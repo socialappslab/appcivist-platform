@@ -8,5 +8,14 @@ GET     /                           controllers.Application.index()
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
-# WebJar routing (for bootstrap, ...)
-GET		/webjars/*file					controllers.WebJarAssets.at(file)
+# Assemblies API
+#GET     /assemblies                    @controllers.Assemblies.findAssemblies
+#POST    /assembly                      @controllers.Assemblies.createAssembly
+#PUT     /assembly/:id                  @controllers.Assemblies.updateAssembly(assemblyId: Long)
+#GET     /assembly/:id/export/:format   @controllers.Assemblies.exportAssembly(assemblyId: Long, format: String)
+
+# Deliberation Services API
+# Proposal Making Services API
+# Mapping Services API
+# Voting Services API
+# Reporting Services API

@@ -1,0 +1,14 @@
+@(message: String, description: String)
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12" ng-view>
+			<div class="jumbotron">
+				<h1 class="text-center">@message</h1>
+				<p class="text-center">@description</p>
+				<p class="text-center">
+					<a class="btn btn-primary btn-lg" href="#" role="button">Create Assembly</a>
+ 				</p>
+			</div>
+        </div>
+    </div>
+</div>

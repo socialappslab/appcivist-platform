@@ -1,7 +1,9 @@
-@(message: String)
+@(message: String)(description: String)
 
-@main("Welcome to Play") {
+@main("AppCivist Dashboard") {
 
-    @play20.welcome(message, style = "Java")
-
+    @navbar("AppCivist Dashboard")
+    @container(message,description)
+    @footer("AppCivist")
+    @javascripts()
 }
