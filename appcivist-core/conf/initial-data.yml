@@ -1,0 +1,84 @@
+# AppCivist Test Data
+---
+
+#Assemblies
+
+  - &urban !!models.Assembly
+    id: 1
+    name: Urban Infrastructure
+    description: "An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal."
+    city: San Francisco
+    icon: /assets/images/tabacalera-140.png
+    url: /assembly/1
+
+  - &racism !!models.Assembly
+    id: 2
+    name: Institutional Racism
+    description: "An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013."
+    city: Oakland
+    icon: /assets/images/justicia-140.png
+    url: /assembly/2
+
+  - &health !!models.Assembly
+    id: 3
+    name: Public Health
+    description: An assembly about Public Health
+    city: Los Angeles
+    icon: /assets/images/barefootdoctor-140.png
+    url: /assembly/3
+
+  - &pbsf !!models.Assembly
+    id: 4
+    name: Participatory Budgeting SF
+    description: An assembly about PB in SF
+    city: San Francisco
+    icon: /assets/images/barefootdoctor-140.png
+    url: /assembly/5
+    campaigns: 
+      - &inspiration !!models.Campaign
+        id: 1
+        name: Inspiration
+        url: http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting
+         
+      - &proposals !!models.Campaign
+        id: 2
+        name: Proposals
+        url: http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting
+         
+      - &voting !!models.Campaign
+        id: 3
+        name: Final Voting
+        url: http://localhost:8000/cdparra/participatory-budgeting-sf-2015/election/pb-sf-2015
+        
+#Users
+
+  - &bob !!models.User
+    userId:     1
+    email:      bob@example.com
+    name:       Bob
+    password:   secret
+    username:   bob
+    locale:     es
+    linkedAccounts:
+    - &bobaccount !!models.LinkedAccount
+      id: 1
+      providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
+      providerKey: password
+      user:
+        userId: 1
+    
+  - &jane !!models.User
+    userId:     2
+    email:      jane@example.com
+    name:       Jane
+    password:   secret
+    username:   jane
+    locale:     en
+
+  - &jeff !!models.User
+    userId:     3
+    email:      jeff@example.com
+    name:       Jeff
+    password:   secret
+    username:   jeff
+    locale:     it

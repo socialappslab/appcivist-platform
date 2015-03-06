@@ -1,0 +1,326 @@
+/**
+ * Original styles in Hypersphere (first demo of AppCivist)
+ */
+
+body {
+  font-family: "Source Sans Pro", sans-serif;
+}
+
+.modal-body {
+  max-height: 50vh;
+  overflow-y: scroll;
+}
+
+.container-fluid {
+  padding: 0;
+}
+
+.container.marketing {
+  text-align: center;
+  margin-bottom: 30px; 
+}
+
+.container.marketing i {
+  color: #808080;
+  font-size: 90px;
+  line-height: 140px;
+}
+
+ins {
+  text-decoration: none;
+  background-color: #cfc;
+}
+
+del {
+  background-color: #fcc;
+  color: #c00;
+}
+
+.compare {
+  button {
+    white-space: normal;
+    width: 100%;
+  }
+}
+
+hr.header {
+  margin-top: 0;
+}
+
+.tab-content > .tab-pane {
+  padding: 0.5em 0;
+}
+
+.filters {
+  margin-bottom: 0.5em;
+  display: none; /* Leave them for now */
+
+  .btn {
+    color: #428BCA;
+    border-right: 1px solid #eee;
+
+    &:last-child {
+      border: none;
+    }
+
+    &:hover {
+      color: #2A6496;
+    }
+
+    &:active, &.active {
+      color: #333;
+      box-shadow: none;
+    }
+  }
+}
+
+.content-type {
+  background: #eee;
+  text-align: center;
+  padding: 1em 0;
+}
+
+.new-button {
+  margin: 8px 0 0 10px;
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.new-button-small {
+  margin-left: 8px;
+  font-size: 8px;
+  padding: 4px 6px;
+}
+
+.affix {
+  top: 20px;
+}
+
+textarea {
+  max-width: 100%;
+}
+
+#post-column {
+  margin-bottom: 100%;
+
+  .panel {
+    background: inherit;
+    border: 4px solid transparent;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+
+    &.proposal {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    &.first-vote {
+      border: 4px solid #5bc0de;
+    }
+
+    &.second-vote {
+      border: 4px solid #f0ad4e;
+    }
+  }
+
+  .panel-default > .panel-heading {
+    font-size: 0.875em;
+    padding: 0.5em 1.25em;
+    font-weight: bold;
+    border-radius: 0;
+    border-color: #d3d3d3;
+
+    &.proposal-change {
+      background: #e6e6e6;
+
+      .compare-button {
+        float: right;
+        padding: 0.125em 0.5em;
+        font-size: 0.75em;
+        font-weight: bold;
+      }
+    }
+
+    &.comment {
+      background: #D2E5FC;
+      border-color: #BAD5F6;
+    }
+
+    small {
+      margin-left: 0.5em;
+      font-weight: normal;
+    }
+  }
+
+  .panel-body {
+    padding: 0.5em 1.125em 1.25em;
+    background: #f9f9f9;
+  }
+}
+
+button#current-vote {
+  border: 2px solid #5bc0de;
+}
+
+button#second-vote {
+  border: 2px solid #f0ad4e;
+}
+
+#map-container {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+#map {
+  border: 1px solid #ccc;
+  height: 90vh;
+}
+
+.map-column {
+  padding: 0;
+}
+
+.navbar .logotype {
+   height: 100%;
+}
+
+.navbar .navbar-brand {
+	padding: 5px 15px
+}
+.navbar-map {
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+.navbar-unauthenticated {
+  margin: 0;
+  border: 0;
+}
+
+.reports-panel {
+  background-color: #f8f8f8;
+  height: 90vh;
+  overflow: auto;
+  padding: 0;
+}
+
+.reports-panel .title {
+  text-align: center;
+}
+
+.jumbotron-index {
+  background-color: #f8f8f8;
+  margin: 0;
+  padding: 0 0 15px 0;
+  text-align: center;
+}
+
+.jumbotron-logotype {
+  height: 48px;
+}
+
+.jumbotron-index .logotype {
+  width: 300px;
+  position: relative;
+  top: -50px;
+}
+
+.jumbotron-index i {
+  color: #808080;
+  font-size: 48px;
+}
+
+.jumbotron-groups img {
+  width: 90px;
+}
+
+.jumbotron-copyright {
+  padding-top: 12px;
+}
+
+.reports {
+  a {
+    color: #000;
+  }
+}
+
+.summary-heading {
+  margin: 30px 0;
+}
+
+#features-row {
+  background-color: #4A4A4A;
+  margin-right: 0;
+  margin-left: 0;
+  color:#FFF;
+}
+
+.highlight {
+  color: #62A6E0;
+}
+
+
+.feature-icon {
+  height: 55px;
+  width: 55px;
+}
+
+
+.media-body h4 {
+  text-align: center;
+}
+
+#feature-title {
+  text-align: center;
+}
+
+#availability-text {
+  font-size: 90%;
+  color: #999999;
+  text-align: center;
+  margin-top: -20px;
+}
+
+#features-row {
+  hr {
+    color: #999;
+    background-color: #999;
+    border: 0;
+    height: 2px;
+  }
+}
+
+.footer {
+  background-color: #505050;
+  
+  a {
+    color: #999999;   
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+#footer-row {
+  background-color: #505050;
+  margin: 0;
+}
+
+.features-arrow {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 18px;
+}
+
+/* Fixes
+
+   TODO: remove these hacks */
+
+@media (min-width: 768px) {
+  .navbar > .container .navbar-brand,
+  .navbar > .container-fluid .navbar-brand {
+    margin-left: 0 !important;
+  }
+}

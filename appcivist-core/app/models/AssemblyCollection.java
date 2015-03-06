@@ -11,13 +11,13 @@ public class AssemblyCollection extends Model {
 	private static final long serialVersionUID = 7213623744477425962L;
 	private List<Assembly> assemblies;
 
-	List<Assembly> getAssemblies() {
+	public List<Assembly> getAssemblies() {
 		return assemblies;
 	}
 
-	void setAssemblies(List<Assembly> assemblies) {
+	public void setAssemblies(List<Assembly> assemblies) {
 		this.assemblies = assemblies;
-	}
+	}	
 	
 	
 }

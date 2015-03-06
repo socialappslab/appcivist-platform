@@ -7,10 +7,13 @@ import views.html.*;
 
 public class Application extends Controller {
 
+	public static final String FLASH_MESSAGE_KEY = "message";
+	public static final String FLASH_ERROR_KEY = "error";
+
+
+	
 	public static Result index() {
-		return ok(index
-				.render("Welcome to AppCivist!",
-						"AppCivist is a service oriented platform to support civic participation and social activism"));
+		return ok(index.render());
 	}
 
 }

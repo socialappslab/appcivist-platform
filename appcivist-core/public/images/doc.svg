@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="70px" height="70px" viewBox="0 0 70 70" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <title>doc.svg</title>
+    <description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Artboard-1" sketch:type="MSArtboardGroup">
+            <g id="Group" sketch:type="MSLayerGroup">
+                <rect id="Rectangle-1" sketch:type="MSShapeGroup" x="0" y="0" width="70" height="70"></rect>
+                <path d="M15.2674679,2 C11.5116453,2.0000006 7.43432613,6.78222656 7.43432613,6.78222656 C7.43432613,6.78222656 7.43432613,6.78222656 7.43432613,6.78222656 C7.43432613,6.78222656 4,10.3294914 4,13.367849 L3.99999996,65.7429535 C3.99999998,66.9894859 4.99898406,68 6.243241,68 L63.756759,68 C64.9956668,68 66,66.9897083 66,65.7472237 L66,4.25277625 C66,3.00860228 64.9857529,2 63.7530476,2 L15.2674679,2 Z" id="Rectangle-3" fill="#4A4A4A" sketch:type="MSShapeGroup"></path>
+                <path d="M15.2674679,2 C11.5116453,2.0000006 13.6830034,12.2051697 13.6830034,12.2051697 C13.6830034,12.2051697 4,10.3294914 4,13.367849 L3.99999996,65.7429535 C3.99999998,66.9894859 4.99898406,68 6.243241,68 L63.756759,68 C64.9956668,68 66,66.9897083 66,65.7472237 L66,4.25277625 C66,3.00860228 64.9857529,2 63.7530476,2 L15.2674679,2 Z" id="Rectangle-3" stroke="#979797" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+                <rect id="Rectangle-4" stroke="#979797" fill="#4A4A4A" sketch:type="MSShapeGroup" x="11" y="15" width="20" height="8" rx="2.25"></rect>
+                <rect id="Rectangle-4" stroke="#979797" fill="#4A4A4A" sketch:type="MSShapeGroup" x="11" y="25" width="51" height="16" rx="2.25"></rect>
+                <rect id="Rectangle-4" stroke="#979797" fill="#4A4A4A" sketch:type="MSShapeGroup" x="11" y="45" width="51" height="16" rx="2.25"></rect>
+            </g>
+        </g>
+    </g>
+</svg>
