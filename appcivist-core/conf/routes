@@ -24,8 +24,8 @@ GET     /user                                        controllers.Users.getUsers(
 GET     /user/login                                  controllers.Users.getLoginForm()
 GET     /user/:uid                                   controllers.Users.getUser(uid: Long)
 GET 	/user/loggedin/:uid 						 controllers.Users.getCurrentUser(uid: Long)
+GET     /user/email/:email                                 controllers.Users.getUserByEmail(email: String) 
 
-POST    /user/:email                                 controllers.Users.getUserByEmail(email: String) 
 POST    /user/login                                  controllers.Users.doLogin()
 POST    /user/logout                                 controllers.Users.doLogout()
 POST    /user/signup                                 controllers.Users.doSignup()

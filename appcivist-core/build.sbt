@@ -18,10 +18,13 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap" % "3.3.1", 			        // jar-packaged version of twitter bootstrap  
   "org.webjars" % "angularjs" % "1.3.14",			        // jar-packaged version of twitter angularjs
   "org.webjars" % "angular-ui-bootstrap" % "0.12.0",  // jar-packaged version of twitter angularjs-ui-bootstrap
-  "com.feth" %% "play-authenticate" % "0.6.8",        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
-  "be.objectify" %% "deadbolt-java" % "2.3.2",        // authoriazation framework that supports roles
+  "com.feth" %% "play-authenticate" % "0.6.8" withSources() withJavadoc(),        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
+  "be.objectify" %% "deadbolt-java" % "2.3.2" withSources() withJavadoc(),        // authoriazation framework that supports roles
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4", 
-  "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0"
+  "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0",
+  "com.typesafe.play" % "play_2.11" % "2.3.7" withSources(),
+  "com.typesafe.play" % "play-java_2.11" % "2.3.8" withSources(), 
+  "org.springframework" % "spring-context" % "4.0.3.RELEASE" withSources()
 )
 
 resolvers += Resolver.url("Objectify Play Repository", url("http://schaloner.github.com/releases/"))(Resolver.ivyStylePatterns)

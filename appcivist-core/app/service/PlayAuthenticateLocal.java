@@ -30,6 +30,13 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 	private static final String SETTING_KEY_ACCOUNT_AUTO_LINK = "accountAutoLink";
 	private static final String SETTING_KEY_ACCOUNT_AUTO_MERGE = "accountAutoMerge";
 
+	public static final String USER_KEY = "pa.u.id";
+	public static final String PROVIDER_KEY = "pa.p.id";
+	public static final String EXPIRES_KEY = "pa.u.exp";
+	public static final String SESSION_KEY_STRING = "SESSION_KEY";
+//	public static final String ORIGINAL_URL = "pa.url.orig";
+//	public static final String SESSION_ID_KEY = "pa.s.id";
+	
 	/**
 	 * Deprecated by public static Result loginAndRedirect(final Context
 	 * context, final AuthUser loginUser, Object payload)
@@ -48,9 +55,10 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 	/**
 	 * Login and redirect signs in the user and sends him back the user
-	 * information along with the sessionKey. Payload is an object containing
-	 * information about what was the original call (signup or login) in order
-	 * to allow signup with automatic login afterwards
+	 * information along with the sessionKey. 
+	 * 
+	 * Payload is an object containing information about what was the original call 
+	 * (signup or login) in order to allow signup with automatic login afterwards
 	 * 
 	 * @param context
 	 * @param loginUser
@@ -67,15 +75,21 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			StringBuffer sb = new StringBuffer();
 
 			if (loginUser.expires() != AuthUser.NO_EXPIRATION) {
-				sb.append("pa.u.exp:");
-				sb.append(loginUser.expires());
-				sb.append("\u0000");
+				sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.EXPIRES_KEY, "UTF-8"));
+				sb.append("=");
+				sb.append(java.net.URLEncoder.encode(loginUser.expires()+"", "UTF-8"));
+				sb.append("&");
 			}
-			sb.append("pa.p.id:");
-			sb.append(loginUser.getProvider());
-			sb.append("\u0000pa.u.id:");
-			sb.append(loginUser.getId());
-			encoded = java.net.URLEncoder.encode(sb.toString(), "UTF-8");
+			sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.PROVIDER_KEY, "UTF-8"));
+			sb.append("=");
+			sb.append(java.net.URLEncoder.encode(loginUser.getProvider(), "UTF-8"));
+			sb.append("&");
+			sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.USER_KEY, "UTF-8"));
+			sb.append("=");
+			sb.append(java.net.URLEncoder.encode(loginUser.getId(), "UTF-8"));
+			
+			//encoded = java.net.URLEncoder.encode(sb.toString(), "UTF-8");
+			encoded = sb.toString();
 			signed = Crypto.sign(encoded);
 		} catch (UnsupportedEncodingException e) {
 			Logger.error(e.getMessage());
@@ -83,7 +97,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		}
 
 		if (Logger.isDebugEnabled()) {
-			Logger.debug("session generated: " + "SESSION_KEY=" + signed + "-"
+			Logger.debug("session generated: " + PlayAuthenticateLocal.SESSION_KEY_STRING+"=" + signed + "-"
 					+ encoded);
 		}
 
@@ -102,28 +116,21 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			provider.sendVerifyEmailMailingAfterSignup(user, context);
 
 		}
-
-		
-//		User u = PlayDozerMapper.getInstance().map(user, UserBean.class);
-//		u.setSessionKey(signed + "-" + encoded);
-//		return Controller.ok(toJson(u));
-		return Controller.ok(toJson("SESSION_KEY=" + signed + "-" + encoded));
+		user.setSessionKey(signed + "-" + encoded);
+//		return Controller.ok(toJson("SESSION_KEY=" + signed + "-" + encoded));
+		return Controller.ok(toJson(user));
 	}
 
 	public static Result handleAuthentication(final String provider,
 			final Context context, final Object payload) {
 		final AuthProvider ap = getProvider(provider);
 		if (ap == null) {
-			 //Provider wasn't found and/or user was fooling with our stuff -
-			 //tell him off:
-			 return Controller.notFound(Messages.get(
-			 "playauthenticate.core.exception.provider_not_found",
-			 provider));
-//			ResponseStatusBean response = new ResponseStatusBean();
-//			response.setResponseStatus(ResponseStatus.NOTAVAILABLE);
-//			response.setStatusMessage("playauthenticate.core.exception.provider_not_found="
-//					+ provider);
-//			return Controller.notFound(toJson(response));
+			// Provider wasn't found and/or user was fooling with our stuff -
+			// tell him off:
+			ResponseStatusBean response = new ResponseStatusBean(ResponseStatus.NOTAVAILABLE,Messages.get(
+					"playauthenticate.core.exception.provider_not_found",
+					provider));
+			return Controller.notFound(toJson(response));
 		}
 		try {
 			final Object o = ap.authenticate(context, payload);
@@ -162,21 +169,21 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				final AuthUser newUser = (AuthUser) o;
 				final Session session = context.session();
 
-				/* 
+				/*
 				 * We might want to do merging here:
-				 *
+				 * 
 				 * Adapted from:
-				 * http://stackoverflow.com/questions/6666267/architecture-for-merging-multiple-user-accounts-together
-				 * 1. The account is linked to a local account and no session
-				 * 	  cookie is present --> Login
-				 * 2. The account is linked to a local account and a session
-				 *    cookie is present --> Merge
-				 * 3. The account is not linked to a local account and no
-				 *    session cookie is present --> Signup
-				 * 4. The account is not linked to a local account and a session
-				 *    cookie is present --> Linking Additional account
+				 * http://stackoverflow.com/questions/6666267/architecture
+				 * -for-merging-multiple-user-accounts-together 1. The account
+				 * is linked to a local account and no session cookie is present
+				 * --> Login 2. The account is linked to a local account and a
+				 * session cookie is present --> Merge 3. The account is not
+				 * linked to a local account and no session cookie is present
+				 * --> Signup 4. The account is not linked to a local account
+				 * and a session cookie is present --> Linking Additional
+				 * account
 				 */
-				
+
 				// Get the user with which we are logged in - is null if we are
 				// not logged in (does NOT check expiration)
 				AuthUser oldUser = getUser(session);
@@ -186,13 +193,15 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 				Object oldIdentity = null;
 
-				// check if local user still exists - it might have been deactivated/deleted,
+				// check if local user still exists - it might have been
+				// deactivated/deleted,
 				// so this is a signup, not a link
 				if (isLoggedIn) {
 					oldIdentity = getUserService().getLocalIdentity(oldUser);
 					isLoggedIn &= oldIdentity != null;
 					if (!isLoggedIn) {
-						// if isLoggedIn is false here, then the local user has been deleted/deactivated
+						// if isLoggedIn is false here, then the local user has
+						// been deleted/deactivated
 						// so kill the session
 						logout(session);
 						oldUser = null;
@@ -248,7 +257,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				} else if (!isLinked && !isLoggedIn) {
 					// 3. -> Signup
 					loginUser = signupUser(newUser);
-					
+
 				} else {
 					// !isLinked && isLoggedIn:
 

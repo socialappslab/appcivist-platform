@@ -75,7 +75,7 @@ public class MyUsernamePasswordAuthProvider
 			this.email = email;
 		}
 
-		@Required
+		//@Required
 		@Email
 		public String email;
 
@@ -85,7 +85,7 @@ public class MyUsernamePasswordAuthProvider
 			implements
 			com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider.UsernamePassword {
 
-		@Required
+		//@Required
 		@MinLength(5)
 		public String password;
 
@@ -159,28 +159,25 @@ public class MyUsernamePasswordAuthProvider
 			final MyUsernamePasswordAuthUser user) {
 		final User u = User.findByUsernamePasswordIdentity(user);
 		if (u != null) {
-			// if (u.isEmailValidated()) {
-			// // This user exists, has its email validated and is active
-			// return SignupResult.USER_EXISTS;
-			// } else {
-			// // this user exists, is active but has not yet validated its
-			// // email
-			// return SignupResult.USER_EXISTS_UNVERIFIED;
-			// }
-			return SignupResult.USER_EXISTS;
-
+			if (u.isEmailVerified()) {
+			   // This user exists, has its email validated and is active
+			   return SignupResult.USER_EXISTS;
+			} else {
+				// this user exists, is active but has not yet validated its
+				// email
+				return SignupResult.USER_EXISTS_UNVERIFIED;
+			}
 		}
-		// The user either does not exist or is inactive - create a new one
 
 		final User newUser = User.createFromAuthUser(user);
 		user.setUserId(newUser.getUserId());
+
+		// TODO verify that the email is correct and valid
 		// Usually the email should be verified before allowing login, however
 		// if you return
 		// return SignupResult.USER_CREATED;
 		// then the user gets logged in directly
 		// return SignupResult.USER_CREATED_UNVERIFIED;
-
-		// TODO verify that the email is correct and valid
 
 		return SignupResult.USER_CREATED;
 	}
@@ -495,5 +492,6 @@ public class MyUsernamePasswordAuthProvider
 		}
 		return kase;
 	}
+	
 
 }

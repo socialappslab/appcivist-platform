@@ -45,7 +45,6 @@ create table appcivist_user (
   user_id                   bigint not null,
   email                     varchar(255),
   name                      varchar(255),
-  password                  varchar(255),
   username                  varchar(255),
   locale                    varchar(255),
   email_verified            boolean,

@@ -50,13 +50,12 @@
         name: Final Voting
         url: http://localhost:8000/cdparra/participatory-budgeting-sf-2015/election/pb-sf-2015
         
-#Users
+# Users (Testing Users)
 
   - &bob !!models.User
     userId:     1
     email:      bob@example.com
     name:       Bob
-    password:   secret
     username:   bob
     locale:     es
     linkedAccounts:
@@ -71,14 +70,26 @@
     userId:     2
     email:      jane@example.com
     name:       Jane
-    password:   secret
     username:   jane
     locale:     en
+    linkedAccounts:
+    - &janeaccount !!models.LinkedAccount
+      id: 2
+      providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
+      providerKey: password
+      user:
+        userId: 2
 
   - &jeff !!models.User
     userId:     3
     email:      jeff@example.com
     name:       Jeff
-    password:   secret
     username:   jeff
     locale:     it
+    linkedAccounts:
+    - &jeffccount !!models.LinkedAccount
+      id: 3
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user:
+        userId: 3

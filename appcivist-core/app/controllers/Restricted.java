@@ -6,6 +6,12 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 
+/**
+ * Controller with restricted services 
+ * 
+ * @author cdparra
+ *
+ */
 @Security.Authenticated(Secured.class)
 public class Restricted extends Controller {
 
@@ -15,7 +21,7 @@ public class Restricted extends Controller {
 		// return ok(restricted.render(localUser));
 //		final models.User localUser = Application.getLocalUser(session());
 		final play.mvc.Http.Cookie cookie = play.mvc.Http.Context.current()
-				.request().cookie("PLAY_SESSION");
+				.request().cookie("SESSION_KEY");
 //		UserAuthenticatedBean user = new UserAuthenticatedBean();
 //		user.setName(localUser.getFname());
 //		user.setLastName(localUser.getSname());

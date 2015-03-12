@@ -1,21 +1,40 @@
 package controllers;
 
 import static play.data.Form.form;
+import static play.libs.F.None;
+import static play.libs.F.Some;
 import static play.libs.Json.toJson;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.NotReadablePropertyException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.google.common.collect.ImmutableList;
 
 import enums.ResponseStatus;
 import models.*;
 import models.TokenAction.Type;
+import play.Logger;
 import play.mvc.*;
 import play.mvc.Http.Session;
 import play.data.Form;
 import play.data.format.Formats.NonEmpty;
+import play.data.validation.ValidationError;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
+import play.libs.F.Option;
 import play.libs.Json;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
@@ -49,12 +68,9 @@ public class Users extends Controller {
 
 	@Security.Authenticated(Secured.class)
 	public static Result getUser(Long id) {
+		Logger.info("Obtaining user with id = "+id);
 		User u = User.findByUserId(id);
-		if (request().accepts("application/xml")) {
-			return ok("<errorMessage>Not Implemented Yet</errorMessage>");
-		} else {
-			return ok(Json.toJson(u));
-		}
+		return ok(Json.toJson(u));
 	}
 
 	@Security.Authenticated(Secured.class)
@@ -114,20 +130,26 @@ public class Users extends Controller {
 
 	/****************************************************************************************************
 	 * AUTHENTICATION Endpoints
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 ***************************************************************************************************/
-	public static Result doLogin() {
-		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
-				.bindFromRequest();
+	public static Result doLogin() throws InstantiationException, IllegalAccessException {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		Logger.info("REQUEST: Login => " + ctx().request());
+		Logger.info("REQUEST: Login JSON => " + ctx().request().body().asJson());
+		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM.bindFromRequest();
+		Logger.info("REQUEST: Login Form => "+filledForm.toString());
 		if (filledForm.hasErrors()) {
 			// User did not fill everything properly
 			// return badRequest(login.render(filledForm));
-			return badRequest();
+			return badRequest("Errors in Data: "+filledForm.errorsAsJson());
 		} else {
 			// Everything was filled
 			return MyUsernamePasswordAuthProvider.handleLogin(ctx());
 		}
+		
 	}
-
+	
 	public static Result doLogout() {
 		return notFound("TODO: Not Implemented Yet");
 	}

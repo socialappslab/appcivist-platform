@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import models.TokenAction.Type;
 
@@ -45,9 +46,11 @@ public class User extends Model {
 	private Long userId;
 	private String email;
 	private String name;
-	private String password;
 	private String username;
 	private String locale;
+	
+	@Transient
+	private String sessionKey;
 	
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
@@ -110,14 +113,6 @@ public class User extends Model {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public Long getUserId() {
@@ -478,6 +473,14 @@ public class User extends Model {
 		} else {
 			return null;
 		}
+	}
+
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
+	public void setSessionKey(String sessionKey) {
+		this.sessionKey = sessionKey;
 	}
 
 }

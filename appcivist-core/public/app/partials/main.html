@@ -1,6 +1,6 @@
 ﻿<div class="view">
 	<div class="container marketing">
-		<div class="row" ui-if='userIsAuthenticated()'>
+		<div class="row" ui-if='!userIsAuthenticated()'>
 			<div class="col-md-12">
                 <h2 class="summary-heading" style="margin-top: 8px;">Assemblies</h2>
 			</div>
@@ -22,7 +22,7 @@
  -->	</div>
 	</div>
 	
-	<div class="container marketing" ui-if='!userIsAuthenticated()'>
+	<div class="container marketing" ui-if='userIsAuthenticated()'>
       <div class="row">
         <h2 class="summary-heading">AppCivist is a platform for democratic assembly and collective action.</h2>
         <div class="col-md-4">
