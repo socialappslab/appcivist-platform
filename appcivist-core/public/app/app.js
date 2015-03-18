@@ -11,30 +11,58 @@
  */
 
 console.log("Welcome to AppCivist!");
-	
 
-var dependencies = [ 'ngRoute', 'ui.bootstrap', 'ngResource'];
+var dependencies = [ 'ngRoute', 'ui.bootstrap', 'ngResource',  'LocalStorageModule'];
 var appCivistApp = angular.module('appCivistApp', dependencies);
 
-// This configures the routes and associates each route with a view and a controller
-appCivistApp.config(function ($routeProvider) {
-    $routeProvider
-        .when('/',
-            {
-                controller: 'MainController',
-                templateUrl: '/assets/app/partials/main.html'
-            })
-//        .when('/assembly/:assemblyID',
-//            {
-//                controller: 'AssemblyController',
-//                templateUrl: '/app/partials/assemblyView.html'
-//            })
-//        //Define a route that has a route parameter in it (:customerID)
-//        .when('/assembly/:assemblyID/campaign/:campaignId',
-//            {
-//                controller: 'AssemblyController',
-//                templateUrl: '/app/partials/assemblyCampaignView.html'
-//            })
-        .otherwise({ redirectTo: '/' });
-});
+/**
+ * AngularJS initial configurations: 
+ * - Routes
+ * - Libraries specifics (e.g., local storage, resource provider, etc.)
+ */
+appCivistApp.config(function($routeProvider, $resourceProvider, $httpProvider,
+		$localStorageServiceProvider) {
+	
+	$routeProvider
+		.when('/', {
+			controller : 'MainCtrl',
+			templateUrl : '/assets/app/partials/main.html'
+		})
+		.when('/assemblies', {
+			controller : 'AssemblyListCtrl',
+			templateUrl : '/assets/app/partials/assemblies.html'
+		})
+		//        //Define a route that has a route parameter in it (:customerID)
+		//        .when('/assembly/:assemblyID/campaign/:campaignId',
+		//            {
+		//                controller: 'AssemblyController',
+		//                templateUrl: '/app/partials/assemblyCampaignView.html'
+		//            })
+		.otherwise({
+			redirectTo : '/'
+		});
+	
+	$localStorageServiceProvider
+		.setPrefix('appcivist')
+		.setStorageType('sessionStorage')
+		.setNotify(true,true);
 
+		
+	$httpProvider.interceptors.push(['$q', '$location', '$localStorage', function($q, $location, $localStorage) {
+        return {
+            'request': function (config) {
+                config.headers = config.headers || {};
+                if ($localStorage.sessionKey) {
+                    config.headers.SESSION_KEY = '' + $localStorage.sessionKey;
+                }
+                return config;
+            },
+            'responseError': function(response) {
+                if(response.status === 401 || response.status === 403) {
+                    $location.path('/');
+                }
+                return $q.reject(response);
+            }
+        };
+    }]);
+});

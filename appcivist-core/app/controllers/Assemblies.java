@@ -8,6 +8,7 @@ import play.libs.Json;
 
 public class Assemblies extends Controller {
 	
+	@Security.Authenticated(Secured.class)
 	public static Result findAssemblies() {
 		AssemblyCollection assemblies = Assembly.findAll();
 		

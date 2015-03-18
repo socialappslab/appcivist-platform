@@ -7,39 +7,42 @@ GET     /                           controllers.Application.index()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
-
-# Map static resources from the /public folder to the to the same path/URL 
-# (to make it easier to migrate/moving HTML views to standalone webapps)
 GET     /public/*file               controllers.Assets.at(path="/public", file)
 
 # Assemblies API
-GET     /assembly                      controllers.Assemblies.findAssemblies()
-#POST    /assembly                     controllers.Assemblies.createAssembly
-#PUT     /assembly/:id                 controllers.Assemblies.updateAssembly(assemblyId: Long)
-#GET     /assembly/:id                 controllers.Assemblies.exportAssembly(assemblyId: Long)
+GET     /api/assemblies                      controllers.Assemblies.findAssemblies()
+#POST    /api/assembly                     controllers.Assemblies.createAssembly
+#PUT     /api/assembly/:id                 controllers.Assemblies.updateAssembly(assemblyId: Long)
+#GET     /api/assembly/:id                 controllers.Assemblies.exportAssembly(assemblyId: Long)
 
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
-GET     /user                                        controllers.Users.getUsers()
-GET     /user/login                                  controllers.Users.getLoginForm()
-GET     /user/:uid                                   controllers.Users.getUser(uid: Long)
-GET 	/user/loggedin/:uid 						 controllers.Users.getCurrentUser(uid: Long)
-GET     /user/email/:email                                 controllers.Users.getUserByEmail(email: String) 
+GET     /api/user                                        controllers.Users.getUsers()
+GET     /api/user/login                                  controllers.Users.getLoginForm()
+GET     /api/user/:uid                                   controllers.Users.getUser(uid: Long)
+GET 	/api/user/loggedin/:uid 						 controllers.Users.getCurrentUser(uid: Long)
+GET     /api/user/email/:email                                 controllers.Users.getUserByEmail(email: String) 
 
-POST    /user/login                                  controllers.Users.doLogin()
-POST    /user/logout                                 controllers.Users.doLogout()
-POST    /user/signup                                 controllers.Users.doSignup()
+POST    /api/user/login                                  controllers.Users.doLogin()
+POST    /api/user/logout                                 controllers.Users.doLogout()
+POST    /api/user/signup                                 controllers.Users.doSignup()
 
-PUT     /user/:uid                                   controllers.Users.updateUser(uid: Long) 
-DELETE  /user/:uid                                   controllers.Users.deleteUser(uid: Long)
-DELETE  /user/:uid/force                             controllers.Users.deleteUserForce(uid: Long)
+PUT     /api/user/:uid                                   controllers.Users.updateUser(uid: Long) 
+DELETE  /api/user/:uid                                   controllers.Users.deleteUser(uid: Long)
+DELETE  /api/user/:uid/force                             controllers.Users.deleteUserForce(uid: Long)
 
 # Play Authenticate endpoints to validate/integrate, used to verify the email
-GET     /user/verify/:token         				 controllers.Users.verify(token: String)
-GET     /user/unverified            				 controllers.Users.unverified()
-GET     /user/exists                				 controllers.Users.exists()
-GET     /login/denied                                controllers.Users.onLoginUserNotFound()
-GET     /authenticate/:provider/denied               controllers.Users.oAuthDenied(provider: String)
-GET     /authenticated                               controllers.Restricted.index()
-GET     /login/:id                                   controllers.Restricted.id(id: String)
-GET     /authenticate/:provider                      controllers.AuthenticateLocal.authenticate(provider: String)
+GET     /api/user/verify/:token         				 controllers.Users.verify(token: String)
+GET     /api/user/unverified            				 controllers.Users.unverified()
+GET     /api/user/exists                				 controllers.Users.exists()
+GET     /api/login/denied                                controllers.Users.onLoginUserNotFound()
+GET     /api/authenticate/:provider/denied               controllers.Users.oAuthDenied(provider: String)
+GET     /api/authenticated                               controllers.Restricted.index()
+GET     /api/login/:id                                   controllers.Restricted.id(id: String)
+GET     /api/authenticate/:provider                      controllers.AuthenticateLocal.authenticate(provider: String)
+
+
+
+
+
+

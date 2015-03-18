@@ -9,6 +9,7 @@ import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security;
 import scala.collection.immutable.HashMap;
+import service.PlayAuthenticateLocal;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
@@ -64,17 +65,17 @@ public class Secured extends Security.Authenticator {
 			try {
 				scala.collection.immutable.Map<String, String> values = Session.decode(play_session);
 				if (values.size() > 0) {
-					String user_exp = values.get("pa.u.exp").get();
-					String provider_id = values.get("pa.p.id").get();
-					String user_id = values.get("pa.u.id").get();
+					String user_exp = values.get(PlayAuthenticateLocal.EXPIRES_KEY).get();
+					String provider_id = values.get(PlayAuthenticateLocal.PROVIDER_KEY).get();
+					String user_id = values.get(PlayAuthenticateLocal.USER_KEY).get();
 
 					Logger.debug("AUTH: session expiring code: " + user_exp);
 					Logger.debug("AUTH: session provider id: " + provider_id);
 					Logger.debug("AUTH: session user id: " + user_id);
 
-					ctx.session().put("pa.u.exp", user_exp);
-					ctx.session().put("pa.p.id", provider_id);
-					ctx.session().put("pa.u.id", user_id);
+					ctx.session().put(PlayAuthenticateLocal.EXPIRES_KEY, user_exp);
+					ctx.session().put(PlayAuthenticateLocal.PROVIDER_KEY, provider_id);
+					ctx.session().put(PlayAuthenticateLocal.USER_KEY, user_id);
 				} else {
 					Logger.debug("AUTH: session key decoding not successful");
 				}

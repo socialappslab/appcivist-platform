@@ -1,56 +1,124 @@
-﻿/**
- * AppCivist Demo Client - Basic Controllers
- * 
+﻿// AppCivist Demo Client - Basic Controllers
+
+/**
+ * AccountCtrl - functions to control authentication 
  */
+appCivistApp.controller('AccountCtrl', function($scope, $resource, $location,
+		$localStorageService, appCivistService, loginService) {
+	init();
 
+	function init() {
+		// check if there is already a user and a sessionKey in the
+		// $localStorage
+		$scope.user = $localStorageService.get("user");
+		$scope.sessionKey = $localStorageService.get("session_key");
 
-// This controller gets data about the assemblies and associates it with the $scope
-// The $scope is ultimately bound to the main view
-appCivistApp.controller('MainController', function ($scope, appCivistService, loginService) {
+		if ($scope.user != null && $scope.sessionKey != null) {
+			// TODO Validate that the Session Key corresponds to the user
+			$location.url('/assemblies');
+		} else {
+			$scope.user = {};
+			$scope.sessionKey = null;
+		}
+	}
 
-    // I like to have an init() for controllers that need to perform some initialization. Keeps things in
-    //one place...not required though especially in the simple example below
-    init();
+	$scope.login = function() {
+		console.log("Signing in with email = " + $scope.email);
+		loginService.signIn($scope.email, $scope.password);
+	}
 
-    function init() {
-        $scope.assemblies = appCivistService.getAssemblies();
-        $scope.auth = loginService.getAuth();
-    }
+	$scope.signup = function() {
+		$location.url('/signupform');
+	}
 
-    $scope.insertAssembly = function () {
-        var title = $scope.newAssembly.title;
-        var description = $scope.newAssembly.description;
-        var city = $scope.newAssembly.city;
-        appCivistService.insertAssembly(title, description, city);
-        $scope.newAssembly.title = '';
-        $scope.newAssembly.description = '';
-        $scope.newAssembly.city = '';
-    };
-
-    $scope.deleteAssembly = function (id) {
-        appCivistService.deleteAssembly(id);
-    };
+	$scope.signout = function() {
+		loginService.signOut();
+	}
 });
 
-//This controller retrieves data from the appCivistService and associates it with the $scope
-//The $scope is bound to the order view
-//app.controller('AssemblyController', function ($scope, $routeParams, appCivistService) {
-//    $scope.assembly = {};
-//    $scope.ordersTotal = 0.00;
-//
-//    //I like to have an init() for controllers that need to perform some initialization. Keeps things in
-//    //one place...not required though especially in the simple example below
-//    init();
-//
-//    function init() {
-//        //Grab assemblyID off of the route        
-//        var assemblyID = ($routeParams.assemblyID) ? parseInt($routeParams.assemblyID) : 0;
-//        if (assemblyID > 0) {
-//            $scope.assembly = appCivistService.getCustomer(assemblyID);
-//        }
-//    }
-//
-//});
+/**
+ * MainCtrl - this controller checks if the user is loggedIn and loads the main
+ * view with the public cover or redirects it to the list of assemblies that the
+ * user can view
+ * 
+ */
+appCivistApp.controller('MainCtrl', function($scope, $resource, $location,
+		$localStorageService, appCivistService, loginService) {
+
+	init();
+
+	function init() {
+		// check if there is already a user and a sessionKey in the scope
+		if ($scope.user != null && $scope.sessionKey != null) {
+			// TODO Validate that the Session Key corresponds to the user
+			$location.url('/assemblies');
+		} else {
+			// check if there is a user and session key in the local storage
+			$scope.user = $localStorageService.get("user");
+			$scope.sessionKey = $localStorageService.get("session_key");
+			if ($scope.user != null && $scope.sessionKey != null) {
+				// TODO Validate that the Session Key corresponds to the user
+				$location.url('/assemblies');
+			} else {
+				$scope.user = {};
+				$scope.sessionKey = null;
+			}
+		}
+	}
+
+	$scope.login = function(email, password) {
+		$scope.user = loginService.signIn(email, password);
+	}
+
+});
+
+// This controller retrieves data from the appCivistService and associates it
+// with the $scope
+// The $scope is bound to the order view
+appCivistApp.controller('AssemblyListCtrl', function($scope, $routeParams,
+		$resource, appCivistService, loginService) {
+
+	$scope.assemblies = {};
+	// I like to have an init() for controllers that need to perform some
+	// initialization. Keeps things in
+	// one place...not required though especially in the simple example below
+	init();
+
+	function init() {
+		$scope.assemblies = appCivistService.getAssemblies();
+		// $scope.auth = loginService.getAuth();
+	}
+});
+
+// This controller retrieves data from the appCivistService and associates it
+// with the $scope
+// The $scope is bound to the order view
+appCivistApp
+		.controller(
+				'AssemblyCtrl',
+				function($scope, $routeParams, $resource, appCivistService,
+						loginService) {
+					$scope.currentAssembly = {};
+
+					// I like to have an init() for controllers that need to
+					// perform some initialization. Keeps things in
+					// one place...not required though especially in the simple
+					// example below
+					init();
+
+					function init() {
+						// $scope.assemblies = appCivistService.getAssemblies();
+
+						// Grab assemblyID off of the route
+						var assemblyID = ($routeParams.assemblyID) ? parseInt($routeParams.assemblyID)
+								: 0;
+						if (assemblyID > 0) {
+							$scope.assembly = appCivistService
+									.getCustomer(assemblyID);
+						}
+					}
+				});
+
 //
 ////This controller retrieves data from the appCivistService and associates it with the $scope
 ////The $scope is bound to the orders view

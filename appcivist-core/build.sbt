@@ -18,6 +18,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap" % "3.3.1", 			        // jar-packaged version of twitter bootstrap  
   "org.webjars" % "angularjs" % "1.3.14",			        // jar-packaged version of twitter angularjs
   "org.webjars" % "angular-ui-bootstrap" % "0.12.0",  // jar-packaged version of twitter angularjs-ui-bootstrap
+  "org.webjars" % "jquery" % "2.1.3",
   "com.feth" %% "play-authenticate" % "0.6.8" withSources() withJavadoc(),        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
   "be.objectify" %% "deadbolt-java" % "2.3.2" withSources() withJavadoc(),        // authoriazation framework that supports roles
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4", 

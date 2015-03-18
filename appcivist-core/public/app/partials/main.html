@@ -1,121 +1,109 @@
 ﻿<div class="view">
-	<div class="container marketing">
-		<div class="row" ui-if='!userIsAuthenticated()'>
-			<div class="col-md-12">
-                <h2 class="summary-heading" style="margin-top: 8px;">Assemblies</h2>
+
+	<div class="container marketing" ui-if='!userIsAuthenticated()'>
+		<div class="row">
+			<h2 class="summary-heading">AppCivist is a platform for
+				democratic assembly and collective action.</h2>
+			<div class="col-md-4">
+				<img class="img-circle" src="/assets/images/map-140.png" alt="Map">
+				<h3>Report issues</h3>
+			</div>
+			<div class="col-md-4">
+				<img class="img-circle" src="/assets/images/discuss-140.png"
+					alt="Discuss">
+				<h3>Propose solutions</h3>
+			</div>
+			<div class="col-md-4">
+				<img class="img-circle" src="/assets/images/visualize-140.png"
+					alt="Visualize">
+				<h3>Evaluate proposals</h3>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-md-3" data-ng-repeat="assembly in assemblies | orderBy:'title'">
-				<a href="/assembly/{{assembly.id}}"><img class="img-circle"
-					src="{{assembly.icon}}"
-					alt="{{assembly.description}}"></a>
-				<h3>{{assembly.title}}</h3>
-				<h4>{{assembly.city}}</h4>
-				<a href="#/assebmly/{{assembly.id}}/campaigns"
-					class="cardBody btn-link"> View {{ assembly.campaigns.length }}
-					Campaigns</a>
-			</div>
-<!-- 			<div class="col-md-3">
-				<i class="icon-wrench" style="position: relative; right: -36px;"></i>
-			</div>
- -->	</div>
 	</div>
-	
-	<div class="container marketing" ui-if='userIsAuthenticated()'>
-      <div class="row">
-        <h2 class="summary-heading">AppCivist is a platform for democratic assembly and collective action.</h2>
-        <div class="col-md-4">
-          <img class="img-circle" src="/assets/images/map-140.png" alt="Map">
-          <h3>Report issues</h3>
-        </div>
-        <div class="col-md-4">
-          <img class="img-circle" src="/assets/images/discuss-140.png" alt="Discuss">
-          <h3>Propose solutions</h3>
-        </div>
-        <div class="col-md-4">
-          <img class="img-circle" src="/assets/images/visualize-140.png" alt="Visualize">
-          <h3>Evaluate proposals</h3>
-        </div>
-      </div>
-    </div>
-    <div class="jumbotron jumbotron-index">
-      <div class="container">
-        <div class="row">
-          <h3 class="summary-heading">AppCivist lets users make their own apps, called Assemblies, with modular components.</h3>
-          <div class="col-md-1"></div>
-          <div class="col-md-1">
-            <i class="icon-doc-text"></i>
-            <h5>Proposal Making</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-users"></i>
-            <h5>Working Groups</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-flag-empty"></i>
-            <h5>Mobilizing</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-chat-empty"></i>
-            <h5>Deliberating</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-docs"></i>
-            <h5>Versioning</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-chart-bar"></i>
-            <h5>Visualizing</h5>
-          </div>
-<!--           <div class="col-md-1">
+	<div class="jumbotron jumbotron-index" ui-if='userIsAuthenticated()'>
+		<div class="container">
+			<div class="row">
+				<h3 class="summary-heading">AppCivist lets users make their own
+					apps, called Assemblies, with modular components.</h3>
+				<div class="col-md-1"></div>
+				<div class="col-md-1">
+					<i class="icon-doc-text"></i>
+					<h5>Proposal Making</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-users"></i>
+					<h5>Working Groups</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-flag-empty"></i>
+					<h5>Mobilizing</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-chat-empty"></i>
+					<h5>Deliberating</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-docs"></i>
+					<h5>Versioning</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-chart-bar"></i>
+					<h5>Visualizing</h5>
+				</div>
+				<!--           <div class="col-md-1">
             <i class="icon-edit"></i>
             <h5>Drawing</h5>
           </div>
- -->      <div class="col-md-1">
-            <i class="icon-thumbs-up"></i>
-            <h5>Voting</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-megaphone"></i>
-            <h5>Reporting</h5>
-          </div>
-          <div class="col-md-1">
-            <i class="icon-location"></i>
-            <h5>Mapping</h5>
-          </div>
-<!--           <div class="col-md-1">
+ -->
+				<div class="col-md-1">
+					<i class="icon-thumbs-up"></i>
+					<h5>Voting</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-megaphone"></i>
+					<h5>Reporting</h5>
+				</div>
+				<div class="col-md-1">
+					<i class="icon-location"></i>
+					<h5>Mapping</h5>
+				</div>
+				<!--           <div class="col-md-1">
             <i class="icon-attention"></i>
             <h5>Alerts</h5>
           </div>
- -->      <div class="col-md-1">
-            <i class="icon-desktop"></i>
-            <h5>Implementing</h5>
-          </div>
-          <div class="col-md-1"></div>
-        </div>
-      </div>
-    </div>
-    <div class="container marketing">
-      <div class="row">
-        <h2 class="summary-heading">Current Assemblies</h2>
-        <div class="col-md-4">
-          <img class="img-circle" src="/assets/images/tabacalera-140.png" alt="Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal.">
-          <h3>Urban Infrastructure</h3>
-        </div>
-        <div class="col-md-4">
-          <img class="img-circle" src="/assets/images/justicia-140.png" alt="Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013.">
-          <h3>Institutional Racism</h3>
-        </div>
-        <div class="col-md-4">
-          <img class="img-circle" src="/assets/images/barefootdoctor-140.png" alt="National Library of Medicine. Go to the country side to serve the 500 million peasants, 1965. Chinese Public Health Posters.">
-          <h3>Public Health</h3>
-          <i class="icon-right-open" style="position: absolute; top: 0; right: -24px; color: #cfc;"></i>
-        </div>
-      </div>
-    </div>
-	
-	
-	
+ -->
+				<div class="col-md-1">
+					<i class="icon-desktop"></i>
+					<h5>Implementing</h5>
+				</div>
+				<div class="col-md-1"></div>
+			</div>
+		</div>
+	</div>
+	<div class="container marketing">
+		<div class="row">
+			<h2 class="summary-heading">Current Assemblies</h2>
+			<div class="col-md-4">
+				<img class="img-circle" src="/assets/images/tabacalera-140.png"
+					alt="Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal.">
+				<h3>Urban Infrastructure</h3>
+			</div>
+			<div class="col-md-4">
+				<img class="img-circle" src="/assets/images/justicia-140.png"
+					alt="Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013.">
+				<h3>Institutional Racism</h3>
+			</div>
+			<div class="col-md-4">
+				<img class="img-circle" src="/assets/images/barefootdoctor-140.png"
+					alt="National Library of Medicine. Go to the country side to serve the 500 million peasants, 1965. Chinese Public Health Posters.">
+				<h3>Public Health</h3>
+				<i class="icon-right-open"
+					style="position: absolute; top: 0; right: -24px; color: #cfc;"></i>
+			</div>
+		</div>
+	</div>
+
+
+
 </div>
 

@@ -1,32 +1,52 @@
-﻿appCivistApp.service('loginService', function () {
-    
-	 $scope.auth = {};
+﻿appCivistApp.service('loginService', function($resource, $http, $location, $localStorageService) {
+
+	var User = $resource('/api/user/:id', {id: '@id'});
+	user = {};
+	user.authenticated = false;
+
+	this.getUser = function() {
+		return user;
+	}
 	
-	this.getLogintState = function () {
-        return auth;
-    };
+	this.getLogintState = function() {
+		return user.authenticated;
+	};
 
-    this.signIn = function (username, password) {
-    	console.log(auth);
-    	
-    	// ToDo: call the actual auth service to authenticate the user
-    	$scope.auth.user = username;
-    	$scope.auth.authenticated = true;
-    };
+	this.signIn = function(email, password) {
+		console.log(user);
+		user = {};
+		user.email = email;
+		user.password = password;
+		//$http.post('/user/login', {email:user.email,password:user.password})
+		$http.post('/api/user/login', user)
+			.success(function(user) {
+				if (user !== '0') {
+					$localStorageService.set("user",user);
+					$localStorageService.set("session_key",user.sessionKey);
+					User.get({id:user.id})
+					user = $resource
+					$location.url('/assemblies');
+					// Not Authenticated
+				} else {
+					$rootScope.message = 'You need to log in.';
+					// $timeout(function(){deferred.reject();}, 0);
+					//deferred.reject();
+					$location.url('/');
+				}
+			});
 
-    this.signOut = function (username) {
-    	$scope.auth.user = '';
-    	$scope.auth.authenticated = false;
-    };
+	};
 
-    this.getAuth = function () {
-    	console.log(auth);
-        return $scope.auth;
-    };
-    
+	this.signOut = function(username) {
+		user.username = '';
+		user.authenticated = false;
+		$http.post('/api/user/logout').success();
+		$location.url('/');
+		
+	};
 
-    this.userIsAuthenticated = function () {
-    	console.log(auth);
-        return $scope.auth.authenticated;
-    };
+	this.userIsAuthenticated = function() {
+		console.log(user);
+		return auth.authenticated;
+	};
 });

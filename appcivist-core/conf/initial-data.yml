@@ -37,17 +37,22 @@
     campaigns: 
       - &inspiration !!models.Campaign
         id: 1
-        name: Inspiration
+        name: Proposal Making
         url: http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting
          
       - &proposals !!models.Campaign
         id: 2
-        name: Proposals
+        name: Versioning
         url: http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting
          
       - &voting !!models.Campaign
         id: 3
-        name: Final Voting
+        name: Preliminary Deliberation
+        url: http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting
+        
+      - &voting !!models.Campaign
+        id: 4
+        name: Voting
         url: http://localhost:8000/cdparra/participatory-budgeting-sf-2015/election/pb-sf-2015
         
 # Users (Testing Users)

@@ -1,7 +1,7 @@
 ﻿// This handles retrieving data and is used by controllers. 
 // 3 options (server, factory, provider) with 
 // each doing the same thing just structuring the functions/data differently.
-appCivistApp.service('appCivistService', function () {
+appCivistApp.service('appCivistService', function ($resource) {
     this.getAssemblies = function () {
         return assemblies;
     };
@@ -29,65 +29,60 @@ appCivistApp.service('appCivistService', function () {
     this.getAssembly = function (id) {
         for (var i = 0; i < assemblies.length; i++) {
             if (assemblies[i].id === id) {
-                return assemblies[i];
+                return asemblies[i];
             }
         }
-        
-        
         
         return null;
     };
     
-    var Users = $resource('/user/:userId', { userId: '@id' });
-    var user = Users.get({ userId: 123 }, function () {
-      user.abc = true;
-      user.$save();
-    });
-
-    
-    
-    var assemblies = [
-        {
-            id: 1, name: 'Urban Infrastructure', 
-            description: 'An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal.', 
-            city: 'San Francisco', 
-            icon: '/assets/images/tabacalera-140.png',
-            url: '/assembly/1'
-        },
-        {
-            id: 2, name: 'Institutional Racism', 
-            description: 'An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013.', 
-            city: 'Oakland',
-            icon: '/assets/images/justicia-140.png',
-            url: '/assembly/2'
-        },
-        {
-            id: 3, name: 'Public Health', 
-            description: 'An assembly about Public Health', 
-            city: 'Los Angeles',
-            icon: '/assets/images/barefootdoctor-140.png',
-            url: '/assembly/3'
-        },
-        {
-            id: 4, name: 'Public Health', 
-            description: 'An assembly about Public Health', 
-            city: 'Los Angeles',
-            icon: '/assets/images/barefootdoctor-140.png',
-            url: '/assembly/4'
-        },
-        {
-            id: 5, name: 'Participatory Budgeting SF', 
-            description: 'An assembly about PB in SF', 
-            city: 'San Francisco',
-            icon: '/assets/images/barefootdoctor-140.png',
-            url: '/assembly/5',
-            campaigns: [
-                { 
-                	campaignId: 1, name: 'Proposals', 
-                	url : 'http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting'
-                }
-            ]
-        }
-    ];
+    var Assemblies = $resource('/api/assemblies');
+    var assemblies = Assemblies.get();
+//
+//    
+//    
+//    var assemblies = [
+//        {
+//            id: 1, name: 'Urban Infrastructure', 
+//            description: 'An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal.', 
+//            city: 'San Francisco', 
+//            icon: '/assets/images/tabacalera-140.png',
+//            url: '/assembly/1'
+//        },
+//        {
+//            id: 2, name: 'Institutional Racism', 
+//            description: 'An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013.', 
+//            city: 'Oakland',
+//            icon: '/assets/images/justicia-140.png',
+//            url: '/assembly/2'
+//        },
+//        {
+//            id: 3, name: 'Public Health', 
+//            description: 'An assembly about Public Health', 
+//            city: 'Los Angeles',
+//            icon: '/assets/images/barefootdoctor-140.png',
+//            url: '/assembly/3'
+//        },
+//        {
+//            id: 4, name: 'Public Health', 
+//            description: 'An assembly about Public Health', 
+//            city: 'Los Angeles',
+//            icon: '/assets/images/barefootdoctor-140.png',
+//            url: '/assembly/4'
+//        },
+//        {
+//            id: 5, name: 'Participatory Budgeting SF', 
+//            description: 'An assembly about PB in SF', 
+//            city: 'San Francisco',
+//            icon: '/assets/images/barefootdoctor-140.png',
+//            url: '/assembly/5',
+//            campaigns: [
+//                { 
+//                	campaignId: 1, name: 'Proposals', 
+//                	url : 'http://localhost:3000/g/hkP4Bvtn/proposals-for-sf-participatory-budgeting'
+//                }
+//            ]
+//        }
+//    ];
 
 });
