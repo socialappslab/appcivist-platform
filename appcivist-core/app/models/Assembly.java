@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import models.services.Service;
 import play.db.ebean.*;
 
 @Entity
@@ -24,9 +25,12 @@ public class Assembly extends Model {
 	private String city;
 	private String icon;
 	private String url;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<Service> connectedServices;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	private List<Campaign> campaigns;
+	private List<Issue> issues;
 
 	public static Model.Finder<Long, Assembly> find = new Model.Finder<Long, Assembly>(
 			Long.class, Assembly.class);
@@ -108,14 +112,20 @@ public class Assembly extends Model {
 		this.url = url;
 	}
 
-	public List<Campaign> getCampaigns() {
-		return campaigns;
+	public List<Service> getConnectedServices() {
+		return connectedServices;
 	}
 
-	public void setCampaigns(List<Campaign> campaigns) {
-		this.campaigns = campaigns;
+	public void setConnectedServices(List<Service> connectedServices) {
+		this.connectedServices = connectedServices;
 	}
 
-	
+	public List<Issue> getIssues() {
+		return issues;
+	}
+
+	public void setIssues(List<Issue> issues) {
+		this.issues = issues;
+	}
 
 }

@@ -11,13 +11,7 @@ public class Assemblies extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result findAssemblies() {
 		AssemblyCollection assemblies = Assembly.findAll();
-		
-		if (request().accepts("application/xml")) { 
-	        return ok("<errorMessage>Not Implemented Yet</errorMessage>");
-	    } else {
-			return ok(Json.toJson(assemblies));
-	    }
-		
+		return ok(Json.toJson(assemblies));
 	}
 
 }
