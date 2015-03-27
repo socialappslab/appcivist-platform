@@ -1,303 +1,298 @@
 # AppCivist Test Data
 ---
 
-# Assemblies
-
-  - &urban !!models.Assembly
-    id: 1
-    name: Urban Infrastructure
-    description: "An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal."
-    city: San Francisco
-    icon: /assets/images/tabacalera-140.png
-    url: /api/assembly/1
-
-  - &racism !!models.Assembly
-    id: 2
-    name: Institutional Racism
-    description: "An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013."
-    city: Oakland
-    icon: /assets/images/justicia-140.png
-    url: /api/assembly/2
-
-  - &health !!models.Assembly
-    id: 3
-    name: Public Health
-    description: An assembly about Public Health
-    city: Los Angeles
-    icon: /assets/images/barefootdoctor-140.png
-    url: /api/assembly/3
-
-  - &pbsf !!models.Assembly
-    id: 4
-    name: Participatory Budgeting in San Francisco
-    description: An assembly about PB in SF
-    city: San Francisco
-    icon: /assets/images/sfskyline-small.jpg
-    url: /api/assembly/4
-    connectedServices:
-      - &etherpad !!models.services.Service
-        id: 1
-        name: Etherpad
-        baseUrl: http://localhost:9001/api/1
-        auth: &etherpadauth !!models.services.ServiceAuthentication
-          id: 1
-          authType: TOKEN
-          token: 3dca6eb8e4f2b5ea5216a88e49d7a63c09da0d7c793d0734b708058e0a687a19
-          tokenInjection: QUERY_PARAM
-          tokenParamName: apiKey 
-        operations: 
-          - &etherpadop1 !!models.services.ServiceOperation
-            id: 1
-            appCivistOperation: readIssue
-            definition: !!models.services.ServiceOperationDefinition
-              id: 1
-              name: readText 
-              type: HTTP
-              method: GET
-              parameters: 
-              - &etherpadopparam !!models.services.ServiceParameterDefinition
-                id: 1
-                name: padId
-                type: QUERY_PARAM
-                dataType: STRING
-          - &etherpadop2 !!models.services.ServiceOperation
-            id: 2
-            appCivistOperation: createIssue
-            definition: !!models.services.ServiceOperationDefinition
-              id: 2
-              name: createPad 
-              type: HTTP
-              method: GET
-              parameters: 
-              - &etherpadopparam1 !!models.services.ServiceParameterDefinition
-                id: 1
-                name: padId
-                type: QUERY_PARAM
-                dataType: STRING 
-              - &etherpadopparam2 !!models.services.ServiceParameterDefinition
-                id: 2
-                name: text
-                type: QUERY_PARAM
-                dataType: STRING
-        resources: 
-          - &etherpadpadresource !!models.services.ServiceResource
-            id: 1
-            url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
-            type: ISSUE
-            parameters: 
-              - &etherpadopparam3 !!models.services.ServiceParameter            
-                value: fk3EFogcuh
-                serviceParameter: !!models.services.ServiceParameterDefinition
-                  id: 1
-      - &loomio !!models.services.Service
-        id: 2
-        name: Loomio
-        baseUrl: http://localhost:4001/api/v1
-        auth: &loomioauth !!models.services.ServiceAuthentication
-          id: 2
-          authType: COOKIE
-          token: UU5nTW5yVmRROVg2NHR5MFpMTERHY0FHZ1RoS1EwcTJOdXVCbENkM1JDWjVvSW9kQWtIbXhucTJsNW84ZWNCSkh1QzdTVzhPbXB5elJnQTNKZTlBTWxuVUswYWFHejNuV25HY1ZYMWpEOXVpS1pXOTJOZWFLVk9iaFhCd05jWFg4eTdSSUdEdFBhVi94dG9GaVN2Q0JncGxOaTcxb1NxU01NaWlPU0s5amd2L2RDZmM1YTlycDlINXZUZFVJK1BmK1Q5QnNMcGE1b0J2cWx1c3JrK2wxTDVrOVlYTFZxOW9SSjdMSC94TDh6cDRmSUVwcmRzZ3VralBjM3ZzZmdvK2ZzbVZOVFo0RUpCQzNxUW1JU1ZoWHVwQlRVWXpBZmlicjdzVTkvSzdlVForNVdhRThNUEQ3UkVDS0FHYUFyZHNQcW9GbDE5NmRES0ZCU1B0ZFVRcHl6Q2QxV2p3THhDT1Z0aXBlTEVCb09RUDhWZ2lrK0UzK0sxcDRYQUFnellHWC8reVE1T2hTTlhZQnBFM2tSQWtRMVdZUzlWczhiZ3JSdWVLTkJxclVDam5lbC80TXZrVFRSMVA5aE5xM1p5Zml3MkVHaCtzZGFoR3VWZU9hcUZWcitNV0dmYk1JRHBTcmtZVlpGdExGRm89LS1YM21jWjRxakNzNUJUaWUzZHkvT2JBPT0%3D--d18356e366a6f76e92bc98f70b9ffea2f168a830
-          tokenInjection: COOKIE
-          tokenParamName: _loomio 
-        operations: 
-          - &loomioop1 !!models.services.ServiceOperation
-            id: 1
-            appCivistOperation: readGroup
-            definition: !!models.services.ServiceOperationDefinition
-              id: 3
-              name: groups
-              type: HTTP
-              method: GET
-              parameters: 
-              - &loomioop1param !!models.services.ServiceParameterDefinition
-                id: 1
-                name: groupId
-                type: PATH_PARAM
-                dataType: STRING 
-          - &loomioop2 !!models.services.ServiceOperation
-            id: 1
-            appCivistOperation: readDiscussion
-            definition: !!models.services.ServiceOperationDefinition
-              id: 4
-              name: discussions
-              type: HTTP
-              method: GET
-              parameters: 
-              - &loomioop2param !!models.services.ServiceParameterDefinition
-                id: 1
-                name: discussionId
-                type: PATH_PARAM
-                dataType: STRING 
-          - &loomioop3 !!models.services.ServiceOperation
-            id: 1
-            appCivistOperation: readProposal
-            definition: !!models.services.ServiceOperationDefinition
-              id: 3
-              name: motion
-              type: HTTP
-              method: GET
-              parameters: 
-              - &loomioop3param !!models.services.ServiceParameterDefinition
-                id: 1
-                name: motionId
-                type: PATH_PARAM
-                dataType: STRING 
-          - &loomioop4 !!models.services.ServiceOperation
-            id: 1
-            appCivistOperation: createProposal
-            definition: !!models.services.ServiceOperationDefinition
-              id: 3
-              name: discussion
-              type: HTTP
-              method: POST
-              parameters: 
-              - &loomioop4param !!models.services.ServiceParameterDefinition
-                id: 1
-                name: description
-                type: BODY_PARAM
-                dataType: JSON
-                #TODO => How do we define structured body objects? dataObjectType: 
-        resources: 
-          - &loomioresource1 !!models.services.ServiceResource
-            id: 2
-            url: /api/v1/groups/hkP4Bvtn
-            keyValue: hkP4Bvtn
-            keyName: groupId
-            type: GROUP
-          - &loomioresource2 !!models.services.ServiceResource
-            id: 3
-            url: /api/v1/discussions/sxiOKaJo
-            keyValue: sxiOKaJo
-            keyName: discussionId
-            type: DISCUSSION
-          - &loomioresource3 !!models.services.ServiceResource
-            id: 4
-            url: /api/v1/motion/5l1yrCV7
-            keyValue: 5l1yrCV7
-            keyName: motionId
-            type: PROPOSAL
-      - &agora !!models.services.Service
-        id: 3
-        name: Agora
-        baseUrl: http://localhost:8000/
-        resources: 
-          - &agoraresource1 !!models.services.ServiceResource
-            id: 5
-            url: /api/v1/action/agora/1
-            keyValue: 1
-            keyName: groupId
-            type: GROUP
-          - &agoraresource2 !!models.services.ServiceResource
-            id: 6
-            url: /api/v1/action/election/4
-            keyValue: 4
-            keyName: electionId
-            type: ELECTION      
-    issues: 
-      - &emptylot !!models.Issue
-        id: 1
-        title: What can we do with the empty lot at Telegraph?  
-        brief: "The corner of Telegraph and Channing has an empty lot, and has had for at least 3 years. We should do something about it"
-        type: IDEA_CHALLENGE
-        # The Type of Issue establishes an standard decisionWorkflow 
-        # from which the assembly can starts their assembly decision design
-        resource: !!models.services.ServiceResource
-          id: 1
-        decisionWorkflow: # defines the decision making timeline to follow
-          - &proposalmaking !!models.Campaign
-            id: 1
-            name: Proposal Making
-            startDate: 2015-03-01
-            endDate: 2015-03-10
-            #capability: PROPOSAL_MAKING 
-            # the capability defines 
-            # 1. the initial template of an inner workflow
-            # 2. the required resources (issue, proposal template, 
-            nextCampaign: !!models.Campaign
-              id: 2
-            # 
-            #TODO: how do we define operations for starting the workflow 
-            #TODO: define the inner enabling workflow 
-            #enablingWorklflow: 
-            #  - &proposalmaking !!models.Campaign 
-             
-          - &proposaldevelopment !!models.Campaign
-            id: 2
-            name: Proposal Development and Versioning
-            startDate: 2015-03-11
-            endDate: 2015-03-20
-            nextCampaign: 
-              id: 3
-            previousCampaign: !!models.Campaign
-              id: 1
-             
-          - &voting !!models.Campaign
-            id: 3
-            name: Deliberation
-            startDate: 2015-03-21
-            endDate: 2015-03-30
-            nextCampaign: 
-              id: 4
-            previousCampaign: 
-              id: 2
-#            operationMappings: 
-#              - &operation1 !!models.services.ServiceOperation
-#                id: 1
-#                operation: readProposal
-#                mappedTo: HTTP_GET_RESOURCE
-#                resource_id: 4
-#                implementingService: !!models.services.Service 
-#                  id: 2 
-          - &voting !!models.Campaign
-            id: 4
-            name: Voting
-            startDate: 2015-03-31
-            endDate: 2015-04-10
-            previousCampaign: !!models.Campaign
-              id: 3
-#           service: !!models.services.Service 
-#             id: 3
-              
 # Users (Testing Users)
-
-  - &bob !!models.User
+  - &u1 !!models.User
     userId:     1
     email:      bob@example.com
     name:       Bob
     username:   bob
     locale:     es
     linkedAccounts:
-    - &bobaccount !!models.LinkedAccount
-      id: 1
+    - &ua1 !!models.LinkedAccount
+      accountId: 1
       providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
       providerKey: password
-      user:
-        userId: 1
-    
-  - &jane !!models.User
+      user: &u1
+  - &u2 !!models.User
     userId:     2
     email:      jane@example.com
     name:       Jane
     username:   jane
     locale:     en
     linkedAccounts:
-    - &janeaccount !!models.LinkedAccount
-      id: 2
+    - &ua2 !!models.LinkedAccount
+      accountId: 2
       providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
       providerKey: password
-      user:
-        userId: 2
-
-  - &jeff !!models.User
+      user: &u2
+  - &u3 !!models.User
     userId:     3
     email:      jeff@example.com
     name:       Jeff
     username:   jeff
     locale:     it
     linkedAccounts:
-    - &jeffccount !!models.LinkedAccount
-      id: 3
+    - &ua3 !!models.LinkedAccount
+      accountId: 3
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
-      user:
-        userId: 3
+      user: &u3
+
+# Service Authentications
+  - &sa1 !!models.services.ServiceAuthentication
+    serviceAuthenticationId: 1
+    authType: TOKEN
+    token: 3dca6eb8e4f2b5ea5216a88e49d7a63c09da0d7c793d0734b708058e0a687a19
+    tokenInjection: QUERY_PARAM
+    tokenParamName: apiKey 
+  - &sa2 !!models.services.ServiceAuthentication
+    serviceAuthenticationId: 2
+    authType: COOKIE
+    token: UU5nTW5yVmRROVg2NHR5MFpMTERHY0FHZ1RoS1EwcTJOdXVCbENkM1JDWjVvSW9kQWtIbXhucTJsNW84ZWNCSkh1QzdTVzhPbXB5elJnQTNKZTlBTWxuVUswYWFHejNuV25HY1ZYMWpEOXVpS1pXOTJOZWFLVk9iaFhCd05jWFg4eTdSSUdEdFBhVi94dG9GaVN2Q0JncGxOaTcxb1NxU01NaWlPU0s5amd2L2RDZmM1YTlycDlINXZUZFVJK1BmK1Q5QnNMcGE1b0J2cWx1c3JrK2wxTDVrOVlYTFZxOW9SSjdMSC94TDh6cDRmSUVwcmRzZ3VralBjM3ZzZmdvK2ZzbVZOVFo0RUpCQzNxUW1JU1ZoWHVwQlRVWXpBZmlicjdzVTkvSzdlVForNVdhRThNUEQ3UkVDS0FHYUFyZHNQcW9GbDE5NmRES0ZCU1B0ZFVRcHl6Q2QxV2p3THhDT1Z0aXBlTEVCb09RUDhWZ2lrK0UzK0sxcDRYQUFnellHWC8reVE1T2hTTlhZQnBFM2tSQWtRMVdZUzlWczhiZ3JSdWVLTkJxclVDam5lbC80TXZrVFRSMVA5aE5xM1p5Zml3MkVHaCtzZGFoR3VWZU9hcUZWcitNV0dmYk1JRHBTcmtZVlpGdExGRm89LS1YM21jWjRxakNzNUJUaWUzZHkvT2JBPT0%3D--d18356e366a6f76e92bc98f70b9ffea2f168a830
+    tokenInjection: COOKIE
+    tokenParamName: _loomio 
+
+# Service Operation Definitions
+  - &sod1 !!models.services.ServiceOperationDefinition
+    operationDefinitionId: 1
+    name: readText 
+    type: HTTP
+    method: GET
+    parameters: 
+    - &spd1 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 1
+      name: padId
+      type: QUERY_PARAM
+      dataType: STRING
+  - &sod2 !!models.services.ServiceOperationDefinition
+    operationDefinitionId: 2
+    name: createPad 
+    type: HTTP
+    method: GET
+    parameters: 
+    - &spd2 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 2
+      name: padId
+      type: QUERY_PARAM
+      dataType: STRING 
+    - &spd3 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 3
+      name: text
+      type: QUERY_PARAM
+      dataType: STRING
+  - &sod3 !!models.services.ServiceOperationDefinition
+    operationDefinitionId: 3
+    name: groups
+    type: HTTP
+    method: GET
+    parameters: 
+    - &spd4 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 4
+      name: groupId
+      type: PATH_PARAM
+      dataType: STRING 
+  - &sod4 !!models.services.ServiceOperationDefinition
+    operationDefinitionId: 4
+    name: discussions
+    type: HTTP
+    method: GET
+    parameters: 
+    - &spd5 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 5
+      name: discussionId
+      type: PATH_PARAM
+      dataType: STRING 
+  - &sod5 !!models.services.ServiceOperationDefinition
+    operationDefinitionId: 5
+    name: motion
+    type: HTTP
+    method: GET
+    parameters: 
+    - &spd6 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 6
+      name: motionId
+      type: PATH_PARAM
+      dataType: STRING 
+  - &sod6 !!models.services.ServiceOperationDefinition
+    operationDefinitionId: 6
+    name: discussion
+    type: HTTP
+    method: POST
+    parameters: 
+    - &spd7 !!models.services.ServiceParameterDefinition
+      parameterDefinitionId: 7
+      name: description
+      type: BODY_PARAM
+      dataType: JSON
+      #TODO => How do we define structured body objects? dataObjectType:
+
+# Assemblies
+  - &a1 !!models.Assembly
+    assemblyId: 1
+    name: Participatory Budgeting in San Francisco
+    description: An assembly about PB in SF
+    city: San Francisco
+    icon: /assets/images/sfskyline-small.jpg
+    url: /api/assembly/4
+    connectedServices:
+    - &s1 !!models.services.Service
+      serviceId: 1
+      name: Etherpad
+      baseUrl: http://localhost:9001/api/1
+      auth: &sa1 
+      operations: 
+      - &so1 !!models.services.ServiceOperation
+        serviceOperationId: 1
+        appCivistOperation: readIssue
+        definition: &sod1 
+      - &so2 !!models.services.ServiceOperation
+        serviceOperationId: 2
+        appCivistOperation: createIssue
+        definition: &sod2 !!models.services.ServiceOperationDefinition
+          operationDefinitionId: 2
+      resources: 
+      - &sr1 !!models.services.ServiceResource
+        serviceResourceId: 1
+        url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+        type: ISSUE
+        parameters: 
+        - &sp1 !!models.services.ServiceParameter            
+          serviceParameterId: 1
+          value: fk3EFogcuh
+          serviceParameter: &spd1 
+    - &s2 !!models.services.Service
+      serviceId: 2
+      name: Loomio
+      baseUrl: http://localhost:4001/api/v1
+      auth: &sa2 
+      operations: 
+      - &so3 !!models.services.ServiceOperation
+        serviceOperationId: 3
+        appCivistOperation: readGroup
+        definition: &sod3
+      - &so4 !!models.services.ServiceOperation
+        serviceOperationId: 4
+        appCivistOperation: readDiscussion
+        definition: &sod4
+      - &so5 !!models.services.ServiceOperation
+        serviceOperationId: 5
+        appCivistOperation: readProposal
+        definition: &sod5
+      - &so6 
+        serviceOperationId: 6
+        appCivistOperation: createProposal
+        definition: &sod6 
+      resources: 
+      - &sr2 !!models.services.ServiceResource
+        serviceResourceId: 2
+        url: /api/v1/groups/hkP4Bvtn
+        keyValue: hkP4Bvtn
+        keyName: groupId
+        type: GROUP
+      - &sr3 !!models.services.ServiceResource
+        serviceResourceId: 3
+        url: /api/v1/discussions/sxiOKaJo
+        keyValue: sxiOKaJo
+        keyName: discussionId
+        type: DISCUSSION
+      - &sr4 !!models.services.ServiceResource
+        serviceResourceId: 4
+        url: /api/v1/motion/5l1yrCV7
+        keyValue: 5l1yrCV7
+        keyName: motionId
+        type: PROPOSAL
+    - &s3 !!models.services.Service
+      serviceId: 3
+      name: Agora
+      baseUrl: http://localhost:8000/
+      resources: 
+      - &sr5 !!models.services.ServiceResource
+        serviceResourceId: 5
+        url: /api/v1/action/agora/1
+        keyValue: 1
+        keyName: groupId
+        type: GROUP
+      - &sr6 !!models.services.ServiceResource
+        serviceResourceId: 6
+        url: /api/v1/action/election/4
+        keyValue: 4
+        keyName: electionId
+        type: ELECTION      
+    issues: 
+    - &i1 !!models.Issue
+      issueId: 1
+      title: What can we do with the empty lot at Telegraph?  
+      brief: "The corner of Telegraph and Channing has an empty lot, and has had for at least 3 years. We should do something about it"
+      type: IDEA_CHALLENGE
+      # The Type of Issue establishes an standard decisionWorkflow 
+      # from which the assembly can starts their assembly decision design
+      resource: &r1
+      decisionWorkflow: # defines the decision making timeline to follow
+      - &c1 !!models.Campaign
+        campaignId: 1
+        name: Proposal Making
+        startDate: 2015-03-01
+        endDate: 2015-03-10
+        #capability: PROPOSAL_MAKING 
+        # the capability defines 
+        # 1. the initial template of an inner workflow
+        # 2. the required resources (issue, proposal template, 
+        # 
+        #TODO: how do we define operations for starting the workflow 
+        #TODO: define the inner enabling workflow 
+        #enablingWorklflow: 
+        #  - &proposalmaking !!models.Campaign 
+         
+      - &c2 !!models.Campaign
+        campaignId: 2
+        name: Proposal Development and Versioning
+        startDate: 2015-03-11
+        endDate: 2015-03-20
+        previousCampaign: &c1
+         
+      - &c3 !!models.Campaign
+        campaignId: 3
+        name: Deliberation
+        startDate: 2015-03-21
+        endDate: 2015-03-30
+        previousCampaign: &c2
+        #operationMappings: 
+        #  - &operation1 !!models.services.ServiceOperation
+        #    id: 1
+        #    operation: readProposal
+        #    mappedTo: HTTP_GET_RESOURCE
+        #    resource_id: 4
+        #    implementingService: !!models.services.Service 
+        #      id: 2 
+        
+      - &c4 !!models.Campaign
+        campaignId: 4
+        name: Voting
+        startDate: 2015-03-31
+        endDate: 2015-04-10
+        previousCampaign: &c3
+
+  - &a2 !!models.Assembly
+    assemblyId: 2
+    name: Urban Infrastructure
+    description: "An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal."
+    city: San Francisco
+    icon: /assets/images/tabacalera-140.png
+    url: /api/assembly/1
+
+  - &a3 !!models.Assembly
+    assemblyId: 3
+    name: Institutional Racism
+    description: "An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013."
+    city: Oakland
+    icon: /assets/images/justicia-140.png
+    url: /api/assembly/2
+
+  - &a4 !!models.Assembly
+    assemblyId: 4
+    name: Public Health
+    description: An assembly about Public Health
+    city: Los Angeles
+    icon: /assets/images/barefootdoctor-140.png
+    url: /api/assembly/3

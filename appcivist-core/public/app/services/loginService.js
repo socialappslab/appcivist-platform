@@ -1,4 +1,4 @@
-﻿appCivistApp.service('loginService', function($resource, $http, $location, $localStorageService) {
+﻿appCivistApp.service('loginService', function($resource, $http, $location, localStorageService) {
 
 	var User = $resource('/api/user/:id', {id: '@id'});
 	user = {};
@@ -21,10 +21,10 @@
 		$http.post('/api/user/login', user)
 			.success(function(user) {
 				if (user !== '0') {
-					$localStorageService.set("user",user);
-					$localStorageService.set("session_key",user.sessionKey);
-					User.get({id:user.id})
-					user = $resource
+					localStorageService.set("user",user);
+					localStorageService.set("session_key",user.sessionKey);
+					user = User.get({id:user.id});
+					console.log("User get from API: " + user);
 					$location.url('/assemblies');
 					// Not Authenticated
 				} else {

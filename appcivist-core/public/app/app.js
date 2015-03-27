@@ -21,7 +21,7 @@ var appCivistApp = angular.module('appCivistApp', dependencies);
  * - Libraries specifics (e.g., local storage, resource provider, etc.)
  */
 appCivistApp.config(function($routeProvider, $resourceProvider, $httpProvider,
-		$localStorageServiceProvider) {
+		localStorageServiceProvider) {
 	
 	$routeProvider
 		.when('/', {
@@ -42,18 +42,18 @@ appCivistApp.config(function($routeProvider, $resourceProvider, $httpProvider,
 			redirectTo : '/'
 		});
 	
-	$localStorageServiceProvider
-		.setPrefix('appcivist')
-		.setStorageType('sessionStorage')
-		.setNotify(true,true);
+	localStorageServiceProvider.setPrefix('appcivist');
+	localStorageServiceProvider.setStorageType('sessionStorage');
+	localStorageServiceProvider.setNotify(true,true);
 
 		
-	$httpProvider.interceptors.push(['$q', '$location', '$localStorage', function($q, $location, $localStorage) {
+	$httpProvider.interceptors.push(['$q', '$location', 'localStorageService', function($q, $location, localStorageService) {
         return {
             'request': function (config) {
                 config.headers = config.headers || {};
-                if ($localStorage.sessionKey) {
-                    config.headers.SESSION_KEY = '' + $localStorage.sessionKey;
+                var sessionKey = localStorageService.get("session_key");
+                if (sessionKey) {
+                    config.headers.SESSION_KEY = '' + sessionKey;
                 }
                 return config;
             },

@@ -21,7 +21,7 @@ public class Issue extends Model {
 
 
 	@Id
-	private Long id;
+	private Long issueId;
 	private String title;
 	private String brief;
 	private String type; // TODO convert in enum
@@ -72,12 +72,12 @@ public class Issue extends Model {
 		this.decisionWorkflow = campaigns;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getIssueId() {
+		return issueId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIssueId(Long id) {
+		this.issueId = id;
 	}
 
 	public String getTitle() {

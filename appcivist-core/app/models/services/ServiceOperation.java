@@ -19,11 +19,11 @@ public class ServiceOperation extends Model {
 	private static final long serialVersionUID = -1132649868643820086L;
 
 	@Id
-	private Long id;
+	private Long serviceOperationId;
 	private String appCivistOperation; // TODO: replace with Enum or Class
 
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "operationDefinitionId")
 	private ServiceOperationDefinition definition;
 
 	public static Model.Finder<Long, ServiceOperation> find = new Model.Finder<Long, ServiceOperation>(
@@ -59,12 +59,12 @@ public class ServiceOperation extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getServiceOperationId() {
+		return serviceOperationId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setServiceOperationId(Long id) {
+		this.serviceOperationId = id;
 	}
 
 	public String getAppCivistOperation() {

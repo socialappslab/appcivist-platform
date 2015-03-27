@@ -1,7 +1,10 @@
 package models.services;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+
+import org.hibernate.validator.constraints.Length;
 
 import play.db.ebean.Model;
 
@@ -14,8 +17,9 @@ public class ServiceAuthentication extends Model {
 	private static final long serialVersionUID = 6076927164603033420L;
 
 	@Id
-	private Long id;
+	private Long serviceAuthenticationId;
 	private String authType; // TODO: replace with Enum
+	@Column(length=2048) 	// TODO: find a way of making token length unlimited
 	private String token;
 	private String tokenInjection; // TODO: replace with Enum
 	private String tokenParamName;
@@ -45,12 +49,12 @@ public class ServiceAuthentication extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getServiceAuthenticationId() {
+		return serviceAuthenticationId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setServiceAuthenticationId(Long id) {
+		this.serviceAuthenticationId = id;
 	}
 
 	public String getAuthType() {

@@ -16,7 +16,7 @@ public class ServiceParameterDefinition extends Model {
 	private static final long serialVersionUID = -299889021493432330L;
 
 	@Id
-	private Long id;
+	private Long parameterDefinitionId;
 	private String name;
 	private String type; // TODO convert in Enum
 	private String dataType;
@@ -58,12 +58,12 @@ public class ServiceParameterDefinition extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getParameterDefinitionId() {
+		return parameterDefinitionId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setParameterDefinitionId(Long id) {
+		this.parameterDefinitionId = id;
 	}
 
 	public String getName() {

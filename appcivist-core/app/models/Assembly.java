@@ -19,7 +19,7 @@ public class Assembly extends Model {
 	private static final long serialVersionUID = 128881028915968230L;
 
 	@Id
-	private Long  id;
+	private Long  assemblyId;
 	private String name;
 	private String description;
 	private String city;
@@ -80,12 +80,12 @@ public class Assembly extends Model {
 		this.description = description;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getAssemblyId() {
+		return assemblyId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setAssemblyId(Long id) {
+		this.assemblyId = id;
 	}
 
 	public String getCity() {

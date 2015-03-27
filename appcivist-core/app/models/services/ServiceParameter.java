@@ -19,10 +19,12 @@ public class ServiceParameter extends Model {
 	private static final long serialVersionUID = 2192872809975724216L;
 
 	@Id
+	private Long serviceParameterId; 
+	
 	private String value;
 	
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "parameter_definition_id")
 	private ServiceParameterDefinition serviceParameter;
 
 	public static Model.Finder<Long, ServiceParameter> find = new Model.Finder<Long, ServiceParameter>(
@@ -71,6 +73,14 @@ public class ServiceParameter extends Model {
 
 	public void setServiceParameter(ServiceParameterDefinition serviceParameter) {
 		this.serviceParameter = serviceParameter;
+	}
+
+	public Long getServiceParameterId() {
+		return serviceParameterId;
+	}
+
+	public void setServiceParameterId(Long id) {
+		this.serviceParameterId = id;
 	}
 
 }

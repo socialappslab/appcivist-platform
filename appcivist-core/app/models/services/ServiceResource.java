@@ -5,8 +5,13 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
 import javax.persistence.OneToMany;
 
+import models.Issue;
+import models.User;
 import play.db.ebean.Model;
 
 @Entity
@@ -18,7 +23,7 @@ public class ServiceResource extends Model {
 	private static final long serialVersionUID = -3024829103843292751L;
 
 	@Id
-	private Long id;
+	private Long serviceResourceId;
 	private String url;
 	private String type; // TODO use enum
 	private String keyValue;
@@ -26,6 +31,10 @@ public class ServiceResource extends Model {
 
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ServiceParameter> parameters;
+	
+//	@ManyToOne
+//	@JoinColumn(name="service_id")
+//	private Service service;
 
 	public static Model.Finder<Long, ServiceResource> find = new Model.Finder<Long, ServiceResource>(
 			Long.class, ServiceResource.class);
@@ -59,12 +68,12 @@ public class ServiceResource extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getServiceResourceId() {
+		return serviceResourceId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setServiceResourceId(Long id) {
+		this.serviceResourceId = id;
 	}
 
 	public String getUrl() {
@@ -106,5 +115,13 @@ public class ServiceResource extends Model {
 	public void setKeyName(String keyName) {
 		this.keyName = keyName;
 	}
+
+//	public Service getServices() {
+//		return service;
+//	}
+//
+//	public void setServices(Service service) {
+//		this.service = service;
+//	}
 
 }

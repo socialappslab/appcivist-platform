@@ -18,7 +18,7 @@ public class ServiceOperationDefinition extends Model {
 	private static final long serialVersionUID = -6066143924703318234L;
 
 	@Id
-	private Long id;
+	private Long operationDefinitionId;
 	private String name;
 	private String type;
 	private String method;
@@ -54,12 +54,12 @@ public class ServiceOperationDefinition extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getOperationDefinitionId() {
+		return operationDefinitionId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setOperationDefinitionId(Long id) {
+		this.operationDefinitionId = id;
 	}
 
 	public String getName() {

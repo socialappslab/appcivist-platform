@@ -20,12 +20,12 @@ public class Service extends Model {
 	private static final long serialVersionUID = -9219771609664792759L;
 
 	@Id
-	private Long id;
+	private Long serviceId;
 	private String name;
 	private String baseUrl;
 
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "serviceAuthenticationId")
 	private ServiceAuthentication auth;
 
 	@OneToMany(cascade = CascadeType.ALL)
@@ -66,12 +66,12 @@ public class Service extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getServiceId() {
+		return serviceId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setServiceId(Long id) {
+		this.serviceId = id;
 	}
 
 	public String getName() {

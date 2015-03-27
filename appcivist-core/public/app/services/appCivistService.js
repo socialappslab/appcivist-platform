@@ -2,8 +2,12 @@
 // 3 options (server, factory, provider) with 
 // each doing the same thing just structuring the functions/data differently.
 appCivistApp.service('appCivistService', function ($resource) {
-    this.getAssemblies = function () {
-        return assemblies;
+
+    var Assemblies = $resource('/api/assemblies');
+    var assemblies = {};
+	
+	this.getAssemblies = function () {
+		return Assemblies.get();
     };
 
     // For getting the data from a SERVER, add Ajax Calls to the functions below
@@ -36,8 +40,7 @@ appCivistApp.service('appCivistService', function ($resource) {
         return null;
     };
     
-    var Assemblies = $resource('/api/assemblies');
-    var assemblies = Assemblies.get();
+    return Assemblies;    
 //
 //    
 //    

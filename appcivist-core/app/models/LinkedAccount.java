@@ -25,7 +25,7 @@ public class LinkedAccount extends Model {
 	@Id
 	@GeneratedValue
 	@Column(name="account_id")
-	private Long id;
+	private Long accountId;
 
 	@ManyToOne
 	@MapsId
@@ -67,12 +67,12 @@ public class LinkedAccount extends Model {
 		return ret;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getAccountId() {
+		return accountId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setAccountId(Long id) {
+		this.accountId = id;
 	}
 
 	public User getUser() {

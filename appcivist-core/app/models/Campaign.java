@@ -19,18 +19,14 @@ public class Campaign extends Model {
 	private static final long serialVersionUID = 3367429873420318943L;
 
 	@Id
-	private Long id;
+	private Long campaignId;
 	private String name;
 	private String url;
 	private String startDate;
 	private String endDate;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id")
-	private Campaign nextCampaign;
-
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "campaignId")
 	private Campaign previousCampaign;
 
 	public static Model.Finder<Long, Campaign> find = new Model.Finder<Long, Campaign>(
@@ -63,12 +59,12 @@ public class Campaign extends Model {
 		find.ref(id).update();
 	}
 
-	public Long getId() {
-		return id;
+	public Long getCampaignId() {
+		return campaignId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setCampaignId(Long id) {
+		this.campaignId = id;
 	}
 
 	public String getName() {
@@ -101,14 +97,6 @@ public class Campaign extends Model {
 
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
-	}
-
-	public Campaign getNextCampaign() {
-		return nextCampaign;
-	}
-
-	public void setNextCampaign(Campaign nextCampaign) {
-		this.nextCampaign = nextCampaign;
 	}
 
 	public Campaign getPreviousCampaign() {

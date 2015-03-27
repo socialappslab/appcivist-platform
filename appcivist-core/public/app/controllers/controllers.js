@@ -4,14 +4,14 @@
  * AccountCtrl - functions to control authentication 
  */
 appCivistApp.controller('AccountCtrl', function($scope, $resource, $location,
-		$localStorageService, appCivistService, loginService) {
+		localStorageService, appCivistService, loginService) {
 	init();
 
 	function init() {
 		// check if there is already a user and a sessionKey in the
 		// $localStorage
-		$scope.user = $localStorageService.get("user");
-		$scope.sessionKey = $localStorageService.get("session_key");
+		$scope.user = localStorageService.get("user");
+		$scope.sessionKey = localStorageService.get("session_key");
 
 		if ($scope.user != null && $scope.sessionKey != null) {
 			// TODO Validate that the Session Key corresponds to the user
@@ -43,7 +43,7 @@ appCivistApp.controller('AccountCtrl', function($scope, $resource, $location,
  * 
  */
 appCivistApp.controller('MainCtrl', function($scope, $resource, $location,
-		$localStorageService, appCivistService, loginService) {
+		localStorageService, appCivistService, loginService) {
 
 	init();
 
@@ -54,8 +54,8 @@ appCivistApp.controller('MainCtrl', function($scope, $resource, $location,
 			$location.url('/assemblies');
 		} else {
 			// check if there is a user and session key in the local storage
-			$scope.user = $localStorageService.get("user");
-			$scope.sessionKey = $localStorageService.get("session_key");
+			$scope.user = localStorageService.get("user");
+			$scope.sessionKey = localStorageService.get("session_key");
 			if ($scope.user != null && $scope.sessionKey != null) {
 				// TODO Validate that the Session Key corresponds to the user
 				$location.url('/assemblies');
@@ -76,7 +76,7 @@ appCivistApp.controller('MainCtrl', function($scope, $resource, $location,
 // with the $scope
 // The $scope is bound to the order view
 appCivistApp.controller('AssemblyListCtrl', function($scope, $routeParams,
-		$resource, appCivistService, loginService) {
+		$resource, appCivistService, loginService, localStorageService) {
 
 	$scope.assemblies = {};
 	// I like to have an init() for controllers that need to perform some
@@ -85,8 +85,12 @@ appCivistApp.controller('AssemblyListCtrl', function($scope, $routeParams,
 	init();
 
 	function init() {
-		$scope.assemblies = appCivistService.getAssemblies();
-		// $scope.auth = loginService.getAuth();
+		$scope.assemblies = appCivistService.get();
+		$scope.assemblies.$promise.then(function(data) {
+			$scope.assemblies = data;
+			localStorageService.set("assemblies", $scope.assemblies);
+			console.log("Assemblies arrived: " + JSON.stringify($scope.assemblies));
+		})
 	}
 });
 
