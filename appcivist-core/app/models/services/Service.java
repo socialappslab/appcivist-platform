@@ -137,7 +137,7 @@ public class Service extends Model {
 	// TODO for simplification, first version of models has all entities to have an 
 	// 		unique id, change this to have relative ids in the future
 		return find.where()
-				.eq("service.assemblyId", aid)
-				.eq("service.serviceId", sid).findUnique();
+				.eq("assembly_assembly_id", aid) // TODO this is not needed now, but implement relative ids
+				.eq("serviceId", sid).findUnique();
 	}
 }

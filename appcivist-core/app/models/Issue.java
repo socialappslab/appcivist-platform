@@ -125,8 +125,8 @@ public class Issue extends Model {
 	
 	public static Issue readIssueOfAssembly(Long assemblyId, Long issueId) {
 		return find.where()
-			.eq("issue.assemblyId", assemblyId)
-			.eq("issue.issueId", issueId).findUnique();
+			.eq("assembly_assembly_id", assemblyId) // TODO as of now this is not neede but we should have relative ids
+			.eq("issueId", issueId).findUnique();
 	}
 	
 }

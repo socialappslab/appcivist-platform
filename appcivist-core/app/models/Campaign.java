@@ -142,7 +142,7 @@ public class Campaign extends Model {
 	// TODO for simplification, first version of models has all entities to have an 
 	// 		unique id, change this to have relative ids in the future
 		return find.where()
-				.eq("campaign.issueId", iid)
-				.eq("campaign.campaignId", cid).findUnique();
+				.eq("issue_issue_id", iid) // TODO this is not needed now, but we should have relative ids
+				.eq("campaignId", cid).findUnique();
 	}
 }
