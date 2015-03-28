@@ -32,6 +32,10 @@ public class Assembly extends Model {
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Issue> issues;
 
+	/*
+	 * Basic Data Queries
+	 */
+	
 	public static Model.Finder<Long, Assembly> find = new Model.Finder<Long, Assembly>(
 			Long.class, Assembly.class);
 
@@ -64,6 +68,9 @@ public class Assembly extends Model {
 		find.ref(id).update();
 	}
 	
+	/*
+	 * Getters and Setters
+	 */
 	public String getName() {
 		return name;
 	}
@@ -127,5 +134,9 @@ public class Assembly extends Model {
 	public void setIssues(List<Issue> issues) {
 		this.issues = issues;
 	}
+	
+	/*
+	 * Other Queries 
+	 */
 
 }

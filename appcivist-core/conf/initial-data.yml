@@ -234,6 +234,7 @@
         name: Proposal Making
         startDate: 2015-03-01
         endDate: 2015-03-10
+        nextCampaign: &c2
         #capability: PROPOSAL_MAKING 
         # the capability defines 
         # 1. the initial template of an inner workflow
@@ -250,6 +251,7 @@
         startDate: 2015-03-11
         endDate: 2015-03-20
         previousCampaign: &c1
+        nextCampaign: &c3
          
       - &c3 !!models.Campaign
         campaignId: 3
@@ -257,6 +259,7 @@
         startDate: 2015-03-21
         endDate: 2015-03-30
         previousCampaign: &c2
+        nextCampaign: &c4
         #operationMappings: 
         #  - &operation1 !!models.services.ServiceOperation
         #    id: 1

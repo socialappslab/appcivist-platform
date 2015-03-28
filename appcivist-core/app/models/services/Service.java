@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import models.Campaign;
 import play.db.ebean.Model;
 
 @Entity
@@ -25,7 +26,7 @@ public class Service extends Model {
 	private String baseUrl;
 
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "serviceAuthenticationId")
+	@JoinColumn(name = "service_authentication_id")
 	private ServiceAuthentication auth;
 
 	@OneToMany(cascade = CascadeType.ALL)
@@ -34,6 +35,10 @@ public class Service extends Model {
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ServiceResource> resources;
 
+	/*
+	 * Basic Data Queries
+	 */
+	
 	public static Model.Finder<Long, Service> find = new Model.Finder<Long, Service>(
 			Long.class, Service.class);
 
@@ -66,6 +71,9 @@ public class Service extends Model {
 		find.ref(id).update();
 	}
 
+	/*
+	 * Getters and Setters
+	 */
 	public Long getServiceId() {
 		return serviceId;
 	}
@@ -112,5 +120,24 @@ public class Service extends Model {
 
 	public void setResources(List<ServiceResource> resources) {
 		this.resources = resources;
+	}
+	
+	/*
+	 * Other Queries
+	 */
+
+	/**
+	 * Obtain the service sid of assembly aid
+	 * 
+	 * @param aid
+	 * @param sid
+	 * @return
+	 */
+	public static Service readServiceOfAssembly(Long aid, Long sid) {
+	// TODO for simplification, first version of models has all entities to have an 
+	// 		unique id, change this to have relative ids in the future
+		return find.where()
+				.eq("service.assemblyId", aid)
+				.eq("service.serviceId", sid).findUnique();
 	}
 }

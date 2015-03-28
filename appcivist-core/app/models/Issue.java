@@ -32,6 +32,10 @@ public class Issue extends Model {
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Campaign> decisionWorkflow;
 
+	/*
+	 * Basic Queries
+	 */
+	
 	public static Model.Finder<Long, Issue> find = new Model.Finder<Long, Issue>(
 			Long.class, Issue.class);
 
@@ -63,7 +67,10 @@ public class Issue extends Model {
 	public static void update(Long id) {
 		find.ref(id).update();
 	}
-
+	
+	/*
+	 * Getters and Setters
+	 */
 	public List<Campaign> getDecisionWorkflow() {
 		return decisionWorkflow;
 	}
@@ -112,4 +119,14 @@ public class Issue extends Model {
 		this.resource = resource;
 	}
 
+	/*
+	 * Other Queries
+	 */
+	
+	public static Issue readIssueOfAssembly(Long assemblyId, Long issueId) {
+		return find.where()
+			.eq("issue.assemblyId", assemblyId)
+			.eq("issue.issueId", issueId).findUnique();
+	}
+	
 }

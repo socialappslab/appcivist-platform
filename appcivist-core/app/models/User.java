@@ -71,16 +71,17 @@ public class User extends Model {
 	@JsonIgnore
 	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
 	private List<TokenAction> tokenActions;
-	
+
+	// TODO Add datetime and profile information (creation date, birthdate, etc.) 
 //  Additional properties that can be interesting
 //	@Temporal(TemporalType.DATE)
 //	@Column
 //	@org.hibernate.annotations.Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
 //	private DateTime creationDate;
-//
+	// TODO add soft deletion support (user.active = true/false) 
 //	@Column
 //	private boolean active;
-//
+	// TODO add role based authorization using deadbolt 
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	@JoinTable(name = "User_Security_Roles", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) })
 //	private List<SecurityRole> roles;
@@ -88,6 +89,10 @@ public class User extends Model {
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	@JoinTable(name = "User_User_Permission", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, inverseJoinColumns = { @JoinColumn(name = "permission_id", referencedColumnName = "permission_id", updatable = true, insertable = true) })
 //	private List<UserPermission> permissions;
+	
+	/*
+	 * Basic Data Queries
+	 */
 	
 	/**
 	 * Static finder property

@@ -26,6 +26,10 @@ public class ServiceOperationDefinition extends Model {
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ServiceParameterDefinition> parameters;
 
+	/*
+	 * Basic Data Queries 
+	 */
+	
 	public static Model.Finder<Long, ServiceOperationDefinition> find = new Model.Finder<Long, ServiceOperationDefinition>(
 			Long.class, ServiceOperationDefinition.class);
 
@@ -54,6 +58,9 @@ public class ServiceOperationDefinition extends Model {
 		find.ref(id).update();
 	}
 
+	/*
+	 * Getters and Setters
+	 */
 	public Long getOperationDefinitionId() {
 		return operationDefinitionId;
 	}
@@ -93,5 +100,9 @@ public class ServiceOperationDefinition extends Model {
 	public void setParameters(List<ServiceParameterDefinition> parameters) {
 		this.parameters = parameters;
 	}
+	
+	/*
+	 * Other Queries
+	 */
 
 }

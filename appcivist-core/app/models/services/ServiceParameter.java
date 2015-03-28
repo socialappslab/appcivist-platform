@@ -27,6 +27,10 @@ public class ServiceParameter extends Model {
 	@JoinColumn(name = "parameter_definition_id")
 	private ServiceParameterDefinition serviceParameter;
 
+	/*
+	 * Basic Data Queries
+	 */
+
 	public static Model.Finder<Long, ServiceParameter> find = new Model.Finder<Long, ServiceParameter>(
 			Long.class, ServiceParameter.class);
 
@@ -59,6 +63,10 @@ public class ServiceParameter extends Model {
 		find.ref(id).update();
 	}
 
+	/* 
+	 * Getters and Setters
+	 */
+	
 	public String getValue() {
 		return value;
 	}
@@ -83,4 +91,7 @@ public class ServiceParameter extends Model {
 		this.serviceParameterId = id;
 	}
 
+	/*
+	 * Other Queries
+	 */
 }

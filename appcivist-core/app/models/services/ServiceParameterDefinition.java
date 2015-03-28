@@ -21,6 +21,10 @@ public class ServiceParameterDefinition extends Model {
 	private String type; // TODO convert in Enum
 	private String dataType;
 
+	/*
+	 * Basic Data Queries 
+	 */
+	
 	public static Model.Finder<Long, ServiceParameterDefinition> find = new Model.Finder<Long, ServiceParameterDefinition>(
 			Long.class, ServiceParameterDefinition.class);
 
@@ -58,6 +62,9 @@ public class ServiceParameterDefinition extends Model {
 		find.ref(id).update();
 	}
 
+	/*
+	 * Getters and Setters
+	 */
 	public Long getParameterDefinitionId() {
 		return parameterDefinitionId;
 	}
@@ -89,4 +96,8 @@ public class ServiceParameterDefinition extends Model {
 	public void setDataType(String dataType) {
 		this.dataType = dataType;
 	}
+	
+	/* 
+	 * Other Queries
+	 */
 }

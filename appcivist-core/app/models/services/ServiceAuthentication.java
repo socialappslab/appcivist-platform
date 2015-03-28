@@ -24,6 +24,10 @@ public class ServiceAuthentication extends Model {
 	private String tokenInjection; // TODO: replace with Enum
 	private String tokenParamName;
 
+	/*
+	 * Basic Data Queries
+	 */
+	
 	public static Model.Finder<Long, ServiceAuthentication> find = new Model.Finder<Long, ServiceAuthentication>(
 			Long.class, ServiceAuthentication.class);
 
@@ -49,6 +53,10 @@ public class ServiceAuthentication extends Model {
 		find.ref(id).update();
 	}
 
+	/*
+	 * Getters and Setters
+	 */
+	
 	public Long getServiceAuthenticationId() {
 		return serviceAuthenticationId;
 	}
@@ -89,4 +97,7 @@ public class ServiceAuthentication extends Model {
 		this.tokenParamName = tokenParamName;
 	}
 
+	/*
+	 * Other Queries
+	 */
 }

@@ -20,7 +20,8 @@ create table campaign (
   url                       varchar(255),
   start_date                varchar(255),
   end_date                  varchar(255),
-  campaignId                bigint,
+  previous_campaign         bigint,
+  next_campaign             bigint,
   constraint pk_campaign primary key (campaign_id))
 ;
 
@@ -47,7 +48,7 @@ create table service (
   assembly_assembly_id      bigint not null,
   name                      varchar(255),
   base_url                  varchar(255),
-  serviceAuthenticationId   bigint,
+  service_authentication_id bigint,
   constraint pk_service primary key (service_id))
 ;
 
@@ -73,7 +74,7 @@ create table service_operation (
   service_operation_id      bigint not null,
   service_service_id        bigint not null,
   app_civist_operation      varchar(255),
-  operationDefinitionId     bigint,
+  operation_definition_id   bigint,
   constraint pk_service_operation primary key (service_operation_id))
 ;
 
@@ -167,32 +168,34 @@ create sequence appcivist_user_seq;
 
 alter table campaign add constraint fk_campaign_issue_1 foreign key (issue_issue_id) references issue (issue_id);
 create index ix_campaign_issue_1 on campaign (issue_issue_id);
-alter table campaign add constraint fk_campaign_previousCampaign_2 foreign key (campaignId) references campaign (campaign_id);
-create index ix_campaign_previousCampaign_2 on campaign (campaignId);
-alter table issue add constraint fk_issue_assembly_3 foreign key (assembly_assembly_id) references assembly (assembly_id);
-create index ix_issue_assembly_3 on issue (assembly_assembly_id);
-alter table issue add constraint fk_issue_resource_4 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_issue_resource_4 on issue (resource_service_resource_id);
-alter table Linked_Account add constraint fk_Linked_Account_user_5 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Linked_Account_user_5 on Linked_Account (user_id);
-alter table service add constraint fk_service_assembly_6 foreign key (assembly_assembly_id) references assembly (assembly_id);
-create index ix_service_assembly_6 on service (assembly_assembly_id);
-alter table service add constraint fk_service_auth_7 foreign key (serviceAuthenticationId) references service_authentication (service_authentication_id);
-create index ix_service_auth_7 on service (serviceAuthenticationId);
-alter table service_operation add constraint fk_service_operation_service_8 foreign key (service_service_id) references service (service_id);
-create index ix_service_operation_service_8 on service_operation (service_service_id);
-alter table service_operation add constraint fk_service_operation_definitio_9 foreign key (operationDefinitionId) references service_operation_definition (operation_definition_id);
-create index ix_service_operation_definitio_9 on service_operation (operationDefinitionId);
-alter table service_parameter add constraint fk_service_parameter_service__10 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_parameter_service__10 on service_parameter (service_resource_service_resource_id);
-alter table service_parameter add constraint fk_service_parameter_serviceP_11 foreign key (parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_serviceP_11 on service_parameter (parameter_definition_id);
-alter table service_parameter_definition add constraint fk_service_parameter_definiti_12 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_parameter_definiti_12 on service_parameter_definition (service_operation_definition_operation_definition_id);
-alter table service_resource add constraint fk_service_resource_service_13 foreign key (service_service_id) references service (service_id);
-create index ix_service_resource_service_13 on service_resource (service_service_id);
-alter table Token_Action add constraint fk_Token_Action_targetUser_14 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Token_Action_targetUser_14 on Token_Action (user_id);
+alter table campaign add constraint fk_campaign_previousCampaign_2 foreign key (previous_campaign) references campaign (campaign_id);
+create index ix_campaign_previousCampaign_2 on campaign (previous_campaign);
+alter table campaign add constraint fk_campaign_nextCampaign_3 foreign key (next_campaign) references campaign (campaign_id);
+create index ix_campaign_nextCampaign_3 on campaign (next_campaign);
+alter table issue add constraint fk_issue_assembly_4 foreign key (assembly_assembly_id) references assembly (assembly_id);
+create index ix_issue_assembly_4 on issue (assembly_assembly_id);
+alter table issue add constraint fk_issue_resource_5 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_issue_resource_5 on issue (resource_service_resource_id);
+alter table Linked_Account add constraint fk_Linked_Account_user_6 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Linked_Account_user_6 on Linked_Account (user_id);
+alter table service add constraint fk_service_assembly_7 foreign key (assembly_assembly_id) references assembly (assembly_id);
+create index ix_service_assembly_7 on service (assembly_assembly_id);
+alter table service add constraint fk_service_auth_8 foreign key (service_authentication_id) references service_authentication (service_authentication_id);
+create index ix_service_auth_8 on service (service_authentication_id);
+alter table service_operation add constraint fk_service_operation_service_9 foreign key (service_service_id) references service (service_id);
+create index ix_service_operation_service_9 on service_operation (service_service_id);
+alter table service_operation add constraint fk_service_operation_definiti_10 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_operation_definiti_10 on service_operation (operation_definition_id);
+alter table service_parameter add constraint fk_service_parameter_service__11 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_parameter_service__11 on service_parameter (service_resource_service_resource_id);
+alter table service_parameter add constraint fk_service_parameter_serviceP_12 foreign key (parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_serviceP_12 on service_parameter (parameter_definition_id);
+alter table service_parameter_definition add constraint fk_service_parameter_definiti_13 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_parameter_definiti_13 on service_parameter_definition (service_operation_definition_operation_definition_id);
+alter table service_resource add constraint fk_service_resource_service_14 foreign key (service_service_id) references service (service_id);
+create index ix_service_resource_service_14 on service_resource (service_service_id);
+alter table Token_Action add constraint fk_Token_Action_targetUser_15 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Token_Action_targetUser_15 on Token_Action (user_id);
 
 
 

@@ -26,9 +26,17 @@ public class Campaign extends Model {
 	private String endDate;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "campaignId")
+	@JoinColumn(name = "previous_campaign")
 	private Campaign previousCampaign;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "next_campaign")
+	private Campaign nextCampaign;
+
+	/*
+	 * Basic Data Operations
+	 */
+	
 	public static Model.Finder<Long, Campaign> find = new Model.Finder<Long, Campaign>(
 			Long.class, Campaign.class);
 
@@ -59,6 +67,9 @@ public class Campaign extends Model {
 		find.ref(id).update();
 	}
 
+	/*
+	 * Getters and Setters
+	 */
 	public Long getCampaignId() {
 		return campaignId;
 	}
@@ -105,5 +116,33 @@ public class Campaign extends Model {
 
 	public void setPreviousCampaign(Campaign previousCampaign) {
 		this.previousCampaign = previousCampaign;
+	}
+
+	public Campaign getNextCampaign() {
+		return nextCampaign;
+	}
+
+	public void setNextCampaign(Campaign nextCampaign) {
+		this.nextCampaign = nextCampaign;
+	}
+
+	/*
+	 * Other Queries
+	 */
+
+	/**
+	 * Obtain the campaign cid of issue iid, part of assembly aid
+	 * 
+	 * @param aid
+	 * @param iid
+	 * @param cid
+	 * @return
+	 */
+	public static Campaign readCampaignOfIssue(Long aid, Long iid, Long cid) {
+	// TODO for simplification, first version of models has all entities to have an 
+	// 		unique id, change this to have relative ids in the future
+		return find.where()
+				.eq("campaign.issueId", iid)
+				.eq("campaign.campaignId", cid).findUnique();
 	}
 }

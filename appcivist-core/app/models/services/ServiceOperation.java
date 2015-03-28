@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import models.Campaign;
 import play.db.ebean.Model;
 
 @Entity
@@ -23,9 +24,13 @@ public class ServiceOperation extends Model {
 	private String appCivistOperation; // TODO: replace with Enum or Class
 
 	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "operationDefinitionId")
+	@JoinColumn(name = "operation_definition_id")
 	private ServiceOperationDefinition definition;
 
+	/* 
+	 * Basic Data Queries
+	 */
+	
 	public static Model.Finder<Long, ServiceOperation> find = new Model.Finder<Long, ServiceOperation>(
 			Long.class, ServiceOperation.class);
 
@@ -58,6 +63,10 @@ public class ServiceOperation extends Model {
 	public static void update(Long id) {
 		find.ref(id).update();
 	}
+	
+	/*
+	 * Getters and Setters
+	 */
 
 	public Long getServiceOperationId() {
 		return serviceOperationId;
@@ -82,4 +91,24 @@ public class ServiceOperation extends Model {
 	public void setDefinition(ServiceOperationDefinition definition) {
 		this.definition = definition;
 	}
+	
+	/*
+	 * Other Queries
+	 */
+	
+	/**
+	 * Obtain the operation oid of service sid, part of assembly aid
+	 * 
+	 * @param aid
+	 * @param sid
+	 * @param oid
+	 * @return
+	 */
+	public static ServiceOperation readOperationOfService(Long aid, Long sid, Long oid) {
+		// TODO for simplification, first version of models has all entities to have an 
+		// 		unique id, change this to have relative ids in the future
+			return find.where()
+					.eq("serviceOperation.serviceId", sid)
+					.eq("serviceOperation.serviceOperationId", oid).findUnique();
+		}
 }

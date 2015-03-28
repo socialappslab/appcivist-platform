@@ -10,13 +10,23 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /public/*file               controllers.Assets.at(path="/public", file)
 
 # Assemblies API
-GET     /api/assemblies                      controllers.Assemblies.findAssemblies()
-#POST    /api/assembly                     controllers.Assemblies.createAssembly
+GET     /api/assemblies                                 controllers.Assemblies.findAssemblies()
+GET     /api/assembly/:aid/issues                       controllers.Assemblies.findIssues(aid: Long)
+GET     /api/assembly/:aid/issue/:iid/campaigns         controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
+GET     /api/assembly/:aid/issue/:iid/campaign/:cid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
+GET     /api/assembly/:aid/services                     controllers.Assemblies.findServices(aid: Long)
+GET     /api/assembly/:aid/service/:sid/operations      controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
+GET     /api/assembly/:aid/service/:sid/operation/:oid  controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
+
+# TODO 
+#POST    /api/assembly/:aid/issue/:iid/campaign/:cid/operation/:oid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
+#POST    /api/assembly                     controllers.Assemblies.createAssembly()
 #PUT     /api/assembly/:id                 controllers.Assemblies.updateAssembly(assemblyId: Long)
 #GET     /api/assembly/:id                 controllers.Assemblies.exportAssembly(assemblyId: Long)
 
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
+# TODO: cleanup, remove what is not used and keep what's important
 GET     /api/user                                        controllers.Users.getUsers()
 GET     /api/user/login                                  controllers.Users.getLoginForm()
 GET     /api/user/:uid                                   controllers.Users.getUser(uid: Long)

@@ -32,10 +32,10 @@ public class ServiceResource extends Model {
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ServiceParameter> parameters;
 	
-//	@ManyToOne
-//	@JoinColumn(name="service_id")
-//	private Service service;
-
+	/*
+	 * Basic Data Queries
+	 */
+	
 	public static Model.Finder<Long, ServiceResource> find = new Model.Finder<Long, ServiceResource>(
 			Long.class, ServiceResource.class);
 
@@ -68,6 +68,10 @@ public class ServiceResource extends Model {
 		find.ref(id).update();
 	}
 
+	/*
+	 * Getters and Setters
+	 */
+	
 	public Long getServiceResourceId() {
 		return serviceResourceId;
 	}
@@ -115,13 +119,8 @@ public class ServiceResource extends Model {
 	public void setKeyName(String keyName) {
 		this.keyName = keyName;
 	}
-
-//	public Service getServices() {
-//		return service;
-//	}
-//
-//	public void setServices(Service service) {
-//		this.service = service;
-//	}
-
+	
+	/*
+	 * Other Queries
+	 */
 }
