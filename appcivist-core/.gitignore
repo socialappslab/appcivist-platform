@@ -14,3 +14,10 @@ dist
 /RUNNING_PID
 /.settings
 conf/application.conf
+
+*.classpath
+*.project
+*.tern-project
+
+
+
