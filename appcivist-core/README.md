@@ -11,7 +11,7 @@ Core of AppCivist services.
     ```sh 
         cd <PATH_TO_YOUR_LOCAL_REPO>/appcivist-core
     ```
-
+    
 4. Run *activator* to enter the typsafe activator console. I will automatically download all the dependencies and setup the [play framework][1]. 
 5. Follow Play Framework's [Get Started][2] guide to learn more about how the project is organized
 

@@ -10,8 +10,10 @@ scalaVersion := "2.11.1"
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 libraryDependencies ++= Seq(
-  javaJdbc,
-  javaEbean,
+  javaJdbc withSources(),
+  javaEbean withSources(),
+  "org.avaje.ebeanorm" % "avaje-ebeanorm" % "3.3.4" withSources(),     
+  "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "3.2.2" withSources(),
   cache,
   javaWs, 
   "javax.xml.bind" % "jaxb-api" % "2.2.12",           // library to support objects-to/from-xml mapping
@@ -25,7 +27,8 @@ libraryDependencies ++= Seq(
   "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0",
   "com.typesafe.play" % "play_2.11" % "2.3.7" withSources(),
   "com.typesafe.play" % "play-java_2.11" % "2.3.8" withSources(), 
-  "org.springframework" % "spring-context" % "4.0.3.RELEASE" withSources()
+  "org.springframework" % "spring-context" % "4.0.3.RELEASE" withSources(),
+  "commons-io" % "commons-io" % "2.4"
 )
 
 resolvers += Resolver.url("Objectify Play Repository", url("http://schaloner.github.com/releases/"))(Resolver.ivyStylePatterns)
