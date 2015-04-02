@@ -1,5 +1,6 @@
 package models.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -7,10 +8,13 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
-import models.Campaign;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import models.Assembly;
 import play.db.ebean.Model;
 
 @Entity
@@ -29,11 +33,18 @@ public class Service extends Model {
 	@JoinColumn(name = "service_authentication_id")
 	private ServiceAuthentication auth;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	private List<ServiceOperation> operations;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="service")
+	private List<ServiceOperation> operations = new ArrayList<ServiceOperation>();
 
-	@OneToMany(cascade = CascadeType.ALL)
-	private List<ServiceResource> resources;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="service")
+	private List<ServiceResource> resources = new ArrayList<ServiceResource>();
+
+	@JsonIgnore
+	@ManyToOne
+	private Assembly assembly;
+
+	@ManyToOne
+	private ServiceDefinition serviceDefinition;
 
 	/*
 	 * Basic Data Queries
@@ -113,6 +124,18 @@ public class Service extends Model {
 	public void setOperations(List<ServiceOperation> operations) {
 		this.operations = operations;
 	}
+	
+	public void addServiceOperation(ServiceOperation operation) {
+        operation.setService(this);
+        operations.add(operation);
+    }
+
+    public void removeServiceOperation(ServiceOperation operation) {
+        operations.remove(operation);
+        if (operation != null) {
+            operation.setService(null);
+        }
+    }
 
 	public List<ServiceResource> getResources() {
 		return resources;
@@ -125,6 +148,22 @@ public class Service extends Model {
 	/*
 	 * Other Queries
 	 */
+
+	public Assembly getAssembly() {
+		return assembly;
+	}
+
+	public void setAssembly(Assembly assembly) {
+		this.assembly = assembly;
+	}
+
+	public ServiceDefinition getServiceDefinition() {
+		return serviceDefinition;
+	}
+
+	public void setServiceDefinition(ServiceDefinition serviceDefinition) {
+		this.serviceDefinition = serviceDefinition;
+	}
 
 	/**
 	 * Obtain the service sid of assembly aid

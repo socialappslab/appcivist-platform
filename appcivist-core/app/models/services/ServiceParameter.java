@@ -6,7 +6,10 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
 
@@ -23,10 +26,14 @@ public class ServiceParameter extends Model {
 	
 	private String value;
 	
-	@OneToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "parameter_definition_id")
 	private ServiceParameterDefinition serviceParameter;
 
+	@JsonIgnore
+	@ManyToOne
+	private ServiceResource serviceResource;
+	
 	/*
 	 * Basic Data Queries
 	 */
@@ -89,6 +96,14 @@ public class ServiceParameter extends Model {
 
 	public void setServiceParameterId(Long id) {
 		this.serviceParameterId = id;
+	}
+
+	public ServiceResource getServiceResource() {
+		return serviceResource;
+	}
+
+	public void setServiceResource(ServiceResource serviceResource) {
+		this.serviceResource = serviceResource;
 	}
 
 	/*

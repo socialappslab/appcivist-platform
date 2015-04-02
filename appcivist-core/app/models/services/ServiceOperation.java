@@ -6,9 +6,11 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
-import models.Campaign;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import play.db.ebean.Model;
 
 @Entity
@@ -26,6 +28,11 @@ public class ServiceOperation extends Model {
 	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "operation_definition_id")
 	private ServiceOperationDefinition definition;
+
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "service_service_id")
+	private Service service;
 
 	/* 
 	 * Basic Data Queries
@@ -91,7 +98,14 @@ public class ServiceOperation extends Model {
 	public void setDefinition(ServiceOperationDefinition definition) {
 		this.definition = definition;
 	}
-	
+
+	public Service getService() {
+		return service;
+	}
+
+	public void setService(Service service) {
+		this.service = service;
+	}
 	/*
 	 * Other Queries
 	 */

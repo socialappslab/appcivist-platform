@@ -3,8 +3,12 @@ package models.services;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import org.hibernate.validator.constraints.Length;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
 
@@ -23,6 +27,11 @@ public class ServiceAuthentication extends Model {
 	private String token;
 	private String tokenInjection; // TODO: replace with Enum
 	private String tokenParamName;
+	
+
+	@JsonIgnore
+	@OneToOne
+	private Service service;
 
 	/*
 	 * Basic Data Queries
@@ -95,6 +104,14 @@ public class ServiceAuthentication extends Model {
 
 	public void setTokenParamName(String tokenParamName) {
 		this.tokenParamName = tokenParamName;
+	}
+
+	public Service getService() {
+		return service;
+	}
+
+	public void setService(Service service) {
+		this.service = service;
 	}
 
 	/*

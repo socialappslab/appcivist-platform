@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -7,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import models.services.ServiceResource;
 import play.db.ebean.Model;
@@ -29,9 +32,14 @@ public class Issue extends Model {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private ServiceResource resource;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	private List<Campaign> decisionWorkflow;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="issue")
+	private List<Campaign> decisionWorkflow = new ArrayList<Campaign>();;
 
+//	private String test;
+	
+	@JsonIgnore
+	@ManyToOne
+	private Assembly assembly;
 	/*
 	 * Basic Queries
 	 */
@@ -39,6 +47,52 @@ public class Issue extends Model {
 	public static Model.Finder<Long, Issue> find = new Model.Finder<Long, Issue>(
 			Long.class, Issue.class);
 
+	
+	public Issue(Long issueId, String title, String brief, String type,
+			ServiceResource resource) {
+		super();
+		this.issueId = issueId;
+		this.title = title;
+		this.brief = brief;
+		this.type = type;
+		this.resource = resource;
+	}
+
+	public Issue(Long issueId, String title, String brief, String type,
+			ServiceResource resource, Campaign c) {
+		super();
+		this.issueId = issueId;
+		this.title = title;
+		this.brief = brief;
+		this.type = type;
+		this.resource = resource;
+		this.addCampaign(c);
+	}
+
+
+	public Issue(Long issueId, String title, String brief, String type,
+			ServiceResource resource, List<Campaign> c) {
+		super();
+		this.issueId = issueId;
+		this.title = title;
+		this.brief = brief;
+		this.type = type;
+		this.resource = resource;
+		this.setDecisionWorkflow(c);
+	}
+	
+	 public Issue() {
+		 super();
+	}
+
+	public static Issue create(Long issueId, String title, String brief, String type,
+				ServiceResource resource, List<Campaign> c) {
+	        Issue i = new Issue(issueId, title, brief, type, resource, c);
+	        i.save();
+	        return i;
+	    }
+	
+	
 	public static IssueCollection findAll() {
 		List<Issue> issues = find.all();
 		IssueCollection issueCollection = new IssueCollection();
@@ -79,6 +133,14 @@ public class Issue extends Model {
 		this.decisionWorkflow = campaigns;
 	}
 
+	public void addCampaign(Campaign c) {
+		this.decisionWorkflow.add(c);
+	}
+	
+	public void removeCampaign(Campaign c) {
+		this.decisionWorkflow.add(c);
+	}
+	
 	public Long getIssueId() {
 		return issueId;
 	}
@@ -123,6 +185,14 @@ public class Issue extends Model {
 	 * Other Queries
 	 */
 	
+	public Assembly getAssembly() {
+		return assembly;
+	}
+
+	public void setAssembly(Assembly assembly) {
+		this.assembly = assembly;
+	}
+
 	public static Issue readIssueOfAssembly(Long assemblyId, Long issueId) {
 		return find.where()
 			.eq("assembly_assembly_id", assemblyId) // TODO as of now this is not neede but we should have relative ids

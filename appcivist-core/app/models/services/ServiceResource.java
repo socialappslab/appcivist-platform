@@ -10,6 +10,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import models.Issue;
 import models.User;
 import play.db.ebean.Model;
@@ -29,8 +31,12 @@ public class ServiceResource extends Model {
 	private String keyValue;
 	private String keyName;
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="serviceResource")
 	private List<ServiceParameter> parameters;
+	
+	@JsonIgnore
+	@ManyToOne
+	private Service service;
 	
 	/*
 	 * Basic Data Queries
@@ -118,6 +124,14 @@ public class ServiceResource extends Model {
 
 	public void setKeyName(String keyName) {
 		this.keyName = keyName;
+	}
+
+	public Service getService() {
+		return service;
+	}
+
+	public void setService(Service service) {
+		this.service = service;
 	}
 	
 	/*

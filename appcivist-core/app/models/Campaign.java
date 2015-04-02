@@ -2,11 +2,19 @@ package models;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+
+import models.services.ServiceOperation;
+import models.services.ServiceResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
 
@@ -24,6 +32,7 @@ public class Campaign extends Model {
 	private String url;
 	private String startDate;
 	private String endDate;
+	private Boolean enabled = true;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "previous_campaign")
@@ -32,7 +41,29 @@ public class Campaign extends Model {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "next_campaign")
 	private Campaign nextCampaign;
+	
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "issue_issue_id")
+	private Issue issue;
 
+	/*
+	 * Properties that allow the tracking of the evolution of a campaign
+	 */
+	@ManyToMany(cascade=CascadeType.ALL)
+	private List<ServiceOperation> availableOperations;
+	
+	@ManyToMany(cascade=CascadeType.ALL)
+	private List<ServiceResource> campaignResources;
+	
+	@ManyToMany(cascade=CascadeType.ALL)
+	private List<ServiceResource> inputResources;
+	
+	@ManyToOne
+	private ServiceOperation startOperation;
+	
+	private String startOperationType;
+	
 	/*
 	 * Basic Data Operations
 	 */
@@ -47,6 +78,8 @@ public class Campaign extends Model {
 
 	public static void create(Campaign campaign) {
 		campaign.save();
+		campaign.saveManyToManyAssociations("availableOperations");
+		campaign.saveManyToManyAssociations("campaignResources");
 		campaign.refresh();
 	}
 
@@ -129,6 +162,62 @@ public class Campaign extends Model {
 	/*
 	 * Other Queries
 	 */
+
+	public Issue getIssue() {
+		return issue;
+	}
+
+	public void setIssue(Issue issue) {
+		this.issue = issue;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public List<ServiceOperation> getAvailableOperations() {
+		return availableOperations;
+	}
+
+	public void setAvailableOperations(List<ServiceOperation> availableOperations) {
+		this.availableOperations = availableOperations;
+	}
+
+	public List<ServiceResource> getCampaignResources() {
+		return campaignResources;
+	}
+
+	public void setCampaignResources(List<ServiceResource> campaignResources) {
+		this.campaignResources = campaignResources;
+	}
+
+	public List<ServiceResource> getInputResources() {
+		return inputResources;
+	}
+
+	public void setInputResources(List<ServiceResource> inputResources) {
+		this.inputResources = inputResources;
+	}
+
+	public ServiceOperation getStartOperation() {
+		return startOperation;
+	}
+
+	public void setStartOperation(ServiceOperation startOperation) {
+		this.startOperation = startOperation;
+	}
+
+	public String getStartOperationType() {
+		return startOperationType;
+	}
+
+	public void setStartOperationType(String startOperationType) {
+		this.startOperationType = startOperationType;
+	}
 
 	/**
 	 * Obtain the campaign cid of issue iid, part of assembly aid

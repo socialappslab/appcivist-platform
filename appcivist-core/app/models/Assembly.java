@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -7,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import enums.ResponseStatus;
 import models.services.Service;
 import play.db.ebean.*;
 
@@ -25,13 +27,13 @@ public class Assembly extends Model {
 	private String city;
 	private String icon;
 	private String url;
-
-	@OneToMany(cascade = CascadeType.ALL)
-	private List<Service> connectedServices;
 	
-	@OneToMany(cascade = CascadeType.ALL)
-	private List<Issue> issues;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
+	private List<Issue> issues = new ArrayList<Issue>();
 
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
+	private List<Service> connectedServices = new ArrayList<Service>();
+	
 	/*
 	 * Basic Data Queries
 	 */
@@ -119,14 +121,6 @@ public class Assembly extends Model {
 		this.url = url;
 	}
 
-	public List<Service> getConnectedServices() {
-		return connectedServices;
-	}
-
-	public void setConnectedServices(List<Service> connectedServices) {
-		this.connectedServices = connectedServices;
-	}
-
 	public List<Issue> getIssues() {
 		return issues;
 	}
@@ -135,6 +129,29 @@ public class Assembly extends Model {
 		this.issues = issues;
 	}
 	
+	public void addIssue(Issue i) {
+		this.issues.add(i);
+	}
+
+	public void removeIssue(Issue i) {
+		this.issues.remove(i);
+	}
+
+	public List<Service> getConnectedServices() {
+		return connectedServices;
+	}
+
+	public void setConnectedServices(List<Service> connectedServices) {
+		this.connectedServices = connectedServices;
+	}
+
+	public void addConnectedService(Service s) {
+		this.connectedServices.add(s);
+	}
+
+	public void removeConnectedService(Service s) {
+		this.connectedServices.remove(s);
+	}
 	/*
 	 * Other Queries 
 	 */

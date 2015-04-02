@@ -6,6 +6,9 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
 
@@ -25,7 +28,20 @@ public class ServiceOperationDefinition extends Model {
 
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ServiceParameterDefinition> parameters;
+	
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="definition")
+	private List<ServiceOperation> operations;
+	
+	@JsonIgnore
+	@OneToOne
+	private ServiceDefinition serviceDefinition;
 
+	@OneToOne
+	private ServiceOperationDefinition dependsOf;
+
+	private String modeOfDependence;
+	
 	/*
 	 * Basic Data Queries 
 	 */
@@ -99,6 +115,38 @@ public class ServiceOperationDefinition extends Model {
 
 	public void setParameters(List<ServiceParameterDefinition> parameters) {
 		this.parameters = parameters;
+	}
+
+	public List<ServiceOperation> getOperations() {
+		return operations;
+	}
+
+	public void setOperations(List<ServiceOperation> operations) {
+		this.operations = operations;
+	}
+
+	public void setServiceDefinition(ServiceDefinition serviceDefinition) {
+		this.serviceDefinition = serviceDefinition;
+	}
+
+	public ServiceDefinition getServiceDefinition() {
+		return serviceDefinition;
+	}
+	
+	public ServiceOperationDefinition getDependsOf() {
+		return dependsOf;
+	}
+
+	public void setDependsOf(ServiceOperationDefinition dependsOf) {
+		this.dependsOf = dependsOf;
+	}
+
+	public String getModeOfDependence() {
+		return modeOfDependence;
+	}
+
+	public void setModeOfDependence(String modeOfDependence) {
+		this.modeOfDependence = modeOfDependence;
 	}
 	
 	/*
