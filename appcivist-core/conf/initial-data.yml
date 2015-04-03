@@ -42,17 +42,17 @@
 # Assemblies
   - &a1 !!models.Assembly
     assemblyId: 1
-    name: Participatory Budgeting in San Francisco
+    name: "Participatory Budgeting in San Francisco and the Bay Area"
     description: An assembly about PB in SF
     city: San Francisco
     icon: /assets/images/sfskyline-small.jpg
     url: /api/assembly/4
     #issues:
-    #  - *i1
+    #  - *i1 # Empty Lot
     #connectedServices:
-    #  - *s1
-    #  - *s2
-    #  - *s2
+    #  - *s1 # Etherpad
+    #  - *s2 # Lomio
+    #  - *s2 # Agora
   - &a2 !!models.Assembly
     assemblyId: 2
     name: Urban Infrastructure
@@ -86,8 +86,8 @@
       serviceDefinitionId: 1
       name: Etherpad 
       #operations: 
-      #  - *sod1
-      #  - *sod2
+      #  - *sod1 # readText
+      #  - *sod2 # createPad
   - &sd2 !!models.services.ServiceDefinition
       serviceDefinitionId: 2
       name: Loomio
@@ -230,6 +230,28 @@
             type: BODY_PARAM
             dataType: JSON
             #dataModel: TODO: Loomio Discussion Model Mapping 
+  # Loomio create group
+  - &sod10 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 10
+      serviceDefinition: *sd2
+      name: groups
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd11 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 11
+            name: group
+            type: BODY_PARAM
+            dataType: JSON
+            #dataModel: "{'name': 'STRING, REQUIRED','description': 'STRING, REQUIRED','visible_to': 'STRING, REQUIRED','discussion_privacy_options': 'STRING, REQUIRED'}"
+            # Preferred model, not working yet, find how to map with JPA
+            dataModel: 
+                'name': 'STRING, REQUIRED'
+                'description': 'STRING, REQUIRED'
+                'visible_to': 'STRING, REQUIRED'
+                'discussion_privacy_options': 'STRING, REQUIRED'
+            #dataModel: TODO: Loomio Discussion Model Mapping 
+
 
 #TODO Map Agora Operations by Agora
 #TODO How can we concatenate operations? 
@@ -292,7 +314,7 @@
   - &sa2 !!models.services.ServiceAuthentication
       serviceAuthenticationId: 2
       authType: COOKIE
-      token: UU5nTW5yVmRROVg2NHR5MFpMTERHY0FHZ1RoS1EwcTJOdXVCbENkM1JDWjVvSW9kQWtIbXhucTJsNW84ZWNCSkh1QzdTVzhPbXB5elJnQTNKZTlBTWxuVUswYWFHejNuV25HY1ZYMWpEOXVpS1pXOTJOZWFLVk9iaFhCd05jWFg4eTdSSUdEdFBhVi94dG9GaVN2Q0JncGxOaTcxb1NxU01NaWlPU0s5amd2L2RDZmM1YTlycDlINXZUZFVJK1BmK1Q5QnNMcGE1b0J2cWx1c3JrK2wxTDVrOVlYTFZxOW9SSjdMSC94TDh6cDRmSUVwcmRzZ3VralBjM3ZzZmdvK2ZzbVZOVFo0RUpCQzNxUW1JU1ZoWHVwQlRVWXpBZmlicjdzVTkvSzdlVForNVdhRThNUEQ3UkVDS0FHYUFyZHNQcW9GbDE5NmRES0ZCU1B0ZFVRcHl6Q2QxV2p3THhDT1Z0aXBlTEVCb09RUDhWZ2lrK0UzK0sxcDRYQUFnellHWC8reVE1T2hTTlhZQnBFM2tSQWtRMVdZUzlWczhiZ3JSdWVLTkJxclVDam5lbC80TXZrVFRSMVA5aE5xM1p5Zml3MkVHaCtzZGFoR3VWZU9hcUZWcitNV0dmYk1JRHBTcmtZVlpGdExGRm89LS1YM21jWjRxakNzNUJUaWUzZHkvT2JBPT0%3D--d18356e366a6f76e92bc98f70b9ffea2f168a830
+      token: dEFoT1ZqaW1WYWdpTVBUcDE5djhDa0p1WG43RkM1elR6WEVrUnQycFpSRit5bFBsZlAzVi8zY0FqYkpXUkZYOEFjTWV0dUdXbnUrd2tHRXk2QWJWYzU2QnZlcWY3YWJXcTByb0RTeUQ5S2RHaVhCaXloWFc3TGhZeFI2akxDOTRrcXFkb08rNzhWZXJmL2hBMlRHNldINklPQit3N2U3R3ROVTljbXlqbUVCQzdxVy9OcTFncVJRVC9BLzFxcCsvUWhmU1JCS3lUUEt1V2duajdxS0RudHBMUkNEOUtFajRlWVpwcXhHQVFhOHRBRDNHaERyMXdBSU4zN3YzcE9qUTJ3TjV4Y3FOK3NGeC8ycTdUOUtuaVV3ak5oMlV0UXpiQVpNRSsxYkVjdVdINzQwVWRSemw1TWcyRnp3a1ZwYzNTelowQi9tN3RvNkluSDRNaTVDVVlxTXJNTXRpNXZySmRWU1o3eDdrMTArT04zZU9NUHVQaHJ1d04xalhHMy9MU3lGT2NTTVRwMHlwZjRraGcyajBSM05GMUIzQ1N1WnhvQkgzSk9DbmpPYz0tLW1RR21YU0xxcEdqMUJKSTVQZC9GTFE9PQ%3D%3D--0b7bd2fdbd5204cec142aee9b35bcbda85ece379
       tokenInjection: COOKIE
       tokenParamName: _loomio
       service: *s2

@@ -17,6 +17,7 @@ create table assembly (
   city                      varchar(255),
   icon                      varchar(255),
   url                       varchar(255),
+  test                      varchar(255),
   constraint pk_assembly primary key (assembly_id))
 ;
 

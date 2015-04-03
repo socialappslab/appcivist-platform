@@ -1,9 +1,14 @@
 package models.services;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 import play.db.ebean.Model;
 
@@ -20,6 +25,13 @@ public class ServiceParameterDefinition extends Model {
 	private String name;
 	private String type; // TODO convert in Enum
 	private String dataType;
+	
+//	@ManyToMany(cascade = CascadeType.ALL)
+	
+	// TODO: find a way of mapping this into the database
+	private Map<String, String> dataModel = new HashMap<String,String>();
+	
+//	private String dataModel;
 
 	/*
 	 * Basic Data Queries 
@@ -96,6 +108,23 @@ public class ServiceParameterDefinition extends Model {
 	public void setDataType(String dataType) {
 		this.dataType = dataType;
 	}
+
+//	public String getDataModel() {
+//		return dataModel;
+//	}
+//
+//	public void setDataModel(String dataModel) {
+//		this.dataModel = dataModel;
+//	}
+
+	public Map<String, String> getDataModel() {
+		return dataModel;
+	}
+
+	public void setDataModel(Map<String, String> dataModel) {
+		this.dataModel = dataModel;
+	}
+	
 	
 	/* 
 	 * Other Queries
