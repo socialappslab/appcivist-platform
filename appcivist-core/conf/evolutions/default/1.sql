@@ -17,7 +17,6 @@ create table assembly (
   city                      varchar(255),
   icon                      varchar(255),
   url                       varchar(255),
-  test                      varchar(255),
   constraint pk_assembly primary key (assembly_id))
 ;
 
@@ -113,12 +112,21 @@ create table service_parameter (
   constraint pk_service_parameter primary key (service_parameter_id))
 ;
 
+create table service_parameter_data_model (
+  data_model_id             bigint not null,
+  data_key                  varchar(255),
+  annotations               varchar(255),
+  definition_parameter_definition_id bigint,
+  constraint pk_service_parameter_data_model primary key (data_model_id))
+;
+
 create table service_parameter_definition (
   parameter_definition_id   bigint not null,
   service_operation_definition_operation_definition_id bigint not null,
   name                      varchar(255),
   type                      varchar(255),
   data_type                 varchar(255),
+  test                      varchar(255),
   constraint pk_service_parameter_definition primary key (parameter_definition_id))
 ;
 
@@ -193,6 +201,8 @@ create sequence service_operation_definition_seq;
 
 create sequence service_parameter_seq;
 
+create sequence service_parameter_data_model_seq;
+
 create sequence service_parameter_definition_seq;
 
 create sequence service_resource_seq;
@@ -237,12 +247,14 @@ alter table service_parameter add constraint fk_service_parameter_serviceP_17 fo
 create index ix_service_parameter_serviceP_17 on service_parameter (parameter_definition_id);
 alter table service_parameter add constraint fk_service_parameter_serviceR_18 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
 create index ix_service_parameter_serviceR_18 on service_parameter (service_resource_service_resource_id);
-alter table service_parameter_definition add constraint fk_service_parameter_definiti_19 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_parameter_definiti_19 on service_parameter_definition (service_operation_definition_operation_definition_id);
-alter table service_resource add constraint fk_service_resource_service_20 foreign key (service_service_id) references service (service_id);
-create index ix_service_resource_service_20 on service_resource (service_service_id);
-alter table Token_Action add constraint fk_Token_Action_targetUser_21 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Token_Action_targetUser_21 on Token_Action (user_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_19 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_data_mod_19 on service_parameter_data_model (definition_parameter_definition_id);
+alter table service_parameter_definition add constraint fk_service_parameter_definiti_20 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_parameter_definiti_20 on service_parameter_definition (service_operation_definition_operation_definition_id);
+alter table service_resource add constraint fk_service_resource_service_21 foreign key (service_service_id) references service (service_id);
+create index ix_service_resource_service_21 on service_resource (service_service_id);
+alter table Token_Action add constraint fk_Token_Action_targetUser_22 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Token_Action_targetUser_22 on Token_Action (user_id);
 
 
 
@@ -284,6 +296,8 @@ drop table if exists service_operation_definition cascade;
 
 drop table if exists service_parameter cascade;
 
+drop table if exists service_parameter_data_model cascade;
+
 drop table if exists service_parameter_definition cascade;
 
 drop table if exists service_resource cascade;
@@ -315,6 +329,8 @@ drop sequence if exists service_operation_seq;
 drop sequence if exists service_operation_definition_seq;
 
 drop sequence if exists service_parameter_seq;
+
+drop sequence if exists service_parameter_data_model_seq;
 
 drop sequence if exists service_parameter_definition_seq;
 

@@ -1,13 +1,18 @@
 package models.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import play.db.ebean.Model;
@@ -25,14 +30,19 @@ public class ServiceParameterDefinition extends Model {
 	private String name;
 	private String type; // TODO convert in Enum
 	private String dataType;
-	
-//	@ManyToMany(cascade = CascadeType.ALL)
-	
-	// TODO: find a way of mapping this into the database
-	private Map<String, String> dataModel = new HashMap<String,String>();
-	
-//	private String dataModel;
 
+// ElementColleciton is not supported by Ebean, the underlying JPA provider of play :(
+//	@ElementCollection
+//	@MapKeyColumn(name="data_key")
+//	@Column(name="data_annotations")
+//	@CollectionTable(name="service_parameter_data_model", joinColumns=@JoinColumn(name="data_model_id"))
+//	private Map<String,String> dataModel = new HashMap<String,String>();
+	
+	private String test;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	private List<ServiceParameterDataModel> dataModel = new ArrayList<ServiceParameterDataModel>();
+	
 	/*
 	 * Basic Data Queries 
 	 */
@@ -109,21 +119,21 @@ public class ServiceParameterDefinition extends Model {
 		this.dataType = dataType;
 	}
 
-//	public String getDataModel() {
-//		return dataModel;
-//	}
-//
-//	public void setDataModel(String dataModel) {
-//		this.dataModel = dataModel;
-//	}
-
-	public Map<String, String> getDataModel() {
+	public List<ServiceParameterDataModel> getDataModel() {
 		return dataModel;
 	}
 
-	public void setDataModel(Map<String, String> dataModel) {
+	public void setDataModel(List<ServiceParameterDataModel> dataModel) {
 		this.dataModel = dataModel;
 	}
+
+//	public Map<String, String> getDataModel() {
+//		return dataModel;
+//	}
+//
+//	public void setDataModel(Map<String, String> dataModel) {
+//		this.dataModel = dataModel;
+//	}
 	
 	
 	/* 

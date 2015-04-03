@@ -243,14 +243,28 @@
             name: group
             type: BODY_PARAM
             dataType: JSON
-            #dataModel: "{'name': 'STRING, REQUIRED','description': 'STRING, REQUIRED','visible_to': 'STRING, REQUIRED','discussion_privacy_options': 'STRING, REQUIRED'}"
-            # Preferred model, not working yet, find how to map with JPA
+            # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
             dataModel: 
-                'name': 'STRING, REQUIRED'
-                'description': 'STRING, REQUIRED'
-                'visible_to': 'STRING, REQUIRED'
-                'discussion_privacy_options': 'STRING, REQUIRED'
-            #dataModel: TODO: Loomio Discussion Model Mapping 
+              - &dm1 !!models.services.ServiceParameterDataModel
+                  dataModelId: 1
+                  dataKey: 'name'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+              - &dm2 !!models.services.ServiceParameterDataModel
+                  dataModelId: 2
+                  dataKey: 'description'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+              - &dm3 !!models.services.ServiceParameterDataModel
+                  dataModelId: 3
+                  dataKey: 'visible_to'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+              - &dm4 !!models.services.ServiceParameterDataModel
+                  dataModelId: 4
+                  dataKey: 'discussion_privacy_options'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
 
 
 #TODO Map Agora Operations by Agora
