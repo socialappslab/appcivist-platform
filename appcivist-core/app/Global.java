@@ -15,7 +15,7 @@ public class Global extends GlobalSettings {
 	public void onStart(Application app) {
 		Logger.info("Application has started");
 		if (Assembly.findAll().getAssemblies().isEmpty()) {
-			List list = (List) Yaml.load("initial-data.yml");
+			List list = (List) Yaml.load("initial-data/initial-data.yml");
 			Ebean.save(list);
 			// List list = (List)
 			// Yaml.load("initial-data/bidirectional-one2many-test.yml");
@@ -43,7 +43,7 @@ public class Global extends GlobalSettings {
 				Ebean.execute(Ebean.createCallableSql(dropDdl));
 				Ebean.execute(Ebean.createCallableSql(createDdl));
 				
-				List list = (List) Yaml.load("initial-data.yml");
+				List list = (List) Yaml.load("initial-data/initial-data.yml");
 				Ebean.save(list);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
