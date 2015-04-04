@@ -14,16 +14,13 @@ public class Global extends GlobalSettings {
 	@SuppressWarnings("rawtypes")
 	public void onStart(Application app) {
 		Logger.info("Application has started");
-		if (Assembly.findAll().getAssemblies().isEmpty()) {
-			List list = (List) Yaml.load("initial-data/initial-data.yml");
-			Ebean.save(list);
-			// List list = (List)
-			// Yaml.load("initial-data/bidirectional-one2many-test.yml");
-			// Ebean.save(list);
-		} else {
 
+		Boolean cleanDB = Play.application().configuration()
+				.getBoolean("appcivist.db.cleanBeforeStarting");
+		// TODO: find a better way for purging the database (instead of
+		// dropping/creating all over again
+		if (cleanDB && !Assembly.findAll().getAssemblies().isEmpty()) {
 			// TODO: make the below code available only in dev mode
-
 			// Delete and Create the Database again
 			// Reading the evolution file
 			String evolutionContent;
@@ -40,17 +37,41 @@ public class Global extends GlobalSettings {
 				String createDdl = upsDowns[0];
 				String dropDdl = upsDowns[1];
 
+				Ebean.beginTransaction();
+				Logger.info("AppCivist: Dropping DB Tables => "+dropDdl);
 				Ebean.execute(Ebean.createCallableSql(dropDdl));
+				Ebean.commitTransaction();
+
+				Ebean.beginTransaction();
+				Logger.info("AppCivist: Creating DB Tables => "+createDdl);
 				Ebean.execute(Ebean.createCallableSql(createDdl));
-				
-				List list = (List) Yaml.load("initial-data/initial-data.yml");
-				Ebean.save(list);
+				Ebean.commitTransaction();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 
+		if (Assembly.findAll().getAssemblies().isEmpty()) {
+
+			Boolean loadTestUsers = Play.application().configuration()
+					.getBoolean("appcivist.db.loadTestUsers");
+			Boolean loadTestOrchestration = Play.application().configuration()
+					.getBoolean("appcivist.db.loadTestOrchestration");
+
+			if (loadTestUsers) {
+				Logger.info("AppCivist: Loading Test Users...");
+				List list = (List) Yaml.load("initial-data/test-users.yml");
+				Ebean.save(list);
+			}
+
+			if (loadTestOrchestration) {
+				Logger.info("AppCivist: Loading Test Assemblies and services...");
+				List list = (List) Yaml
+						.load("initial-data/orchestration-example-1.yml");
+				Ebean.save(list);
+			}
+		}
 	}
 
 	public void onStop(Application app) {

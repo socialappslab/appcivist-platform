@@ -1,0 +1,493 @@
+# AppCivist Test Data
+---
+
+# Assemblies
+  - &a1 !!models.Assembly
+    assemblyId: 1
+    name: "Participatory Budgeting in San Francisco and the Bay Area"
+    description: An assembly about PB in SF
+    city: San Francisco
+    icon: /assets/images/sfskyline-small.jpg
+    url: /api/assembly/4
+    #issues:
+    #  - *i1 # Empty Lot
+    #connectedServices:
+    #  - *s1 # Etherpad
+    #  - *s2 # Lomio
+    #  - *s2 # Agora
+  - &a2 !!models.Assembly
+    assemblyId: 2
+    name: Urban Infrastructure
+    description: "An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal."
+    city: San Francisco
+    icon: /assets/images/tabacalera-140.png
+    url: /api/assembly/1
+    #issues:
+    #connectedServices:
+  - &a3 !!models.Assembly
+    assemblyId: 3
+    name: Institutional Racism
+    description: "An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013."
+    city: Oakland
+    icon: /assets/images/justicia-140.png
+    url: /api/assembly/2
+    #issues:
+    #connectedServices:
+  - &a4 !!models.Assembly
+    assemblyId: 4
+    name: Public Health
+    description: An assembly about Public Health
+    city: Los Angeles
+    icon: /assets/images/barefootdoctor-140.png
+    url: /api/assembly/3
+    #issues:
+    #connectedServices:
+
+# Service Definitions (the registry)
+  - &sd1 !!models.services.ServiceDefinition
+      serviceDefinitionId: 1
+      name: Etherpad 
+      #operations: 
+      #  - *sod1 # readText
+      #  - *sod2 # createPad
+  - &sd2 !!models.services.ServiceDefinition
+      serviceDefinitionId: 2
+      name: Loomio
+      #operations: 
+      #  - *sod3
+      #  - *sod4
+  - &sd3 !!models.services.ServiceDefinition
+      serviceDefinitionId: 3
+      name: Agora
+      #operations:
+      #  - *sod5
+      #  - *sod6
+      #  - *sod7
+      #  - *sod8
+
+# Service Operation Definitions
+  # Etherpad readText
+  - &sod1 !!models.services.ServiceOperationDefinition 
+      operationDefinitionId: 1
+      serviceDefinition: *sd1
+      name: readText 
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd1 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 1
+            name: padId
+            type: QUERY_PARAM
+            dataType: STRING
+  # Etherpad createPad
+  - &sod2 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 2
+      serviceDefinition: *sd1
+      name: createPad 
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd2 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 2
+            name: padId
+            type: QUERY_PARAM
+            dataType: STRING 
+        - &spd3 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 3
+            name: text
+            type: QUERY_PARAM
+            dataType: STRING
+  # Loomio GET groups
+  - &sod3 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 3
+      serviceDefinition: *sd2
+      name: groups
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd4 !!models.services.ServiceParameterDefinition
+          parameterDefinitionId: 4
+          name: groupId
+          type: PATH_PARAM
+          dataType: STRING 
+  # Loomio GET discussions
+  - &sod4 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 4
+      serviceDefinition: *sd2
+      name: discussions
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd5 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 5
+            name: discussionId
+            type: PATH_PARAM
+            dataType: STRING 
+  # Loomio GET motion 
+  - &sod5 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 5
+      serviceDefinition: *sd3
+      name: motion
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd6 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 6
+            name: motionId
+            type: PATH_PARAM
+            dataType: STRING 
+  # Agora execute action
+  - &sod6 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 6
+      serviceDefinition: *sd3
+      name: action
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd7 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 7
+            name: description
+            type: BODY_PARAM
+            dataType: JSON
+            #TODO => How do we define structured body objects? dataObjectType:
+  # Agora GET agora
+  - &sod7 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 7
+      serviceDefinition: *sd3
+      name: agora
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd8 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 8
+            name: id
+            type: PATH_PARAM
+            dataType: INT
+  # Agora GET election
+  - &sod8 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 8
+      serviceDefinition: *sd3
+      name: election
+      type: HTTP
+      method: GET
+      dependsOf: *sod7
+      modeOfDependence: CONCATENATION
+      parameters: 
+        - &spd9 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 9
+            name: id
+            type: PATH_PARAM
+            dataType: INT
+  # Loomio create discussion
+  - &sod9 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 9
+      serviceDefinition: *sd2
+      name: groups
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd10 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 10
+            name: group
+            type: BODY_PARAM
+            dataType: JSON
+            #dataModel: TODO: Loomio Discussion Model Mapping 
+  # Loomio create group
+  - &sod10 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 10
+      serviceDefinition: *sd2
+      name: groups
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd11 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 11
+            name: group
+            type: BODY_PARAM
+            dataType: JSON
+            # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
+            dataModel: 
+              - &dm1 !!models.services.ServiceParameterDataModel
+                  dataModelId: 1
+                  dataKey: 'name'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+              - &dm2 !!models.services.ServiceParameterDataModel
+                  dataModelId: 2
+                  dataKey: 'description'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+              - &dm3 !!models.services.ServiceParameterDataModel
+                  dataModelId: 3
+                  dataKey: 'visible_to'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+              - &dm4 !!models.services.ServiceParameterDataModel
+                  dataModelId: 4
+                  dataKey: 'discussion_privacy_options'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd11
+
+
+#TODO Map Agora Operations by Agora
+#TODO How can we concatenate operations? 
+# Example: 
+# - GET /agora/{id} ==> Read Agora
+# - GET /agora/{id}/action {"action": "create_election", ... }
+
+# Services
+  - &s1 !!models.services.Service
+      serviceId: 1
+      name: Etherpad
+      baseUrl: http://localhost:9001/api/1
+      serviceDefinition: *sd1
+      assembly: *a1
+      #auth: *sa1 
+      #operations: 
+      #  - *so1
+      #  - *so2
+      #resources: 
+      #  - *sr1 
+  - &s2 !!models.services.Service
+      serviceId: 2
+      name: Loomio
+      baseUrl: http://localhost:4001/api/v1
+      serviceDefinition: *sd2
+      assembly: *a1
+      #auth: &sa2 
+      #operations: 
+      #  - *so3 
+      #  - *so4 
+      #  - *so5 
+      #  - *so6 
+      #resources: 
+      #  - *sr2 
+      #  - *sr3 
+      #  - *sr4 
+  - &s3 !!models.services.Service
+      serviceId: 3
+      name: Agora
+      baseUrl: http://localhost:8000/api/v1
+      serviceDefinition: *sd3
+      assembly: *a1
+      #operations: 
+      #  - *so3 
+      #  - *so4 
+      #  - *so5 
+      #  - *so6 
+      #resources: 
+      #  - *sr5
+      #  - *sr6 
+
+# Service Authentications
+  - &sa1 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 1
+      authType: TOKEN
+      token: 3dca6eb8e4f2b5ea5216a88e49d7a63c09da0d7c793d0734b708058e0a687a19
+      tokenInjection: QUERY_PARAM
+      tokenParamName: apiKey 
+      service: *s1
+  - &sa2 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 2
+      authType: COOKIE
+      token: dEFoT1ZqaW1WYWdpTVBUcDE5djhDa0p1WG43RkM1elR6WEVrUnQycFpSRit5bFBsZlAzVi8zY0FqYkpXUkZYOEFjTWV0dUdXbnUrd2tHRXk2QWJWYzU2QnZlcWY3YWJXcTByb0RTeUQ5S2RHaVhCaXloWFc3TGhZeFI2akxDOTRrcXFkb08rNzhWZXJmL2hBMlRHNldINklPQit3N2U3R3ROVTljbXlqbUVCQzdxVy9OcTFncVJRVC9BLzFxcCsvUWhmU1JCS3lUUEt1V2duajdxS0RudHBMUkNEOUtFajRlWVpwcXhHQVFhOHRBRDNHaERyMXdBSU4zN3YzcE9qUTJ3TjV4Y3FOK3NGeC8ycTdUOUtuaVV3ak5oMlV0UXpiQVpNRSsxYkVjdVdINzQwVWRSemw1TWcyRnp3a1ZwYzNTelowQi9tN3RvNkluSDRNaTVDVVlxTXJNTXRpNXZySmRWU1o3eDdrMTArT04zZU9NUHVQaHJ1d04xalhHMy9MU3lGT2NTTVRwMHlwZjRraGcyajBSM05GMUIzQ1N1WnhvQkgzSk9DbmpPYz0tLW1RR21YU0xxcEdqMUJKSTVQZC9GTFE9PQ%3D%3D--0b7bd2fdbd5204cec142aee9b35bcbda85ece379
+      tokenInjection: COOKIE
+      tokenParamName: _loomio
+      service: *s2
+  - &sa3 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 3
+      authType: TOKEN
+      token: ApiKey cdparra:2cea7838eaa75a61a45c96042cf4d5e8cc625e00
+      tokenInjection: HEADER
+      tokenParamName: Authorization
+      service: *s3
+
+# Service Operations
+  - &so1 !!models.services.ServiceOperation
+      serviceOperationId: 1
+      appCivistOperation: readIssue
+      definition: *sod1 
+      service: *s1 
+  - &so2 !!models.services.ServiceOperation
+      serviceOperationId: 2
+      appCivistOperation: createIssue
+      definition: *sod2
+      service: *s1 
+  - &so3 !!models.services.ServiceOperation
+      serviceOperationId: 3
+      appCivistOperation: readGroup
+      definition: *sod3
+      service: *s2 
+  - &so4 !!models.services.ServiceOperation
+      serviceOperationId: 4
+      appCivistOperation: readDiscussion
+      definition: *sod4
+      service: *s2 
+  - &so5 !!models.services.ServiceOperation
+      serviceOperationId: 5
+      appCivistOperation: readProposal
+      definition: *sod1
+      service: *s2 
+  - &so6 !!models.services.ServiceOperation
+      serviceOperationId: 6
+      appCivistOperation: createProposal
+      definition: *sod2
+      service: *s2
+  - &so7 !!models.services.ServiceOperation
+      serviceOperationId: 7
+      appCivistOperation: createElection
+      definition: *sod6
+      service: *s2    
+  - &so8 !!models.services.ServiceOperation
+      serviceOperationId: 8
+      appCivistOperation: createDiscussion
+      definition: *sod9
+      service: *s2 
+
+# Service Resources
+  - &sr1 !!models.services.ServiceResource
+      serviceResourceId: 1
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: ISSUE
+      service: *s1
+  - &sr2 !!models.services.ServiceResource
+      serviceResourceId: 2
+      url: /api/v1/groups/hkP4Bvtn
+      keyValue: hkP4Bvtn
+      keyName: groupId
+      type: GROUP
+      service: *s2
+  - &sr3 !!models.services.ServiceResource
+      serviceResourceId: 3
+      url: /api/v1/discussions/sxiOKaJo
+      keyValue: sxiOKaJo
+      keyName: discussionId
+      type: DISCUSSION
+      service: *s2
+  - &sr4 !!models.services.ServiceResource
+      serviceResourceId: 4
+      url: /api/v1/motion/5l1yrCV7
+      keyValue: 5l1yrCV7
+      keyName: motionId
+      type: PROPOSAL
+      service: *s2
+  - &sr5 !!models.services.ServiceResource
+      serviceResourceId: 5
+      url: /api/v1/action/agora/1
+      keyValue: 1
+      keyName: groupId
+      type: GROUP
+      service: *s3
+  - &sr6 !!models.services.ServiceResource
+      serviceResourceId: 6
+      url: /api/v1/action/election/4
+      keyValue: 4
+      keyName: electionId
+      type: ELECTION
+      service: *s3
+  - &sr7 !!models.services.ServiceResource
+      serviceResourceId: 7
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: PROPOSAL
+      service: *s1
+  - &sr8 !!models.services.ServiceResource
+      serviceResourceId: 8
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: PROPOSAL
+      service: *s1
+  - &sr9 !!models.services.ServiceResource
+      serviceResourceId: 9
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: PROPOSAL
+      service: *s1
+
+# Service Parameter Values
+  - &sp1 !!models.services.ServiceParameter            
+      serviceParameterId: 1
+      value: fk3EFogcuh
+      serviceParameter: *spd1 
+      serviceResource: *sr1
+
+# Issues 
+  - &i1 !!models.Issue
+    issueId: 1
+    title: What can we do with the empty lot at Telegraph?  
+    brief: "The corner of Telegraph and Channing has an empty lot, and has had for at least 3 years. We should do something about it"
+    type: IDEA_CHALLENGE
+    assembly: *a1
+    # The Type of Issue establishes an standard decisionWorkflow 
+    # from which the assembly can starts their assembly decision design
+    #resource: &sr1
+    # The workflow below goes includes only Proposal Making, Deliberation and Voting
+    #decisionWorkflow: #[ &c1, &c2, &c3, &c4 ] # defines the decision making timeline to follow
+    #  - *c1  
+    #  - *c2 
+    #  - *c3 
+    #  - *c4
+
+# Campaigns
+  - &c1 !!models.Campaign
+    campaignId: 1
+    name: Proposal Making
+    startDate: 2015-03-01
+    endDate: 2015-03-10
+    #nextCampaign: &c2
+    issue: *i1
+    availableOperations: 
+      - *so1
+      - *so2
+      - *so5
+      - *so6
+    campaignResources:
+      - *sr1 
+      - *sr7
+      - *sr8
+      - *sr9
+    #capability: PROPOSAL_MAKING 
+    # the capability defines 
+    # 1. the initial template of an inner workflow
+    # 2. the required resources (issue, proposal template, 
+    # 
+    #TODO: how do we define operations for starting the workflow 
+    #TODO: define the inner enabling workflow 
+    #enablingWorklflow: 
+    #  - &proposalmaking !!models.Campaign 
+  - &c2 !!models.Campaign
+    campaignId: 2
+    name: Proposal Development and Versioning
+    startDate: 2015-03-11
+    endDate: 2015-03-20
+    enabled: false
+    previousCampaign: *c1
+    #nextCampaign: &c3
+    issue: *i1
+  - &c3 !!models.Campaign
+    campaignId: 3
+    name: Deliberation
+    startDate: 2015-03-21
+    endDate: 2015-03-30
+    previousCampaign: *c2
+    #nextCampaign: &c4
+    issue: *i1
+    availableOperations: 
+      - *so1
+      - *so3
+      - *so4
+      - *so5 
+      - *so8 
+    inputResources:
+      - *sr1 
+      - *sr7
+      - *sr8
+      - *sr9
+    campaignResources:
+      - *sr3
+    startOperation: *so8 # Create a Discusion 
+    startOperationType: FOREACH # For each Proposal
+  - &c4 !!models.Campaign
+    campaignId: 4
+    name: Voting
+    startDate: 2015-03-31
+    endDate: 2015-04-10
+    previousCampaign: *c3
+    issue: *i1
