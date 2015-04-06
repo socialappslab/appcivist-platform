@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 import enums.ResponseStatus;
 import models.services.Service;
 import play.db.ebean.*;
+import utils.GlobalData;
 
 @Entity
 public class Assembly extends Model {
@@ -25,8 +26,10 @@ public class Assembly extends Model {
 	private String name;
 	private String description;
 	private String city;
-	private String icon;
+	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON;
 	private String url;
+	
+//	private String test;
 	
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
 	private List<Issue> issues = new ArrayList<Issue>();

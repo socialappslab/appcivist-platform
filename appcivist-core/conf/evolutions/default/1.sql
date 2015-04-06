@@ -126,7 +126,6 @@ create table service_parameter_definition (
   name                      varchar(255),
   type                      varchar(255),
   data_type                 varchar(255),
-  test                      varchar(255),
   constraint pk_service_parameter_definition primary key (parameter_definition_id))
 ;
 

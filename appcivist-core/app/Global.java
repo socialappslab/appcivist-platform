@@ -10,7 +10,7 @@ import play.libs.Yaml;
 import com.avaje.ebean.Ebean;
 
 public class Global extends GlobalSettings {
-
+	
 	@SuppressWarnings("rawtypes")
 	public void onStart(Application app) {
 		Logger.info("Application has started");

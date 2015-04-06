@@ -37,10 +37,8 @@ public class ServiceParameterDefinition extends Model {
 //	@Column(name="data_annotations")
 //	@CollectionTable(name="service_parameter_data_model", joinColumns=@JoinColumn(name="data_model_id"))
 //	private Map<String,String> dataModel = new HashMap<String,String>();
-	
-	private String test;
-	
-	@OneToMany(cascade=CascadeType.ALL)
+		
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="definition")
 	private List<ServiceParameterDataModel> dataModel = new ArrayList<ServiceParameterDataModel>();
 	
 	/*
