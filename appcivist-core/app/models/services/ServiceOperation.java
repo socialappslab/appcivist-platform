@@ -1,12 +1,15 @@
 package models.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,7 +18,6 @@ import play.db.ebean.Model;
 
 @Entity
 public class ServiceOperation extends Model {
-
 	/**
 	 * 
 	 */
@@ -33,7 +35,14 @@ public class ServiceOperation extends Model {
 	@ManyToOne
 	@JoinColumn(name = "service_service_id")
 	private Service service;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="serviceOperation")
+	private List<ServiceParameter> parameters = new ArrayList<ServiceParameter>();
 
+	// TODO: maybe is better not having resources attached to the operations that either 
+	// 		 created them or will use them, attaching only resources to services 
+//	@OneToMany(cascade=CascadeType.ALL, mappedBy="serviceResource")
+//	private List<ServiceResource> resources = new ArrayList<ServiceResource>();
 	/* 
 	 * Basic Data Queries
 	 */
@@ -106,6 +115,23 @@ public class ServiceOperation extends Model {
 	public void setService(Service service) {
 		this.service = service;
 	}
+	
+	public List<ServiceParameter> getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(List<ServiceParameter> parameters) {
+		this.parameters = parameters;
+	}
+
+//	public List<ServiceResource> getResources() {
+//		return resources;
+//	}
+//
+//	public void setResources(List<ServiceResource> resources) {
+//		this.resources = resources;
+//	}
+
 	/*
 	 * Other Queries
 	 */

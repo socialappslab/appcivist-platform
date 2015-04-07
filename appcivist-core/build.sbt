@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "org.avaje.ebeanorm" % "avaje-ebeanorm" % "3.3.4" withSources(),     
   "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "3.2.2" withSources(),
   cache,
-  javaWs, 
+  javaWs withSources(), 
   "javax.xml.bind" % "jaxb-api" % "2.2.12",           // library to support objects-to/from-xml mapping
   "org.webjars" % "bootstrap" % "3.3.1", 			        // jar-packaged version of twitter bootstrap  
   "org.webjars" % "angularjs" % "1.3.14",			        // jar-packaged version of twitter angularjs

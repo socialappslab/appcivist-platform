@@ -171,7 +171,7 @@
       type: HTTP
       method: GET
       dependsOf: *sod7
-      modeOfDependence: CONCATENATION
+      modeOfDependence: CHAIN
       parameters: 
         - &spd9 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 9
@@ -182,16 +182,39 @@
   - &sod9 !!models.services.ServiceOperationDefinition
       operationDefinitionId: 9
       serviceDefinition: *sd2
-      name: groups
+      name: discussions
       type: HTTP
       method: POST
       parameters: 
         - &spd10 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 10
-            name: group
+            name: discussion
             type: BODY_PARAM
             dataType: JSON
-            #dataModel: TODO: Loomio Discussion Model Mapping 
+            dataModel: 
+              - &dm5 !!models.services.ServiceParameterDataModel
+                  dataModelId: 5
+                  dataKey: 'title'
+                  annotations: 'STRING, REQUIRED'
+                  defaultValue: 'Title of discussion goes here'
+                  definition: *spd10
+              - &dm6 !!models.services.ServiceParameterDataModel
+                  dataModelId: 6
+                  dataKey: 'description'
+                  defaultValue: 'Discussion description goes here'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd10
+              - &dm7 !!models.services.ServiceParameterDataModel
+                  dataModelId: 7
+                  dataKey: 'private'
+                  defaultValue: 'false'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd10
+              - &dm8 !!models.services.ServiceParameterDataModel
+                  dataModelId: 8
+                  dataKey: 'group_id'
+                  annotations: 'INT, REQUIRED'
+                  definition: *spd10
   # Loomio create group
   - &sod10 !!models.services.ServiceOperationDefinition
       operationDefinitionId: 10
@@ -211,20 +234,24 @@
                   dataModelId: 1
                   dataKey: 'name'
                   annotations: 'STRING, REQUIRED'
+                  defaultValue: 'Group name goes here'
                   definition: *spd11
               - &dm2 !!models.services.ServiceParameterDataModel
                   dataModelId: 2
                   dataKey: 'description'
+                  defaultValue: 'Group description goes here'
                   annotations: 'STRING, REQUIRED'
                   definition: *spd11
               - &dm3 !!models.services.ServiceParameterDataModel
                   dataModelId: 3
                   dataKey: 'visible_to'
+                  defaultValue: 'public'
                   annotations: 'STRING, REQUIRED'
                   definition: *spd11
               - &dm4 !!models.services.ServiceParameterDataModel
                   dataModelId: 4
                   dataKey: 'discussion_privacy_options'
+                  defaultValue: 'public'
                   annotations: 'STRING, REQUIRED'
                   definition: *spd11
 
@@ -290,7 +317,7 @@
   - &sa2 !!models.services.ServiceAuthentication
       serviceAuthenticationId: 2
       authType: COOKIE
-      token: dEFoT1ZqaW1WYWdpTVBUcDE5djhDa0p1WG43RkM1elR6WEVrUnQycFpSRit5bFBsZlAzVi8zY0FqYkpXUkZYOEFjTWV0dUdXbnUrd2tHRXk2QWJWYzU2QnZlcWY3YWJXcTByb0RTeUQ5S2RHaVhCaXloWFc3TGhZeFI2akxDOTRrcXFkb08rNzhWZXJmL2hBMlRHNldINklPQit3N2U3R3ROVTljbXlqbUVCQzdxVy9OcTFncVJRVC9BLzFxcCsvUWhmU1JCS3lUUEt1V2duajdxS0RudHBMUkNEOUtFajRlWVpwcXhHQVFhOHRBRDNHaERyMXdBSU4zN3YzcE9qUTJ3TjV4Y3FOK3NGeC8ycTdUOUtuaVV3ak5oMlV0UXpiQVpNRSsxYkVjdVdINzQwVWRSemw1TWcyRnp3a1ZwYzNTelowQi9tN3RvNkluSDRNaTVDVVlxTXJNTXRpNXZySmRWU1o3eDdrMTArT04zZU9NUHVQaHJ1d04xalhHMy9MU3lGT2NTTVRwMHlwZjRraGcyajBSM05GMUIzQ1N1WnhvQkgzSk9DbmpPYz0tLW1RR21YU0xxcEdqMUJKSTVQZC9GTFE9PQ%3D%3D--0b7bd2fdbd5204cec142aee9b35bcbda85ece379
+      token: MVh4dXBZamgxaGZWdHpoSUlkVWZwTjBEOWVIYmVvaTJMM0hpYXp2MDZhNHZjeW1rOVZJUFZ0MUtXZW45OXIxaElnaVd4SGFtZjR2bWZYaVFFN0ZuU0w4ZnNxMW8za2FDdFB3U20rT2NlU0RURXZ6VTlTVUF3NU9wb2ZZTDF2b0VWcTRtaTdnQU01TkRTbTRUQytEQ0IrNEJjMVVGeExnRERVVG1XWlU2TUt4UkQ5OFo5Y3gyRUloMkZqMzF6SXZGWDhLS3NNb2ZjdGV4bjdUb3AxQ1NYTWhWREJZSE1Bb2hrNVRVeXlvaGxZQUloekROS0lvano0aXE4U1lEQWs2QTRpbHcwK2hjTFdQWmM3Z0F0OG44cFp2c2ZmWDdCREJhdXI0Z1Rpa3ZmelMzTjFZQ0JwaXpjZ01JZTF1YkhIUEdCMmZsRnIvRmxTSlJteDBOa3lGRU1FejdEamV2eFZtTVpKaVpURnFrYkRRQWl6TDNzTmJNTWVmQmpvZjZHNlhVVW53U3RMb1RtdUVnSVhFeTd0UUxkUT09LS1nd0RYNWJpakJYMnZUMVlLb1R6a2hBPT0%3D--f392e285a192d44e361eebab8719dbc2cfa9f7b7
       tokenInjection: COOKIE
       tokenParamName: _loomio
       service: *s2
@@ -302,7 +329,7 @@
       tokenParamName: Authorization
       service: *s3
 
-# Service Operations
+# Service Operations # TODO: maybe we don't need to store instances of operations
   - &so1 !!models.services.ServiceOperation
       serviceOperationId: 1
       appCivistOperation: readIssue

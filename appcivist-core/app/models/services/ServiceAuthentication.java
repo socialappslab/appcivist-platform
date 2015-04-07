@@ -1,5 +1,6 @@
 package models.services;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -27,10 +28,10 @@ public class ServiceAuthentication extends Model {
 	private String token;
 	private String tokenInjection; // TODO: replace with Enum
 	private String tokenParamName;
-	
+//	private String test;
 
 	@JsonIgnore
-	@OneToOne
+	@ManyToOne
 	private Service service;
 
 	/*

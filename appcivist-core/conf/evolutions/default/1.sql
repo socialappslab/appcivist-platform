@@ -63,7 +63,6 @@ create table service (
   service_id                bigint not null,
   name                      varchar(255),
   base_url                  varchar(255),
-  service_authentication_id bigint,
   assembly_assembly_id      bigint,
   service_definition_service_definition_id bigint,
   constraint pk_service primary key (service_id))
@@ -107,8 +106,9 @@ create table service_operation_definition (
 create table service_parameter (
   service_parameter_id      bigint not null,
   value                     varchar(255),
-  parameter_definition_id   bigint,
+  service_parameter_parameter_definition_id bigint,
   service_resource_service_resource_id bigint,
+  service_operation_service_operation_id bigint,
   constraint pk_service_parameter primary key (service_parameter_id))
 ;
 
@@ -116,6 +116,7 @@ create table service_parameter_data_model (
   data_model_id             bigint not null,
   data_key                  varchar(255),
   annotations               varchar(255),
+  default_value             varchar(255),
   definition_parameter_definition_id bigint,
   constraint pk_service_parameter_data_model primary key (data_model_id))
 ;
@@ -226,26 +227,26 @@ alter table issue add constraint fk_issue_assembly_7 foreign key (assembly_assem
 create index ix_issue_assembly_7 on issue (assembly_assembly_id);
 alter table Linked_Account add constraint fk_Linked_Account_user_8 foreign key (user_id) references appcivist_user (user_id);
 create index ix_Linked_Account_user_8 on Linked_Account (user_id);
-alter table service add constraint fk_service_auth_9 foreign key (service_authentication_id) references service_authentication (service_authentication_id);
-create index ix_service_auth_9 on service (service_authentication_id);
-alter table service add constraint fk_service_assembly_10 foreign key (assembly_assembly_id) references assembly (assembly_id);
-create index ix_service_assembly_10 on service (assembly_assembly_id);
-alter table service add constraint fk_service_serviceDefinition_11 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_serviceDefinition_11 on service (service_definition_service_definition_id);
-alter table service_authentication add constraint fk_service_authentication_ser_12 foreign key (service_service_id) references service (service_id);
-create index ix_service_authentication_ser_12 on service_authentication (service_service_id);
-alter table service_operation add constraint fk_service_operation_definiti_13 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_operation_definiti_13 on service_operation (operation_definition_id);
-alter table service_operation add constraint fk_service_operation_service_14 foreign key (service_service_id) references service (service_id);
-create index ix_service_operation_service_14 on service_operation (service_service_id);
-alter table service_operation_definition add constraint fk_service_operation_definiti_15 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_operation_definiti_15 on service_operation_definition (service_definition_service_definition_id);
-alter table service_operation_definition add constraint fk_service_operation_definiti_16 foreign key (depends_of_operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_operation_definiti_16 on service_operation_definition (depends_of_operation_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceP_17 foreign key (parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_serviceP_17 on service_parameter (parameter_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceR_18 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_parameter_serviceR_18 on service_parameter (service_resource_service_resource_id);
+alter table service add constraint fk_service_assembly_9 foreign key (assembly_assembly_id) references assembly (assembly_id);
+create index ix_service_assembly_9 on service (assembly_assembly_id);
+alter table service add constraint fk_service_serviceDefinition_10 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_serviceDefinition_10 on service (service_definition_service_definition_id);
+alter table service_authentication add constraint fk_service_authentication_ser_11 foreign key (service_service_id) references service (service_id);
+create index ix_service_authentication_ser_11 on service_authentication (service_service_id);
+alter table service_operation add constraint fk_service_operation_definiti_12 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_operation_definiti_12 on service_operation (operation_definition_id);
+alter table service_operation add constraint fk_service_operation_service_13 foreign key (service_service_id) references service (service_id);
+create index ix_service_operation_service_13 on service_operation (service_service_id);
+alter table service_operation_definition add constraint fk_service_operation_definiti_14 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_operation_definiti_14 on service_operation_definition (service_definition_service_definition_id);
+alter table service_operation_definition add constraint fk_service_operation_definiti_15 foreign key (depends_of_operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_operation_definiti_15 on service_operation_definition (depends_of_operation_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceP_16 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_serviceP_16 on service_parameter (service_parameter_parameter_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceR_17 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_parameter_serviceR_17 on service_parameter (service_resource_service_resource_id);
+alter table service_parameter add constraint fk_service_parameter_serviceO_18 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_parameter_serviceO_18 on service_parameter (service_operation_service_operation_id);
 alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_19 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
 create index ix_service_parameter_data_mod_19 on service_parameter_data_model (definition_parameter_definition_id);
 alter table service_parameter_definition add constraint fk_service_parameter_definiti_20 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);

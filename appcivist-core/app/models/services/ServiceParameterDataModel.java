@@ -26,6 +26,7 @@ public class ServiceParameterDataModel extends Model {
 	private Long dataModelId;
 	private String dataKey;
 	private String annotations;
+	private String defaultValue;
 	
 	@JsonIgnore
 	@ManyToOne
@@ -95,6 +96,14 @@ public class ServiceParameterDataModel extends Model {
 
 	public void setDefinition(ServiceParameterDefinition definition) {
 		this.definition = definition;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
 	}
 	
 	/* 

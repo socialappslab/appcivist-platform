@@ -27,12 +27,19 @@ public class ServiceParameter extends Model {
 	private String value;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "parameter_definition_id")
+	//@JoinColumn(referencedColumnName="parameter_definition_id")
 	private ServiceParameterDefinition serviceParameter;
 
 	@JsonIgnore
 	@ManyToOne
+	//@JoinColumn(referencedColumnName="service_resource_id")
 	private ServiceResource serviceResource;
+
+	@JsonIgnore
+	@ManyToOne
+	//@JoinColumn(referencedColumnName="service_operation_id")
+	private ServiceOperation serviceOperation;
+
 	
 	/*
 	 * Basic Data Queries
@@ -104,6 +111,14 @@ public class ServiceParameter extends Model {
 
 	public void setServiceResource(ServiceResource serviceResource) {
 		this.serviceResource = serviceResource;
+	}
+
+	public ServiceOperation getServiceOperation() {
+		return serviceOperation;
+	}
+
+	public void setServiceOperation(ServiceOperation serviceOperation) {
+		this.serviceOperation = serviceOperation;
 	}
 
 	/*

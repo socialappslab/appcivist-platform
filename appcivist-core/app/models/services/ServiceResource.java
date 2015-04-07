@@ -37,6 +37,11 @@ public class ServiceResource extends Model {
 	@JsonIgnore
 	@ManyToOne
 	private Service service;
+
+//	@JsonIgnore
+//	@ManyToOne
+//	private ServiceOperation linkedOperation;
+
 	
 	/*
 	 * Basic Data Queries

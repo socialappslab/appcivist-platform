@@ -29,9 +29,8 @@ public class Service extends Model {
 	private String name;
 	private String baseUrl;
 
-	@OneToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "service_authentication_id")
-	private ServiceAuthentication auth;
+	@OneToMany(cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+	private List<ServiceAuthentication> auth;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="service")
 	private List<ServiceOperation> operations = new ArrayList<ServiceOperation>();
@@ -109,11 +108,11 @@ public class Service extends Model {
 		this.baseUrl = baseUrl;
 	}
 
-	public ServiceAuthentication getAuth() {
+	public List<ServiceAuthentication> getAuth() {
 		return auth;
 	}
 
-	public void setAuth(ServiceAuthentication auth) {
+	public void setAuth(List<ServiceAuthentication> auth) {
 		this.auth = auth;
 	}
 
@@ -179,4 +178,6 @@ public class Service extends Model {
 				.eq("assembly_assembly_id", aid) // TODO this is not needed now, but implement relative ids
 				.eq("serviceId", sid).findUnique();
 	}
+	
+	
 }

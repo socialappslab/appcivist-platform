@@ -4,6 +4,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import models.Assembly;
+import models.User;
 import play.*;
 import play.libs.Yaml;
 
@@ -52,19 +53,20 @@ public class Global extends GlobalSettings {
 			}
 		}
 
-		if (Assembly.findAll().getAssemblies().isEmpty()) {
-
+		if (User.findAll().isEmpty()) {
 			Boolean loadTestUsers = Play.application().configuration()
 					.getBoolean("appcivist.db.loadTestUsers");
-			Boolean loadTestOrchestration = Play.application().configuration()
-					.getBoolean("appcivist.db.loadTestOrchestration");
-
 			if (loadTestUsers) {
 				Logger.info("AppCivist: Loading Test Users...");
 				List list = (List) Yaml.load("initial-data/test-users.yml");
 				Ebean.save(list);
 			}
+		}
+		
+		if (Assembly.findAll().getAssemblies().isEmpty()) {
 
+			Boolean loadTestOrchestration = Play.application().configuration()
+					.getBoolean("appcivist.db.loadTestOrchestration");
 			if (loadTestOrchestration) {
 				Logger.info("AppCivist: Loading Test Assemblies and services...");
 				List list = (List) Yaml
