@@ -71,6 +71,7 @@
       operationDefinitionId: 1
       serviceDefinition: *sd1
       name: readText 
+      nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
@@ -84,6 +85,7 @@
       operationDefinitionId: 2
       serviceDefinition: *sd1
       name: createPad 
+      nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
@@ -102,12 +104,14 @@
       operationDefinitionId: 3
       serviceDefinition: *sd2
       name: groups
+      nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
         - &spd4 !!models.services.ServiceParameterDefinition
           parameterDefinitionId: 4
           name: groupId
+          pathOrder: 0
           type: PATH_PARAM
           dataType: STRING 
   # Loomio GET discussions
@@ -115,25 +119,29 @@
       operationDefinitionId: 4
       serviceDefinition: *sd2
       name: discussions
+      nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
         - &spd5 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 5
             name: discussionId
+            pathOrder: 0
             type: PATH_PARAM
             dataType: STRING 
   # Loomio GET motion 
   - &sod5 !!models.services.ServiceOperationDefinition
       operationDefinitionId: 5
       serviceDefinition: *sd3
-      name: motion
+      name: proposals
+      nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
         - &spd6 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 6
             name: motionId
+            pathOrder: 0
             type: PATH_PARAM
             dataType: STRING 
   # Agora execute action
@@ -141,6 +149,7 @@
       operationDefinitionId: 6
       serviceDefinition: *sd3
       name: action
+      nameOnPath: TRUE
       type: HTTP
       method: POST
       parameters: 
@@ -155,6 +164,7 @@
       operationDefinitionId: 7
       serviceDefinition: *sd3
       name: agora
+      nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
@@ -168,10 +178,9 @@
       operationDefinitionId: 8
       serviceDefinition: *sd3
       name: election
+      nameOnPath: FALSE
       type: HTTP
       method: GET
-      dependsOf: *sod7
-      modeOfDependence: CHAIN
       parameters: 
         - &spd9 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 9
@@ -183,6 +192,7 @@
       operationDefinitionId: 9
       serviceDefinition: *sd2
       name: discussions
+      nameOnPath: TRUE
       type: HTTP
       method: POST
       parameters: 
@@ -195,31 +205,40 @@
               - &dm5 !!models.services.ServiceParameterDataModel
                   dataModelId: 5
                   dataKey: 'title'
-                  annotations: 'STRING, REQUIRED'
                   defaultValue: 'Title of discussion goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: false
                   definition: *spd10
               - &dm6 !!models.services.ServiceParameterDataModel
                   dataModelId: 6
                   dataKey: 'description'
                   defaultValue: 'Discussion description goes here'
                   annotations: 'STRING, REQUIRED'
+                  required: FALSE
+                  list: FALSE
                   definition: *spd10
               - &dm7 !!models.services.ServiceParameterDataModel
                   dataModelId: 7
                   dataKey: 'private'
                   defaultValue: 'false'
                   annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
                   definition: *spd10
               - &dm8 !!models.services.ServiceParameterDataModel
                   dataModelId: 8
                   dataKey: 'group_id'
                   annotations: 'INT, REQUIRED'
+                  required: TRUE
+                  list: FALSE
                   definition: *spd10
   # Loomio create group
   - &sod10 !!models.services.ServiceOperationDefinition
       operationDefinitionId: 10
       serviceDefinition: *sd2
       name: groups
+      nameOnPath: TRUE
       type: HTTP
       method: POST
       parameters: 
@@ -233,27 +252,196 @@
               - &dm1 !!models.services.ServiceParameterDataModel
                   dataModelId: 1
                   dataKey: 'name'
-                  annotations: 'STRING, REQUIRED'
                   defaultValue: 'Group name goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
                   definition: *spd11
               - &dm2 !!models.services.ServiceParameterDataModel
                   dataModelId: 2
                   dataKey: 'description'
                   defaultValue: 'Group description goes here'
                   annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
                   definition: *spd11
               - &dm3 !!models.services.ServiceParameterDataModel
                   dataModelId: 3
                   dataKey: 'visible_to'
                   defaultValue: 'public'
                   annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
                   definition: *spd11
               - &dm4 !!models.services.ServiceParameterDataModel
                   dataModelId: 4
                   dataKey: 'discussion_privacy_options'
                   defaultValue: 'public'
                   annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
                   definition: *spd11
+  # Agora CREATE election
+  - &sod11 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 11
+      serviceDefinition: *sd3
+      name: create_election
+      nameOnPath: FALSE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd12 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 12
+            name: agora
+            defaultValue: agora
+            pathOrder: 0
+            type: PATH_PARAM
+            dataType: STRING
+        - &spd13 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 13
+            name: agora_id
+            pathOrder: 1
+            type: PATH_PARAM
+            dataType: INT
+        - &spd14 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 14
+            name: action
+            defaultValue: action
+            pathOrder: 2
+            type: PATH_PARAM
+            dataType: INT
+        - &spd15 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 15
+            name: group
+            type: BODY_PARAM
+            dataType: JSON
+            # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
+            dataModel: 
+              - &dm9 !!models.services.ServiceParameterDataModel
+                  dataModelId: 9
+                  dataKey: 'action'
+                  defaultValue: 'create_election'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm10 !!models.services.ServiceParameterDataModel
+                  dataModelId: 10
+                  dataKey: 'description'
+                  defaultValue: 'Election description goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm11 !!models.services.ServiceParameterDataModel
+                  dataModelId: 11
+                  dataKey: 'questions'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+                  list: TRUE
+                  childDataModel: 
+                    - &dm16 !!models.services.ServiceParameterDataModel
+                        dataModelId: 16
+                        dataKey: 'question'
+                        defaultValue: 'Do you prefer foo or bar?'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm17 !!models.services.ServiceParameterDataModel
+                        dataModelId: 17
+                        dataKey: 'a'
+                        defaultValue: 'ballot/question'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm18 !!models.services.ServiceParameterDataModel
+                        dataModelId: 18
+                        dataKey: 'tally_type'
+                        defaultValue: 'ONE_CHOICE'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm19 !!models.services.ServiceParameterDataModel
+                        dataModelId: 19
+                        dataKey: 'max'
+                        defaultValue: '1'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm20 !!models.services.ServiceParameterDataModel
+                        dataModelId: 20                      
+                        dataKey: 'min'
+                        defaultValue: '0'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm21 !!models.services.ServiceParameterDataModel
+                        dataModelId: 21
+                        dataKey: 'randomize_answer_order'
+                        defaultValue: 'True'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm22 !!models.services.ServiceParameterDataModel
+                        dataModelId: 22
+                        dataKey: 'answers'
+                        annotations: 'LIST, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                        list: TRUE
+                        childDataModel: 
+                          - &dm23 !!models.services.ServiceParameterDataModel
+                              dataModelId: 23
+                              dataKey: 'a'
+                              defaultValue: 'ballot/answer'
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+                          - &dm24 !!models.services.ServiceParameterDataModel
+                              dataModelId: 24
+                              dataKey: 'url'
+                              defaultValue: ''
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+                          - &dm25 !!models.services.ServiceParameterDataModel
+                              dataModelId: 25
+                              dataKey: 'details'
+                              defaultValue: ''
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+                          - &dm26 !!models.services.ServiceParameterDataModel
+                              dataModelId: 26
+                              dataKey: 'value'
+                              defaultValue: 'foo'
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+              - &dm13 !!models.services.ServiceParameterDataModel
+                  dataModelId: 13
+                  dataKey: 'pretty_name'
+                  defaultValue: 'Election pretty_name'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm14 !!models.services.ServiceParameterDataModel
+                  dataModelId: 14
+                  dataKey: 'is_vote_secret'
+                  defaultValue: 'Election pretty_name'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm15 !!models.services.ServiceParameterDataModel
+                  dataModelId: 15
+                  dataKey: 'from_date'
+                  annotations: 'STRING, OPTIONAL, %Y-%m-%dT%H:%M:%S'
+                  definition: *spd15
+              - &dm27 !!models.services.ServiceParameterDataModel
+                  dataModelId: 27
+                  dataKey: 'to_date'
+                  annotations: 'STRING, OPTIONAL, %Y-%m-%dT%H:%M:%S'
+                  definition: *spd15
+
 
 
 #TODO Map Agora Operations by Agora
@@ -297,6 +485,7 @@
       baseUrl: http://localhost:8000/api/v1
       serviceDefinition: *sd3
       assembly: *a1
+      trailingSlash: TRUE
       #operations: 
       #  - *so3 
       #  - *so4 
@@ -318,7 +507,7 @@
       serviceAuthenticationId: 2
       authType: COOKIE
       token: MVh4dXBZamgxaGZWdHpoSUlkVWZwTjBEOWVIYmVvaTJMM0hpYXp2MDZhNHZjeW1rOVZJUFZ0MUtXZW45OXIxaElnaVd4SGFtZjR2bWZYaVFFN0ZuU0w4ZnNxMW8za2FDdFB3U20rT2NlU0RURXZ6VTlTVUF3NU9wb2ZZTDF2b0VWcTRtaTdnQU01TkRTbTRUQytEQ0IrNEJjMVVGeExnRERVVG1XWlU2TUt4UkQ5OFo5Y3gyRUloMkZqMzF6SXZGWDhLS3NNb2ZjdGV4bjdUb3AxQ1NYTWhWREJZSE1Bb2hrNVRVeXlvaGxZQUloekROS0lvano0aXE4U1lEQWs2QTRpbHcwK2hjTFdQWmM3Z0F0OG44cFp2c2ZmWDdCREJhdXI0Z1Rpa3ZmelMzTjFZQ0JwaXpjZ01JZTF1YkhIUEdCMmZsRnIvRmxTSlJteDBOa3lGRU1FejdEamV2eFZtTVpKaVpURnFrYkRRQWl6TDNzTmJNTWVmQmpvZjZHNlhVVW53U3RMb1RtdUVnSVhFeTd0UUxkUT09LS1nd0RYNWJpakJYMnZUMVlLb1R6a2hBPT0%3D--f392e285a192d44e361eebab8719dbc2cfa9f7b7
-      tokenInjection: COOKIE
+      tokenInjection: Cookie
       tokenParamName: _loomio
       service: *s2
   - &sa3 !!models.services.ServiceAuthentication
@@ -327,6 +516,13 @@
       token: ApiKey cdparra:2cea7838eaa75a61a45c96042cf4d5e8cc625e00
       tokenInjection: HEADER
       tokenParamName: Authorization
+      service: *s3
+  - &sa3 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 4
+      authType: TOKEN
+      token: 6JOPudnXZIe63vTRXiwMYULsDJynfwHU
+      tokenInjection: HEADER
+      tokenParamName: X-CSRFToken
       service: *s3
 
 # Service Operations # TODO: maybe we don't need to store instances of operations

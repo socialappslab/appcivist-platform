@@ -1,12 +1,16 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 import enums.ResponseStatus;
 import models.services.Service;
@@ -22,6 +26,7 @@ public class Assembly extends Model {
 	private static final long serialVersionUID = 128881028915968230L;
 
 	@Id
+	@GeneratedValue
 	private Long  assemblyId;
 	private String name;
 	private String description;
@@ -37,12 +42,32 @@ public class Assembly extends Model {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
 	private List<Service> connectedServices = new ArrayList<Service>();
 	
+	
+	@Transient
+	private Map<String, String> resourceMappings = new HashMap<String,String>();
+
+	@Transient
+	private Map<String, Service> operationServiceMappings = new HashMap<String,Service>();
 	/*
 	 * Basic Data Queries
 	 */
 	
 	public static Model.Finder<Long, Assembly> find = new Model.Finder<Long, Assembly>(
 			Long.class, Assembly.class);
+
+	/**
+	 * Empty constructor
+	 */
+	public Assembly() {
+		super();
+	}
+	
+	public Assembly(String assemblyTitle, String assemblyDescription,
+			String assemblyCity) {
+		this.name=assemblyTitle;
+		this.description=assemblyDescription;
+		this.city=assemblyCity;
+	}
 
 	public static AssemblyCollection findAll() {
 		List<Assembly> assemblies = find.all();
@@ -52,8 +77,16 @@ public class Assembly extends Model {
 	}
 
 	public static void create(Assembly assembly) {
+		if (assembly.getAssemblyId()!=null && (assembly.getUrl()==null || assembly.getUrl()=="")) {
+			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL+"/"+assembly.getAssemblyId());
+		}
+		
 		assembly.save();
 		assembly.refresh();
+		
+		if (assembly.getUrl()==null || assembly.getUrl()=="") {
+			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL+"/"+assembly.getAssemblyId());
+		}
 	}
 
 	public static Assembly read(Long assemblyId) {
@@ -151,10 +184,40 @@ public class Assembly extends Model {
 	public void addConnectedService(Service s) {
 		this.connectedServices.add(s);
 	}
-
+	
 	public void removeConnectedService(Service s) {
 		this.connectedServices.remove(s);
 	}
+	
+	public Map<String, String> getResourceMappings() {
+		return resourceMappings;
+	}
+
+	public void setResourceMappings(Map<String, String> resourceMappings) {
+		this.resourceMappings = resourceMappings;
+	}
+
+	public void addResourceMappings(String key, String value) {
+		this.resourceMappings.put(key,value);
+	}
+
+	public Map<String, Service> getOperationServiceMappings() {
+		return operationServiceMappings;
+	}
+	
+	public Service getServiceForOperation(String operationKey) {
+		return this.operationServiceMappings.get(operationKey);
+	}
+
+	public void setOperationServiceMappings(Map<String, Service> operationServiceMappings) {
+		this.operationServiceMappings = operationServiceMappings;
+	}
+
+	public void addOperationServiceMapping(String opName, Service service) {
+		this.getOperationServiceMappings().put(opName,service);
+	}
+	
+
 	/*
 	 * Other Queries 
 	 */

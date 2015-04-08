@@ -1,7 +1,9 @@
 package models.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -11,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -44,6 +47,13 @@ public class Service extends Model {
 
 	@ManyToOne
 	private ServiceDefinition serviceDefinition;
+	
+	
+	// TODO: implement an entity for storing operationMappings
+	@Transient
+	private Map<String,String> operationMappings = new HashMap<String,String>();
+	
+	private Boolean trailingSlash = false;
 
 	/*
 	 * Basic Data Queries
@@ -162,6 +172,30 @@ public class Service extends Model {
 
 	public void setServiceDefinition(ServiceDefinition serviceDefinition) {
 		this.serviceDefinition = serviceDefinition;
+	}
+
+	public Map<String,String> getOperationMappings() {
+		return operationMappings;
+	}
+
+	public void setOperationMappings(Map<String,String> operationMappings) {
+		this.operationMappings = operationMappings;
+	}
+	
+	public void addOperationMapping(String key, String value) {
+		this.operationMappings.put(key, value);
+	}
+	
+	public String getDefinitionKeyForOperation(String key) {
+		return this.operationMappings.get(key);
+	}
+
+	public Boolean getTrailingSlash() {
+		return trailingSlash;
+	}
+
+	public void setTrailingSlash(Boolean trailingSlash) {
+		this.trailingSlash = trailingSlash;
 	}
 
 	/**

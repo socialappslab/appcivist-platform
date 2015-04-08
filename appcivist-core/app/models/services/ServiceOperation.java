@@ -123,6 +123,10 @@ public class ServiceOperation extends Model {
 	public void setParameters(List<ServiceParameter> parameters) {
 		this.parameters = parameters;
 	}
+	
+	public void addParameter(ServiceParameter parameter) {
+		this.parameters.add(parameter);
+	}
 
 //	public List<ServiceResource> getResources() {
 //		return resources;

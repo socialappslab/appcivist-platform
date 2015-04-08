@@ -41,6 +41,11 @@ public class ServiceParameterDefinition extends Model {
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="definition")
 	private List<ServiceParameterDataModel> dataModel = new ArrayList<ServiceParameterDataModel>();
 	
+	private Integer pathOrder = 0; // if this is a path param, when must be included in the url
+	
+	private String defaultValue; // what to put on the path if is not specified
+	
+	private Boolean required = false;
 	/*
 	 * Basic Data Queries 
 	 */
@@ -123,6 +128,30 @@ public class ServiceParameterDefinition extends Model {
 
 	public void setDataModel(List<ServiceParameterDataModel> dataModel) {
 		this.dataModel = dataModel;
+	}
+
+	public Integer getPathOrder() {
+		return pathOrder;
+	}
+
+	public void setPathOrder(Integer pathOrder) {
+		this.pathOrder = pathOrder;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
+	public Boolean getRequired() {
+		return required;
+	}
+
+	public void setRequired(Boolean required) {
+		this.required = required;
 	}
 
 //	public Map<String, String> getDataModel() {

@@ -37,10 +37,12 @@ public class ServiceOperationDefinition extends Model {
 	@OneToOne
 	private ServiceDefinition serviceDefinition;
 
-	@OneToOne
-	private ServiceOperationDefinition dependsOf;
+//	@OneToOne
+//	private ServiceOperationDefinition dependsOf;
+//
+//	private String modeOfDependence;
 
-	private String modeOfDependence;
+	private Boolean nameOnPath;
 	
 	/*
 	 * Basic Data Queries 
@@ -58,6 +60,11 @@ public class ServiceOperationDefinition extends Model {
 	public static ServiceOperationDefinition read(
 			Long serviceOperationDefinitionId) {
 		return find.ref(serviceOperationDefinitionId);
+	}
+
+	public static ServiceOperationDefinition read(
+			String serviceOperationDefinitionId) {
+		return find.ref(new Long(serviceOperationDefinitionId));
 	}
 
 	public static ServiceOperationDefinition createObject(
@@ -133,20 +140,28 @@ public class ServiceOperationDefinition extends Model {
 		return serviceDefinition;
 	}
 	
-	public ServiceOperationDefinition getDependsOf() {
-		return dependsOf;
-	}
+//	public ServiceOperationDefinition getDependsOf() {
+//		return dependsOf;
+//	}
+//
+//	public void setDependsOf(ServiceOperationDefinition dependsOf) {
+//		this.dependsOf = dependsOf;
+//	}
+//
+//	public String getModeOfDependence() {
+//		return modeOfDependence;
+//	}
+//
+//	public void setModeOfDependence(String modeOfDependence) {
+//		this.modeOfDependence = modeOfDependence;
+//	}
 
-	public void setDependsOf(ServiceOperationDefinition dependsOf) {
-		this.dependsOf = dependsOf;
+	public Boolean getNameOnPath() {
+		return this.nameOnPath;
 	}
-
-	public String getModeOfDependence() {
-		return modeOfDependence;
-	}
-
-	public void setModeOfDependence(String modeOfDependence) {
-		this.modeOfDependence = modeOfDependence;
+	
+	public void setNameOnPath(Boolean nameOnPath) {
+		this.nameOnPath = nameOnPath;
 	}
 	
 	/*

@@ -1,13 +1,16 @@
 package models.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -27,10 +30,20 @@ public class ServiceParameterDataModel extends Model {
 	private String dataKey;
 	private String annotations;
 	private String defaultValue;
+	private Boolean required = false;
+	private Boolean list = false;
+//	private Boolean test = false;
 	
 	@JsonIgnore
 	@ManyToOne
 	private ServiceParameterDefinition definition;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="parentDataModel")
+	private List<ServiceParameterDataModel> childDataModel = new ArrayList<ServiceParameterDataModel>();
+	
+	@JsonIgnore
+	@ManyToOne
+	private ServiceParameterDataModel parentDataModel;
 	
 	/*
 	 * Basic Data Queries 
@@ -105,6 +118,39 @@ public class ServiceParameterDataModel extends Model {
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 	}
+
+	public Boolean getRequired() {
+		return required;
+	}
+
+	public void setRequired(Boolean required) {
+		this.required = required;
+	}
+
+	public Boolean getList() {
+		return list;
+	}
+
+	public void setList(Boolean list) {
+		this.list = list;
+	}
+	
+	public List<ServiceParameterDataModel> getChildDataModel() {
+		return childDataModel;
+	}
+
+	public void setChildDataModel(List<ServiceParameterDataModel> dataModel) {
+		this.childDataModel = dataModel;
+	}
+
+	public ServiceParameterDataModel getParentDataModel() {
+		return parentDataModel;
+	}
+
+	public void setParentDataModel(ServiceParameterDataModel parentDataModel) {
+		this.parentDataModel = parentDataModel;
+	}
+
 	
 	/* 
 	 * Other Queries
