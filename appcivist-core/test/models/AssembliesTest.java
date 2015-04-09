@@ -590,7 +590,7 @@ public class AssembliesTest extends WithApplication {
 		
 		bodyParamValues.put("pretty_name",electionTitle );
 		bodyParamValues.put("description", electionDescription);
-		bodyParamValues.put("is_vote_secret", "true");
+		bodyParamValues.put("is_vote_secret", true);
 //		bodyParamValues.put("from_date", "2014-05-01");
 //		bodyParamValues.put("to_date", "2014-05-03");
 		bodyParamValues.put("short_description", "Election");
@@ -602,7 +602,7 @@ public class AssembliesTest extends WithApplication {
 		question.put("min", 0);
 		question.put("num_seats", 1);
 		question.put("question", electionPrettyName);
-		question.put("randomize_answer_order", "true");
+		question.put("randomize_answer_order", true);
 		
 		List<Map<String, Object>> answers = new ArrayList<Map<String, Object>>();
 		

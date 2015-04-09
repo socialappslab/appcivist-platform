@@ -113,10 +113,9 @@ public class Composer {
 		if (paramType.equals("BODY_PARAM") || dataModel.size()>0 ) {
 			Map<String, Object> bodyMap = new HashMap<String, Object>(); // parameters needed in the body
 			List<ServiceParameterDataModel> dmList = pDef.getDataModel(); // data model of the body 
-
 			
-			//Map<String, Object> values = (Map<String, Object>) paramValues.get(paramName); // e.g., discussion
-			bodyMap = processDataModel(paramName, dmList, paramValues);
+			Map<String, Object> values = (Map<String, Object>) paramValues.get(paramName); // e.g., discussion
+			bodyMap = processDataModel(paramName, dmList, values);
 			
 			if (pDef.getDataType().equals("JSON")) {
 				param.setValue(Json.toJson(bodyMap).toString());
@@ -154,7 +153,6 @@ public class Composer {
 											Map<String, Object> paramValues) {
 		Map<String, Object> bodyMap = new HashMap<String, Object>(); 
 		
-		
 		for (ServiceParameterDataModel dm : dmList) {
 			String dmKey = dm.getDataKey();
 			String dmDefault = dm.getDefaultValue();
@@ -164,12 +162,13 @@ public class Composer {
 			ServiceParameterDataModel parent = dm.getParentDataModel();
 			List<ServiceParameterDataModel> childDataModels = dm.getChildDataModel();
 			
-			if(childDataModels.size()>0) {
+			if(childDataModels!=null && childDataModels.size()>0) {
+				
 				// avoid circular connections
 				if (parent!=null && !dm.equals(parent.getParentDataModel())) {
 					if (dmIsList) {			
-						Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);			
-						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) dmValuesMap.get(dmKey);
+//						Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);			
+						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) paramValues.get(dmKey);
 						List<Map<String,Object>> childParamValues = new ArrayList<Map<String,Object>>();
 						for (Map<String, Object> valueMap : valueMapList) {
 							Map<String,Object> childParamValueMap = processDataModel(dmKey, childDataModels,valueMap);
@@ -177,22 +176,22 @@ public class Composer {
 						}
 						bodyMap.put(dmKey, childParamValues);
 					} else {
-						Map<String,Object> valueMap = (Map<String, Object>) paramValues.get(parentKey);
+						Map<String,Object> valueMap = (Map<String, Object>) paramValues.get(dmKey);
 						Map<String,Object> childParamValues = processDataModel(dmKey, childDataModels,valueMap);
 						bodyMap.put(dmKey, childParamValues);
 					}
 				} else if (parent==null) {
 					if (dmIsList) {						
-						Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);			
-						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) dmValuesMap.get(dmKey);
+//						Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);			
+						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) paramValues.get(dmKey);
 						List<Map<String,Object>> childParamValues = new ArrayList<Map<String,Object>>();
 						for (Map<String, Object> valueMap : valueMapList) {
-							Map<String,Object> childParamValueMap = processDataModel(dmKey, childDataModels,valueMap);
-							childParamValues.add(childParamValueMap);
+							Map<String,Object> childParamValue = processDataModel(dmKey, childDataModels,valueMap);
+							childParamValues.add(childParamValue);
 						}
 						bodyMap.put(dmKey, childParamValues);
 					} else {
-						Map<String,Object> valueMap = (Map<String, Object>) paramValues.get(parentKey);
+						Map<String,Object> valueMap = (Map<String, Object>) paramValues.get(dmKey);
 						Map<String,Object> childParamValues = processDataModel(dmKey, childDataModels,valueMap);
 						bodyMap.put(dmKey, childParamValues);
 					}
@@ -200,8 +199,9 @@ public class Composer {
 				}
 			} else {
 				String key = dmKey;
-				Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);
-				String value = (String) dmValuesMap.get(key);
+				//Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);
+				//String value = (String) paramValues.get(key);
+				Object value = paramValues.get(key);
 				if (value != null && !value.equals("")) {
 					bodyMap.put(key, value);
 				} else {
