@@ -125,7 +125,7 @@
       parameters: 
         - &spd5 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 5
-            name: discussionId
+            name: key
             pathOrder: 0
             type: PATH_PARAM
             dataType: STRING 
@@ -143,7 +143,7 @@
             name: motionId
             pathOrder: 0
             type: PATH_PARAM
-            dataType: STRING 
+            dataType: STRING
   # Agora execute action
   - &sod6 !!models.services.ServiceOperationDefinition
       operationDefinitionId: 6
@@ -312,7 +312,7 @@
             dataType: INT
         - &spd15 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 15
-            name: group
+            name: action
             type: BODY_PARAM
             dataType: JSON
             # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
@@ -339,6 +339,20 @@
                   definition: *spd15
                   list: TRUE
                   childDataModel: 
+                    - &dm28 !!models.services.ServiceParameterDataModel
+                        dataModelId: 28
+                        dataKey: 'question_num'
+                        defaultValue: '1'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm29 !!models.services.ServiceParameterDataModel
+                        dataModelId: 29
+                        dataKey: 'num_seats'
+                        defaultValue: '1'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
                     - &dm16 !!models.services.ServiceParameterDataModel
                         dataModelId: 16
                         dataKey: 'question'
@@ -441,7 +455,102 @@
                   dataKey: 'to_date'
                   annotations: 'STRING, OPTIONAL, %Y-%m-%dT%H:%M:%S'
                   definition: *spd15
-
+  #http://localhost:4001/api/v1/proposals?discussion_id=4
+  # GET proposals in discussion
+  - &sod12 !!models.services.ServiceOperationDefinition  
+      operationDefinitionId: 12
+      serviceDefinition: *sd3
+      name: proposals
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd16 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 16
+            name: discussion_id
+            pathOrder: 0
+            type: QUERY_PARAM
+            dataType: STRING
+  # POST http://localhost:4001/api/v1/proposals
+  # CREATE proposals in discussion
+  - &sod13 !!models.services.ServiceOperationDefinition  
+      operationDefinitionId: 13
+      serviceDefinition: *sd3
+      name: proposals
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd17 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 17
+            name: proposal
+            pathOrder: 0
+            type: BODY_PARAM
+            dataType: JSON
+            dataModel:
+              - &dm35 !!models.services.ServiceParameterDataModel
+                  dataModelId: 35
+                  dataKey: 'discussion_id'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+              - &dm36 !!models.services.ServiceParameterDataModel
+                  dataModelId: 36
+                  dataKey: 'name'
+                  defaultValue: 'Name of proposal'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+              - &dm30 !!models.services.ServiceParameterDataModel
+                  dataModelId: 30
+                  dataKey: 'description'
+                  defaultValue: 'Description of proposal'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+              - &dm31 !!models.services.ServiceParameterDataModel
+                  dataModelId: 31
+                  dataKey: 'closing_at'
+                  defaultValue: 'Description of proposal'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+  # Agora CREATE agora
+  - &sod14 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 14
+      serviceDefinition: *sd3
+      name: agora
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd18 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 18
+            name: agora
+            type: BODY_PARAM
+            dataType: JSON
+            dataModel:
+              - &dm32 !!models.services.ServiceParameterDataModel
+                  dataModelId: 32
+                  dataKey: 'pretty_name'
+                  defaultValue: 'created-agora'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd18
+              - &dm33 !!models.services.ServiceParameterDataModel
+                  dataModelId: 33
+                  dataKey: 'short_description'
+                  defaultValue: 'created agora description'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd18
+              - &dm34 !!models.services.ServiceParameterDataModel
+                  dataModelId: 34
+                  dataKey: 'is_vote_secret'
+                  defaultValue: FALSE
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd18
 
 
 #TODO Map Agora Operations by Agora
@@ -520,7 +629,8 @@
   - &sa3 !!models.services.ServiceAuthentication
       serviceAuthenticationId: 4
       authType: TOKEN
-      token: 6JOPudnXZIe63vTRXiwMYULsDJynfwHU
+      # Challenge: changes for each user
+      token: tFvhI9SFsWmH3lMmcdip9MaLfr49wVt6 #6JOPudnXZIe63vTRXiwMYULsDJynfwHU
       tokenInjection: HEADER
       tokenParamName: X-CSRFToken
       service: *s3

@@ -88,6 +88,7 @@ create table service_definition (
 create table service_operation (
   service_operation_id      bigint not null,
   app_civist_operation      varchar(255),
+  expected_resource         varchar(255),
   operation_definition_id   bigint,
   service_service_id        bigint,
   constraint pk_service_operation primary key (service_operation_id))
@@ -119,7 +120,6 @@ create table service_parameter_data_model (
   default_value             varchar(255),
   required                  boolean,
   list                      boolean,
-  test                      boolean,
   definition_parameter_definition_id bigint,
   parent_data_model_data_model_id bigint,
   constraint pk_service_parameter_data_model primary key (data_model_id))
@@ -143,6 +143,8 @@ create table service_resource (
   type                      varchar(255),
   key_value                 varchar(255),
   key_name                  varchar(255),
+  body                      varchar(255),
+  test                      varchar(255),
   service_service_id        bigint,
   constraint pk_service_resource primary key (service_resource_id))
 ;

@@ -185,6 +185,10 @@ public class Service extends Model {
 	public void addOperationMapping(String key, String value) {
 		this.operationMappings.put(key, value);
 	}
+
+	public void removeOperationMapping(String key) {
+		this.operationMappings.remove(key);
+	}
 	
 	public String getDefinitionKeyForOperation(String key) {
 		return this.operationMappings.get(key);

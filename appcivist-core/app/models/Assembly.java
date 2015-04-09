@@ -48,6 +48,12 @@ public class Assembly extends Model {
 
 	@Transient
 	private Map<String, Service> operationServiceMappings = new HashMap<String,Service>();
+	
+//	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
+//	private List<OperationServiceMappings> operationServiceMappings = new ArrayList<Service>();
+	
+	
+	
 	/*
 	 * Basic Data Queries
 	 */
@@ -214,9 +220,12 @@ public class Assembly extends Model {
 	}
 
 	public void addOperationServiceMapping(String opName, Service service) {
-		this.getOperationServiceMappings().put(opName,service);
+		this.operationServiceMappings.put(opName,service);
 	}
 	
+	public void removeOperationServiceMapping(String opName) {
+		this.operationServiceMappings.remove(opName);
+	}	
 
 	/*
 	 * Other Queries 

@@ -11,17 +11,26 @@ import models.services.ServiceOperation;
 import models.services.ServiceOperationDefinition;
 import models.services.ServiceParameter;
 import models.services.ServiceParameterDefinition;
+import models.services.ServiceResource;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+/**
+ * AppCivist basic execution engine. Takes an ServiceOeration created by the CompositionEngine and executes it, 
+ * putting its resulting ServiceResource in the appropriate connected Service container and in as the input of the 
+ * appropriated ServiceOperation as defined in the Assembly
+ * 
+ * @author cdparra
+ *
+ */
 public class Runner {
 
-	public static void execute(ServiceOperation op) {
+	private static final long DEFAULT_TIMEOUT = 10000;
+
+	public static ServiceResource execute(ServiceOperation op) {
 		ServiceOperationDefinition opDef = op.getDefinition();
 		Service opService = op.getService();
 		
@@ -123,17 +132,40 @@ public class Runner {
 		System.out
 				.println("RUNNER > #1 > Executing the request: "
 							+ holder.toString());
+
 		
-		Promise<JsonNode> responsePromise = holder.execute().map(
-				new Function<WSResponse, JsonNode>() {
-					public JsonNode apply(WSResponse response) {
-						JsonNode json = response.asJson();
-						System.out
-								.println("RUNNER v1 > #4.1 > Received this response from operation execution:"
-										+ json.toString());
-						return json;
+		Promise<WSResponse> promise = holder.execute().map(
+				new Function<WSResponse, WSResponse>() {
+					public WSResponse apply(WSResponse response) {
+						return response;
 					}
 				});
+
+		
+//		Promise<JsonNode> responsePromise = holder.execute().map(
+//				new Function<WSResponse, JsonNode>() {
+//					public JsonNode apply(WSResponse response) {
+//						JsonNode json = response.asJson();
+//						return json;
+//					}
+//				});
+		
+		ServiceResource rs = new ServiceResource();
+		WSResponse response = promise.get(DEFAULT_TIMEOUT);
+		rs.setBody(response.asJson().toString());
+		rs.setUrl(response.getUri().toString());
+		
+		// Adding the Resource to the parent service
+		opService.getResources().add(rs);
+		rs.setType(op.getExpectedResource());
+		
+		// TODO: automatically put the resource in the appropriate input/output streams
+		
+		System.out
+		.println("RUNNER v1 > #4.1 > Received this response from operation execution:"
+				+ response.toString());
+
+		return rs;
 	}
 
 }

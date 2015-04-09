@@ -1,5 +1,6 @@
 package engine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,8 @@ public class Composer {
 	public static ServiceOperation createOperationInstance(
 			String operationKey,
 			Assembly composition, 
-			Map<String, String> paramValues) {
+			Map<String, Object> paramValues, 
+			String expectedResult) {
 		
 		// STEP 0 => find the operation definition for the requested operation 
 		Service service = composition.getServiceForOperation(operationKey);
@@ -57,7 +59,7 @@ public class Composer {
 		operation.setDefinition(operationDefinition);
 		operation.setService(service);
 		operation.setAppCivistOperation(operationKey);
-
+		operation.setExpectedResource(expectedResult);
 		// STEP 3 => setup parameters for the operation according to definition
 		List<ServiceParameterDefinition> paramDefinitions = operationDefinition.getParameters();
 		System.out
@@ -83,59 +85,8 @@ public class Composer {
 							+ "):"
 							+ Json.toJson(pDef));
 			
-			ServiceParameter param = new ServiceParameter();
-			param.setServiceOperation(operation);
-			param.setServiceParameter(pDef);
-
-			String values = paramValues.get(pDef.getName()); // e.g., discussion
-
-			if (pDef.getType().equals("BODY_PARAM")) {
-				Map<String, String> bodyMap = new HashMap<String, String>(); // parameters needed in the body
-				Map<String, String> bodyParamValuesMap = new HashMap<String, String>(); // values for the parameters needed in the body
-				List<ServiceParameterDataModel> dm = pDef.getDataModel(); // data model of the body 
-
-				// TODO: take into account the requirements for each parameter
-				
-				// When the parameter is a body param, the value related to its key contains
-				// the keys for its internal values separated by commas
-				// TODO: improve this by not using String inthe values but instead using another map
-				String[] valuesKeys = values.split(",");
-				for (String key : valuesKeys) {
-					bodyParamValuesMap.put(key, paramValues.get(key));
-				}
-
-				for (ServiceParameterDataModel part : dm) {
-					System.out
-					.println("COMPOSER > #3.1.1"
-							+ " > Parameter is a body parameter. Reading its model and building it. "
-							+ " Setting body param value "
-							+ part.getDataKey()
-							+ " ("
-							+ paramNum
-							+ "/"
-							+ paramCount
-							+ "):"
-							+ Json.toJson(pDef));
-					String key = part.getDataKey();
-					String value = bodyParamValuesMap.get(key);
-
-					if (value != null && !value.equals("")) {
-						bodyMap.put(key, value);
-					} else {
-						bodyMap.put(key, part.getDefaultValue());
-					}
-				}
-
-				if (pDef.getDataType().equals("JSON")) {
-					param.setValue(Json.toJson(bodyMap).toString());
-				} else {
-					param.setValue(bodyMap.toString());
-				}
-			} else { 
-				// TODO: support for other data types, not only everything as string
-				param.setValue(paramValues.get(pDef.getName()));
-			}
-			
+			ServiceParameter param = prepareOperationParameter(operation, pDef, paramValues);
+					
 			System.out
 					.println("COMPOSER > #3.1 > Value for parameter "
 							+ pDef.getName()
@@ -148,6 +99,113 @@ public class Composer {
 		return operation;
 	}
 
+	private static ServiceParameter prepareOperationParameter(
+			ServiceOperation operation, ServiceParameterDefinition pDef, Map<String, Object> paramValues) {
+		
+		ServiceParameter param = new ServiceParameter();
+		param.setServiceOperation(operation);
+		param.setServiceParameter(pDef);
+		
+		String paramType = pDef.getType();
+		List<ServiceParameterDataModel> dataModel = pDef.getDataModel();
+		String paramName = pDef.getName();
+		
+		if (paramType.equals("BODY_PARAM") || dataModel.size()>0 ) {
+			Map<String, Object> bodyMap = new HashMap<String, Object>(); // parameters needed in the body
+			List<ServiceParameterDataModel> dmList = pDef.getDataModel(); // data model of the body 
+
+			
+			//Map<String, Object> values = (Map<String, Object>) paramValues.get(paramName); // e.g., discussion
+			bodyMap = processDataModel(paramName, dmList, paramValues);
+			
+			if (pDef.getDataType().equals("JSON")) {
+				param.setValue(Json.toJson(bodyMap).toString());
+			} else {
+				param.setValue(bodyMap.toString()); // TODO: add XML, YAML and other formats for the body
+			}
+		} else { 
+			Object value = (String) paramValues.get(paramName);
+			param.setValue((String) value); // TODO: support for other data types, not only everything as string
+		}
+
+		return param;
+	}
+
+	/**
+	 * Reads the DataModel of a parameter and setups the correct parameter values based on the provided
+	 * paramValues table
+	 * 
+	 * @param paramName Name of the parameter used to identify its value in the the paramValues table
+	 * 					Nested datamodles are identified by concatenating their names: 
+	 * 					- discussion.title => title field in the DataModel of the discussion parameter
+	 * 					- questions.0.question => question field in the DataModel of the questions parameter, 
+	 * 						with questions being a list 
+	 * @param dmList
+	 * @param paramValues
+	 * @return
+	 */
+	private static Map<String, Object> processDataModel(
+											String parentKey,
+											List<ServiceParameterDataModel> dmList, 
+											Map<String, Object> paramValues) {
+		Map<String, Object> bodyMap = new HashMap<String, Object>(); 
+		
+		
+		for (ServiceParameterDataModel dm : dmList) {
+			String dmKey = dm.getDataKey();
+			String dmDefault = dm.getDefaultValue();
+			Boolean dmRequired = dm.getRequired();
+			Boolean dmIsList = dm.getList();
+			ServiceParameterDefinition dmDef = dm.getDefinition();
+			ServiceParameterDataModel parent = dm.getParentDataModel();
+			List<ServiceParameterDataModel> childDataModels = dm.getChildDataModel();
+			
+			if(childDataModels.size()>0) {
+				// avoid circular connections
+				if (parent!=null && !dm.equals(parent.getParentDataModel())) {
+					if (dmIsList) {						
+						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) paramValues.get(parentKey);
+						List<Map<String,Object>> childParamValues = new ArrayList<Map<String,Object>>();
+						for (Map<String, Object> valueMap : valueMapList) {
+							Map<String,Object> childParamValueMap = processDataModel(dmKey, childDataModels,valueMap);
+							childParamValues.add(childParamValueMap);
+						}
+						bodyMap.put(dmKey, childParamValues);
+					} else {
+						Map<String,Object> valueMap = (Map<String, Object>) paramValues.get(parentKey);
+						Map<String,Object> childParamValues = processDataModel(dmKey, childDataModels,valueMap);
+						bodyMap.put(dmKey, childParamValues);
+					}
+				} // TODO: what to do in case of circular connections
+			} else {
+				String key = dmKey;
+				Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);
+				String value = (String) dmValuesMap.get(key);
+				if (value != null && !value.equals("")) {
+					bodyMap.put(key, value);
+				} else {
+					bodyMap.put(key, dmDefault);
+				}
+			}
+
+			String logMessage = "COMPOSER > #3.1.1"
+					+ " > Reading DataModel of "+parentKey+" and associating with its value. "
+					+ " Setting" + parentKey 
+					+ "."
+					+ dmKey
+					+ ":";
+			
+			if (dmDef!=null) {
+				logMessage += Json.toJson(dmDef);
+			} else {
+				logMessage+= Json.toJson(parent);
+			}
+			System.out.println(logMessage);	
+		}
+		
+		return bodyMap;
+	}
+	
 	/**
 	 * Saves an instance of an operation in the database, so that can be executed without having 
 	 * to be rebuild the next time

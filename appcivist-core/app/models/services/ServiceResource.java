@@ -30,6 +30,8 @@ public class ServiceResource extends Model {
 	private String type; // TODO use enum
 	private String keyValue;
 	private String keyName;
+	private String body;
+	private String test;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="serviceResource")
 	private List<ServiceParameter> parameters;
@@ -137,6 +139,14 @@ public class ServiceResource extends Model {
 
 	public void setService(Service service) {
 		this.service = service;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
 	}
 	
 	/*

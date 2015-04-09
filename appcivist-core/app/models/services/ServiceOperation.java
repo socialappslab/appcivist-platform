@@ -26,6 +26,7 @@ public class ServiceOperation extends Model {
 	@Id
 	private Long serviceOperationId;
 	private String appCivistOperation; // TODO: replace with Enum or Class
+	private String expectedResource;
 
 	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "operation_definition_id")
@@ -140,6 +141,14 @@ public class ServiceOperation extends Model {
 	 * Other Queries
 	 */
 	
+	public String getExpectedResource() {
+		return expectedResource;
+	}
+
+	public void setExpectedResource(String expectedResource) {
+		this.expectedResource = expectedResource;
+	}
+
 	/**
 	 * Obtain the operation oid of service sid, part of assembly aid
 	 * 
