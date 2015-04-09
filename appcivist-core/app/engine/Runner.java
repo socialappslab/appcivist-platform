@@ -154,7 +154,6 @@ public class Runner {
 		WSResponse response = promise.get(DEFAULT_TIMEOUT);
 		rs.setBody(response.asJson().toString());
 		rs.setUrl(response.getUri().toString());
-		
 		// Adding the Resource to the parent service
 		opService.getResources().add(rs);
 		rs.setType(op.getExpectedResource());

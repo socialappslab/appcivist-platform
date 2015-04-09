@@ -575,12 +575,12 @@ public class AssembliesTest extends WithApplication {
 		 *   }
 		 */
 		JsonNode issueBody = Json.parse(issue.getBody());
-		String electionTitle = "Voting Proposals for Issue #"+issueBody.get("discussions").get(0).get("discussion_id").asText();
+		String electionTitle = "Voting Proposals for Issue #"+issueBody.get("discussions").get(0).get("id").asText();
 		String electionPrettyName = "Choose a proposal for: "+issueBody.get("discussions").get(0).get("title").asText();
 		String electionDescription = "This election is to choose the winning proposal for the issue => "+issueBody.get("discussions").get(0).get("title").asText();
 		
 		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
-		String agoraId = jsonAgoraGroup.get("agora_id").asText();
+		String agoraId = jsonAgoraGroup.get("id").asText();
 		
 		Map<String, Object> rootParamValues = new HashMap<String, Object>();
 		Map<String, Object> bodyParamValues = new HashMap<String, Object>();
@@ -588,12 +588,11 @@ public class AssembliesTest extends WithApplication {
 		List<Map<String, Object>> questions = new ArrayList<Map<String, Object>>();
 		Map<String, Object> question = new HashMap<String, Object>();
 		
-		bodyParamValues.put("agora_id", agoraId + "");
 		bodyParamValues.put("pretty_name",electionTitle );
 		bodyParamValues.put("description", electionDescription);
 		bodyParamValues.put("is_vote_secret", "true");
-		bodyParamValues.put("from_date", "2014-05-01");
-		bodyParamValues.put("to_date", "2014-05-03");
+//		bodyParamValues.put("from_date", "2014-05-01");
+//		bodyParamValues.put("to_date", "2014-05-03");
 		bodyParamValues.put("short_description", "Election");
 		bodyParamValues.put("action", "create_election");
 		
@@ -610,12 +609,12 @@ public class AssembliesTest extends WithApplication {
 		for (ServiceResource proposal : proposals) {
 			JsonNode jsonLoomioProposal = Json.parse(proposal.getBody());
 			String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
-			proposals.add(proposal);
 			Map<String, Object> a = new HashMap<String, Object>();
 			a.put("value", proposalTitle);
 			a.put("a", "ballot/answer");
 			a.put("url", "");
 			a.put("details", "");
+			answers.add(a);
 		}
 		//		Map<String, Object> a1 = new HashMap<String, Object>();
 		//		Map<String, Object> a2 = new HashMap<String, Object>();
@@ -636,11 +635,11 @@ public class AssembliesTest extends WithApplication {
 
 		question.put("answers", answers);
 		questions.add(question);
-		bodyParamValues.put("questions", questions);
-	    
-		rootParamValues.put("action", bodyParamValues);
-	    
 		
+		bodyParamValues.put("questions", questions);
+		
+		rootParamValues.put("agora_id", agoraId + "");
+		rootParamValues.put("actionBody", bodyParamValues);
 		
 		ServiceOperation readElection = Composer
 					.createOperationInstance(

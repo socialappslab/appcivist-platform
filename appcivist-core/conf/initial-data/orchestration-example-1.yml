@@ -312,7 +312,7 @@
             dataType: INT
         - &spd15 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 15
-            name: action
+            name: actionBody
             type: BODY_PARAM
             dataType: JSON
             # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
@@ -633,6 +633,14 @@
       token: tFvhI9SFsWmH3lMmcdip9MaLfr49wVt6 #6JOPudnXZIe63vTRXiwMYULsDJynfwHU
       tokenInjection: HEADER
       tokenParamName: X-CSRFToken
+      service: *s3
+  - &sa3 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 5
+      authType: COOKIE
+      # Challenge: changes for each user
+      token: tFvhI9SFsWmH3lMmcdip9MaLfr49wVt6 #6JOPudnXZIe63vTRXiwMYULsDJynfwHU
+      tokenInjection: Cookie
+      tokenParamName: csrftoken
       service: *s3
 
 # Service Operations # TODO: maybe we don't need to store instances of operations

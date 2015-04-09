@@ -124,8 +124,12 @@ public class Composer {
 				param.setValue(bodyMap.toString()); // TODO: add XML, YAML and other formats for the body
 			}
 		} else { 
-			Object value = (String) paramValues.get(paramName);
-			param.setValue((String) value); // TODO: support for other data types, not only everything as string
+			Object value = paramValues.get(paramName);
+			if (value==null) {
+				param.setValue(pDef.getDefaultValue());
+			} else {
+				param.setValue((String) value); // TODO: support for other data types, not only everything as string
+			}
 		}
 
 		return param;
@@ -163,8 +167,9 @@ public class Composer {
 			if(childDataModels.size()>0) {
 				// avoid circular connections
 				if (parent!=null && !dm.equals(parent.getParentDataModel())) {
-					if (dmIsList) {						
-						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) paramValues.get(parentKey);
+					if (dmIsList) {			
+						Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);			
+						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) dmValuesMap.get(dmKey);
 						List<Map<String,Object>> childParamValues = new ArrayList<Map<String,Object>>();
 						for (Map<String, Object> valueMap : valueMapList) {
 							Map<String,Object> childParamValueMap = processDataModel(dmKey, childDataModels,valueMap);
@@ -176,7 +181,23 @@ public class Composer {
 						Map<String,Object> childParamValues = processDataModel(dmKey, childDataModels,valueMap);
 						bodyMap.put(dmKey, childParamValues);
 					}
-				} // TODO: what to do in case of circular connections
+				} else if (parent==null) {
+					if (dmIsList) {						
+						Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);			
+						List<Map<String,Object>> valueMapList = (List<Map<String, Object>>) dmValuesMap.get(dmKey);
+						List<Map<String,Object>> childParamValues = new ArrayList<Map<String,Object>>();
+						for (Map<String, Object> valueMap : valueMapList) {
+							Map<String,Object> childParamValueMap = processDataModel(dmKey, childDataModels,valueMap);
+							childParamValues.add(childParamValueMap);
+						}
+						bodyMap.put(dmKey, childParamValues);
+					} else {
+						Map<String,Object> valueMap = (Map<String, Object>) paramValues.get(parentKey);
+						Map<String,Object> childParamValues = processDataModel(dmKey, childDataModels,valueMap);
+						bodyMap.put(dmKey, childParamValues);
+					}
+				} else { // TODO: what todo in circular connections
+				}
 			} else {
 				String key = dmKey;
 				Map<String,Object> dmValuesMap = (Map<String,Object>) paramValues.get(parentKey);
