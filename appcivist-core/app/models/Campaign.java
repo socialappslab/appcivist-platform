@@ -1,6 +1,7 @@
 package models;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -10,6 +11,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
+
+import org.apache.commons.collections.map.HashedMap;
 
 import models.services.ServiceOperation;
 import models.services.ServiceResource;
@@ -17,6 +21,7 @@ import models.services.ServiceResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
+import scala.collection.mutable.HashMap;
 
 @Entity
 public class Campaign extends Model {
@@ -55,6 +60,9 @@ public class Campaign extends Model {
 	
 	@ManyToMany(cascade=CascadeType.ALL)
 	private List<ServiceResource> campaignResources;
+	
+	@Transient
+	private Map<String, ServiceResource> campaignResourcesMap = new HashMap<String,ServiceResource>();
 	
 	@ManyToMany(cascade=CascadeType.ALL)
 	private List<ServiceResource> inputResources;
@@ -193,6 +201,11 @@ public class Campaign extends Model {
 
 	public void setCampaignResources(List<ServiceResource> campaignResources) {
 		this.campaignResources = campaignResources;
+	}
+	
+	public void addCampaignResource(ServiceResource r) {
+		this.campaignResources.add(r);
+		this.campaignResourcesMap.put(r.getType(), r);
 	}
 
 	public List<ServiceResource> getInputResources() {

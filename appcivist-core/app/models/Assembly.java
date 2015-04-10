@@ -14,6 +14,7 @@ import javax.persistence.Transient;
 
 import enums.ResponseStatus;
 import models.services.Service;
+import models.services.ServiceResource;
 import play.db.ebean.*;
 import utils.GlobalData;
 
@@ -44,7 +45,7 @@ public class Assembly extends Model {
 	
 	
 	@Transient
-	private Map<String, String> resourceMappings = new HashMap<String,String>();
+	private Map<String, ServiceResource> resourceMappings = new HashMap<String,ServiceResource>();
 
 	@Transient
 	private Map<String, Service> operationServiceMappings = new HashMap<String,Service>();
@@ -195,16 +196,20 @@ public class Assembly extends Model {
 		this.connectedServices.remove(s);
 	}
 	
-	public Map<String, String> getResourceMappings() {
+	public Map<String, ServiceResource> getResourceMappings() {
 		return resourceMappings;
 	}
 
-	public void setResourceMappings(Map<String, String> resourceMappings) {
+	public void setResourceMappings(Map<String, ServiceResource> resourceMappings) {
 		this.resourceMappings = resourceMappings;
 	}
 
-	public void addResourceMappings(String key, String value) {
+	public void addResourceMappings(String key, ServiceResource value) {
 		this.resourceMappings.put(key,value);
+	}
+	
+	public void removeResourceMappings(String key) {
+		this.resourceMappings.remove(key);
 	}
 
 	public Map<String, Service> getOperationServiceMappings() {

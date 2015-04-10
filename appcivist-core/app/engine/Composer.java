@@ -37,6 +37,16 @@ public class Composer {
 		
 		// STEP 0 => find the operation definition for the requested operation 
 		Service service = composition.getServiceForOperation(operationKey);
+		return createOperationInstance(operationKey, service, paramValues, expectedResult);
+	}
+	
+	public static ServiceOperation createOperationInstance(
+			String operationKey,
+			Service service, 
+			Map<String, Object> paramValues, 
+			String expectedResult) {
+		
+		// STEP 0 => find the operation definition for the requested operation 
 		String operationDefinitionKey = service.getDefinitionKeyForOperation(operationKey);
 
 		// STEP 1 => read the operation definition
