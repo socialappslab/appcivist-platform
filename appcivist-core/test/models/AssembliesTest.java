@@ -333,9 +333,9 @@ public class AssembliesTest extends WithApplication {
 		orchestration.addResourceMappings("ISSUE", issue); // TODO: right now, there is some redundancy with ServiceResources, remove it later
 		orchestration.addIssue(issueObject);
 		JsonNode jsonEtherpadIssue = Json.parse(issue.getBody());
+		System.out.println("DEMOv2 > #4.1 > Created ISSUE on 'Etherpad': "+jsonEtherpadIssue.toString());
 		String issueText = jsonEtherpadIssue.get("data").get("text").asText();
 		assertThat(issueText.equals(issue_desc)); // will fail becaus Etherpad does not return the text
-		System.out.println("DEMOv2 > #4.1 > Created ISSUE on 'Etherpad': "+jsonEtherpadIssue.toString());
 
 		
 		/**
@@ -361,7 +361,7 @@ public class AssembliesTest extends WithApplication {
 		/**
 		 * 3. Create 5 Proposals related to the Issue, and each to a different WG => creating a Pad on Etherpad
 		 */
-		List<ServiceResource> proposalList = new ArrayList<ServiceResource>();
+		List<ServiceResource> proposalListEtherpad = new ArrayList<ServiceResource>();
 		for (int i = 1; i < 6; i++) {
 			String proposalTitle = PROP_SAMPLE_TITLE + " " + i;
 			String proposalText = PROP_SAMPLE_DESC + " " + i;
@@ -369,16 +369,16 @@ public class AssembliesTest extends WithApplication {
 			padResponse = createProposalInEtherpad(etherpad, proposalTitle, proposalText,  "PROPOSAL");
 			// The createService does not return the created resource, so we have to read it afterwards
 			ServiceResource proposal = readTextInEtherpad(etherpad, proposalTitle,  "PROPOSAL");
-			proposalList.add(proposal);
+			proposalListEtherpad.add(proposal);
 			proposals.addCampaignResource(proposal);
 			orchestration.addResourceMappings("PROPOSAL", proposal); // TODO: right now, there is some redundancy with ServiceResources, remove it later
 			orchestration.addIssue(issueObject);
 			JsonNode jsonProposal = Json.parse(proposal.getBody());
 			String jsonProposalText = jsonProposal.get("data").get("text").asText();
 			assertThat(jsonProposalText.equals(issue_desc)); // will fail becaus Etherpad does not return the text
-			System.out.println("DEMOv2 > #4"+(i+4)+" > Created PROPOSAL on 'Etherpad': "+jsonProposal.toString());	
+			System.out.println("DEMOv2 > #4."+(i+4)+" > Created PROPOSAL on 'Etherpad': "+jsonProposal.toString());	
 
-			System.out.println("DEMOv2 > #4"+(i+4)+" > Assign PROPOSAL to working group "+i%3);
+			System.out.println("DEMOv2 > #4."+(i+4)+" > Assign PROPOSAL to working group "+(i%3+1));
 			// assign the proposal to the working group
 			workingGroups.get(i%3).addRelatedResource(proposal);
 		}
@@ -387,35 +387,53 @@ public class AssembliesTest extends WithApplication {
 		/**
 		 * 4. Move to the next campaign, of Deliberation, copying the resources that were created and the ones that are still open to the next campaign.
 		 */
-		
-		for (ServiceResource serviceResource : proposals.getCampaignResources()) {
+		// TODO: Use campaign resources instead of locally defined workingGroups (now, this is a fix) 
+		List<ServiceResource> proposalListLoomio = new ArrayList<ServiceResource>();
+	    for (ServiceResource serviceResource : proposals.getCampaignResources()) {
+		//for (ServiceResource serviceResource : workingGroups) {
+				
 			if (serviceResource.getType().equals("GROUP")) { // replace by reading from the hashmap of resources
-				List<ServiceResource> groupProposals = serviceResource.getRelatedResources();
-				deliberation.addCampaignResource(serviceResource);
+				ServiceResource loomioGroup = serviceResource;
+				List<ServiceResource> groupProposals = loomioGroup.getRelatedResources();
+				deliberation.addCampaignResource(loomioGroup); // Adding the group to Deliberation
 				
 				int i = 1;
-				for (ServiceResource groupProposal : groupProposals) {
-					JsonNode jsonGroup = Json.parse(serviceResource.getBody());
+				for (ServiceResource groupEtherpadProposal : groupProposals) {
+					// Create a Discussion for the GROUP Proposal
+					JsonNode jsonGroup = Json.parse(loomioGroup.getBody());
 					String groupNameCreated = jsonGroup.get("groups").get(0).get("name").asText();
 					String disc_title = "Discussion about proposal of "+i;
 					
-					JsonNode jsonProposal = Json.parse(groupProposal.getBody());
+					JsonNode jsonProposal = Json.parse(groupEtherpadProposal.getBody());
 					String jsonProposalText = jsonProposal.get("data").get("text").asText();
 					String disc_desc = jsonProposalText;
-					ServiceResource discussion = createDiscussionInLoomio(orchestration, serviceResource, disc_title, disc_desc,  "DISCUSSION");
-					JsonNode jsonLoomioDiscussion = Json.parse(issue.getBody());
+					ServiceResource discussion = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc,  "DISCUSSION");
+					JsonNode jsonLoomioDiscussion = Json.parse(discussion.getBody());
 					String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
 					assertThat(issueTitle.equals(disc_title));	
 					
-					discussion.addRelatedResource(groupProposal);
+					discussion.addRelatedResource(groupEtherpadProposal);
 					deliberation.addCampaignResource(discussion);
 					orchestration.addResourceMappings("DISCUSSION", discussion);
+
+					System.out.println("DEMOv2 > #5."+(i+9)+" > Created DISCUSSION on 'Loomio': "+jsonLoomioDiscussion.toString());	
+
 					i++;
+					// Copy the Proposal into a proposal for the Discussion
 					
 
-					System.out.println("DEMOv2 > #5"+(i+9)+" > Created PROPOSAL on 'Etherpad': "+jsonProposal.toString());	
-					
-					// TODO: translate etherpad proposals into loomio proposals
+					ServiceResource loomioProposal = createLoomioProposal(orchestration, loomioGroup, discussion, "PROPOSAL");
+					JsonNode jsonLoomioProposal = Json.parse(loomioProposal.getBody());
+					String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
+					assertThat(proposalTitle.equals(disc_title));			
+
+					System.out.println("DEMOv2 > #5."+(i+9)+" > Created PROPOSAL on 'Loomio' DISCUSSION: "+jsonLoomioDiscussion.toString());	
+					proposalListLoomio.add(loomioProposal);
+
+					discussion.addRelatedResource(loomioProposal); // TODO: how to differentiate in the ServiceResource between Loomio and Etherpad proposals
+					deliberation.addCampaignResource(loomioProposal);
+					orchestration.addResourceMappings("PROPOSAL", loomioProposal);					
+					i++;
 				}
 			}
 		}
@@ -424,40 +442,50 @@ public class AssembliesTest extends WithApplication {
 		 * 6. Move to the next campaign, of Voting
 		 * 
 		 * 7. Start by creating a Public Group where the voting will happen => create an agora in Agora
+		 */
+	    
+
+//		ServiceResource agoraGroup = createGroupInAgora(orchestration, groupName3, groupDesc3, "GROUP");	
+//		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
+//		String agoraPrettyName = jsonAgoraGroup.get("pretty_name").asText();
+//		assertThat(agoraPrettyName.equals(groupName3));
+	    
+
+		/**
 		 * 8. Read the Proposals from the Deliberation campaign copy their titles + URLs as options in a new Election within the created group => create * an election in Agora => copy an election in Agora
 		 */
 		
-		for (ServiceResource serviceResource : proposals.getCampaignResources()) {
-			if (serviceResource.getType().equals("GROUP")) { // replace by reading from the hashmap of resources
-				List<ServiceResource> groupProposals = serviceResource.getRelatedResources();
-				deliberation.addCampaignResource(serviceResource);
-				
-				int i = 1;
-				for (ServiceResource groupProposal : groupProposals) {
-					JsonNode jsonGroup = Json.parse(serviceResource.getBody());
-					String groupNameCreated = jsonGroup.get("groups").get(0).get("name").asText();
-					String disc_title = "Discussion about proposal of "+i;
-					
-					JsonNode jsonProposal = Json.parse(groupProposal.getBody());
-					String jsonProposalText = jsonProposal.get("data").get("text").asText();
-					String disc_desc = jsonProposalText;
-					ServiceResource discussion = createDiscussionInLoomio(orchestration, serviceResource, disc_title, disc_desc,  "DISCUSSION");
-					JsonNode jsonLoomioDiscussion = Json.parse(issue.getBody());
-					String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
-					assertThat(issueTitle.equals(disc_title));	
-					
-					discussion.addRelatedResource(groupProposal);
-					deliberation.addCampaignResource(discussion);
-					orchestration.addResourceMappings("DISCUSSION", discussion);
-					i++;
-					
-
-					System.out.println("DEMOv2 > #5"+(i+9)+" > Created PROPOSAL on 'Etherpad': "+jsonProposal.toString());	
-					
-					// TODO: translate etherpad proposals into loomio proposals
-				}
-			}
-		}
+//		for (ServiceResource serviceResource : proposals.getCampaignResources()) {
+//			if (serviceResource.getType().equals("GROUP")) { // replace by reading from the hashmap of resources
+//				List<ServiceResource> groupProposals = serviceResource.getRelatedResources();
+//				deliberation.addCampaignResource(serviceResource);
+//				
+//				int i = 1;
+//				for (ServiceResource groupProposal : groupProposals) {
+//					JsonNode jsonGroup = Json.parse(serviceResource.getBody());
+//					String groupNameCreated = jsonGroup.get("groups").get(0).get("name").asText();
+//					String disc_title = "Discussion about proposal of "+i;
+//					
+//					JsonNode jsonProposal = Json.parse(groupProposal.getBody());
+//					String jsonProposalText = jsonProposal.get("data").get("text").asText();
+//					String disc_desc = jsonProposalText;
+//					ServiceResource discussion = createDiscussionInLoomio(orchestration, serviceResource, disc_title, disc_desc,  "DISCUSSION");
+//					JsonNode jsonLoomioDiscussion = Json.parse(issue.getBody());
+//					String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
+//					assertThat(issueTitle.equals(disc_title));	
+//					
+//					discussion.addRelatedResource(groupProposal);
+//					deliberation.addCampaignResource(discussion);
+//					orchestration.addResourceMappings("DISCUSSION", discussion);
+//					i++;
+//					
+//
+//					System.out.println("DEMOv2 > #5"+(i+9)+" > Created PROPOSAL on 'Etherpad': "+jsonProposal.toString());	
+//					
+//					// TODO: translate etherpad proposals into loomio proposals
+//				}
+//			}
+//		}
 		
 		
 //		
@@ -519,8 +547,8 @@ public class AssembliesTest extends WithApplication {
 			String title, String text, String expectedResourceType) {
 		
 		Map<String, Object> rootParamValues = new HashMap<String, Object>();
-		rootParamValues.put("padId",title);
-		rootParamValues.put("text","'"+title+"\n"+text+"'");
+		rootParamValues.put("padID",title);
+		rootParamValues.put("text",title+"\n"+text);
 		
 		ServiceOperation createIssue = 
 				Composer.createOperationInstance(
@@ -538,7 +566,7 @@ public class AssembliesTest extends WithApplication {
 			String padId, String expectedResourceType) {
 		
 		Map<String, Object> rootParamValues = new HashMap<String, Object>();
-		rootParamValues.put("padId",padId);
+		rootParamValues.put("padID",padId);
 		
 		ServiceOperation createIssue = 
 				Composer.createOperationInstance(

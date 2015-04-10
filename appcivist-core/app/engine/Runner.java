@@ -104,6 +104,8 @@ public class Runner {
 //				holder.setAuth(serviceAuth.getToken());
 			} else if (injection.equals("HEADER")){
 				holder.setHeader(serviceAuth.getTokenParamName(), serviceAuth.getToken());
+			} else if (injection.equals("QUERY")) {
+				queryParams.put(serviceAuth.getTokenParamName(), serviceAuth.getToken());
 			}
 		}
 	

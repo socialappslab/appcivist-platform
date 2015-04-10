@@ -70,14 +70,14 @@
   - &sod1 !!models.services.ServiceOperationDefinition 
       operationDefinitionId: 1
       serviceDefinition: *sd1
-      name: readText 
+      name: getText 
       nameOnPath: TRUE
       type: HTTP
       method: GET
       parameters: 
         - &spd1 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 1
-            name: padId
+            name: padID
             type: QUERY_PARAM
             dataType: STRING
   # Etherpad createPad
@@ -91,7 +91,7 @@
       parameters: 
         - &spd2 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 2
-            name: padId
+            name: padID
             type: QUERY_PARAM
             dataType: STRING 
         - &spd3 !!models.services.ServiceParameterDefinition
@@ -570,7 +570,7 @@
       parameters: 
         - &spd22 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 22
-            name: groupId
+            name: groupID
             type: QUERY_PARAM
             dataType: STRING
   # Etherpad createGroupPad
@@ -584,7 +584,7 @@
       parameters: 
         - &spd19 !!models.services.ServiceParameterDefinition
             parameterDefinitionId: 19
-            name: groupId
+            name: groupID
             type: QUERY_PARAM
             dataType: STRING
         - &spd20 !!models.services.ServiceParameterDefinition
@@ -667,7 +667,7 @@
       serviceAuthenticationId: 1
       authType: TOKEN
       token: 3dca6eb8e4f2b5ea5216a88e49d7a63c09da0d7c793d0734b708058e0a687a19
-      tokenInjection: QUERY_PARAM
+      tokenInjection: QUERY
       tokenParamName: apiKey 
       service: *s1
   - &sa2 !!models.services.ServiceAuthentication

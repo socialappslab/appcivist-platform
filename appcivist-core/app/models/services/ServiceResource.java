@@ -30,7 +30,7 @@ public class ServiceResource extends Model {
 	private String keyValue;
 	private String keyName;
 	private String body; // TODO how to store datamodel
-
+	
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="serviceResource")
 	private List<ServiceParameter> parameters;
 	
