@@ -551,6 +551,64 @@
                   annotations: 'STRING, REQUIRED'
                   required: TRUE
                   definition: *spd18
+  # Etherpad createGroup
+  - &sod15 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 15
+      serviceDefinition: *sd1
+      name: createGroup 
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+  # Etherpad listPads
+  - &sod16 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 16
+      serviceDefinition: *sd1
+      name: listPads
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd18 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 18
+            name: groupId
+            type: QUERY_PARAM
+            dataType: STRING
+  # Etherpad createGroupPad
+  - &sod17 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 17
+      serviceDefinition: *sd1
+      name: createGroupPad
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd19 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 19
+            name: groupId
+            type: QUERY_PARAM
+            dataType: STRING
+        - &spd20 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 20
+            name: padName
+            type: QUERY_PARAM
+            dataType: STRING
+        - &spd21 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 21
+            name: text
+            type: QUERY_PARAM
+            dataType: STRING
+#createAuthor([name]) creates a new author 
+#createAuthorIfNotExistsFor(authorMapper [, name]) this functions helps you to map your application author ids to etherpad lite author ids 
+#listPadsOfAuthor(authorID) returns an array of all pads this author contributed to
+#createSession(groupID, authorID, validUntil) creates a new session. validUntil is an unix timestamp in seconds 
+#deleteSession(sessionID) deletes a session 
+#getSessionInfo(sessionID) returns informations about a session 
+#listSessionsOfGroup(groupID) returns all sessions of a group 
+#listSessionsOfAuthor(authorID) returns all sessions of an author 
+#getText(padID, [rev]) returns the text of a pad 
+#setText(padID, text) sets the text of a pad 
+#getHTML(padID, [rev]) returns the text of a pad formatted as HTML
+
 
 
 #TODO Map Agora Operations by Agora
