@@ -1,5 +1,6 @@
 package models;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,15 +14,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
-import org.apache.commons.collections.map.HashedMap;
-
 import models.services.ServiceOperation;
 import models.services.ServiceResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
-import scala.collection.mutable.HashMap;
 
 @Entity
 public class Campaign extends Model {
@@ -38,6 +36,8 @@ public class Campaign extends Model {
 	private String startDate;
 	private String endDate;
 	private Boolean enabled = true;
+	
+	private String test;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "previous_campaign")
@@ -62,7 +62,7 @@ public class Campaign extends Model {
 	private List<ServiceResource> campaignResources;
 	
 	@Transient
-	private Map<String, ServiceResource> campaignResourcesMap = new HashMap<String,ServiceResource>();
+	private Map<String, ServiceResource> campaignResourcesMap = new HashMap<String, ServiceResource>();
 	
 	@ManyToMany(cascade=CascadeType.ALL)
 	private List<ServiceResource> inputResources;

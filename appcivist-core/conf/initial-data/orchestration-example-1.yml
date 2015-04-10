@@ -568,8 +568,8 @@
       type: HTTP
       method: GET
       parameters: 
-        - &spd18 !!models.services.ServiceParameterDefinition
-            parameterDefinitionId: 18
+        - &spd22 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 22
             name: groupId
             type: QUERY_PARAM
             dataType: STRING

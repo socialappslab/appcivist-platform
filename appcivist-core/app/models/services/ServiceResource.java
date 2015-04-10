@@ -1,19 +1,18 @@
 package models.services;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import models.Issue;
-import models.User;
 import play.db.ebean.Model;
 
 @Entity
@@ -30,8 +29,7 @@ public class ServiceResource extends Model {
 	private String type; // TODO use enum
 	private String keyValue;
 	private String keyName;
-	private String body;
-	private String test;
+	private String body; // TODO how to store datamodel
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="serviceResource")
 	private List<ServiceParameter> parameters;
@@ -39,6 +37,17 @@ public class ServiceResource extends Model {
 	@JsonIgnore
 	@ManyToOne
 	private Service service;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="parentResource") 
+	private List<ServiceResource> relatedResources;
+	
+	@Transient
+	private Map<String, ServiceResource> relatedResourcesMap = new HashMap<String, ServiceResource>();
+	
+
+	@JsonIgnore
+	@ManyToOne
+	private ServiceResource parentResource;
 
 //	@JsonIgnore
 //	@ManyToOne
@@ -148,6 +157,37 @@ public class ServiceResource extends Model {
 	public void setBody(String body) {
 		this.body = body;
 	}
+
+	public List<ServiceResource> getRelatedResources() {
+		return relatedResources;
+	}
+
+	public void setRelatedResources(List<ServiceResource> relatedResources) {
+		this.relatedResources = relatedResources;
+	}
+	
+	public void addRelatedResource(ServiceResource relatedResource) {
+		this.relatedResources.add(relatedResource);
+		this.relatedResourcesMap.put(relatedResource.getType(),relatedResource);
+	}
+
+	public Map<String, ServiceResource> getRelatedResourcesMap() {
+		return relatedResourcesMap;
+	}
+
+	public void setRelatedResourcesMap(
+			Map<String, ServiceResource> relatedResourcesMap) {
+		this.relatedResourcesMap = relatedResourcesMap;
+	}
+
+	public ServiceResource getParentResource() {
+		return parentResource;
+	}
+
+	public void setParentResource(ServiceResource parentResource) {
+		this.parentResource = parentResource;
+	}
+	
 	
 	/*
 	 * Other Queries
