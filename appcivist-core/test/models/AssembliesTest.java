@@ -422,7 +422,8 @@ public class AssembliesTest extends WithApplication {
 					// Copy the Proposal into a proposal for the Discussion
 					
 
-					ServiceResource loomioProposal = createLoomioProposal(orchestration, loomioGroup, discussion, "PROPOSAL");
+					// TODO: RENAME method to create proposal when it receives the orchestration
+					ServiceResource loomioProposal = createLoomioProposal(loomio, loomioGroup, discussion, "PROPOSAL");
 					JsonNode jsonLoomioProposal = Json.parse(loomioProposal.getBody());
 					String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
 					assertThat(proposalTitle.equals(disc_title));			
@@ -943,6 +944,45 @@ public class AssembliesTest extends WithApplication {
 				Composer.createOperationInstance(
 						"createProposal", 
 						orchestration, 
+						rootParamValues, 
+						expectedResourceType);
+		
+		ServiceResource result = Runner.execute(createLoomioGroup);
+		return result;
+	}
+	
+	/**
+	 * Creates a motion inside a discussion of loomio
+	 * @param orchestration
+	 * @param loomioGroup
+	 * @param discussion
+	 * @param expectedResourceType
+	 * @return
+	 */
+	private ServiceResource createLoomioProposal(Service service,
+			ServiceResource loomioGroup, ServiceResource discussion, String expectedResourceType) {
+
+		// TODO: do we need the group here?
+		JsonNode jsonLoomioGroup = Json.parse(loomioGroup.getBody());
+		String groupName = jsonLoomioGroup.get("groups").get(0).get("name").asText();
+
+		JsonNode jsonLoomioDiscussion = Json.parse(discussion.getBody());
+		String discussionTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
+		String discussionDescription = jsonLoomioDiscussion.get("discussions").get(0).get("description").asText();
+		String discussionId = jsonLoomioDiscussion.get("discussions").get(0).get("id").asText();
+		
+		Map<String, Object> rootParamValues = new HashMap<String, Object>();
+		Map<String, Object> bodyParamValues = new HashMap<String, Object>();
+		bodyParamValues.put("name", "FINAL PROPOSAL: "+discussionTitle);
+		bodyParamValues.put("description", "The proposal is: "+discussionDescription);
+		bodyParamValues.put("discussion_id", discussionId);
+		bodyParamValues.put("closing_at", "2015-04-10");
+		rootParamValues.put("proposal", bodyParamValues);
+		
+		ServiceOperation createLoomioGroup = 
+				Composer.createOperationInstance(
+						"createProposal", 
+						service, 
 						rootParamValues, 
 						expectedResourceType);
 		
