@@ -33,6 +33,7 @@ create table campaign (
   start_date                varchar(255),
   end_date                  varchar(255),
   enabled                   boolean,
+  test                      varchar(255),
   previous_campaign         bigint,
   next_campaign             bigint,
   issue_issue_id            bigint,
@@ -144,8 +145,8 @@ create table service_resource (
   key_value                 varchar(255),
   key_name                  varchar(255),
   body                      varchar(255),
-  test                      varchar(255),
   service_service_id        bigint,
+  parent_resource_service_resource_id bigint,
   constraint pk_service_resource primary key (service_resource_id))
 ;
 
@@ -262,8 +263,10 @@ alter table service_parameter_definition add constraint fk_service_parameter_def
 create index ix_service_parameter_definiti_20 on service_parameter_definition (service_operation_definition_operation_definition_id);
 alter table service_resource add constraint fk_service_resource_service_21 foreign key (service_service_id) references service (service_id);
 create index ix_service_resource_service_21 on service_resource (service_service_id);
-alter table Token_Action add constraint fk_Token_Action_targetUser_22 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Token_Action_targetUser_22 on Token_Action (user_id);
+alter table service_resource add constraint fk_service_resource_parentRes_22 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_resource_parentRes_22 on service_resource (parent_resource_service_resource_id);
+alter table Token_Action add constraint fk_Token_Action_targetUser_23 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Token_Action_targetUser_23 on Token_Action (user_id);
 
 
 

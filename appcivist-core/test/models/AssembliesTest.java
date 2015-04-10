@@ -252,6 +252,8 @@ public class AssembliesTest extends WithApplication {
 		orchestration.addOperationServiceMapping("createGroup", loomio); 		// there is a create group in both agora and loomio and we need both
 		orchestration.addOperationServiceMapping("createGroup", agora); 		// there is a create group in both agora and loomio and we need both
 		orchestration.addOperationServiceMapping("createDiscussion", loomio);
+		orchestration.addOperationServiceMapping("createIssue", etherpad);
+		orchestration.addOperationServiceMapping("readIssue", etherpad);
 		orchestration.addOperationServiceMapping("createProposal", etherpad);
 		orchestration.addOperationServiceMapping("readProposal", etherpad);
 		orchestration.addOperationServiceMapping("createElection", agora);
@@ -269,6 +271,8 @@ public class AssembliesTest extends WithApplication {
 		
 		etherpad.addOperationMapping("createProposal", ETHERPAD_CREATE_PAD_OP_ID);
 		etherpad.addOperationMapping("readProposal", ETHERPAD_READ_TEXT_OP_ID);
+		etherpad.addOperationMapping("createIssue", ETHERPAD_CREATE_PAD_OP_ID);
+		etherpad.addOperationMapping("readIssue", ETHERPAD_READ_TEXT_OP_ID);
 
 		System.out.println("DEMOv2 > #3.3 > Creating an Issue object to hold later the actual issue that will be created and to store information of the decision making campaigns");
 		// Create the Issue object
