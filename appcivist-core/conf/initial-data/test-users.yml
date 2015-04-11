@@ -1,0 +1,40 @@
+# AppCivist Test Data
+---
+
+# Users (Testing Users)
+  - &u1 !!models.User
+    userId:     1
+    email:      bob@example.com
+    name:       Bob
+    username:   bob
+    locale:     es
+    linkedAccounts:
+    - &ua1 !!models.LinkedAccount
+      accountId: 1
+      providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
+      providerKey: password
+      user: *u1
+  - &u2 !!models.User
+    userId:     2
+    email:      jane@example.com
+    name:       Jane
+    username:   jane
+    locale:     en
+    linkedAccounts:
+    - &ua2 !!models.LinkedAccount
+      accountId: 2
+      providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
+      providerKey: password
+      user: *u2
+  - &u3 !!models.User
+    userId:     3
+    email:      jeff@example.com
+    name:       Jeff
+    username:   jeff
+    locale:     it
+    linkedAccounts:
+    - &ua3 !!models.LinkedAccount
+      accountId: 3
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u3

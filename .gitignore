@@ -50,3 +50,7 @@ target
 tmp
 dist
 .cache
+.classpath
+.project
+appcivist-core/app/models/A.java
+appcivist-core/app/models/B.java

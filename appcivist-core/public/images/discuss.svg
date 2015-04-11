@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="70px" height="70px" viewBox="0 0 70 70" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <title>discuss.svg</title>
+    <description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Artboard-1" sketch:type="MSArtboardGroup" stroke="#979797">
+            <g id="Rectangle-47-+-Rectangle-47" sketch:type="MSLayerGroup" transform="translate(-1.000000, 10.000000)">
+                <path d="M9.27737696,41 L7.48455967,41 C5.01128607,41 3,38.9918331 3,36.5146337 L3,4.48536629 C3,2.00526988 5.00780576,0 7.48455967,0 L64.5154403,0 C66.9887139,0 69,2.00816689 69,4.48536629 L69,36.5146337 C69,38.9947301 66.9921942,41 64.5154403,41 L22.5805995,41 L10.8565,55.0885788 C9.27613293,56.9876693 8.13721287,56.5348629 8.31806751,54.0706983 L9.27737696,41 Z" id="Rectangle-47" fill="#E1E1E1" sketch:type="MSShapeGroup"></path>
+                <path d="M27.8869595,37.8955166 C26.6248095,37.4885603 25.7179487,36.3060186 25.7179487,34.9106221 L25.7179487,12.1361069 C25.7179487,10.4009841 27.1223181,9 28.8546955,9 L63.8632532,9 C65.6028174,9 67,10.4040829 67,12.1361069 L67,34.9106221 C67,36.6457449 65.5956306,38.046729 63.8632532,38.046729 L35.8520613,38.046729 L28.7151457,47.1073953 C27.6331774,48.4810075 26.9036926,48.1807772 27.0682904,46.4590365 L27.8869595,37.8955166 Z" id="Rectangle-47" fill="#4A4A4A" sketch:type="MSShapeGroup" transform="translate(44.500000, 30.000000) scale(-1, 1) translate(-44.500000, -30.000000) "></path>
+            </g>
+        </g>
+    </g>
+</svg>
