@@ -618,14 +618,15 @@ public class AssembliesTest extends WithApplication {
 				int proposalNum = 0;
 				int i = 1;
 				for (ServiceResource groupEtherpadProposal : groupProposals) {
+					proposalNum++;
 					// Create a Discussion for the GROUP Proposal
 					JsonNode jsonGroup = Json.parse(loomioGroup.getBody());
 					String groupNameCreated = jsonGroup.get("groups").get(0).get("name").asText();
-					String disc_title = "Discussion about proposal #"+proposalNum+"of Group #"+groupNum;
+					String disc_title = "Proposal #"+proposalNum+" of Group #"+groupNum;
 					
 					JsonNode jsonProposal = Json.parse(groupEtherpadProposal.getBody());
 					String jsonProposalText = jsonProposal.get("data").get("text").asText();
-					String disc_desc = "Proposal #"+proposalNum+"of Group #"+groupNum+"\n Group Name: "+groupNameCreated+"\n Proposal Details:\n"+jsonProposalText;
+					String disc_desc = "Discussion about proposal #"+proposalNum+" of Group #"+groupNum+"\n Group Name: "+groupNameCreated+"\n Proposal Details:\n"+jsonProposalText;
 					ServiceResource discussion = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc,  "DISCUSSION");
 					JsonNode jsonLoomioDiscussion = Json.parse(discussion.getBody());
 					String discussionTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
