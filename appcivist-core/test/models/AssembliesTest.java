@@ -82,6 +82,7 @@ public class AssembliesTest extends WithApplication {
 	
 	public static final String DISC_SAMPLE_TITLE = "Empty lot in telegraph and channing";
 	public static final String DISC_SAMPLE_DESC = "How might we best use the empty lot?";
+	public static String DEMO_VERSION = "1";
 
 	@Test
 	public void testAssemblyIssueCreation() {
@@ -160,6 +161,219 @@ public class AssembliesTest extends WithApplication {
 		spdDB.delete();
 		sodDB.delete();
 		sd.delete();
+	}
+
+	/**
+	 * Implementation of Issue #20
+	 */
+	@Test
+	public void testOrchestrationDemo1() {
+		// Observation: Using Preloaded Data (see Global.onStart())
+		DEMO_VERSION = "2";
+		/******************************************************************************************
+		 * STEP 1: 
+		 * - Create a new AppCivist orchestration, i.e., an Assembly
+		 * ==> e.g., orch = new AppCivistOrchestrator() ;
+		 */
+		Assembly orchestration = 
+					new Assembly(ASSEMBLY_TITLE,
+								 	ASSEMBLY_DESCRIPTION, 
+								 	ASSEMBLY_CITY);
+
+		/******************************************************************************************
+		 * STEP 2: 
+		 * - Add Service Instances to the assembly: Loomio & Agora
+		 * - In this example, we add already existing Service Instances, otherwise we need to 
+		 *   create new instances by searching for the ServiceDefinition and instantiating
+		 *   by indicating its BaseUrl and obtaining authentication credentials
+		 */
+		System.out.println("DEMOv"+DEMO_VERSION+" > #1 > Add connected services to the Assembly");
+
+		// e.g., loomio = orch.getServiceInstance(Constants.LOOMIO_INFO) ;
+		Service loomio = Service.read(LOOMIO_SERVICE_ID);
+		System.out
+				.println("DEMOv"+DEMO_VERSION+" > #1.1 > Reading and adding service 'Loomio'"
+						+ Json.toJson(loomio));
+		orchestration.addConnectedService(loomio);
+
+		// e.g., agora = orch.getServiceInstance(Constants.AGORA_INFO) ;
+		Service agora = Service.read(AGORA_SERVICE_ID);
+		System.out
+				.println("DEMOv"+DEMO_VERSION+" > #1.2 > Reading and adding Service 'Agora'"
+						+ Json.toJson(agora));
+		orchestration.addConnectedService(agora);
+
+		/******************************************************************************************
+		 * STEP 3: 
+		 * - Map AppCivist Operations to Services where to lookup for specific operation definitions
+		 * - Map AppCivist Operations to specific definitions inside the Services
+		 * - Map specific resources to existing ServiceResource instances 
+		 * TODO: Map operation inputs/outputs between operations 
+		 * TODO: Modify mappings to store them in entities (rather than HashMaps)
+		 * TODO: Modify mappings to store actual entities and not IDs
+		 */
+
+		System.out.println("DEMOv"+DEMO_VERSION+" > #2 > Create a Discussion in 'Loomio'");
+
+		orchestration.addOperationServiceMapping("createGroup", loomio);
+		orchestration.addOperationServiceMapping("createIssue", loomio);
+		orchestration.addOperationServiceMapping("createDiscussion", loomio);
+		orchestration.addOperationServiceMapping("createProposal", loomio);
+		orchestration.addOperationServiceMapping("readProposal", loomio);
+		orchestration.addOperationServiceMapping("readProposalFromGroup", loomio);
+		orchestration.addOperationServiceMapping("createElection", agora);
+		orchestration.addOperationServiceMapping("readElection", agora);
+
+		// TODO: replace operation ids for ServiceOperationDefinition
+		loomio.addOperationMapping("createGroup",LOOMIO_CREATE_GROUP_OP_ID + "");
+		loomio.addOperationMapping("createDiscussion",LOOMIO_CREATE_DISCUSSION_OP_ID + "");
+		loomio.addOperationMapping("createProposal",LOOMIO_CREATE_PROPOSAL_OP_ID+"");
+		agora.addOperationMapping("createElection", AGORA_CREATE_ELECTION_OP_ID+ "");
+		agora.addOperationMapping("readElection", AGORA_READ_ELECTION_OP_ID+ "");
+
+		// TODO: add also support to resource mappings
+//		orchestration.addResourceMappings("mainGroup", LOOMIO_GROUP_ID+"");
+//		orchestration.addResourceMappings("agoraGroup", AGORA_ID+"");
+//		orchestration.addResourceMappings("agoraElection", AGORA_ELECTION_ID+"");
+
+		/******************************************************************************************
+		 * STEP 3: Actual Orchestration Execution
+		 * - For each action, we create an operation (i.e, ServiceOperation) 
+		 *   based on its definition (e.g., ServiceOperationDefinition)
+		 * - To know what definition, we read the information in the orchestration (i.e., the assembly) 
+		 * - The Demo does the following: 
+		 * 		1. add Loomio group creation
+		 * 		2. Creates an ISSUE as a discussion in Loomio
+		 * 		3. Creates PROPOSALS within the created GROUP
+		 * 		4. Reads the PROPOSALS
+		 * 		5: add Agora group creation
+		 * 		6. Creates an election in Agora (with proposals as options and the issue as question)
+		 * 		7. Prints the final definition of the Assembly for this demo
+		 * - Example: To create a discussion in Loomio, we need to instantiate the operation 
+		 *   "createDiscussion" using the OperationDefinition to which it is mapped in the 
+		 *   selected service ("loomio") => this is the task of the "composition engine"
+		 * - Instantiating the operation implies filling in also the values for its requested 
+		 * 	 parameters
+		 * - Once created the operation, we need to execute it => this is done by the 
+		 *   "execution engine"
+		 * 
+		 * Fake example as defined in issue #20:
+		 * 
+		 * orch = new AppCivistOrchestrator() ;
+		 * loomio = orch.getServiceInstance(Constants.LOOMIO_INFO) ;
+		 * agora =  orch.getServiceInstance(Constants.AGORA_INFO) ;
+		 * 
+		 * String title = Constants.SAMPLE_TITLE ;
+		 * String desc = Constants.SAMPLE_DESC ;
+		 * 
+		 * loomio.RESTCalls.createDiscussion(title, desc); //this is fake, is being used only for demo purposes
+		 * 
+		 * //setup complete, main job starts
+		 * 
+		 * AppCivistDiscussion d = loomio.RESTCalls.getDiscussions().get(0); // gets the first discussion, 
+		 * 																	 // uses AppCivist data structure
+		 * 
+		 * AppCivistElectionInstance e = agora.RESTCalls.createAgora(d);
+		 * 
+		 * for (AppCivistDecisions disc : d.getMotions()){
+		 *  e.addVoteOption(disc.motion.title, disc.motion.url);
+		 * }
+		 * 
+		 * // at the end of this, our agora instance should have an election set up inside it.
+		 * 
+		 * Utils.printInfo(agora.RESTCalls.getElectionInstance(e.getID())); //should print all voting options
+		 * 
+		 * //end of demo 1 
+		 */
+		System.out.println("DEMOv"+DEMO_VERSION+" > #3 > Create a Discussion in 'Loomio'");
+		
+		// TODO: implement operations finders in Service
+		// TODO: automatically link operation inputs and outputs
+
+		//		ServiceResource loomioGroup = new ServiceResource();
+		//		loomioGroup.setKeyName("group");
+		//		loomioGroup.setBody("{'group_id':"+LOOMIO_GROUP_ID+"}");
+		// TODO: model also the data model of the expected output for each operations
+
+		// 1. Create a group in loomio for the issue and the discussions
+		String groupName = "[LOOMIO]: "+GROUP_SAMPLE_TITLE;
+		String groupDesc = GROUP_SAMPLE_DESC;
+		ServiceResource loomioGroup = createGroupInLoomio(orchestration, groupName, groupDesc, "GROUP");	
+		JsonNode jsonLoomioGroup = Json.parse(loomioGroup.getBody());
+		String groupNameCreated = jsonLoomioGroup.get("groups").get(0).get("name").asText();
+		assertThat(groupNameCreated.equals(groupName));
+		
+		// 2. Create a discussion for describing the issue
+		String disc_title = "ISSUE:"+DISC_SAMPLE_TITLE;
+		String disc_desc = DISC_SAMPLE_DESC;
+		ServiceResource issue = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc,  "ISSUE");
+		JsonNode jsonLoomioDiscussion = Json.parse(issue.getBody());
+		String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
+		assertThat(issueTitle.equals(disc_title));
+		
+		// 3. Create three different discussions for working groups to come up with proposals
+		disc_title = PROP_SAMPLE_TITLE + " 1";
+		disc_desc = PROP_SAMPLE_DESC + " 1";
+		ServiceResource d1 = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc, "DISCUSSION");
+		JsonNode jsonLoomioDiscussion1 = Json.parse(d1.getBody());
+		String dTitle1 = jsonLoomioDiscussion1.get("discussions").get(0).get("title").asText();
+		assertThat(dTitle1.equals(disc_title));
+
+		disc_title = PROP_SAMPLE_TITLE + " 2";
+		disc_desc = PROP_SAMPLE_DESC + " 2";		
+		ServiceResource d2 = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc, "DISCUSSION");
+		JsonNode jsonLoomioDiscussion2 = Json.parse(d2.getBody());
+		String dTitle2 = jsonLoomioDiscussion2.get("discussions").get(0).get("title").asText();
+		assertThat(dTitle2.equals(disc_title));
+
+		disc_title = PROP_SAMPLE_TITLE + " 3";
+		disc_desc = PROP_SAMPLE_DESC + " 3";
+		ServiceResource d3 = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc, "DISCUSSION");
+		JsonNode jsonLoomioDiscussion3 = Json.parse(d3.getBody());
+		String dTitle3 = jsonLoomioDiscussion3.get("discussions").get(0).get("title").asText();
+		assertThat(dTitle3.equals(disc_title));
+		
+		List<ServiceResource> discussions = new ArrayList<ServiceResource>();
+		discussions.add(d1);
+		discussions.add(d2);
+		discussions.add(d3);
+		
+		// 4. Create final proposals in each discussion
+		List<ServiceResource> proposals = new ArrayList<ServiceResource>();
+		
+		int num = 1;
+		for (ServiceResource discussion : discussions) {
+			ServiceResource proposal = createLoomioProposal(orchestration, loomioGroup, discussion, "PROPOSAL");
+			JsonNode jsonLoomioProposal = Json.parse(proposal.getBody());
+			String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
+			assertThat(proposalTitle.equals("FINAL PROPOSAL: "+PROP_SAMPLE_TITLE+num));			
+			proposals.add(proposal);
+			num++;
+		}
+
+		// Before creating the election, we know need to create an Agora, which is a group. 
+		// But we have previously assigned createGroup to Loomio, so that needs to be updated
+		orchestration.removeOperationServiceMapping("createGroup");
+		orchestration.addOperationServiceMapping("createGroup", agora);
+		agora.addOperationMapping("createGroup",AGORA_CREATE_AGORA_OP_ID+ "");
+		
+		// 5. Create agora for hosting the election
+		//		ServiceResource agoraGroup = new ServiceResource();
+		//		agoraGroup.setKeyName("group");
+		//		agoraGroup.setBody("{'agora_id':"+AGORA_ID+"}");
+		ServiceResource agoraGroup = createGroupInAgora(orchestration, groupName, groupDesc, "GROUP");	
+		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
+		String agoraPrettyName = jsonAgoraGroup.get("pretty_name").asText();
+		assertThat(agoraPrettyName.equals(groupName));
+		
+		// 6. Create the election in the recently created Agora
+		ServiceResource election = createAgoraElection(orchestration, agoraGroup, proposals, issue, "ELECTION");
+		JsonNode jsonAgoraElection = Json.parse(election.getBody());
+		String electionPrettyName = jsonAgoraElection.get("pretty_name").asText();
+		assertThat(electionPrettyName.equals("Choose a proposal for: "+issueTitle));
+
+		System.out.println("DEMOv"+DEMO_VERSION+" > #4 > Created Election => "+election.getBody());
+		System.out.println("DEMOv"+DEMO_VERSION+" > #5 > Rendered Assembly => "+Json.toJson(orchestration));
 	}
 
 	/**
@@ -442,357 +656,44 @@ public class AssembliesTest extends WithApplication {
 		/**
 		 * 6. Move to the next campaign, of Voting
 		 * 
-		 * 7. Start by creating a Public Group where the voting will happen => create an agora in Agora
+		 * 7. Start by creating a Public Group based on the Issue where the voting will 
+		 *    happen => create an agora in Agora
 		 */
 	    
+	    String groupName = issue_title; // TODO: PROBLEM, the response body from the createPad op does not include the padID
+	    String groupDesc = Json.parse(issue.getBody()).get("data").get("text").asText();
 
-//		ServiceResource agoraGroup = createGroupInAgora(orchestration, groupName3, groupDesc3, "GROUP");	
-//		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
-//		String agoraPrettyName = jsonAgoraGroup.get("pretty_name").asText();
-//		assertThat(agoraPrettyName.equals(groupName3));
-	    
+ 		ServiceResource agoraGroup = createGroupInAgora(agora, groupName, groupDesc, "GROUP");	
+		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
+		String agoraPrettyName = jsonAgoraGroup.get("pretty_name").asText();
+		assertThat(agoraPrettyName.equals(groupName));
+		voting.addCampaignResource(agoraGroup);
+		orchestration.addResourceMappings("GROUP", agoraGroup);
+		System.out.println("DEMOv2 > #5.14 > Created GROUP in 'Agora': "+jsonAgoraGroup.toString());	
+		
+	    for (ServiceResource finalProposal : proposalListLoomio) {
+			voting.addCampaignResource(finalProposal);
+		}
 
 		/**
 		 * 8. Read the Proposals from the Deliberation campaign copy their titles + URLs as options in a new Election within the created group => create * an election in Agora => copy an election in Agora
 		 */
+	    
+	    String electionTitle = "Voting Proposals for Issue: '"+issue_title+"'";
+		String electionQuestion = "Which proposal is the best?";
+		String electionDescription = "This election is to choose the winning proposal for the issue => "+issue_title;
 		
-//		for (ServiceResource serviceResource : proposals.getCampaignResources()) {
-//			if (serviceResource.getType().equals("GROUP")) { // replace by reading from the hashmap of resources
-//				List<ServiceResource> groupProposals = serviceResource.getRelatedResources();
-//				deliberation.addCampaignResource(serviceResource);
-//				
-//				int i = 1;
-//				for (ServiceResource groupProposal : groupProposals) {
-//					JsonNode jsonGroup = Json.parse(serviceResource.getBody());
-//					String groupNameCreated = jsonGroup.get("groups").get(0).get("name").asText();
-//					String disc_title = "Discussion about proposal of "+i;
-//					
-//					JsonNode jsonProposal = Json.parse(groupProposal.getBody());
-//					String jsonProposalText = jsonProposal.get("data").get("text").asText();
-//					String disc_desc = jsonProposalText;
-//					ServiceResource discussion = createDiscussionInLoomio(orchestration, serviceResource, disc_title, disc_desc,  "DISCUSSION");
-//					JsonNode jsonLoomioDiscussion = Json.parse(issue.getBody());
-//					String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
-//					assertThat(issueTitle.equals(disc_title));	
-//					
-//					discussion.addRelatedResource(groupProposal);
-//					deliberation.addCampaignResource(discussion);
-//					orchestration.addResourceMappings("DISCUSSION", discussion);
-//					i++;
-//					
-//
-//					System.out.println("DEMOv2 > #5"+(i+9)+" > Created PROPOSAL on 'Etherpad': "+jsonProposal.toString());	
-//					
-//					// TODO: translate etherpad proposals into loomio proposals
-//				}
-//			}
-//		}
-		
-		
-//		
-//		
-//		List<ServiceResource> discussions = new ArrayList<ServiceResource>();
-//		discussions.add(d1);
-//		discussions.add(d2);
-//		discussions.add(d3);
-//		
-//		// 4. Create final proposals in each discussion
-//		List<ServiceResource> proposals = new ArrayList<ServiceResource>();
-//		
-//		int num = 1;
-//		for (ServiceResource discussion : discussions) {
-//			ServiceResource proposal = createLoomioProposal(orchestration, loomioGroup3, discussion, "PROPOSAL");
-//			JsonNode jsonLoomioProposal = Json.parse(proposal.getBody());
-//			String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
-//			assertThat(proposalTitle.equals("FINAL PROPOSAL: "+PROP_SAMPLE_TITLE+num));			
-//			proposals.add(proposal);
-//			num++;
-//		}
-//
-//		// Before creating the election, we know need to create an Agora, which is a group. 
-//		// But we have previously assigned createGroup to Loomio, so that needs to be updated
-//		orchestration.removeOperationServiceMapping("createGroup");
-//		orchestration.addOperationServiceMapping("createGroup", agora);
-//		agora.addOperationMapping("createGroup",AGORA_CREATE_AGORA_OP_ID+ "");
-//		
-//		// 5. Create agora for hosting the election
-//		//		ServiceResource agoraGroup = new ServiceResource();
-//		//		agoraGroup.setKeyName("group");
-//		//		agoraGroup.setBody("{'agora_id':"+AGORA_ID+"}");
-//		ServiceResource agoraGroup = createGroupInAgora(orchestration, groupName3, groupDesc3, "GROUP");	
-//		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
-//		String agoraPrettyName = jsonAgoraGroup.get("pretty_name").asText();
-//		assertThat(agoraPrettyName.equals(groupName3));
-//		
-//		// 6. Create the election in the recently created Agora
-//		ServiceResource election = createAgoraElection(orchestration, agoraGroup, proposals, issue, "ELECTION");
-//		JsonNode jsonAgoraElection = Json.parse(election.getBody());
-//		String electionPrettyName = jsonAgoraElection.get("pretty_name").asText();
-//		assertThat(electionPrettyName.equals("Choose a proposal for: "+issueTitle));
-//
-//		System.out.println("DEMOv1 > #4 > Created Election => "+election.getBody());
-		System.out.println("DEMOv1 > #5 > Rendered Assembly => "+Json.toJson(orchestration));
-	}
-	
-	private ServiceResource createIssueInEtherpad(Service etherpad,
-			Issue issueObject, String expectedResourceType) {
-		return createPadInEtherpad(etherpad, issueObject.getTitle(), issueObject.getBrief(), expectedResourceType);
-	}
-	
-	private ServiceResource createProposalInEtherpad(Service etherpad,
-			String title, String text, String expectedResourceType) {
-		return createPadInEtherpad(etherpad, title, text, expectedResourceType);
-	}
-	
-	private ServiceResource createPadInEtherpad(Service etherpad,
-			String title, String text, String expectedResourceType) {
-		
-		Map<String, Object> rootParamValues = new HashMap<String, Object>();
-		rootParamValues.put("padID",title);
-		rootParamValues.put("text",title+"\n"+text);
-		
-		ServiceOperation createIssue = 
-				Composer.createOperationInstance(
-						"createIssue", 
-						etherpad, 
-						rootParamValues, 
-						expectedResourceType);
-		
-		ServiceResource result = Runner.execute(createIssue);
-		return result;
-	}
-	
-	
-	private ServiceResource readTextInEtherpad(Service etherpad,
-			String padId, String expectedResourceType) {
-		
-		Map<String, Object> rootParamValues = new HashMap<String, Object>();
-		rootParamValues.put("padID",padId);
-		
-		ServiceOperation createIssue = 
-				Composer.createOperationInstance(
-						"readIssue", 
-						etherpad, 
-						rootParamValues, 
-						expectedResourceType);
-		
-		ServiceResource result = Runner.execute(createIssue);
-		return result;
-	}
-	
-	
-
-	/**
-	 * Implementation of Issue #20
-	 */
-	@Test
-	public void testOrchestrationDemo1() {
-		// Observation: Using Preloaded Data (see Global.onStart())
-
-		/******************************************************************************************
-		 * STEP 1: 
-		 * - Create a new AppCivist orchestration, i.e., an Assembly
-		 * ==> e.g., orch = new AppCivistOrchestrator() ;
-		 */
-		Assembly orchestration = 
-					new Assembly(ASSEMBLY_TITLE,
-								 	ASSEMBLY_DESCRIPTION, 
-								 	ASSEMBLY_CITY);
-
-		/******************************************************************************************
-		 * STEP 2: 
-		 * - Add Service Instances to the assembly: Loomio & Agora
-		 * - In this example, we add already existing Service Instances, otherwise we need to 
-		 *   create new instances by searching for the ServiceDefinition and instantiating
-		 *   by indicating its BaseUrl and obtaining authentication credentials
-		 */
-		System.out.println("DEMOv1 > #1 > Add connected services to the Assembly");
-
-		// e.g., loomio = orch.getServiceInstance(Constants.LOOMIO_INFO) ;
-		Service loomio = Service.read(LOOMIO_SERVICE_ID);
-		System.out
-				.println("DEMOv1 > #1.1 > Reading and adding service 'Loomio'"
-						+ Json.toJson(loomio));
-		orchestration.addConnectedService(loomio);
-
-		// e.g., agora = orch.getServiceInstance(Constants.AGORA_INFO) ;
-		Service agora = Service.read(AGORA_SERVICE_ID);
-		System.out
-				.println("DEMOv1 > #1.2 > Reading and adding Service 'Agora'"
-						+ Json.toJson(agora));
-		orchestration.addConnectedService(agora);
-
-		/******************************************************************************************
-		 * STEP 3: 
-		 * - Map AppCivist Operations to Services where to lookup for specific operation definitions
-		 * - Map AppCivist Operations to specific definitions inside the Services
-		 * - Map specific resources to existing ServiceResource instances 
-		 * TODO: Map operation inputs/outputs between operations 
-		 * TODO: Modify mappings to store them in entities (rather than HashMaps)
-		 * TODO: Modify mappings to store actual entities and not IDs
-		 */
-
-		System.out.println("DEMOv1 > #2 > Create a Discussion in 'Loomio'");
-
-		orchestration.addOperationServiceMapping("createGroup", loomio);
-		orchestration.addOperationServiceMapping("createIssue", loomio);
-		orchestration.addOperationServiceMapping("createDiscussion", loomio);
-		orchestration.addOperationServiceMapping("createProposal", loomio);
-		orchestration.addOperationServiceMapping("readProposal", loomio);
-		orchestration.addOperationServiceMapping("readProposalFromGroup", loomio);
-		orchestration.addOperationServiceMapping("createElection", agora);
-		orchestration.addOperationServiceMapping("readElection", agora);
-
-		// TODO: replace operation ids for ServiceOperationDefinition
-		loomio.addOperationMapping("createGroup",LOOMIO_CREATE_GROUP_OP_ID + "");
-		loomio.addOperationMapping("createDiscussion",LOOMIO_CREATE_DISCUSSION_OP_ID + "");
-		loomio.addOperationMapping("createProposal",LOOMIO_CREATE_PROPOSAL_OP_ID+"");
-		agora.addOperationMapping("createElection", AGORA_CREATE_ELECTION_OP_ID+ "");
-		agora.addOperationMapping("readElection", AGORA_READ_ELECTION_OP_ID+ "");
-
-		// TODO: add also support to resource mappings
-//		orchestration.addResourceMappings("mainGroup", LOOMIO_GROUP_ID+"");
-//		orchestration.addResourceMappings("agoraGroup", AGORA_ID+"");
-//		orchestration.addResourceMappings("agoraElection", AGORA_ELECTION_ID+"");
-
-		/******************************************************************************************
-		 * STEP 3: Actual Orchestration Execution
-		 * - For each action, we create an operation (i.e, ServiceOperation) 
-		 *   based on its definition (e.g., ServiceOperationDefinition)
-		 * - To know what definition, we read the information in the orchestration (i.e., the assembly) 
-		 * - The Demo does the following: 
-		 * 		1. add Loomio group creation
-		 * 		2. Creates an ISSUE as a discussion in Loomio
-		 * 		3. Creates PROPOSALS within the created GROUP
-		 * 		4. Reads the PROPOSALS
-		 * 		5: add Agora group creation
-		 * 		6. Creates an election in Agora (with proposals as options and the issue as question)
-		 * 		7. Prints the final definition of the Assembly for this demo
-		 * - Example: To create a discussion in Loomio, we need to instantiate the operation 
-		 *   "createDiscussion" using the OperationDefinition to which it is mapped in the 
-		 *   selected service ("loomio") => this is the task of the "composition engine"
-		 * - Instantiating the operation implies filling in also the values for its requested 
-		 * 	 parameters
-		 * - Once created the operation, we need to execute it => this is done by the 
-		 *   "execution engine"
-		 * 
-		 * Fake example as defined in issue #20:
-		 * 
-		 * orch = new AppCivistOrchestrator() ;
-		 * loomio = orch.getServiceInstance(Constants.LOOMIO_INFO) ;
-		 * agora =  orch.getServiceInstance(Constants.AGORA_INFO) ;
-		 * 
-		 * String title = Constants.SAMPLE_TITLE ;
-		 * String desc = Constants.SAMPLE_DESC ;
-		 * 
-		 * loomio.RESTCalls.createDiscussion(title, desc); //this is fake, is being used only for demo purposes
-		 * 
-		 * //setup complete, main job starts
-		 * 
-		 * AppCivistDiscussion d = loomio.RESTCalls.getDiscussions().get(0); // gets the first discussion, 
-		 * 																	 // uses AppCivist data structure
-		 * 
-		 * AppCivistElectionInstance e = agora.RESTCalls.createAgora(d);
-		 * 
-		 * for (AppCivistDecisions disc : d.getMotions()){
-		 *  e.addVoteOption(disc.motion.title, disc.motion.url);
-		 * }
-		 * 
-		 * // at the end of this, our agora instance should have an election set up inside it.
-		 * 
-		 * Utils.printInfo(agora.RESTCalls.getElectionInstance(e.getID())); //should print all voting options
-		 * 
-		 * //end of demo 1 
-		 */
-		System.out.println("DEMOv1 > #3 > Create a Discussion in 'Loomio'");
-		
-		// TODO: implement operations finders in Service
-		// TODO: automatically link operation inputs and outputs
-
-		//		ServiceResource loomioGroup = new ServiceResource();
-		//		loomioGroup.setKeyName("group");
-		//		loomioGroup.setBody("{'group_id':"+LOOMIO_GROUP_ID+"}");
-		// TODO: model also the data model of the expected output for each operations
-
-		// 1. Create a group in loomio for the issue and the discussions
-		String groupName = "[LOOMIO]: "+GROUP_SAMPLE_TITLE;
-		String groupDesc = GROUP_SAMPLE_DESC;
-		ServiceResource loomioGroup = createGroupInLoomio(orchestration, groupName, groupDesc, "GROUP");	
-		JsonNode jsonLoomioGroup = Json.parse(loomioGroup.getBody());
-		String groupNameCreated = jsonLoomioGroup.get("groups").get(0).get("name").asText();
-		assertThat(groupNameCreated.equals(groupName));
-		
-		// 2. Create a discussion for describing the issue
-		String disc_title = "ISSUE:"+DISC_SAMPLE_TITLE;
-		String disc_desc = DISC_SAMPLE_DESC;
-		ServiceResource issue = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc,  "ISSUE");
-		JsonNode jsonLoomioDiscussion = Json.parse(issue.getBody());
-		String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
-		assertThat(issueTitle.equals(disc_title));
-		
-		// 3. Create three different discussions for working groups to come up with proposals
-		disc_title = PROP_SAMPLE_TITLE + " 1";
-		disc_desc = PROP_SAMPLE_DESC + " 1";
-		ServiceResource d1 = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc, "DISCUSSION");
-		JsonNode jsonLoomioDiscussion1 = Json.parse(d1.getBody());
-		String dTitle1 = jsonLoomioDiscussion1.get("discussions").get(0).get("title").asText();
-		assertThat(dTitle1.equals(disc_title));
-
-		disc_title = PROP_SAMPLE_TITLE + " 2";
-		disc_desc = PROP_SAMPLE_DESC + " 2";		
-		ServiceResource d2 = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc, "DISCUSSION");
-		JsonNode jsonLoomioDiscussion2 = Json.parse(d2.getBody());
-		String dTitle2 = jsonLoomioDiscussion2.get("discussions").get(0).get("title").asText();
-		assertThat(dTitle2.equals(disc_title));
-
-		disc_title = PROP_SAMPLE_TITLE + " 3";
-		disc_desc = PROP_SAMPLE_DESC + " 3";
-		ServiceResource d3 = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc, "DISCUSSION");
-		JsonNode jsonLoomioDiscussion3 = Json.parse(d3.getBody());
-		String dTitle3 = jsonLoomioDiscussion3.get("discussions").get(0).get("title").asText();
-		assertThat(dTitle3.equals(disc_title));
-		
-		List<ServiceResource> discussions = new ArrayList<ServiceResource>();
-		discussions.add(d1);
-		discussions.add(d2);
-		discussions.add(d3);
-		
-		// 4. Create final proposals in each discussion
-		List<ServiceResource> proposals = new ArrayList<ServiceResource>();
-		
-		int num = 1;
-		for (ServiceResource discussion : discussions) {
-			ServiceResource proposal = createLoomioProposal(orchestration, loomioGroup, discussion, "PROPOSAL");
-			JsonNode jsonLoomioProposal = Json.parse(proposal.getBody());
-			String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
-			assertThat(proposalTitle.equals("FINAL PROPOSAL: "+PROP_SAMPLE_TITLE+num));			
-			proposals.add(proposal);
-			num++;
-		}
-
-		// Before creating the election, we know need to create an Agora, which is a group. 
-		// But we have previously assigned createGroup to Loomio, so that needs to be updated
-		orchestration.removeOperationServiceMapping("createGroup");
-		orchestration.addOperationServiceMapping("createGroup", agora);
-		agora.addOperationMapping("createGroup",AGORA_CREATE_AGORA_OP_ID+ "");
-		
-		// 5. Create agora for hosting the election
-		//		ServiceResource agoraGroup = new ServiceResource();
-		//		agoraGroup.setKeyName("group");
-		//		agoraGroup.setBody("{'agora_id':"+AGORA_ID+"}");
-		ServiceResource agoraGroup = createGroupInAgora(orchestration, groupName, groupDesc, "GROUP");	
-		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
-		String agoraPrettyName = jsonAgoraGroup.get("pretty_name").asText();
-		assertThat(agoraPrettyName.equals(groupName));
-		
-		// 6. Create the election in the recently created Agora
-		ServiceResource election = createAgoraElection(orchestration, agoraGroup, proposals, issue, "ELECTION");
+	    
+		ServiceResource election = createAgoraElection(orchestration, agoraGroup, proposalListLoomio, 
+				electionTitle, electionQuestion, electionDescription, "ELECTION");
 		JsonNode jsonAgoraElection = Json.parse(election.getBody());
 		String electionPrettyName = jsonAgoraElection.get("pretty_name").asText();
-		assertThat(electionPrettyName.equals("Choose a proposal for: "+issueTitle));
+		voting.addCampaignResource(election);
+		orchestration.addResourceMappings("ELECTION", election);
+		assertThat(electionPrettyName.equals(electionTitle));
 
-		System.out.println("DEMOv1 > #4 > Created Election => "+election.getBody());
-		System.out.println("DEMOv1 > #5 > Rendered Assembly => "+Json.toJson(orchestration));
+		System.out.println("DEMOv2 > #6 > Created Election => "+election.getBody());
+	    System.out.println("DEMOv2 > #7 > Rendered Assembly => "+Json.toJson(orchestration));
 	}
 	
 	/**
@@ -904,7 +805,7 @@ public class AssembliesTest extends WithApplication {
 
 		// STEP 4 => prepare and send service request/call
 		System.out
-				.println("DEMOv1 > #4 > Prepare parameters for instance of [Loomio].createDiscussion according to definition:"
+				.println("DEMOv"+DEMO_VERSION+" > #[createDiscussionInLoomio].1 > Prepare parameters for instance of [Loomio].createDiscussion according to definition:"
 						+ Json.toJson(createDiscussion.getParameters()));
 
 		ServiceResource result = Runner.execute(createDiscussion);
@@ -991,7 +892,10 @@ public class AssembliesTest extends WithApplication {
 	}
 
 	/**
-	 * Creates a group in Agora
+	 * TODO: unify AppCivist operations and separate them from the part of creating the paramValues Map
+	 * 
+	 * Creates a group in Agora when there is only one "createGroup" service mapped in the 
+	 * orchestration
 	 * 
 	 * @param orchestration
 	 * @param groupName
@@ -1000,6 +904,21 @@ public class AssembliesTest extends WithApplication {
 	 * @return
 	 */
 	private ServiceResource createGroupInAgora(Assembly orchestration,
+			String groupName, String groupDesc, String expectedResourceType) {	
+		Service s = orchestration.getServiceForOperation("createGroup");
+		return createGroupInAgora(s, groupName, groupDesc, expectedResourceType );
+	}
+	
+	/**
+	 * Creates a group in Agora
+	 * 
+	 * @param orchestration
+	 * @param groupName
+	 * @param groupDesc
+	 * @param expectedResourceType
+	 * @return
+	 */
+	private ServiceResource createGroupInAgora(Service service,
 			String groupName, String groupDesc, String expectedResourceType) {
 		Map<String, Object> rootParamValues = new HashMap<String, Object>();
 		Map<String, Object> bodyParamValues = new HashMap<String, Object>();
@@ -1009,7 +928,7 @@ public class AssembliesTest extends WithApplication {
 		rootParamValues.put("agora", bodyParamValues);
 
 		ServiceOperation createAgora = Composer.createOperationInstance(
-				"createGroup", orchestration, rootParamValues,
+				"createGroup", service, rootParamValues,
 				expectedResourceType);
 
 		ServiceResource result = Runner.execute(createAgora);
@@ -1032,55 +951,23 @@ public class AssembliesTest extends WithApplication {
 			List<ServiceResource> proposals, 
 			ServiceResource issue,
 			String expectedResult) {
-		/* 
-		 * Example of election to create as it is expected by the AGORA API
-		 * 
- 		 *   {
-		 *     "pretty_name": "Pretty Election",
-		 *     "description": "election test",
-		 *     "is_vote_secret": true,
-		 *     "questions": [
-		 *       {
-		 *         "a": "ballot/question",
-		 *         "tally_type": "ONE_CHOICE",
-		 *         "max": 1,
-		 *         "min": 0,
-		 *         "num_seats": 1,
-		 *         "question": "Question one?",
-		 *         "randomize_answer_order": true,
-		 *         "answers": [
-		 *           {
-		 *             "value": "Option 1",
-		 *             "a": "ballot/answer",
-		 *             "url": "",
-		 *             "details": ""
-		 *           },
-		 *           {
-		 *             "value": "Option 2",
-		 *             "a": "ballot/answer",
-		 *             "url": "",
-		 *             "details": ""
-		 *           },
-		 *           {
-		 *             "value": "Option 3",
-		 *             "a": "ballot/answer",
-		 *             "url": "",
-		 *             "details": ""
-		 *           }
-		 *         ]
-		 *       }
-		 *     ],
-		 *     "from_date": "",
-		 *     "to_date": "",
-		 *     "short_description": "test",
-		 *     "action": "create_election"
-		 *   }
-		 */
-		JsonNode issueBody = Json.parse(issue.getBody());
-		String electionTitle = "Voting Proposals for Issue #"+issueBody.get("discussions").get(0).get("id").asText();
-		String electionPrettyName = "Choose a proposal for: "+issueBody.get("discussions").get(0).get("title").asText();
-		String electionDescription = "This election is to choose the winning proposal for the issue => "+issueBody.get("discussions").get(0).get("title").asText();
 		
+		JsonNode issueBody = Json.parse(issue.getBody());
+		String electionTitle = "Voting Proposals for Issue: '"+issueBody.get("discussions").get(0).get("id").asText()+"'";
+		String electionPrettyName = "Which proposal is the best?";
+		String electionDescription = "This election is to choose the winning proposal for the issue => "+issueBody.get("discussions").get(0).get("title").asText();
+		return createAgoraElection(orch, agoraGroup, proposals, electionTitle, electionPrettyName, electionDescription, expectedResult);
+	}
+
+	private ServiceResource createAgoraElection(
+			Assembly orch,
+			ServiceResource agoraGroup, 
+			List<ServiceResource> proposals, 
+			String electionTitle,
+			String electionQuestion, 
+			String electionDescription,
+			String expectedResult) {
+
 		JsonNode jsonAgoraGroup = Json.parse(agoraGroup.getBody());
 		String agoraId = jsonAgoraGroup.get("id").asText();
 		
@@ -1103,7 +990,7 @@ public class AssembliesTest extends WithApplication {
 		question.put("max", 1);
 		question.put("min", 0);
 		question.put("num_seats", 1);
-		question.put("question", electionPrettyName);
+		question.put("question", electionQuestion);
 		question.put("randomize_answer_order", true);
 		
 		List<Map<String, Object>> answers = new ArrayList<Map<String, Object>>();
@@ -1118,23 +1005,7 @@ public class AssembliesTest extends WithApplication {
 			a.put("details", "");
 			answers.add(a);
 		}
-		//		Map<String, Object> a1 = new HashMap<String, Object>();
-		//		Map<String, Object> a2 = new HashMap<String, Object>();
-		//
-		//		a2.put("value", "Option 2");
-		//		a2.put("a", "ballot/answer");
-		//		a2.put("url", "");
-		//		a2.put("details", "");
-		//
-		//		a3.put("value", "Option 3");
-		//		a3.put("a", "ballot/answer");
-		//		a3.put("url", "");
-		//		a3.put("details", "");
-		//
-		//		answers.add(a1);
-		//		answers.add(a2);
-		//		answers.add(a3);
-
+		
 		question.put("answers", answers);
 		questions.add(question);
 		
@@ -1143,7 +1014,7 @@ public class AssembliesTest extends WithApplication {
 		rootParamValues.put("agora_id", agoraId + "");
 		rootParamValues.put("actionBody", bodyParamValues);
 		
-		ServiceOperation readElection = Composer
+		ServiceOperation createElection = Composer
 					.createOperationInstance(
 							"createElection", 
 							orch, 
@@ -1152,13 +1023,13 @@ public class AssembliesTest extends WithApplication {
 
 		// STEP 4 => prepare and send service request/call
 		System.out
-				.println("DEMOv1 > #4 > Prepare parameters for instance of [Loomio].createDiscussion according to definition:"
-						+ Json.toJson(readElection.getParameters()));
+				.println("DEMOv"+DEMO_VERSION+" > #[createAgoraElection].1 > Prepare parameters for instance of [Loomio].createDiscussion according to definition:"
+						+ Json.toJson(createElection.getParameters()));
 
-		ServiceResource result = Runner.execute(readElection);
+		ServiceResource result = Runner.execute(createElection);
 		return result;
 	}
-
+	
 	private ServiceResource readAgoraElection(Assembly orch, String expectedResourceType) {
 		Map<String, Object> paramValues = new HashMap<String, Object>();
 		paramValues.put("id",AGORA_ELECTION_ID+"");
@@ -1172,7 +1043,7 @@ public class AssembliesTest extends WithApplication {
 
 		// STEP 4 => prepare and send service request/call
 		System.out
-				.println("DEMOv1 > #4 > Prepare parameters for instance of [Loomio].createDiscussion according to definition:"
+				.println("DEMOv"+DEMO_VERSION+" > #[readAgoraElection].1 > Prepare parameters for instance of [Loomio].createDiscussion according to definition:"
 						+ Json.toJson(readElection.getParameters()));
 
 		ServiceResource result = Runner.execute(readElection);
@@ -1180,5 +1051,49 @@ public class AssembliesTest extends WithApplication {
 		return result;
 	}
 	
-
+	private ServiceResource createIssueInEtherpad(Service etherpad,
+			Issue issueObject, String expectedResourceType) {
+		return createPadInEtherpad(etherpad, issueObject.getTitle(), issueObject.getBrief(), expectedResourceType);
+	}
+	
+	private ServiceResource createProposalInEtherpad(Service etherpad,
+			String title, String text, String expectedResourceType) {
+		return createPadInEtherpad(etherpad, title, text, expectedResourceType);
+	}
+	
+	private ServiceResource createPadInEtherpad(Service etherpad,
+			String title, String text, String expectedResourceType) {
+		
+		Map<String, Object> rootParamValues = new HashMap<String, Object>();
+		rootParamValues.put("padID",title);
+		rootParamValues.put("text",title+"\n"+text);
+		
+		ServiceOperation createIssue = 
+				Composer.createOperationInstance(
+						"createIssue", 
+						etherpad, 
+						rootParamValues, 
+						expectedResourceType);
+		
+		ServiceResource result = Runner.execute(createIssue);
+		return result;
+	}
+	
+	private ServiceResource readTextInEtherpad(Service etherpad,
+			String padId, String expectedResourceType) {
+		
+		Map<String, Object> rootParamValues = new HashMap<String, Object>();
+		rootParamValues.put("padID",padId);
+		
+		ServiceOperation createIssue = 
+				Composer.createOperationInstance(
+						"readIssue", 
+						etherpad, 
+						rootParamValues, 
+						expectedResourceType);
+		
+		ServiceResource result = Runner.execute(createIssue);
+		return result;
+	}
+	
 }

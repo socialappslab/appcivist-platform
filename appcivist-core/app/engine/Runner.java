@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import models.services.Service;
 import models.services.ServiceAuthentication;
@@ -36,16 +39,16 @@ public class Runner {
 		
 		String serviceUrl = opService.getBaseUrl();
 		
-		List<String> pathParams = new ArrayList<String>();
 		Map<String, String> otherHeaders = new HashMap<String, String>();
 		Map<String, String> queryParams = new HashMap<String, String>();
+		// Using a TreeMap structure because the path params might come unordered
+		// A treemap will return its keys in order
+		Map <Integer, String> pathParamsTree = new TreeMap<Integer, String>();
 
 		String servicePath = "";
-		//String serviceQuery = "";
 		String serviceBody = "";
 		
 		List<ServiceParameter> pValues = op.getParameters();
-		
 		for (ServiceParameter p : pValues) {
 			String paramType = p.getServiceParameter().getType();
 			ServiceParameterDefinition pDef = p.getServiceParameter(); 
@@ -57,23 +60,20 @@ public class Runner {
 				}
 			} else if (paramType.equals("PATH_PARAM")) {
 				String path = "/"+value;
-				pathParams.add(pDef.getPathOrder(), path);
+				Integer order = pDef.getPathOrder();
+				pathParamsTree.put(order, path);
 			} else if (paramType.equals("QUERY_PARAM")) {
 				queryParams.put(pDef.getName(),value);
 			}
 		}
 		
-		for (String path : pathParams) {
+		for (String path: pathParamsTree.values()) {
 			servicePath+=path;
 		}
-
-		// You end by calling a method corresponding to the HTTP method you want
-		// to use.
-		// This ends the chain, and uses all the options defined on the built
-		// request in the
-		// WSRequestHolder.
-
 		
+		// You end by calling a method corresponding to the HTTP method you want
+		// to use. This ends the chain, and uses all the options defined on the built
+		// request in the WSRequestHolder.
 		String method = opDef.getMethod();
 		String opName = opDef.getName();
 		Boolean nameOnPath = opDef.getNameOnPath();
@@ -118,7 +118,6 @@ public class Runner {
 		}
 		
 		holder.setMethod(method);
-		//holder.setQueryString(serviceQuery);
 		holder.setBody(serviceBody);
 
 		System.out
