@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="70px" height="70px" viewBox="0 0 70 70" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <title>arrow.svg</title>
+    <description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Artboard-1" sketch:type="MSArtboardGroup" stroke="#979797" fill="#FFFFFF">
+            <g id="arrow" sketch:type="MSLayerGroup" transform="translate(2.000000, 18.000000)">
+                <g id="Page-1" sketch:type="MSShapeGroup">
+                    <path d="M44,26 L2.00449605,26 C0.896918893,26 0,25.1086907 0,24.0092049 L0,7.99079514 C0,6.89821238 0.89744345,6 2.00449605,6 L44,6 L44,1.1606523 C44,0.0524840918 44.7263316,-0.313919214 45.6173153,0.338611857 L65.3826847,14.8142042 C66.2759033,15.4683721 66.2736684,16.5306244 65.3826847,17.1831554 L45.6173153,31.6587478 C44.7240967,32.3129156 44,31.9421217 44,30.8367074 L44,26 L44,26 Z" id="Rectangle-1"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
