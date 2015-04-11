@@ -82,7 +82,7 @@ public class AssembliesTest extends WithApplication {
 	
 	public static final String DISC_SAMPLE_TITLE = "Empty lot in telegraph and channing";
 	public static final String DISC_SAMPLE_DESC = "How might we best use the empty lot?";
-	public static String DEMO_VERSION = "1";
+	public String DEMO_VERSION = "1";
 
 	@Test
 	public void testAssemblyIssueCreation() {
@@ -169,7 +169,7 @@ public class AssembliesTest extends WithApplication {
 	@Test
 	public void testOrchestrationDemo1() {
 		// Observation: Using Preloaded Data (see Global.onStart())
-		DEMO_VERSION = "2";
+		DEMO_VERSION = "1";
 		/******************************************************************************************
 		 * STEP 1: 
 		 * - Create a new AppCivist orchestration, i.e., an Assembly
@@ -401,7 +401,8 @@ public class AssembliesTest extends WithApplication {
 	@Test
 	public void testOrchestrationDemo2() {
 		// Observation: Using Preloaded Data (see Global.onStart())
-
+		DEMO_VERSION = "2";
+		
 		/******************************************************************************************
 		 * STEP 1: 
 		 * - Create a new AppCivist orchestration, i.e., an Assembly
@@ -603,46 +604,48 @@ public class AssembliesTest extends WithApplication {
 		 */
 		// TODO: Use campaign resources instead of locally defined workingGroups (now, this is a fix) 
 		List<ServiceResource> proposalListLoomio = new ArrayList<ServiceResource>();
+
+		int groupNum=0;
 	    for (ServiceResource serviceResource : proposals.getCampaignResources()) {
 		//for (ServiceResource serviceResource : workingGroups) {
-				
+			
 			if (serviceResource.getType().equals("GROUP")) { // replace by reading from the hashmap of resources
+				groupNum++;
 				ServiceResource loomioGroup = serviceResource;
 				List<ServiceResource> groupProposals = loomioGroup.getRelatedResources();
 				deliberation.addCampaignResource(loomioGroup); // Adding the group to Deliberation
 				
+				int proposalNum = 0;
 				int i = 1;
 				for (ServiceResource groupEtherpadProposal : groupProposals) {
 					// Create a Discussion for the GROUP Proposal
 					JsonNode jsonGroup = Json.parse(loomioGroup.getBody());
 					String groupNameCreated = jsonGroup.get("groups").get(0).get("name").asText();
-					String disc_title = "Discussion about proposal of "+i;
+					String disc_title = "Discussion about proposal #"+proposalNum+"of Group #"+groupNum;
 					
 					JsonNode jsonProposal = Json.parse(groupEtherpadProposal.getBody());
 					String jsonProposalText = jsonProposal.get("data").get("text").asText();
-					String disc_desc = jsonProposalText;
+					String disc_desc = "Proposal #"+proposalNum+"of Group #"+groupNum+"\n Group Name: "+groupNameCreated+"\n Proposal Details:\n"+jsonProposalText;
 					ServiceResource discussion = createDiscussionInLoomio(orchestration, loomioGroup, disc_title, disc_desc,  "DISCUSSION");
 					JsonNode jsonLoomioDiscussion = Json.parse(discussion.getBody());
-					String issueTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
-					assertThat(issueTitle.equals(disc_title));	
+					String discussionTitle = jsonLoomioDiscussion.get("discussions").get(0).get("title").asText();
+					assertThat(discussionTitle.equals(disc_title));	
 					
 					discussion.addRelatedResource(groupEtherpadProposal);
 					deliberation.addCampaignResource(discussion);
 					orchestration.addResourceMappings("DISCUSSION", discussion);
 
 					System.out.println("DEMOv2 > #5."+(i+9)+" > Created DISCUSSION on 'Loomio': "+jsonLoomioDiscussion.toString());	
-
 					i++;
 					// Copy the Proposal into a proposal for the Discussion
 					
-
 					// TODO: RENAME method to create proposal when it receives the orchestration
 					ServiceResource loomioProposal = createLoomioProposal(loomio, loomioGroup, discussion, "PROPOSAL");
 					JsonNode jsonLoomioProposal = Json.parse(loomioProposal.getBody());
 					String proposalTitle = jsonLoomioProposal.get("proposals").get(0).get("name").asText();
 					assertThat(proposalTitle.equals(disc_title));			
 
-					System.out.println("DEMOv2 > #5."+(i+9)+" > Created PROPOSAL on 'Loomio' DISCUSSION: "+jsonLoomioDiscussion.toString());	
+					System.out.println("DEMOv2 > #5."+(i+9)+" > Created PROPOSAL on 'Loomio' DISCUSSION: "+jsonLoomioProposal.toString());	
 					proposalListLoomio.add(loomioProposal);
 
 					discussion.addRelatedResource(loomioProposal); // TODO: how to differentiate in the ServiceResource between Loomio and Etherpad proposals
