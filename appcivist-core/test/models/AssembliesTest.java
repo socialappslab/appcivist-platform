@@ -434,7 +434,7 @@ public class AssembliesTest extends WithApplication {
 
 		// e.g., etherpad = orch.getServiceInstance(Constants.ETHERPAD_INFO) ;
 		Service etherpad = Service.read(ETHERPAD_SERVICE_ID);
-		System.out.println("DEMOv2 > #1.3 > Reading and adding Service 'Agora'"+Json.toJson(etherpad));
+		System.out.println("DEMOv2 > #1.3 > Reading and adding Service 'Etherpad'"+Json.toJson(etherpad));
 		orchestration.addConnectedService(etherpad);
 		
 		/******************************************************************************************
