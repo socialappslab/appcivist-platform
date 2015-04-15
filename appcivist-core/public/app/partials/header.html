@@ -1,0 +1,32 @@
+<!-- Fixed navbar -->
+<div>
+	<nav class="navbar navbar-default" role="navigation" ng-controller="AccountCtrl">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target="#navbar-menu">
+					<span class="sr-only">Toggle navigation</span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span>
+				</button>
+				<a href="#/"><img src="/public/images/logotype.svg" class="logotype" /></a>
+			</div>
+			
+			<div class="collapse navbar-collapse navbar-right" id="navbar-menu" ng-show="!user.authenticated">
+				<form class="navbar-form navbar-left" role="login" ng-submit="login()">
+					<div class="form-group">
+						<input type="text" placeholder="Email" class="form-control" ng-model="email"> 
+						<input type="password" placeholder="Password" class="form-control" ng-model="password"/>
+					</div>
+					<button type="submit" class="btn btn-success">Sign in</button>
+					<button type="button" class="btn btn-primary" ng-click="signup()">Sign up</button>	
+				</form>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="/user/recoveryform" ng-show="!user.authenticated">Forgot Password?</a></li>
+					<li ng-show="user.authenticated"><button type="button" class="btn btn-primary">Logout</button></li>	
+				</ul>
+			</div>
+		</div>
+	</nav>
+</div>

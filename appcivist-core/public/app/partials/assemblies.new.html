@@ -1,0 +1,19 @@
+<div class="row">
+	<div class="span3">
+		Title: <br /> <input data-ng-model="newAssembly.title" type="text"
+			placeholder="Title">
+	</div>
+	<div class="span3">
+		Description: <br /> <input data-ng-model="newAssembly.description"
+			type="text" placeholder="Description">
+	</div>
+	<div class="span6">
+		City: <br /> <input data-ng-model="newAssembly.city" type="text"
+			placeholder="Assembly City">
+		<button id="submitAssembly" class="btn btn-primary" type="button"
+			data-ng-disabled="!newAssembly.title || !newAssembly.description || !newAssembly.city"
+			data-ng-click="insertAssembly()">Add Assembly</button>
+	</div>
+</div>
+<br />
+<br />

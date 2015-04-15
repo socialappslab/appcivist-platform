@@ -1,0 +1,5 @@
+package enums;
+
+public enum ServiceCategories {
+	MAPPING, DELIBERATION, PROPOSAL, VOTING, REPORTING, VISUALIZATION, PETITIONING
+}

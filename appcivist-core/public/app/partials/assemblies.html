@@ -1,0 +1,23 @@
+<div class="container marketing">
+	<div class="row">
+		<div class="col-md-12">
+			<h2 class="summary-heading" style="margin-top: 8px;">Assemblies</h2>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3"
+			data-ng-repeat="assembly in assemblies.assemblies | orderBy:'title'">
+			<a href="#/assembly/{{assembly.id}}"><img class="img-circle"
+				src="{{assembly.icon}}" alt="{{assembly.description}}"></a>
+			<h3>{{assembly.title}}</h3>
+			<h4>{{assembly.city}}</h4>
+			<a href="#/assebmly/{{assembly.id}}/campaigns"
+				class="cardBody btn-link"> View {{ assembly.issues.length }}
+				Issues</a>
+		</div>
+		<div class="col-md-3">
+			<i class="icon-wrench" style="position: relative; right: -36px;"></i>
+		</div>
+
+	</div>
+</div>

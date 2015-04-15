@@ -1,0 +1,892 @@
+# AppCivist Test Data
+---
+
+# Assemblies
+  - &a1 !!models.Assembly
+    assemblyId: 1
+    name: "Participatory Budgeting in San Francisco and the Bay Area"
+    description: An assembly about PB in SF
+    city: San Francisco
+    icon: /assets/images/sfskyline-small.jpg
+    url: /api/assembly/4
+    #issues:
+    #  - *i1 # Empty Lot
+    #connectedServices:
+    #  - *s1 # Etherpad
+    #  - *s2 # Lomio
+    #  - *s2 # Agora
+  - &a2 !!models.Assembly
+    assemblyId: 2
+    name: Urban Infrastructure
+    description: "An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal."
+    city: San Francisco
+    icon: /assets/images/tabacalera-140.png
+    url: /api/assembly/1
+    #issues:
+    #connectedServices:
+  - &a3 !!models.Assembly
+    assemblyId: 3
+    name: Institutional Racism
+    description: "An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013."
+    city: Oakland
+    icon: /assets/images/justicia-140.png
+    url: /api/assembly/2
+    #issues:
+    #connectedServices:
+  - &a4 !!models.Assembly
+    assemblyId: 4
+    name: Public Health
+    description: An assembly about Public Health
+    city: Los Angeles
+    icon: /assets/images/barefootdoctor-140.png
+    url: /api/assembly/3
+    #issues:
+    #connectedServices:
+
+# Service Definitions (the registry)
+  - &sd1 !!models.services.ServiceDefinition
+      serviceDefinitionId: 1
+      name: Etherpad 
+      #operations: 
+      #  - *sod1 # readText
+      #  - *sod2 # createPad
+  - &sd2 !!models.services.ServiceDefinition
+      serviceDefinitionId: 2
+      name: Loomio
+      #operations: 
+      #  - *sod3
+      #  - *sod4
+  - &sd3 !!models.services.ServiceDefinition
+      serviceDefinitionId: 3
+      name: Agora
+      #operations:
+      #  - *sod5
+      #  - *sod6
+      #  - *sod7
+      #  - *sod8
+
+# Service Operation Definitions
+  # Etherpad readText
+  - &sod1 !!models.services.ServiceOperationDefinition 
+      operationDefinitionId: 1
+      serviceDefinition: *sd1
+      name: getText 
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd1 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 1
+            name: padID
+            type: QUERY_PARAM
+            dataType: STRING
+  # Etherpad createPad
+  - &sod2 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 2
+      serviceDefinition: *sd1
+      name: createPad 
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd2 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 2
+            name: padID
+            type: QUERY_PARAM
+            dataType: STRING 
+        - &spd3 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 3
+            name: text
+            type: QUERY_PARAM
+            dataType: STRING
+  # Loomio GET groups
+  - &sod3 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 3
+      serviceDefinition: *sd2
+      name: groups
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd4 !!models.services.ServiceParameterDefinition
+          parameterDefinitionId: 4
+          name: groupId
+          pathOrder: 0
+          type: PATH_PARAM
+          dataType: STRING 
+  # Loomio GET discussions
+  - &sod4 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 4
+      serviceDefinition: *sd2
+      name: discussions
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd5 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 5
+            name: key
+            pathOrder: 0
+            type: PATH_PARAM
+            dataType: STRING 
+  # Loomio GET motion 
+  - &sod5 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 5
+      serviceDefinition: *sd3
+      name: proposals
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd6 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 6
+            name: motionId
+            pathOrder: 0
+            type: PATH_PARAM
+            dataType: STRING
+  # Agora execute action
+  - &sod6 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 6
+      serviceDefinition: *sd3
+      name: action
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd7 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 7
+            name: description
+            type: BODY_PARAM
+            dataType: JSON
+            #TODO => How do we define structured body objects? dataObjectType:
+  # Agora GET agora
+  - &sod7 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 7
+      serviceDefinition: *sd3
+      name: agora
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd8 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 8
+            name: id
+            type: PATH_PARAM
+            dataType: INT
+  # Agora GET election
+  - &sod8 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 8
+      serviceDefinition: *sd3
+      name: election
+      nameOnPath: FALSE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd9 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 9
+            name: id
+            type: PATH_PARAM
+            dataType: INT
+  # Loomio create discussion
+  - &sod9 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 9
+      serviceDefinition: *sd2
+      name: discussions
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd10 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 10
+            name: discussion
+            type: BODY_PARAM
+            dataType: JSON
+            dataModel: 
+              - &dm5 !!models.services.ServiceParameterDataModel
+                  dataModelId: 5
+                  dataKey: 'title'
+                  defaultValue: 'Title of discussion goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: false
+                  definition: *spd10
+              - &dm6 !!models.services.ServiceParameterDataModel
+                  dataModelId: 6
+                  dataKey: 'description'
+                  defaultValue: 'Discussion description goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: FALSE
+                  list: FALSE
+                  definition: *spd10
+              - &dm7 !!models.services.ServiceParameterDataModel
+                  dataModelId: 7
+                  dataKey: 'private'
+                  defaultValue: 'false'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
+                  definition: *spd10
+              - &dm8 !!models.services.ServiceParameterDataModel
+                  dataModelId: 8
+                  dataKey: 'group_id'
+                  annotations: 'INT, REQUIRED'
+                  required: TRUE
+                  list: FALSE
+                  definition: *spd10
+  # Loomio create group
+  - &sod10 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 10
+      serviceDefinition: *sd2
+      name: groups
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd11 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 11
+            name: group
+            type: BODY_PARAM
+            dataType: JSON
+            # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
+            dataModel: 
+              - &dm1 !!models.services.ServiceParameterDataModel
+                  dataModelId: 1
+                  dataKey: 'name'
+                  defaultValue: 'Group name goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
+                  definition: *spd11
+              - &dm2 !!models.services.ServiceParameterDataModel
+                  dataModelId: 2
+                  dataKey: 'description'
+                  defaultValue: 'Group description goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
+                  definition: *spd11
+              - &dm3 !!models.services.ServiceParameterDataModel
+                  dataModelId: 3
+                  dataKey: 'visible_to'
+                  defaultValue: 'public'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
+                  definition: *spd11
+              - &dm4 !!models.services.ServiceParameterDataModel
+                  dataModelId: 4
+                  dataKey: 'discussion_privacy_options'
+                  defaultValue: 'public'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  list: FALSE
+                  definition: *spd11
+  # Agora CREATE election
+  - &sod11 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 11
+      serviceDefinition: *sd3
+      name: create_election
+      nameOnPath: FALSE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd12 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 12
+            name: agora
+            defaultValue: agora
+            pathOrder: 0
+            type: PATH_PARAM
+            dataType: STRING
+        - &spd13 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 13
+            name: agora_id
+            pathOrder: 1
+            type: PATH_PARAM
+            dataType: INT
+        - &spd14 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 14
+            name: action
+            defaultValue: action
+            pathOrder: 2
+            type: PATH_PARAM
+            dataType: INT
+        - &spd15 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 15
+            name: actionBody
+            type: BODY_PARAM
+            dataType: JSON
+            # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
+            dataModel: 
+              - &dm9 !!models.services.ServiceParameterDataModel
+                  dataModelId: 9
+                  dataKey: 'action'
+                  defaultValue: 'create_election'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm10 !!models.services.ServiceParameterDataModel
+                  dataModelId: 10
+                  dataKey: 'description'
+                  defaultValue: 'Election description goes here'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm11 !!models.services.ServiceParameterDataModel
+                  dataModelId: 11
+                  dataKey: 'questions'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+                  list: TRUE
+                  childDataModel: 
+                    - &dm28 !!models.services.ServiceParameterDataModel
+                        dataModelId: 28
+                        dataKey: 'question_num'
+                        defaultValue: '1'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm29 !!models.services.ServiceParameterDataModel
+                        dataModelId: 29
+                        dataKey: 'num_seats'
+                        defaultValue: '1'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm16 !!models.services.ServiceParameterDataModel
+                        dataModelId: 16
+                        dataKey: 'question'
+                        defaultValue: 'Do you prefer foo or bar?'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm17 !!models.services.ServiceParameterDataModel
+                        dataModelId: 17
+                        dataKey: 'a'
+                        defaultValue: 'ballot/question'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm18 !!models.services.ServiceParameterDataModel
+                        dataModelId: 18
+                        dataKey: 'tally_type'
+                        defaultValue: 'ONE_CHOICE'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm19 !!models.services.ServiceParameterDataModel
+                        dataModelId: 19
+                        dataKey: 'max'
+                        defaultValue: '1'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm20 !!models.services.ServiceParameterDataModel
+                        dataModelId: 20                      
+                        dataKey: 'min'
+                        defaultValue: '0'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm21 !!models.services.ServiceParameterDataModel
+                        dataModelId: 21
+                        dataKey: 'randomize_answer_order'
+                        defaultValue: 'True'
+                        annotations: 'STRING, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                    - &dm22 !!models.services.ServiceParameterDataModel
+                        dataModelId: 22
+                        dataKey: 'answers'
+                        annotations: 'LIST, REQUIRED'
+                        required: TRUE
+                        parentDataModel: *dm11
+                        list: TRUE
+                        childDataModel: 
+                          - &dm23 !!models.services.ServiceParameterDataModel
+                              dataModelId: 23
+                              dataKey: 'a'
+                              defaultValue: 'ballot/answer'
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+                          - &dm24 !!models.services.ServiceParameterDataModel
+                              dataModelId: 24
+                              dataKey: 'url'
+                              defaultValue: ''
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+                          - &dm25 !!models.services.ServiceParameterDataModel
+                              dataModelId: 25
+                              dataKey: 'details'
+                              defaultValue: ''
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+                          - &dm26 !!models.services.ServiceParameterDataModel
+                              dataModelId: 26
+                              dataKey: 'value'
+                              defaultValue: 'foo'
+                              annotations: 'STRING, REQUIRED'
+                              required: TRUE
+                              parentDataModel: *dm22
+              - &dm13 !!models.services.ServiceParameterDataModel
+                  dataModelId: 13
+                  dataKey: 'pretty_name'
+                  defaultValue: 'Election pretty_name'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm14 !!models.services.ServiceParameterDataModel
+                  dataModelId: 14
+                  dataKey: 'is_vote_secret'
+                  defaultValue: 'Election pretty_name'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd15
+              - &dm15 !!models.services.ServiceParameterDataModel
+                  dataModelId: 15
+                  dataKey: 'from_date'
+                  annotations: 'STRING, OPTIONAL, %Y-%m-%dT%H:%M:%S'
+                  definition: *spd15
+              - &dm27 !!models.services.ServiceParameterDataModel
+                  dataModelId: 27
+                  dataKey: 'to_date'
+                  annotations: 'STRING, OPTIONAL, %Y-%m-%dT%H:%M:%S'
+                  definition: *spd15
+  #http://localhost:4001/api/v1/proposals?discussion_id=4
+  # GET proposals in discussion
+  - &sod12 !!models.services.ServiceOperationDefinition  
+      operationDefinitionId: 12
+      serviceDefinition: *sd3
+      name: proposals
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd16 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 16
+            name: discussion_id
+            pathOrder: 0
+            type: QUERY_PARAM
+            dataType: STRING
+  # POST http://localhost:4001/api/v1/proposals
+  # CREATE proposals in discussion
+  - &sod13 !!models.services.ServiceOperationDefinition  
+      operationDefinitionId: 13
+      serviceDefinition: *sd3
+      name: proposals
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd17 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 17
+            name: proposal
+            pathOrder: 0
+            type: BODY_PARAM
+            dataType: JSON
+            dataModel:
+              - &dm35 !!models.services.ServiceParameterDataModel
+                  dataModelId: 35
+                  dataKey: 'discussion_id'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+              - &dm36 !!models.services.ServiceParameterDataModel
+                  dataModelId: 36
+                  dataKey: 'name'
+                  defaultValue: 'Name of proposal'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+              - &dm30 !!models.services.ServiceParameterDataModel
+                  dataModelId: 30
+                  dataKey: 'description'
+                  defaultValue: 'Description of proposal'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+              - &dm31 !!models.services.ServiceParameterDataModel
+                  dataModelId: 31
+                  dataKey: 'closing_at'
+                  defaultValue: 'Description of proposal'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd17
+  # Agora CREATE agora
+  - &sod14 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 14
+      serviceDefinition: *sd3
+      name: agora
+      nameOnPath: TRUE
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd18 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 18
+            name: agora
+            type: BODY_PARAM
+            dataType: JSON
+            dataModel:
+              - &dm32 !!models.services.ServiceParameterDataModel
+                  dataModelId: 32
+                  dataKey: 'pretty_name'
+                  defaultValue: 'created-agora'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd18
+              - &dm33 !!models.services.ServiceParameterDataModel
+                  dataModelId: 33
+                  dataKey: 'short_description'
+                  defaultValue: 'created agora description'
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd18
+              - &dm34 !!models.services.ServiceParameterDataModel
+                  dataModelId: 34
+                  dataKey: 'is_vote_secret'
+                  defaultValue: FALSE
+                  annotations: 'STRING, REQUIRED'
+                  required: TRUE
+                  definition: *spd18
+  # Etherpad createGroup
+  - &sod15 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 15
+      serviceDefinition: *sd1
+      name: createGroup 
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+  # Etherpad listPads
+  - &sod16 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 16
+      serviceDefinition: *sd1
+      name: listPads
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd22 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 22
+            name: groupID
+            type: QUERY_PARAM
+            dataType: STRING
+  # Etherpad createGroupPad
+  - &sod17 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 17
+      serviceDefinition: *sd1
+      name: createGroupPad
+      nameOnPath: TRUE
+      type: HTTP
+      method: GET
+      parameters: 
+        - &spd19 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 19
+            name: groupID
+            type: QUERY_PARAM
+            dataType: STRING
+        - &spd20 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 20
+            name: padName
+            type: QUERY_PARAM
+            dataType: STRING
+        - &spd21 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 21
+            name: text
+            type: QUERY_PARAM
+            dataType: STRING
+#createAuthor([name]) creates a new author 
+#createAuthorIfNotExistsFor(authorMapper [, name]) this functions helps you to map your application author ids to etherpad lite author ids 
+#listPadsOfAuthor(authorID) returns an array of all pads this author contributed to
+#createSession(groupID, authorID, validUntil) creates a new session. validUntil is an unix timestamp in seconds 
+#deleteSession(sessionID) deletes a session 
+#getSessionInfo(sessionID) returns informations about a session 
+#listSessionsOfGroup(groupID) returns all sessions of a group 
+#listSessionsOfAuthor(authorID) returns all sessions of an author 
+#getText(padID, [rev]) returns the text of a pad 
+#setText(padID, text) sets the text of a pad 
+#getHTML(padID, [rev]) returns the text of a pad formatted as HTML
+
+
+
+#TODO Map Agora Operations by Agora
+#TODO How can we concatenate operations? 
+# Example: 
+# - GET /agora/{id} ==> Read Agora
+# - GET /agora/{id}/action {"action": "create_election", ... }
+
+# Services
+  - &s1 !!models.services.Service
+      serviceId: 1
+      name: Etherpad
+      baseUrl: http://localhost:9001/api/1
+      serviceDefinition: *sd1
+      assembly: *a1
+      #auth: *sa1 
+      #operations: 
+      #  - *so1
+      #  - *so2
+      #resources: 
+      #  - *sr1 
+  - &s2 !!models.services.Service
+      serviceId: 2
+      name: Loomio
+      baseUrl: http://localhost:4001/api/v1
+      serviceDefinition: *sd2
+      assembly: *a1
+      #auth: &sa2 
+      #operations: 
+      #  - *so3 
+      #  - *so4 
+      #  - *so5 
+      #  - *so6 
+      #resources: 
+      #  - *sr2 
+      #  - *sr3 
+      #  - *sr4 
+  - &s3 !!models.services.Service
+      serviceId: 3
+      name: Agora
+      baseUrl: http://localhost:8000/api/v1
+      serviceDefinition: *sd3
+      assembly: *a1
+      trailingSlash: TRUE
+      #operations: 
+      #  - *so3 
+      #  - *so4 
+      #  - *so5 
+      #  - *so6 
+      #resources: 
+      #  - *sr5
+      #  - *sr6 
+
+# Service Authentications
+  - &sa1 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 1
+      authType: TOKEN
+      token: 3dca6eb8e4f2b5ea5216a88e49d7a63c09da0d7c793d0734b708058e0a687a19
+      tokenInjection: QUERY
+      tokenParamName: apiKey 
+      service: *s1
+  - &sa2 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 2
+      authType: COOKIE
+      token: MVh4dXBZamgxaGZWdHpoSUlkVWZwTjBEOWVIYmVvaTJMM0hpYXp2MDZhNHZjeW1rOVZJUFZ0MUtXZW45OXIxaElnaVd4SGFtZjR2bWZYaVFFN0ZuU0w4ZnNxMW8za2FDdFB3U20rT2NlU0RURXZ6VTlTVUF3NU9wb2ZZTDF2b0VWcTRtaTdnQU01TkRTbTRUQytEQ0IrNEJjMVVGeExnRERVVG1XWlU2TUt4UkQ5OFo5Y3gyRUloMkZqMzF6SXZGWDhLS3NNb2ZjdGV4bjdUb3AxQ1NYTWhWREJZSE1Bb2hrNVRVeXlvaGxZQUloekROS0lvano0aXE4U1lEQWs2QTRpbHcwK2hjTFdQWmM3Z0F0OG44cFp2c2ZmWDdCREJhdXI0Z1Rpa3ZmelMzTjFZQ0JwaXpjZ01JZTF1YkhIUEdCMmZsRnIvRmxTSlJteDBOa3lGRU1FejdEamV2eFZtTVpKaVpURnFrYkRRQWl6TDNzTmJNTWVmQmpvZjZHNlhVVW53U3RMb1RtdUVnSVhFeTd0UUxkUT09LS1nd0RYNWJpakJYMnZUMVlLb1R6a2hBPT0%3D--f392e285a192d44e361eebab8719dbc2cfa9f7b7
+      tokenInjection: Cookie
+      tokenParamName: _loomio
+      service: *s2
+  - &sa3 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 3
+      authType: TOKEN
+      token: ApiKey cdparra:2cea7838eaa75a61a45c96042cf4d5e8cc625e00
+      tokenInjection: HEADER
+      tokenParamName: Authorization
+      service: *s3
+  - &sa3 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 4
+      authType: TOKEN
+      # Challenge: changes for each user
+      token: tFvhI9SFsWmH3lMmcdip9MaLfr49wVt6 #6JOPudnXZIe63vTRXiwMYULsDJynfwHU
+      tokenInjection: HEADER
+      tokenParamName: X-CSRFToken
+      service: *s3
+  - &sa3 !!models.services.ServiceAuthentication
+      serviceAuthenticationId: 5
+      authType: COOKIE
+      # Challenge: changes for each user
+      token: tFvhI9SFsWmH3lMmcdip9MaLfr49wVt6 #6JOPudnXZIe63vTRXiwMYULsDJynfwHU
+      tokenInjection: Cookie
+      tokenParamName: csrftoken
+      service: *s3
+
+# Service Operations # TODO: maybe we don't need to store instances of operations
+  - &so1 !!models.services.ServiceOperation
+      serviceOperationId: 1
+      appCivistOperation: readIssue
+      definition: *sod1 
+      service: *s1 
+  - &so2 !!models.services.ServiceOperation
+      serviceOperationId: 2
+      appCivistOperation: createIssue
+      definition: *sod2
+      service: *s1 
+  - &so3 !!models.services.ServiceOperation
+      serviceOperationId: 3
+      appCivistOperation: readGroup
+      definition: *sod3
+      service: *s2 
+  - &so4 !!models.services.ServiceOperation
+      serviceOperationId: 4
+      appCivistOperation: readDiscussion
+      definition: *sod4
+      service: *s2 
+  - &so5 !!models.services.ServiceOperation
+      serviceOperationId: 5
+      appCivistOperation: readProposal
+      definition: *sod1
+      service: *s2 
+  - &so6 !!models.services.ServiceOperation
+      serviceOperationId: 6
+      appCivistOperation: createProposal
+      definition: *sod2
+      service: *s2
+  - &so7 !!models.services.ServiceOperation
+      serviceOperationId: 7
+      appCivistOperation: createElection
+      definition: *sod6
+      service: *s2    
+  - &so8 !!models.services.ServiceOperation
+      serviceOperationId: 8
+      appCivistOperation: createDiscussion
+      definition: *sod9
+      service: *s2 
+
+# Service Resources
+  - &sr1 !!models.services.ServiceResource
+      serviceResourceId: 1
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: ISSUE
+      service: *s1
+  - &sr2 !!models.services.ServiceResource
+      serviceResourceId: 2
+      url: /api/v1/groups/hkP4Bvtn
+      keyValue: hkP4Bvtn
+      keyName: groupId
+      type: GROUP
+      service: *s2
+  - &sr3 !!models.services.ServiceResource
+      serviceResourceId: 3
+      url: /api/v1/discussions/sxiOKaJo
+      keyValue: sxiOKaJo
+      keyName: discussionId
+      type: DISCUSSION
+      service: *s2
+  - &sr4 !!models.services.ServiceResource
+      serviceResourceId: 4
+      url: /api/v1/motion/5l1yrCV7
+      keyValue: 5l1yrCV7
+      keyName: motionId
+      type: PROPOSAL
+      service: *s2
+  - &sr5 !!models.services.ServiceResource
+      serviceResourceId: 5
+      url: /api/v1/action/agora/1
+      keyValue: 1
+      keyName: groupId
+      type: GROUP
+      service: *s3
+  - &sr6 !!models.services.ServiceResource
+      serviceResourceId: 6
+      url: /api/v1/action/election/4
+      keyValue: 4
+      keyName: electionId
+      type: ELECTION
+      service: *s3
+  - &sr7 !!models.services.ServiceResource
+      serviceResourceId: 7
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: PROPOSAL
+      service: *s1
+  - &sr8 !!models.services.ServiceResource
+      serviceResourceId: 8
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: PROPOSAL
+      service: *s1
+  - &sr9 !!models.services.ServiceResource
+      serviceResourceId: 9
+      url: http://localhost:9001/api/1/api/1/getText?padId=fk3EFogcuh
+      type: PROPOSAL
+      service: *s1
+
+# Service Parameter Values
+  - &sp1 !!models.services.ServiceParameter            
+      serviceParameterId: 1
+      value: fk3EFogcuh
+      serviceParameter: *spd1 
+      serviceResource: *sr1
+
+# Issues 
+  - &i1 !!models.Issue
+    issueId: 1
+    title: What can we do with the empty lot at Telegraph?  
+    brief: "The corner of Telegraph and Channing has an empty lot, and has had for at least 3 years. We should do something about it"
+    type: IDEA_CHALLENGE
+    assembly: *a1
+    # The Type of Issue establishes an standard decisionWorkflow 
+    # from which the assembly can starts their assembly decision design
+    #resource: &sr1
+    # The workflow below goes includes only Proposal Making, Deliberation and Voting
+    #decisionWorkflow: #[ &c1, &c2, &c3, &c4 ] # defines the decision making timeline to follow
+    #  - *c1  
+    #  - *c2 
+    #  - *c3 
+    #  - *c4
+
+# Campaigns
+  - &c1 !!models.Campaign
+    campaignId: 1
+    name: Proposal Making
+    startDate: 2015-03-01
+    endDate: 2015-03-10
+    #nextCampaign: &c2
+    issue: *i1
+    availableOperations: 
+      - *so1
+      - *so2
+      - *so5
+      - *so6
+    campaignResources:
+      - *sr1 
+      - *sr7
+      - *sr8
+      - *sr9
+    #capability: PROPOSAL_MAKING 
+    # the capability defines 
+    # 1. the initial template of an inner workflow
+    # 2. the required resources (issue, proposal template, 
+    # 
+    #TODO: how do we define operations for starting the workflow 
+    #TODO: define the inner enabling workflow 
+    #enablingWorklflow: 
+    #  - &proposalmaking !!models.Campaign 
+  - &c2 !!models.Campaign
+    campaignId: 2
+    name: Proposal Development and Versioning
+    startDate: 2015-03-11
+    endDate: 2015-03-20
+    enabled: false
+    previousCampaign: *c1
+    #nextCampaign: &c3
+    issue: *i1
+  - &c3 !!models.Campaign
+    campaignId: 3
+    name: Deliberation
+    startDate: 2015-03-21
+    endDate: 2015-03-30
+    previousCampaign: *c2
+    #nextCampaign: &c4
+    issue: *i1
+    availableOperations: 
+      - *so1
+      - *so3
+      - *so4
+      - *so5 
+      - *so8 
+    inputResources:
+      - *sr1 
+      - *sr7
+      - *sr8
+      - *sr9
+    campaignResources:
+      - *sr3
+    startOperation: *so8 # Create a Discusion 
+    startOperationType: FOREACH # For each Proposal
+  - &c4 !!models.Campaign
+    campaignId: 4
+    name: Voting
+    startDate: 2015-03-31
+    endDate: 2015-04-10
+    previousCampaign: *c3
+    issue: *i1
