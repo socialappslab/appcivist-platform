@@ -3,11 +3,7 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -33,13 +29,17 @@ public class Issue extends Model {
 	private ServiceResource resource;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="issue")
-	private List<Campaign> decisionWorkflow = new ArrayList<Campaign>();;
+	private List<Campaign> decisionWorkflow = new ArrayList<Campaign>();
 
 //	private String test;
 	
 	@JsonIgnore
 	@ManyToOne
 	private Assembly assembly;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Theme> themes = new ArrayList<Theme>();
+
 	/*
 	 * Basic Queries
 	 */
@@ -47,9 +47,10 @@ public class Issue extends Model {
 	public static Model.Finder<Long, Issue> find = new Model.Finder<Long, Issue>(
 			Long.class, Issue.class);
 
-	
-	public Issue(Long issueId, String title, String brief, String type,
+
+    public Issue(Long issueId, String title, String brief, String type,
 			ServiceResource resource) {
+
 		super();
 		this.issueId = issueId;
 		this.title = title;
@@ -80,6 +81,20 @@ public class Issue extends Model {
 		this.resource = resource;
 		this.setDecisionWorkflow(c);
 	}
+
+    public Issue(Long issueId, String title, String brief, String type,
+                 ServiceResource resource, List<Campaign> c, Assembly assembly, List<Theme> themes ) {
+        super();
+        this.issueId = issueId;
+        this.title = title;
+        this.brief = brief;
+        this.type = type;
+        this.resource = resource;
+        this.setDecisionWorkflow(c);
+        this.assembly = assembly;
+        this.setThemes(themes);
+
+    }
 	
 	 public Issue() {
 		 super();
@@ -180,6 +195,14 @@ public class Issue extends Model {
 	public void setResource(ServiceResource resource) {
 		this.resource = resource;
 	}
+
+    public List<Theme> getThemes() {
+        return themes;
+    }
+
+    public void setThemes(List<Theme> themes) {
+        this.themes = themes;
+    }
 
 	/*
 	 * Other Queries
