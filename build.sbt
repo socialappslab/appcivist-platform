@@ -6,6 +6,10 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
 scalaVersion := "2.11.1"
 
+herokuAppName in Compile := "appcivist-pb"
+
+herokuJdkVersion in Compile := "1.8"
+
 // Resolvers for Maven2 repositories
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
@@ -41,4 +45,4 @@ resolvers += Resolver.url("play-authenticate (release)", url("http://joscha.gith
 
 resolvers += Resolver.url("play-authenticate (snapshot)", url("http://joscha.github.io/play-authenticate/repo/snapshots/"))(Resolver.ivyStylePatterns)
 
-herokuAppName in Compile := "appcivist-pb"
+
