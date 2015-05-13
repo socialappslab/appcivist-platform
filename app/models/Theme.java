@@ -4,6 +4,7 @@ import play.db.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -24,19 +25,62 @@ public class Theme extends Model {
     /*@ManyToMany(mappedBy = "themes")
     private List<Organization> organizations = new ArrayList<Organization>();*/
 
-    public Theme(Long themeId, String title, String description, List<Issue> issues, List<Assembly> assemblies){
+    //Commons
+    private User creator;
+    private Date creation;
+    private Date removal;
+    private String lang;
+
+    public Theme(Long themeId, String title, String description, List<Issue> issues, List<Assembly> assemblies, User creator, Date creation, Date removal, String lang){
         this.themeId = themeId;
         this.title = title;
         this.description = description;
         this.setIssues(issues);
         this.setAssemblies(assemblies);
+        this.creator = creator;
+        this.creation = creation;
+        this.removal = removal;
+        this.lang = lang;
     }
 
     public Long getThemeId() {
         return themeId;
     }
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Date getCreation() {
+        return creation;
+    }
+
+    public void setCreation(Date creation) {
+        this.creation = creation;
+    }
+
+    public Date getRemoval() {
+        return removal;
+    }
+
+    public void setRemoval(Date removal) {
+        this.removal = removal;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
+    }
+
     public void setThemeId(Long themeId) {
+
         this.themeId = themeId;
     }
 

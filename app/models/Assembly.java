@@ -1,16 +1,8 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import enums.ResponseStatus;
 import models.services.Service;
@@ -34,6 +26,12 @@ public class Assembly extends Model {
 	private String city;
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON;
 	private String url;
+
+    //Commons
+    private User creator;
+    private Date creation;
+    private Date removal;
+    private String lang;
 	
 //	private String test;
 	
@@ -52,8 +50,12 @@ public class Assembly extends Model {
 	
 //	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
 //	private List<OperationServiceMappings> operationServiceMappings = new ArrayList<Service>();
-	
-	
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Theme> themes = new ArrayList<Theme>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Phase> phases = new ArrayList<Phase>();
 	
 	/*
 	 * Basic Data Queries
@@ -62,7 +64,7 @@ public class Assembly extends Model {
 	public static Model.Finder<Long, Assembly> find = new Model.Finder<Long, Assembly>(
 			Long.class, Assembly.class);
 
-	/**
+    /**
 	 * Empty constructor
 	 */
 	public Assembly() {
@@ -76,14 +78,32 @@ public class Assembly extends Model {
 		this.city=assemblyCity;
 	}
 
-	public static AssemblyCollection findAll() {
+    public Assembly(String name, String description, String city, String icon, String url, User creator, Date creation, Date removal, String lang, List<Issue> issues, List<Service> connectedServices, Map<String, ServiceResource> resourceMappings, Map<String, Service> operationServiceMappings, List<Theme> themes, List<Phase> phases) {
+        this.name = name;
+        this.description = description;
+        this.city = city;
+        this.icon = icon;
+        this.url = url;
+        this.creator = creator;
+        this.creation = creation;
+        this.removal = removal;
+        this.lang = lang;
+        this.issues = issues;
+        this.connectedServices = connectedServices;
+        this.resourceMappings = resourceMappings;
+        this.operationServiceMappings = operationServiceMappings;
+        this.themes = themes;
+        this.phases = phases;
+    }
+
+    public static AssemblyCollection findAll() {
 		List<Assembly> assemblies = find.all();
 		AssemblyCollection assemblyCollection = new AssemblyCollection();
 		assemblyCollection.setAssemblies(assemblies);
 		return assemblyCollection;
 	}
 
-	public static void create(Assembly assembly) {
+    public static void create(Assembly assembly) {
 		if (assembly.getAssemblyId()!=null && (assembly.getUrl()==null || assembly.getUrl()=="")) {
 			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL+"/"+assembly.getAssemblyId());
 		}
@@ -230,9 +250,58 @@ public class Assembly extends Model {
 	
 	public void removeOperationServiceMapping(String opName) {
 		this.operationServiceMappings.remove(opName);
-	}	
+	}
 
-	/*
+    public List<Theme> getThemes() {
+        return themes;
+    }
+
+    public void setThemes(List<Theme> themes) {
+        this.themes = themes;
+    }
+
+    public List<Phase> getPhases() {
+        return phases;
+    }
+
+    public void setPhases(List<Phase> phases) {
+        this.phases = phases;
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Date getCreation() {
+        return creation;
+    }
+
+    public void setCreation(Date creation) {
+        this.creation = creation;
+    }
+
+    public Date getRemoval() {
+        return removal;
+    }
+
+    public void setRemoval(Date removal) {
+        this.removal = removal;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
+    }
+
+
+    /*
 	 * Other Queries 
 	 */
 
