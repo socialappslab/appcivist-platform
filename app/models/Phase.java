@@ -31,11 +31,14 @@ public class Phase extends Model {
     @ManyToMany(mappedBy = "phases")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
-    /*@ManyToMany(cascade = CascadeType.ALL)
-    private List<Resource> resources = new ArrayList<Resource>();*/
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Module> modules = new ArrayList<Module>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Resource> resources = new ArrayList<Resource>();
 
 
-    public Phase(Long phaseId, Date start, Date end, Date update, String name, User creator, Date creation, Date removal, String lang, List<Assembly> assemblies) {
+    public Phase(Long phaseId, Date start, Date end, Date update, String name, User creator, Date creation, Date removal, String lang, List<Assembly> assemblies, List<Module> modules, List<Resource> resources) {
         this.phaseId = phaseId;
         this.start = start;
         this.end = end;
@@ -46,6 +49,24 @@ public class Phase extends Model {
         this.removal = removal;
         this.lang = lang;
         this.assemblies = assemblies;
+        this.modules = modules;
+        this.resources = resources;
+    }
+
+    public List<Module> getModules() {
+        return modules;
+    }
+
+    public void setModules(List<Module> modules) {
+        this.modules = modules;
+    }
+
+    public List<Resource> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<Resource> resources) {
+        this.resources = resources;
     }
 
     public Long getPhaseId() {

@@ -56,6 +56,18 @@ public class Assembly extends Model {
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Phase> phases = new ArrayList<Phase>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Module> modules = new ArrayList<Module>();
+
+    @ManyToMany(mappedBy = "assemblies")
+    private List<Organization> organizations = new ArrayList<Organization>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Message> messages = new ArrayList<Message>();
+
+    @ManyToMany(mappedBy = "assemblies")
+    private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 	
 	/*
 	 * Basic Data Queries
@@ -78,7 +90,7 @@ public class Assembly extends Model {
 		this.city=assemblyCity;
 	}
 
-    public Assembly(String name, String description, String city, String icon, String url, User creator, Date creation, Date removal, String lang, List<Issue> issues, List<Service> connectedServices, Map<String, ServiceResource> resourceMappings, Map<String, Service> operationServiceMappings, List<Theme> themes, List<Phase> phases) {
+    public Assembly(String name, String description, String city, String icon, String url, User creator, Date creation, Date removal, String lang, List<Issue> issues, List<Service> connectedServices, Map<String, ServiceResource> resourceMappings, Map<String, Service> operationServiceMappings, List<Theme> themes, List<Phase> phases, List<Module> modules, List<Organization> organizations, List<Message> messages, List<WorkingGroup> workingGroups) {
         this.name = name;
         this.description = description;
         this.city = city;
@@ -94,6 +106,10 @@ public class Assembly extends Model {
         this.operationServiceMappings = operationServiceMappings;
         this.themes = themes;
         this.phases = phases;
+        this.modules = modules;
+        this.organizations = organizations;
+        this.messages = messages;
+        this.workingGroups = workingGroups;
     }
 
     public static AssemblyCollection findAll() {
@@ -300,6 +316,37 @@ public class Assembly extends Model {
         this.lang = lang;
     }
 
+    public List<Module> getModules() {
+        return modules;
+    }
+
+    public void setModules(List<Module> modules) {
+        this.modules = modules;
+    }
+
+    public List<Organization> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(List<Organization> organizations) {
+        this.organizations = organizations;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
+    }
+
+    public List<WorkingGroup> getWorkingGroups() {
+        return workingGroups;
+    }
+
+    public void setWorkingGroups(List<WorkingGroup> workingGroups) {
+        this.workingGroups = workingGroups;
+    }
 
     /*
 	 * Other Queries 

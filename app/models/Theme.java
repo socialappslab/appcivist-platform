@@ -22,8 +22,8 @@ public class Theme extends Model {
     @ManyToMany(mappedBy = "themes")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
-    /*@ManyToMany(mappedBy = "themes")
-    private List<Organization> organizations = new ArrayList<Organization>();*/
+    @ManyToMany(mappedBy = "themes")
+    private List<Organization> organizations = new ArrayList<Organization>();
 
     //Commons
     private User creator;
@@ -31,12 +31,13 @@ public class Theme extends Model {
     private Date removal;
     private String lang;
 
-    public Theme(Long themeId, String title, String description, List<Issue> issues, List<Assembly> assemblies, User creator, Date creation, Date removal, String lang){
+    public Theme(Long themeId, String title, String description, List<Issue> issues, List<Assembly> assemblies, List<Organization> organizations, User creator, Date creation, Date removal, String lang){
         this.themeId = themeId;
         this.title = title;
         this.description = description;
         this.setIssues(issues);
         this.setAssemblies(assemblies);
+        this.setOrganizations(organizations);
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -77,6 +78,14 @@ public class Theme extends Model {
 
     public void setLang(String lang) {
         this.lang = lang;
+    }
+
+    public List<Organization> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(List<Organization> organizations) {
+        this.organizations = organizations;
     }
 
     public void setThemeId(Long themeId) {
