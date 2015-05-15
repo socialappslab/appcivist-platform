@@ -4,14 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.MembershipStatus;
 import play.db.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-public class Membership extends Model{
+@Inheritance(strategy=InheritanceType.JOINED)
+@DiscriminatorColumn(name="MEMBERSHIP_TYPE")
+public abstract class Membership extends Model{
 
     //Commons
     private User creator;
@@ -24,25 +23,33 @@ public class Membership extends Model{
     private Date expiration;
     private MembershipStatus status;
 
-    @OneToMany
-    private User target;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User User) {
+        this.user = User;
+    }
+
+    @JsonIgnore
+    @ManyToOne
+    private User user;
+
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role Role) {
+        this.role = Role;
+    }
 
     @JsonIgnore
     @ManyToOne
     private Role role;
-
-    public Membership(User creator, Date creation, Date removal, String lang, Long membershipId, Date expiration, MembershipStatus status, User target, Role role) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.membershipId = membershipId;
-        this.expiration = expiration;
-        this.status = status;
-        this.target = target;
-        this.role = role;
-    }
-
+    
+    
     public User getCreator() {
         return creator;
     }
@@ -97,21 +104,5 @@ public class Membership extends Model{
 
     public void setStatus(MembershipStatus status) {
         this.status = status;
-    }
-
-    public User getTarget() {
-        return target;
-    }
-
-    public void setTarget(User target) {
-        this.target = target;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
 }

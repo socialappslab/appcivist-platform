@@ -1,9 +1,12 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import play.db.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.util.Date;
 
 @Entity
@@ -19,6 +22,10 @@ public class Config extends Model{
     private Long configId;
     private String key;
     private String value;
+
+    @ManyToOne
+    @JsonIgnore
+    private Module module;
 
     public Config(User creator, Date creation, Date removal, String lang, Long configId, String key, String value) {
         this.creator = creator;

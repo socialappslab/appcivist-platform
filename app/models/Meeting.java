@@ -7,7 +7,6 @@ import play.db.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.xml.stream.Location;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -26,17 +25,13 @@ public class Meeting extends Model{
     private Long meetingId;
     private Date date;
     private String topic;
-    private Location place;
+    private String place;
     private MeetingStatus status;
     private List<String> attendees =  new ArrayList<String>();
     private URL doodle;
     private URL hangout;
 
-    @JsonIgnore
-    @ManyToOne
-    private Resource resource;
-
-    public Meeting(User creator, Date creation, Date removal, String lang, Long meetingId, Date date, String topic, Location place, MeetingStatus status, List<String> attendees, URL doodle, URL hangout, Resource resource) {
+    public Meeting(User creator, Date creation, Date removal, String lang, Long meetingId, Date date, String topic, String place, MeetingStatus status, List<String> attendees, URL doodle, URL hangout) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -49,7 +44,6 @@ public class Meeting extends Model{
         this.attendees = attendees;
         this.doodle = doodle;
         this.hangout = hangout;
-        this.resource = resource;
     }
 
     public User getCreator() {
@@ -108,11 +102,11 @@ public class Meeting extends Model{
         this.topic = topic;
     }
 
-    public Location getPlace() {
+    public String getPlace() {
         return place;
     }
 
-    public void setPlace(Location place) {
+    public void setPlace(String place) {
         this.place = place;
     }
 
@@ -148,11 +142,4 @@ public class Meeting extends Model{
         this.hangout = hangout;
     }
 
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
 }

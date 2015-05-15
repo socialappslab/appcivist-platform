@@ -22,14 +22,7 @@ public class Note extends Model{
     private String title;
     private String text;
 
-    @ManyToMany(mappedBy = "notes")
-    private List<Task> tasks = new ArrayList<Task>();
-
-    @JsonIgnore
-    @ManyToOne
-    private Resource resource;
-
-    public Note(User creator, Date creation, Date removal, String lang, Long noteId, String title, String text, Resource resource, List<Task> tasks) {
+    public Note(User creator, Date creation, Date removal, String lang, Long noteId, String title, String text) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -37,16 +30,6 @@ public class Note extends Model{
         this.noteId = noteId;
         this.title = title;
         this.text = text;
-        this.resource = resource;
-        this.tasks = tasks;
-    }
-
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
     }
 
     public User getCreator() {
@@ -105,11 +88,4 @@ public class Note extends Model{
         this.text = text;
     }
 
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
 }

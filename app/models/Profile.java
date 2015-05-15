@@ -4,7 +4,6 @@ import play.db.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.xml.stream.Location;
 import java.util.Date;
 
 @Entity
@@ -22,9 +21,9 @@ public class Profile extends Model{
     private String middleName;
     private String lastName;
     private Date birthdate;
-    private Location address;
+    private String address;
 
-    public Profile(User creator, Date creation, Date removal, String lang, Long profileId, String name, String middleName, String lastName, Date birthdate, Location address) {
+    public Profile(User creator, Date creation, Date removal, String lang, Long profileId, String name, String middleName, String lastName, Date birthdate, String address) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -109,11 +108,11 @@ public class Profile extends Model{
         this.birthdate = birthdate;
     }
 
-    public Location getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setAddress(Location address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 }

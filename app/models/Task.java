@@ -5,7 +5,6 @@ import enums.TaskStatus;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
-import javax.xml.stream.Location;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
@@ -26,16 +25,9 @@ public class Task extends Model{
     private Date dueDate;
     private User responsible;
     private TaskStatus status;
-    private Location places;
+    private String places;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Note> notes = new ArrayList<Note>();
-
-    @JsonIgnore
-    @ManyToOne
-    private Resource resource;
-
-    public Task(User creator, Date creation, Date removal, String lang, Long taskId, String title, String description, Date dueDate, User responsible, TaskStatus status, Location places, List<Note> notes, Resource resource) {
+    public Task(User creator, Date creation, Date removal, String lang, Long taskId, String title, String description, Date dueDate, User responsible, TaskStatus status, String places) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -47,8 +39,6 @@ public class Task extends Model{
         this.responsible = responsible;
         this.status = status;
         this.places = places;
-        this.notes = notes;
-        this.resource = resource;
     }
 
     public User getCreator() {
@@ -131,27 +121,13 @@ public class Task extends Model{
         this.status = status;
     }
 
-    public Location getPlaces() {
+    public String getPlaces() {
         return places;
     }
 
-    public void setPlaces(Location places) {
+    public void setPlaces(String places) {
         this.places = places;
     }
 
-    public List<Note> getNotes() {
-        return notes;
-    }
 
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
-    }
-
-    public Resource getResource() {
-        return resource;
-    }
-
-    public void setResource(Resource resource) {
-        this.resource = resource;
-    }
 }

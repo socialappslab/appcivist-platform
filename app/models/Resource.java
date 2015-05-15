@@ -18,6 +18,7 @@ public class Resource extends Model{
     private String lang;
 
     @Id
+    @Column(name="resource_id")
     private Long resourceId;
     private String type;
     private URL externalURL;
@@ -26,6 +27,10 @@ public class Resource extends Model{
     private List<Phase> phases = new ArrayList<Phase>();
 
     @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name="RELATED_RESOURCES",
+            joinColumns={@JoinColumn(name="source", referencedColumnName="resource_id")},
+            inverseJoinColumns={@JoinColumn(name="target", referencedColumnName="resource_id")})
     private List<Resource> resources = new ArrayList<Resource>();
 
     @ManyToMany(mappedBy = "resources")
@@ -34,6 +39,7 @@ public class Resource extends Model{
     @ManyToMany(mappedBy = "resources")
     private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
+    /*
     @OneToMany(cascade = CascadeType.ALL, mappedBy="resource")
     private List<Meeting> meetings = new ArrayList<Meeting>();
 
@@ -41,9 +47,9 @@ public class Resource extends Model{
     private List<Note> notes = new ArrayList<Note>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="resource")
-    private List<Task> tasks = new ArrayList<Task>();
+    private List<Task> tasks = new ArrayList<Task>();*/
 
-    public Resource(User creator, Date creation, Date removal, String lang, Long resourceId, String type, URL externalURL, List<Phase> phases, List<Resource> resources, List<Issue> issues, List<WorkingGroup> workingGroups, List<Meeting> meetings, List<Note> notes, List<Task> tasks) {
+    public Resource(User creator, Date creation, Date removal, String lang, Long resourceId, String type, URL externalURL, List<Phase> phases, List<Resource> resources, List<Issue> issues, List<WorkingGroup> workingGroups) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -55,9 +61,6 @@ public class Resource extends Model{
         this.resources = resources;
         this.issues = issues;
         this.workingGroups = workingGroups;
-        this.meetings = meetings;
-        this.notes = notes;
-        this.tasks = tasks;
     }
 
     public User getCreator() {
@@ -148,27 +151,4 @@ public class Resource extends Model{
         this.workingGroups = workingGroups;
     }
 
-    public List<Meeting> getMeetings() {
-        return meetings;
-    }
-
-    public void setMeetings(List<Meeting> meetings) {
-        this.meetings = meetings;
-    }
-
-    public List<Note> getNotes() {
-        return notes;
-    }
-
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
-    }
-
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
-    }
 }

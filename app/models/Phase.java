@@ -15,8 +15,8 @@ public class Phase extends Model {
 
     @Id
     private Long phaseId;
-    private Date start;
-    private Date end;
+    private Date start_date;
+    private Date end_date;
     private Date update;
     private String name;
 
@@ -40,8 +40,8 @@ public class Phase extends Model {
 
     public Phase(Long phaseId, Date start, Date end, Date update, String name, User creator, Date creation, Date removal, String lang, List<Assembly> assemblies, List<Module> modules, List<Resource> resources) {
         this.phaseId = phaseId;
-        this.start = start;
-        this.end = end;
+        this.start_date = start;
+        this.end_date = end;
         this.update = update;
         this.name = name;
         this.creator = creator;
@@ -77,20 +77,20 @@ public class Phase extends Model {
         this.phaseId = phaseId;
     }
 
-    public Date getStart() {
-        return start;
+    public Date getStart_date() {
+        return start_date;
     }
 
-    public void setStart(Date start) {
-        this.start = start;
+    public void setStart_date(Date start_date) {
+        this.start_date = start_date;
     }
 
-    public Date getEnd() {
-        return end;
+    public Date getEnd_date() {
+        return end_date;
     }
 
-    public void setEnd(Date end) {
-        this.end = end;
+    public void setEnd_date(Date end_date) {
+        this.end_date = end_date;
     }
 
     public Date getUpdate() {

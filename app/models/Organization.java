@@ -1,12 +1,10 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.collections.transformation.SortedList;
 import play.db.ebean.Model;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,8 +22,6 @@ public class Organization extends Model {
     private Long orgId;
     private String name;
     private String description;
-    
-    private SortedList<Phase> phases;
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Theme> themes = new ArrayList<Theme>();
@@ -36,10 +32,24 @@ public class Organization extends Model {
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<Message>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<OrganizationMembership> organizationMemberships = new ArrayList<OrganizationMembership>();
 
-    public Organization(User creator, Date creation, Date removal, String lang, Long orgId, String name, String description, SortedList<Phase> phases, List<Theme> themes, List<Assembly> assemblies, List<Message> messages, List<OrganizationMembership> organizationMemberships) {
+    public List<OrganizationMembership> getMemberships() {
+        return memberships;
+    }
+
+    public void setMemberships(List<OrganizationMembership> memberships) {
+        this.memberships = memberships;
+    }
+
+    @JsonIgnore
+    @OneToMany(mappedBy="organization", cascade = CascadeType.ALL)
+    private List<OrganizationMembership> memberships = new ArrayList<OrganizationMembership>();
+
+/*
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<OrganizationMembership> organizationMemberships = new ArrayList<OrganizationMembership>();*/
+
+    public Organization(User creator, Date creation, Date removal, String lang, Long orgId, String name, String description, List<Theme> themes, List<Assembly> assemblies, List<Message> messages /*List<OrganizationMembership> organizationMemberships*/) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -47,11 +57,10 @@ public class Organization extends Model {
         this.orgId = orgId;
         this.name = name;
         this.description = description;
-        this.phases = phases;
         this.themes = themes;
         this.assemblies = assemblies;
         this.messages = messages;
-        this.organizationMemberships = organizationMemberships;
+        //this.organizationMemberships = organizationMemberships;
     }
 
     public User getCreator() {
@@ -110,14 +119,6 @@ public class Organization extends Model {
         this.description = description;
     }
 
-    public SortedList<Phase> getPhases() {
-        return phases;
-    }
-
-    public void setPhases(SortedList<Phase> phases) {
-        this.phases = phases;
-    }
-
     public List<Theme> getThemes() {
         return themes;
     }
@@ -141,12 +142,12 @@ public class Organization extends Model {
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
-
+/*
     public List<OrganizationMembership> getOrganizationMemberships() {
         return organizationMemberships;
     }
 
     public void setOrganizationMemberships(List<OrganizationMembership> organizationMemberships) {
         this.organizationMemberships = organizationMemberships;
-    }
+    }*/
 }

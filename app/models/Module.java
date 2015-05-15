@@ -2,9 +2,7 @@ package models;
 
 import play.db.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
@@ -29,6 +27,9 @@ public class Module extends Model{
 
     @ManyToMany(mappedBy = "modules")
     private List<Phase> phases = new ArrayList<Phase>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "module")
+    private List<Config> configs = new ArrayList<Config>();
 
     public Module(User creator, Date creation, Date removal, String lang, Long modId, Boolean enabled, String name, Config configuration, List<Assembly> assemblies, List<Phase> phases) {
         this.creator = creator;

@@ -1,11 +1,15 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.PermissionTypes;
 import play.db.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 public class Permission extends Model{
@@ -18,16 +22,18 @@ public class Permission extends Model{
 
     @Id
     private Long permitId;
-    private String resName;
     private PermissionTypes permit;
 
-    public Permission(User creator, Date creation, Date removal, String lang, Long permitId, String resName, PermissionTypes permit) {
+    @JsonIgnore
+    @ManyToOne
+    private List<Role> roles = new ArrayList<Role>();
+
+    public Permission(User creator, Date creation, Date removal, String lang, Long permitId, PermissionTypes permit) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
         this.lang = lang;
         this.permitId = permitId;
-        this.resName = resName;
         this.permit = permit;
     }
 
@@ -37,6 +43,14 @@ public class Permission extends Model{
 
     public void setCreator(User creator) {
         this.creator = creator;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 
     public Date getCreation() {
@@ -69,14 +83,6 @@ public class Permission extends Model{
 
     public void setPermitId(Long permitId) {
         this.permitId = permitId;
-    }
-
-    public String getResName() {
-        return resName;
-    }
-
-    public void setResName(String resName) {
-        this.resName = resName;
     }
 
     public PermissionTypes getPermit() {
