@@ -6,13 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.TokenAction.Type;
 
@@ -71,6 +65,13 @@ public class User extends Model {
 	@JsonIgnore
 	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
 	private List<TokenAction> tokenActions;
+
+
+    //New addings
+    @JsonIgnore
+    @ManyToOne
+    private Role role;
+
 
 	// TODO Add datetime and profile information (creation date, birthdate, etc.) 
 //  Additional properties that can be interesting
