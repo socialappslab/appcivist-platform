@@ -1,5 +1,6 @@
 package models;
 
+import models.Location.Geo;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
@@ -39,6 +40,16 @@ public class Resource extends Model{
     @ManyToMany(mappedBy = "resources")
     private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
+    @OneToOne
+    private Geo location;
+
+    public Geo getLocation() {
+        return location;
+    }
+
+    public void setLocation(Geo location) {
+        this.location = location;
+    }
     /*
     @OneToMany(cascade = CascadeType.ALL, mappedBy="resource")
     private List<Meeting> meetings = new ArrayList<Meeting>();

@@ -8,6 +8,7 @@ import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import models.Location.Geo;
 import models.services.ServiceResource;
 import play.db.ebean.Model;
 
@@ -49,6 +50,17 @@ public class Issue extends Model {
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
+
+    @OneToOne
+    private Geo location;
+
+    public Geo getLocation() {
+        return location;
+    }
+
+    public void setLocation(Geo location) {
+        this.location = location;
+    }
 
 	/*
 	 * Basic Queries

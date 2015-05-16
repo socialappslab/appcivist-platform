@@ -5,6 +5,7 @@ import java.util.*;
 import javax.persistence.*;
 
 import enums.ResponseStatus;
+import models.Location.Geo;
 import models.services.Service;
 import models.services.ServiceResource;
 import play.db.ebean.*;
@@ -68,7 +69,18 @@ public class Assembly extends Model {
 
     @ManyToMany(mappedBy = "assemblies")
     private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
-	
+
+    @OneToOne
+    private Geo location;
+
+    public Geo getLocation() {
+        return location;
+    }
+
+    public void setLocation(Geo location) {
+        this.location = location;
+    }
+
 	/*
 	 * Basic Data Queries
 	 */

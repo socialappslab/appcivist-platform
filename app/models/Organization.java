@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.collections.transformation.SortedList;
+import models.Location.Geo;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
@@ -22,6 +23,7 @@ public class Organization extends Model {
     private Long orgId;
     private String name;
     private String description;
+    private String address;
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Theme> themes = new ArrayList<Theme>();
@@ -32,24 +34,14 @@ public class Organization extends Model {
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<Message>();
 
-
-    public List<OrganizationMembership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<OrganizationMembership> memberships) {
-        this.memberships = memberships;
-    }
-
     @JsonIgnore
     @OneToMany(mappedBy="organization", cascade = CascadeType.ALL)
     private List<OrganizationMembership> memberships = new ArrayList<OrganizationMembership>();
 
-/*
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<OrganizationMembership> organizationMemberships = new ArrayList<OrganizationMembership>();*/
+    @OneToOne
+    private Geo location;
 
-    public Organization(User creator, Date creation, Date removal, String lang, Long orgId, String name, String description, List<Theme> themes, List<Assembly> assemblies, List<Message> messages /*List<OrganizationMembership> organizationMemberships*/) {
+    public Organization(User creator, Date creation, Date removal, String lang, Long orgId, String name, String description, List<Theme> themes, List<Assembly> assemblies, List<Message> messages) {
         this.creator = creator;
         this.creation = creation;
         this.removal = removal;
@@ -60,7 +52,30 @@ public class Organization extends Model {
         this.themes = themes;
         this.assemblies = assemblies;
         this.messages = messages;
-        //this.organizationMemberships = organizationMemberships;
+    }
+
+    public List<OrganizationMembership> getMemberships() {
+        return memberships;
+    }
+
+    public void setMemberships(List<OrganizationMembership> memberships) {
+        this.memberships = memberships;
+    }
+
+    public Geo getLocation() {
+        return location;
+    }
+
+    public void setLocation(Geo location) {
+        this.location = location;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public User getCreator() {
@@ -142,12 +157,5 @@ public class Organization extends Model {
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
-/*
-    public List<OrganizationMembership> getOrganizationMemberships() {
-        return organizationMemberships;
-    }
 
-    public void setOrganizationMemberships(List<OrganizationMembership> organizationMemberships) {
-        this.organizationMemberships = organizationMemberships;
-    }*/
 }
