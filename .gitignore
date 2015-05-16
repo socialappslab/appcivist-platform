@@ -74,6 +74,7 @@ conf/application.conf
 *.classpath
 *.project
 *.tern-project
-
+/tests
+/appcivist-core
 
 

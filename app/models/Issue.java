@@ -1,16 +1,14 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import models.Location.Geo;
 import models.services.ServiceResource;
 import play.db.ebean.Model;
 
@@ -22,24 +20,48 @@ public class Issue extends Model {
 	 */
 	private static final long serialVersionUID = 7576572204861603387L;
 
+    //Commons
+    private User creator;
+    private Date creation;
+    private Date removal;
+    private String lang;
 
 	@Id
 	private Long issueId;
 	private String title;
 	private String brief;
 	private String type; // TODO convert in enum
+    private Long likes;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private ServiceResource resource;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="issue")
-	private List<Campaign> decisionWorkflow = new ArrayList<Campaign>();;
+	private List<Campaign> decisionWorkflow = new ArrayList<Campaign>();
 
 //	private String test;
 	
 	@JsonIgnore
 	@ManyToOne
 	private Assembly assembly;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Theme> themes = new ArrayList<Theme>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Resource> resources = new ArrayList<Resource>();
+
+    @OneToOne
+    private Geo location;
+
+    public Geo getLocation() {
+        return location;
+    }
+
+    public void setLocation(Geo location) {
+        this.location = location;
+    }
+
 	/*
 	 * Basic Queries
 	 */
@@ -47,9 +69,10 @@ public class Issue extends Model {
 	public static Model.Finder<Long, Issue> find = new Model.Finder<Long, Issue>(
 			Long.class, Issue.class);
 
-	
-	public Issue(Long issueId, String title, String brief, String type,
+
+    public Issue(Long issueId, String title, String brief, String type,
 			ServiceResource resource) {
+
 		super();
 		this.issueId = issueId;
 		this.title = title;
@@ -80,8 +103,25 @@ public class Issue extends Model {
 		this.resource = resource;
 		this.setDecisionWorkflow(c);
 	}
-	
-	 public Issue() {
+
+    public Issue(User creator, Date creation, Date removal, String lang, Long issueId, String title, String brief, String type, Long likes, ServiceResource resource, List<Campaign> decisionWorkflow, Assembly assembly, List<Theme> themes, List<Resource> resources) {
+        this.creator = creator;
+        this.creation = creation;
+        this.removal = removal;
+        this.lang = lang;
+        this.issueId = issueId;
+        this.title = title;
+        this.brief = brief;
+        this.type = type;
+        this.likes = likes;
+        this.resource = resource;
+        this.decisionWorkflow = decisionWorkflow;
+        this.assembly = assembly;
+        this.themes = themes;
+        this.resources = resources;
+    }
+
+    public Issue() {
 		 super();
 	}
 
@@ -181,7 +221,63 @@ public class Issue extends Model {
 		this.resource = resource;
 	}
 
-	/*
+    public List<Theme> getThemes() {
+        return themes;
+    }
+
+    public void setThemes(List<Theme> themes) {
+        this.themes = themes;
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Date getCreation() {
+        return creation;
+    }
+
+    public void setCreation(Date creation) {
+        this.creation = creation;
+    }
+
+    public Date getRemoval() {
+        return removal;
+    }
+
+    public void setRemoval(Date removal) {
+        this.removal = removal;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
+    }
+
+    public Long getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Long likes) {
+        this.likes = likes;
+    }
+
+    public List<Resource> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<Resource> resources) {
+        this.resources = resources;
+    }
+
+    /*
 	 * Other Queries
 	 */
 	

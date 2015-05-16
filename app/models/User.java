@@ -1,18 +1,8 @@
 package models;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.TokenAction.Type;
 
@@ -71,6 +61,72 @@ public class User extends Model {
 	@JsonIgnore
 	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
 	private List<TokenAction> tokenActions;
+
+    public List<Membership> getMemberships() {
+        return memberships;
+    }
+
+    public void setMemberships(List<Membership> memberships) {
+        this.memberships = memberships;
+    }
+
+    @JsonIgnore
+    @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
+    private List<Membership> memberships = new ArrayList<Membership>();
+
+
+    //New addings
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public Boolean getUsernameVerified() {
+        return usernameVerified;
+    }
+
+    public List<TokenAction> getTokenActions() {
+        return tokenActions;
+    }
+
+    public void setTokenActions(List<TokenAction> tokenActions) {
+        this.tokenActions = tokenActions;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+/*
+    public List<Membership> getMemberships() {
+        return memberships;
+    }
+
+    public void setMemberships(List<Membership> memberships) {
+        this.memberships = memberships;
+    }
+*/
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
+    }
+
+    @JsonIgnore
+    @ManyToOne
+    private Role role;
+/*
+    @OneToMany(cascade = CascadeType.ALL, mappedBy="target")
+    private List<Membership> memberships = new ArrayList<Membership>();*/
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy="targetUser")
+    private List<Message> messages = new ArrayList<Message>();
+
 
 	// TODO Add datetime and profile information (creation date, birthdate, etc.) 
 //  Additional properties that can be interesting
