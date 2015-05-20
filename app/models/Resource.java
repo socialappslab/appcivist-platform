@@ -74,6 +74,13 @@ public class Resource extends Model{
         this.workingGroups = workingGroups;
     }
 
+    public static Model.Finder<Long, Resource> find = new Model.Finder<Long, Resource>(
+            Long.class, Resource.class);
+
+    public static Resource read(Long resourceId) {
+        return find.ref(resourceId);
+    }
+
     public User getCreator() {
         return creator;
     }

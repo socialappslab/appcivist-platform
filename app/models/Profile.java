@@ -36,6 +36,13 @@ public class Profile extends Model{
         this.address = address;
     }
 
+    public static Model.Finder<Long, Profile> find = new Model.Finder<Long, Profile>(
+            Long.class, Profile.class);
+
+    public static Profile read(Long profileId) {
+        return find.ref(profileId);
+    }
+
     public User getCreator() {
         return creator;
     }

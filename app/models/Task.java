@@ -41,6 +41,13 @@ public class Task extends Model{
         this.places = places;
     }
 
+    public static Model.Finder<Long, Task> find = new Model.Finder<Long, Task>(
+            Long.class, Task.class);
+
+    public static Task read(Long taskId) {
+        return find.ref(taskId);
+    }
+
     public User getCreator() {
         return creator;
     }

@@ -54,6 +54,17 @@ public class Organization extends Model {
         this.messages = messages;
     }
 
+    public Organization(){
+        super();
+    }
+
+    public static Model.Finder<Long, Organization> find = new Model.Finder<Long, Organization>(
+            Long.class, Organization.class);
+
+    public static Organization read(Long organizationId) {
+        return find.ref(organizationId);
+    }
+
     public List<OrganizationMembership> getMemberships() {
         return memberships;
     }

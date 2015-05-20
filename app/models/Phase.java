@@ -53,6 +53,17 @@ public class Phase extends Model {
         this.resources = resources;
     }
 
+    public Phase(){
+        super();
+    }
+
+    public static Model.Finder<Long, Phase> find = new Model.Finder<Long, Phase>(
+            Long.class, Phase.class);
+
+    public static Phase read(Long phaseId) {
+        return find.ref(phaseId);
+    }
+
     public List<Module> getModules() {
         return modules;
     }

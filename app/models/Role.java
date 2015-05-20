@@ -63,6 +63,13 @@ public class Role extends Model{
         this.users = users;
     }
 
+    public static Model.Finder<Long, Role> find = new Model.Finder<Long, Role>(
+            Long.class, Role.class);
+
+    public static Role read(Long roleId) {
+        return find.ref(roleId);
+    }
+
     public User getCreator() {
         return creator;
     }

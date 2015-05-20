@@ -37,6 +37,13 @@ public class Permission extends Model{
         this.permit = permit;
     }
 
+    public static Model.Finder<Long, Permission> find = new Model.Finder<Long, Permission>(
+            Long.class, Permission.class);
+
+    public static Permission read(Long permitId) {
+        return find.ref(permitId);
+    }
+
     public User getCreator() {
         return creator;
     }

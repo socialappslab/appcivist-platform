@@ -50,6 +50,17 @@ public class Message extends Model{
         this.organization = organization;
     }
 
+    public Message(){
+        super();
+    }
+
+    public static Model.Finder<Long, Message> find = new Model.Finder<Long, Message>(
+            Long.class, Message.class);
+
+    public static Message read(Long messageId) {
+        return find.ref(messageId);
+    }
+
     public User getCreator() {
         return creator;
     }

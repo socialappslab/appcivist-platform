@@ -18,7 +18,7 @@ public class Module extends Model{
 
     @Id
     private Long modId;
-    private Boolean enabled;
+    private Boolean enabled = false;
     private String name;
     private Config configuration;
 
@@ -42,6 +42,17 @@ public class Module extends Model{
         this.configuration = configuration;
         this.assemblies = assemblies;
         this.phases = phases;
+    }
+
+    public Module(){
+        super();
+    }
+
+    public static Model.Finder<Long, Module> find = new Model.Finder<Long, Module>(
+            Long.class, Module.class);
+
+    public static Module read(Long moduleId) {
+        return find.ref(moduleId);
     }
 
     public User getCreator() {

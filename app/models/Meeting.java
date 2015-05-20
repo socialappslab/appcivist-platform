@@ -46,6 +46,13 @@ public class Meeting extends Model{
         this.hangout = hangout;
     }
 
+    public static Model.Finder<Long, Meeting> find = new Model.Finder<Long, Meeting>(
+            Long.class, Meeting.class);
+
+    public static Meeting read(Long meetingId) {
+        return find.ref(meetingId);
+    }
+
     public User getCreator() {
         return creator;
     }

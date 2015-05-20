@@ -81,6 +81,13 @@ public class WorkingGroup extends Model{
 
     }
 
+    public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
+            Long.class, WorkingGroup.class);
+
+    public static WorkingGroup read(Long workingGroupId) {
+        return find.ref(workingGroupId);
+    }
+
     public void setCreator(User creator) {
         this.creator = creator;
     }

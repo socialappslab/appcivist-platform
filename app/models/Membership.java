@@ -48,7 +48,13 @@ public abstract class Membership extends Model{
     @JsonIgnore
     @ManyToOne
     private Role role;
-    
+
+    public static Model.Finder<Long, Membership> find = new Model.Finder<Long, Membership>(
+            Long.class, Membership.class);
+
+    public static Membership read(Long membershipId) {
+        return find.ref(membershipId);
+    }
     
     public User getCreator() {
         return creator;

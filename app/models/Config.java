@@ -37,6 +37,17 @@ public class Config extends Model{
         this.value = value;
     }
 
+    public Config(){
+        super();
+    }
+
+    public static Model.Finder<Long, Config> find = new Model.Finder<Long, Config>(
+            Long.class, Config.class);
+
+    public static Config read(Long configId) {
+        return find.ref(configId);
+    }
+
     public User getCreator() {
         return creator;
     }

@@ -44,6 +44,13 @@ public class Theme extends Model {
         this.lang = lang;
     }
 
+    public static Model.Finder<Long, Theme> find = new Model.Finder<Long, Theme>(
+            Long.class, Theme.class);
+
+    public static Theme read(Long themeId) {
+        return find.ref(themeId);
+    }
+
     public Long getThemeId() {
         return themeId;
     }

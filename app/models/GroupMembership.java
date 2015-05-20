@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.MembershipStatus;
+import play.db.ebean.Model;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -24,4 +25,11 @@ public class GroupMembership extends Membership{
     @JsonIgnore
     @ManyToOne
     private WorkingGroup workingGroup;
+
+    public static Model.Finder<Long, GroupMembership> find = new Model.Finder<Long, GroupMembership>(
+            Long.class, GroupMembership.class);
+
+    public static GroupMembership read(Long groupMembershipId) {
+        return find.ref(groupMembershipId);
+    }
 }
