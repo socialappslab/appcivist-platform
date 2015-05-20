@@ -61,13 +61,13 @@ public class Assembly extends Model {
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Module> modules = new ArrayList<Module>();
 
-    @ManyToMany(mappedBy = "assemblies")
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<Organization> organizations = new ArrayList<Organization>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<Message>();
 
-    @ManyToMany(mappedBy = "assemblies")
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
     @OneToOne

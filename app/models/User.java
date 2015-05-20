@@ -75,6 +75,10 @@ public class User extends Model {
     private List<Membership> memberships = new ArrayList<Membership>();
 
 
+    public User(){
+		super();
+	}
+
     //New addings
 
     public Boolean getEmailVerified() {

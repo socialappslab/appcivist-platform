@@ -107,8 +107,8 @@ create table membership (
   status                    integer,
   user_user_id              bigint,
   role_role_id              bigint,
-  working_group_group_id    bigint,
   organization_org_id       bigint,
+  working_group_group_id    bigint,
   constraint ck_membership_status check (status in (0,1,2,3)),
   constraint pk_membership primary key (membership_id))
 ;
@@ -397,10 +397,22 @@ create table assembly_module (
   constraint pk_assembly_module primary key (assembly_assembly_id, module_mod_id))
 ;
 
+create table assembly_organization (
+  assembly_assembly_id           bigint not null,
+  organization_org_id            bigint not null,
+  constraint pk_assembly_organization primary key (assembly_assembly_id, organization_org_id))
+;
+
 create table assembly_message (
   assembly_assembly_id           bigint not null,
   message_message_id             bigint not null,
   constraint pk_assembly_message primary key (assembly_assembly_id, message_message_id))
+;
+
+create table assembly_working_group (
+  assembly_assembly_id           bigint not null,
+  working_group_group_id         bigint not null,
+  constraint pk_assembly_working_group primary key (assembly_assembly_id, working_group_group_id))
 ;
 
 create table campaign_service_operation (
@@ -433,12 +445,6 @@ create table organization_theme (
   constraint pk_organization_theme primary key (organization_org_id, theme_theme_id))
 ;
 
-create table organization_assembly (
-  organization_org_id            bigint not null,
-  assembly_assembly_id           bigint not null,
-  constraint pk_organization_assembly primary key (organization_org_id, assembly_assembly_id))
-;
-
 create table organization_message (
   organization_org_id            bigint not null,
   message_message_id             bigint not null,
@@ -461,12 +467,6 @@ create table RELATED_RESOURCES (
   source                         bigint not null,
   target                         bigint not null,
   constraint pk_RELATED_RESOURCES primary key (source, target))
-;
-
-create table working_group_assembly (
-  working_group_group_id         bigint not null,
-  assembly_assembly_id           bigint not null,
-  constraint pk_working_group_assembly primary key (working_group_group_id, assembly_assembly_id))
 ;
 
 create table working_group_resource (
@@ -566,10 +566,10 @@ alter table membership add constraint fk_membership_user_12 foreign key (user_us
 create index ix_membership_user_12 on membership (user_user_id);
 alter table membership add constraint fk_membership_role_13 foreign key (role_role_id) references role (role_id);
 create index ix_membership_role_13 on membership (role_role_id);
-alter table membership add constraint fk_membership_workingGroup_14 foreign key (working_group_group_id) references working_group (group_id);
-create index ix_membership_workingGroup_14 on membership (working_group_group_id);
-alter table membership add constraint fk_membership_organization_15 foreign key (organization_org_id) references organization (org_id);
-create index ix_membership_organization_15 on membership (organization_org_id);
+alter table membership add constraint fk_membership_organization_14 foreign key (organization_org_id) references organization (org_id);
+create index ix_membership_organization_14 on membership (organization_org_id);
+alter table membership add constraint fk_membership_workingGroup_15 foreign key (working_group_group_id) references working_group (group_id);
+create index ix_membership_workingGroup_15 on membership (working_group_group_id);
 alter table message add constraint fk_message_targetUser_16 foreign key (target_user_user_id) references appcivist_user (user_id);
 create index ix_message_targetUser_16 on message (target_user_user_id);
 alter table message add constraint fk_message_targeWorkingGroup_17 foreign key (targe_working_group_group_id) references working_group (group_id);
@@ -633,9 +633,17 @@ alter table assembly_module add constraint fk_assembly_module_assembly_01 foreig
 
 alter table assembly_module add constraint fk_assembly_module_module_02 foreign key (module_mod_id) references module (mod_id);
 
+alter table assembly_organization add constraint fk_assembly_organization_asse_01 foreign key (assembly_assembly_id) references assembly (assembly_id);
+
+alter table assembly_organization add constraint fk_assembly_organization_orga_02 foreign key (organization_org_id) references organization (org_id);
+
 alter table assembly_message add constraint fk_assembly_message_assembly_01 foreign key (assembly_assembly_id) references assembly (assembly_id);
 
 alter table assembly_message add constraint fk_assembly_message_message_02 foreign key (message_message_id) references message (message_id);
+
+alter table assembly_working_group add constraint fk_assembly_working_group_ass_01 foreign key (assembly_assembly_id) references assembly (assembly_id);
+
+alter table assembly_working_group add constraint fk_assembly_working_group_wor_02 foreign key (working_group_group_id) references working_group (group_id);
 
 alter table campaign_service_operation add constraint fk_campaign_service_operation_01 foreign key (campaign_campaign_id) references campaign (campaign_id);
 
@@ -657,10 +665,6 @@ alter table organization_theme add constraint fk_organization_theme_organiz_01 f
 
 alter table organization_theme add constraint fk_organization_theme_theme_02 foreign key (theme_theme_id) references theme (theme_id);
 
-alter table organization_assembly add constraint fk_organization_assembly_orga_01 foreign key (organization_org_id) references organization (org_id);
-
-alter table organization_assembly add constraint fk_organization_assembly_asse_02 foreign key (assembly_assembly_id) references assembly (assembly_id);
-
 alter table organization_message add constraint fk_organization_message_organ_01 foreign key (organization_org_id) references organization (org_id);
 
 alter table organization_message add constraint fk_organization_message_messa_02 foreign key (message_message_id) references message (message_id);
@@ -677,10 +681,6 @@ alter table RELATED_RESOURCES add constraint fk_RELATED_RESOURCES_resource_01 fo
 
 alter table RELATED_RESOURCES add constraint fk_RELATED_RESOURCES_resource_02 foreign key (target) references resource (resource_id);
 
-alter table working_group_assembly add constraint fk_working_group_assembly_wor_01 foreign key (working_group_group_id) references working_group (group_id);
-
-alter table working_group_assembly add constraint fk_working_group_assembly_ass_02 foreign key (assembly_assembly_id) references assembly (assembly_id);
-
 alter table working_group_resource add constraint fk_working_group_resource_wor_01 foreign key (working_group_group_id) references working_group (group_id);
 
 alter table working_group_resource add constraint fk_working_group_resource_res_02 foreign key (resource_resource_id) references resource (resource_id);
@@ -695,11 +695,11 @@ drop table if exists assembly_phase cascade;
 
 drop table if exists assembly_module cascade;
 
-drop table if exists organization_assembly cascade;
+drop table if exists assembly_organization cascade;
 
 drop table if exists assembly_message cascade;
 
-drop table if exists working_group_assembly cascade;
+drop table if exists assembly_working_group cascade;
 
 drop table if exists campaign cascade;
 
