@@ -81,8 +81,9 @@ public class AssembliesTest extends WithApplication {
 	public static final String DISC_SAMPLE_DESC = "How might we best use the empty lot?";
 	public String DEMO_VERSION = "1";
 
+
+
 	@Test
-	@Ignore
 	public void testAssemblyIssueCreation() {
 
 		// 1. Create instance of Issue
@@ -120,7 +121,6 @@ public class AssembliesTest extends WithApplication {
 	}
 
 	@Test
-	@Ignore
 	public void testYAMLDataLoading() {
 
 		// VirtualFile appRoot = VirtualFile.open(Play.applicationPath);
@@ -166,7 +166,6 @@ public class AssembliesTest extends WithApplication {
 	 * Implementation of Issue #20
 	 */
 	@Test
-	@Ignore
 	public void testOrchestrationDemo1() {
 		// Observation: Using Preloaded Data (see Global.onStart())
 		DEMO_VERSION = "1";
@@ -399,7 +398,6 @@ public class AssembliesTest extends WithApplication {
 	 * 7. Read the Proposals from the Deliberation campaign copy their titles + URLs as options in a new Election within the created group => create * an election in Agora => copy an election in Agora
 	 */
 	@Test
-	@Ignore
 	public void testOrchestrationDemo2() {
 		// Observation: Using Preloaded Data (see Global.onStart())
 		DEMO_VERSION = "2";

@@ -244,6 +244,11 @@ public class CoreTest extends play.test.WithApplication{
         a1 = Assembly.read(new Long(9999999));
         assertThat(a1 == null);
         assertThat(a1.getIssues().size() == 0);
+        assertThat(a1.getOrganizations().size() == 0);
+        assertThat(a1.getMessages().size() == 0);
+        assertThat(a1.getWorkingGroups().size() == 0);
+        assertThat(a1.getModules().size() == 0);
+        assertThat(a1.getPhases().size() == 0);
 
         // 7. Verify if all the rest of the data remain
         i11 = Issue.read(new Long(99991));

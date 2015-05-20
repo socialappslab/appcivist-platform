@@ -32,21 +32,18 @@ import static org.fest.assertions.Assertions.*;
 public class ApplicationTest {
 
 	@Test
-	@Ignore
 	public void simpleCheck() {
 		int a = 1 + 1;
 		assertThat(a).isEqualTo(2);
 	}
 
 	@Test
-	@Ignore
 	public void renderTemplate() {
 		Content html = views.html.index.render();
 		assertThat(contentType(html)).isEqualTo("text/html");
 	}
 
 	@Test
-	@Ignore
 	public void testPasswords() {
 		MyLoginUsernamePasswordAuthUser authUser = new MyLoginUsernamePasswordAuthUser(
 				"secret", " bob@example.com");
