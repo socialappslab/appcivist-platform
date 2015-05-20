@@ -28,7 +28,7 @@ public class Organization extends Model {
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Theme> themes = new ArrayList<Theme>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "organizations")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -52,6 +52,11 @@ public class Organization extends Model {
         this.themes = themes;
         this.assemblies = assemblies;
         this.messages = messages;
+    }
+
+    public Organization(Date creation, Date removal){
+        this.creation = creation;
+        this.removal = removal;
     }
 
     public Organization(){
