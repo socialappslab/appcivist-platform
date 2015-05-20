@@ -1,9 +1,6 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import models.Assembly;
 import models.services.Service;
@@ -83,6 +80,8 @@ public class AssembliesTest extends WithApplication {
 	public static final String DISC_SAMPLE_TITLE = "Empty lot in telegraph and channing";
 	public static final String DISC_SAMPLE_DESC = "How might we best use the empty lot?";
 	public String DEMO_VERSION = "1";
+
+
 
 	@Test
 	public void testAssemblyIssueCreation() {

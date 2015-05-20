@@ -25,7 +25,7 @@ public class WorkingGroup extends Model{
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "workingGroups")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)

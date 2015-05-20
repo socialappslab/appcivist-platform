@@ -13,14 +13,6 @@ import java.util.List;
 @DiscriminatorValue("ORG")
 public class OrganizationMembership extends Membership{
 
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }
-
     @JsonIgnore
     @ManyToOne
     private Organization organization;
@@ -30,5 +22,13 @@ public class OrganizationMembership extends Membership{
 
     public static OrganizationMembership read(Long organizationMembershipId) {
         return find.ref(organizationMembershipId);
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 }
