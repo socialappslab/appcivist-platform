@@ -55,6 +55,10 @@ public class Module extends Model{
         return find.ref(moduleId);
     }
 
+    public static List<Module> findAll() {
+        return find.all();
+    }
+
     public User getCreator() {
         return creator;
     }

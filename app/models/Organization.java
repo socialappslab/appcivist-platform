@@ -3,7 +3,9 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.collections.transformation.SortedList;
 import models.Location.Geo;
+import models.services.ServiceResource;
 import play.db.ebean.Model;
+import scala.tools.nsc.transform.patmat.Logic;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -68,6 +70,29 @@ public class Organization extends Model {
 
     public static Organization read(Long organizationId) {
         return find.ref(organizationId);
+    }
+
+    public static List<Organization> findAll() {
+        return find.all();
+    }
+
+    public static Organization create(Organization organization) {
+        organization.save();
+        organization.refresh();
+        return organization;
+    }
+
+    public static Organization createObject(Organization organization) {
+        organization.save();
+        return organization;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
     }
 
     public List<OrganizationMembership> getMemberships() {

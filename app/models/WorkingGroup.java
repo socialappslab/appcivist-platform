@@ -76,16 +76,39 @@ public class WorkingGroup extends Model{
         this.groupMemberships = groupMemberships;
     }*/
 
-    public User getCreator() {
-        return creator;
-
-    }
-
     public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
 
     public static WorkingGroup read(Long workingGroupId) {
         return find.ref(workingGroupId);
+    }
+
+    public static List<WorkingGroup> findAll() {
+        return find.all();
+    }
+
+    public static WorkingGroup create(WorkingGroup workingGroup) {
+        workingGroup.save();
+        workingGroup.refresh();
+        return workingGroup;
+    }
+
+    public static WorkingGroup createObject(WorkingGroup workingGroup) {
+        workingGroup.save();
+        return workingGroup;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
+    }
+
+    public User getCreator() {
+        return creator;
+
     }
 
     public void setCreator(User creator) {

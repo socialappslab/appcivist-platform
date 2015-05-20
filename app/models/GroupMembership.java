@@ -13,6 +13,9 @@ import java.util.Date;
 @DiscriminatorValue("GROUP")
 public class GroupMembership extends Membership{
 
+    @JsonIgnore
+    @ManyToOne
+    private WorkingGroup workingGroup;
 
     public WorkingGroup getWorkingGroup() {
         return workingGroup;
@@ -22,14 +25,4 @@ public class GroupMembership extends Membership{
         this.workingGroup = WorkingGroup;
     }
 
-    @JsonIgnore
-    @ManyToOne
-    private WorkingGroup workingGroup;
-
-    public static Model.Finder<Long, GroupMembership> find = new Model.Finder<Long, GroupMembership>(
-            Long.class, GroupMembership.class);
-
-    public static GroupMembership read(Long groupMembershipId) {
-        return find.ref(groupMembershipId);
-    }
 }
