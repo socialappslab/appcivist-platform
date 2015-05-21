@@ -44,6 +44,29 @@ public class Permission extends Model{
         return find.ref(permitId);
     }
 
+    public static List<Permission> findAll() {
+        return find.all();
+    }
+
+    public static Permission create(Permission permission) {
+        permission.save();
+        permission.refresh();
+        return permission;
+    }
+
+    public static Permission createObject(Permission permission) {
+        permission.save();
+        return permission;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
+    }
+
     public User getCreator() {
         return creator;
     }

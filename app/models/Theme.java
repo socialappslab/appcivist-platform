@@ -51,6 +51,29 @@ public class Theme extends Model {
         return find.ref(themeId);
     }
 
+    public static List<Theme> findAll() {
+        return find.all();
+    }
+
+    public static Theme create(Theme theme) {
+        theme.save();
+        theme.refresh();
+        return theme;
+    }
+
+    public static Theme createObject(Theme theme) {
+        theme.save();
+        return theme;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
+    }
+
     public Long getThemeId() {
         return themeId;
     }

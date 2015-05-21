@@ -70,6 +70,29 @@ public class Role extends Model{
         return find.ref(roleId);
     }
 
+    public static List<Role> findAll() {
+        return find.all();
+    }
+
+    public static Role create(Role role) {
+        role.save();
+        role.refresh();
+        return role;
+    }
+
+    public static Role createObject(Role role) {
+        role.save();
+        return role;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
+    }
+
     public User getCreator() {
         return creator;
     }
