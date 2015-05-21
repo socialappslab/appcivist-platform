@@ -17,13 +17,6 @@ public class OrganizationMembership extends Membership{
     @ManyToOne
     private Organization organization;
 
-    public static Model.Finder<Long, OrganizationMembership> find = new Model.Finder<Long, OrganizationMembership>(
-            Long.class, OrganizationMembership.class);
-
-    public static OrganizationMembership read(Long organizationMembershipId) {
-        return find.ref(organizationMembershipId);
-    }
-
     public Organization getOrganization() {
         return organization;
     }

@@ -64,6 +64,10 @@ public class Phase extends Model {
         return find.ref(phaseId);
     }
 
+    public static List<Phase> findAll() {
+        return find.all();
+    }
+
     public List<Module> getModules() {
         return modules;
     }

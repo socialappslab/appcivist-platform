@@ -6,6 +6,7 @@ import play.db.ebean.Model;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
@@ -54,6 +55,29 @@ public abstract class Membership extends Model{
 
     public static Membership read(Long membershipId) {
         return find.ref(membershipId);
+    }
+
+    public static List<Membership> findAll() {
+        return find.all();
+    }
+
+    public static Membership create(Membership membership) {
+        membership.save();
+        membership.refresh();
+        return membership;
+    }
+
+    public static Membership createObject(Membership membership) {
+        membership.save();
+        return membership;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
     }
     
     public User getCreator() {

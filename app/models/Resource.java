@@ -81,6 +81,29 @@ public class Resource extends Model{
         return find.ref(resourceId);
     }
 
+    public static List<Resource> findAll() {
+        return find.all();
+    }
+
+    public static Resource create(Resource resource) {
+        resource.save();
+        resource.refresh();
+        return resource;
+    }
+
+    public static Resource createObject(Resource resource) {
+        resource.save();
+        return resource;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
+    }
+
     public User getCreator() {
         return creator;
     }

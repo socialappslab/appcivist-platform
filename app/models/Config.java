@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Config extends Model{
@@ -46,6 +47,29 @@ public class Config extends Model{
 
     public static Config read(Long configId) {
         return find.ref(configId);
+    }
+
+    public static List<Config> findAll() {
+        return find.all();
+    }
+
+    public static Config create(Config config) {
+        config.save();
+        config.refresh();
+        return config;
+    }
+
+    public static Config createObject(Config config) {
+        config.save();
+        return config;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
     }
 
     public User getCreator() {

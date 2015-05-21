@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Message extends Model{
@@ -59,6 +60,29 @@ public class Message extends Model{
 
     public static Message read(Long messageId) {
         return find.ref(messageId);
+    }
+
+    public static List<Message> findAll() {
+        return find.all();
+    }
+
+    public static Message create(Message message) {
+        message.save();
+        message.refresh();
+        return message;
+    }
+
+    public static Message createObject(Message message) {
+        message.save();
+        return message;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
     }
 
     public User getCreator() {
