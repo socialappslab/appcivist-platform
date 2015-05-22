@@ -13,7 +13,9 @@ import models.services.ServiceOperation;
 import models.services.ServiceOperationCollection;
 import play.mvc.*;
 import play.libs.Json;
+import http.Headers;
 
+@With(Headers.class)
 public class Assemblies extends Controller {
 
 	/**

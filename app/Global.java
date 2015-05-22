@@ -7,11 +7,20 @@ import models.Assembly;
 import models.User;
 import play.*;
 import play.libs.Yaml;
+import play.mvc.Action;
+import play.mvc.Call;
+import play.mvc.Http.Context;
+import play.mvc.Http.Request;
+import play.mvc.Result;
+import play.mvc.Results;
+
+
+import java.lang.reflect.Method;
 
 import com.avaje.ebean.Ebean;
 
 public class Global extends GlobalSettings {
-	
+
 	@SuppressWarnings("rawtypes")
 	public void onStart(Application app) {
 		Logger.info("Application has started");
@@ -39,12 +48,12 @@ public class Global extends GlobalSettings {
 				String dropDdl = upsDowns[1];
 
 				Ebean.beginTransaction();
-				Logger.info("AppCivist: Dropping DB Tables => "+dropDdl);
+				Logger.info("AppCivist: Dropping DB Tables => " + dropDdl);
 				Ebean.execute(Ebean.createCallableSql(dropDdl));
 				Ebean.commitTransaction();
 
 				Ebean.beginTransaction();
-				Logger.info("AppCivist: Creating DB Tables => "+createDdl);
+				Logger.info("AppCivist: Creating DB Tables => " + createDdl);
 				Ebean.execute(Ebean.createCallableSql(createDdl));
 				Ebean.commitTransaction();
 			} catch (IOException e) {
@@ -62,7 +71,7 @@ public class Global extends GlobalSettings {
 				Ebean.save(list);
 			}
 		}
-		
+
 		if (Assembly.findAll().getAssemblies().isEmpty()) {
 
 			Boolean loadTestOrchestration = Play.application().configuration()
@@ -79,5 +88,23 @@ public class Global extends GlobalSettings {
 	public void onStop(Application app) {
 		Logger.info("Application shutdown...");
 	}
+
+//	@Override
+//	public Action onRequest(Request request, Method actionMethod) {
+//		return new Action.Simple() {
+//			@Override
+//			public Result call(Context ctx) throws Throwable {
+//				Result r = delegate.call(ctx);
+//		
+//				/*
+//				 * Support for CORS Requests
+//				 */
+//				Logger.debug("--> Setting CORS response headers");
+//				ctx.response().setHeader("Access-Control-Allow-Origin", "*");
+//				//return super.onRequest(request, actionMethod);
+//				return r;
+//			}
+//		};
+//	}
 
 }

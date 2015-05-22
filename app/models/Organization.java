@@ -1,7 +1,6 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import javafx.collections.transformation.SortedList;
 import models.Location.Geo;
 import models.services.ServiceResource;
 import play.db.ebean.Model;

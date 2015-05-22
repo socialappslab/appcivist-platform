@@ -3,20 +3,23 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index()
+GET           /                                                     controllers.Application.index()
+
+# CORS Support
+OPTIONS /*path                                  controllers.Application.checkPreFlight(path)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
-GET     /public/*file               controllers.Assets.at(path="/public", file)
+GET           /assets/*file                                         controllers.Assets.at(path="/public", file)
+GET           /public/*file                                         controllers.Assets.at(path="/public", file)
 
 # Assemblies API
-GET     /api/assemblies                                 controllers.Assemblies.findAssemblies()
-GET     /api/assembly/:aid/issues                       controllers.Assemblies.findIssues(aid: Long)
-GET     /api/assembly/:aid/issue/:iid/campaigns         controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
-GET     /api/assembly/:aid/issue/:iid/campaign/:cid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
-GET     /api/assembly/:aid/services                     controllers.Assemblies.findServices(aid: Long)
-GET     /api/assembly/:aid/service/:sid/operations      controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
-GET     /api/assembly/:aid/service/:sid/operation/:oid  controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
+GET           /api/assemblies                                       controllers.Assemblies.findAssemblies()
+GET           /api/assembly/:aid/issues                             controllers.Assemblies.findIssues(aid: Long)
+GET           /api/assembly/:aid/issue/:iid/campaigns               controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
+GET           /api/assembly/:aid/issue/:iid/campaign/:cid           controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
+GET           /api/assembly/:aid/services                           controllers.Assemblies.findServices(aid: Long)
+GET           /api/assembly/:aid/service/:sid/operations            controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
+GET           /api/assembly/:aid/service/:sid/operation/:oid        controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
 
 # TODO 
 #POST    /api/assembly/:aid/issue/:iid/campaign/:cid/operation/:oid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
@@ -27,29 +30,33 @@ GET     /api/assembly/:aid/service/:sid/operation/:oid  controllers.Assemblies.f
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
 # TODO: cleanup, remove what is not used and keep what's important
-GET     /api/user                                        controllers.Users.getUsers()
-GET     /api/user/login                                  controllers.Users.getLoginForm()
-GET     /api/user/:uid                                   controllers.Users.getUser(uid: Long)
-GET 	/api/user/loggedin/:uid 						 controllers.Users.getCurrentUser(uid: Long)
-GET     /api/user/email/:email                                 controllers.Users.getUserByEmail(email: String) 
+GET           /api/user                                             controllers.Users.getUsers()
+GET           /api/user/login                                       controllers.Users.getLoginForm()
+GET           /api/user/:uid                                        controllers.Users.getUser(uid: Long)
+GET           /api/user/loggedin/:uid                               controllers.Users.getCurrentUser(uid: Long)
+GET           /api/user/email/:email                                controllers.Users.getUserByEmail(email: String)
 
-POST    /api/user/login                                  controllers.Users.doLogin()
-POST    /api/user/logout                                 controllers.Users.doLogout()
-POST    /api/user/signup                                 controllers.Users.doSignup()
+POST          /api/user/login                                       controllers.Users.doLogin()
+POST          /api/user/logout                                      controllers.Users.doLogout()
+POST          /api/user/signup                                      controllers.Users.doSignup()
 
-PUT     /api/user/:uid                                   controllers.Users.updateUser(uid: Long) 
-DELETE  /api/user/:uid                                   controllers.Users.deleteUser(uid: Long)
-DELETE  /api/user/:uid/force                             controllers.Users.deleteUserForce(uid: Long)
+PUT           /api/user/:uid                                        controllers.Users.updateUser(uid: Long)
+DELETE        /api/user/:uid                                        controllers.Users.deleteUser(uid: Long)
+DELETE        /api/user/:uid/force                                  controllers.Users.deleteUserForce(uid: Long)
 
 # Play Authenticate endpoints to validate/integrate, used to verify the email
-GET     /api/user/verify/:token         				 controllers.Users.verify(token: String)
-GET     /api/user/unverified            				 controllers.Users.unverified()
-GET     /api/user/exists                				 controllers.Users.exists()
-GET     /api/login/denied                                controllers.Users.onLoginUserNotFound()
-GET     /api/authenticate/:provider/denied               controllers.Users.oAuthDenied(provider: String)
-GET     /api/authenticated                               controllers.Restricted.index()
-GET     /api/login/:id                                   controllers.Restricted.id(id: String)
-GET     /api/authenticate/:provider                      controllers.AuthenticateLocal.authenticate(provider: String)
+GET           /api/user/verify/:token                               controllers.Users.verify(token: String)
+GET           /api/user/unverified                                  controllers.Users.unverified()
+GET           /api/user/exists                                      controllers.Users.exists()
+GET           /api/login/denied                                     controllers.Users.onLoginUserNotFound()
+GET           /api/authenticate/:provider/denied                    controllers.Users.oAuthDenied(provider: String)
+GET           /api/authenticated                                    controllers.Restricted.index()
+GET           /api/login/:id                                        controllers.Restricted.id(id: String)
+GET           /api/authenticate/:provider                           controllers.AuthenticateLocal.authenticate(provider: String)
+
+# WorkingGroup API
+GET           /api/wgroups                                          controllers.WorkingGroups.findWorkingGroups()
+
 
 
 

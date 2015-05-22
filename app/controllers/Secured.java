@@ -3,6 +3,7 @@ package controllers;
 import play.Logger;
 import play.api.mvc.CookieBaker;
 import play.api.mvc.Session;
+import play.mvc.*;
 import play.mvc.Http;
 //import play.mvc.Http.Session;
 import play.mvc.Http.Context;
@@ -14,6 +15,9 @@ import service.PlayAuthenticateLocal;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
 
+import http.Headers;
+
+@With(Headers.class)
 public class Secured extends Security.Authenticator {
 
 	/**

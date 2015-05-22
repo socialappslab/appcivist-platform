@@ -2,9 +2,11 @@ package controllers;
 
 import java.io.UnsupportedEncodingException;
 
+import play.mvc.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import http.Headers;
 
 /**
  * Controller with restricted services 
@@ -12,6 +14,7 @@ import play.mvc.Security;
  * @author cdparra
  *
  */
+@With(Headers.class)
 @Security.Authenticated(Secured.class)
 public class Restricted extends Controller {
 
