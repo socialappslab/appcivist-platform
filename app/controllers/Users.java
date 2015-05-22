@@ -45,6 +45,9 @@ import providers.MyUsernamePasswordAuthProvider.MySignup;
 import utils.ResponseStatusBean;
 import play.i18n.Messages;
 
+import http.Headers;
+
+@With(Headers.class)
 public class Users extends Controller {
 
 	/****************************************************************************************************

@@ -5,6 +5,9 @@
 # Home page
 GET           /                                                     controllers.Application.index()
 
+# CORS Support
+OPTIONS /*path                                  controllers.Application.checkPreFlight(path)
+
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                         controllers.Assets.at(path="/public", file)
 GET           /public/*file                                         controllers.Assets.at(path="/public", file)
