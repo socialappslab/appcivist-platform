@@ -3,7 +3,6 @@
 
 # Users (Testing Users)
   - &u1 !!models.User
-    userId:     1
     email:      bob@example.com
     name:       Bob
     username:   bob
@@ -15,7 +14,6 @@
       providerKey: password
       user: *u1
   - &u2 !!models.User
-    userId:     2
     email:      jane@example.com
     name:       Jane
     username:   jane
@@ -27,7 +25,6 @@
       providerKey: password
       user: *u2
   - &u3 !!models.User
-    userId:     3
     email:      jeff@example.com
     name:       Jeff
     username:   jeff

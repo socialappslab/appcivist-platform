@@ -33,6 +33,7 @@ public class User extends Model {
 	 */
 	private static final long serialVersionUID = -1771934342960424445L;
 	@Id
+	@GeneratedValue
 	private Long userId;
 	private String email;
 	private String name;
@@ -139,8 +140,8 @@ public class User extends Model {
 //	@org.hibernate.annotations.Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
 //	private DateTime creationDate;
 	// TODO add soft deletion support (user.active = true/false) 
-//	@Column
-//	private boolean active;
+	@Column
+	private boolean active;
 	// TODO add role based authorization using deadbolt 
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	@JoinTable(name = "User_Security_Roles", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) })
@@ -154,6 +155,14 @@ public class User extends Model {
 	 * Basic Data Queries
 	 */
 	
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
 	/**
 	 * Static finder property
 	 */

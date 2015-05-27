@@ -1,11 +1,5 @@
 # Override default Play's validation messages
 
-# --- reminiscens
-reminiscens.birth.headline = Birth
-reminiscens.birth.text = The story of my birth
-reminiscens.context.person.title=Contextual Reminiscence Collection for
-reminiscens.context.person.subtitle=Collection of historical items that stimulate the practice of reminiscence for
-
 # --- Constraints
 constraint.required=Required
 constraint.min=Minimum value: {0}
@@ -153,3 +147,11 @@ playauthenticate.index.details=View details
 playauthenticate.restricted.secrets=Secrets, everywhere!
 
 ### --- play-authenticate END
+
+
+### --- AppCivist Messages
+groups.creation.success = The working group {0} has been created with success by {1}
+groups.creation.error = The working group was not created. There was a problem with the request: {0}
+
+assemblies.creation.success = The assembly {0} has been created with success by {1}
+assemblies.creation.error = The assembly was not created. There was a problem with the request: {0}

@@ -13,7 +13,7 @@ public class WorkingGroup extends Model{
 
     //Commons
     private User creator;
-    private Date creation;
+    private Date creation = new Date(); // it will automatically assign the current date by default
     private Date removal;
     private String lang;
 

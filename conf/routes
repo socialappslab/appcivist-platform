@@ -12,21 +12,6 @@ OPTIONS /*path                                  controllers.Application.checkPre
 GET           /assets/*file                                         controllers.Assets.at(path="/public", file)
 GET           /public/*file                                         controllers.Assets.at(path="/public", file)
 
-# Assemblies API
-GET           /api/assemblies                                       controllers.Assemblies.findAssemblies()
-GET           /api/assembly/:aid/issues                             controllers.Assemblies.findIssues(aid: Long)
-GET           /api/assembly/:aid/issue/:iid/campaigns               controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
-GET           /api/assembly/:aid/issue/:iid/campaign/:cid           controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
-GET           /api/assembly/:aid/services                           controllers.Assemblies.findServices(aid: Long)
-GET           /api/assembly/:aid/service/:sid/operations            controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
-GET           /api/assembly/:aid/service/:sid/operation/:oid        controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
-
-# TODO 
-#POST    /api/assembly/:aid/issue/:iid/campaign/:cid/operation/:oid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
-#POST    /api/assembly                     controllers.Assemblies.createAssembly()
-#PUT     /api/assembly/:id                 controllers.Assemblies.updateAssembly(assemblyId: Long)
-#GET     /api/assembly/:id                 controllers.Assemblies.exportAssembly(assemblyId: Long)
-
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
 # TODO: cleanup, remove what is not used and keep what's important
@@ -54,12 +39,45 @@ GET           /api/authenticated                                    controllers.
 GET           /api/login/:id                                        controllers.Restricted.id(id: String)
 GET           /api/authenticate/:provider                           controllers.AuthenticateLocal.authenticate(provider: String)
 
+
+# Assemblies API
+GET           /api/assemblies                                       controllers.Assemblies.findAssemblies()
+GET           /api/assembly/:aid/issues                             controllers.Assemblies.findIssues(aid: Long)
+POST          /api/assembly                                         controllers.Assemblies.createAssembly()
+
+# TODO 
+#POST    /api/assembly/bulked              controllers.Assemblies.createAssemblyBulked()
+#POST    /api/organization/:id/assembly    controllers.Assemblies.createAssemblyForOrganization()
+#GET     /api/assembly/:id                 controllers.Assemblies.exportAssembly(assemblyId: Long)
+
+# Invitations to a Group (creating the membership, depending on the typ, will be invitation or request)
+# For each membership, let's create a random 64 char token
+#POST    /api/group/:id/membership              controllers.WorkingGroups.createGroupMembership()
+# Approve invitation or request (if invitation, user must send request; if request, group MEMBER must send request)
+# TODO: think of rules for this based on roles
+#PUT    /api/group/:id/membership/token/:token              controllers.WorkingGroups.approveMembership()  
+# Reject invitation or request (if invitation, user must send request; if request, group MEMBER must send request)
+#DELETE    /api/group/:id/membership/token/:token              controllers.WorkingGroups.rejectMembership()
+
+# Same for Assembly (creating the membership, depending on the typ, will be invitation or request)
+#POST    /api/group/:id/membership              controllers.WorkingGroups.createGroupMembership()
+#PUT    /api/group/:id/membership/token/:token              controllers.WorkingGroups.approveMembership()  
+#DELETE    /api/group/:id/membership/token/:token              controllers.WorkingGroups.rejectMembership()
+
+
+
 # WorkingGroup API
-GET           /api/wgroups                                          controllers.WorkingGroups.findWorkingGroups()
+GET           /api/groups                                          controllers.WorkingGroups.findWorkingGroups()
+POST          /api/assembly                                        controllers.WorkingGroups.createWorkingGroup()
+
+#####################################################################################
+# Composition Engine endpoints
+GET           /api/assembly/:aid/services                           controllers.Assemblies.findServices(aid: Long)
+GET           /api/assembly/:aid/service/:sid/operations            controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
+GET           /api/assembly/:aid/service/:sid/operation/:oid        controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
 
 
-
-
-
-
-
+#####################################################################################
+# Deprecated endpoints
+GET           /api/assembly/:aid/issue/:iid/campaigns               controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
+GET           /api/assembly/:aid/issue/:iid/campaign/:cid           controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)

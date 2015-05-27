@@ -374,6 +374,7 @@ create table appcivist_user (
   profile_pic               varchar(255),
   conf_type                 varchar(255),
   role_role_id              bigint,
+  active                    boolean,
   constraint pk_appcivist_user primary key (user_id))
 ;
 
