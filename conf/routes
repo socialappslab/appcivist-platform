@@ -68,7 +68,7 @@ POST          /api/assembly                                         controllers.
 
 # WorkingGroup API
 GET           /api/groups                                          controllers.WorkingGroups.findWorkingGroups()
-POST          /api/assembly                                        controllers.WorkingGroups.createWorkingGroup()
+POST          /api/group                                           controllers.WorkingGroups.createWorkingGroup()
 
 #####################################################################################
 # Composition Engine endpoints
@@ -81,3 +81,10 @@ GET           /api/assembly/:aid/service/:sid/operation/:oid        controllers.
 # Deprecated endpoints
 GET           /api/assembly/:aid/issue/:iid/campaigns               controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
 GET           /api/assembly/:aid/issue/:iid/campaign/:cid           controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
+
+# Role API
+GET 		 /api/roles												controllers.Roles.findRoles()
+GET			 /api/role/:rid											controllers.Roles.findRole(rid: Long)
+#PUT			 /api/role/:rid											controllers.Roles.findRoleToUpdate(rid: Long)
+POST		 /api/role												controllers.Roles.createRole()
+DELETE       /api/role/:rid											controllers.Roles.findRoleToDelete(rid: Long)

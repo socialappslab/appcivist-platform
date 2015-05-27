@@ -69,6 +69,10 @@ public class Role extends Model{
     public static Role read(Long roleId) {
         return find.ref(roleId);
     }
+    
+    public static Role readByTitle(String name){
+    	return (Role) find.where().eq("name", name);
+    }
 
     public static List<Role> findAll() {
         return find.all();
