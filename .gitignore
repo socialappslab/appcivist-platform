@@ -70,6 +70,7 @@ dist
 /RUNNING_PID
 /.settings
 conf/application.conf
+/conf/application.conf
 
 *.classpath
 *.project
