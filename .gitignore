@@ -54,6 +54,8 @@ dist
 .project
 appcivist-core/app/models/A.java
 appcivist-core/app/models/B.java
+conf/application.conf
+conf/evolutions
 logs
 project/project
 project/target
@@ -69,8 +71,6 @@ dist
 /.project
 /RUNNING_PID
 /.settings
-conf/application.conf
-/conf/application.conf
 
 *.classpath
 *.project
