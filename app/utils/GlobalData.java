@@ -18,4 +18,9 @@ public class GlobalData {
 	public static String GROUP_CREATE_MSG_SUCCESS = "groups.creation.success";
 	public static String GROUP_CREATE_MSG_ERROR = "groups.creation.error";
 	public static String GROUP_BASE_PATH = "/group";
+	
+	// Role
+	public static String ROLE_CREATE_MSG_SUCCESS = "roles.creation.success";
+	public static String ROLE_CREATE_MSG_ERROR = "roles.creation.error";
+	public static String ROLE_BASE_PATH = "/role";
 }

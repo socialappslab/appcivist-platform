@@ -153,3 +153,13 @@ playauthenticate.index.details=View details
 playauthenticate.restricted.secrets=Secrets, everywhere!
 
 ### --- play-authenticate END
+
+### --- AppCivist Messages
+groups.creation.success = El grupo de trabajo {0} ha sido creado con exito por {1}
+groups.creation.error = El grupo de trabajo no fue creado. Hubo un problema con la peticion: {0}
+
+assemblies.creation.success = La asamblea {0} ha sido creada con exito por {1}
+assemblies.creation.error = La asamblea no fue creada. Hubo un problema con la peticion: {0}
+
+roles.creation.success = El rol {0} ha sido creado con exito por {1}
+roles.creation.error = El rol no fue creado. Hubo un problema con la peticion: {0}

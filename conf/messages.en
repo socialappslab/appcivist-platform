@@ -155,3 +155,6 @@ groups.creation.error = The working group was not created. There was a problem w
 
 assemblies.creation.success = The assembly {0} has been created with success by {1}
 assemblies.creation.error = The assembly was not created. There was a problem with the request: {0}
+
+roles.creation.success = The role {0} has been created with success by {1}
+roles.creation.error = The role was not created. There was a problem with the request: {0}
