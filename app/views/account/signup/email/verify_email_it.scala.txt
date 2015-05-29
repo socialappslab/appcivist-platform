@@ -1,0 +1,11 @@
+@(verificationUrl: String, token: String, name: String, email: String)
+Ciao @name,
+
+Congratulazioni! Ti sei appena registrato a AppCivist
+
+Prima di usare il servizio, segue il seguente collegamento per attivare il tuo utente: 
+@verificationUrl
+
+Saluti,
+La squadra di AppCivist
+www.appcivist.org
