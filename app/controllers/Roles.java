@@ -41,7 +41,7 @@ public class Roles extends Controller {
 	}
 	
 	@Security.Authenticated(Secured.class)
-	public static Result findRoleToDelete(Long roleId) {
+	public static Result deleteRole(Long roleId) {
 		Role.delete(roleId);
 		return ok();
 	}
@@ -64,9 +64,6 @@ public class Roles extends Controller {
 			
 			Role newRole = newRoleForm.get();
 			
-			// setting default values (TODO: maybe we should create a dedicated method for this in each model)
-			newRole.setCreator(roleCreator);
-			
 			if(newRole.getLang() == null) 
 				newRole.setLang(roleCreator.getLocale());
 
@@ -76,6 +73,10 @@ public class Roles extends Controller {
 				Logger.info("Role already exists");
 			}
 			else{
+				if (newRole.getCreator() == null){
+					newRole.setCreator(roleCreator);
+				}
+
 				Role.create(newRole);
 				Logger.info("Creating new role");
 				Logger.debug("=> " + newRoleForm.toString());
@@ -92,7 +93,7 @@ public class Roles extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public static Result findRoleToUpdate() {
+	public static Result updateRole() {
 		// 1. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
