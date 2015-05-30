@@ -26,6 +26,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
     private MembershipRoles membershipRole = MembershipRoles.MEMBER;
+    private User creator;
 
     @ManyToMany(mappedBy = "workingGroups")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
