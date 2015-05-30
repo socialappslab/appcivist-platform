@@ -73,6 +73,10 @@ PUT            /api/group                                            controllers
 POST           /api/group                                            controllers.WorkingGroups.createWorkingGroup()
 DELETE         /api/group/:gid                                       controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
 
+# WorkingGroupMemberships API
+POST           /api/:t/membership/invitation                      controllers.Memberships.createInvitation(t: String)
+POST           /api/:t/membership/request                         controllers.Memberships.createRequest(t: String)
+
 #####################################################################################
 # Composition Engine endpoints
 GET            /api/assembly/:aid/services                           controllers.Assemblies.findServices(aid: Long)

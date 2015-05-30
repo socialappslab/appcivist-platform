@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import enums.MembershipRoles;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
@@ -25,6 +26,7 @@ public class WorkingGroup extends Model{
     private Date expiration;
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
+    private MembershipRoles membershipRole = MembershipRoles.MEMBER;
 
     @ManyToMany(mappedBy = "workingGroups")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
@@ -35,10 +37,6 @@ public class WorkingGroup extends Model{
     @JsonIgnore
     @OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
     private List<GroupMembership> memberships = new ArrayList<GroupMembership>();
-
-    @JsonIgnore
-    @ManyToOne
-    private Role role;
 
     public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
@@ -156,14 +154,6 @@ public class WorkingGroup extends Model{
         this.resources = resources;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
     public List<GroupMembership> getMemberships() {
         return memberships;
     }
@@ -186,5 +176,13 @@ public class WorkingGroup extends Model{
 
     public void setAcceptRequests(Boolean acceptRequests) {
         this.acceptRequests = acceptRequests;
+    }
+
+    public MembershipRoles getMembershipRole() {
+        return membershipRole;
+    }
+
+    public void setMembershipRole(MembershipRoles membershipRole) {
+        this.membershipRole = membershipRole;
     }
 }

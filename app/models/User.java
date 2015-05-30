@@ -63,17 +63,12 @@ public class User extends Model {
 	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
 	private List<TokenAction> tokenActions;
 
-    public List<Membership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<Membership> memberships) {
-        this.memberships = memberships;
-    }
-
     @JsonIgnore
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
     private List<Membership> memberships = new ArrayList<Membership>();
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<Role> roles = new ArrayList<Role>();
 
 
     public User(){
@@ -98,13 +93,6 @@ public class User extends Model {
         this.tokenActions = tokenActions;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
 /*
     public List<Membership> getMemberships() {
         return memberships;
@@ -122,9 +110,13 @@ public class User extends Model {
         this.messages = messages;
     }
 
-    @JsonIgnore
-    @ManyToOne
-    private Role role;
+	public List<Membership> getMemberships() {
+		return memberships;
+	}
+
+	public void setMemberships(List<Membership> memberships) {
+		this.memberships = memberships;
+	}
 /*
     @OneToMany(cascade = CascadeType.ALL, mappedBy="target")
     private List<Membership> memberships = new ArrayList<Membership>();*/
@@ -168,10 +160,19 @@ public class User extends Model {
 	 */
 	public static Model.Finder<Long, User> find = new Model.Finder<Long, User>(
 			Long.class, User.class);
-	
+
+
 	/************************************************************************************************
 	 * Getters & Setters
 	 ************************************************************************************************/
+
+	public List<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
+	}
 	
 	public String getEmail() {
 		return email;
