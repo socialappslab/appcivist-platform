@@ -78,3 +78,10 @@ conf/application.conf
 /appcivist-core
 
 
+conf/play-authenticate/mine.heroku.conf
+conf/play-authenticate/mine.local.conf
+conf/play-authenticate/smtp.heroku.conf
+conf/play-authenticate/smtp.local.conf
+project/activator-sbt-echo-shim.sbt
+project/activator-sbt-eclipse-shim.sbt
+project/activator-sbt-idea-shim.sbt
