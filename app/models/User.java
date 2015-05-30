@@ -1,12 +1,26 @@
 package models;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import models.TokenAction.Type;
-
-import org.joda.time.DateTime;
+import play.Play;
+import play.db.ebean.Model;
+import play.db.ebean.Transactional;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
@@ -18,11 +32,6 @@ import com.feth.play.module.pa.user.AuthUserIdentity;
 import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
-
-import play.Play;
-import play.db.ebean.Model;
-import play.db.ebean.Transactional;
-import providers.MyUsernamePasswordAuthUser;
 
 @Entity
 @Table(name="appcivist_user")
@@ -488,7 +497,7 @@ public class User extends Model {
 		 * 9. Create the new user
 		 */
 		if (userId != null) {
-			user.update(userId);
+			User.update(userId); //TODO CHECK THIS PART AGAIN
 		} else {
 //			user.setCreationDate(DateTime.now());
 			user.save();

@@ -1,88 +1,102 @@
 package models;
 
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
 import play.db.ebean.Model;
 
-import javax.persistence.*;
-import java.util.Date;
-
 @Entity
-public class Note extends Model{
+public class Note extends AppCivistBaseModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8437512308326874898L;
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
+	@Id
+	@GeneratedValue
+	private Long noteId;
+	private String title;
+	private String text;
+	private User creator;
 
-    @Id
-    private Long noteId;
-    private String title;
-    private String text;
+	/**
+	 * The find property is an static property that facilitates database query creation
+	 */
+	public static Model.Finder<Long, Note> find = new Model.Finder<Long, Note>(
+			Long.class, Note.class);
 
-    public Note(User creator, Date creation, Date removal, String lang, Long noteId, String title, String text) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.noteId = noteId;
-        this.title = title;
-        this.text = text;
+	public Note(User creator,String title, String text) {
+		this.creator = creator;
+		this.title = title;
+		this.text = text;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public Long getNoteId() {
+		return noteId;
+	}
+
+	public void setNoteId(Long noteId) {
+		this.noteId = noteId;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	/*
+	 * Basic Data operations
+	 */
+	
+	public static Note read(Long id) {
+        return find.ref(id);
     }
 
-    public User getCreator() {
-        return creator;
+    public static List<Note> findAll() {
+        return find.all();
     }
 
-    public void setCreator(User creator) {
-        this.creator = creator;
+    public static Note create(Note object) {
+        object.save();
+        object.refresh();
+        return object;
     }
 
-    public Date getCreation() {
-        return creation;
+    public static Note createObject(Note object) {
+        object.save();
+        return object;
     }
 
-    public void setCreation(Date creation) {
-        this.creation = creation;
+    public static void delete(Long id) {
+        find.ref(id).delete();
     }
 
-    public Date getRemoval() {
-        return removal;
+    public static void update(Long id) {
+        find.ref(id).update();
     }
 
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
 
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public Long getNoteId() {
-        return noteId;
-    }
-
-    public void setNoteId(Long noteId) {
-        this.noteId = noteId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
 
 }

@@ -9,28 +9,27 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-public class WorkingGroup extends Model{
-
-    //Commons
-    private User creator;
-    private Date creation = new Date(); // it will automatically assign the current date by default
-    private Date removal;
-    private String lang;
-
-    @Id
+public class WorkingGroup extends AppCivistBaseModel {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6809971288859856328L;
+	
+	@Id
+	@GeneratedValue
     private Long groupId;
     private String name;
     private String text;
     private Date expiration;
     private Boolean isPublic = true;
-    private Boolean acceptRequests = true;
-
+    private Boolean acceptRequests = false;
+    private User creator;
+    
     @ManyToMany(mappedBy = "workingGroups")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
-
 
     public List<GroupMembership> getMemberships() {
         return memberships;
@@ -113,30 +112,6 @@ public class WorkingGroup extends Model{
 
     public void setCreator(User creator) {
         this.creator = creator;
-    }
-
-    public Date getCreation() {
-        return creation;
-    }
-
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
-
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
     }
 
     public Long getGroupId() {

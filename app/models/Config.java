@@ -1,43 +1,44 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import enums.ConfigTargets;
 import play.db.ebean.Model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import java.util.Date;
+import javax.persistence.OneToOne;
 import java.util.List;
 
 @Entity
-public class Config extends Model{
+public class Config extends AppCivistBaseModel {
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
-
-    @Id
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3340337591058459420L;
+	
+	@Id
+    @GeneratedValue
     private Long configId;
     private String key;
     private String value;
-
-    @ManyToOne
-    @JsonIgnore
-    private Module module;
-
-    public Config(User creator, Date creation, Date removal, String lang, Long configId, String key, String value) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.configId = configId;
+    private ConfigTargets configTarget;
+    
+    @OneToOne
+    private ConfigDefinition definition; 
+    
+    public Config(String key, String value) {
         this.key = key;
         this.value = value;
     }
-
+    
+    public Config(String key, String value, ConfigDefinition def) {
+        this.key = key;
+        this.value = value;
+        this.definition = def;
+    }
+    
+    
     public Config(){
         super();
     }
@@ -45,7 +46,49 @@ public class Config extends Model{
     public static Model.Finder<Long, Config> find = new Model.Finder<Long, Config>(
             Long.class, Config.class);
 
-    public static Config read(Long configId) {
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+    
+    
+    
+    public ConfigTargets getConfigTarget() {
+		return configTarget;
+	}
+
+	public void setConfigTarget(ConfigTargets configTarget) {
+		this.configTarget = configTarget;
+	}
+
+	public ConfigDefinition getDefinition() {
+		return definition;
+	}
+
+	public void setDefinition(ConfigDefinition definition) {
+		this.definition = definition;
+	}
+
+	public static Config read(Long configId) {
         return find.ref(configId);
     }
 
@@ -70,61 +113,5 @@ public class Config extends Model{
 
     public static void update(Long id) {
         find.ref(id).update();
-    }
-
-    public User getCreator() {
-        return creator;
-    }
-
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreation() {
-        return creation;
-    }
-
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
-
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public Long getConfigId() {
-        return configId;
-    }
-
-    public void setConfigId(Long configId) {
-        this.configId = configId;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 }

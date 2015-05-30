@@ -6,12 +6,13 @@ import com.feth.play.module.pa.PlayAuthenticate;
 
 import models.Assembly;
 import models.AssemblyCollection;
-import models.Campaign;
-import models.CampaignCollection;
-import models.Issue;
-import models.IssueCollection;
 import models.User;
 import models.WorkingGroup;
+import models.services.ServiceAssembly;
+import models.services.ServiceCampaign;
+import models.services.ServiceCampaignCollection;
+import models.services.ServiceIssue;
+import models.services.ServiceIssueCollection;
 import models.services.Service;
 import models.services.ServiceCollection;
 import models.services.ServiceOperation;
@@ -48,9 +49,9 @@ public class Assemblies extends Controller {
 	 */
 	@Security.Authenticated(Secured.class)
 	public static Result findIssues(Long aid) {
-		Assembly assembly = Assembly.read(aid);
-		IssueCollection issues = new IssueCollection();
-		issues.setIssues(assembly.getIssues());
+		ServiceAssembly assembly = ServiceAssembly.read(aid);
+		ServiceIssueCollection issues = new ServiceIssueCollection();
+		issues.setIssues(assembly.getServiceIssues());
 		return ok(Json.toJson(issues));
 	}
 
@@ -108,8 +109,8 @@ public class Assemblies extends Controller {
 	 */
 	@Security.Authenticated(Secured.class)
 	public static Result findIssueCampaigns(Long aid, Long iid) {
-		Issue issue = Issue.readIssueOfAssembly(aid, iid);
-		CampaignCollection campaigns = new CampaignCollection();
+		ServiceIssue issue = ServiceIssue.readIssueOfServiceAssembly(aid, iid);
+		ServiceCampaignCollection campaigns = new ServiceCampaignCollection();
 		campaigns.setCampaigns(issue.getDecisionWorkflow());
 		return ok(Json.toJson(campaigns));
 	}
@@ -121,7 +122,7 @@ public class Assemblies extends Controller {
 	 */
 	@Security.Authenticated(Secured.class)
 	public static Result findIssueCampaignById(Long aid, Long iid, Long cid) {
-		Campaign campaign = Campaign.readCampaignOfIssue(aid, iid, cid);
+		ServiceCampaign campaign = ServiceCampaign.readCampaignOfIssue(aid, iid, cid);
 		return ok(Json.toJson(campaign));
 	}
 
@@ -132,7 +133,7 @@ public class Assemblies extends Controller {
 	 */
 	@Security.Authenticated(Secured.class)
 	public static Result findServices(Long aid) {
-		Assembly assembly = Assembly.read(aid);
+		ServiceAssembly assembly = ServiceAssembly.read(aid);
 		ServiceCollection services = new ServiceCollection();
 		services.setServices(assembly.getConnectedServices());
 		return ok(Json.toJson(services));

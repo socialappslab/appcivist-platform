@@ -1,8 +1,8 @@
 package models;
 
-import java.util.*;
+import java.util.List;
 
-import play.db.ebean.*;
+import play.db.ebean.Model;
 
 public class CampaignCollection extends Model {
 	/**

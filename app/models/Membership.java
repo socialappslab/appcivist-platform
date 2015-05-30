@@ -11,20 +11,19 @@ import java.util.List;
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
 @DiscriminatorColumn(name="MEMBERSHIP_TYPE")
-public abstract class Membership extends Model{
-
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
-
+public abstract class Membership extends AppCivistBaseModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4939869903730586228L;
+	
     @Id
+    @GeneratedValue
     private Long membershipId;
     private Date expiration;
     private MembershipStatus status;
-
-
+    private User creator;
+    
     public User getUser() {
         return user;
     }
@@ -86,30 +85,6 @@ public abstract class Membership extends Model{
 
     public void setCreator(User creator) {
         this.creator = creator;
-    }
-
-    public Date getCreation() {
-        return creation;
-    }
-
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
-
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
     }
 
     public Long getMembershipId() {
