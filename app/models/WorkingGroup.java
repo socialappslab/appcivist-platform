@@ -1,6 +1,8 @@
 package models;
 
+import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import enums.MembershipRoles;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
@@ -22,58 +24,18 @@ public class WorkingGroup extends AppCivistBaseModel {
     private String text;
     private Date expiration;
     private Boolean isPublic = true;
-    private Boolean acceptRequests = false;
-    private User creator;
-    
+    private Boolean acceptRequests = true;
+    private MembershipRoles membershipRole = MembershipRoles.MEMBER;
+
     @ManyToMany(mappedBy = "workingGroups")
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
 
-    public List<GroupMembership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<GroupMembership> memberships) {
-        this.memberships = memberships;
-    }
-
     @JsonIgnore
     @OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
     private List<GroupMembership> memberships = new ArrayList<GroupMembership>();
-
-/*
-    @OneToMany
-    private List<GroupMembership> groupMemberships = new ArrayList<GroupMembership>();*/
-
-    @JsonIgnore
-    @ManyToOne
-    private Role role;
-
-    public Boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
-    public Boolean getAcceptRequests() {
-        return acceptRequests;
-    }
-
-    public void setAcceptRequests(Boolean acceptRequests) {
-        this.acceptRequests = acceptRequests;
-    }
-/*
-    public List<GroupMembership> getGroupMemberships() {
-        return groupMemberships;
-    }
-
-    public void setGroupMemberships(List<GroupMembership> groupMemberships) {
-        this.groupMemberships = groupMemberships;
-    }*/
 
     public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
@@ -84,6 +46,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     public static List<WorkingGroup> findAll() {
         return find.all();
+    }
+
+    public static Integer readByTitle(String name){
+        ExpressionList<WorkingGroup> wGroups = find.where().eq("name", name);
+        return wGroups.findList().size();
     }
 
     public static WorkingGroup create(WorkingGroup workingGroup) {
@@ -162,11 +129,35 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.resources = resources;
     }
 
-    public Role getRole() {
-        return role;
+    public List<GroupMembership> getMemberships() {
+        return memberships;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setMemberships(List<GroupMembership> memberships) {
+        this.memberships = memberships;
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public Boolean getAcceptRequests() {
+        return acceptRequests;
+    }
+
+    public void setAcceptRequests(Boolean acceptRequests) {
+        this.acceptRequests = acceptRequests;
+    }
+
+    public MembershipRoles getMembershipRole() {
+        return membershipRole;
+    }
+
+    public void setMembershipRole(MembershipRoles membershipRole) {
+        this.membershipRole = membershipRole;
     }
 }

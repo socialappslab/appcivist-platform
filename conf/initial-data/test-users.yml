@@ -1,12 +1,25 @@
 # AppCivist Test Data
 ---
 
+# Roles
+  - &r1 !!models.Role
+    name:       COORDINATOR
+  - &r2 !!models.Role
+    name:       MEMBER
+  - &r3 !!models.Role
+    name:       VOLUNTEER
+  - &r4 !!models.Role
+    name:       FOLLOWER
+
 # Users (Testing Users)
   - &u1 !!models.User
     email:      bob@example.com
     name:       Bob
     username:   bob
     locale:     es
+    roles:
+      - *r1
+      - *r4
     linkedAccounts:
     - &ua1 !!models.LinkedAccount
       accountId: 1
@@ -18,6 +31,9 @@
     name:       Jane
     username:   jane
     locale:     en
+    roles:
+           - *r2
+           - *r1
     linkedAccounts:
     - &ua2 !!models.LinkedAccount
       accountId: 2
@@ -29,6 +45,10 @@
     name:       Jeff
     username:   jeff
     locale:     it
+    roles:
+      - *r3
+      - *r1
+      - *r2
     linkedAccounts:
     - &ua3 !!models.LinkedAccount
       accountId: 3

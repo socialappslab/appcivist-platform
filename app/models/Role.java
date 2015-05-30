@@ -7,10 +7,12 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
 import play.db.ebean.Model;
 
+import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -26,21 +28,16 @@ public class Role extends AppCivistBaseModel {
 	private String name;
 	private User creator;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "roles")
+    @JsonIgnore
+    @ManyToMany(mappedBy="roles")
+    private List<Membership> memberships  = new ArrayList<Membership>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "roles")
 	private Permission permits;
 
-	public List<Membership> getMemberships() {
-		return memberships;
-	}
-
-	public void setMemberships(List<Membership> memberships) {
-		this.memberships = memberships;
-	}
-
-	@JsonIgnore
-	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-	private List<Membership> memberships = new ArrayList<Membership>();;
-
+    @JsonIgnore
+    @ManyToMany(mappedBy="roles")
+    private List<User> users = new ArrayList<User>();
 	/*
 	 * @OneToMany(cascade = CascadeType.ALL, mappedBy="role") private
 	 * List<Membership> memberships = new ArrayList<Membership>();
@@ -48,9 +45,6 @@ public class Role extends AppCivistBaseModel {
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "role")
 	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
-
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "role")
-	private List<User> users = new ArrayList<User>();
 
 	public Role(User creator, String name, Permission permits, /*
 																 * List<Membership
@@ -69,13 +63,14 @@ public class Role extends AppCivistBaseModel {
 	public static Model.Finder<Long, Role> find = new Model.Finder<Long, Role>(
 			Long.class, Role.class);
 
-	public static Role read(Long roleId) {
-		return find.ref(roleId);
-	}
-
-	public static Role readByTitle(String name) {
-		return (Role) find.where().eq("name", name);
-	}
+    public static Role read(Long roleId) {
+        return find.ref(roleId);
+    }
+    
+    public static Integer readByTitle(String name){
+    	ExpressionList<Role> roles = find.where().eq("name", name);
+    	return roles.findList().size();
+    }
 
 	public static List<Role> findAll() {
 		return find.all();
@@ -146,11 +141,19 @@ public class Role extends AppCivistBaseModel {
 		this.workingGroups = workingGroups;
 	}
 
-	public List<User> getUsers() {
-		return users;
-	}
+    public List<User> getUsers() {
+        return users;
+    }
 
-	public void setUsers(List<User> users) {
-		this.users = users;
-	}
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+
+    public List<Membership> getMemberships() {
+        return memberships;
+    }
+
+    public void setMemberships(List<Membership> memberships) {
+        this.memberships = memberships;
+    }
 }

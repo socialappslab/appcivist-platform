@@ -5,6 +5,7 @@ import enums.MembershipStatus;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,31 +24,14 @@ public abstract class Membership extends AppCivistBaseModel {
     private Date expiration;
     private MembershipStatus status;
     private User creator;
-    
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User User) {
-        this.user = User;
-    }
 
     @JsonIgnore
     @ManyToOne
     private User user;
 
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role Role) {
-        this.role = Role;
-    }
-
     @JsonIgnore
-    @ManyToOne
-    private Role role;
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<Role> roles = new ArrayList<Role>();
 
     public static Model.Finder<Long, Membership> find = new Model.Finder<Long, Membership>(
             Long.class, Membership.class);
@@ -77,6 +61,14 @@ public abstract class Membership extends AppCivistBaseModel {
 
     public static void update(Long id) {
         find.ref(id).update();
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User User) {
+        this.user = User;
     }
     
     public User getCreator() {
@@ -109,5 +101,13 @@ public abstract class Membership extends AppCivistBaseModel {
 
     public void setStatus(MembershipStatus status) {
         this.status = status;
+    }
+
+    public List<Role> getRole() {
+        return roles;
+    }
+
+    public void setRole(List<Role> roles) {
+        this.roles = roles;
     }
 }
