@@ -4,9 +4,13 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import play.db.ebean.Model;
 import enums.ContributionConnectionStatuses;
@@ -27,13 +31,25 @@ public class ContributionConnection extends AppCivistBaseModel {
 	private ContributionConnectionStatuses status = ContributionConnectionStatuses.NEW; 
 	private Long upVotes;
 	private Long downVotes;
+	private User creator;
+	
+	
+	// Who is the group that moved or copied this contribution to its Campaign Phase
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinTable(name = "contribution_connection_group", 
+		joinColumns = 
+			@JoinColumn(name = "group_id", referencedColumnName = "group_id"), 
+		inverseJoinColumns = 
+			@JoinColumn(name = "contribution_connection_id", referencedColumnName = "contribution_connection_id")
+	)
+	private WorkingGroup ownerGroup;
 
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Contribution sourceContribution;
 
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Contribution targetContribution;
-
+	
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -95,6 +111,22 @@ public class ContributionConnection extends AppCivistBaseModel {
 
 	public void setDownVotes(Long downVotes) {
 		this.downVotes = downVotes;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public WorkingGroup getOwnerGroup() {
+		return ownerGroup;
+	}
+
+	public void setOwnerGroup(WorkingGroup ownerGroup) {
+		this.ownerGroup = ownerGroup;
 	}
 
 	public Contribution getSourceContribution() {

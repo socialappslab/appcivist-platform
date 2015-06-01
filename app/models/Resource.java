@@ -7,12 +7,14 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 
+import enums.ResourceTypes;
 import models.Location.Geo;
 import play.db.ebean.Model;
 
@@ -25,8 +27,9 @@ public class Resource extends AppCivistBaseModel {
 	@Id
 	@Column(name = "resource_id")
 	private Long resourceId;
-	private String type;
-	private URL externalURL;
+	private ResourceTypes type;
+	private String externalResourceType;
+	private URL url;
 	private User creator;
 
 	@ManyToMany(cascade = CascadeType.ALL)
@@ -36,18 +39,27 @@ public class Resource extends AppCivistBaseModel {
 	@OneToOne
 	private Geo location;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_contribution", 
+		joinColumns = 
+			@JoinColumn(name = "resource_id", referencedColumnName = "resource_id"), 
+		inverseJoinColumns = 
+			@JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id")
+	)
+	private Contribution contribution; 
+	
 	/**
-	 * The find property is an static property that facilitates database query creation
+	 * The find property is an static property that facilitates database query
+	 * creation
 	 */
 	public static Model.Finder<Long, Resource> find = new Model.Finder<Long, Resource>(
 			Long.class, Resource.class);
 
-	public Resource(User creator, 
-			 String type, URL externalURL,
+	public Resource(User creator, ResourceTypes type, URL externalURL,
 			List<Resource> resources) {
 		this.creator = creator;
 		this.type = type;
-		this.externalURL = externalURL;
+		this.url = externalURL;
 		this.resources = resources;
 	}
 
@@ -63,20 +75,34 @@ public class Resource extends AppCivistBaseModel {
 		this.resourceId = resourceId;
 	}
 
-	public String getType() {
+	public ResourceTypes getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(ResourceTypes type) {
 		this.type = type;
 	}
 
-	public URL getExternalURL() {
-		return externalURL;
+	/**
+	 * The external resource type is a string property reserved to further
+	 * explained what exactly the resource is (a google doc, spreadsheet, etc.)
+	 * 
+	 * @return
+	 */
+	public String getExternalResourceType() {
+		return externalResourceType;
 	}
 
-	public void setExternalURL(URL externalURL) {
-		this.externalURL = externalURL;
+	public void setExternalResourceType(String externalResourceType) {
+		this.externalResourceType = externalResourceType;
+	}
+
+	public URL getUrl() {
+		return url;
+	}
+
+	public void setUrl(URL externalURL) {
+		this.url = externalURL;
 	}
 
 	public List<Resource> getResources() {
@@ -88,12 +114,12 @@ public class Resource extends AppCivistBaseModel {
 	}
 
 	public Geo getLocation() {
-        return location;
-    }
+		return location;
+	}
 
-    public void setLocation(Geo location) {
-        this.location = location;
-    }
+	public void setLocation(Geo location) {
+		this.location = location;
+	}
 
 	/*
 	 * Basic Data operations
