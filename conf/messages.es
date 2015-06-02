@@ -166,3 +166,5 @@ roles.creation.error = El rol no fue creado. Hubo un problema con la peticion: {
 
 membership.invitation.creation.success = La invitacion a la membresia {0} ha sido creada con exito por {1}
 membership.invitation.creation.error = La invitacion a la membresia no fue creada. Hubo un problema con la peticion: {0}
+
+membership.invitation.email.message = Invitacion para membresia

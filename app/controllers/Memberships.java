@@ -1,6 +1,7 @@
 package controllers;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import models.Membership;
 import models.transfer.TransferMembership;
 import models.User;
 import models.WorkingGroup;
@@ -25,7 +26,7 @@ public class Memberships extends Controller{
      */
     public static Result createInvitation(String membershipType) {
         // 1. obtaining the user of the requestor
-        User user = User.findByAuthUserIdentity(PlayAuthenticate
+        User wGroupUser = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
 
         // 2. read the new group data from the body
@@ -45,13 +46,20 @@ public class Memberships extends Controller{
             WorkingGroup newWorkingGroup = WorkingGroup.read(transferMembership.getId());
 
             // Check if the user has the correct role to send invitations for this group
-            if (hasTheRole(newWorkingGroup, user)) {
+            if (hasRole(newWorkingGroup, wGroupUser)) {
                 ResponseStatusBean responseBody = new ResponseStatusBean();
+
+                if(transferMembership.getUserId() != null){
+                    User user = User.findByUserId(transferMembership.getUserId());
+                    String token = Membership.generateVerificationRecord(user);
+                }else{
+
+                }
 
                 return ok(Json.toJson(responseBody));
 
             } else {
-                return unauthorized("You don't have the correct rights");
+                return unauthorized("You don't have the correct rights to do that");
             }
         }
     }
@@ -60,7 +68,7 @@ public class Memberships extends Controller{
         return ok();
     }
 
-    private static Boolean hasTheRole(WorkingGroup workingGroup, User user){
+    private static Boolean hasRole(WorkingGroup workingGroup, User user){
         Boolean role = false;
         Integer cont = 0;
 
