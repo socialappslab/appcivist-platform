@@ -98,9 +98,9 @@ DELETE         /api/role/:rid                                        controllers
 
 # Config API
 GET            /api/configs                                          controllers.Configs.findConfigs()
-GET            /api/config/:cid                                      controllers.Configs.findConfig(Long: cid)
+GET            /api/config/:cid                                      controllers.Configs.findConfig(cid: Long)
 PUT            /api/config                                           controllers.Configs.updateConfig()
 POST           /api/config                                           controllers.Configs.createConfig()
-DELETE         /api/config/:cid                                      controllers.Configs.deleteConfig(Long: cid)
+DELETE         /api/config/:cid                                      controllers.Configs.deleteConfig(cid: Long)
 
 
