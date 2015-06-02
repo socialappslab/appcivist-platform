@@ -50,8 +50,8 @@ public class Memberships extends Controller{
                 ResponseStatusBean responseBody = new ResponseStatusBean();
 
                 if(transferMembership.getUserId() != null){
-                    User user = User.findByUserId(transferMembership.getUserId());
-                    String token = Membership.generateVerificationRecord(user);
+                    //User user = User.findByUserId(transferMembership.getUserId());
+                    //String token = Membership.generateVerificationRecord(user);
                 }else{
 
                 }

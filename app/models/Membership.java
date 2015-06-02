@@ -89,7 +89,7 @@ public abstract class Membership extends AppCivistBaseModel {
         TokenAction.create(TokenAction.Type.EMAIL_VERIFICATION, token, user);
         return token;
     }
-
+/*
     protected Mailer.Mail.Body getVerifyEmailMailingBody(final String token, final User user) {
 
         // final boolean isSecure = getConfiguration().getBoolean(
@@ -97,7 +97,7 @@ public abstract class Membership extends AppCivistBaseModel {
         // TODO find out how to return just json
         // final String url = "";
         // final String url = routes.Signup.verify(token).absoluteURL(
-/*
+
         String baseURL = Play.application().configuration()
                 .getString("application.baseUrl");
         final String url = baseURL + routes.Users.verify(token).url();
@@ -121,7 +121,7 @@ public abstract class Membership extends AppCivistBaseModel {
                 || locale.equals("en")) {
             locale = "en";
         }
-*/
+
         String name = user.getName() + " " + user.getName();
         String email = user.getEmail();
         final String html = getEmailTemplate(
@@ -193,7 +193,7 @@ public abstract class Membership extends AppCivistBaseModel {
         final String token = generateVerificationRecord(user);
         final Mailer.Mail.Body body = getVerifyEmailMailingBody(token, user);
         MyUsernamePasswordAuthProvider.getMailer().sendMail(subject, body, getEmailName(user));
-    }
+    }*/
 
     private String getEmailName(final User user) {
         return getEmailName(user.getEmail(), user.getName());
