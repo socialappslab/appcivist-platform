@@ -2,7 +2,9 @@ package models;
 
 import java.util.*;
 
-import models.Assembly;
+import models.services.ServiceAssembly;
+import models.services.ServiceCampaign;
+import models.services.ServiceIssue;
 import models.services.Service;
 import models.services.ServiceAuthentication;
 import models.services.ServiceDefinition;
@@ -38,9 +40,9 @@ import static org.fest.assertions.Assertions.*;
  * interested in mocking a whole application, see the wiki for more details.
  *
  */
-public class AssembliesTest extends WithApplication {
+public class ServiceAssembliesTest extends WithApplication {
 
-	// Assembly Details
+	// ServiceAssembly Details
 	private static final String ASSEMBLY_TITLE = "Urban Spaces Assembly";
 	private static final String ASSEMBLY_DESCRIPTION = "An assembly that works on proposals for addressing problems in urban spaces";
 	private static final String ASSEMBLY_CITY = "Paris";
@@ -81,43 +83,41 @@ public class AssembliesTest extends WithApplication {
 	public static final String DISC_SAMPLE_DESC = "How might we best use the empty lot?";
 	public String DEMO_VERSION = "1";
 
-
-
 	@Test
-	public void testAssemblyIssueCreation() {
+	public void testServiceAssemblyIssueCreation() {
 
 		// 1. Create instance of Issue
-		Issue i = new Issue();
+		ServiceIssue i = new ServiceIssue();
 		i.setIssueId(new Long(999));
 		i.setTitle("Issue Title");
 		i.setBrief("Issue Brief");
 
-		// 2. Create instance of Assembly
-		Assembly a = new Assembly();
+		// 2. Create instance of ServiceAssembly
+		ServiceAssembly a = new ServiceAssembly();
 		a.setAssemblyId(new Long(999));
 		a.setName("Assembly Name");
 		a.setDescription("Assembly Description");
 		a.setCity("Asuncion");
 		a.setIcon("/assets/images/sfskyline-small.jpg");
 		a.setUrl("/api/assembly/4");
-		a.getIssues().add(i);
+		a.getServiceIssues().add(i);
 
 		// 3. Save Assembly (and its corresponding issues)
 		a.save();
 
 		// 4. Read the assembly for db and assert it exists and it has issues
-		Assembly a1 = Assembly.read(new Long(999));
+		ServiceAssembly a1 = ServiceAssembly.read(new Long(999));
 		assertThat(a1 != null);
-		assertThat(a1.getIssues().size() > 0);
+		assertThat(a1.getServiceIssues().size() > 0);
 
 		// 5. Delete created data
 		i.delete();
 		a.delete();
 
 		// 6. Verify data was deleted
-		a1 = Assembly.read(new Long(999));
+		a1 = ServiceAssembly.read(new Long(999));
 		assertThat(a1 == null);
-		assertThat(a1.getIssues().size() == 0);
+		assertThat(a1.getServiceIssues().size() == 0);
 	}
 
 	@Test
@@ -171,11 +171,11 @@ public class AssembliesTest extends WithApplication {
 		DEMO_VERSION = "1";
 		/******************************************************************************************
 		 * STEP 1: 
-		 * - Create a new AppCivist orchestration, i.e., an Assembly
+		 * - Create a new AppCivist orchestration, i.e., an ServiceAssembly
 		 * ==> e.g., orch = new AppCivistOrchestrator() ;
 		 */
-		Assembly orchestration = 
-					new Assembly(ASSEMBLY_TITLE,
+		ServiceAssembly orchestration = 
+					new ServiceAssembly(ASSEMBLY_TITLE,
 								 	ASSEMBLY_DESCRIPTION, 
 								 	ASSEMBLY_CITY);
 
@@ -186,7 +186,7 @@ public class AssembliesTest extends WithApplication {
 		 *   create new instances by searching for the ServiceDefinition and instantiating
 		 *   by indicating its BaseUrl and obtaining authentication credentials
 		 */
-		System.out.println("DEMOv"+DEMO_VERSION+" > #1 > Add connected services to the Assembly");
+		System.out.println("DEMOv"+DEMO_VERSION+" > #1 > Add connected services to the ServiceAssembly");
 
 		// e.g., loomio = orch.getServiceInstance(Constants.LOOMIO_INFO) ;
 		Service loomio = Service.read(LOOMIO_SERVICE_ID);
@@ -247,7 +247,7 @@ public class AssembliesTest extends WithApplication {
 		 * 		4. Reads the PROPOSALS
 		 * 		5: add Agora group creation
 		 * 		6. Creates an election in Agora (with proposals as options and the issue as question)
-		 * 		7. Prints the final definition of the Assembly for this demo
+		 * 		7. Prints the final definition of the ServiceAssembly for this demo
 		 * - Example: To create a discussion in Loomio, we need to instantiate the operation 
 		 *   "createDiscussion" using the OperationDefinition to which it is mapped in the 
 		 *   selected service ("loomio") => this is the task of the "composition engine"
@@ -372,7 +372,7 @@ public class AssembliesTest extends WithApplication {
 		assertThat(electionPrettyName.equals("Choose a proposal for: "+issueTitle));
 
 		System.out.println("DEMOv"+DEMO_VERSION+" > #4 > Created Election => "+election.getBody());
-		System.out.println("DEMOv"+DEMO_VERSION+" > #5 > Rendered Assembly => "+Json.toJson(orchestration));
+		System.out.println("DEMOv"+DEMO_VERSION+" > #5 > Rendered ServiceAssembly => "+Json.toJson(orchestration));
 	}
 
 	/**
@@ -388,7 +388,7 @@ public class AssembliesTest extends WithApplication {
 	 * 
 	 * Deliberation: active discussion and evaluation of proposals by the whole community
 	 * 
-	 * Create a Public Working Group, open to all members of the community => in Loomio, create a Public Group with the name of the Assembly and * Issue
+	 * Create a Public Working Group, open to all members of the community => in Loomio, create a Public Group with the name of the ServiceAssembly and * Issue
 	 * 4. Start by creating a Public Discussion for each proposal => in Loomio, create a public discussion for each proposal that was created in the * previous campaign, within the public group
 	 * 5. Move to the next campaign, of Voting
 	 * 
@@ -404,11 +404,11 @@ public class AssembliesTest extends WithApplication {
 		
 		/******************************************************************************************
 		 * STEP 1: 
-		 * - Create a new AppCivist orchestration, i.e., an Assembly
+		 * - Create a new AppCivist orchestration, i.e., an ServiceAssembly
 		 * ==> e.g., orch = new AppCivistOrchestrator() ;
 		 */
-		Assembly orchestration = 
-					new Assembly(ASSEMBLY_TITLE,
+		ServiceAssembly orchestration = 
+					new ServiceAssembly(ASSEMBLY_TITLE,
 								 	ASSEMBLY_DESCRIPTION, 
 								 	ASSEMBLY_CITY);
 
@@ -419,7 +419,7 @@ public class AssembliesTest extends WithApplication {
 		 *   create new instances by searching for the ServiceDefinition and instantiating
 		 *   by indicating its BaseUrl and obtaining authentication credentials
 		 */
-		System.out.println("DEMOv2 > #1 > Add connected services to the Assembly");
+		System.out.println("DEMOv2 > #1 > Add connected services to the ServiceAssembly");
 
 		// e.g., loomio = orch.getServiceInstance(Constants.LOOMIO_INFO) ;
 		Service loomio = Service.read(LOOMIO_SERVICE_ID);
@@ -461,7 +461,7 @@ public class AssembliesTest extends WithApplication {
 		 * 8. Read the Proposals from the Deliberation campaign copy their titles + URLs as options in a new Election within the created group => create * an election in Agora => copy an election in Agora
 		 */
 		
-		System.out.println("DEMOv2 > #3.1 > Adding operation mappings to the Assembly");
+		System.out.println("DEMOv2 > #3.1 > Adding operation mappings to the ServiceAssembly");
 
 		orchestration.addOperationServiceMapping("createGroup", loomio); 		// there is a create group in both agora and loomio and we need both
 		orchestration.addOperationServiceMapping("createGroup", agora); 		// there is a create group in both agora and loomio and we need both
@@ -473,7 +473,7 @@ public class AssembliesTest extends WithApplication {
 		orchestration.addOperationServiceMapping("createElection", agora);
 		orchestration.addOperationServiceMapping("readElection", agora);
 
-		System.out.println("DEMOv2 > #3.2 > Adding operation mappings to the services in the Assembly");
+		System.out.println("DEMOv2 > #3.2 > Adding operation mappings to the services in the ServiceAssembly");
 		// TODO: replace operation ids for ServiceOperationDefinition
 		loomio.addOperationMapping("createGroup",LOOMIO_CREATE_GROUP_OP_ID + "");
 		loomio.addOperationMapping("createDiscussion",LOOMIO_CREATE_DISCUSSION_OP_ID + "");
@@ -492,25 +492,25 @@ public class AssembliesTest extends WithApplication {
 		// Create the Issue object
 		String issue_title = "ISSUE:"+DISC_SAMPLE_TITLE;
 		String issue_desc = DISC_SAMPLE_DESC;
-		Issue issueObject = new Issue();
-		issueObject.setAssembly(orchestration);
+		ServiceIssue issueObject = new ServiceIssue();
+		issueObject.setServiceAssembly(orchestration);
 		issueObject.setTitle(issue_title);
 		issueObject.setBrief(issue_desc);
 		
 		System.out.println("DEMOv2 > #3.4 > Creating 3 Campaign objects for each stage of the process (Proposal Making, Deliberation, Voting)");
-		Campaign proposals = new Campaign();
+		ServiceCampaign proposals = new ServiceCampaign();
 		proposals.setIssue(issueObject);
 		proposals.setEnabled(true);
 		proposals.setName("Proposal Making Phase");
 		issueObject.addCampaign(proposals);
 
-		Campaign deliberation = new Campaign();
+		ServiceCampaign deliberation = new ServiceCampaign();
 		deliberation.setIssue(issueObject);
 		deliberation.setEnabled(true);
 		deliberation.setName("Deliberation Phase");
 		issueObject.addCampaign(deliberation);
 
-		Campaign voting = new Campaign();
+		ServiceCampaign voting = new ServiceCampaign();
 		voting.setIssue(issueObject);
 		voting.setEnabled(true);
 		voting.setName("Voting Phase");
@@ -545,7 +545,7 @@ public class AssembliesTest extends WithApplication {
 		issueObject.setResource(issue);
 		proposals.addCampaignResource(issue);
 		orchestration.addResourceMappings("ISSUE", issue); // TODO: right now, there is some redundancy with ServiceResources, remove it later
-		orchestration.addIssue(issueObject);
+		orchestration.addServiceIssue(issueObject);
 		JsonNode jsonEtherpadIssue = Json.parse(issue.getBody());
 		System.out.println("DEMOv2 > #4.1 > Created ISSUE on 'Etherpad': "+jsonEtherpadIssue.toString());
 		String issueText = jsonEtherpadIssue.get("data").get("text").asText();
@@ -586,7 +586,7 @@ public class AssembliesTest extends WithApplication {
 			proposalListEtherpad.add(proposal);
 			proposals.addCampaignResource(proposal);
 			orchestration.addResourceMappings("PROPOSAL", proposal); // TODO: right now, there is some redundancy with ServiceResources, remove it later
-			orchestration.addIssue(issueObject);
+			orchestration.addServiceIssue(issueObject);
 			JsonNode jsonProposal = Json.parse(proposal.getBody());
 			String jsonProposalText = jsonProposal.get("data").get("text").asText();
 			assertThat(jsonProposalText.equals(issue_desc)); // will fail becaus Etherpad does not return the text
@@ -696,7 +696,7 @@ public class AssembliesTest extends WithApplication {
 		assertThat(electionPrettyName.equals(electionTitle));
 
 		System.out.println("DEMOv2 > #6 > Created Election => "+election.getBody());
-	    System.out.println("DEMOv2 > #7 > Rendered Assembly => "+Json.toJson(orchestration));
+	    System.out.println("DEMOv2 > #7 > Rendered ServiceAssembly => "+Json.toJson(orchestration));
 	}
 	
 	/**
@@ -707,7 +707,7 @@ public class AssembliesTest extends WithApplication {
 	 * @return
 	 */
 	private ServiceResource createGroupInLoomio(
-				Assembly orchestration, 
+				ServiceAssembly orchestration, 
 				String groupName, 
 				String groupDesc,
 				String expectedResourceType) {
@@ -769,7 +769,7 @@ public class AssembliesTest extends WithApplication {
 	 * Creates an instance of the Operation "createDiscussion", using the specific 
 	 * OperationDefinition to which it is mapped
 	 * 
-	 * @param orch Assembly that contains information about what service holds the definition of the operation
+	 * @param orch ServiceAssembly that contains information about what service holds the definition of the operation
 	 * @param expectedResourceType What's the type of the output (i.e., the type with respect to the resources 
 	 * 			in the context of AppCivist, e.g., Issue, Proposal, Discussion, Comment, Election, Vote)
 	 * @param string 
@@ -777,7 +777,7 @@ public class AssembliesTest extends WithApplication {
 	 * @return
 	 */
 	private ServiceResource createDiscussionInLoomio(
-				Assembly orch,
+				ServiceAssembly orch,
 				ServiceResource loomioGroup,
 				String title, 
 				String desc,
@@ -824,7 +824,7 @@ public class AssembliesTest extends WithApplication {
 	 * @param expectedResourceType
 	 * @return
 	 */
-	private ServiceResource createLoomioProposal(Assembly orchestration,
+	private ServiceResource createLoomioProposal(ServiceAssembly orchestration,
 			ServiceResource loomioGroup, ServiceResource discussion, String expectedResourceType) {
 
 		// TODO: do we need the group here?
@@ -906,7 +906,7 @@ public class AssembliesTest extends WithApplication {
 	 * @param expectedResourceType
 	 * @return
 	 */
-	private ServiceResource createGroupInAgora(Assembly orchestration,
+	private ServiceResource createGroupInAgora(ServiceAssembly orchestration,
 			String groupName, String groupDesc, String expectedResourceType) {	
 		Service s = orchestration.getServiceForOperation("createGroup");
 		return createGroupInAgora(s, groupName, groupDesc, expectedResourceType );
@@ -949,7 +949,7 @@ public class AssembliesTest extends WithApplication {
 	 * @return
 	 */
 	private ServiceResource createAgoraElection(
-			Assembly orch,
+			ServiceAssembly orch,
 			ServiceResource agoraGroup, 
 			List<ServiceResource> proposals, 
 			ServiceResource issue,
@@ -963,7 +963,7 @@ public class AssembliesTest extends WithApplication {
 	}
 
 	private ServiceResource createAgoraElection(
-			Assembly orch,
+			ServiceAssembly orch,
 			ServiceResource agoraGroup, 
 			List<ServiceResource> proposals, 
 			String electionTitle,
@@ -1033,7 +1033,7 @@ public class AssembliesTest extends WithApplication {
 		return result;
 	}
 	
-	private ServiceResource readAgoraElection(Assembly orch, String expectedResourceType) {
+	private ServiceResource readAgoraElection(ServiceAssembly orch, String expectedResourceType) {
 		Map<String, Object> paramValues = new HashMap<String, Object>();
 		paramValues.put("id",AGORA_ELECTION_ID+"");
 		
@@ -1055,7 +1055,7 @@ public class AssembliesTest extends WithApplication {
 	}
 	
 	private ServiceResource createIssueInEtherpad(Service etherpad,
-			Issue issueObject, String expectedResourceType) {
+			ServiceIssue issueObject, String expectedResourceType) {
 		return createPadInEtherpad(etherpad, issueObject.getTitle(), issueObject.getBrief(), expectedResourceType);
 	}
 	

@@ -25,7 +25,9 @@ public class TokenAction extends Model {
 		EMAIL_VERIFICATION,
 
 		@EnumValue("PR")
-		PASSWORD_RESET
+		PASSWORD_RESET, 
+		
+		MEMBERSHIP_INVITATION
 	}
 
 	/**

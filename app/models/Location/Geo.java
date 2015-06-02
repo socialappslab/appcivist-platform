@@ -3,13 +3,21 @@ package models.Location;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
+
+import models.AppCivistBaseModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Geo extends Model {
+public class Geo extends AppCivistBaseModel {
 
-    @Id
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4612546771988078421L;
+	@Id
+    @GeneratedValue
     private Long locationId;
     private String type = "Feature";
 
@@ -17,8 +25,14 @@ public class Geo extends Model {
     private List<Geometry> geometries = new ArrayList<Geometry>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="geo")
-    private List<Properties> propertieses = new ArrayList<Properties>();
+    private List<Properties> properties = new ArrayList<Properties>();
 
+	/**
+	 * The find property is an static property that facilitates database query creation
+	 */
+	public static Model.Finder<Long, Geo> find = new Model.Finder<Long, Geo>(
+			Long.class, Geo.class);
+    
     public Long getLocationId() {
         return locationId;
     }
@@ -43,11 +57,42 @@ public class Geo extends Model {
         this.geometries = geometries;
     }
 
-    public List<Properties> getPropertieses() {
-        return propertieses;
+    public List<Properties> getProperties() {
+        return properties;
     }
 
-    public void setPropertieses(List<Properties> propertieses) {
-        this.propertieses = propertieses;
+    public void setProperties(List<Properties> propertieses) {
+        this.properties = propertieses;
+    }
+
+	/*
+	 * Basic Data operations
+	 */
+	
+	public static Geo read(Long id) {
+        return find.ref(id);
+    }
+
+    public static List<Geo> findAll() {
+        return find.all();
+    }
+
+    public static Geo create(Geo object) {
+        object.save();
+        object.refresh();
+        return object;
+    }
+
+    public static Geo createObject(Geo object) {
+        object.save();
+        return object;
+    }
+
+    public static void delete(Long id) {
+        find.ref(id).delete();
+    }
+
+    public static void update(Long id) {
+        find.ref(id).update();
     }
 }

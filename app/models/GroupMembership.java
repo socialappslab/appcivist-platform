@@ -1,19 +1,20 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import enums.MembershipStatus;
-import play.db.ebean.Model;
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
-import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @DiscriminatorValue("GROUP")
 public class GroupMembership extends Membership{
 
-    @JsonIgnore
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3737906484702711675L;
+	@JsonIgnore
     @ManyToOne
     private WorkingGroup workingGroup;
 

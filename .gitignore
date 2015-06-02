@@ -54,6 +54,9 @@ dist
 .project
 appcivist-core/app/models/A.java
 appcivist-core/app/models/B.java
+conf/application.conf
+conf/evolutions
+conf/local.conf
 logs
 project/project
 project/target
@@ -69,7 +72,6 @@ dist
 /.project
 /RUNNING_PID
 /.settings
-conf/application.conf
 
 *.classpath
 *.project
@@ -78,3 +80,10 @@ conf/application.conf
 /appcivist-core
 
 
+conf/play-authenticate/mine.heroku.conf
+conf/play-authenticate/mine.local.conf
+conf/play-authenticate/smtp.heroku.conf
+conf/play-authenticate/smtp.local.conf
+project/activator-sbt-echo-shim.sbt
+project/activator-sbt-eclipse-shim.sbt
+project/activator-sbt-idea-shim.sbt

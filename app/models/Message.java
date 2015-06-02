@@ -1,183 +1,149 @@
 package models;
 
-import enums.MessageType;
-import play.db.ebean.Model;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+import play.db.ebean.Model;
+import enums.MessageType;
+
 @Entity
-public class Message extends Model{
+public class Message extends AppCivistBaseModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2793007528040604050L;
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
+	@Id
+	@GeneratedValue
+	private Long messageId;
+	private String title;
+	private String text;
+	private MessageType type;
+	private User creator;
+	
+	@ManyToOne
+	// Un usuario o una lista de usuarios?
+	private User targetUser;
 
-    @Id
-    private Long messageId;
-    private String title;
-    private String text;
-    private MessageType type;
+	@ManyToOne
+	// Un workingGroup o una lista de workingGroups?
+	private WorkingGroup targetWorkingGroup;
 
-    @ManyToOne //Un usuario o una lista de usuarios?
-    private User targetUser;
+	@ManyToOne
+	// Una assembly o una lista de assemblies?
+	private Assembly targetAssembly;
 
-    @ManyToOne //Un workingGroup o una lista de workingGroups?
-    private WorkingGroup targeWorkingGroup;
 
-    @ManyToOne //Una assembly o una lista de assemblies?
-    private Assembly assembly;
+	public Message(User creator, String title, String text, MessageType type,
+			User targetUser, WorkingGroup targeWorkingGroup, Assembly assembly) {
+		this.creator = creator;
+		this.title = title;
+		this.text = text;
+		this.type = type;
+		this.targetUser = targetUser;
+		this.targetWorkingGroup = targeWorkingGroup;
+		this.targetAssembly = assembly;
+	}
 
-    @ManyToOne //Una organization o una lista de organizations?
-    private Organization organization;
+	public Message() {
+		super();
+	}
 
-    public Message(User creator, Date creation, Date removal, String lang, Long messageId, String title, String text, MessageType type, User targetUser, WorkingGroup targeWorkingGroup, Assembly assembly, Organization organization) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.messageId = messageId;
-        this.title = title;
-        this.text = text;
-        this.type = type;
-        this.targetUser = targetUser;
-        this.targeWorkingGroup = targeWorkingGroup;
-        this.assembly = assembly;
-        this.organization = organization;
-    }
+	public static Model.Finder<Long, Message> find = new Model.Finder<Long, Message>(
+			Long.class, Message.class);
 
-    public Message(){
-        super();
-    }
+	public static Message read(Long messageId) {
+		return find.ref(messageId);
+	}
 
-    public static Model.Finder<Long, Message> find = new Model.Finder<Long, Message>(
-            Long.class, Message.class);
+	public static List<Message> findAll() {
+		return find.all();
+	}
 
-    public static Message read(Long messageId) {
-        return find.ref(messageId);
-    }
+	public static Message create(Message message) {
+		message.save();
+		message.refresh();
+		return message;
+	}
 
-    public static List<Message> findAll() {
-        return find.all();
-    }
+	public static Message createObject(Message message) {
+		message.save();
+		return message;
+	}
 
-    public static Message create(Message message) {
-        message.save();
-        message.refresh();
-        return message;
-    }
+	public static void delete(Long id) {
+		find.ref(id).delete();
+	}
 
-    public static Message createObject(Message message) {
-        message.save();
-        return message;
-    }
+	public static void update(Long id) {
+		find.ref(id).update();
+	}
 
-    public static void delete(Long id) {
-        find.ref(id).delete();
-    }
+	public User getCreator() {
+		return creator;
+	}
 
-    public static void update(Long id) {
-        find.ref(id).update();
-    }
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 
-    public User getCreator() {
-        return creator;
-    }
+	public Long getMessageId() {
+		return messageId;
+	}
 
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
+	public void setMessageId(Long messageId) {
+		this.messageId = messageId;
+	}
 
-    public Date getCreation() {
-        return creation;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public Date getRemoval() {
-        return removal;
-    }
+	public String getText() {
+		return text;
+	}
 
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
+	public void setText(String text) {
+		this.text = text;
+	}
 
-    public String getLang() {
-        return lang;
-    }
+	public MessageType getType() {
+		return type;
+	}
 
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
+	public void setType(MessageType type) {
+		this.type = type;
+	}
 
-    public Long getMessageId() {
-        return messageId;
-    }
+	public User getTargetUser() {
+		return targetUser;
+	}
 
-    public void setMessageId(Long messageId) {
-        this.messageId = messageId;
-    }
+	public void setTargetUser(User targetUser) {
+		this.targetUser = targetUser;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public WorkingGroup getTargetWorkingGroup() {
+		return targetWorkingGroup;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	public void setTargetWorkingGroup(WorkingGroup targeWorkingGroup) {
+		this.targetWorkingGroup = targeWorkingGroup;
+	}
 
-    public String getText() {
-        return text;
-    }
+	public Assembly getTargetAssembly() {
+		return targetAssembly;
+	}
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public MessageType getType() {
-        return type;
-    }
-
-    public void setType(MessageType type) {
-        this.type = type;
-    }
-
-    public User getTargetUser() {
-        return targetUser;
-    }
-
-    public void setTargetUser(User targetUser) {
-        this.targetUser = targetUser;
-    }
-
-    public WorkingGroup getTargeWorkingGroup() {
-        return targeWorkingGroup;
-    }
-
-    public void setTargeWorkingGroup(WorkingGroup targeWorkingGroup) {
-        this.targeWorkingGroup = targeWorkingGroup;
-    }
-
-    public Assembly getAssembly() {
-        return assembly;
-    }
-
-    public void setAssembly(Assembly assembly) {
-        this.assembly = assembly;
-    }
-
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }
+	public void setTargetAssembly(Assembly assembly) {
+		this.targetAssembly = assembly;
+	}
 }

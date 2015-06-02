@@ -1,125 +1,100 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import enums.PermissionTypes;
-import play.db.ebean.Model;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+
+import play.db.ebean.Model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import enums.PermissionTypes;
 
 @Entity
-public class Permission extends Model{
+public class Permission extends AppCivistBaseModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5209150394472354436L;
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
+	@Id
+	@GeneratedValue
+	private Long permitId;
+	private PermissionTypes permit;
+	private User creator;
 
-    @Id
-    private Long permitId;
-    private PermissionTypes permit;
+	@JsonIgnore
+	@ManyToOne
+	private List<Role> roles = new ArrayList<Role>();
 
-    @JsonIgnore
-    @ManyToOne
-    private List<Role> roles = new ArrayList<Role>();
+	public Permission(User creator, PermissionTypes permit) {
+		this.creator = creator;
+		this.permit = permit;
+	}
 
-    public Permission(User creator, Date creation, Date removal, String lang, Long permitId, PermissionTypes permit) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.permitId = permitId;
-        this.permit = permit;
-    }
+	public static Model.Finder<Long, Permission> find = new Model.Finder<Long, Permission>(
+			Long.class, Permission.class);
 
-    public static Model.Finder<Long, Permission> find = new Model.Finder<Long, Permission>(
-            Long.class, Permission.class);
+	public static Permission read(Long permitId) {
+		return find.ref(permitId);
+	}
 
-    public static Permission read(Long permitId) {
-        return find.ref(permitId);
-    }
+	public static List<Permission> findAll() {
+		return find.all();
+	}
 
-    public static List<Permission> findAll() {
-        return find.all();
-    }
+	public static Permission create(Permission permission) {
+		permission.save();
+		permission.refresh();
+		return permission;
+	}
 
-    public static Permission create(Permission permission) {
-        permission.save();
-        permission.refresh();
-        return permission;
-    }
+	public static Permission createObject(Permission permission) {
+		permission.save();
+		return permission;
+	}
 
-    public static Permission createObject(Permission permission) {
-        permission.save();
-        return permission;
-    }
+	public static void delete(Long id) {
+		find.ref(id).delete();
+	}
 
-    public static void delete(Long id) {
-        find.ref(id).delete();
-    }
+	public static void update(Long id) {
+		find.ref(id).update();
+	}
 
-    public static void update(Long id) {
-        find.ref(id).update();
-    }
+	public User getCreator() {
+		return creator;
+	}
 
-    public User getCreator() {
-        return creator;
-    }
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
+	public List<Role> getRoles() {
+		return roles;
+	}
 
-    public List<Role> getRoles() {
-        return roles;
-    }
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
+	}
 
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
-    }
+	public Long getPermitId() {
+		return permitId;
+	}
 
-    public Date getCreation() {
-        return creation;
-    }
+	public void setPermitId(Long permitId) {
+		this.permitId = permitId;
+	}
 
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
+	public PermissionTypes getPermit() {
+		return permit;
+	}
 
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public Long getPermitId() {
-        return permitId;
-    }
-
-    public void setPermitId(Long permitId) {
-        this.permitId = permitId;
-    }
-
-    public PermissionTypes getPermit() {
-        return permit;
-    }
-
-    public void setPermit(PermissionTypes permit) {
-        this.permit = permit;
-    }
+	public void setPermit(PermissionTypes permit) {
+		this.permit = permit;
+	}
 }

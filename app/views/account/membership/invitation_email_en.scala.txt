@@ -1,0 +1,8 @@
+@(validationUrl: String, token: String, name: String, email: String)Howdy @name,
+
+
+You've just received an invitation, for accepting it follow this link:
+@validationUrl
+
+Cheers,
+AppCivist

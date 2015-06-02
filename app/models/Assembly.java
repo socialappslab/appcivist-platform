@@ -1,18 +1,24 @@
 package models;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
-import enums.ResponseStatus;
 import models.Location.Geo;
-import models.services.Service;
-import models.services.ServiceResource;
-import play.db.ebean.*;
+import play.db.ebean.Model;
 import utils.GlobalData;
+import enums.Visibility;
 
 @Entity
-public class Assembly extends Model {
+public class Assembly extends AppCivistBaseModel {
 
 	/**
 	 * 
@@ -21,126 +27,313 @@ public class Assembly extends Model {
 
 	@Id
 	@GeneratedValue
-	private Long  assemblyId;
-	private String name;
+	private Long assemblyId;
+
+	/**
+	 * Properties specific to the Assembly
+	 */
+
+	private User creator;
+	private String name; // TODO limit to no more than what a title should be (150 chars maybe?)
 	private String description;
 	private String city;
+	private String state;
+	private String country;
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON;
-	private String url;
+	private String url; 
+	private Visibility visibiliy = Visibility.MEMBERSONLY; // only members by default
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
-	
-//	private String test;
-	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
-	private List<Issue> issues = new ArrayList<Issue>();
+	// Relationships
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<Category> interestCategories = new ArrayList<Category>();
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
-	private List<Service> connectedServices = new ArrayList<Service>();
-	
-	
-	@Transient
-	private Map<String, ServiceResource> resourceMappings = new HashMap<String,ServiceResource>();
+	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	private List<Campaign> campaigns = new ArrayList<Campaign>();
 
-	@Transient
-	private Map<String, Service> operationServiceMappings = new HashMap<String,Service>();
-	
-//	@OneToMany(cascade = CascadeType.ALL, mappedBy="assembly")
-//	private List<OperationServiceMappings> operationServiceMappings = new ArrayList<Service>();
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<Config> assemblyConfigs = new ArrayList<Config>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Theme> themes = new ArrayList<Theme>();
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Phase> phases = new ArrayList<Phase>();
+	// Even if in the original design, we will have only working groups
+	// belonging to
+	// one assembly, let's make it manytomany in case we need it for the future
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Module> modules = new ArrayList<Module>();
+// 	AssemblyConnections and Messages are managed in different entity
+// 	TODO check that this works
+//	@OneToMany(mappedBy = "targetAssembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//	private List<AssemblyConnection> connections = new ArrayList<AssemblyConnection>();
+//
+//	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//	private List<Message> messages = new ArrayList<Message>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Organization> organizations = new ArrayList<Organization>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Message> messages = new ArrayList<Message>();
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
-
-    @OneToOne
-    private Geo location;
-
-    public Geo getLocation() {
-        return location;
-    }
-
-    public void setLocation(Geo location) {
-        this.location = location;
-    }
-
-	/*
-	 * Basic Data Queries
+	/**
+	 * Experimental properties (things we might want to have)
 	 */
+	// A location specification that is more precise, based on the GeoJSON
+	// standard
+	// Basically, with this location object, we can specify whether an entity is
+	// located in a specific geo point, route/line or area.
+	@OneToOne
+	private Geo location;
+
+	// If assemblies decide to collaborate on campaigns, then we might want to
+	// have
+	// the notion of "shared campaigns
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Campaign> sharedCampaigns = new ArrayList<Campaign>();
 	
+	/**
+	 * The find property is an static property that facilitates database query creation
+	 */
 	public static Model.Finder<Long, Assembly> find = new Model.Finder<Long, Assembly>(
 			Long.class, Assembly.class);
 
-    /**
+	/**
 	 * Empty constructor
 	 */
 	public Assembly() {
 		super();
 	}
-	
+
+	/**
+	 * Basic assembly constructor (with the most basic elements of an assembly)
+	 * @param assemblyTitle
+	 * @param assemblyDescription
+	 * @param assemblyCity
+	 */
 	public Assembly(String assemblyTitle, String assemblyDescription,
 			String assemblyCity) {
-		this.name=assemblyTitle;
-		this.description=assemblyDescription;
-		this.city=assemblyCity;
+		super();
+		this.name = assemblyTitle;
+		this.description = assemblyDescription;
+		this.city = assemblyCity;
 	}
 
-    public Assembly(String name, String description, String city, String icon, String url, User creator, Date creation, Date removal, String lang, List<Issue> issues, List<Service> connectedServices, Map<String, ServiceResource> resourceMappings, Map<String, Service> operationServiceMappings, List<Theme> themes, List<Phase> phases, List<Module> modules, List<Organization> organizations, List<Message> messages, List<WorkingGroup> workingGroups) {
-        this.name = name;
-        this.description = description;
-        this.city = city;
-        this.icon = icon;
-        this.url = url;
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.issues = issues;
-        this.connectedServices = connectedServices;
-        this.resourceMappings = resourceMappings;
-        this.operationServiceMappings = operationServiceMappings;
-        this.themes = themes;
-        this.phases = phases;
-        this.modules = modules;
-        this.organizations = organizations;
-        this.messages = messages;
-        this.workingGroups = workingGroups;
-    }
+	public Assembly(User creator, String name, String description, String city,
+			String state, String country, String icon, Visibility visibility) {
+		super();
+		this.creator = creator;
+		this.name = name;
+		this.description = description;
+		this.city = city;
+		this.state = state;
+		this.country = country;
+		this.icon = icon;
+		this.visibiliy = visibility;
+	}
 
-    public static AssemblyCollection findAll() {
+	/** 
+	 * Assembly constructor, including the basic lists of categories (interests), hashtags
+	 * and configuration key/value pairs
+	 * @param lang 
+	 * @param creator
+	 * @param name
+	 * @param description
+	 * @param city
+	 * @param state
+	 * @param country
+	 * @param icon
+	 * @param interests
+	 * @param hashtags
+	 * @param configurations
+	 */
+	public Assembly(String lang, User creator, String name, String description, String city,
+			String state, String country, String icon, 
+			Visibility visibility,
+			List<Category> interests,
+			List<Hashtag> hashtags,
+			List<Config> assemblyConfigs) {
+		super(lang);
+		this.creator = creator;
+		this.name = name;
+		this.description = description;
+		this.city = city;
+		this.state = state;
+		this.country = country;
+		this.icon = icon;
+		this.visibiliy = visibility;
+		this.interestCategories = interests;
+		this.hashtags = hashtags;
+		this.assemblyConfigs = assemblyConfigs;
+	}
+	
+	/*
+	 * Getters and Setters
+	 */
+
+	public Long getAssemblyId() {
+		return assemblyId;
+	}
+
+	public void setAssemblyId(Long assemblyId) {
+		this.assemblyId = assemblyId;
+	}
+
+	/*
+	 * Getters and Setters
+	 */
+	
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public Visibility getVisibiliy() {
+		return visibiliy;
+	}
+
+	public void setVisibiliy(Visibility visibiliy) {
+		this.visibiliy = visibiliy;
+	}
+
+	public List<Category> getInterestCategories() {
+		return interestCategories;
+	}
+
+	public void setInterestCategories(List<Category> interests) {
+		this.interestCategories = interests;
+	}
+
+	public List<Campaign> getCampaigns() {
+		return campaigns;
+	}
+
+	public void setCampaigns(List<Campaign> campaigns) {
+		this.campaigns = campaigns;
+	}
+
+	public List<Config> getAssemblyConfigs() {
+		return assemblyConfigs;
+	}
+
+	public void setAssemblyConfigs(List<Config> assemblyConfigs) {
+		this.assemblyConfigs = assemblyConfigs;
+	}
+
+	public List<Hashtag> getHashtags() {
+		return hashtags;
+	}
+
+	public void setHashtags(List<Hashtag> hashtags) {
+		this.hashtags = hashtags;
+	}
+
+	public List<WorkingGroup> getWorkingGroups() {
+		return workingGroups;
+	}
+
+	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
+		this.workingGroups = workingGroups;
+	}
+
+	public Geo getLocation() {
+		return location;
+	}
+
+	public void setLocation(Geo location) {
+		this.location = location;
+	}
+
+	public List<Campaign> getSharedCampaigns() {
+		return sharedCampaigns;
+	}
+
+	public void setSharedCampaigns(List<Campaign> sharedCampaigns) {
+		this.sharedCampaigns = sharedCampaigns;
+	}
+
+	/*
+	 * Basic Data Queries
+	 */
+	
+	/**
+	 * Returns all the assemblies in our system
+	 * @return
+	 */
+	public static AssemblyCollection findAll() {
 		List<Assembly> assemblies = find.all();
 		AssemblyCollection assemblyCollection = new AssemblyCollection();
 		assemblyCollection.setAssemblies(assemblies);
 		return assemblyCollection;
 	}
 
-    public static void create(Assembly assembly) {
-		if (assembly.getAssemblyId()!=null && (assembly.getUrl()==null || assembly.getUrl()=="")) {
-			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL+"/"+assembly.getAssemblyId());
+	public static void create(Assembly assembly) {
+		if (assembly.getAssemblyId() != null
+				&& (assembly.getUrl() == null || assembly.getUrl() == "")) {
+			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
+					+ assembly.getAssemblyId());
 		}
-		
+
 		assembly.save();
 		assembly.refresh();
-		
-		if (assembly.getUrl()==null || assembly.getUrl()=="") {
-			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL+"/"+assembly.getAssemblyId());
+
+		if (assembly.getUrl() == null || assembly.getUrl() == "") {
+			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
+					+ assembly.getAssemblyId());
 		}
 	}
 
@@ -160,208 +353,33 @@ public class Assembly extends Model {
 	public static void update(Long id) {
 		find.ref(id).update();
 	}
-	
+
 	/*
-	 * Getters and Setters
+	 * Other Queries
+	 * 
+	 * TODO: 
+	 * [done] Create an assembly
+		Create an assembly with a name, a description and a assembly logo/icon. 
+		Provide initial configuration
+		Establish if the assembly is public/private
+		Establish if members can create new issues
+		Establish if members can join by request or only by invitation
+		Associate hashtags
+		Invite users to become members of the assembly
+		Configure an assembly
+			can members create new issues?
+			update hashtags
+		Publish the assembly (make assembly public to all users) or keep private
+			update proposal template
+		Export issues from one assembly into another 
+		Export proposals from one assembly into an issue of another assembly
+		Import issues from another assembly
+		Import proposals from another assembly into an issue [what working group will be assigned to them?]
+		Import proposal template from another assembly		
+		Subscribe to another assembly
+		Publish issues (if assembly is public, all issues are automatically published, i.e., public)	
+		Publish proposals (if assembly is public, all proposals are automatically published unless the working group unpublishes the proposal)
 	 */
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public Long getAssemblyId() {
-		return assemblyId;
-	}
-
-	public void setAssemblyId(Long id) {
-		this.assemblyId = id;
-	}
-
-	public String getCity() {
-		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
-	}
-
-	public String getIcon() {
-		return icon;
-	}
-
-	public void setIcon(String icon) {
-		this.icon = icon;
-	}
-
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public List<Issue> getIssues() {
-		return issues;
-	}
-
-	public void setIssues(List<Issue> issues) {
-		this.issues = issues;
-	}
 	
-	public void addIssue(Issue i) {
-		this.issues.add(i);
-	}
-
-	public void removeIssue(Issue i) {
-		this.issues.remove(i);
-	}
-
-	public List<Service> getConnectedServices() {
-		return connectedServices;
-	}
-
-	public void setConnectedServices(List<Service> connectedServices) {
-		this.connectedServices = connectedServices;
-	}
-
-	public void addConnectedService(Service s) {
-		this.connectedServices.add(s);
-	}
-	
-	public void removeConnectedService(Service s) {
-		this.connectedServices.remove(s);
-	}
-	
-	public Map<String, ServiceResource> getResourceMappings() {
-		return resourceMappings;
-	}
-
-	public void setResourceMappings(Map<String, ServiceResource> resourceMappings) {
-		this.resourceMappings = resourceMappings;
-	}
-
-	public void addResourceMappings(String key, ServiceResource value) {
-		this.resourceMappings.put(key,value);
-	}
-	
-	public void removeResourceMappings(String key) {
-		this.resourceMappings.remove(key);
-	}
-
-	public Map<String, Service> getOperationServiceMappings() {
-		return operationServiceMappings;
-	}
-	
-	public Service getServiceForOperation(String operationKey) {
-		return this.operationServiceMappings.get(operationKey);
-	}
-
-	public void setOperationServiceMappings(Map<String, Service> operationServiceMappings) {
-		this.operationServiceMappings = operationServiceMappings;
-	}
-
-	public void addOperationServiceMapping(String opName, Service service) {
-		this.operationServiceMappings.put(opName,service);
-	}
-	
-	public void removeOperationServiceMapping(String opName) {
-		this.operationServiceMappings.remove(opName);
-	}
-
-    public List<Theme> getThemes() {
-        return themes;
-    }
-
-    public void setThemes(List<Theme> themes) {
-        this.themes = themes;
-    }
-
-    public List<Phase> getPhases() {
-        return phases;
-    }
-
-    public void setPhases(List<Phase> phases) {
-        this.phases = phases;
-    }
-
-    public User getCreator() {
-        return creator;
-    }
-
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreation() {
-        return creation;
-    }
-
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
-
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public List<Module> getModules() {
-        return modules;
-    }
-
-    public void setModules(List<Module> modules) {
-        this.modules = modules;
-    }
-
-    public List<Organization> getOrganizations() {
-        return organizations;
-    }
-
-    public void setOrganizations(List<Organization> organizations) {
-        this.organizations = organizations;
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
-
-    public List<WorkingGroup> getWorkingGroups() {
-        return workingGroups;
-    }
-
-    public void setWorkingGroups(List<WorkingGroup> workingGroups) {
-        this.workingGroups = workingGroups;
-    }
-
-    /*
-	 * Other Queries 
-	 */
 
 }

@@ -1,195 +1,161 @@
 package models;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+
+import enums.ResourceTypes;
 import models.Location.Geo;
 import play.db.ebean.Model;
 
-import javax.persistence.*;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 @Entity
-public class Resource extends Model{
+public class Resource extends AppCivistBaseModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2501353074091631217L;
+	@Id
+	@Column(name = "resource_id")
+	private Long resourceId;
+	private ResourceTypes type;
+	private String externalResourceType;
+	private URL url;
+	private User creator;
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "RELATED_RESOURCES", joinColumns = { @JoinColumn(name = "source", referencedColumnName = "resource_id") }, inverseJoinColumns = { @JoinColumn(name = "target", referencedColumnName = "resource_id") })
+	private List<Resource> resources = new ArrayList<Resource>();
 
-    @Id
-    @Column(name="resource_id")
-    private Long resourceId;
-    private String type;
-    private URL externalURL;
+	@OneToOne
+	private Geo location;
+/*
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_contribution", 
+		joinColumns = 
+			@JoinColumn(name = "resource_id", referencedColumnName = "resource_id"),
+		inverseJoinColumns = 
+			@JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id")
+	)*/
+//	private Contribution contribution;
+	
+	/**
+	 * The find property is an static property that facilitates database query
+	 * creation
+	 */
+	public static Model.Finder<Long, Resource> find = new Model.Finder<Long, Resource>(
+			Long.class, Resource.class);
 
-    @ManyToMany(mappedBy = "resources")
-    private List<Phase> phases = new ArrayList<Phase>();
+	public Resource(User creator, ResourceTypes type, URL externalURL,
+			List<Resource> resources) {
+		this.creator = creator;
+		this.type = type;
+		this.url = externalURL;
+		this.resources = resources;
+	}
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name="RELATED_RESOURCES",
-            joinColumns={@JoinColumn(name="source", referencedColumnName="resource_id")},
-            inverseJoinColumns={@JoinColumn(name="target", referencedColumnName="resource_id")})
-    private List<Resource> resources = new ArrayList<Resource>();
+	/*
+	 * Getters and Setters
+	 */
 
-    @ManyToMany(mappedBy = "resources")
-    private List<Issue> issues = new ArrayList<Issue>();
+	public Long getResourceId() {
+		return resourceId;
+	}
 
-    @ManyToMany(mappedBy = "resources")
-    private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
+	public void setResourceId(Long resourceId) {
+		this.resourceId = resourceId;
+	}
 
-    @OneToOne
-    private Geo location;
+	public ResourceTypes getType() {
+		return type;
+	}
 
-    public Geo getLocation() {
-        return location;
-    }
+	public void setType(ResourceTypes type) {
+		this.type = type;
+	}
 
-    public void setLocation(Geo location) {
-        this.location = location;
-    }
-    /*
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="resource")
-    private List<Meeting> meetings = new ArrayList<Meeting>();
+	/**
+	 * The external resource type is a string property reserved to further
+	 * explained what exactly the resource is (a google doc, spreadsheet, etc.)
+	 * 
+	 * @return
+	 */
+	public String getExternalResourceType() {
+		return externalResourceType;
+	}
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="resource")
-    private List<Note> notes = new ArrayList<Note>();
+	public void setExternalResourceType(String externalResourceType) {
+		this.externalResourceType = externalResourceType;
+	}
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="resource")
-    private List<Task> tasks = new ArrayList<Task>();*/
+	public URL getUrl() {
+		return url;
+	}
 
-    public Resource(User creator, Date creation, Date removal, String lang, Long resourceId, String type, URL externalURL, List<Phase> phases, List<Resource> resources, List<Issue> issues, List<WorkingGroup> workingGroups) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.resourceId = resourceId;
-        this.type = type;
-        this.externalURL = externalURL;
-        this.phases = phases;
-        this.resources = resources;
-        this.issues = issues;
-        this.workingGroups = workingGroups;
-    }
+	public void setUrl(URL externalURL) {
+		this.url = externalURL;
+	}
 
-    public static Model.Finder<Long, Resource> find = new Model.Finder<Long, Resource>(
-            Long.class, Resource.class);
+	public List<Resource> getResources() {
+		return resources;
+	}
 
-    public static Resource read(Long resourceId) {
-        return find.ref(resourceId);
-    }
+	public void setResources(List<Resource> resources) {
+		this.resources = resources;
+	}
 
-    public static List<Resource> findAll() {
-        return find.all();
-    }
+	public Geo getLocation() {
+		return location;
+	}
 
-    public static Resource create(Resource resource) {
-        resource.save();
-        resource.refresh();
-        return resource;
-    }
+	public void setLocation(Geo location) {
+		this.location = location;
+	}
 
-    public static Resource createObject(Resource resource) {
-        resource.save();
-        return resource;
-    }
+	/*
+	 * Basic Data operations
+	 */
+	public static Resource read(Long resourceId) {
+		return find.ref(resourceId);
+	}
 
-    public static void delete(Long id) {
-        find.ref(id).delete();
-    }
+	public static List<Resource> findAll() {
+		return find.all();
+	}
 
-    public static void update(Long id) {
-        find.ref(id).update();
-    }
+	public static Resource create(Resource resource) {
+		resource.save();
+		resource.refresh();
+		return resource;
+	}
 
-    public User getCreator() {
-        return creator;
-    }
+	public static Resource createObject(Resource resource) {
+		resource.save();
+		return resource;
+	}
 
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
+	public static void delete(Long id) {
+		find.ref(id).delete();
+	}
 
-    public Date getCreation() {
-        return creation;
-    }
+	public static void update(Long id) {
+		find.ref(id).update();
+	}
 
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
+	public User getCreator() {
+		return creator;
+	}
 
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public URL getExternalURL() {
-        return externalURL;
-    }
-
-    public void setExternalURL(URL externalURL) {
-        this.externalURL = externalURL;
-    }
-
-    public List<Phase> getPhases() {
-        return phases;
-    }
-
-    public void setPhases(List<Phase> phases) {
-        this.phases = phases;
-    }
-
-    public List<Resource> getResources() {
-        return resources;
-    }
-
-    public void setResources(List<Resource> resources) {
-        this.resources = resources;
-    }
-
-    public List<Issue> getIssues() {
-        return issues;
-    }
-
-    public void setIssues(List<Issue> issues) {
-        this.issues = issues;
-    }
-
-    public List<WorkingGroup> getWorkingGroups() {
-        return workingGroups;
-    }
-
-    public void setWorkingGroups(List<WorkingGroup> workingGroups) {
-        this.workingGroups = workingGroups;
-    }
-
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 }
