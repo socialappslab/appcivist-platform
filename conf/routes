@@ -74,8 +74,8 @@ POST           /api/group                                            controllers
 DELETE         /api/group/:gid                                       controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
 
 # WorkingGroupMemberships API
-POST           /api/:t/membership/invitation                      controllers.Memberships.createInvitation(t: String)
-POST           /api/:t/membership/request                         controllers.Memberships.createRequest(t: String)
+POST           /api/:t/membership/invitation                         controllers.Memberships.createInvitation(t: String)
+POST           /api/:t/membership/request                            controllers.Memberships.createRequest(t: String)
 
 #####################################################################################
 # Composition Engine endpoints
@@ -95,4 +95,12 @@ GET            /api/role/:rid                                        controllers
 PUT            /api/role                                             controllers.Roles.updateRole()
 POST           /api/role                                             controllers.Roles.createRole()
 DELETE         /api/role/:rid                                        controllers.Roles.deleteRole(rid: Long)
+
+# Config API
+GET            /api/configs                                          controllers.Configs.findConfigs()
+GET            /api/config/:cid                                      controllers.Configs.findConfig(Long: cid)
+PUT            /api/config                                           controllers.Configs.updateConfig()
+POST           /api/config                                           controllers.Configs.createConfig()
+DELETE         /api/config/:cid                                      controllers.Configs.deleteConfig(Long: cid)
+
 

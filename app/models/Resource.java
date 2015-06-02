@@ -38,15 +38,15 @@ public class Resource extends AppCivistBaseModel {
 
 	@OneToOne
 	private Geo location;
-
+/*
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_contribution", 
 		joinColumns = 
-			@JoinColumn(name = "resource_id", referencedColumnName = "resource_id"), 
+			@JoinColumn(name = "resource_id", referencedColumnName = "resource_id"),
 		inverseJoinColumns = 
 			@JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id")
-	)
-	private Contribution contribution; 
+	)*/
+//	private Contribution contribution;
 	
 	/**
 	 * The find property is an static property that facilitates database query

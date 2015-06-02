@@ -30,4 +30,9 @@ public class GlobalData {
 	public static String ROLE_CREATE_MSG_SUCCESS = "roles.creation.success";
 	public static String ROLE_CREATE_MSG_ERROR = "roles.creation.error";
 	public static String ROLE_BASE_PATH = "/role";
+
+	// Config
+	public static String CONFIG_CREATE_MSG_SUCCESS = "configs.creation.success";
+	public static String CONFIG_CREATE_MSG_ERROR = "configs.creation.error";
+	public static String CONFIG_BASE_PATH = "/config";
 }

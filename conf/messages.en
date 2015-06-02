@@ -159,6 +159,9 @@ assemblies.creation.error = The assembly was not created. There was a problem wi
 roles.creation.success = The role {0} has been created with success by {1}
 roles.creation.error = The role was not created. There was a problem with the request: {0}
 
+configs.creation.success = The config {0} has been created with success by {1}
+configs.creation.error = The config was not created. There was a problem with the request: {0}
+
 membership.invitation.creation.success = The invitation to membership {0} has been created with success by {1}
 membership.invitation.creation.error = The invitation to membership was not created. There was a problem with the request: {0}
 

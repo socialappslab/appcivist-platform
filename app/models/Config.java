@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.ExpressionList;
 import enums.ConfigTargets;
 import play.db.ebean.Model;
 
@@ -91,6 +92,12 @@ public class Config extends AppCivistBaseModel {
 	public static Config read(Long configId) {
         return find.ref(configId);
     }
+
+    public static Integer readByKey(String key) {
+        ExpressionList<Config> configs = find.where().eq("key", key);
+        return configs.findList().size();
+    }
+
 
     public static List<Config> findAll() {
         return find.all();
