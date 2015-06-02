@@ -69,7 +69,7 @@ POST           /api/assembly                                         controllers
 # WorkingGroup API
 GET            /api/groups                                           controllers.WorkingGroups.findWorkingGroups()
 GET            /api/group/:gid                                       controllers.WorkingGroups.findWorkingGroup(gid: Long)
-PUT            /api/group                                            controllers.WorkingGroups.updateWorkingGroup()
+PUT            /api/group/:gid                                       controllers.WorkingGroups.updateWorkingGroup(gid: Long)
 POST           /api/group                                            controllers.WorkingGroups.createWorkingGroup()
 DELETE         /api/group/:gid                                       controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
 
@@ -92,15 +92,24 @@ GET            /api/assembly/:aid/issue/:iid/campaign/:cid           controllers
 # Role API
 GET            /api/roles                                            controllers.Roles.findRoles()
 GET            /api/role/:rid                                        controllers.Roles.findRole(rid: Long)
-PUT            /api/role                                             controllers.Roles.updateRole()
+PUT            /api/role/:rid                                        controllers.Roles.updateRole(rid: Long)
 POST           /api/role                                             controllers.Roles.createRole()
 DELETE         /api/role/:rid                                        controllers.Roles.deleteRole(rid: Long)
 
 # Config API
 GET            /api/configs                                          controllers.Configs.findConfigs()
 GET            /api/config/:cid                                      controllers.Configs.findConfig(cid: Long)
-PUT            /api/config                                           controllers.Configs.updateConfig()
+PUT            /api/config/:cid                                      controllers.Configs.updateConfig(cid: Long)
 POST           /api/config                                           controllers.Configs.createConfig()
 DELETE         /api/config/:cid                                      controllers.Configs.deleteConfig(cid: Long)
+
+# Campaign API
+GET            /api/campaigns                                        controllers.Campaigns.findCampaigns()
+GET            /api/campaign/:cid                                    controllers.Campaigns.findCampaign(cid: Long)
+PUT            /api/campaign/:cid                                    controllers.Campaigns.updateCampaign(cid: Long)
+POST           /api/campaign                                         controllers.Campaigns.createCampaign()
+DELETE         /api/campaign/:cid                                    controllers.Campaigns.deleteCampaign(cid: Long)
+
+
 
 

@@ -43,7 +43,7 @@ public class Configs extends Controller {
     }
 
     @Security.Authenticated(Secured.class)
-    public static Result updateConfig() {
+    public static Result updateConfig(Long configId) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
@@ -63,6 +63,7 @@ public class Configs extends Controller {
                 Logger.info("Config already exists");
             }
             else {
+                newConfig.setConfigId(configId);
                 newConfig.update();
                 Logger.info("Updating config");
                 Logger.debug("=> " + newConfigForm.toString());

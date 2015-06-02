@@ -35,4 +35,9 @@ public class GlobalData {
 	public static String CONFIG_CREATE_MSG_SUCCESS = "configs.creation.success";
 	public static String CONFIG_CREATE_MSG_ERROR = "configs.creation.error";
 	public static String CONFIG_BASE_PATH = "/config";
+
+	// Campaign
+	public static String CAMPAIGN_CREATE_MSG_SUCCESS = "campaign.creation.success";
+	public static String CAMPAIGN_CREATE_MSG_ERROR = "campaign.creation.error";
+	public static String CAMPAIGN_BASE_PATH = "/campaign";
 }

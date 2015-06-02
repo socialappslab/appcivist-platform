@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.avaje.ebean.ExpressionList;
 import play.db.ebean.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -219,6 +220,11 @@ public class Campaign extends AppCivistBaseModel {
 
 	public static Campaign read(Long campaignId) {
 		return find.ref(campaignId);
+	}
+
+	public static Integer readByTitle(String campaignTitle) {
+		ExpressionList<Campaign> campaigns = find.where().eq("title",campaignTitle);
+		return campaigns.findList().size();
 	}
 
 	public static Campaign createObject(Campaign campaign) {
