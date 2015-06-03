@@ -110,6 +110,13 @@ PUT            /api/campaign/:cid                                    controllers
 POST           /api/campaign                                         controllers.Campaigns.createCampaign()
 DELETE         /api/campaign/:cid                                    controllers.Campaigns.deleteCampaign(cid: Long)
 
+# CampaignPhase API
+GET            /api/campaign/:cid/phases                             controllers.CampaignPhases.findCampaignPhases(cid:Long)
+#GET            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.findCampaignPhase(cid: Long, cpid: Long)
+#PUT            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.updateCampaignPhase(cid: Long, cpid: Long)
+#POST           /api/campaign/:cid/phase                              controllers.CampaignPhases.createCampaignPhase(cid: Long)
+#DELETE         /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.deleteCampaignPhase(cid: Long, cpid: Long)
+
 
 
 

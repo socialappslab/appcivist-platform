@@ -3,6 +3,7 @@ package controllers;
 import com.feth.play.module.pa.PlayAuthenticate;
 import http.Headers;
 import models.Campaign;
+import models.CampaignPhase;
 import models.User;
 import play.Logger;
 import play.data.Form;
@@ -20,30 +21,30 @@ import java.util.List;
 import static play.data.Form.form;
 
 @With(Headers.class)
-public class Campaigns extends Controller{
+public class CampaignPhases extends Controller{
 
-    public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
+    public static final Form<CampaignPhase> CAMPAIGN_PHASE_FORM = form(CampaignPhase.class);
 
     //@Security.Authenticated(Secured.class)
-    public static Result findCampaigns(){
-        List<Campaign> campaigns = Campaign.findAll();
-        return ok(Json.toJson(campaigns));
+    public static Result findCampaignPhases(Long campaignId){
+        List<CampaignPhase> phases = CampaignPhase.findAll();
+        return ok(Json.toJson(phases));
     }
-
-    //@Security.Authenticated(Secured.class)
-    public static Result findCampaign(Long campaignId){
+/*
+    @Security.Authenticated(Secured.class)
+    public static Result findCampaignPhase(Long campaignId, Long phaseId){
         Campaign campaign = Campaign.read(campaignId);
         return ok(Json.toJson(campaign));
     }
 
     @Security.Authenticated(Secured.class)
-    public static Result deleteCampaign(Long campaignId){
+    public static Result deleteCampaignPhase(Long campaignId, Long phaseId){
         Campaign.delete(campaignId);
         return ok();
     }
 
     @Security.Authenticated(Secured.class)
-    public static Result updateCampaign(Long campaignId) {
+    public static Result updateCampaignPhase(Long campaignId, Long phaseId) {
         // 1. read the campaign data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
@@ -80,7 +81,7 @@ public class Campaigns extends Controller{
     }
 
     @Security.Authenticated(Secured.class)
-    public static Result createCampaign() {
+    public static Result createCampaignPhase(Long campaignId) {
         // 1. obtaining the user of the requestor
         User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
@@ -119,5 +120,5 @@ public class Campaigns extends Controller{
 
             return ok(Json.toJson(responseBody));
         }
-    }
+    }*/
 }
