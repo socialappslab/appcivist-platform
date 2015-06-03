@@ -1,0 +1,45 @@
+# AppCivist Test Data
+---
+
+# Assemblies
+  - &a1 !!models.Assembly
+    name: "Participatory Budgeting Vallejo 2015"
+    description: Participatory Budgeting of the Municipality of Vallejo for the year 2015
+    city: Vallejo
+    icon: /assets/images/sfskyline-small.jpg
+    url: /api/assembly/99
+
+
+# Categories
+  - &cat1 !!models.Category
+    title: "Streets and Transportation"
+    description: "Streets are the veins of our city. Transportation is its blood. They are the reason why we are moving, and to keep moving, they must be as healty as possible"
+  - &cat2 !!models.Category
+    title: "Economic Development"
+    description: "What we do everyday has an impact in our local economy. What can we do to foster its growth? And how can we ensure that growth benefits us all?"
+  - &cat3 !!models.Category
+    title: "Community and Culture"
+    description: "Culture speak to us about our history, values and traditions. It is the soul that keeps the heart of our communities pumping."
+  - &cat4 !!models.Category
+    title: "Public Safety"
+    description: "To thrive, our communities need a safe space to live. Your contributions to improve public safety go here."
+  - &cat5 !!models.Category
+    title: "Parks and Recreation"
+    description: "All work no play?. We all know life is so much more. Let's assure our parks give us all the recreation opportunities our communities need to enjoy life."
+  - &cat6 !!models.Category
+    title: "Education"
+    description: "'Education is the most powerful weapon which you can use to change the world'. Indeed Mr. Mandela."
+
+# Phase Definitions
+
+
+
+# Working Groups
+
+
+# Group Memberships
+
+
+# Assembly Memberships
+
+

@@ -3,7 +3,9 @@ package models;
 import play.db.ebean.Model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+
 import java.util.List;
 
 @Entity
@@ -14,6 +16,7 @@ public class Category extends AppCivistBaseModel {
 	 */
 	private static final long serialVersionUID = 2546530838000950929L;
 	@Id
+	@GeneratedValue
     private Long categoryId;
     private String title;
     private String description;
