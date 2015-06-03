@@ -30,19 +30,19 @@ public class CampaignPhases extends Controller{
         List<CampaignPhase> phases = CampaignPhase.findAll(campaignId);
         return ok(Json.toJson(phases));
     }
-/*
-    @Security.Authenticated(Secured.class)
+
+    //@Security.Authenticated(Secured.class)
     public static Result findCampaignPhase(Long campaignId, Long phaseId){
-        Campaign campaign = Campaign.read(campaignId);
-        return ok(Json.toJson(campaign));
+        CampaignPhase campaignPhase = CampaignPhase.read(campaignId, phaseId);
+        return ok(Json.toJson(campaignPhase));
     }
 
-    @Security.Authenticated(Secured.class)
+    //@Security.Authenticated(Secured.class)
     public static Result deleteCampaignPhase(Long campaignId, Long phaseId){
-        Campaign.delete(campaignId);
+        CampaignPhase.delete(campaignId,phaseId);
         return ok();
     }
-
+/*
     @Security.Authenticated(Secured.class)
     public static Result updateCampaignPhase(Long campaignId, Long phaseId) {
         // 1. read the campaign data from the body

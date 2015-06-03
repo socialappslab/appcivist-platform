@@ -138,8 +138,10 @@ public class CampaignPhase extends AppCivistBaseModel {
 		this.canOverlap = canOverlap;
 	}
 
-	public static CampaignPhase read(Long id) {
-        return find.ref(id);
+	public static CampaignPhase read(Long campaignId, Long phaseId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
+		CampaignPhase phase = campaignPhases.findList().get(0);
+		return phase;
     }
 
     public static List<CampaignPhase> findAll(Long campaignId) {
@@ -159,8 +161,10 @@ public class CampaignPhase extends AppCivistBaseModel {
         return object;
     }
 
-    public static void delete(Long id) {
-        find.ref(id).delete();
+    public static void delete(Long campaignId, Long phaseId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
+		CampaignPhase phase = campaignPhases.findList().get(0);
+		phase.delete();
     }
 
     public static void update(Long id) {
