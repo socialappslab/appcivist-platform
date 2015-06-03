@@ -46,9 +46,11 @@ public class Campaign extends AppCivistBaseModel {
 	@OneToOne(cascade = CascadeType.ALL)
 	private CampaignType type;
 
+	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<CampaignPhase> phases = new ArrayList<CampaignPhase>();
 
+	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Config> campaignConfigs = new ArrayList<Config>();
 

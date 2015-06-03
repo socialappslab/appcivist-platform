@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.db.ebean.Model;
@@ -29,7 +30,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	private Long phaseId;
 	private Date startDate;
 	private Date endDate;
-	
+
 	@JsonIgnore
 	@ManyToOne
 	private Campaign campaign;
@@ -37,6 +38,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	@OneToOne
 	private PhaseDefinition definition;
 	
+	@JsonIgnore
 	@OneToMany(cascade=CascadeType.ALL)
 	private List<Config> campaignPhaseConfigs = new ArrayList<Config>();
 	
@@ -140,8 +142,10 @@ public class CampaignPhase extends AppCivistBaseModel {
         return find.ref(id);
     }
 
-    public static List<CampaignPhase> findAll() {
-        return find.all();
+    public static List<CampaignPhase> findAll(Long campaignId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id",campaignId);
+		List<CampaignPhase> campaignPhaseList = campaignPhases.findList();
+		return campaignPhaseList;
     }
 
     public static CampaignPhase create(CampaignPhase object) {

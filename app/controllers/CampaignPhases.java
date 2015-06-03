@@ -27,7 +27,7 @@ public class CampaignPhases extends Controller{
 
     //@Security.Authenticated(Secured.class)
     public static Result findCampaignPhases(Long campaignId){
-        List<CampaignPhase> phases = CampaignPhase.findAll();
+        List<CampaignPhase> phases = CampaignPhase.findAll(campaignId);
         return ok(Json.toJson(phases));
     }
 /*
