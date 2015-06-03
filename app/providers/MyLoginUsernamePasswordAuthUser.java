@@ -13,7 +13,7 @@ public class MyLoginUsernamePasswordAuthUser extends
 	 * The session timeout in seconds
 	 * Defaults to two weeks (24 hours * 14 days * 60 minutes * 60 seconds)
 	 */
-	final static long SESSION_TIMEOUT = 24 * 14 * 3600;
+	public final static long SESSION_TIMEOUT = 24 * 14 * 3600;
 	private long expiration;
 
 	/**

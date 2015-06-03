@@ -2,10 +2,12 @@ package models;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import enums.MembershipRoles;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

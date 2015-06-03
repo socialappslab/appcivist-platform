@@ -15,6 +15,7 @@ import javax.persistence.OneToOne;
 import models.Location.Geo;
 import play.db.ebean.Model;
 import utils.GlobalData;
+import enums.MembershipRoles;
 import enums.Visibility;
 
 @Entity
@@ -42,6 +43,7 @@ public class Assembly extends AppCivistBaseModel {
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON;
 	private String url; 
 	private Visibility visibiliy = Visibility.MEMBERSONLY; // only members by default
+    private MembershipRoles membershipRole = MembershipRoles.COORDINATOR;
 
 	// Relationships
 	@ManyToMany(cascade = CascadeType.ALL)
@@ -248,6 +250,14 @@ public class Assembly extends AppCivistBaseModel {
 
 	public void setVisibiliy(Visibility visibiliy) {
 		this.visibiliy = visibiliy;
+	}
+
+	public MembershipRoles getMembershipRole() {
+		return membershipRole;
+	}
+
+	public void setMembershipRole(MembershipRoles membershipRole) {
+		this.membershipRole = membershipRole;
 	}
 
 	public List<Category> getInterestCategories() {

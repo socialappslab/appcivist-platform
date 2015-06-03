@@ -1,51 +1,37 @@
 package controllers;
 
 import static play.data.Form.form;
-import static play.libs.F.None;
-import static play.libs.F.Some;
 import static play.libs.Json.toJson;
+import http.Headers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.NotReadablePropertyException;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
-
-import com.feth.play.module.pa.PlayAuthenticate;
-import com.google.common.collect.ImmutableList;
-
-import enums.ResponseStatus;
-import models.*;
+import models.TokenAction;
 import models.TokenAction.Type;
+import models.User;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.mvc.*;
-import play.mvc.Http.Session;
 import play.data.Form;
 import play.data.format.Formats.NonEmpty;
-import play.data.validation.ValidationError;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
-import play.libs.F.Option;
+import play.i18n.Messages;
 import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Http.Session;
+import play.mvc.Result;
+import play.mvc.Security;
+import play.mvc.With;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
-import providers.MyUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider.MyIdentity;
 import providers.MyUsernamePasswordAuthProvider.MyLogin;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
-import utils.ResponseStatusBean;
-import play.i18n.Messages;
+import providers.MyUsernamePasswordAuthUser;
 
-import http.Headers;
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import enums.ResponseStatus;
 
 @With(Headers.class)
 public class Users extends Controller {
@@ -100,7 +86,7 @@ public class Users extends Controller {
 		if (filledForm.hasErrors()) {
 			// User did not fill everything properly
 			// return badRequest(signup.render(filledForm));
-			ResponseStatusBean response = new ResponseStatusBean();
+			TransferResponseStatus response = new TransferResponseStatus();
 			response.setResponseStatus(ResponseStatus.BADREQUEST);
 			response.setStatusMessage("play.authenticate.filledFromHasErrors:"
 					+ filledForm.errorsAsJson());
@@ -584,7 +570,7 @@ public class Users extends Controller {
 	}
 
 	public static Result onLoginUserNotFound() {
-		ResponseStatusBean response = new ResponseStatusBean();
+		TransferResponseStatus response = new TransferResponseStatus();
 		response.setResponseStatus(ResponseStatus.NODATA);
 		response.setStatusMessage(Messages
 				.get("playauthenticate.password.login.unknown_user_or_pw"));

@@ -9,13 +9,13 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import models.User;
 import models.Role;
 import models.WorkingGroup;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.mvc.*;
 import play.i18n.Messages;
 import play.data.Form;
 import play.libs.Json;
 import utils.GlobalData;
-import utils.ResponseStatusBean;
 import http.Headers;
 
 @With(Headers.class)
@@ -56,7 +56,7 @@ public class Roles extends Controller {
 		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
 		
 		if (newRoleForm.hasErrors()) {
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.ROLE_CREATE_MSG_ERROR,newRoleForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
@@ -67,7 +67,7 @@ public class Roles extends Controller {
 			if(newRole.getLang() == null) 
 				newRole.setLang(roleCreator.getLocale());
 
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 
 			if( Role.readByTitle(newRole.getName()) > 0 ){
 				Logger.info("Role already exists");
@@ -99,7 +99,7 @@ public class Roles extends Controller {
 		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
 
 		if (newRoleForm.hasErrors()) {
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.ROLE_CREATE_MSG_ERROR,newRoleForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
@@ -107,7 +107,7 @@ public class Roles extends Controller {
 
 			Role newRole = newRoleForm.get();
 
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 
 			if( Role.readByTitle(newRole.getName()) > 0 ){
 				Logger.info("Role already exists");
