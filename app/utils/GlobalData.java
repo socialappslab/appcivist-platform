@@ -40,4 +40,14 @@ public class GlobalData {
 	public static String CAMPAIGN_CREATE_MSG_SUCCESS = "campaign.creation.success";
 	public static String CAMPAIGN_CREATE_MSG_ERROR = "campaign.creation.error";
 	public static String CAMPAIGN_BASE_PATH = "/campaign";
+
+	// Campaign Phase
+	public static String CAMPAIGN_PHASE_CREATE_MSG_SUCCESS = "campaign.phase.creation.success";
+	public static String CAMPAIGN_PHASE_CREATE_MSG_ERROR = "campaign.phase.creation.error";
+	public static String CAMPAIGN_PHASE_BASE_PATH = "/phase";
+
+	// Contribution
+	public static String CONTRIBUTION_CREATE_MSG_SUCCESS = "contribution.creation.success";
+	public static String CONTRIBUTION_CREATE_MSG_ERROR = "contribution.creation.error";
+	public static String CONTRIBUTION_BASE_PATH = "/contribution";
 }

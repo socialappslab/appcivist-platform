@@ -113,10 +113,41 @@ DELETE         /api/campaign/:cid                                    controllers
 # CampaignPhase API
 GET            /api/campaign/:cid/phases                             controllers.CampaignPhases.findCampaignPhases(cid:Long)
 GET            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.findCampaignPhase(cid: Long, cpid: Long)
-#PUT            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.updateCampaignPhase(cid: Long, cpid: Long)
-#POST           /api/campaign/:cid/phase                              controllers.CampaignPhases.createCampaignPhase(cid: Long)
+PUT            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.updateCampaignPhase(cid: Long, cpid: Long)
+POST           /api/campaign/:cid/phase                              controllers.CampaignPhases.createCampaignPhase(cid: Long)
 DELETE         /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.deleteCampaignPhase(cid: Long, cpid: Long)
 
+# Contribution API
+GET            /api/contributions                                    controllers.Contributions.findContributions()
+GET            /api/contribution/:cid                                controllers.Contributions.findContribution(cid: Long)
+PUT            /api/contribution/:cid                                controllers.Contributions.updateContribution(cid: Long)
+POST           /api/contribution                                     controllers.Contributions.createContribution()
+DELETE         /api/contribution/:cid                                controllers.Contributions.deleteContribution(cid: Long)
 
+# Contribution ISSUE API
+GET            /api/issues                                           controllers.Contributions.findContributions()
+GET            /api/issue/:cid                                       controllers.Contributions.findContribution(cid: Long)
+PUT            /api/issue/:cid                                       controllers.Contributions.updateContribution(cid: Long)
+POST           /api/issue                                            controllers.Contributions.createContribution()
+DELETE         /api/issue/:cid                                       controllers.Contributions.deleteContribution(cid: Long)
 
+# Contribution IDEA API
+GET            /api/ideas                                            controllers.Contributions.findContributions()
+GET            /api/idea/:cid                                        controllers.Contributions.findContribution(cid: Long)
+PUT            /api/idea/:cid                                        controllers.Contributions.updateContribution(cid: Long)
+POST           /api/idea                                             controllers.Contributions.createContribution()
+DELETE         /api/idea/:cid                                        controllers.Contributions.deleteContribution(cid: Long)
 
+# Contribution QUESTION API
+GET            /api/questions                                        controllers.Contributions.findContributions()
+GET            /api/question/:cid                                    controllers.Contributions.findContribution(cid: Long)
+PUT            /api/question/:cid                                    controllers.Contributions.updateContribution(cid: Long)
+POST           /api/question                                         controllers.Contributions.createContribution()
+DELETE         /api/question/:cid                                    controllers.Contributions.deleteContribution(cid: Long)
+
+# Contribution COMMENT API
+GET            /api/comments                                         controllers.Contributions.findContributions()
+GET            /api/comment/:cid                                     controllers.Contributions.findContribution(cid: Long)
+PUT            /api/comment/:cid                                     controllers.Contributions.updateContribution(cid: Long)
+POST           /api/comment                                          controllers.Contributions.createContribution()
+DELETE         /api/comment/:cid                                     controllers.Contributions.deleteContribution(cid: Long)

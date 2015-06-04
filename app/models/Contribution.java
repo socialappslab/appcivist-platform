@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import com.avaje.ebean.ExpressionList;
 import enums.ContributionTypes;
 import models.Location.Geo;
 import play.db.ebean.Model;
@@ -197,6 +198,11 @@ public class Contribution extends AppCivistBaseModel {
 
 	public static Contribution read(Long issueId) {
 		return find.ref(issueId);
+	}
+
+	public static Integer readByTitle(String title) {
+		ExpressionList<Contribution> contributions = find.where().eq("title", title);
+		return contributions.findList().size();
 	}
 
 	public static Contribution createObject(Contribution issue) {

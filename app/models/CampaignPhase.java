@@ -109,7 +109,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	public void setCampaign(Campaign campaign) {
 		this.campaign = campaign;
 	}
-	
+
 	public PhaseDefinition getDefinition() {
 		return definition;
 	}
@@ -140,7 +140,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 
 	public static CampaignPhase read(Long campaignId, Long phaseId) {
 		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
-		CampaignPhase phase = campaignPhases.findList().get(0);
+		CampaignPhase phase = campaignPhases.findUnique();
 		return phase;
     }
 
@@ -150,10 +150,20 @@ public class CampaignPhase extends AppCivistBaseModel {
 		return campaignPhaseList;
     }
 
-    public static CampaignPhase create(CampaignPhase object) {
-        object.save();
-        object.refresh();
-        return object;
+    public static CampaignPhase create(Long campaignId, CampaignPhase phase) {
+        Campaign campaign = Campaign.read(campaignId);
+		PhaseDefinition phaseDefinition = null;
+		if(phase.getDefinition().getPhaseDefinitionId() != null){
+			phaseDefinition = PhaseDefinition.read(phase.getDefinition().getPhaseDefinitionId());
+		}
+		else if(phase.getDefinition().getName() != null){
+			phaseDefinition = PhaseDefinition.readByName(phase.getDefinition().getName());
+		}
+		phase.setCampaign(campaign);
+		phase.setDefinition(phaseDefinition);
+		phase.save();
+        phase.refresh();
+        return phase;
     }
 
     public static CampaignPhase createObject(CampaignPhase object) {
@@ -163,7 +173,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 
     public static void delete(Long campaignId, Long phaseId) {
 		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
-		CampaignPhase phase = campaignPhases.findList().get(0);
+		CampaignPhase phase = campaignPhases.findUnique();
 		phase.delete();
     }
 
