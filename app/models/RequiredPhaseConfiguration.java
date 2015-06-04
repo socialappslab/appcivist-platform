@@ -2,6 +2,7 @@ package models;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -24,7 +25,7 @@ public class RequiredPhaseConfiguration extends AppCivistBaseModel {
 	@ManyToOne
 	private PhaseDefinition phaseDefinition;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private ConfigDefinition configDefinition;
 
 	/**

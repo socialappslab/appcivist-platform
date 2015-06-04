@@ -30,15 +30,11 @@ public class WorkingGroup extends AppCivistBaseModel {
     private MembershipRoles membershipRole = MembershipRoles.MEMBER;
     private User creator;
 
-    @ManyToMany(mappedBy = "workingGroups")
+    @ManyToMany(cascade=CascadeType.ALL)
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
-    private List<GroupMembership> memberships = new ArrayList<GroupMembership>();
 
     public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
@@ -130,14 +126,6 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     public void setResources(List<Resource> resources) {
         this.resources = resources;
-    }
-
-    public List<GroupMembership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<GroupMembership> memberships) {
-        this.memberships = memberships;
     }
 
     public Boolean getIsPublic() {

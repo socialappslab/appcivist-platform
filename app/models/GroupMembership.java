@@ -1,10 +1,15 @@
 package models;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import enums.MembershipStatus;
 
 @Entity
 @DiscriminatorValue("GROUP")
@@ -14,16 +19,35 @@ public class GroupMembership extends Membership {
 	 * 
 	 */
 	private static final long serialVersionUID = 3737906484702711675L;
-	@JsonIgnore
-	@ManyToOne
+	
+	@ManyToOne(cascade=CascadeType.ALL)
 	private WorkingGroup workingGroup;
 
+	public GroupMembership() {
+		super();
+	}
+	public GroupMembership(Long expiration, MembershipStatus status,
+			User creator, User user, List<Role> roles, String membershipType) {
+		super(expiration, status, creator, user, roles, membershipType);
+	}
+	
+	public GroupMembership(Long expiration, MembershipStatus status,
+			User creator, User user, List<Role> roles, String membershipType, 
+			WorkingGroup workingGroup) {
+		super(expiration, status, creator, user, roles, membershipType);
+		this.workingGroup = workingGroup;
+	}
+	
+	/*
+	 * Getters and Setters
+	 */
+	
 	public WorkingGroup getWorkingGroup() {
 		return workingGroup;
 	}
 
-	public void setWorkingGroup(WorkingGroup WorkingGroup) {
-		this.workingGroup = WorkingGroup;
+	public void setWorkingGroup(WorkingGroup workingGroup) {
+		this.workingGroup = workingGroup;
 	}
 
 	/**

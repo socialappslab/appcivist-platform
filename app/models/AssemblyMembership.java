@@ -1,10 +1,15 @@
 package models;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import enums.MembershipStatus;
 
 @Entity
 @DiscriminatorValue("ASSEMBLY")
@@ -13,18 +18,40 @@ public class AssemblyMembership extends Membership {
 	 * 
 	 */
 	private static final long serialVersionUID = 6654162992798204503L;
-	@JsonIgnore
-	@ManyToOne
+	
+	@ManyToOne(cascade=CascadeType.ALL)
 	private Assembly assembly;
-
+	
+	public AssemblyMembership() {
+		super();
+	}
+	public AssemblyMembership(Long expiration, MembershipStatus status,
+			User creator, User user, List<Role> roles, String membershipType) {
+		super(expiration, status, creator, user, roles, membershipType);
+	}
+	
+	public AssemblyMembership(Long expiration, MembershipStatus status,
+			User creator, User user, List<Role> roles, String membershipType, 
+			Assembly assembly) {
+		super(expiration, status, creator, user, roles, membershipType);
+		this.assembly = assembly;
+	}
+	
+	/*
+	 * Getters and Setters
+	 */
 	public Assembly getAssembly() {
 		return assembly;
 	}
 
-	public void setAssembly(Assembly organization) {
-		this.assembly = organization;
+	public void setAssembly(Assembly assembly) {
+		this.assembly = assembly;
 	}
-
+	
+	/*
+	 * Basic Queries
+	 */
+	
 	/**
 	 * Check if membership for this user to the group/assembly already exists
 	 * 

@@ -14,8 +14,6 @@ import javax.persistence.OneToOne;
 
 import play.db.ebean.Model;
 import enums.CampaignPhaseContributionConnectionTypes;
-import enums.ContributionConnectionStatuses;
-import enums.ContributionConnectionTypes;
 
 @Entity
 public class CampaignPhaseContribution extends AppCivistBaseModel {

@@ -58,12 +58,6 @@ public class Assembly extends AppCivistBaseModel {
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
 
-	// Even if in the original design, we will have only working groups
-	// belonging to
-	// one assembly, let's make it manytomany in case we need it for the future
-	@ManyToMany(cascade = CascadeType.ALL)
-	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
-
 // 	AssemblyConnections and Messages are managed in different entity
 // 	TODO check that this works
 //	@OneToMany(mappedBy = "targetAssembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -175,10 +169,6 @@ public class Assembly extends AppCivistBaseModel {
 	public void setAssemblyId(Long assemblyId) {
 		this.assemblyId = assemblyId;
 	}
-
-	/*
-	 * Getters and Setters
-	 */
 	
 	public User getCreator() {
 		return creator;
@@ -292,14 +282,6 @@ public class Assembly extends AppCivistBaseModel {
 		this.hashtags = hashtags;
 	}
 
-	public List<WorkingGroup> getWorkingGroups() {
-		return workingGroups;
-	}
-
-	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
-		this.workingGroups = workingGroups;
-	}
-
 	public Geo getLocation() {
 		return location;
 	}
@@ -339,6 +321,8 @@ public class Assembly extends AppCivistBaseModel {
 		}
 
 		assembly.save();
+		assembly.saveManyToManyAssociations("interestCategories");
+		assembly.saveManyToManyAssociations("hashtags");
 		assembly.refresh();
 
 		if (assembly.getUrl() == null || assembly.getUrl() == "") {
@@ -353,6 +337,8 @@ public class Assembly extends AppCivistBaseModel {
 
 	public static Assembly createObject(Assembly assembly) {
 		assembly.save();
+		assembly.saveManyToManyAssociations("interestCategories");
+		assembly.saveManyToManyAssociations("hashtags");
 		return assembly;
 	}
 

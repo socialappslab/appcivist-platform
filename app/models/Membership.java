@@ -1,31 +1,26 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+
+import models.TokenAction.Type;
+import play.db.ebean.Model;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.feth.play.module.mail.Mailer;
-import com.feth.play.module.mail.Mailer.Mail.Body;
-import com.feth.play.module.pa.PlayAuthenticate;
 
 import enums.MembershipRoles;
 import enums.MembershipStatus;
-import play.Logger;
-import play.Play;
-import play.db.ebean.Model;
-import play.i18n.Lang;
-import play.i18n.Messages;
-import play.mvc.Http;
-import providers.MyUsernamePasswordAuthProvider;
-import providers.MyUsernamePasswordAuthUser;
-
-import javax.persistence.*;
-
-import models.TokenAction.Type;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -35,20 +30,19 @@ public abstract class Membership extends AppCivistBaseModel {
 	 * 
 	 */
 	private static final long serialVersionUID = 4939869903730586228L;
-	private static final String EMAIL_TEMPLATE_FALLBACK_LANGUAGE = "en";
-
 	@Id
 	@GeneratedValue
 	private Long membershipId;
 	private Long expiration;
 	private MembershipStatus status;
+	
+	@ManyToOne
 	private User creator;
 
 	@JsonIgnore
 	@ManyToOne
 	private User user;
 
-	@JsonIgnore
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Role> roles = new ArrayList<Role>();
 
@@ -57,6 +51,21 @@ public abstract class Membership extends AppCivistBaseModel {
 
 	public static Model.Finder<Long, Membership> find = new Model.Finder<Long, Membership>(
 			Long.class, Membership.class);
+
+	public Membership(Long expiration, MembershipStatus status, User creator,
+			User user, List<Role> roles, String membershipType) {
+		super();
+		this.expiration = expiration;
+		this.status = status;
+		this.creator = creator;
+		this.user = user;
+		this.roles = roles;
+		this.membershipType = membershipType;
+	}
+
+	public Membership() {
+		super();
+	}
 
 	/*
 	 * Getters and Setters
@@ -132,12 +141,14 @@ public abstract class Membership extends AppCivistBaseModel {
 
 	public static Membership create(Membership membership) {
 		membership.save();
+		membership.saveManyToManyAssociations("roles");
 		membership.refresh();
 		return membership;
 	}
 
 	public static Membership createObject(Membership membership) {
 		membership.save();
+		membership.saveManyToManyAssociations("roles");
 		return membership;
 	}
 

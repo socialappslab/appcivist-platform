@@ -1,19 +1,12 @@
 package models;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 
 import play.db.ebean.Model;
-
-import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Role extends AppCivistBaseModel {
@@ -26,26 +19,9 @@ public class Role extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long roleId;
 	private String name;
-	private User creator;
 
-	@JsonIgnore
-	@ManyToMany(mappedBy = "roles")
-	private List<Membership> memberships = new ArrayList<Membership>();
-
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "roles")
-	private Permission permits;
-
-	@JsonIgnore
-	@ManyToMany(mappedBy = "roles")
-	private List<User> users = new ArrayList<User>();
-
-	public Role(User creator, String name, Permission permits,
-			List<Membership> memberships, List<User> users) {
-		this.creator = creator;
+	public Role(String name, List<Membership> memberships, List<User> users) {
 		this.name = name;
-		this.permits = permits;
-		this.memberships = memberships;
-		this.users = users;
 	}
 
 	public static Model.Finder<Long, Role> find = new Model.Finder<Long, Role>(
@@ -82,14 +58,6 @@ public class Role extends AppCivistBaseModel {
 		find.ref(id).update();
 	}
 
-	public User getCreator() {
-		return creator;
-	}
-
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-
 	public Long getRoleId() {
 		return roleId;
 	}
@@ -104,29 +72,5 @@ public class Role extends AppCivistBaseModel {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public Permission getPermits() {
-		return permits;
-	}
-
-	public void setPermits(Permission permits) {
-		this.permits = permits;
-	}
-
-	public List<User> getUsers() {
-		return users;
-	}
-
-	public void setUsers(List<User> users) {
-		this.users = users;
-	}
-
-	public List<Membership> getMemberships() {
-		return memberships;
-	}
-
-	public void setMemberships(List<Membership> memberships) {
-		this.memberships = memberships;
 	}
 }

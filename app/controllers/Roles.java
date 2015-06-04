@@ -48,6 +48,7 @@ public class Roles extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result createRole() {
 		// 1. obtaining the user of the requestor
+		// Deprecated, roles don't really need creators
 		User roleCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
 		// 2. read the new role data from the body
@@ -72,9 +73,6 @@ public class Roles extends Controller {
 				Logger.info("Role already exists");
 			}
 			else{
-				if (newRole.getCreator() == null){
-					newRole.setCreator(roleCreator);
-				}
 
 				Role.create(newRole);
 				Logger.info("Creating new role");
