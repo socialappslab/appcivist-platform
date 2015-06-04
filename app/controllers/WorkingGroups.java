@@ -95,7 +95,7 @@ public class WorkingGroups extends Controller {
 		}
 	}
 
-	//@Security.Authenticated(Secured.class)
+	@Security.Authenticated(Secured.class)
 	public static Result updateWorkingGroup(Long groupId) {
 		// 1. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()

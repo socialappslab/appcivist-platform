@@ -37,11 +37,11 @@ public class CampaignPhase extends AppCivistBaseModel {
 
 	@OneToOne
 	private PhaseDefinition definition;
-	
+
 	@JsonIgnore
 	@OneToMany(cascade=CascadeType.ALL)
 	private List<Config> campaignPhaseConfigs = new ArrayList<Config>();
-	
+
 	private Boolean canOverlap = false;
 	
 	/**
@@ -125,7 +125,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	public void setCampaignPhaseConfigs(List<Config> campaignPhaseConfigs) {
 		this.campaignPhaseConfigs = campaignPhaseConfigs;
 	}
-	
+
 	/*
 	 * Basic Data operations
 	 */

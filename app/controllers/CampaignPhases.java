@@ -43,7 +43,7 @@ public class CampaignPhases extends Controller{
         return ok();
     }
 
-    //@Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured.class)
     public static Result updateCampaignPhase(Long campaignId, Long phaseId) {
         // 1. read the campaignPhase data from the body
         // another way of getting the body content => request().body().asJson()
@@ -61,6 +61,7 @@ public class CampaignPhases extends Controller{
             ResponseStatusBean responseBody = new ResponseStatusBean();
 
             newCampaignPhase.setPhaseId(phaseId);
+            CampaignPhase camp2 = CampaignPhase.find.ref(phaseId);
             newCampaignPhase.update();
             Logger.info("Updating phase in campaign =>" + campaignId);
             Logger.debug("=> " + newCampaignPhaseForm.toString());
@@ -68,17 +69,17 @@ public class CampaignPhases extends Controller{
             responseBody.setNewResourceId(newCampaignPhase.getPhaseId());
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_PHASE_CREATE_MSG_SUCCESS,
-                    newCampaignPhase.getDefinition().getName()));
+                    newCampaignPhase.getPhaseId()));
             responseBody.setNewResourceURL(GlobalData.CAMPAIGN_PHASE_BASE_PATH + "/" + newCampaignPhase.getPhaseId());
 
             return ok(Json.toJson(responseBody));
         }
     }
 
-    //@Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured.class)
     public static Result createCampaignPhase(Long campaignId) {
         // 1. obtaining the user of the requestor
-        //User campaignPhaseCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        User campaignPhaseCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
         // 2. read the new campaign data from the body
         // another way of getting the body content => request().body().asJson()
@@ -93,8 +94,8 @@ public class CampaignPhases extends Controller{
 
             CampaignPhase newCampaignPhase = newCampaignPhaseForm.get();
 
-            //if(newCampaignPhase.getLang() == null)
-              //  newCampaignPhase.setLang(campaignPhaseCreator.getLocale());
+            if(newCampaignPhase.getLang() == null)
+                newCampaignPhase.setLang(campaignPhaseCreator.getLocale());
 
             ResponseStatusBean responseBody = new ResponseStatusBean();
 

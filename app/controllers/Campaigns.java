@@ -24,13 +24,13 @@ public class Campaigns extends Controller{
 
     public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
 
-    //@Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured.class)
     public static Result findCampaigns(){
         List<Campaign> campaigns = Campaign.findAll();
         return ok(Json.toJson(campaigns));
     }
 
-    //@Security.Authenticated(Secured.class)
+    @Security.Authenticated(Secured.class)
     public static Result findCampaign(Long campaignId){
         Campaign campaign = Campaign.read(campaignId);
         return ok(Json.toJson(campaign));

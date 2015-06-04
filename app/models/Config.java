@@ -1,13 +1,11 @@
 package models;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.ConfigTargets;
 import play.db.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -26,7 +24,11 @@ public class Config extends AppCivistBaseModel {
     private ConfigTargets configTarget;
     
     @OneToOne
-    private ConfigDefinition definition; 
+    private ConfigDefinition definition;
+
+    @JsonIgnore
+    @ManyToOne
+    private CampaignPhase campaignPhase;
     
     public Config(String key, String value) {
         this.key = key;
@@ -89,7 +91,15 @@ public class Config extends AppCivistBaseModel {
 		this.definition = definition;
 	}
 
-	public static Config read(Long configId) {
+    public CampaignPhase getCampaignPhase() {
+        return campaignPhase;
+    }
+
+    public void setCampaignPhase(CampaignPhase campaignPhase) {
+        this.campaignPhase = campaignPhase;
+    }
+
+    public static Config read(Long configId) {
         return find.ref(configId);
     }
 
