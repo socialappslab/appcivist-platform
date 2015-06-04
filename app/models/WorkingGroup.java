@@ -1,7 +1,7 @@
 package models;
 
 import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.MembershipRoles;
 import play.db.ebean.Model;
@@ -35,6 +35,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
+    
+	@OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<Config> workingGroupConfigs = new ArrayList<Config>();
 
     public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
@@ -151,4 +155,12 @@ public class WorkingGroup extends AppCivistBaseModel {
     public void setMembershipRole(MembershipRoles membershipRole) {
         this.membershipRole = membershipRole;
     }
+
+	public List<Config> getWorkingGroupConfigs() {
+		return workingGroupConfigs;
+	}
+
+	public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
+		this.workingGroupConfigs = workingGroupConfigs;
+	}
 }

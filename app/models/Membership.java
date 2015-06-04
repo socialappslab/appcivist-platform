@@ -7,17 +7,18 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinTable;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 import models.TokenAction.Type;
 import play.db.ebean.Model;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import enums.MembershipRoles;
 import enums.MembershipStatus;
@@ -25,7 +26,7 @@ import enums.MembershipStatus;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "MEMBERSHIP_TYPE")
-public abstract class Membership extends AppCivistBaseModel {
+public class Membership extends AppCivistBaseModel {
 	/**
 	 * 
 	 */
@@ -39,16 +40,27 @@ public abstract class Membership extends AppCivistBaseModel {
 	@ManyToOne
 	private User creator;
 
-	@JsonIgnore
 	@ManyToOne
 	private User user;
 
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@JoinTable(name = "MEMBERSHIP_ROLE", 
+		joinColumns =
+			{ @JoinColumn(name = "membership_membership_id", referencedColumnName="membership_id", nullable = false) },
+			inverseJoinColumns = { @JoinColumn(name = "role_role_id", referencedColumnName="role_id", nullable = false)}
+	)
 	private List<Role> roles = new ArrayList<Role>();
 
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)
 	private String membershipType;
+	
 
+	@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
+	private Assembly targetAssembly;
+	
+	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
+	private WorkingGroup targetGroup;
+	
 	public static Model.Finder<Long, Membership> find = new Model.Finder<Long, Membership>(
 			Long.class, Membership.class);
 
@@ -131,6 +143,22 @@ public abstract class Membership extends AppCivistBaseModel {
 	 * Basic Queries
 	 */
 
+	public Assembly getTargetAssembly() {
+		return targetAssembly;
+	}
+
+	public void setTargetAssembly(Assembly targetAssembly) {
+		this.targetAssembly = targetAssembly;
+	}
+
+	public WorkingGroup getTargetGroup() {
+		return targetGroup;
+	}
+
+	public void setTargetGroup(WorkingGroup targetGroup) {
+		this.targetGroup = targetGroup;
+	}
+
 	public static Membership read(Long membershipId) {
 		return find.ref(membershipId);
 	}
@@ -170,7 +198,19 @@ public abstract class Membership extends AppCivistBaseModel {
 	 * @param m
 	 * @return
 	 */
-	abstract public boolean checkIfExists();
+	public static boolean checkIfExists(Membership gm) {
+		Membership m1 = find.where().eq("creator", gm.getCreator())
+		.eq("user", gm.getUser())
+		.eq("targetAssembly", gm.getTargetAssembly())
+		.findUnique();
+		
+		Membership m2 = find.where().eq("creator", gm.getCreator())
+				.eq("user", gm.getUser())
+				.eq("targetGroup", gm.getTargetGroup())
+				.findUnique();
+		
+		return m1!= null || m2!=null;
+	}
 
 	public static Boolean userCanInvite(User user, WorkingGroup workingGroup) {
 		Boolean userCanInvite = false;

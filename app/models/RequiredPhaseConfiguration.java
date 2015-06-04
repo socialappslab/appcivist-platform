@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import play.db.ebean.Model;
 
 @Entity
@@ -23,6 +25,7 @@ public class RequiredPhaseConfiguration extends AppCivistBaseModel {
 	private Long requiredPhaseConfigurationId; 
 	
 	@ManyToOne
+	@JsonBackReference
 	private PhaseDefinition phaseDefinition;
 	
 	@ManyToOne(cascade=CascadeType.ALL)

@@ -1,13 +1,17 @@
 package models;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import enums.ConfigTargets;
 import play.db.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+
 import java.util.List;
 
 @Entity
@@ -27,6 +31,26 @@ public class Config extends AppCivistBaseModel {
     
     @OneToOne
     private ConfigDefinition definition; 
+    
+    /* Relatiohships
+     * 
+     */
+    
+    @ManyToOne
+	@JsonBackReference
+	private Campaign campaign;
+
+    @ManyToOne
+	@JsonBackReference
+	private CampaignPhase campaignPhase;
+    
+    @ManyToOne
+	@JsonBackReference
+	private Assembly assembly;
+    
+    @ManyToOne
+	@JsonBackReference
+	private WorkingGroup workingGroup;
     
     public Config(String key, String value) {
         this.key = key;
@@ -87,6 +111,38 @@ public class Config extends AppCivistBaseModel {
 
 	public void setDefinition(ConfigDefinition definition) {
 		this.definition = definition;
+	}
+
+	public Campaign getCampaign() {
+		return campaign;
+	}
+
+	public void setCampaign(Campaign campaign) {
+		this.campaign = campaign;
+	}
+
+	public CampaignPhase getCampaignPhase() {
+		return campaignPhase;
+	}
+
+	public void setCampaignPhase(CampaignPhase campaignPhase) {
+		this.campaignPhase = campaignPhase;
+	}
+
+	public Assembly getAssembly() {
+		return assembly;
+	}
+
+	public void setAssembly(Assembly assembly) {
+		this.assembly = assembly;
+	}
+
+	public WorkingGroup getWorkingGroup() {
+		return workingGroup;
+	}
+
+	public void setWorkingGroup(WorkingGroup workingGroup) {
+		this.workingGroup = workingGroup;
 	}
 
 	public static Config read(Long configId) {

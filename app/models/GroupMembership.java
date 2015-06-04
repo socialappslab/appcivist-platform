@@ -7,8 +7,6 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import enums.MembershipStatus;
 
 @Entity
@@ -56,8 +54,8 @@ public class GroupMembership extends Membership {
 	 * @param m
 	 * @return
 	 */
-	public boolean checkIfExists() {
-		GroupMembership gm = (GroupMembership) this;
+	public static boolean checkIfExists(Membership m) {
+		GroupMembership gm = (GroupMembership) m;
 		return find.where().eq("creator", gm.getCreator())
 				.eq("user", gm.getUser())
 				.eq("workingGroup", gm.getWorkingGroup()).findUnique() != null;

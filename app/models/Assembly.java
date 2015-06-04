@@ -12,6 +12,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import models.Location.Geo;
 import play.db.ebean.Model;
 import utils.GlobalData;
@@ -50,9 +52,11 @@ public class Assembly extends AppCivistBaseModel {
 	private List<Category> interestCategories = new ArrayList<Category>();
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<Campaign> campaigns = new ArrayList<Campaign>();
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<Config> assemblyConfigs = new ArrayList<Config>();
 
 	@ManyToMany(cascade = CascadeType.ALL)

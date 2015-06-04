@@ -1,35 +1,36 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import models.Assembly;
+import models.AssemblyMembership;
+import models.GroupMembership;
+import models.Membership;
+import models.Role;
+import models.TokenAction;
+import models.TokenAction.Type;
+import models.User;
+import models.WorkingGroup;
+import models.transfer.TransferMembership;
+import models.transfer.TransferResponseStatus;
+import play.data.Form;
+import play.i18n.Messages;
+import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security;
+import providers.MyUsernamePasswordAuthProvider;
+import utils.GlobalData;
+import play.Logger;
+
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import enums.MembershipCreationTypes;
 import enums.MembershipRoles;
 import enums.MembershipStatus;
 import enums.ResponseStatus;
-import models.Membership;
-import models.TokenAction.Type;
-import models.transfer.TransferResponseStatus;
-import models.transfer.TransferMembership;
-import models.Assembly;
-import models.AssemblyMembership;
-import models.GroupMembership;
-import models.Role;
-import models.TokenAction;
-import models.User;
-import models.WorkingGroup;
-import play.Logger;
-import play.data.Form;
-import play.i18n.Messages;
-import play.libs.Json;
-import play.mvc.*;
-import providers.MyLoginUsernamePasswordAuthUser;
-import providers.MyUsernamePasswordAuthProvider;
-import utils.GlobalData;
-import static play.data.Form.form;
-import static play.libs.Json.toJson;
 
 public class Memberships extends Controller {
 
@@ -80,6 +81,8 @@ public class Memberships extends Controller {
 	public static Result readMembership(Long id) {
 		Membership m = Membership.read(id);
 		if (m != null) {
+			List<Role> roles = m.getRoles();
+			Logger.debug("Membership roles: #" +roles.size() +" = "+ roles.toString());
 			return ok(Json.toJson(m));
 		} else {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -327,14 +330,14 @@ public class Memberships extends Controller {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = Users.tokenIsValid(token, Type.MEMBERSHIP_INVITATION);
 		if (ta == null) {
-			return badRequest(toJson(Messages.get("playauthenticate.token.error.message")));
+			return badRequest(Json.toJson(Messages.get("playauthenticate.token.error.message")));
 			// TODO content negotiation: if content-type is HTML, render the response in HTML
 			// return badRequest(no_token_or_invalid.render());
 		}
 		
 		final String email = ta.targetUser.getEmail();
 		Membership.verify(id, ta.targetUser);
-		return ok(toJson(Messages.get("playauthenticate.verify_email.success", email)));		
+		return ok(Json.toJson(Messages.get("playauthenticate.verify_email.success", email)));		
 	}
 
 	/****************************************************************************************************************
@@ -393,7 +396,7 @@ public class Memberships extends Controller {
 
 		// 9. check if the membership of this user on this assembly/group
 		// already exists
-		boolean mExists = m.checkIfExists();
+		boolean mExists = Membership.checkIfExists(m);
 
 		if (!mExists) {
 			// 8. Set the initial status of the new membership depending of

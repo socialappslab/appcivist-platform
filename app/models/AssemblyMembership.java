@@ -1,15 +1,23 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import utils.GlobalData;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import enums.MembershipRoles;
 import enums.MembershipStatus;
+import enums.Visibility;
 
 @Entity
 @DiscriminatorValue("ASSEMBLY")
@@ -20,6 +28,7 @@ public class AssemblyMembership extends Membership {
 	private static final long serialVersionUID = 6654162992798204503L;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
+	@JsonIgnoreProperties({"creator", "membershipRole", "campaigns", "assemblyConfigs"})
 	private Assembly assembly;
 	
 	public AssemblyMembership() {
@@ -58,8 +67,8 @@ public class AssemblyMembership extends Membership {
 	 * @param m
 	 * @return
 	 */
-	public boolean checkIfExists() {
-		AssemblyMembership gm = (AssemblyMembership) this;
+	public static boolean checkIfExists(Membership m) {
+		AssemblyMembership gm = (AssemblyMembership) m;
 		return find.where().eq("creator", gm.getCreator())
 				.eq("user", gm.getUser()).eq("assembly", gm.getAssembly())
 				.findUnique() != null;

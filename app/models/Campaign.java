@@ -14,7 +14,9 @@ import javax.persistence.OneToOne;
 
 import play.db.ebean.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.Visibility;
 
@@ -38,17 +40,19 @@ public class Campaign extends AppCivistBaseModel {
 
 	// Relationships
 
-	@JsonIgnore
 	@ManyToOne
+	@JsonBackReference
 	private Assembly assembly;
 
 	@OneToOne(cascade = CascadeType.ALL)
 	private CampaignType type;
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(mappedBy="campaign", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<CampaignPhase> phases = new ArrayList<CampaignPhase>();
 
 	@OneToMany(cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<Config> campaignConfigs = new ArrayList<Config>();
 
 	/**

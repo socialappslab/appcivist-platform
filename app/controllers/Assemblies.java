@@ -1,31 +1,32 @@
 package controllers;
 
 import static play.data.Form.form;
-
-import com.feth.play.module.pa.PlayAuthenticate;
-
+import http.Headers;
 import models.Assembly;
 import models.AssemblyCollection;
 import models.User;
-import models.WorkingGroup;
+import models.services.Service;
 import models.services.ServiceAssembly;
 import models.services.ServiceCampaign;
 import models.services.ServiceCampaignCollection;
+import models.services.ServiceCollection;
 import models.services.ServiceIssue;
 import models.services.ServiceIssueCollection;
-import models.services.Service;
-import models.services.ServiceCollection;
 import models.services.ServiceOperation;
 import models.services.ServiceOperationCollection;
 import models.transfer.TransferMembership;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.mvc.*;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security;
+import play.mvc.With;
 import utils.GlobalData;
-import http.Headers;
+
+import com.feth.play.module.pa.PlayAuthenticate;
 
 @With(Headers.class)
 public class Assemblies extends Controller {
