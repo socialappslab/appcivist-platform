@@ -484,7 +484,7 @@ public class MyUsernamePasswordAuthProvider
 		// ctx.request(), isSecure);
 		String baseURL = Play.application().configuration()
 				.getString("application.baseUrl");
-		final String url = baseURL + routes.Memberships.verifyMembership(token).url();
+		final String url = baseURL + routes.Memberships.verifyMembership(m.getMembershipId(),token).url();
 
 		// TODO: use requests
 //		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());

@@ -445,7 +445,7 @@ public class Users extends Controller {
 	 * @param type
 	 * @return
 	 */
-	private static TokenAction tokenIsValid(final String token, final Type type) {
+	protected static TokenAction tokenIsValid(final String token, final Type type) {
 		TokenAction ret = null;
 		if (token != null && !token.trim().isEmpty()) {
 			final TokenAction ta = TokenAction.findByToken(token, type);

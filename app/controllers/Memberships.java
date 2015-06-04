@@ -1,16 +1,23 @@
 package controllers;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import enums.MembershipCreationTypes;
+import enums.MembershipRoles;
 import enums.MembershipStatus;
+import enums.ResponseStatus;
 import models.Membership;
+import models.TokenAction.Type;
 import models.transfer.TransferResponseStatus;
 import models.transfer.TransferMembership;
 import models.Assembly;
 import models.AssemblyMembership;
 import models.GroupMembership;
+import models.Role;
+import models.TokenAction;
 import models.User;
 import models.WorkingGroup;
 import play.Logger;
@@ -22,10 +29,14 @@ import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
 import utils.GlobalData;
 import static play.data.Form.form;
+import static play.libs.Json.toJson;
 
 public class Memberships extends Controller {
 
-	public static final Form<TransferMembership> MEMBERSHIP_FORM = form(TransferMembership.class);
+	public static final Form<TransferMembership> TRANSFER_MEMBERSHIP_FORM = form(TransferMembership.class);
+	public static final Form<Membership> MEMBERSHIP_FORM = form(Membership.class);
+	public static final Form<Role> ROLE_FORM = form(Role.class);
+
 	/**
 	 * The membership invitation/request timeout in seconds Defaults to 4 weeks
 	 * (24 hours * 30 days * 60 minutes * 60 seconds)
@@ -41,7 +52,7 @@ public class Memberships extends Controller {
 
 		// 2. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<TransferMembership> newMembershipForm = MEMBERSHIP_FORM
+		final Form<TransferMembership> newMembershipForm = TRANSFER_MEMBERSHIP_FORM
 				.bindFromRequest();
 
 		if (newMembershipForm.hasErrors()) {
@@ -58,14 +69,285 @@ public class Memberships extends Controller {
 					newMembership.getEmail());
 		}
 	}
-	
+
 	/**
-	 * POST /<assembly or group>/:id/membership/:type
+	 * Read a membership by ID
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Security.Authenticated(Secured.class)
+	public static Result readMembership(Long id) {
+		Membership m = Membership.read(id);
+		if (m != null) {
+			return ok(Json.toJson(m));
+		} else {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage("There is no membership with ID = "
+					+ id);
+			return notFound(Json.toJson(responseBody));
+		}
+	}
+
+	/**
+	 * Read the roles assigned to a specific membership by ID
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Security.Authenticated(Secured.class)
+	public static Result readMembershipRoles(Long id) {
+		Membership m = Membership.read(id);
+		if (m != null) {
+			List<Role> roles = m.getRoles();
+			return roles != null ? ok(Json.toJson(roles)) : notFound(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.NOTAVAILABLE,
+							"No roles for membership" + id)));
+		} else {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage("There is no membership with ID = "
+					+ id);
+			return notFound(Json.toJson(responseBody));
+		}
+	}
+
+	/**
+	 * Add a Role to the membership (only Coordinators of the Assembly/Group)
+	 * 
+	 * private Long roleId; private String name;
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Security.Authenticated(Secured.class)
+	public static Result addMembershipRole(Long id) {
+		Membership m = Membership.read(id);
+		if (m != null) {
+			// TODO move all the role checking to another common place
+			User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+					.getUser(session()));
+			Boolean authorization = false;
+			// what's the requestor membership in the group/assembly related to
+			// this membership
+			Membership requestorMembership = requestorMembership(requestor, m);
+
+			if (requestorMembership != null) {
+				authorization = requestorIsCoordinator(requestor,
+						requestorMembership);
+			} else {
+				return unauthorized(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.UNAUTHORIZED,
+						"Requestor is not member of this "
+								+ m.getMembershipType())));
+			}
+
+			if (authorization) {
+				final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
+				if (newRoleForm.hasErrors()) {
+					TransferResponseStatus responseBody = new TransferResponseStatus();
+					responseBody
+							.setStatusMessage("There was an error in the role included in the request"
+									+ newRoleForm.errorsAsJson());
+					return badRequest(Json.toJson(responseBody));
+				} else {
+					Role newRole = newRoleForm.get();
+					Long roleId = newRole.getRoleId();
+					String roleName = newRole.getName();
+
+					Role role = Role.read(roleId);
+					if (role == null) {
+						role = Role.readByTitle(roleName);
+					}
+
+					if (role != null) {
+						m.getRoles().add(role);
+						m.update();
+						m.refresh();
+						return ok(Json.toJson(m));
+					} else {
+						return internalServerError(Json
+								.toJson(new TransferResponseStatus(
+										ResponseStatus.NOTAVAILABLE,
+										"The role you are trying to add ("
+												+ roleName + ")"
+												+ " does not exist ")));
+					}
+				}
+
+			} else {
+				return unauthorized(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.UNAUTHORIZED, "Requestor is not"
+								+ MembershipRoles.COORDINATOR)));
+			}
+
+		} else {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage("There is no membership with ID = "
+					+ id);
+			return notFound(Json.toJson(responseBody));
+		}
+	}
+
+	/**
+	 * Add a Role to the membership (only Coordinators of the Assembly/Group)
+	 * 
+	 * private Long roleId; private String name;
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Security.Authenticated(Secured.class)
+	public static Result deleteMembershipRole(Long id, Long rid) {
+		Membership m = Membership.read(id);
+		if (m != null) {
+			// TODO move all the role checking to another common place
+			// TODO move all the role checking to another common place
+			User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+					.getUser(session()));
+			Boolean authorization = false;
+			// what's the requestor membership in the group/assembly related to
+			// this membership
+			Membership requestorMembership = requestorMembership(requestor, m);
+
+			if (requestorMembership != null) {
+				authorization = requestorIsCoordinator(requestor,
+						requestorMembership);
+			} else {
+				return unauthorized(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.UNAUTHORIZED,
+						"Requestor is not member of this "
+								+ m.getMembershipType())));
+			}
+
+			if (authorization) {
+				Role membershipRole = Role.read(rid);
+				m.getRoles().remove(membershipRole);
+				m.update();
+				m.refresh();
+				return ok(Json.toJson(m));
+
+			} else {
+				return unauthorized(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.UNAUTHORIZED, "Requestor is not"
+								+ MembershipRoles.COORDINATOR)));
+			}
+		} else {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage("There is no membership with ID = "
+					+ id);
+			return notFound(Json.toJson(responseBody));
+		}
+	}
+
+	// PUT /api/membership/:id controllers.Memberships.update(id: Long)
+	@Security.Authenticated(Secured.class)
+	public static Result updateMembershipStatus(Long id, String status) {
+		String upStatus = status.toUpperCase();
+		Membership m = Membership.read(id);
+		// TODO move all the role checking to another common place
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		Boolean authorization = false;
+		// what's the requestor membership in the group/assembly related to
+		// this membership
+		Membership requestorMembership = requestorMembership(requestor, m);
+
+		if (requestorMembership != null) {
+			authorization = requestorIsCoordinator(requestor,
+					requestorMembership);
+		} else {
+			return unauthorized(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.UNAUTHORIZED,
+							"Requestor is not member of this "
+									+ m.getMembershipType())));
+		}
+
+		if (authorization) {
+			m.setStatus(MembershipStatus.valueOf(upStatus));
+			m.update();
+			m.refresh();
+			return ok(Json.toJson(m));
+		} else {
+			return unauthorized(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.UNAUTHORIZED, "Requestor is not"
+							+ MembershipRoles.COORDINATOR)));
+		}
+	}
+
+	// DELETE /api/membership/:id controllers.Memberships.delete(id: Long)
+	@Security.Authenticated(Secured.class)
+	public static Result deleteMembership(Long id) {
+		Membership m = Membership.read(id);
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+
+		// Any user can delete their own memberships
+		if (isMembershipOfRequestor(requestor, m)) {
+			m.delete();
+			return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK,
+					"Membership was deleted")));
+		} else {
+			// Also COORDINATORS of the associated assembly/group can delete
+			// memberships
+			Boolean authorization = false;
+
+			// what's the requestor membership in the group/assembly related to
+			// this membership
+			Membership requestorMembership = requestorMembership(requestor, m);
+
+			if (requestorMembership != null) {
+				authorization = requestorIsCoordinator(requestor,
+						requestorMembership);
+			} else {
+				return unauthorized(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.UNAUTHORIZED,
+						"Requestor is not member of this "
+								+ m.getMembershipType())));
+			}
+
+			if (authorization) {
+				m.delete();
+				return ok(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.OK, "Membership was deleted")));
+			} else {
+				return unauthorized(Json.toJson(new TransferResponseStatus(
+						ResponseStatus.UNAUTHORIZED, "Requestor is not"
+								+ MembershipRoles.COORDINATOR)));
+			}
+
+		}
+	}
+
+	// GET /api/membership/verify/:token
+	// controllers.Memberships.verifyMembership(token: String)
+	@Security.Authenticated(Secured.class)
+	public static Result verifyMembership(Long id, String token) {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final TokenAction ta = Users.tokenIsValid(token, Type.MEMBERSHIP_INVITATION);
+		if (ta == null) {
+			return badRequest(toJson(Messages.get("playauthenticate.token.error.message")));
+			// TODO content negotiation: if content-type is HTML, render the response in HTML
+			// return badRequest(no_token_or_invalid.render());
+		}
+		
+		final String email = ta.targetUser.getEmail();
+		Membership.verify(id, ta.targetUser);
+		return ok(toJson(Messages.get("playauthenticate.verify_email.success", email)));		
+	}
+
+	/****************************************************************************************************************
+	 * Not exposed methods
+	 ****************************************************************************************************************/
+
+	/**
+	 * General create membership method (not exposed in the API)
 	 * 
 	 * @param membershipType
 	 * @return
 	 */
-	public static Result createMembership(User requestor,
+	protected static Result createMembership(User requestor,
 			String targetCollection, Long id, String membershipType,
 			Long userId, String userEmail) {
 
@@ -122,10 +404,11 @@ public class Memberships extends Controller {
 				// 8. Check if the creator is authorized
 				if (Membership.userCanInvite(requestor, targetAssembly)) {
 					m.setStatus(MembershipStatus.INVITED);
+					Membership.create(m);
+					m.refresh();
 					MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
 							.getProvider();
 					provider.sendMembershipInvitationEmail(m, targetCollection);
-					Membership.create(m);
 					return ok(Json.toJson(m));
 
 				} else {
@@ -143,9 +426,10 @@ public class Memberships extends Controller {
 				return ok(Json.toJson(m));
 			} else {
 				TransferResponseStatus responseBody = new TransferResponseStatus();
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-						" The request did not specified whether it was an invitation or a join request"));
+				responseBody
+						.setStatusMessage(Messages
+								.get(GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+										" The request did not specified whether it was an invitation or a join request"));
 				return unauthorized(Json.toJson(responseBody));
 			}
 		} else {
@@ -157,47 +441,78 @@ public class Memberships extends Controller {
 							+ targetCollection));
 			return unauthorized(Json.toJson(responseBody));
 		}
-
 	}
 
-	//GET    /api/membership/:id                            controllers.Memberships.readMembership(id: Long)
-	@Security.Authenticated(Secured.class)
-	public static Result readMembership(Long id) {
-		Membership m = Membership.read(id);
-		if (m!=null){
-			return ok(Json.toJson(m));	
+	/**
+	 * Checks is the user who sent the request is actually the user of this membership
+	 * @param requestor
+	 * @param m
+	 * @return
+	 */
+	protected static Boolean isMembershipOfRequestor(User requestor,
+			Membership m) {
+		// is requestor the user in this membership?
+		if (requestor.equals(m.getUser())) {
+			return true;
 		} else {
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			responseBody.setStatusMessage("There is no membership with ID = "+id);
-			return notFound(Json.toJson(responseBody));
+			return false;
 		}
 	}
-	
-	//PUT    /api/membership/:id                            controllers.Memberships.update(id: Long)
-	@Security.Authenticated(Secured.class)
-	public static Result update(Long id) {
-		// TODO: IMPLEMENT
-		TransferResponseStatus responseBody = new TransferResponseStatus();
-		responseBody.setStatusMessage("Not implemented yet");
-		return notFound(Json.toJson(responseBody));
+
+	/**
+	 * Get the Membership of the requestor, associated to the group or assembly of the membership whose 
+	 * ID is given on the request
+	 * @param requestor
+	 * @param m
+	 * @return
+	 */
+	protected static Membership requestorMembership(User requestor, Membership m) {
+		// is requestor the user in this membership?
+		if (requestor.equals(m.getUser())) {
+			return m;
+		} else {
+			if (m.getMembershipType().equals("ASSEMBLY")) {
+				return AssemblyMembership.findByUserAndAssembly(requestor,
+						((AssemblyMembership) m).getAssembly());
+			} else {
+				return GroupMembership.findByUserAndGroup(requestor,
+						((GroupMembership) m).getWorkingGroup());
+			}
+		}
+
 	}
 
-	//DELETE /api/membership/:id                            controllers.Memberships.delete(id: Long)
-	@Security.Authenticated(Secured.class)
-	public static Result delete(Long id) {
-		// TODO: IMPLEMENT
-		TransferResponseStatus responseBody = new TransferResponseStatus();
-		responseBody.setStatusMessage("Not implemented yet");
-		return notFound(Json.toJson(responseBody));
-	} 
 
-	//GET    /api/membership/verify/:token                  controllers.Memberships.verifyMembership(token: String) 
-	@Security.Authenticated(Secured.class)
-	public static Result verifyMembership(String token) {
-		// check the user who is accepting the invitation is
-		// TODO
-		TransferResponseStatus responseBody = new TransferResponseStatus();
-		responseBody.setStatusMessage("Not implemented yet");
-		return notFound(Json.toJson(responseBody));
+	/**
+	 * Check if the requestor is COORDINATOR of the group or assembly associated to the membership whose 
+	 * ID is given on the request
+	 * @param requestor
+	 * @param m
+	 * @return
+	 */
+	protected static Boolean requestorIsCoordinator(User requestor, Membership m) {
+		return requestorHasRole(requestor, m, MembershipRoles.COORDINATOR);
 	}
+
+	/**
+	 * Check if the requestor has a given Role in the group or assembly associated to the membership whose 
+	 * ID is given on the request
+	 * @param requestor
+	 * @param m
+	 * @return
+	 */
+	protected static Boolean requestorHasRole(User requestor, Membership m,
+			MembershipRoles role) {
+		if (m != null) {
+			for (Role requestorRole : m.getRoles()) {
+				if (requestorRole.getName().equals(role)) {
+					return true;
+				}
+			}
+			return false;
+		} else {
+			return false;
+		}
+	}
+
 }

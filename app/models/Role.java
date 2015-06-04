@@ -55,9 +55,8 @@ public class Role extends AppCivistBaseModel {
 		return find.ref(roleId);
 	}
 
-	public static Integer readByTitle(String name) {
-		ExpressionList<Role> roles = find.where().eq("name", name);
-		return roles.findList().size();
+	public static Role readByTitle(String name) {
+		return find.where().eq("name", name).findUnique();
 	}
 
 	public static List<Role> findAll() {

@@ -8,7 +8,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 
 import models.User;
 import models.Role;
-import models.WorkingGroup;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.mvc.*;
@@ -69,7 +68,7 @@ public class Roles extends Controller {
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if( Role.readByTitle(newRole.getName()) > 0 ){
+			if( Role.readByTitle(newRole.getName()) != null ){
 				Logger.info("Role already exists");
 			}
 			else{
@@ -109,7 +108,7 @@ public class Roles extends Controller {
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if( Role.readByTitle(newRole.getName()) > 0 ){
+			if( Role.readByTitle(newRole.getName()) != null ){
 				Logger.info("Role already exists");
 			}
 			else {
@@ -128,4 +127,18 @@ public class Roles extends Controller {
 		}
 	}
 
+	
+	/**
+	 * 
+	 */
+	public static Boolean userHasRole(User user, String role) {
+		// TODO check if user has the role
+		return true;
+	}
+	
+	public static Boolean userHasRoleInMembership(User user, String role) {
+		// TODO check if user has the role in the membership
+		return true;
+	}
+	
 }

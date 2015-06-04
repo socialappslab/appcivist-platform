@@ -23,6 +23,11 @@ public class TransferResponseStatus implements Serializable {
 		this.statusMessage = statusMessage;
 	}
 	
+
+	public TransferResponseStatus(String statusMessage) {
+		this.statusMessage = statusMessage;
+	}
+	
 	public TransferResponseStatus(ResponseStatus responseStatus,
 			String statusMessage, String errorTrace) {
 		this.responseStatus = responseStatus;
