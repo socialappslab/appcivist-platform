@@ -582,10 +582,10 @@ create table working_group (
   removed                   boolean,
   name                      varchar(255),
   text                      varchar(255),
-  expiration                timestamp,
   is_public                 boolean,
   accept_requests           boolean,
   membership_role           integer,
+  test_field                bigint,
   constraint ck_working_group_membership_role check (membership_role in (0,1,2,3)),
   constraint pk_working_group primary key (group_id))
 ;

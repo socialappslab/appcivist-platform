@@ -230,16 +230,14 @@ public class Membership extends AppCivistBaseModel {
 		MembershipRoles roleForInvitations = assembly.getMembershipRole();
 		Membership m = AssemblyMembership.findByUserAndAssembly(user, assembly);
 
-		if (roleForInvitations != null) {
+		if (roleForInvitations != null && m != null) {
 			for (Role userRole : m.getRoles()) {
 				userCanInvite = roleForInvitations.toString().toUpperCase()
 						.equals(userRole.getName().toUpperCase());
 				if(userCanInvite)
 					return userCanInvite;
 			}
-		} else {
-			userCanInvite = m != null;
-		}
+		} 
 		return userCanInvite;
 	}
 

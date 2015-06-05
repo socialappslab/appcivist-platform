@@ -337,7 +337,6 @@ public class Memberships extends Controller {
 	// TODO: TEST
 	// GET /api/membership/verify/:token
 	// controllers.Memberships.verifyMembership(token: String)
-	@Security.Authenticated(Secured.class)
 	public static Result verifyMembership(Long id, String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = Users.tokenIsValid(token, Type.MEMBERSHIP_INVITATION);
@@ -357,7 +356,6 @@ public class Memberships extends Controller {
 	 ****************************************************************************************************************/
 
 
-	// TODO: TEST
 	/**
 	 * General create membership method (not exposed in the API)
 	 * 
