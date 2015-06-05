@@ -36,31 +36,26 @@ public class Membership extends AppCivistBaseModel {
 	private Long membershipId;
 	private Long expiration;
 	private MembershipStatus status;
-	
+
 	@ManyToOne
 	private User creator;
 
 	@ManyToOne
 	private User user;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
-	@JoinTable(name = "MEMBERSHIP_ROLE", 
-		joinColumns =
-			{ @JoinColumn(name = "membership_membership_id", referencedColumnName="membership_id", nullable = false) },
-			inverseJoinColumns = { @JoinColumn(name = "role_role_id", referencedColumnName="role_id", nullable = false)}
-	)
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinTable(name = "MEMBERSHIP_ROLE", joinColumns = { @JoinColumn(name = "membership_membership_id", referencedColumnName = "membership_id", nullable = false) }, inverseJoinColumns = { @JoinColumn(name = "role_role_id", referencedColumnName = "role_id", nullable = false) })
 	private List<Role> roles = new ArrayList<Role>();
 
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)
 	private String membershipType;
-	
 
 	@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
 	private Assembly targetAssembly;
-	
+
 	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	private WorkingGroup targetGroup;
-	
+
 	public static Model.Finder<Long, Membership> find = new Model.Finder<Long, Membership>(
 			Long.class, Membership.class);
 
@@ -195,21 +190,20 @@ public class Membership extends AppCivistBaseModel {
 	/**
 	 * Check if membership for this user to the group/assembly already exists
 	 * TODO: CHECK this method to fix the bug of null results
+	 * 
 	 * @param m
 	 * @return
 	 */
 	public static boolean checkIfExists(Membership gm) {
 		Membership m1 = find.where().eq("creator", gm.getCreator())
-		.eq("user", gm.getUser())
-		.eq("targetAssembly", gm.getTargetAssembly())
-		.findUnique();
-		
+				.eq("user", gm.getUser())
+				.eq("targetAssembly", gm.getTargetAssembly()).findUnique();
+
 		Membership m2 = find.where().eq("creator", gm.getCreator())
 				.eq("user", gm.getUser())
-				.eq("targetGroup", gm.getTargetGroup())
-				.findUnique();
-		
-		return m1!= null || m2!=null;
+				.eq("targetGroup", gm.getTargetGroup()).findUnique();
+
+		return m1 != null || m2 != null;
 	}
 
 	public static Boolean userCanInvite(User user, WorkingGroup workingGroup) {
@@ -217,12 +211,12 @@ public class Membership extends AppCivistBaseModel {
 
 		MembershipRoles roleForInvitations = workingGroup.getMembershipRole();
 		Membership m = GroupMembership.findByUserAndGroup(user, workingGroup);
-		
-		if (roleForInvitations != null && m !=null) {
+
+		if (roleForInvitations != null && m != null) {
 			for (Role userRole : m.getRoles()) {
-				userCanInvite = roleForInvitations.toString().toUpperCase().equals(userRole
-						.getName().toUpperCase());
-				if(userCanInvite)
+				userCanInvite = roleForInvitations.toString().toUpperCase()
+						.equals(userRole.getName().toUpperCase());
+				if (userCanInvite)
 					return userCanInvite;
 			}
 		}
@@ -238,8 +232,10 @@ public class Membership extends AppCivistBaseModel {
 
 		if (roleForInvitations != null) {
 			for (Role userRole : m.getRoles()) {
-				userCanInvite = roleForInvitations.toString().toUpperCase() == userRole
-						.getName().toUpperCase();
+				userCanInvite = roleForInvitations.toString().toUpperCase()
+						.equals(userRole.getName().toUpperCase());
+				if(userCanInvite)
+					return userCanInvite;
 			}
 		} else {
 			userCanInvite = m != null;
