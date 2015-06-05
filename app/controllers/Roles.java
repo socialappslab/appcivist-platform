@@ -90,7 +90,7 @@ public class Roles extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public static Result updateRole() {
+	public static Result updateRole(Long roleId) {
 		// 1. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
@@ -110,6 +110,7 @@ public class Roles extends Controller {
 				Logger.info("Role already exists");
 			}
 			else {
+				newRole.setRoleId(roleId);
 				newRole.update();
 				Logger.info("Creating new role");
 				Logger.debug("=> " + newRoleForm.toString());

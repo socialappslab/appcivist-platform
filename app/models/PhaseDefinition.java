@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import com.avaje.ebean.ExpressionList;
 import play.db.ebean.Model;
 
 @Entity
@@ -75,6 +76,11 @@ public class PhaseDefinition extends AppCivistBaseModel {
 	public static PhaseDefinition read(Long id) {
         return find.ref(id);
     }
+
+	public static PhaseDefinition readByName(String definitionName) {
+		ExpressionList<PhaseDefinition> phaseDefinition = find.where().eq("name",definitionName);
+		return phaseDefinition.findUnique();
+	}
 
     public static List<PhaseDefinition> findAll() {
         return find.all();

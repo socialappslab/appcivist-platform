@@ -23,7 +23,7 @@ public class Meeting extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long meetingId;
-	private Date date;
+	private Date meetingDate;
 	private String topic;
 	private String place;
 	private MeetingStatus status;
@@ -37,7 +37,7 @@ public class Meeting extends AppCivistBaseModel {
 			MeetingStatus status, List<String> attendees, URL doodle,
 			URL hangout) {
 		this.creator = creator;
-		this.date = date;
+		this.meetingDate = date;
 		this.topic = topic;
 		this.place = place;
 		this.status = status;
@@ -70,11 +70,11 @@ public class Meeting extends AppCivistBaseModel {
 	}
 
 	public Date getDate() {
-		return date;
+		return meetingDate;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setDate(Date meetingDate) {
+		this.meetingDate = meetingDate;
 	}
 
 	public String getTopic() {

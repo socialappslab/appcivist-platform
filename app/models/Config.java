@@ -30,7 +30,11 @@ public class Config extends AppCivistBaseModel {
     private ConfigTargets configTarget;
     
     @OneToOne
-    private ConfigDefinition definition; 
+    private ConfigDefinition definition;
+
+    @JsonIgnore
+    @ManyToOne
+    private CampaignPhase campaignPhase;
     
     /* Relatiohships
      * 

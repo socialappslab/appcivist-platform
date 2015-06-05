@@ -14,6 +14,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -32,18 +33,19 @@ public class CampaignPhase extends AppCivistBaseModel {
 	private Long phaseId;
 	private Date startDate;
 	private Date endDate;
-	
+
 	@ManyToOne
 	@JsonBackReference
 	private Campaign campaign;
 
 	@OneToOne
 	private PhaseDefinition definition;
-	
+
+	@JsonIgnore
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="campaignPhase")
 	@JsonManagedReference
 	private List<Config> campaignPhaseConfigs = new ArrayList<Config>();
-	
+
 	private Boolean canOverlap = false;
 	
 	/**
@@ -111,7 +113,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	public void setCampaign(Campaign campaign) {
 		this.campaign = campaign;
 	}
-	
+
 	public PhaseDefinition getDefinition() {
 		return definition;
 	}
@@ -127,7 +129,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	public void setCampaignPhaseConfigs(List<Config> campaignPhaseConfigs) {
 		this.campaignPhaseConfigs = campaignPhaseConfigs;
 	}
-	
+
 	/*
 	 * Basic Data operations
 	 */
@@ -140,18 +142,32 @@ public class CampaignPhase extends AppCivistBaseModel {
 		this.canOverlap = canOverlap;
 	}
 
-	public static CampaignPhase read(Long id) {
-        return find.ref(id);
+	public static CampaignPhase read(Long campaignId, Long phaseId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
+		CampaignPhase phase = campaignPhases.findUnique();
+		return phase;
     }
 
-    public static List<CampaignPhase> findAll() {
-        return find.all();
+    public static List<CampaignPhase> findAll(Long campaignId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id",campaignId);
+		List<CampaignPhase> campaignPhaseList = campaignPhases.findList();
+		return campaignPhaseList;
     }
 
-    public static CampaignPhase create(CampaignPhase object) {
-        object.save();
-        object.refresh();
-        return object;
+    public static CampaignPhase create(Long campaignId, CampaignPhase phase) {
+        Campaign campaign = Campaign.read(campaignId);
+		PhaseDefinition phaseDefinition = null;
+		if(phase.getDefinition().getPhaseDefinitionId() != null){
+			phaseDefinition = PhaseDefinition.read(phase.getDefinition().getPhaseDefinitionId());
+		}
+		else if(phase.getDefinition().getName() != null){
+			phaseDefinition = PhaseDefinition.readByName(phase.getDefinition().getName());
+		}
+		phase.setCampaign(campaign);
+		phase.setDefinition(phaseDefinition);
+		phase.save();
+        phase.refresh();
+        return phase;
     }
 
     public static CampaignPhase createObject(CampaignPhase object) {
@@ -159,8 +175,10 @@ public class CampaignPhase extends AppCivistBaseModel {
         return object;
     }
 
-    public static void delete(Long id) {
-        find.ref(id).delete();
+    public static void delete(Long campaignId, Long phaseId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
+		CampaignPhase phase = campaignPhases.findUnique();
+		phase.delete();
     }
 
     public static void update(Long id) {

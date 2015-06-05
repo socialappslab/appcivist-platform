@@ -85,19 +85,17 @@ GET    /api/assembly/:aid/services                    controllers.Assemblies.fin
 GET    /api/assembly/:aid/service/:sid/operations     controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
 GET    /api/assembly/:aid/service/:sid/operation/:oid controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
 
-# Role API
-GET    /api/roles                                      controllers.Roles.findRoles()
-GET    /api/role/:rid                                  controllers.Roles.findRole(rid: Long)
-PUT    /api/role                                       controllers.Roles.updateRole()
-POST   /api/role                                       controllers.Roles.createRole()
-DELETE /api/role/:rid                                  controllers.Roles.deleteRole(rid: Long)
 
-# Config API
-GET     /api/configs                                   controllers.Configs.findConfigs()
-GET     /api/config/:cid                               controllers.Configs.findConfig(cid: Long)
-PUT     /api/config                                    controllers.Configs.updateConfig()
-POST    /api/config                                    controllers.Configs.createConfig()
-DELETE  /api/config/:cid                               controllers.Configs.deleteConfig(cid: Long)
+# WorkingGroup API
+
+GET            /api/groups                                           controllers.WorkingGroups.findWorkingGroups()
+
+GET            /api/group/:gid                                       controllers.WorkingGroups.findWorkingGroup(gid: Long)
+PUT            /api/group/:gid                                       controllers.WorkingGroups.updateWorkingGroup(gid: Long)
+POST           /api/group                                            controllers.WorkingGroups.createWorkingGroup()
+DELETE         /api/group/:gid                                       controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
+
+
 
 
 #####################################################################################
@@ -105,5 +103,65 @@ DELETE  /api/config/:cid                               controllers.Configs.delet
 GET    /api/assembly/:aid/issue/:iid/campaigns         controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
 GET    /api/assembly/:aid/issue/:iid/campaign/:cid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
 
+# Role API
+GET            /api/roles                                            controllers.Roles.findRoles()
+GET            /api/role/:rid                                        controllers.Roles.findRole(rid: Long)
+PUT            /api/role/:rid                                        controllers.Roles.updateRole(rid: Long)
+POST           /api/role                                             controllers.Roles.createRole()
+DELETE         /api/role/:rid                                        controllers.Roles.deleteRole(rid: Long)
 
+# Config API
+GET            /api/configs                                          controllers.Configs.findConfigs()
+GET            /api/config/:cid                                      controllers.Configs.findConfig(cid: Long)
+PUT            /api/config/:cid                                      controllers.Configs.updateConfig(cid: Long)
+POST           /api/config                                           controllers.Configs.createConfig()
+DELETE         /api/config/:cid                                      controllers.Configs.deleteConfig(cid: Long)
 
+# Campaign API
+GET            /api/campaigns                                        controllers.Campaigns.findCampaigns()
+GET            /api/campaign/:cid                                    controllers.Campaigns.findCampaign(cid: Long)
+PUT            /api/campaign/:cid                                    controllers.Campaigns.updateCampaign(cid: Long)
+POST           /api/campaign                                         controllers.Campaigns.createCampaign()
+DELETE         /api/campaign/:cid                                    controllers.Campaigns.deleteCampaign(cid: Long)
+
+# CampaignPhase API
+GET            /api/campaign/:cid/phases                             controllers.CampaignPhases.findCampaignPhases(cid:Long)
+GET            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.findCampaignPhase(cid: Long, cpid: Long)
+PUT            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.updateCampaignPhase(cid: Long, cpid: Long)
+POST           /api/campaign/:cid/phase                              controllers.CampaignPhases.createCampaignPhase(cid: Long)
+DELETE         /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.deleteCampaignPhase(cid: Long, cpid: Long)
+
+# Contribution API
+GET            /api/contributions                                    controllers.Contributions.findContributions()
+GET            /api/contribution/:cid                                controllers.Contributions.findContribution(cid: Long)
+PUT            /api/contribution/:cid                                controllers.Contributions.updateContribution(cid: Long)
+POST           /api/contribution                                     controllers.Contributions.createContribution()
+DELETE         /api/contribution/:cid                                controllers.Contributions.deleteContribution(cid: Long)
+
+# Contribution ISSUE API
+GET            /api/issues                                           controllers.Contributions.findContributions()
+GET            /api/issue/:cid                                       controllers.Contributions.findContribution(cid: Long)
+PUT            /api/issue/:cid                                       controllers.Contributions.updateContribution(cid: Long)
+POST           /api/issue                                            controllers.Contributions.createContribution()
+DELETE         /api/issue/:cid                                       controllers.Contributions.deleteContribution(cid: Long)
+
+# Contribution IDEA API
+GET            /api/ideas                                            controllers.Contributions.findContributions()
+GET            /api/idea/:cid                                        controllers.Contributions.findContribution(cid: Long)
+PUT            /api/idea/:cid                                        controllers.Contributions.updateContribution(cid: Long)
+POST           /api/idea                                             controllers.Contributions.createContribution()
+DELETE         /api/idea/:cid                                        controllers.Contributions.deleteContribution(cid: Long)
+
+# Contribution QUESTION API
+GET            /api/questions                                        controllers.Contributions.findContributions()
+GET            /api/question/:cid                                    controllers.Contributions.findContribution(cid: Long)
+PUT            /api/question/:cid                                    controllers.Contributions.updateContribution(cid: Long)
+POST           /api/question                                         controllers.Contributions.createContribution()
+DELETE         /api/question/:cid                                    controllers.Contributions.deleteContribution(cid: Long)
+
+# Contribution COMMENT API
+GET            /api/comments                                         controllers.Contributions.findContributions()
+GET            /api/comment/:cid                                     controllers.Contributions.findContribution(cid: Long)
+PUT            /api/comment/:cid                                     controllers.Contributions.updateContribution(cid: Long)
+POST           /api/comment                                          controllers.Contributions.createContribution()
+DELETE         /api/comment/:cid                                     controllers.Contributions.deleteContribution(cid: Long)

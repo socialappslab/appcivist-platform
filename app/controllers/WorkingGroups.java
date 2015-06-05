@@ -100,8 +100,8 @@ public class WorkingGroups extends Controller {
 		}
 	}
 
-	// @Security.Authenticated(Secured.class)
-	public static Result updateWorkingGroup() {
+	@Security.Authenticated(Secured.class)
+	public static Result updateWorkingGroup(Long groupId) {
 		// 1. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<WorkingGroup> newWorkingGroupForm = WORKING_GROUP_FORM
@@ -121,6 +121,7 @@ public class WorkingGroups extends Controller {
 			if (WorkingGroup.readByTitle(newWorkingGroup.getName()) > 0) {
 				Logger.info("Working group already exists");
 			} else {
+				newWorkingGroup.setGroupId(groupId);
 				newWorkingGroup.update();
 
 				// TODO: return URL of the new group
