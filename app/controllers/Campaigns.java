@@ -13,7 +13,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
 import utils.GlobalData;
-import utils.ResponseStatusBean;
+import models.transfer.TransferResponseStatus;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class Campaigns extends Controller{
         final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
 
         if (newCampaignForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_CREATE_MSG_ERROR, newCampaignForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -57,7 +57,7 @@ public class Campaigns extends Controller{
 
             Campaign newCampaign = newCampaignForm.get();
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if( Campaign.readByTitle(newCampaign.getTitle()) > 0 ){
                 Logger.info("Campaign already exists");
@@ -89,7 +89,7 @@ public class Campaigns extends Controller{
         final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
 
         if (newCampaignForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_CREATE_MSG_ERROR, newCampaignForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -100,7 +100,7 @@ public class Campaigns extends Controller{
             if(newCampaign.getLang() == null)
                 newCampaign.setLang(campaignCreator.getLocale());
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if( Campaign.readByTitle(newCampaign.getTitle()) > 0 ){
                 Logger.info("Campaign already exists");

@@ -12,7 +12,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.GlobalData;
-import utils.ResponseStatusBean;
+import models.transfer.TransferResponseStatus;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class Contributions extends Controller{
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
 
         if (newContributionForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CONTRIBUTION_CREATE_MSG_ERROR, newContributionForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -66,7 +66,7 @@ public class Contributions extends Controller{
             if(newContribution.getLang() == null)
                 newContribution.setLang(contributionCreator.getLocale());
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if( Contribution.readByTitle(newContribution.getTitle()) > 0 ){
                 Logger.info("Contribution already exists");
@@ -98,7 +98,7 @@ public class Contributions extends Controller{
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
 
         if (newContributionForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,newContributionForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -106,7 +106,7 @@ public class Contributions extends Controller{
 
             Contribution newContribution = newContributionForm.get();
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if( newContribution.readByTitle(newContribution.getTitle()) > 0 ){
                 Logger.info("Contribution already exists");

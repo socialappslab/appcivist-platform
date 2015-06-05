@@ -60,7 +60,7 @@ GET     /api/assembly/:aid/issues                     controllers.Assemblies.fin
 # WorkingGroup API
 GET    /api/groups                                    controllers.WorkingGroups.findWorkingGroups()
 GET    /api/group/:gid                                controllers.WorkingGroups.findWorkingGroup(gid: Long)
-PUT    /api/group                                     controllers.WorkingGroups.updateWorkingGroup()
+PUT    /api/group                                     controllers.WorkingGroups.updateWorkingGroup(gid: Long)
 POST   /api/group                                     controllers.WorkingGroups.createWorkingGroup()
 DELETE /api/group/:gid                                controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
 POST   /api/group/:id/membership/:type                controllers.WorkingGroups.createGroupMembership(id: Long, type: String)  
@@ -84,19 +84,6 @@ GET    /api/membership/:id/verify/:token              controllers.Memberships.ve
 GET    /api/assembly/:aid/services                    controllers.Assemblies.findServices(aid: Long)
 GET    /api/assembly/:aid/service/:sid/operations     controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
 GET    /api/assembly/:aid/service/:sid/operation/:oid controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
-
-
-# WorkingGroup API
-
-GET            /api/groups                                           controllers.WorkingGroups.findWorkingGroups()
-
-GET            /api/group/:gid                                       controllers.WorkingGroups.findWorkingGroup(gid: Long)
-PUT            /api/group/:gid                                       controllers.WorkingGroups.updateWorkingGroup(gid: Long)
-POST           /api/group                                            controllers.WorkingGroups.createWorkingGroup()
-DELETE         /api/group/:gid                                       controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
-
-
-
 
 #####################################################################################
 # Deprecated endpoints, move to ServiceAssemblies controller

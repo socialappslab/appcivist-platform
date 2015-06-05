@@ -14,7 +14,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
 import utils.GlobalData;
-import utils.ResponseStatusBean;
+import models.transfer.TransferResponseStatus;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public class CampaignPhases extends Controller{
         final Form<CampaignPhase> newCampaignPhaseForm = CAMPAIGN_PHASE_FORM.bindFromRequest();
 
         if (newCampaignPhaseForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_PHASE_CREATE_MSG_ERROR, newCampaignPhaseForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -58,7 +58,7 @@ public class CampaignPhases extends Controller{
 
             CampaignPhase newCampaignPhase = newCampaignPhaseForm.get();
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             newCampaignPhase.setPhaseId(phaseId);
             CampaignPhase camp2 = CampaignPhase.find.ref(phaseId);
@@ -86,7 +86,7 @@ public class CampaignPhases extends Controller{
         final Form<CampaignPhase> newCampaignPhaseForm = CAMPAIGN_PHASE_FORM.bindFromRequest();
 
         if (newCampaignPhaseForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_PHASE_CREATE_MSG_ERROR, newCampaignPhaseForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -97,7 +97,7 @@ public class CampaignPhases extends Controller{
             if(newCampaignPhase.getLang() == null)
                 newCampaignPhase.setLang(campaignPhaseCreator.getLocale());
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             CampaignPhase.create(campaignId, newCampaignPhase);
             Logger.info("Creating new campaign Phase");
