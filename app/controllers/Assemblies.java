@@ -33,7 +33,7 @@ public class Assemblies extends Controller {
 
 	public static final Form<Assembly> ASSEMBLY_FORM = form(Assembly.class);
 	public static final Form<TransferMembership> MEMBERSHIP_FORM = form(TransferMembership.class);
-	
+
 	/**
 	 * Return the full list of assemblies
 	 * 
@@ -66,22 +66,23 @@ public class Assemblies extends Controller {
 
 		// 2. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM
-				.bindFromRequest();
+		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
 
 		if (newAssemblyForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
-					GlobalData.ASSEMBLY_CREATE_MSG_ERROR,newAssemblyForm.errorsAsJson()));
+					GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+					newAssemblyForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			Assembly newAssembly = newAssemblyForm.get();
 
-			// setting default values (TODO: maybe we should create a dedicated method for this in each model)
+			// setting default values (TODO: maybe we should create a dedicated
+			// method for this in each model)
 			newAssembly.setCreator(groupCreator);
-			if (newAssembly.getLang()==null)
+			if (newAssembly.getLang() == null)
 				newAssembly.setLang(groupCreator.getLocale());
-			
+
 			// TODO: check if assembly with same title exists
 			// if not add it
 
@@ -96,26 +97,37 @@ public class Assemblies extends Controller {
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.ASSEMBLY_CREATE_MSG_SUCCESS,
 					newAssembly.getName(), groupCreator.getIdentifier()));
-			responseBody.setNewResourceURL(GlobalData.ASSEMBLY_BASE_PATH+"/"+newAssembly.getAssemblyId());
+			responseBody.setNewResourceURL(GlobalData.ASSEMBLY_BASE_PATH + "/"
+					+ newAssembly.getAssemblyId());
 			return ok(Json.toJson(responseBody));
 		}
 	}
 
-//	TODO GET     /api/assemblies                               controllers.Assemblies.findAssemblies()
-//	TODO POST    /api/assembly                                 controllers.Assemblies.createAssembly()
-//	# TODO GET    /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
-//	# TODO PUT    /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
-//	# TODO DELETE /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
-//	POST    /api/assembly/:id/membership/:type            controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
-//	TODO GET     /api/assembly/:id/membership/:status          controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
-//
-//	# TODO 
-//	#TODO POST    /api/assembly/bulked                         controllers.Assemblies.createAssemblyBulked()
-//	#TODO POST    /api/organization/:id/assembly               controllers.Assemblies.createAssemblyForOrganization()
-//	#TODO GET     /api/assembly/:id                            controllers.Assemblies.exportAssembly(assemblyId: Long)
-//
-//	# Deprecated, convert to ServiceAssemblies
-//	TODO GET     /api/assembly/:aid/issues                     controllers.Assemblies.findIssues(aid: Long)
+	// TODO GET /api/assemblies controllers.Assemblies.findAssemblies()
+	// TODO POST /api/assembly controllers.Assemblies.createAssembly()
+	// # TODO GET /api/assembly/:id controllers.Assemblies.findAssembly(id:
+	// Long)
+	// # TODO PUT /api/assembly/:id controllers.Assemblies.findAssembly(id:
+	// Long)
+	// # TODO DELETE /api/assembly/:id controllers.Assemblies.findAssembly(id:
+	// Long)
+	// POST /api/assembly/:id/membership/:type
+	// controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
+	// TODO GET /api/assembly/:id/membership/:status
+	// controllers.Assemblies.listMembershipsWithStatus(id: Long, status:
+	// String)
+	//
+	// # TODO
+	// #TODO POST /api/assembly/bulked
+	// controllers.Assemblies.createAssemblyBulked()
+	// #TODO POST /api/organization/:id/assembly
+	// controllers.Assemblies.createAssemblyForOrganization()
+	// #TODO GET /api/assembly/:id
+	// controllers.Assemblies.exportAssembly(assemblyId: Long)
+	//
+	// # Deprecated, convert to ServiceAssemblies
+	// TODO GET /api/assembly/:aid/issues controllers.Assemblies.findIssues(aid:
+	// Long)
 
 	@Security.Authenticated(Secured.class)
 	public static Result createAssemblyMembership(Long id, String type) {
@@ -136,12 +148,16 @@ public class Assemblies extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			TransferMembership newMembership = newMembershipForm.get();
-			return Memberships.createMembership(requestor, "assembly", id, type,
-					newMembership.getUserId(), newMembership.getEmail());
+			return Memberships.createMembership(requestor, "assembly", id,
+					type, newMembership.getUserId(), newMembership.getEmail(),
+					newMembership.getDefaultRoleId(),
+					newMembership.getDefaultRoleName());
 		}
 	}
-	
-//	TODO GET     /api/assembly/:id/membership/:status          controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)	
+
+	// TODO GET /api/assembly/:id/membership/:status
+	// controllers.Assemblies.listMembershipsWithStatus(id: Long, status:
+	// String)
 	@Security.Authenticated(Secured.class)
 	public static Result listMemberships(Long id) {
 		// check the user who is accepting the invitation is
@@ -150,7 +166,7 @@ public class Assemblies extends Controller {
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
 	}
-	
+
 	@Security.Authenticated(Secured.class)
 	public static Result listMembershipsWithStatus(Long id, String status) {
 		// check the user who is accepting the invitation is
@@ -159,7 +175,7 @@ public class Assemblies extends Controller {
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
 	}
-	
+
 	/*******************************************************
 	 * OLD ENDPOINTS - TO BE DEPRECATED SHORTLY
 	 */
@@ -184,7 +200,8 @@ public class Assemblies extends Controller {
 	 */
 	@Security.Authenticated(Secured.class)
 	public static Result findIssueCampaignById(Long aid, Long iid, Long cid) {
-		ServiceCampaign campaign = ServiceCampaign.readCampaignOfIssue(aid, iid, cid);
+		ServiceCampaign campaign = ServiceCampaign.readCampaignOfIssue(aid,
+				iid, cid);
 		return ok(Json.toJson(campaign));
 	}
 

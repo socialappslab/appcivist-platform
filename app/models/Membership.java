@@ -194,7 +194,7 @@ public class Membership extends AppCivistBaseModel {
 
 	/**
 	 * Check if membership for this user to the group/assembly already exists
-	 * 
+	 * TODO: CHECK this method to fix the bug of null results
 	 * @param m
 	 * @return
 	 */
@@ -217,14 +217,14 @@ public class Membership extends AppCivistBaseModel {
 
 		MembershipRoles roleForInvitations = workingGroup.getMembershipRole();
 		Membership m = GroupMembership.findByUserAndGroup(user, workingGroup);
-
-		if (roleForInvitations != null) {
+		
+		if (roleForInvitations != null && m !=null) {
 			for (Role userRole : m.getRoles()) {
-				userCanInvite = roleForInvitations.toString().toUpperCase() == userRole
-						.getName().toUpperCase();
+				userCanInvite = roleForInvitations.toString().toUpperCase().equals(userRole
+						.getName().toUpperCase());
+				if(userCanInvite)
+					return userCanInvite;
 			}
-		} else {
-			userCanInvite = m != null;
 		}
 		return userCanInvite;
 	}

@@ -164,10 +164,12 @@ public class WorkingGroups extends Controller {
 		} else {
 			TransferMembership newMembership = newMembershipForm.get();
 			return Memberships.createMembership(requestor, "group", id, type,
-					newMembership.getUserId(), newMembership.getEmail());
+					newMembership.getUserId(), newMembership.getEmail(),
+					newMembership.getDefaultRoleId(),
+					newMembership.getDefaultRoleName());
 		}
 	}
-	
+
 	// GET /api/group/:id/membership
 	// controllers.WorkingGroups.listMemberships(id: Long)
 	@Security.Authenticated(Secured.class)
@@ -178,7 +180,7 @@ public class WorkingGroups extends Controller {
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
 	}
-	
+
 	// GET /api/group/:id/membership/:status
 	// controllers.WorkingGroups.listMembershipsWithStatus(id: Long, status:
 	// String)
@@ -190,6 +192,5 @@ public class WorkingGroups extends Controller {
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
 	}
-	
 
 }

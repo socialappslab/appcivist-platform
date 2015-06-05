@@ -45,6 +45,8 @@ public class Memberships extends Controller {
 	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(
 			30 * 14 * 3600);
 
+
+	// TODO: TEST
 	@Security.Authenticated(Secured.class)
 	public static Result createMembership() {
 		// 1. obtaining the user of the requestor
@@ -64,10 +66,13 @@ public class Memberships extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			TransferMembership newMembership = newMembershipForm.get();
+			String targetCollection = newMembership.getTargetCollection();
+			Long targetCollectionId = targetCollection.toUpperCase().equals("GROUP") ? newMembership.getGroupId() : newMembership.getAssemblyId();
+			
 			return createMembership(requestor,
-					newMembership.getTargetCollection(), newMembership.getId(),
+					targetCollection, targetCollectionId,
 					newMembership.getType(), newMembership.getUserId(),
-					newMembership.getEmail());
+					newMembership.getEmail(), newMembership.getDefaultRoleId(), newMembership.getDefaultRoleName());
 		}
 	}
 
@@ -224,12 +229,18 @@ public class Memberships extends Controller {
 			}
 
 			if (authorization) {
-				Role membershipRole = Role.read(rid);
-				m.getRoles().remove(membershipRole);
-				m.update();
-				m.refresh();
-				return ok(Json.toJson(m));
-
+				
+				if(m.getRoles().size()>1) {
+					Role membershipRole = Role.read(rid);
+					m.getRoles().remove(membershipRole);
+					m.update();
+					m.refresh();
+					return ok(Json.toJson(m));
+				} else {
+					// leave always at least one Role				
+					return badRequest(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.BADREQUEST, "Memberships must have at least one role")));
+				}
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED, "Requestor is not"
@@ -323,6 +334,7 @@ public class Memberships extends Controller {
 		}
 	}
 
+	// TODO: TEST
 	// GET /api/membership/verify/:token
 	// controllers.Memberships.verifyMembership(token: String)
 	@Security.Authenticated(Secured.class)
@@ -344,6 +356,8 @@ public class Memberships extends Controller {
 	 * Not exposed methods
 	 ****************************************************************************************************************/
 
+
+	// TODO: TEST
 	/**
 	 * General create membership method (not exposed in the API)
 	 * 
@@ -351,18 +365,18 @@ public class Memberships extends Controller {
 	 * @return
 	 */
 	protected static Result createMembership(User requestor,
-			String targetCollection, Long id, String membershipType,
-			Long userId, String userEmail) {
+			String targetCollection, Long targetCollectionId, String membershipType,
+			Long userId, String userEmail, Long defaultRoleId, String defaultRoleName) {
 
 		// 4. Read the target Group or Assembly from the Database depending
 		// on the targetCollection
-		WorkingGroup targetWorkingGroup = targetCollection.equals("group") ? WorkingGroup
-				.read(id) : null;
-		Assembly targetAssembly = targetCollection.equals("assembly") ? Assembly
-				.read(id) : null;
+		WorkingGroup targetWorkingGroup = targetCollection.toUpperCase().equals("GROUP") ? WorkingGroup
+				.read(targetCollectionId) : null;
+		Assembly targetAssembly = targetCollection.toUpperCase().equals("ASSEMBLY") ? Assembly
+				.read(targetCollectionId) : null;
 		// 5.Create the correct type of membership depending on the
 		// targetCollection
-		Membership m = targetCollection.equals("group") ? new GroupMembership()
+		Membership m = targetCollection.toUpperCase().equals("GROUP") ? new GroupMembership()
 				: new AssemblyMembership();
 
 		// 6. Make sure either the assembly or the group exists before
@@ -371,7 +385,7 @@ public class Memberships extends Controller {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-					" The target " + targetCollection + " " + id
+					" The target " + targetCollection + " " + targetCollectionId
 							+ " does not exist"));
 			return unauthorized(Json.toJson(responseBody));
 		}
@@ -393,19 +407,34 @@ public class Memberships extends Controller {
 		m.setUser(targetUser);
 		m.setLang(targetUser.getLocale());
 		m.setExpiration((System.currentTimeMillis() + 1000 * MEMBERSHIP_EXPIRATION_TIMEOUT));
-
+		if(targetCollection.toUpperCase().equals("GROUP")) {
+			((GroupMembership) m).setWorkingGroup(targetWorkingGroup);
+		} else {
+			((AssemblyMembership) m).setAssembly(targetAssembly);
+		}
+		
 		// 9. check if the membership of this user on this assembly/group
 		// already exists
-		boolean mExists = Membership.checkIfExists(m);
+		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? GroupMembership.checkIfExists(m) :
+				AssemblyMembership.checkIfExists(m);
 
+		Role role = Role.readByTitle(MembershipRoles.MEMBER.toString());
+		if(defaultRoleId != null) 
+			role = Role.read(defaultRoleId);
+		else if (defaultRoleName != null)
+			m.getRoles().add(role);
+
+		m.getRoles().add(role);
+		
 		if (!mExists) {
 			// 8. Set the initial status of the new membership depending of
 			// the type
 			if (membershipType.toUpperCase().equals(
-					MembershipCreationTypes.INVITATION)) {
+					MembershipCreationTypes.INVITATION.toString())) {
 
+				Boolean userCanInvite = targetCollection.toUpperCase().equals("ASSEMBLY") ? Membership.userCanInvite(requestor, targetAssembly) : Membership.userCanInvite(requestor, targetWorkingGroup);
 				// 8. Check if the creator is authorized
-				if (Membership.userCanInvite(requestor, targetAssembly)) {
+				if (userCanInvite) {
 					m.setStatus(MembershipStatus.INVITED);
 					Membership.create(m);
 					m.refresh();
@@ -418,12 +447,12 @@ public class Memberships extends Controller {
 					return unauthorized("You don't have the role to send invitations");
 				}
 			} else if (membershipType.toUpperCase().equals(
-					MembershipCreationTypes.REQUEST)) {
+					MembershipCreationTypes.REQUEST.toString())) {
 				m.setStatus(MembershipStatus.REQUESTED);
 				Membership.create(m);
 				return ok(Json.toJson(m));
 			} else if (membershipType.toUpperCase().equals(
-					MembershipCreationTypes.SUBSCRIPTION)) {
+					MembershipCreationTypes.SUBSCRIPTION.toString())) {
 				m.setStatus(MembershipStatus.FOLLOWING);
 				Membership.create(m);
 				return ok(Json.toJson(m));
@@ -508,7 +537,7 @@ public class Memberships extends Controller {
 			MembershipRoles role) {
 		if (m != null) {
 			for (Role requestorRole : m.getRoles()) {
-				if (requestorRole.getName().equals(role)) {
+				if (requestorRole.getName().equals(role.toString())) {
 					return true;
 				}
 			}
