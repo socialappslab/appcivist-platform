@@ -167,6 +167,12 @@ roles.creation.error = El rol no fue creado. Hubo un problema con la peticion: {
 config.creation.success = La config {0} ha sido creada con exito por {1}
 config.creation.error = La config no fue creada. Hubo un problema con la peticion: {0}
 
+campaign.creation.success = La campaña {0} ha sido creada con exito por {1}
+campaign.creation.error = La campaña no fue creada. Hubo un problema con la peticion: {0}
+
+campaign.phase.creation.success = La fase de campaña {0} ha sido creada con exito por {1}
+campaign.phase.creation.error = La fase de campaña no fue creada. Hubo un problema con la peticion: {0}
+
 membership.invitation.creation.success = La invitacion a la membresia {0} ha sido creada con exito por {1}
 membership.invitation.creation.error = La invitacion a la membresia no fue creada. Hubo un problema con la peticion: {0}
 
