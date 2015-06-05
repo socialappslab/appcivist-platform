@@ -237,7 +237,7 @@ create table meeting (
   lang                      varchar(255),
   removal                   timestamp,
   removed                   boolean,
-  date                      timestamp,
+  meeting_date              timestamp,
   topic                     varchar(255),
   place                     varchar(255),
   status                    integer,
