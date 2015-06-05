@@ -8,14 +8,13 @@ import com.feth.play.module.pa.PlayAuthenticate;
 
 import models.User;
 import models.Role;
-import models.WorkingGroup;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.mvc.*;
 import play.i18n.Messages;
 import play.data.Form;
 import play.libs.Json;
 import utils.GlobalData;
-import utils.ResponseStatusBean;
 import http.Headers;
 
 @With(Headers.class)
@@ -49,6 +48,7 @@ public class Roles extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result createRole() {
 		// 1. obtaining the user of the requestor
+		// Deprecated, roles don't really need creators
 		User roleCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
 		// 2. read the new role data from the body
@@ -56,7 +56,7 @@ public class Roles extends Controller {
 		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
 		
 		if (newRoleForm.hasErrors()) {
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.ROLE_CREATE_MSG_ERROR,newRoleForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
@@ -67,15 +67,12 @@ public class Roles extends Controller {
 			if(newRole.getLang() == null) 
 				newRole.setLang(roleCreator.getLocale());
 
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if( Role.readByTitle(newRole.getName()) > 0 ){
+			if( Role.readByTitle(newRole.getName()) != null ){
 				Logger.info("Role already exists");
 			}
 			else{
-				if (newRole.getCreator() == null){
-					newRole.setCreator(roleCreator);
-				}
 
 				Role.create(newRole);
 				Logger.info("Creating new role");
@@ -99,7 +96,7 @@ public class Roles extends Controller {
 		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
 
 		if (newRoleForm.hasErrors()) {
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.ROLE_CREATE_MSG_ERROR,newRoleForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
@@ -107,9 +104,9 @@ public class Roles extends Controller {
 
 			Role newRole = newRoleForm.get();
 
-			ResponseStatusBean responseBody = new ResponseStatusBean();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if( Role.readByTitle(newRole.getName()) > 0 ){
+			if( Role.readByTitle(newRole.getName()) != null ){
 				Logger.info("Role already exists");
 			}
 			else {
@@ -128,4 +125,18 @@ public class Roles extends Controller {
 		}
 	}
 
+	
+	/**
+	 * 
+	 */
+	public static Boolean userHasRole(User user, String role) {
+		// TODO check if user has the role
+		return true;
+	}
+	
+	public static Boolean userHasRoleInMembership(User user, String role) {
+		// TODO check if user has the role in the membership
+		return true;
+	}
+	
 }

@@ -3,15 +3,13 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import play.db.ebean.Model;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import enums.PermissionTypes;
 
 @Entity
@@ -25,10 +23,11 @@ public class Permission extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long permitId;
 	private PermissionTypes permit;
+	
+	@ManyToOne(cascade=CascadeType.ALL)
 	private User creator;
 
-	@JsonIgnore
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private List<Role> roles = new ArrayList<Role>();
 
 	public Permission(User creator, PermissionTypes permit) {

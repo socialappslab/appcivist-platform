@@ -2,10 +2,13 @@ package models;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import play.db.ebean.Model;
 
@@ -22,9 +25,10 @@ public class RequiredPhaseConfiguration extends AppCivistBaseModel {
 	private Long requiredPhaseConfigurationId; 
 	
 	@ManyToOne
+	@JsonBackReference
 	private PhaseDefinition phaseDefinition;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private ConfigDefinition configDefinition;
 
 	/**

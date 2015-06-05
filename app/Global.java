@@ -39,8 +39,6 @@ public class Global extends GlobalSettings {
 
 	@SuppressWarnings("rawtypes")
 	private void loadDataFiles(List<String> dataLoadFiles) {
-		// TODO: make sure data in the initial data files have not been loaded
-		// before
 		if (dataLoadFiles.size() > 0) {
 			Logger.info("Loading data using the folloiwing initial data files: ");
 			Logger.info("--> " + dataLoadFiles.toString());
@@ -49,13 +47,24 @@ public class Global extends GlobalSettings {
 				InitialDataConfig fileConfig = InitialDataConfig
 						.readByFileName(dataFile);
 
-				if (fileConfig == null) {
+				if (fileConfig == null || !fileConfig.getLoaded()) {
 					try {
-						fileConfig = new InitialDataConfig(dataFile, true);
 						Logger.info("---> AppCivist: Loading '" + dataFile
 								+ "'...");
 						List list = (List) Yaml.load(dataFile);
+						
+						if(fileConfig!=null && !fileConfig.getLoaded()) {
+							Logger.info("---> AppCivist: '" + dataFile
+									+ "' was previously loaded, deleting before reload...");
+							Ebean.delete(list);
+						} else {
+							Logger.info("---> AppCivist: '" + dataFile
+								+ "' will be loaded to database now...");
+							fileConfig = new InitialDataConfig(dataFile, true);	
+						}
 						Ebean.save(list);
+						if(!fileConfig.getLoaded())
+							fileConfig.setLoaded(true);
 						fileConfig.save();
 						Logger.info("---> AppCivist: '" + dataFile
 								+ "' loaded successfully!");
@@ -104,24 +113,4 @@ public class Global extends GlobalSettings {
 	public void onStop(Application app) {
 		Logger.info("Application shutdown...");
 	}
-
-	// TODO: check if CORS requests support is still needed
-	// @Override
-	// public Action onRequest(Request request, Method actionMethod) {
-	// return new Action.Simple() {
-	// @Override
-	// public Result call(Context ctx) throws Throwable {
-	// Result r = delegate.call(ctx);
-	//
-	// /*
-	// * Support for CORS Requests
-	// */
-	// Logger.debug("--> Setting CORS response headers");
-	// ctx.response().setHeader("Access-Control-Allow-Origin", "*");
-	// //return super.onRequest(request, actionMethod);
-	// return r;
-	// }
-	// };
-	// }
-
 }

@@ -4,8 +4,8 @@ import static play.libs.Json.toJson;
 
 import java.io.UnsupportedEncodingException;
 
+import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.Play;
 import play.api.libs.Crypto;
 import play.i18n.Messages;
 import play.mvc.Call;
@@ -13,9 +13,7 @@ import play.mvc.Controller;
 import play.mvc.Http.Context;
 import play.mvc.Http.Session;
 import play.mvc.Result;
-import models.User;
 import providers.MyUsernamePasswordAuthProvider;
-import utils.ResponseStatusBean;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.exceptions.AuthException;
@@ -127,7 +125,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		if (ap == null) {
 			// Provider wasn't found and/or user was fooling with our stuff -
 			// tell him off:
-			ResponseStatusBean response = new ResponseStatusBean(ResponseStatus.NOTAVAILABLE,Messages.get(
+			TransferResponseStatus response = new TransferResponseStatus(ResponseStatus.NOTAVAILABLE,Messages.get(
 					"playauthenticate.core.exception.provider_not_found",
 					provider));
 			return Controller.notFound(toJson(response));
@@ -136,7 +134,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			final Object o = ap.authenticate(context, payload);
 			if (o instanceof String) {
 				if ("NOT_FOUND".equals(o)) {
-					ResponseStatusBean response = new ResponseStatusBean();
+					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
 					response.setStatusMessage(Messages
 							.get("playauthenticate.password.login.unknown_user_or_pw"));
@@ -145,20 +143,20 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 					// return Controller.unauthorized(
 					// Messages.get("playauthenticate.password.login.unknown_user_or_pw"));
 				} else if (routes.Users.unverified().url().equals(o)) {
-					ResponseStatusBean response = new ResponseStatusBean();
+					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
 					response.setStatusMessage(Messages
 							.get("playauthenticate.verify.email.cta"));
 					return Controller.unauthorized(toJson(response));
 				} else if (routes.Users.exists().url().equals(o)) {
-					ResponseStatusBean response = new ResponseStatusBean();
+					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
 					response.setStatusMessage(Messages
 							.get("playauthenticate.user.exists.message"));
 					return Controller.unauthorized(toJson(response));
 				} else {
 					// return Controller.redirect((String) o);
-					ResponseStatusBean response = new ResponseStatusBean();
+					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.SERVERERROR);
 					response.setStatusMessage("not implemented when the authenticate response is: "
 							+ o);
@@ -285,7 +283,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 				return loginAndRedirect(context, loginUser, payload);
 			} else {
-				ResponseStatusBean response = new ResponseStatusBean();
+				TransferResponseStatus response = new TransferResponseStatus();
 				response.setResponseStatus(ResponseStatus.SERVERERROR);
 				response.setStatusMessage("playauthenticate.core.exception.general");
 				return Controller.internalServerError(toJson(response));
@@ -298,13 +296,13 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			} else {
 				final String message = e.getMessage();
 				if (message != null) {
-					ResponseStatusBean response = new ResponseStatusBean();
+					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.SERVERERROR);
 					response.setStatusMessage(message);
 					return Controller.internalServerError(toJson(response));
 					// return Controller.internalServerError(message);
 				} else {
-					ResponseStatusBean response = new ResponseStatusBean();
+					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.SERVERERROR);
 					response.setStatusMessage("Internal server error");
 					return Controller.internalServerError(toJson(response));

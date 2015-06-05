@@ -49,9 +49,9 @@ playauthenticate.change_password.success=Password has been changed successfully.
 playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
 playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
 
-playauthenticate.password.verify_signup.subject=Reminiscens: Complete your signup
-playauthenticate.password.verify_email.subject=Reminiscens: Confirm your e-mail address
-playauthenticate.password.reset_email.subject=Reminiscens: How to reset your password
+playauthenticate.password.verify_signup.subject=AppCivist: Complete your signup
+playauthenticate.password.verify_email.subject=AppCivist: Confirm your e-mail address
+playauthenticate.password.reset_email.subject=AppCivist: How to reset your password
 
 # play-authenticate: Additional translations
 
@@ -164,5 +164,8 @@ configs.creation.error = The config was not created. There was a problem with th
 
 membership.invitation.creation.success = The invitation to membership {0} has been created with success by {1}
 membership.invitation.creation.error = The invitation to membership was not created. There was a problem with the request: {0}
-
+membership.invitation.creation.unauthorized = The membership could not be created because user is not authorized
 membership.invitation.email.message = Membership invitation
+membership.invitation.email.subject=Invitation to join an AppCivist {0}
+membership.request.email.subject=Request to join an AppCivist {0}
+membership.confirmation.email.subject=Welcome to this AppCivist {0}

@@ -7,16 +7,16 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 
-import enums.ResourceTypes;
 import models.Location.Geo;
 import play.db.ebean.Model;
+import enums.ResourceTypes;
 
 @Entity
 public class Resource extends AppCivistBaseModel {
@@ -25,6 +25,7 @@ public class Resource extends AppCivistBaseModel {
 	 */
 	private static final long serialVersionUID = 2501353074091631217L;
 	@Id
+	@GeneratedValue
 	@Column(name = "resource_id")
 	private Long resourceId;
 	private ResourceTypes type;

@@ -1,10 +1,12 @@
 package controllers;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import http.Headers;
 import models.Config;
 import models.Role;
 import models.User;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -14,7 +16,6 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
 import utils.GlobalData;
-import utils.ResponseStatusBean;
 import static play.data.Form.form;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public class Configs extends Controller {
         final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
 
         if (newConfigForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CONFIG_CREATE_MSG_ERROR, newConfigForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -57,7 +58,7 @@ public class Configs extends Controller {
 
             Config newConfig = newConfigForm.get();
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if( Config.readByKey(newConfig.getKey()) > 0 ){
                 Logger.info("Config already exists");
@@ -88,7 +89,7 @@ public class Configs extends Controller {
         final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
 
         if (newConfigForm.hasErrors()) {
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CONFIG_CREATE_MSG_ERROR,newConfigForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
@@ -99,7 +100,7 @@ public class Configs extends Controller {
             if(newConfig.getLang() == null)
                 newConfig.setLang(configCreator.getLocale());
 
-            ResponseStatusBean responseBody = new ResponseStatusBean();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if( Config.readByKey(newConfig.getKey()) > 0 ){
                 Logger.info("Config already exists");

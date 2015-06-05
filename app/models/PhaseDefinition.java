@@ -9,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import play.db.ebean.Model;
 
 @Entity
@@ -23,6 +25,7 @@ public class PhaseDefinition extends AppCivistBaseModel {
 	private String name; 
 	
 	@OneToMany(mappedBy = "phaseDefinition", cascade=CascadeType.ALL)
+	@JsonManagedReference
 	private List<RequiredPhaseConfiguration> requiredConfigurations = new ArrayList<RequiredPhaseConfiguration>();
 	
 	/**

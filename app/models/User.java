@@ -497,9 +497,9 @@ public class User extends Model {
 		/*
 		 * 9. Create the new user
 		 */
-		if (userId != null) {
+		if (userId != null)
 			User.update(userId); //TODO CHECK THIS PART AGAIN
-		} else {
+		else {
 //			user.setCreationDate(DateTime.now());
 			user.save();
 			user.refresh();
@@ -566,5 +566,4 @@ public class User extends Model {
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
-
 }

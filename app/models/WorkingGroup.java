@@ -1,11 +1,13 @@
 package models;
 
 import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import enums.MembershipRoles;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,15 +30,15 @@ public class WorkingGroup extends AppCivistBaseModel {
     private MembershipRoles membershipRole = MembershipRoles.MEMBER;
     private User creator;
 
-    @ManyToMany(mappedBy = "workingGroups")
+    @ManyToMany(cascade=CascadeType.ALL)
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
-    private List<GroupMembership> memberships = new ArrayList<GroupMembership>();
+    
+	@OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<Config> workingGroupConfigs = new ArrayList<Config>();
 
     public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
@@ -130,14 +132,6 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.resources = resources;
     }
 
-    public List<GroupMembership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<GroupMembership> memberships) {
-        this.memberships = memberships;
-    }
-
     public Boolean getIsPublic() {
         return isPublic;
     }
@@ -161,4 +155,12 @@ public class WorkingGroup extends AppCivistBaseModel {
     public void setMembershipRole(MembershipRoles membershipRole) {
         this.membershipRole = membershipRole;
     }
+
+	public List<Config> getWorkingGroupConfigs() {
+		return workingGroupConfigs;
+	}
+
+	public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
+		this.workingGroupConfigs = workingGroupConfigs;
+	}
 }

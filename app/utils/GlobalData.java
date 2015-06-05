@@ -9,7 +9,7 @@ public class GlobalData {
 	/**
 	 * Internationalization Messages Bindings
 	 */
-	public static final String DEFAULT_LOCALE = "en_EN";
+	public static final String DEFAULT_LOCALE = "en-EN";
 	
 	// Assemblies
 	public static final String ASSEMBLY_CREATE_MSG_SUCCESS = "assemblies.creation.success";
@@ -24,6 +24,7 @@ public class GlobalData {
 	// Working Groups Membership
 	public static String MEMBERSHIP_INVITATION_CREATE_MSG_SUCCESS = "membership.invitation.creation.success";
 	public static String MEMBERSHIP_INVITATION_CREATE_MSG_ERROR = "membership.invitation.creation.error";
+	public static String MEMBERSHIP_INVITATION_CREATE_MSG_UNAUTHORIZED = "membership.invitation.creation.unauthorized";
 	public static String MEMBERSHIP_INVITATION_BASE_PATH = "/membership";
 	
 	// Role

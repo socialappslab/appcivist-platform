@@ -8,11 +8,14 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import play.db.ebean.Model;
 
@@ -30,14 +33,15 @@ public class CampaignPhase extends AppCivistBaseModel {
 	private Date startDate;
 	private Date endDate;
 	
-	@JsonIgnore
 	@ManyToOne
+	@JsonBackReference
 	private Campaign campaign;
 
 	@OneToOne
 	private PhaseDefinition definition;
 	
-	@OneToMany(cascade=CascadeType.ALL)
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="campaignPhase")
+	@JsonManagedReference
 	private List<Config> campaignPhaseConfigs = new ArrayList<Config>();
 	
 	private Boolean canOverlap = false;
