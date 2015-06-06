@@ -1,9 +1,9 @@
-package utils;
+package models.transfer;
 import java.io.Serializable;
 
 import enums.ResponseStatus;
 
-public class ResponseStatusBean implements Serializable {
+public class TransferResponseStatus implements Serializable {
 
 	/**
 	 * 
@@ -15,21 +15,27 @@ public class ResponseStatusBean implements Serializable {
 	private String statusMessage;
 	private String errorTrace;
 	private Long newResourceId;
+	private String newResourceURL;
 
-	public ResponseStatusBean(ResponseStatus responseStatus,
+	public TransferResponseStatus(ResponseStatus responseStatus,
 			String statusMessage) {
 		this.responseStatus = responseStatus;
 		this.statusMessage = statusMessage;
 	}
 	
-	public ResponseStatusBean(ResponseStatus responseStatus,
+
+	public TransferResponseStatus(String statusMessage) {
+		this.statusMessage = statusMessage;
+	}
+	
+	public TransferResponseStatus(ResponseStatus responseStatus,
 			String statusMessage, String errorTrace) {
 		this.responseStatus = responseStatus;
 		this.statusMessage = statusMessage;
 		this.errorTrace = errorTrace;
 	}
 
-	public ResponseStatusBean() {
+	public TransferResponseStatus() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -69,6 +75,14 @@ public class ResponseStatusBean implements Serializable {
 
 	public void setNewResourceId(Long newResourceId) {
 		this.newResourceId = newResourceId;
+	}
+
+	public String getNewResourceURL() {
+		return newResourceURL;
+	}
+
+	public void setNewResourceURL(String newResourceURL) {
+		this.newResourceURL = newResourceURL;
 	}
 	
 	

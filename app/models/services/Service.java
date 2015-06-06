@@ -9,15 +9,13 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import models.Assembly;
+import models.services.ServiceAssembly;
 import play.db.ebean.Model;
 
 @Entity
@@ -43,7 +41,7 @@ public class Service extends Model {
 
 	@JsonIgnore
 	@ManyToOne
-	private Assembly assembly;
+	private ServiceAssembly assembly;
 
 	@ManyToOne
 	private ServiceDefinition serviceDefinition;
@@ -158,11 +156,11 @@ public class Service extends Model {
 	 * Other Queries
 	 */
 
-	public Assembly getAssembly() {
+	public ServiceAssembly getAssembly() {
 		return assembly;
 	}
 
-	public void setAssembly(Assembly assembly) {
+	public void setAssembly(ServiceAssembly assembly) {
 		this.assembly = assembly;
 	}
 

@@ -1,152 +1,128 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import enums.MeetingStatus;
-import play.db.ebean.Model;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import play.db.ebean.Model;
+import enums.MeetingStatus;
 
 @Entity
-public class Meeting extends Model{
+public class Meeting extends AppCivistBaseModel {
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2788111418126466766L;
+	
+	@Id
+	@GeneratedValue
+	private Long meetingId;
+	private Date meetingDate;
+	private String topic;
+	private String place;
+	private MeetingStatus status;
+	private List<String> attendees = new ArrayList<String>();
+	private URL doodle;
+	private URL hangout;
+	private User creator;
 
-    @Id
-    private Long meetingId;
-    private Date date;
-    private String topic;
-    private String place;
-    private MeetingStatus status;
-    private List<String> attendees =  new ArrayList<String>();
-    private URL doodle;
-    private URL hangout;
+	public Meeting(User creator, 
+			Date date, String topic, String place,
+			MeetingStatus status, List<String> attendees, URL doodle,
+			URL hangout) {
+		this.creator = creator;
+		this.meetingDate = date;
+		this.topic = topic;
+		this.place = place;
+		this.status = status;
+		this.attendees = attendees;
+		this.doodle = doodle;
+		this.hangout = hangout;
+	}
 
-    public Meeting(User creator, Date creation, Date removal, String lang, Long meetingId, Date date, String topic, String place, MeetingStatus status, List<String> attendees, URL doodle, URL hangout) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.meetingId = meetingId;
-        this.date = date;
-        this.topic = topic;
-        this.place = place;
-        this.status = status;
-        this.attendees = attendees;
-        this.doodle = doodle;
-        this.hangout = hangout;
-    }
+	public static Model.Finder<Long, Meeting> find = new Model.Finder<Long, Meeting>(
+			Long.class, Meeting.class);
 
-    public static Model.Finder<Long, Meeting> find = new Model.Finder<Long, Meeting>(
-            Long.class, Meeting.class);
+	public static Meeting read(Long meetingId) {
+		return find.ref(meetingId);
+	}
 
-    public static Meeting read(Long meetingId) {
-        return find.ref(meetingId);
-    }
+	public User getCreator() {
+		return creator;
+	}
 
-    public User getCreator() {
-        return creator;
-    }
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
+	public Long getMeetingId() {
+		return meetingId;
+	}
 
-    public Date getCreation() {
-        return creation;
-    }
+	public void setMeetingId(Long meetingId) {
+		this.meetingId = meetingId;
+	}
 
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
+	public Date getDate() {
+		return meetingDate;
+	}
 
-    public Date getRemoval() {
-        return removal;
-    }
+	public void setDate(Date meetingDate) {
+		this.meetingDate = meetingDate;
+	}
 
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
+	public String getTopic() {
+		return topic;
+	}
 
-    public String getLang() {
-        return lang;
-    }
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
 
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
+	public String getPlace() {
+		return place;
+	}
 
-    public Long getMeetingId() {
-        return meetingId;
-    }
+	public void setPlace(String place) {
+		this.place = place;
+	}
 
-    public void setMeetingId(Long meetingId) {
-        this.meetingId = meetingId;
-    }
+	public MeetingStatus getStatus() {
+		return status;
+	}
 
-    public Date getDate() {
-        return date;
-    }
+	public void setStatus(MeetingStatus status) {
+		this.status = status;
+	}
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
+	public List<String> getAttendees() {
+		return attendees;
+	}
 
-    public String getTopic() {
-        return topic;
-    }
+	public void setAttendees(List<String> attendees) {
+		this.attendees = attendees;
+	}
 
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
+	public URL getDoodle() {
+		return doodle;
+	}
 
-    public String getPlace() {
-        return place;
-    }
+	public void setDoodle(URL doodle) {
+		this.doodle = doodle;
+	}
 
-    public void setPlace(String place) {
-        this.place = place;
-    }
+	public URL getHangout() {
+		return hangout;
+	}
 
-    public MeetingStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(MeetingStatus status) {
-        this.status = status;
-    }
-
-    public List<String> getAttendees() {
-        return attendees;
-    }
-
-    public void setAttendees(List<String> attendees) {
-        this.attendees = attendees;
-    }
-
-    public URL getDoodle() {
-        return doodle;
-    }
-
-    public void setDoodle(URL doodle) {
-        this.doodle = doodle;
-    }
-
-    public URL getHangout() {
-        return hangout;
-    }
-
-    public void setHangout(URL hangout) {
-        this.hangout = hangout;
-    }
+	public void setHangout(URL hangout) {
+		this.hangout = hangout;
+	}
 
 }

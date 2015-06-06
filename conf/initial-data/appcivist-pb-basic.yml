@@ -1,0 +1,433 @@
+# AppCivist Test Data
+---
+##############################################################################################################################################################################################
+# Roles
+  - &r1 !!models.Role
+    name:       "ADMIN"
+  - &r2 !!models.Role
+    name:       "USER"
+  - &r3 !!models.Role
+    name:       "COORDINATOR"
+  - &r4 !!models.Role
+    name:       "MEMBER"
+##############################################################################################################################################################################################
+# Categories
+  - &cat1 !!models.Category
+    title: "Streets and Transportation"
+    description: "Streets are the veins of our city. Transportation is its blood. They are the reason why we are moving, and to keep moving, they must be as healty as possible"
+  - &cat2 !!models.Category
+    title: "Economic Development"
+    description: "What we do everyday has an impact in our local economy. What can we do to foster its growth? And how can we ensure that growth benefits us all?"
+  - &cat3 !!models.Category
+    title: "Community and Culture"
+    description: "Culture speak to us about our history, values and traditions. It is the soul that keeps the heart of our communities pumping."
+  - &cat4 !!models.Category
+    title: "Public Safety"
+    description: "To thrive, our communities need a safe space to live. Your contributions to improve public safety go here."
+  - &cat5 !!models.Category
+    title: "Parks and Recreation"
+    description: "All work no play?. We all know life is so much more. Let's assure our parks give us all the recreation opportunities our communities need to enjoy life."
+  - &cat6 !!models.Category
+    title: "Education"
+    description: "'Education is the most powerful weapon which you can use to change the world'. Indeed Mr. Mandela."
+##############################################################################################################################################################################################
+# Users (Testing Users)
+  - &u1 !!models.User
+    email:      bob@example.com
+    name:       Bob
+    username:   bob
+    locale:     es
+    roles:
+      - *r1
+      - *r2
+    linkedAccounts:
+    - &ua1 !!models.LinkedAccount
+      providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
+      providerKey: password
+      user: *u1
+  - &u2 !!models.User
+    email:      jane@example.com
+    name:       Jane
+    username:   jane
+    locale:     en
+    roles:
+      - *r1
+      - *r2
+    linkedAccounts:
+    - &ua2 !!models.LinkedAccount
+      providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
+      providerKey: password
+      user: *u2
+  - &u3 !!models.User
+    email:      jeff@example.com
+    name:       Jeff
+    username:   jeff
+    locale:     it
+    roles:
+      - *r1
+      - *r2
+    linkedAccounts:
+    - &ua3 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u3
+  - &u4 !!models.User
+    email:      sara@example.com
+    name:       Sara
+    username:   sara
+    locale:     fr
+    roles: 
+      - *r2
+    linkedAccounts:
+    - &ua4 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u4
+  - &u5 !!models.User
+    email:      alicia@example.com
+    name:       Alicia
+    username:   alicia
+    locale:     es
+    roles:
+      - *r2
+    linkedAccounts:
+    - &ua5 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u5
+  - &u6 !!models.User
+    email:      ted@example.com
+    name:       Ted
+    username:   ted
+    locale:     en
+    roles:
+      - *r2
+    linkedAccounts:
+    - &ua6 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u6
+  - &u7 !!models.User
+    email:      leia@example.com
+    name:       Leia
+    username:   leia
+    locale:     it
+    roles:
+      - *r2
+    linkedAccounts:
+    - &ua7 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u7
+  - &u8 !!models.User
+    email:      luke@example.com
+    name:       Luke
+    username:   luke
+    locale:     es
+    roles:
+      - *r2
+    linkedAccounts:
+    - &ua8 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u8
+  - &u9 !!models.User
+    email:      ahsoka@example.com
+    name:       Ahsoka
+    username:   ahsoka
+    locale:     en
+    roles:
+      - *r2
+    linkedAccounts:
+    - &ua9 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u9
+  - &u10 !!models.User
+    email:      jeff@example.com
+    name:       Jeff
+    username:   jeff
+    locale:     it
+    roles:
+      - *r2
+    linkedAccounts:
+    - &ua10 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u10
+##############################################################################################################################################################################################
+# Configuration Definitions
+  - &config1 !!models.ConfigDefinition
+    key: "maximum.contributions"
+    valueType: Integer
+    description: "Maximun number of Contributions to accept" 
+    category: "Phase Definition"
+  - &config2 !!models.ConfigDefinition
+    key: "enable.agreement.scores"
+    valueType: Boolean
+    description: "Enable the system of automatic computation of agreement on contributions" 
+    category: "Phase Definition"
+  - &config3 !!models.ConfigDefinition
+    key: "enable.comments.threads"
+    valueType: Boolean
+    description: "Enable comments on comments" 
+    category: "Phase Definition" 
+  - &config4 !!models.ConfigDefinition
+    key: "maximum.level.thread"
+    valueType: Integer
+    description: "Maximum depth of threading in comments" 
+    category: "Phase Definition"
+  - &config5 !!models.ConfigDefinition
+    key: "voting.system"
+    valueType: String
+    description: "Unranked, Ranked, Range, Distributed" 
+    category: "Phase Definition"
+##############################################################################################################################################################################################    
+# Phase Definitions
+  - &pd1 !!models.PhaseDefinition
+    name: "Proposal Making"
+    requiredConfigurations: 
+    - &phaseConfig1 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd1
+      configDefinition: *config1
+  - &pd2 !!models.PhaseDefinition
+    name: "Versioning"
+    requiredConfigurations: 
+    - &phaseConfig2 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd2
+      configDefinition: *config2
+  - &pd3 !!models.PhaseDefinition
+    name: "Deliberation"
+    requiredConfigurations: 
+    - &phaseConfig3 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd3
+      configDefinition: *config3
+    - &phaseConfig4 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd3
+      configDefinition: *config4
+  - &pd4 !!models.PhaseDefinition
+    name: "Voting"
+    requiredConfigurations: 
+    - &phaseConfig5 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd4
+      configDefinition: *config5
+##############################################################################################################################################################################################
+# CampaignTypes
+  - &ct1 !!models.CampaignType
+    nameKey: "PARTICIPATORY_BUDGETING"
+    name: "Participatory Budgeting" 
+    defaultPhases: 
+      - *pd1
+      - *pd2
+      - *pd3
+      - *pd4
+##############################################################################################################################################################################################
+# Assemblies
+  - &a1 !!models.Assembly
+    creator: *u1
+    name: "Participatory Budgeting Vallejo - City Council Assembly"
+    description: Participatory Budgeting of the Municipality of Vallejo for the year 2015
+    city: Vallejo
+    icon: /assets/images/sfskyline-small.jpg
+    interestCategories: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+    campaigns: 
+      - &c1 !!models.Campaign
+        title: "Participatory Budgeting cycle 4 - 2015"
+        startDate: "2015-06-30"
+        endDate: "2015-10-30"
+        visibility: PUBLIC
+        assembly: *a1
+        type: *ct1
+        phases:
+          - &ph1 !!models.CampaignPhase
+            startDate: "2015-06-30"
+            endDate: "2015-07-10"
+            campaign: *c1
+            definition: *pd1
+          - &ph2 !!models.CampaignPhase
+            startDate: "2015-07-11"
+            endDate: "2015-08-10"
+            campaign: *c1
+            definition: *pd2
+          - &ph3 !!models.CampaignPhase
+            startDate: "2015-08-10"
+            endDate: "2015-08-30"
+            campaign: *c1
+            definition: *pd3
+          - &ph4 !!models.CampaignPhase
+            startDate: "2015-09-01"
+            endDate: "2015-10-15"
+            campaign: *c1
+            definition: *pd4          
+  - &a2 !!models.Assembly
+    creator: *u1
+    name: "Neighboors United for Participatory Budgeting in Vallejo"
+    description: Vallejo neighbors association assembly to produce proposals for Vallejo PB
+    city: Vallejo
+    icon: /assets/images/sfskyline-small.jpg
+    interestCategories: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+  - &a3 !!models.Assembly
+    creator: *u1
+    name: "AntiEviction Groups for PB 2015"
+    description: Vallejo PB proposals to fight Eviction
+    city: Vallejo
+    icon: /assets/images/sfskyline-small.jpg
+    interestCategories: 
+      - *cat2
+      - *cat3
+##############################################################################################################################################################################################
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Advisory Commitee 2015" 
+    text: Commitee in charge of managing contributions in the PB process 2015 for Vallejo
+    isPublic: false
+    acceptRequests: false
+    assemblies: 
+      - *a1
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 13 - Category Education" 
+    text: Group of neighbors from district 13, focused on Education
+    isPublic: true
+    acceptRequests: true
+    assemblies: 
+      - *a2
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    isPublic: true
+    acceptRequests: true
+    assemblies: 
+      - *a2
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    isPublic: false
+    acceptRequests: true
+    assemblies: 
+      - *a3
+##############################################################################################################################################################################################
+# Assembly Memberships
+  - &am1 !!models.AssemblyMembership
+    assembly: *a1
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am2 !!models.AssemblyMembership
+    status: ACCEPTED
+    creator: *u1
+    user: *u2
+    roles: 
+      - *r4
+    assembly: *a1
+  - &am3 !!models.AssemblyMembership
+    assembly: *a1
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &am4 !!models.AssemblyMembership
+    assembly: *a2
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am5 !!models.AssemblyMembership
+    assembly: *a3
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+##############################################################################################################################################################################################
+# Group Memberships
+  - &gm1 !!models.GroupMembership
+    user: *u3
+    workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm2 !!models.GroupMembership
+    user: *u4
+    workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm3 !!models.GroupMembership
+    workingGroup: *wg2
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm4 !!models.GroupMembership
+    workingGroup: *wg3
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm5 !!models.GroupMembership
+    workingGroup: *wg3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm6 !!models.GroupMembership
+    workingGroup: *wg3    
+    user: *u5
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm7 !!models.GroupMembership
+    workingGroup: *wg3
+    user: *u6
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.GroupMembership
+    workingGroup: *wg1    
+    user: *u3
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.GroupMembership
+    workingGroup: *wg3    
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4

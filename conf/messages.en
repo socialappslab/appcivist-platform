@@ -1,11 +1,5 @@
 # Override default Play's validation messages
 
-# --- reminiscens
-reminiscens.birth.headline = Birth
-reminiscens.birth.text = The story of my birth
-reminiscens.context.person.title=Contextual Reminiscence Collection for
-reminiscens.context.person.subtitle=Collection of historical items that stimulate the practice of reminiscence for
-
 # --- Constraints
 constraint.required=Required
 constraint.min=Minimum value: {0}
@@ -54,10 +48,11 @@ playauthenticate.change_password.success=Password has been changed successfully.
 
 playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
 playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
+playauthenticate.password.signup.error.missing_lang=Missing language
 
-playauthenticate.password.verify_signup.subject=Reminiscens: Complete your signup
-playauthenticate.password.verify_email.subject=Reminiscens: Confirm your e-mail address
-playauthenticate.password.reset_email.subject=Reminiscens: How to reset your password
+playauthenticate.password.verify_signup.subject=AppCivist: Complete your signup
+playauthenticate.password.verify_email.subject=AppCivist: Confirm your e-mail address
+playauthenticate.password.reset_email.subject=AppCivist: How to reset your password
 
 # play-authenticate: Additional translations
 
@@ -153,3 +148,34 @@ playauthenticate.index.details=View details
 playauthenticate.restricted.secrets=Secrets, everywhere!
 
 ### --- play-authenticate END
+
+
+### --- AppCivist Messages
+groups.creation.success = The working group {0} has been created with success by {1}
+groups.creation.error = The working group was not created. There was a problem with the request: {0}
+
+assemblies.creation.success = The assembly {0} has been created with success by {1}
+assemblies.creation.error = The assembly was not created. There was a problem with the request: {0}
+
+roles.creation.success = The role {0} has been created with success by {1}
+roles.creation.error = The role was not created. There was a problem with the request: {0}
+
+configs.creation.success = The config {0} has been created with success by {1}
+configs.creation.error = The config was not created. There was a problem with the request: {0}
+
+campaign.creation.success = The campaign {0} has been created with success by {1}
+campaign.creation.error = The campaign was not created. There was a problem with the request: {0}
+
+campaign.phase.creation.success = The campaign phase {0} has been created with success by {1}
+campaign.phase.creation.error = The campaign phase was not created. There was a problem with the request: {0}
+
+contribution.creation.success = The contribution {0} has been created with success by {1}
+contribution.creation.error = The contribution was not created. There was a problem with the request: {0}
+
+membership.invitation.creation.success = The invitation to membership {0} has been created with success by {1}
+membership.invitation.creation.error = The invitation to membership was not created. There was a problem with the request: {0}
+membership.invitation.creation.unauthorized = The membership could not be created because user is not authorized
+membership.invitation.email.message = Membership invitation
+membership.invitation.email.subject=Invitation to join an AppCivist {0}
+membership.request.email.subject=Request to join an AppCivist {0}
+membership.confirmation.email.subject=Welcome to this AppCivist {0}

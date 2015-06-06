@@ -52,8 +52,10 @@ playauthenticate.reset_password.message.success.manual_login=Your password has b
 playauthenticate.change_password.error.passwords_not_same=Passwords do not match.
 playauthenticate.change_password.success=Password has been changed successfully.
 
-playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
-playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
+playauthenticate.password.signup.error.passwords_not_same=Las passwords no coinciden
+playauthenticate.password.login.unknown_user_or_pw=Usuario o password desconocidos
+playauthenticate.password.signup.error.missing_lang=Falta elegir un idioma
+
 
 playauthenticate.password.verify_signup.subject=Reminiscens: Completa tu subscripción
 playauthenticate.password.verify_email.subject=Reminiscens: Confirma tu dirección de correo electrónico
@@ -153,3 +155,27 @@ playauthenticate.index.details=View details
 playauthenticate.restricted.secrets=Secrets, everywhere!
 
 ### --- play-authenticate END
+
+### --- AppCivist Messages
+groups.creation.success = El grupo de trabajo {0} ha sido creado con exito por {1}
+groups.creation.error = El grupo de trabajo no fue creado. Hubo un problema con la peticion: {0}
+
+assemblies.creation.success = La asamblea {0} ha sido creada con exito por {1}
+assemblies.creation.error = La asamblea no fue creada. Hubo un problema con la peticion: {0}
+
+roles.creation.success = El rol {0} ha sido creado con exito por {1}
+roles.creation.error = El rol no fue creado. Hubo un problema con la peticion: {0}
+
+config.creation.success = La config {0} ha sido creada con exito por {1}
+config.creation.error = La config no fue creada. Hubo un problema con la peticion: {0}
+
+campaign.creation.success = La campaña {0} ha sido creada con exito por {1}
+campaign.creation.error = La campaña no fue creada. Hubo un problema con la peticion: {0}
+
+campaign.phase.creation.success = La fase de campaña {0} ha sido creada con exito por {1}
+campaign.phase.creation.error = La fase de campaña no fue creada. Hubo un problema con la peticion: {0}
+
+membership.invitation.creation.success = La invitacion a la membresia {0} ha sido creada con exito por {1}
+membership.invitation.creation.error = La invitacion a la membresia no fue creada. Hubo un problema con la peticion: {0}
+
+membership.invitation.email.message = Invitacion para membresia

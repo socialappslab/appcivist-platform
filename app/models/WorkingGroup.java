@@ -1,82 +1,48 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import enums.MembershipRoles;
 import play.db.ebean.Model;
 
 import javax.persistence.*;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
-public class WorkingGroup extends Model{
-
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
-
-    @Id
+public class WorkingGroup extends AppCivistBaseModel {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6809971288859856328L;
+	
+	@Id
+	@GeneratedValue
     private Long groupId;
     private String name;
     private String text;
-    private Date expiration;
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
+    private MembershipRoles membershipRole = MembershipRoles.MEMBER;
+    private User creator;
 
-    @ManyToMany(mappedBy = "workingGroups")
+    private Long testField;
+    
+    @ManyToMany(cascade=CascadeType.ALL)
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
+    
+	@OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<Config> workingGroupConfigs = new ArrayList<Config>();
 
-
-    public List<GroupMembership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<GroupMembership> memberships) {
-        this.memberships = memberships;
-    }
-
-    @JsonIgnore
-    @OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
-    private List<GroupMembership> memberships = new ArrayList<GroupMembership>();
-
-/*
-    @OneToMany
-    private List<GroupMembership> groupMemberships = new ArrayList<GroupMembership>();*/
-
-    @JsonIgnore
-    @ManyToOne
-    private Role role;
-
-    public Boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
-    public Boolean getAcceptRequests() {
-        return acceptRequests;
-    }
-
-    public void setAcceptRequests(Boolean acceptRequests) {
-        this.acceptRequests = acceptRequests;
-    }
-/*
-    public List<GroupMembership> getGroupMemberships() {
-        return groupMemberships;
-    }
-
-    public void setGroupMemberships(List<GroupMembership> groupMemberships) {
-        this.groupMemberships = groupMemberships;
-    }*/
-
-    public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
+	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
+	// TODO: all be connected in a P2P architecture. 
+	public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
 
     public static WorkingGroup read(Long workingGroupId) {
@@ -85,6 +51,11 @@ public class WorkingGroup extends Model{
 
     public static List<WorkingGroup> findAll() {
         return find.all();
+    }
+
+    public static Integer readByTitle(String name){
+        ExpressionList<WorkingGroup> wGroups = find.where().eq("name", name);
+        return wGroups.findList().size();
     }
 
     public static WorkingGroup create(WorkingGroup workingGroup) {
@@ -115,30 +86,6 @@ public class WorkingGroup extends Model{
         this.creator = creator;
     }
 
-    public Date getCreation() {
-        return creation;
-    }
-
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
-
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
     public Long getGroupId() {
         return groupId;
     }
@@ -163,14 +110,6 @@ public class WorkingGroup extends Model{
         this.text = text;
     }
 
-    public Date getExpiration() {
-        return expiration;
-    }
-
-    public void setExpiration(Date expiration) {
-        this.expiration = expiration;
-    }
-
     public List<Assembly> getAssemblies() {
         return assemblies;
     }
@@ -187,11 +126,35 @@ public class WorkingGroup extends Model{
         this.resources = resources;
     }
 
-    public Role getRole() {
-        return role;
+    public Boolean getIsPublic() {
+        return isPublic;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
+
+    public Boolean getAcceptRequests() {
+        return acceptRequests;
+    }
+
+    public void setAcceptRequests(Boolean acceptRequests) {
+        this.acceptRequests = acceptRequests;
+    }
+
+    public MembershipRoles getMembershipRole() {
+        return membershipRole;
+    }
+
+    public void setMembershipRole(MembershipRoles membershipRole) {
+        this.membershipRole = membershipRole;
+    }
+
+	public List<Config> getWorkingGroupConfigs() {
+		return workingGroupConfigs;
+	}
+
+	public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
+		this.workingGroupConfigs = workingGroupConfigs;
+	}
 }

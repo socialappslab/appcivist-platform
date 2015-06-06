@@ -2,7 +2,7 @@
 ---
 
 # Assemblies
-  - &a1 !!models.Assembly
+  - &a1 !!models.services.ServiceAssembly
     assemblyId: 1
     name: "Participatory Budgeting in San Francisco and the Bay Area"
     description: An assembly about PB in SF
@@ -15,7 +15,7 @@
     #  - *s1 # Etherpad
     #  - *s2 # Lomio
     #  - *s2 # Agora
-  - &a2 !!models.Assembly
+  - &a2 !!models.services.ServiceAssembly
     assemblyId: 2
     name: Urban Infrastructure
     description: "An assembly about Urban Infrastructure. Image Credit: Centro Social Autogestionado La Tabacalera de Lavapiés. Plano Planta Principal."
@@ -24,7 +24,7 @@
     url: /api/assembly/1
     #issues:
     #connectedServices:
-  - &a3 !!models.Assembly
+  - &a3 !!models.services.ServiceAssembly
     assemblyId: 3
     name: Institutional Racism
     description: "An assembly about Institutional Racism. Image Credit: Favianna Rodriguez. La Justicia No Tiene Fronteras, 2013."
@@ -33,7 +33,7 @@
     url: /api/assembly/2
     #issues:
     #connectedServices:
-  - &a4 !!models.Assembly
+  - &a4 !!models.services.ServiceAssembly
     assemblyId: 4
     name: Public Health
     description: An assembly about Public Health
@@ -808,7 +808,7 @@
       serviceResource: *sr1
 
 # Issues 
-  - &i1 !!models.Issue
+  - &i1 !!models.services.ServiceIssue
     issueId: 1
     title: What can we do with the empty lot at Telegraph?  
     brief: "The corner of Telegraph and Channing has an empty lot, and has had for at least 3 years. We should do something about it"
@@ -825,7 +825,7 @@
     #  - *c4
 
 # Campaigns
-  - &c1 !!models.Campaign
+  - &c1 !!models.services.ServiceCampaign
     campaignId: 1
     name: Proposal Making
     startDate: 2015-03-01
@@ -850,8 +850,8 @@
     #TODO: how do we define operations for starting the workflow 
     #TODO: define the inner enabling workflow 
     #enablingWorklflow: 
-    #  - &proposalmaking !!models.Campaign 
-  - &c2 !!models.Campaign
+    #  - &proposalmaking !!models.services.ServiceCampaign 
+  - &c2 !!models.services.ServiceCampaign
     campaignId: 2
     name: Proposal Development and Versioning
     startDate: 2015-03-11
@@ -860,7 +860,7 @@
     previousCampaign: *c1
     #nextCampaign: &c3
     issue: *i1
-  - &c3 !!models.Campaign
+  - &c3 !!models.services.ServiceCampaign
     campaignId: 3
     name: Deliberation
     startDate: 2015-03-21
@@ -883,7 +883,7 @@
       - *sr3
     startOperation: *so8 # Create a Discusion 
     startOperationType: FOREACH # For each Proposal
-  - &c4 !!models.Campaign
+  - &c4 !!models.services.ServiceCampaign
     campaignId: 4
     name: Voting
     startDate: 2015-03-31

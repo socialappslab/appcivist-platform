@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import models.Assembly;
 import models.services.Service;
+import models.services.ServiceAssembly;
 import models.services.ServiceOperation;
 import models.services.ServiceOperationDefinition;
 import models.services.ServiceParameter;
@@ -31,7 +31,7 @@ public class Composer {
 	 */
 	public static ServiceOperation createOperationInstance(
 			String operationKey,
-			Assembly composition, 
+			ServiceAssembly composition, 
 			Map<String, Object> paramValues, 
 			String expectedResult) {
 		

@@ -1,141 +1,84 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
 import play.db.ebean.Model;
 
-import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
-
 @Entity
-public class Module extends Model{
+public class Module extends AppCivistBaseModel {
 
-    //Commons
-    private User creator;
-    private Date creation;
-    private Date removal;
-    private String lang;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1215339626510577704L;
+	@Id
+	@GeneratedValue
+	private Long modId;
+	private Boolean enabled = false;
+	private String name;
+	private User creator;
 
-    @Id
-    private Long modId;
-    private Boolean enabled = false;
-    private String name;
-    private Config configuration;
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<Config> configs = new ArrayList<Config>();
 
-    @ManyToMany(mappedBy = "modules")
-    private List<Assembly> assemblies = new ArrayList<Assembly>();
+	public Module(User creator, 
+			Boolean enabled, String name) {
+		this.creator = creator;
+		this.enabled = enabled;
+		this.name = name;
+	}
 
-    @ManyToMany(mappedBy = "modules")
-    private List<Phase> phases = new ArrayList<Phase>();
+	public Module() {
+		super();
+	}
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "module")
-    private List<Config> configs = new ArrayList<Config>();
+	public static Model.Finder<Long, Module> find = new Model.Finder<Long, Module>(
+			Long.class, Module.class);
 
-    public Module(User creator, Date creation, Date removal, String lang, Long modId, Boolean enabled, String name, Config configuration, List<Assembly> assemblies, List<Phase> phases) {
-        this.creator = creator;
-        this.creation = creation;
-        this.removal = removal;
-        this.lang = lang;
-        this.modId = modId;
-        this.enabled = enabled;
-        this.name = name;
-        this.configuration = configuration;
-        this.assemblies = assemblies;
-        this.phases = phases;
-    }
+	public static Module read(Long moduleId) {
+		return find.ref(moduleId);
+	}
 
-    public Module(){
-        super();
-    }
+	public static List<Module> findAll() {
+		return find.all();
+	}
 
-    public static Model.Finder<Long, Module> find = new Model.Finder<Long, Module>(
-            Long.class, Module.class);
+	public User getCreator() {
+		return creator;
+	}
 
-    public static Module read(Long moduleId) {
-        return find.ref(moduleId);
-    }
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 
-    public static List<Module> findAll() {
-        return find.all();
-    }
+	public Long getModId() {
+		return modId;
+	}
 
-    public User getCreator() {
-        return creator;
-    }
+	public void setModId(Long modId) {
+		this.modId = modId;
+	}
 
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
+	public Boolean getEnabled() {
+		return enabled;
+	}
 
-    public Date getCreation() {
-        return creation;
-    }
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
 
-    public void setCreation(Date creation) {
-        this.creation = creation;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public Date getRemoval() {
-        return removal;
-    }
-
-    public void setRemoval(Date removal) {
-        this.removal = removal;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public Long getModId() {
-        return modId;
-    }
-
-    public void setModId(Long modId) {
-        this.modId = modId;
-    }
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Config getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(Config configuration) {
-        this.configuration = configuration;
-    }
-
-    public List<Assembly> getAssemblies() {
-        return assemblies;
-    }
-
-    public void setAssemblies(List<Assembly> assemblies) {
-        this.assemblies = assemblies;
-    }
-
-    public List<Phase> getPhases() {
-        return phases;
-    }
-
-    public void setPhases(List<Phase> phases) {
-        this.phases = phases;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 }

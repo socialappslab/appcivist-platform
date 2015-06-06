@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import models.LinkedAccount;
+import models.Membership;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
@@ -109,6 +110,8 @@ public class MyUsernamePasswordAuthProvider
 		public String name;
 
 		private Long userId;
+		
+		private String lang; 
 
 		public String validate() {
 			if (password == null || !password.equals(getRepeatPassword())) {
@@ -118,6 +121,9 @@ public class MyUsernamePasswordAuthProvider
 				// return
 				return Messages
 						.get("playauthenticate.password.signup.error.passwords_not_same");
+			} else if (lang == null) {
+				return Messages
+						.get("playauthenticate.password.signup.error.missing_lang");
 			}
 			return null;
 		}
@@ -136,6 +142,14 @@ public class MyUsernamePasswordAuthProvider
 
 		public void setUserId(Long userId) {
 			this.userId = userId;
+		}
+		
+		public void setLang(String lang) {
+			this.lang=lang;
+		}
+		
+		public String getLang() {
+			return this.lang;
 		}
 	}
 
@@ -310,6 +324,18 @@ public class MyUsernamePasswordAuthProvider
 		TokenAction.create(Type.PASSWORD_RESET, token, u);
 		return token;
 	}
+	
+	protected String generateNewMembershipInvitation(final User u) {
+		final String token = generateToken();
+		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, u);
+		return token;
+	}
+	
+	protected String generateNewMembershipRequest(final User u) {
+		final String token = generateToken();
+		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, u);
+		return token;
+	}
 
 	protected String getPasswordResetMailingSubject(final User user,
 			final Context ctx) {
@@ -355,29 +381,25 @@ public class MyUsernamePasswordAuthProvider
 			final Context ctx) {
 		return Messages.get("playauthenticate.password.verify_email.subject");
 	}
+	
+	protected String getMembershipInvitationEmail(String target) {
+		return Messages.get("membership.invitation.email.subject",target);
+	}
 
 	protected String getEmailTemplate(final String template,
 			final String langCode, final String url, final String token,
 			final String name, final String email) {
+		
 		Class<?> cls = null;
 		String ret = null;
-		String locale = "";
-
-		if (langCode.equals("it_IT") || langCode.equals("it-IT")) {
-			locale = "it";
-		} else if (langCode.equals("es_ES") || langCode.equals("es-ES")) {
-			locale = "es";
-		} else {
-			locale = langCode;
-		}
 
 		try {
-			cls = Class.forName(template + "_" + locale);
+			cls = Class.forName(template + "_" + langCode);
 		} catch (ClassNotFoundException e) {
 			Logger.warn("Template: '"
 					+ template
 					+ "_"
-					+ locale
+					+ langCode
 					+ "' was not found! Trying to use English fallback template instead.");
 		}
 		if (cls == null) {
@@ -462,6 +484,56 @@ public class MyUsernamePasswordAuthProvider
 		final String token = generateVerificationRecord(user);
 		final Body body = getVerifyEmailMailingBodyAfterSignup(token, user, ctx);
 		mailer.sendMail(subject, body, getEmailName(user));
+	}
+
+	protected Body getMembershipInvitationEmailBody(final String token,
+			final Membership m) {
+
+		// final boolean isSecure = getConfiguration().getBoolean(
+		// SETTING_KEY_VERIFICATION_LINK_SECURE);
+		// TODO find out how to return just json
+		// final String url = "";
+		// final String url = routes.Signup.verify(token).absoluteURL(
+		// ctx.request(), isSecure);
+		String baseURL = Play.application().configuration()
+				.getString("application.baseUrl");
+		final String url = baseURL + routes.Memberships.verifyMembership(m.getMembershipId(),token).url();
+
+		// TODO: use requests
+//		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
+//		final String langCode = lang.code();
+
+		User user = m.getUser();
+		String locale = user.getLocale();
+
+		// Checking if the language is in ISO format e.g., it-IT, it_IT
+		String[] isoLocale = locale.split("-");
+		if(isoLocale!=null && isoLocale.length>0)
+			locale = isoLocale[0]; // we will use only the short code for lang = "it", "es", "en" 
+		else {
+			isoLocale = locale.split("_");
+			if(isoLocale != null && isoLocale.length>0)
+				locale = isoLocale[0];
+		}
+		
+		// TODO: what we do with Users that don't have emails? 
+		String name = user.getName();
+		String email = user.getEmail();
+		final String html = getEmailTemplate(
+				"views.html.account.membership.invitation_email", locale, url, token,
+				name, email);
+		final String text = getEmailTemplate(
+				"views.html.account.membership.invitation_email", locale, url, token,
+				name, email);
+
+		return new Body(text, html);
+	}	
+	
+	public void sendMembershipInvitationEmail(final Membership m, String targetCollection) {
+		final String subject = getMembershipInvitationEmail(targetCollection);
+		final String token = generateNewMembershipInvitation(m.getUser());
+		final Body body = getMembershipInvitationEmailBody(token, m);
+		mailer.sendMail(subject, body, getEmailName(m.getUser()));
 	}
 
 	private String getEmailName(final User user) {

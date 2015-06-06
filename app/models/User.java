@@ -1,12 +1,27 @@
 package models;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import models.TokenAction.Type;
-
-import org.joda.time.DateTime;
+import play.Play;
+import play.db.ebean.Model;
+import play.db.ebean.Transactional;
+import utils.GlobalData;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
@@ -19,11 +34,6 @@ import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
 
-import play.Play;
-import play.db.ebean.Model;
-import play.db.ebean.Transactional;
-import providers.MyUsernamePasswordAuthUser;
-
 @Entity
 @Table(name="appcivist_user")
 public class User extends Model {
@@ -33,11 +43,12 @@ public class User extends Model {
 	 */
 	private static final long serialVersionUID = -1771934342960424445L;
 	@Id
+	@GeneratedValue
 	private Long userId;
 	private String email;
 	private String name;
 	private String username;
-	private String locale;
+	private String locale = GlobalData.DEFAULT_LOCALE;
 	
 	@Transient
 	private String sessionKey;
@@ -62,17 +73,12 @@ public class User extends Model {
 	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
 	private List<TokenAction> tokenActions;
 
-    public List<Membership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<Membership> memberships) {
-        this.memberships = memberships;
-    }
-
     @JsonIgnore
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
     private List<Membership> memberships = new ArrayList<Membership>();
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<Role> roles = new ArrayList<Role>();
 
 
     public User(){
@@ -97,13 +103,6 @@ public class User extends Model {
         this.tokenActions = tokenActions;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
 /*
     public List<Membership> getMemberships() {
         return memberships;
@@ -121,9 +120,13 @@ public class User extends Model {
         this.messages = messages;
     }
 
-    @JsonIgnore
-    @ManyToOne
-    private Role role;
+	public List<Membership> getMemberships() {
+		return memberships;
+	}
+
+	public void setMemberships(List<Membership> memberships) {
+		this.memberships = memberships;
+	}
 /*
     @OneToMany(cascade = CascadeType.ALL, mappedBy="target")
     private List<Membership> memberships = new ArrayList<Membership>();*/
@@ -139,8 +142,8 @@ public class User extends Model {
 //	@org.hibernate.annotations.Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
 //	private DateTime creationDate;
 	// TODO add soft deletion support (user.active = true/false) 
-//	@Column
-//	private boolean active;
+	@Column
+	private boolean active;
 	// TODO add role based authorization using deadbolt 
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	@JoinTable(name = "User_Security_Roles", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) })
@@ -154,15 +157,32 @@ public class User extends Model {
 	 * Basic Data Queries
 	 */
 	
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
 	/**
 	 * Static finder property
 	 */
 	public static Model.Finder<Long, User> find = new Model.Finder<Long, User>(
 			Long.class, User.class);
-	
+
+
 	/************************************************************************************************
 	 * Getters & Setters
 	 ************************************************************************************************/
+
+	public List<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
+	}
 	
 	public String getEmail() {
 		return email;
@@ -478,9 +498,9 @@ public class User extends Model {
 		/*
 		 * 9. Create the new user
 		 */
-		if (userId != null) {
-			user.update(userId);
-		} else {
+		if (userId != null)
+			User.update(userId); //TODO CHECK THIS PART AGAIN
+		else {
 //			user.setCreationDate(DateTime.now());
 			user.save();
 			user.refresh();
@@ -547,5 +567,4 @@ public class User extends Model {
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
-
 }
