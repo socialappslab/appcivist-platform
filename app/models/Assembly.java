@@ -48,7 +48,7 @@ public class Assembly extends AppCivistBaseModel {
     private MembershipRoles membershipRole = MembershipRoles.COORDINATOR;
 
 	// Relationships
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
 	private List<Category> interestCategories = new ArrayList<Category>();
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
@@ -261,6 +261,14 @@ public class Assembly extends AppCivistBaseModel {
 	public void setInterestCategories(List<Category> interests) {
 		this.interestCategories = interests;
 	}
+	
+	public void addInterestCategory(Category category) {
+        this.interestCategories.add(category);
+    }
+ 
+    public void removeInterestCategory(Category category) {
+        this.interestCategories.remove(category);
+    }
 
 	public List<Campaign> getCampaigns() {
 		return campaigns;
@@ -325,8 +333,6 @@ public class Assembly extends AppCivistBaseModel {
 		}
 
 		assembly.save();
-		assembly.saveManyToManyAssociations("interestCategories");
-		assembly.saveManyToManyAssociations("hashtags");
 		assembly.refresh();
 
 		if (assembly.getUrl() == null || assembly.getUrl() == "") {
@@ -341,8 +347,6 @@ public class Assembly extends AppCivistBaseModel {
 
 	public static Assembly createObject(Assembly assembly) {
 		assembly.save();
-		assembly.saveManyToManyAssociations("interestCategories");
-		assembly.saveManyToManyAssociations("hashtags");
 		return assembly;
 	}
 

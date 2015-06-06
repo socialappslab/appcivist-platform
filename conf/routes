@@ -15,7 +15,7 @@ GET     /public/*file                                controllers.Assets.at(path=
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
 # TODO: cleanup, remove what is not used and keep what's important
-GET     /api/user                                     controllers.Users.getUsers()
+GET     /api/user                                     controllers.Users.getUsers() 
 GET     /api/user/login                               controllers.Users.getLoginForm()
 GET     /api/user/:uid                                controllers.Users.getUser(uid: Long)
 GET     /api/user/loggedin/:uid                       controllers.Users.getCurrentUser(uid: Long)
@@ -43,9 +43,9 @@ GET     /api/authenticate/:provider                   controllers.AuthenticateLo
 # Assemblies API
 GET     /api/assemblies                               controllers.Assemblies.findAssemblies()
 POST    /api/assembly                                 controllers.Assemblies.createAssembly()
-# TODO GET    /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
-# TODO PUT    /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
-# TODO DELETE /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
+GET     /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
+PUT     /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
+DELETE  /api/assembly/:id                             controllers.Assemblies.findAssembly(id: Long)
 POST    /api/assembly/:id/membership/:type            controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
 GET     /api/assembly/:id/membership/:status          controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
 

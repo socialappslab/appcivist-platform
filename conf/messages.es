@@ -52,8 +52,10 @@ playauthenticate.reset_password.message.success.manual_login=Your password has b
 playauthenticate.change_password.error.passwords_not_same=Passwords do not match.
 playauthenticate.change_password.success=Password has been changed successfully.
 
-playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
-playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
+playauthenticate.password.signup.error.passwords_not_same=Las passwords no coinciden
+playauthenticate.password.login.unknown_user_or_pw=Usuario o password desconocidos
+playauthenticate.password.signup.error.missing_lang=Falta elegir un idioma
+
 
 playauthenticate.password.verify_signup.subject=Reminiscens: Completa tu subscripción
 playauthenticate.password.verify_email.subject=Reminiscens: Confirma tu dirección de correo electrónico

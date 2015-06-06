@@ -28,6 +28,8 @@ import utils.GlobalData;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
+import enums.ResponseStatus;
+
 @With(Headers.class)
 public class Assemblies extends Controller {
 
@@ -43,6 +45,20 @@ public class Assemblies extends Controller {
 	public static Result findAssemblies() {
 		AssemblyCollection assemblies = Assembly.findAll();
 		return ok(Json.toJson(assemblies));
+	}
+
+	/**
+	 * Return queries based on a query
+	 * 
+	 * @return models.AssemblyCollection
+	 */
+	@Security.Authenticated(Secured.class)
+	public static Result searchAssemblies(String query) {
+		// check the user who is accepting the invitation is
+		// TODO
+		TransferResponseStatus responseBody = new TransferResponseStatus();
+		responseBody.setStatusMessage("Not implemented yet");
+		return notFound(Json.toJson(responseBody));
 	}
 
 	/**
@@ -103,31 +119,53 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	// TODO GET /api/assemblies controllers.Assemblies.findAssemblies()
-	// TODO POST /api/assembly controllers.Assemblies.createAssembly()
-	// # TODO GET /api/assembly/:id controllers.Assemblies.findAssembly(id:
-	// Long)
-	// # TODO PUT /api/assembly/:id controllers.Assemblies.findAssembly(id:
-	// Long)
-	// # TODO DELETE /api/assembly/:id controllers.Assemblies.findAssembly(id:
-	// Long)
-	// POST /api/assembly/:id/membership/:type
-	// controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
-	// TODO GET /api/assembly/:id/membership/:status
-	// controllers.Assemblies.listMembershipsWithStatus(id: Long, status:
-	// String)
-	//
-	// # TODO
-	// #TODO POST /api/assembly/bulked
-	// controllers.Assemblies.createAssemblyBulked()
-	// #TODO POST /api/organization/:id/assembly
-	// controllers.Assemblies.createAssemblyForOrganization()
-	// #TODO GET /api/assembly/:id
-	// controllers.Assemblies.exportAssembly(assemblyId: Long)
-	//
-	// # Deprecated, convert to ServiceAssemblies
-	// TODO GET /api/assembly/:aid/issues controllers.Assemblies.findIssues(aid:
-	// Long)
+	@Security.Authenticated(Secured.class)
+	public static Result findAssembly(Long id) {
+		Assembly a = Assembly.read(id);
+		return a != null ? ok(Json.toJson(a))
+				: notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA,
+						"No assembly with ID = " + id)));
+	}
+
+	@Security.Authenticated(Secured.class)
+	public static Result deleteAssembly(Long id) {
+		Assembly.delete(id);
+		return ok();
+	}
+
+	@Security.Authenticated(Secured.class)
+	public static Result updateAssembly(Long id) {
+		// 1. read the new group data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
+
+		if (newAssemblyForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+					newAssemblyForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			Assembly newAssembly = newAssemblyForm.get();
+
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			newAssembly.setAssemblyId(id);
+			newAssembly.update();
+
+			// TODO: return URL of the new group
+			Logger.info("Updating assembly");
+			Logger.debug("=> " + newAssemblyForm.toString());
+
+			responseBody.setNewResourceId(newAssembly.getAssemblyId());
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.ASSEMBLY_CREATE_MSG_SUCCESS,
+					newAssembly.getName()));
+			responseBody.setNewResourceURL(GlobalData.ASSEMBLY_BASE_PATH + "/"
+					+ newAssembly.getAssemblyId());
+
+			return ok(Json.toJson(responseBody));
+		}
+	}
 
 	@Security.Authenticated(Secured.class)
 	public static Result createAssemblyMembership(Long id, String type) {

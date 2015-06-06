@@ -110,6 +110,8 @@ public class MyUsernamePasswordAuthProvider
 		public String name;
 
 		private Long userId;
+		
+		private String lang; 
 
 		public String validate() {
 			if (password == null || !password.equals(getRepeatPassword())) {
@@ -119,6 +121,9 @@ public class MyUsernamePasswordAuthProvider
 				// return
 				return Messages
 						.get("playauthenticate.password.signup.error.passwords_not_same");
+			} else if (lang == null) {
+				return Messages
+						.get("playauthenticate.password.signup.error.missing_lang");
 			}
 			return null;
 		}
@@ -137,6 +142,14 @@ public class MyUsernamePasswordAuthProvider
 
 		public void setUserId(Long userId) {
 			this.userId = userId;
+		}
+		
+		public void setLang(String lang) {
+			this.lang=lang;
+		}
+		
+		public String getLang() {
+			return this.lang;
 		}
 	}
 
@@ -495,8 +508,12 @@ public class MyUsernamePasswordAuthProvider
 
 		// Checking if the language is in ISO format e.g., it-IT, it_IT
 		String[] isoLocale = locale.split("-");
-		if(isoLocale.length>0) {
+		if(isoLocale!=null && isoLocale.length>0)
 			locale = isoLocale[0]; // we will use only the short code for lang = "it", "es", "en" 
+		else {
+			isoLocale = locale.split("_");
+			if(isoLocale != null && isoLocale.length>0)
+				locale = isoLocale[0];
 		}
 		
 		// TODO: what we do with Users that don't have emails? 
