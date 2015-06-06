@@ -9,7 +9,6 @@ import play.db.ebean.Model;
 import javax.persistence.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -24,12 +23,13 @@ public class WorkingGroup extends AppCivistBaseModel {
     private Long groupId;
     private String name;
     private String text;
-    private Date expiration;
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
     private MembershipRoles membershipRole = MembershipRoles.MEMBER;
     private User creator;
 
+    private Long testField;
+    
     @ManyToMany(cascade=CascadeType.ALL)
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
@@ -40,7 +40,9 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonManagedReference
 	private List<Config> workingGroupConfigs = new ArrayList<Config>();
 
-    public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
+	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
+	// TODO: all be connected in a P2P architecture. 
+	public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
 
     public static WorkingGroup read(Long workingGroupId) {
@@ -106,14 +108,6 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public Date getExpiration() {
-        return expiration;
-    }
-
-    public void setExpiration(Date expiration) {
-        this.expiration = expiration;
     }
 
     public List<Assembly> getAssemblies() {

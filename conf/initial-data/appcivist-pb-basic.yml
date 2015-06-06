@@ -1,20 +1,16 @@
 # AppCivist Test Data
 ---
-
+##############################################################################################################################################################################################
 # Roles
   - &r1 !!models.Role
-    roleId:     9999
     name:       "ADMIN"
   - &r2 !!models.Role
-    roleId:     8888
     name:       "USER"
   - &r3 !!models.Role
-    roleId:     7777
     name:       "COORDINATOR"
   - &r4 !!models.Role
-    roleId:     5555
     name:       "MEMBER"
-
+##############################################################################################################################################################################################
 # Categories
   - &cat1 !!models.Category
     title: "Streets and Transportation"
@@ -34,10 +30,9 @@
   - &cat6 !!models.Category
     title: "Education"
     description: "'Education is the most powerful weapon which you can use to change the world'. Indeed Mr. Mandela."
-
+##############################################################################################################################################################################################
 # Users (Testing Users)
   - &u1 !!models.User
-    userId:     9991
     email:      bob@example.com
     name:       Bob
     username:   bob
@@ -47,12 +42,10 @@
       - *r2
     linkedAccounts:
     - &ua1 !!models.LinkedAccount
-      accountId: 1
       providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
       providerKey: password
       user: *u1
   - &u2 !!models.User
-    userId:     9992
     email:      jane@example.com
     name:       Jane
     username:   jane
@@ -62,12 +55,10 @@
       - *r2
     linkedAccounts:
     - &ua2 !!models.LinkedAccount
-      accountId: 2
       providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
       providerKey: password
       user: *u2
   - &u3 !!models.User
-    userId:     9993
     email:      jeff@example.com
     name:       Jeff
     username:   jeff
@@ -77,13 +68,10 @@
       - *r2
     linkedAccounts:
     - &ua3 !!models.LinkedAccount
-      accountId: 3
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u3
-
   - &u4 !!models.User
-    userId:     9994
     email:      sara@example.com
     name:       Sara
     username:   sara
@@ -92,12 +80,10 @@
       - *r2
     linkedAccounts:
     - &ua4 !!models.LinkedAccount
-      accountId: 4
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u4
   - &u5 !!models.User
-    userId:     9995
     email:      alicia@example.com
     name:       Alicia
     username:   alicia
@@ -106,12 +92,10 @@
       - *r2
     linkedAccounts:
     - &ua5 !!models.LinkedAccount
-      accountId: 5
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u5
   - &u6 !!models.User
-    userId:     9996
     email:      ted@example.com
     name:       Ted
     username:   ted
@@ -120,12 +104,10 @@
       - *r2
     linkedAccounts:
     - &ua6 !!models.LinkedAccount
-      accountId: 6
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u6
   - &u7 !!models.User
-    userId:     9997
     email:      leia@example.com
     name:       Leia
     username:   leia
@@ -134,12 +116,10 @@
       - *r2
     linkedAccounts:
     - &ua7 !!models.LinkedAccount
-      accountId: 7
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u7
   - &u8 !!models.User
-    userId:     9998
     email:      luke@example.com
     name:       Luke
     username:   luke
@@ -148,12 +128,10 @@
       - *r2
     linkedAccounts:
     - &ua8 !!models.LinkedAccount
-      accountId: 8
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u8
   - &u9 !!models.User
-    userId:     9999
     email:      ahsoka@example.com
     name:       Ahsoka
     username:   ahsoka
@@ -162,12 +140,10 @@
       - *r2
     linkedAccounts:
     - &ua9 !!models.LinkedAccount
-      accountId: 9
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u9
   - &u10 !!models.User
-    userId:     9990
     email:      jeff@example.com
     name:       Jeff
     username:   jeff
@@ -176,11 +152,10 @@
       - *r2
     linkedAccounts:
     - &ua10 !!models.LinkedAccount
-      accountId: 10
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u10
-
+##############################################################################################################################################################################################
 # Configuration Definitions
   - &config1 !!models.ConfigDefinition
     key: "maximum.contributions"
@@ -207,7 +182,7 @@
     valueType: String
     description: "Unranked, Ranked, Range, Distributed" 
     category: "Phase Definition"
-    
+##############################################################################################################################################################################################    
 # Phase Definitions
   - &pd1 !!models.PhaseDefinition
     name: "Proposal Making"
@@ -236,7 +211,7 @@
     - &phaseConfig5 !!models.RequiredPhaseConfiguration
       phaseDefinition: *pd4
       configDefinition: *config5
-
+##############################################################################################################################################################################################
 # CampaignTypes
   - &ct1 !!models.CampaignType
     nameKey: "PARTICIPATORY_BUDGETING"
@@ -246,10 +221,9 @@
       - *pd2
       - *pd3
       - *pd4
-
+##############################################################################################################################################################################################
 # Assemblies
   - &a1 !!models.Assembly
-    assemblyId: 9999
     creator: *u1
     name: "Participatory Budgeting Vallejo - City Council Assembly"
     description: Participatory Budgeting of the Municipality of Vallejo for the year 2015
@@ -290,8 +264,7 @@
             startDate: "2015-09-01"
             endDate: "2015-10-15"
             campaign: *c1
-            definition: *pd4
-            
+            definition: *pd4          
   - &a2 !!models.Assembly
     creator: *u1
     name: "Neighboors United for Participatory Budgeting in Vallejo"
@@ -314,11 +287,10 @@
     interestCategories: 
       - *cat2
       - *cat3
-
+##############################################################################################################################################################################################
 # Working Groups
   - &wg1 !!models.WorkingGroup
     creator: *u1
-    groupId: 1111
     name: "Advisory Commitee 2015" 
     text: Commitee in charge of managing contributions in the PB process 2015 for Vallejo
     isPublic: false
@@ -327,7 +299,6 @@
       - *a1
   - &wg2 !!models.WorkingGroup
     creator: *u1
-    groupId: 2222
     name: "Neighborhood 13 - Category Education" 
     text: Group of neighbors from district 13, focused on Education
     isPublic: true
@@ -336,7 +307,6 @@
       - *a2
   - &wg3 !!models.WorkingGroup
     creator: *u1
-    groupId: 3333
     name: "Neighborhood 14, Category Parks" 
     text: Group of neighbors from district 13, focused on Parks
     isPublic: true
@@ -345,98 +315,119 @@
       - *a2
   - &wg4 !!models.WorkingGroup
     creator: *u1
-    groupId: 4444
     name: "AntiEviction Proposals Team" 
     text: Team in charge of turning Ideas into proposals
     isPublic: false
     acceptRequests: true
     assemblies: 
       - *a3
-
+##############################################################################################################################################################################################
 # Assembly Memberships
   - &am1 !!models.AssemblyMembership
-    membershipId: 1111
-    status: ACCEPTED
-    creator: *u1
+    assembly: *a1
     user: *u1
+    creator: *u1
+    status: ACCEPTED
     roles: 
       - *r3
       - *r4
-    assembly: *a1
   - &am2 !!models.AssemblyMembership
-    membershipId: 2222
     status: ACCEPTED
     creator: *u1
     user: *u2
     roles: 
       - *r4
     assembly: *a1
-  - &am1 !!models.AssemblyMembership
-    membershipId: 3333
-    status: ACCEPTED
-    creator: *u1
+  - &am3 !!models.AssemblyMembership
+    assembly: *a1
     user: *u3
+    creator: *u1
+    status: ACCEPTED
     roles: 
       - *r4
-    assembly: *a1
-
+  - &am4 !!models.AssemblyMembership
+    assembly: *a2
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am5 !!models.AssemblyMembership
+    assembly: *a3
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+##############################################################################################################################################################################################
 # Group Memberships
   - &gm1 !!models.GroupMembership
-    membershipId: 4444
-    status: ACCEPTED
-    creator: *u1
     user: *u3
+    workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
     roles: 
       - *r3
       - *r4
-    workingGroup: *wg1
   - &gm2 !!models.GroupMembership
-    membershipId: 5555
-    status: ACCEPTED
-    creator: *u1
     user: *u4
-    roles: 
-      - *r4
     workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
   - &gm3 !!models.GroupMembership
-    membershipId: 6666
-    status: ACCEPTED
-    creator: *u1
-    user: *u3
-    roles: 
-      - *r3
-      - *r4
     workingGroup: *wg2
-  - &gm4 !!models.GroupMembership
-    membershipId: 7777
-    status: ACCEPTED
-    creator: *u1
     user: *u3
-    roles: 
-      - *r4
-    workingGroup: *wg3
-  - &gm5 !!models.GroupMembership
-    membershipId: 8888
-    status: ACCEPTED
     creator: *u1
-    user: *u4
-    roles: 
-      - *r4
-    workingGroup: *wg3
-  - &gm6 !!models.GroupMembership
-    membershipId: 9999
     status: ACCEPTED
-    creator: *u1
-    user: *u5
-    roles: 
-      - *r4
-    workingGroup: *wg3    
-  - &gm7 !!models.GroupMembership
-    membershipId: 9898
-    status: ACCEPTED
-    creator: *u1
-    user: *u6
     roles: 
       - *r3
       - *r4
+  - &gm4 !!models.GroupMembership
     workingGroup: *wg3
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm5 !!models.GroupMembership
+    workingGroup: *wg3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm6 !!models.GroupMembership
+    workingGroup: *wg3    
+    user: *u5
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm7 !!models.GroupMembership
+    workingGroup: *wg3
+    user: *u6
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.GroupMembership
+    workingGroup: *wg1    
+    user: *u3
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.GroupMembership
+    workingGroup: *wg3    
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4

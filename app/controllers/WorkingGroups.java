@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
+import enums.ResponseStatus;
 import models.User;
 import models.WorkingGroup;
 import models.transfer.TransferMembership;
@@ -35,10 +36,16 @@ public class WorkingGroups extends Controller {
 		return ok(Json.toJson(workingGroups));
 	}
 
-	// @Security.Authenticated(Secured.class)
+	// TODO make a read working group for non members
+	// TODO only members of the group can read the whole group
+	@Security.Authenticated(Secured.class)
 	public static Result findWorkingGroup(Long wGroupId) {
 		WorkingGroup workingGroup = WorkingGroup.read(wGroupId);
-		return ok(Json.toJson(workingGroup));
+		return workingGroup != null ? ok(Json.toJson(workingGroup))
+				: notFound(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.NODATA, "No group with ID = "
+										+ wGroupId)));
 	}
 
 	@Security.Authenticated(Secured.class)
@@ -119,7 +126,10 @@ public class WorkingGroups extends Controller {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
 			if (WorkingGroup.readByTitle(newWorkingGroup.getName()) > 0) {
-				Logger.info("Working group already exists");
+				String status_message = "Working group already exists with the same name already exists";
+				Logger.info(status_message);
+				responseBody.setResponseStatus(ResponseStatus.UNAUTHORIZED);
+				responseBody.setStatusMessage(status_message);
 			} else {
 				newWorkingGroup.setGroupId(groupId);
 				newWorkingGroup.update();

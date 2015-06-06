@@ -21,6 +21,7 @@ import models.TokenAction.Type;
 import play.Play;
 import play.db.ebean.Model;
 import play.db.ebean.Transactional;
+import utils.GlobalData;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
@@ -47,7 +48,7 @@ public class User extends Model {
 	private String email;
 	private String name;
 	private String username;
-	private String locale;
+	private String locale = GlobalData.DEFAULT_LOCALE;
 	
 	@Transient
 	private String sessionKey;
