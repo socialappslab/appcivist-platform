@@ -12,6 +12,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -22,6 +24,8 @@ import play.Play;
 import play.db.ebean.Model;
 import play.db.ebean.Transactional;
 import utils.GlobalData;
+import be.objectify.deadbolt.core.models.Permission;
+import be.objectify.deadbolt.core.models.Subject;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
@@ -36,7 +40,7 @@ import com.feth.play.module.pa.user.PicturedIdentity;
 
 @Entity
 @Table(name="appcivist_user")
-public class User extends Model {
+public class User extends Model implements Subject {
 
 	/**
 	 * 
@@ -48,23 +52,20 @@ public class User extends Model {
 	private String email;
 	private String name;
 	private String username;
-	private String locale = GlobalData.DEFAULT_LOCALE;
-	
-	@Transient
-	private String sessionKey;
-	
+	private String language = GlobalData.DEFAULT_LANGUAGE;	
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
-
-	@Column(name = "username_verified")
-	private Boolean usernameVerified;
-
 	@Column(name = "profile_pic")
 	private String profilePic;
+	@Column
+	private boolean active;
+	// TODO create a transfer model for user and place the session key only there
+	@Transient
+	private String sessionKey;
 
-	@Column(name = "conf_type")
-	private String confType;
-
+	/*
+	 * Relationships
+	 */
 	@JsonIgnore
 	@OneToMany(mappedBy="user", cascade = CascadeType.ALL)
 	private List<LinkedAccount> linkedAccounts;
@@ -77,187 +78,170 @@ public class User extends Model {
     @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
     private List<Membership> memberships = new ArrayList<Membership>();
 
+    //	@ManyToMany(cascade = CascadeType.ALL)
+
 	@ManyToMany(cascade = CascadeType.ALL)
-	private List<Role> roles = new ArrayList<Role>();
-
-
-    public User(){
-		super();
-	}
-
-    //New addings
-
-    public Boolean getEmailVerified() {
-        return emailVerified;
-    }
-
-    public Boolean getUsernameVerified() {
-        return usernameVerified;
-    }
-
-    public List<TokenAction> getTokenActions() {
-        return tokenActions;
-    }
-
-    public void setTokenActions(List<TokenAction> tokenActions) {
-        this.tokenActions = tokenActions;
-    }
-
-/*
-    public List<Membership> getMemberships() {
-        return memberships;
-    }
-
-    public void setMemberships(List<Membership> memberships) {
-        this.memberships = memberships;
-    }
-*/
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
-
-	public List<Membership> getMemberships() {
-		return memberships;
-	}
-
-	public void setMemberships(List<Membership> memberships) {
-		this.memberships = memberships;
-	}
-/*
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="target")
-    private List<Membership> memberships = new ArrayList<Membership>();*/
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="targetUser")
-    private List<Message> messages = new ArrayList<Message>();
-
-
-	// TODO Add datetime and profile information (creation date, birthdate, etc.) 
-//  Additional properties that can be interesting
-//	@Temporal(TemporalType.DATE)
-//	@Column
-//	@org.hibernate.annotations.Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-//	private DateTime creationDate;
-	// TODO add soft deletion support (user.active = true/false) 
-	@Column
-	private boolean active;
-	// TODO add role based authorization using deadbolt 
-//	@ManyToMany(cascade = CascadeType.ALL)
-//	@JoinTable(name = "User_Security_Roles", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) })
-//	private List<SecurityRole> roles;
-//
-//	@ManyToMany(cascade = CascadeType.ALL)
-//	@JoinTable(name = "User_User_Permission", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, inverseJoinColumns = { @JoinColumn(name = "permission_id", referencedColumnName = "permission_id", updatable = true, insertable = true) })
-//	private List<UserPermission> permissions;
+	@JoinTable(name = "User_Security_Roles", 
+		joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, 
+		inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) }
+	)
+	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
 	
-	/*
-	 * Basic Data Queries
-	 */
-	
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "User_User_Permission", 
+		joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, 
+		inverseJoinColumns = { @JoinColumn(name = "permission_id", referencedColumnName = "permission_id", updatable = true, insertable = true) }
+	)
+    private List<UserPermission> permissions = new ArrayList<UserPermission>();
+    
 	/**
 	 * Static finder property
 	 */
 	public static Model.Finder<Long, User> find = new Model.Finder<Long, User>(
 			Long.class, User.class);
-
+	
+    public User(){
+		super();
+	}
+	
 
 	/************************************************************************************************
 	 * Getters & Setters
 	 ************************************************************************************************/
 
-	public List<Role> getRoles() {
-		return roles;
+	
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setRoles(List<Role> roles) {
-		this.roles = roles;
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
-	
+
+
 	public String getEmail() {
 		return email;
 	}
+
 
 	public void setEmail(String email) {
 		this.email = email;
 	}
 
+
 	public String getName() {
 		return name;
 	}
+
 
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long id) {
-		this.userId = id;
-	}
-		
-	public String getIdentifier() {
-		return Long.toString(userId);
-	}
-	
-	public Boolean isEmailVerified() {
-		return emailVerified;
-	}
-
-	public void setEmailVerified(Boolean emailVerified) {
-		this.emailVerified = emailVerified;
-	}
-
-	public Boolean isUsernameVerified() {
-		return usernameVerified;
-	}
-
-	public void setUsernameVerified(Boolean usernameVerified) {
-		this.usernameVerified = usernameVerified;
-	}
 
 	public String getUsername() {
 		return username;
 	}
 
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
+
+	public String getLanguage() {
+		return language;
+	}
+
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+
+	public Boolean getEmailVerified() {
+		return emailVerified;
+	}
+
+
+	public Boolean isEmailVerified() {
+		return emailVerified;
+	}
+
+
+	public void setEmailVerified(Boolean emailVerified) {
+		this.emailVerified = emailVerified;
+	}
+
+
+	public boolean isActive() {
+		return active;
+	}
+
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
+
+	public void setSessionKey(String sessionKey) {
+		this.sessionKey = sessionKey;
+	}
+
+
+	public List<TokenAction> getTokenActions() {
+		return tokenActions;
+	}
+
+
+	public void setTokenActions(List<TokenAction> tokenActions) {
+		this.tokenActions = tokenActions;
+	}
+
+
+	public List<Membership> getMemberships() {
+		return memberships;
+	}
+
+
+	public void setMemberships(List<Membership> memberships) {
+		this.memberships = memberships;
+	}
+
+
+	public List<SecurityRole> getRoles() {
+		return roles;
+	}
+
+
+	public void setRoles(List<SecurityRole> roles) {
+		this.roles = roles;
+	}
+
 
 	public String getProfilePic() {
 		return profilePic;
 	}
 
+
 	public void setProfilePic(String profilePic) {
 		this.profilePic = profilePic;
 	}
 
-	public String getConfType() {
-		return confType;
+	
+	@Override
+	public List<? extends Permission> getPermissions() {
+		return this.permissions;
 	}
-
-	public void setConfType(String confType) {
-		this.confType = confType;
-	}
-
-	public String getLocale() {
-		return locale;
-	}
-
-	public void setLocale(String locale) {
-		this.locale = locale;
+	
+	public void setPermissions(List<UserPermission> permissions) {
+		this.permissions = permissions;
 	}
 
 	public List<LinkedAccount> getLinkedAccounts() {
@@ -269,6 +253,11 @@ public class User extends Model {
 	}
 
 
+	@Override
+	public String getIdentifier() {
+		return this.username;
+	}
+	
 	/************************************************************************************************
 	 * Basic Persistence queries
 	 ************************************************************************************************/
@@ -483,17 +472,17 @@ public class User extends Model {
 
 		/*
 		 * 7. Generate the username
+		 * TODO add username to the signup form
 		 */
 
 		user.setUsername(models.User.generateUsername(user.getEmail()));
-		user.setUsernameVerified(false);
 		
 		/*
 		 * 8. Set language of user
 		 */
 		// TODO get the default language from request		
-		String userLocale = user.getLocale() == null ? Play.application().configuration().getString("default.language") : user.getLocale();		
-		user.setLocale(userLocale);
+		String userLanguage = user.getLanguage() == null ? Play.application().configuration().getString("default.language") : user.getLanguage();		
+		user.setLanguage(userLanguage);
 		
 		/*
 		 * 9. Create the new user
@@ -550,21 +539,12 @@ public class User extends Model {
 	 * Other DB queries
 	 ************************************************************************************************/
 	
-	public static String readLocaleByPersonId(Long personId) {
-		List<User> p = find.where().eq("person.personId", personId).findList();
-		if (p!=null && !p.isEmpty()) {
-			User u = p.get(0);
-			return u.getLocale();
-		} else {
-			return null;
-		}
-	}
+    public static User findByUserName(String userName)
+    {
+        return find.where()
+                   .eq("username",
+                       userName)
+                   .findUnique();
+    }
 
-	public String getSessionKey() {
-		return sessionKey;
-	}
-
-	public void setSessionKey(String sessionKey) {
-		this.sessionKey = sessionKey;
-	}
 }

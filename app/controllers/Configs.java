@@ -4,7 +4,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 
 import http.Headers;
 import models.Config;
-import models.Role;
 import models.User;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -99,7 +98,7 @@ public class Configs extends Controller {
             Config newConfig = newConfigForm.get();
 
             if(newConfig.getLang() == null)
-                newConfig.setLang(configCreator.getLocale());
+                newConfig.setLang(configCreator.getLanguage());
 
             TransferResponseStatus responseBody = new TransferResponseStatus();
 

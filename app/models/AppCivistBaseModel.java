@@ -20,7 +20,7 @@ public class AppCivistBaseModel extends Model {
 	 */
 	private Date creation = new Date(); // by Default, the creation is NOW
 	private Date lastUpdate = new Date(); // by Default, the creation is NOW
-	private String lang = GlobalData.DEFAULT_LOCALE; // defaults language to English 
+	private String lang = GlobalData.DEFAULT_LANGUAGE; // defaults language to English 
 													 // TODO get the language automatically from 
 													 // from the requests that creates it
 	

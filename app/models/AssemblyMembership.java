@@ -35,12 +35,12 @@ public class AssemblyMembership extends Membership {
 		super();
 	}
 	public AssemblyMembership(Long expiration, MembershipStatus status,
-			User creator, User user, List<Role> roles, String membershipType) {
+			User creator, User user, List<SecurityRole> roles, String membershipType) {
 		super(expiration, status, creator, user, roles, membershipType);
 	}
 	
 	public AssemblyMembership(Long expiration, MembershipStatus status,
-			User creator, User user, List<Role> roles, String membershipType, 
+			User creator, User user, List<SecurityRole> roles, String membershipType, 
 			Assembly assembly) {
 		super(expiration, status, creator, user, roles, membershipType);
 		this.assembly = assembly;

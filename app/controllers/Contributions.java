@@ -64,7 +64,7 @@ public class Contributions extends Controller{
             Contribution newContribution = newContributionForm.get();
 
             if(newContribution.getLang() == null)
-                newContribution.setLang(contributionCreator.getLocale());
+                newContribution.setLang(contributionCreator.getLanguage());
 
             TransferResponseStatus responseBody = new TransferResponseStatus();
 

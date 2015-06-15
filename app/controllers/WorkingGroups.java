@@ -75,7 +75,7 @@ public class WorkingGroups extends Controller {
 			WorkingGroup newWorkingGroup = newWorkingGroupForm.get();
 
 			if (newWorkingGroup.getLang() == null)
-				newWorkingGroup.setLang(groupCreator.getLocale());
+				newWorkingGroup.setLang(groupCreator.getLanguage());
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 

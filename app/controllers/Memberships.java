@@ -8,7 +8,7 @@ import models.Assembly;
 import models.AssemblyMembership;
 import models.GroupMembership;
 import models.Membership;
-import models.Role;
+import models.SecurityRole;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
@@ -36,7 +36,7 @@ public class Memberships extends Controller {
 
 	public static final Form<TransferMembership> TRANSFER_MEMBERSHIP_FORM = form(TransferMembership.class);
 	public static final Form<Membership> MEMBERSHIP_FORM = form(Membership.class);
-	public static final Form<Role> ROLE_FORM = form(Role.class);
+	public static final Form<SecurityRole> ROLE_FORM = form(SecurityRole.class);
 
 	/**
 	 * The membership invitation/request timeout in seconds Defaults to 4 weeks
@@ -86,7 +86,7 @@ public class Memberships extends Controller {
 	public static Result readMembership(Long id) {
 		Membership m = Membership.read(id);
 		if (m != null) {
-			List<Role> roles = m.getRoles();
+			List<SecurityRole> roles = m.getRoles();
 			Logger.debug("Membership roles: #" +roles.size() +" = "+ roles.toString());
 			return ok(Json.toJson(m));
 		} else {
@@ -107,7 +107,7 @@ public class Memberships extends Controller {
 	public static Result readMembershipRoles(Long id) {
 		Membership m = Membership.read(id);
 		if (m != null) {
-			List<Role> roles = m.getRoles();
+			List<SecurityRole> roles = m.getRoles();
 			return roles != null ? ok(Json.toJson(roles)) : notFound(Json
 					.toJson(new TransferResponseStatus(
 							ResponseStatus.NOTAVAILABLE,
@@ -151,7 +151,7 @@ public class Memberships extends Controller {
 			}
 
 			if (authorization) {
-				final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
+				final Form<SecurityRole> newRoleForm = ROLE_FORM.bindFromRequest();
 				if (newRoleForm.hasErrors()) {
 					TransferResponseStatus responseBody = new TransferResponseStatus();
 					responseBody
@@ -159,13 +159,13 @@ public class Memberships extends Controller {
 									+ newRoleForm.errorsAsJson());
 					return badRequest(Json.toJson(responseBody));
 				} else {
-					Role newRole = newRoleForm.get();
+					SecurityRole newRole = newRoleForm.get();
 					Long roleId = newRole.getRoleId();
 					String roleName = newRole.getName();
 
-					Role role = Role.read(roleId);
+					SecurityRole role = SecurityRole.read(roleId);
 					if (role == null) {
-						role = Role.readByTitle(roleName);
+						role = SecurityRole.findByName(roleName);
 					}
 
 					if (role != null) {
@@ -231,7 +231,7 @@ public class Memberships extends Controller {
 			if (authorization) {
 				
 				if(m.getRoles().size()>1) {
-					Role membershipRole = Role.read(rid);
+					SecurityRole membershipRole = SecurityRole.read(rid);
 					m.getRoles().remove(membershipRole);
 					m.update();
 					m.refresh();
@@ -403,7 +403,7 @@ public class Memberships extends Controller {
 		}
 
 		m.setUser(targetUser);
-		m.setLang(targetUser.getLocale());
+		m.setLang(targetUser.getLanguage());
 		m.setExpiration((System.currentTimeMillis() + 1000 * MEMBERSHIP_EXPIRATION_TIMEOUT));
 		if(targetCollection.toUpperCase().equals("GROUP")) {
 			((GroupMembership) m).setWorkingGroup(targetWorkingGroup);
@@ -416,9 +416,9 @@ public class Memberships extends Controller {
 		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? GroupMembership.checkIfExists(m) :
 				AssemblyMembership.checkIfExists(m);
 
-		Role role = Role.readByTitle(MembershipRoles.MEMBER.toString());
+		SecurityRole role = SecurityRole.findByName(MembershipRoles.MEMBER.toString());
 		if(defaultRoleId != null) 
-			role = Role.read(defaultRoleId);
+			role = SecurityRole.read(defaultRoleId);
 		else if (defaultRoleName != null)
 			m.getRoles().add(role);
 
@@ -534,7 +534,7 @@ public class Memberships extends Controller {
 	protected static Boolean requestorHasRole(User requestor, Membership m,
 			MembershipRoles role) {
 		if (m != null) {
-			for (Role requestorRole : m.getRoles()) {
+			for (SecurityRole requestorRole : m.getRoles()) {
 				if (requestorRole.getName().equals(role.toString())) {
 					return true;
 				}

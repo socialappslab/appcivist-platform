@@ -173,7 +173,7 @@ public class MyUsernamePasswordAuthProvider
 			final MyUsernamePasswordAuthUser user) {
 		final User u = User.findByUsernamePasswordIdentity(user);
 		if (u != null) {
-			if (u.isEmailVerified()) {
+			if (u.getEmailVerified()) {
 			   // This user exists, has its email validated and is active
 			   return SignupResult.USER_EXISTS;
 			} else {
@@ -449,8 +449,8 @@ public class MyUsernamePasswordAuthProvider
 
 		String locale = langCode;
 
-		if (user.getLocale() != null) {
-			locale = user.getLocale();
+		if (user.getLanguage() != null) {
+			locale = user.getLanguage();
 		}
 
 		if (locale.equals("it_IT") || locale.equals("it-IT")
@@ -504,7 +504,7 @@ public class MyUsernamePasswordAuthProvider
 //		final String langCode = lang.code();
 
 		User user = m.getUser();
-		String locale = user.getLocale();
+		String locale = user.getLanguage();
 
 		// Checking if the language is in ISO format e.g., it-IT, it_IT
 		String[] isoLocale = locale.split("-");

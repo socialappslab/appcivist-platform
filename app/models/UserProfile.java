@@ -9,7 +9,7 @@ import javax.persistence.Id;
 import java.util.Date;
 
 @Entity
-public class Profile extends AppCivistBaseModel {
+public class UserProfile extends AppCivistBaseModel {
 	/**
 	 * 
 	 */
@@ -25,7 +25,7 @@ public class Profile extends AppCivistBaseModel {
 	private String address;
 	private User creator;
 
-	public Profile(User creator, String name, String middleName, String lastName,
+	public UserProfile(User creator, String name, String middleName, String lastName,
 			Date birthdate, String address) {
 		this.creator = creator;
 		this.name = name;
@@ -35,10 +35,10 @@ public class Profile extends AppCivistBaseModel {
 		this.address = address;
 	}
 
-	public static Model.Finder<Long, Profile> find = new Model.Finder<Long, Profile>(
-			Long.class, Profile.class);
+	public static Model.Finder<Long, UserProfile> find = new Model.Finder<Long, UserProfile>(
+			Long.class, UserProfile.class);
 
-	public static Profile read(Long profileId) {
+	public static UserProfile read(Long profileId) {
 		return find.ref(profileId);
 	}
 

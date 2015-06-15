@@ -95,7 +95,7 @@ public class CampaignPhases extends Controller{
             CampaignPhase newCampaignPhase = newCampaignPhaseForm.get();
 
             if(newCampaignPhase.getLang() == null)
-                newCampaignPhase.setLang(campaignPhaseCreator.getLocale());
+                newCampaignPhase.setLang(campaignPhaseCreator.getLanguage());
 
             TransferResponseStatus responseBody = new TransferResponseStatus();
 
