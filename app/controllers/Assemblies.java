@@ -25,6 +25,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
 import utils.GlobalData;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
@@ -41,7 +42,8 @@ public class Assemblies extends Controller {
 	 * 
 	 * @return models.AssemblyCollection
 	 */
-	@Security.Authenticated(Secured.class)
+	//@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result findAssemblies() {
 		AssemblyCollection assemblies = Assembly.findAll();
 		return ok(Json.toJson(assemblies));
@@ -97,7 +99,7 @@ public class Assemblies extends Controller {
 			// method for this in each model)
 			newAssembly.setCreator(groupCreator);
 			if (newAssembly.getLang() == null)
-				newAssembly.setLang(groupCreator.getLocale());
+				newAssembly.setLang(groupCreator.getLanguage());
 
 			// TODO: check if assembly with same title exists
 			// if not add it

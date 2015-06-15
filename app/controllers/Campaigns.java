@@ -98,7 +98,7 @@ public class Campaigns extends Controller{
             Campaign newCampaign = newCampaignForm.get();
 
             if(newCampaign.getLang() == null)
-                newCampaign.setLang(campaignCreator.getLocale());
+                newCampaign.setLang(campaignCreator.getLanguage());
 
             TransferResponseStatus responseBody = new TransferResponseStatus();
 

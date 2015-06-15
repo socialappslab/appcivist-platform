@@ -25,12 +25,12 @@ public class GroupMembership extends Membership {
 		super();
 	}
 	public GroupMembership(Long expiration, MembershipStatus status,
-			User creator, User user, List<Role> roles, String membershipType) {
+			User creator, User user, List<SecurityRole> roles, String membershipType) {
 		super(expiration, status, creator, user, roles, membershipType);
 	}
 	
 	public GroupMembership(Long expiration, MembershipStatus status,
-			User creator, User user, List<Role> roles, String membershipType, 
+			User creator, User user, List<SecurityRole> roles, String membershipType, 
 			WorkingGroup workingGroup) {
 		super(expiration, status, creator, user, roles, membershipType);
 		this.workingGroup = workingGroup;

@@ -306,19 +306,6 @@ create table note (
   constraint pk_note primary key (note_id))
 ;
 
-create table permission (
-  permit_id                 bigint not null,
-  creation                  timestamp,
-  last_update               timestamp,
-  lang                      varchar(255),
-  removal                   timestamp,
-  removed                   boolean,
-  permit                    integer,
-  creator_user_id           bigint,
-  constraint ck_permission_permit check (permit in (0,1,2,3)),
-  constraint pk_permission primary key (permit_id))
-;
-
 create table phase_definition (
   phase_definition_id       bigint not null,
   creation                  timestamp,
@@ -328,21 +315,6 @@ create table phase_definition (
   removed                   boolean,
   name                      varchar(255),
   constraint pk_phase_definition primary key (phase_definition_id))
-;
-
-create table profile (
-  profile_id                bigint not null,
-  creation                  timestamp,
-  last_update               timestamp,
-  lang                      varchar(255),
-  removal                   timestamp,
-  removed                   boolean,
-  name                      varchar(255),
-  middle_name               varchar(255),
-  last_name                 varchar(255),
-  birthdate                 timestamp,
-  address                   varchar(255),
-  constraint pk_profile primary key (profile_id))
 ;
 
 create table properties (
@@ -393,15 +365,10 @@ create table resource (
   constraint pk_resource primary key (resource_id))
 ;
 
-create table role (
+create table security_role (
   role_id                   bigint not null,
-  creation                  timestamp,
-  last_update               timestamp,
-  lang                      varchar(255),
-  removal                   timestamp,
-  removed                   boolean,
   name                      varchar(255),
-  constraint pk_role primary key (role_id))
+  constraint pk_security_role primary key (role_id))
 ;
 
 create table service (
@@ -564,13 +531,32 @@ create table appcivist_user (
   email                     varchar(255),
   name                      varchar(255),
   username                  varchar(255),
-  locale                    varchar(255),
+  language                  varchar(255),
   email_verified            boolean,
-  username_verified         boolean,
   profile_pic               varchar(255),
-  conf_type                 varchar(255),
   active                    boolean,
   constraint pk_appcivist_user primary key (user_id))
+;
+
+create table user_permission (
+  permission_id             bigint not null,
+  permission_value          varchar(255),
+  constraint pk_user_permission primary key (permission_id))
+;
+
+create table user_profile (
+  profile_id                bigint not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  name                      varchar(255),
+  middle_name               varchar(255),
+  last_name                 varchar(255),
+  birthdate                 timestamp,
+  address                   varchar(255),
+  constraint pk_user_profile primary key (profile_id))
 ;
 
 create table working_group (
@@ -651,10 +637,16 @@ create table service_campaign_service_resourc (
   constraint pk_service_campaign_service_resourc primary key (service_campaign_campaign_id, service_resource_service_resource_id))
 ;
 
-create table appcivist_user_role (
-  appcivist_user_user_id         bigint not null,
-  role_role_id                   bigint not null,
-  constraint pk_appcivist_user_role primary key (appcivist_user_user_id, role_role_id))
+create table User_Security_Roles (
+  user_id                        bigint not null,
+  role_id                        bigint not null,
+  constraint pk_User_Security_Roles primary key (user_id, role_id))
+;
+
+create table User_User_Permission (
+  user_id                        bigint not null,
+  permission_id                  bigint not null,
+  constraint pk_User_User_Permission primary key (user_id, permission_id))
 ;
 
 create table working_group_assembly (
@@ -710,11 +702,7 @@ create sequence module_seq;
 
 create sequence note_seq;
 
-create sequence permission_seq;
-
 create sequence phase_definition_seq;
-
-create sequence profile_seq;
 
 create sequence properties_seq;
 
@@ -724,7 +712,7 @@ create sequence required_phase_configuration_seq;
 
 create sequence resource_seq;
 
-create sequence role_seq;
+create sequence security_role_seq;
 
 create sequence service_seq;
 
@@ -755,6 +743,10 @@ create sequence task_seq;
 create sequence Token_Action_seq;
 
 create sequence appcivist_user_seq;
+
+create sequence user_permission_seq;
+
+create sequence user_profile_seq;
 
 create sequence working_group_seq;
 
@@ -818,64 +810,62 @@ alter table message add constraint fk_message_targetWorkingGroup_29 foreign key 
 create index ix_message_targetWorkingGroup_29 on message (target_working_group_group_id);
 alter table message add constraint fk_message_targetAssembly_30 foreign key (target_assembly_assembly_id) references assembly (assembly_id);
 create index ix_message_targetAssembly_30 on message (target_assembly_assembly_id);
-alter table permission add constraint fk_permission_creator_31 foreign key (creator_user_id) references appcivist_user (user_id);
-create index ix_permission_creator_31 on permission (creator_user_id);
-alter table properties add constraint fk_properties_geo_32 foreign key (geo_location_id) references geo (location_id);
-create index ix_properties_geo_32 on properties (geo_location_id);
-alter table required_campaign_configuration add constraint fk_required_campaign_configur_33 foreign key (phase_definition_phase_definition_id) references phase_definition (phase_definition_id);
-create index ix_required_campaign_configur_33 on required_campaign_configuration (phase_definition_phase_definition_id);
-alter table required_campaign_configuration add constraint fk_required_campaign_configur_34 foreign key (configuration_config_id) references config (config_id);
-create index ix_required_campaign_configur_34 on required_campaign_configuration (configuration_config_id);
-alter table required_phase_configuration add constraint fk_required_phase_configurati_35 foreign key (phase_definition_phase_definition_id) references phase_definition (phase_definition_id);
-create index ix_required_phase_configurati_35 on required_phase_configuration (phase_definition_phase_definition_id);
-alter table required_phase_configuration add constraint fk_required_phase_configurati_36 foreign key (config_definition_config_definition_id) references config_definition (config_definition_id);
-create index ix_required_phase_configurati_36 on required_phase_configuration (config_definition_config_definition_id);
-alter table resource add constraint fk_resource_contribution_37 foreign key (contribution_contribution_id) references contribution (contribution_id);
-create index ix_resource_contribution_37 on resource (contribution_contribution_id);
-alter table resource add constraint fk_resource_location_38 foreign key (location_location_id) references geo (location_id);
-create index ix_resource_location_38 on resource (location_location_id);
-alter table service add constraint fk_service_assembly_39 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
-create index ix_service_assembly_39 on service (assembly_assembly_id);
-alter table service add constraint fk_service_serviceDefinition_40 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_serviceDefinition_40 on service (service_definition_service_definition_id);
-alter table service_authentication add constraint fk_service_authentication_ser_41 foreign key (service_service_id) references service (service_id);
-create index ix_service_authentication_ser_41 on service_authentication (service_service_id);
-alter table service_campaign add constraint fk_service_campaign_previousC_42 foreign key (previous_campaign) references service_campaign (campaign_id);
-create index ix_service_campaign_previousC_42 on service_campaign (previous_campaign);
-alter table service_campaign add constraint fk_service_campaign_nextCampa_43 foreign key (next_campaign) references service_campaign (campaign_id);
-create index ix_service_campaign_nextCampa_43 on service_campaign (next_campaign);
-alter table service_campaign add constraint fk_service_campaign_issue_44 foreign key (issue_issue_id) references service_issue (issue_id);
-create index ix_service_campaign_issue_44 on service_campaign (issue_issue_id);
-alter table service_campaign add constraint fk_service_campaign_startOper_45 foreign key (start_operation_service_operation_id) references service_operation (service_operation_id);
-create index ix_service_campaign_startOper_45 on service_campaign (start_operation_service_operation_id);
-alter table service_issue add constraint fk_service_issue_assembly_46 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
-create index ix_service_issue_assembly_46 on service_issue (assembly_assembly_id);
-alter table service_issue add constraint fk_service_issue_resource_47 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_issue_resource_47 on service_issue (resource_service_resource_id);
-alter table service_operation add constraint fk_service_operation_definiti_48 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_operation_definiti_48 on service_operation (operation_definition_id);
-alter table service_operation add constraint fk_service_operation_service_49 foreign key (service_service_id) references service (service_id);
-create index ix_service_operation_service_49 on service_operation (service_service_id);
-alter table service_operation_definition add constraint fk_service_operation_definiti_50 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_operation_definiti_50 on service_operation_definition (service_definition_service_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceP_51 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_serviceP_51 on service_parameter (service_parameter_parameter_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceR_52 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_parameter_serviceR_52 on service_parameter (service_resource_service_resource_id);
-alter table service_parameter add constraint fk_service_parameter_serviceO_53 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
-create index ix_service_parameter_serviceO_53 on service_parameter (service_operation_service_operation_id);
-alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_54 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_data_mod_54 on service_parameter_data_model (definition_parameter_definition_id);
-alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_55 foreign key (parent_data_model_data_model_id) references service_parameter_data_model (data_model_id);
-create index ix_service_parameter_data_mod_55 on service_parameter_data_model (parent_data_model_data_model_id);
-alter table service_parameter_definition add constraint fk_service_parameter_definiti_56 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_parameter_definiti_56 on service_parameter_definition (service_operation_definition_operation_definition_id);
-alter table service_resource add constraint fk_service_resource_service_57 foreign key (service_service_id) references service (service_id);
-create index ix_service_resource_service_57 on service_resource (service_service_id);
-alter table service_resource add constraint fk_service_resource_parentRes_58 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_resource_parentRes_58 on service_resource (parent_resource_service_resource_id);
-alter table Token_Action add constraint fk_Token_Action_targetUser_59 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Token_Action_targetUser_59 on Token_Action (user_id);
+alter table properties add constraint fk_properties_geo_31 foreign key (geo_location_id) references geo (location_id);
+create index ix_properties_geo_31 on properties (geo_location_id);
+alter table required_campaign_configuration add constraint fk_required_campaign_configur_32 foreign key (phase_definition_phase_definition_id) references phase_definition (phase_definition_id);
+create index ix_required_campaign_configur_32 on required_campaign_configuration (phase_definition_phase_definition_id);
+alter table required_campaign_configuration add constraint fk_required_campaign_configur_33 foreign key (configuration_config_id) references config (config_id);
+create index ix_required_campaign_configur_33 on required_campaign_configuration (configuration_config_id);
+alter table required_phase_configuration add constraint fk_required_phase_configurati_34 foreign key (phase_definition_phase_definition_id) references phase_definition (phase_definition_id);
+create index ix_required_phase_configurati_34 on required_phase_configuration (phase_definition_phase_definition_id);
+alter table required_phase_configuration add constraint fk_required_phase_configurati_35 foreign key (config_definition_config_definition_id) references config_definition (config_definition_id);
+create index ix_required_phase_configurati_35 on required_phase_configuration (config_definition_config_definition_id);
+alter table resource add constraint fk_resource_contribution_36 foreign key (contribution_contribution_id) references contribution (contribution_id);
+create index ix_resource_contribution_36 on resource (contribution_contribution_id);
+alter table resource add constraint fk_resource_location_37 foreign key (location_location_id) references geo (location_id);
+create index ix_resource_location_37 on resource (location_location_id);
+alter table service add constraint fk_service_assembly_38 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
+create index ix_service_assembly_38 on service (assembly_assembly_id);
+alter table service add constraint fk_service_serviceDefinition_39 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_serviceDefinition_39 on service (service_definition_service_definition_id);
+alter table service_authentication add constraint fk_service_authentication_ser_40 foreign key (service_service_id) references service (service_id);
+create index ix_service_authentication_ser_40 on service_authentication (service_service_id);
+alter table service_campaign add constraint fk_service_campaign_previousC_41 foreign key (previous_campaign) references service_campaign (campaign_id);
+create index ix_service_campaign_previousC_41 on service_campaign (previous_campaign);
+alter table service_campaign add constraint fk_service_campaign_nextCampa_42 foreign key (next_campaign) references service_campaign (campaign_id);
+create index ix_service_campaign_nextCampa_42 on service_campaign (next_campaign);
+alter table service_campaign add constraint fk_service_campaign_issue_43 foreign key (issue_issue_id) references service_issue (issue_id);
+create index ix_service_campaign_issue_43 on service_campaign (issue_issue_id);
+alter table service_campaign add constraint fk_service_campaign_startOper_44 foreign key (start_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_campaign_startOper_44 on service_campaign (start_operation_service_operation_id);
+alter table service_issue add constraint fk_service_issue_assembly_45 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
+create index ix_service_issue_assembly_45 on service_issue (assembly_assembly_id);
+alter table service_issue add constraint fk_service_issue_resource_46 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_issue_resource_46 on service_issue (resource_service_resource_id);
+alter table service_operation add constraint fk_service_operation_definiti_47 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_operation_definiti_47 on service_operation (operation_definition_id);
+alter table service_operation add constraint fk_service_operation_service_48 foreign key (service_service_id) references service (service_id);
+create index ix_service_operation_service_48 on service_operation (service_service_id);
+alter table service_operation_definition add constraint fk_service_operation_definiti_49 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_operation_definiti_49 on service_operation_definition (service_definition_service_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceP_50 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_serviceP_50 on service_parameter (service_parameter_parameter_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceR_51 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_parameter_serviceR_51 on service_parameter (service_resource_service_resource_id);
+alter table service_parameter add constraint fk_service_parameter_serviceO_52 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_parameter_serviceO_52 on service_parameter (service_operation_service_operation_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_53 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_data_mod_53 on service_parameter_data_model (definition_parameter_definition_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_54 foreign key (parent_data_model_data_model_id) references service_parameter_data_model (data_model_id);
+create index ix_service_parameter_data_mod_54 on service_parameter_data_model (parent_data_model_data_model_id);
+alter table service_parameter_definition add constraint fk_service_parameter_definiti_55 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_parameter_definiti_55 on service_parameter_definition (service_operation_definition_operation_definition_id);
+alter table service_resource add constraint fk_service_resource_service_56 foreign key (service_service_id) references service (service_id);
+create index ix_service_resource_service_56 on service_resource (service_service_id);
+alter table service_resource add constraint fk_service_resource_parentRes_57 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_resource_parentRes_57 on service_resource (parent_resource_service_resource_id);
+alter table Token_Action add constraint fk_Token_Action_targetUser_58 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Token_Action_targetUser_58 on Token_Action (user_id);
 
 
 
@@ -905,7 +895,7 @@ alter table contribution_hashtag add constraint fk_contribution_hashtag_hasht_02
 
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_membership_01 foreign key (membership_membership_id) references membership (membership_id);
 
-alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_role_02 foreign key (role_role_id) references role (role_id);
+alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_security_r_02 foreign key (role_role_id) references security_role (role_id);
 
 alter table RELATED_RESOURCES add constraint fk_RELATED_RESOURCES_resource_01 foreign key (source) references resource (resource_id);
 
@@ -919,9 +909,13 @@ alter table service_campaign_service_resourc add constraint fk_service_campaign_
 
 alter table service_campaign_service_resourc add constraint fk_service_campaign_service_r_02 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
 
-alter table appcivist_user_role add constraint fk_appcivist_user_role_appciv_01 foreign key (appcivist_user_user_id) references appcivist_user (user_id);
+alter table User_Security_Roles add constraint fk_User_Security_Roles_appciv_01 foreign key (user_id) references appcivist_user (user_id);
 
-alter table appcivist_user_role add constraint fk_appcivist_user_role_role_02 foreign key (role_role_id) references role (role_id);
+alter table User_Security_Roles add constraint fk_User_Security_Roles_securi_02 foreign key (role_id) references security_role (role_id);
+
+alter table User_User_Permission add constraint fk_User_User_Permission_appci_01 foreign key (user_id) references appcivist_user (user_id);
+
+alter table User_User_Permission add constraint fk_User_User_Permission_user__02 foreign key (permission_id) references user_permission (permission_id);
 
 alter table working_group_assembly add constraint fk_working_group_assembly_wor_01 foreign key (working_group_group_id) references working_group (group_id);
 
@@ -989,11 +983,7 @@ drop table if exists module cascade;
 
 drop table if exists note cascade;
 
-drop table if exists permission cascade;
-
 drop table if exists phase_definition cascade;
-
-drop table if exists profile cascade;
 
 drop table if exists properties cascade;
 
@@ -1005,7 +995,7 @@ drop table if exists resource cascade;
 
 drop table if exists RELATED_RESOURCES cascade;
 
-drop table if exists role cascade;
+drop table if exists security_role cascade;
 
 drop table if exists service cascade;
 
@@ -1041,7 +1031,13 @@ drop table if exists Token_Action cascade;
 
 drop table if exists appcivist_user cascade;
 
-drop table if exists appcivist_user_role cascade;
+drop table if exists User_Security_Roles cascade;
+
+drop table if exists User_User_Permission cascade;
+
+drop table if exists user_permission cascade;
+
+drop table if exists user_profile cascade;
 
 drop table if exists working_group cascade;
 
@@ -1091,11 +1087,7 @@ drop sequence if exists module_seq;
 
 drop sequence if exists note_seq;
 
-drop sequence if exists permission_seq;
-
 drop sequence if exists phase_definition_seq;
-
-drop sequence if exists profile_seq;
 
 drop sequence if exists properties_seq;
 
@@ -1105,7 +1097,7 @@ drop sequence if exists required_phase_configuration_seq;
 
 drop sequence if exists resource_seq;
 
-drop sequence if exists role_seq;
+drop sequence if exists security_role_seq;
 
 drop sequence if exists service_seq;
 
@@ -1136,6 +1128,10 @@ drop sequence if exists task_seq;
 drop sequence if exists Token_Action_seq;
 
 drop sequence if exists appcivist_user_seq;
+
+drop sequence if exists user_permission_seq;
+
+drop sequence if exists user_profile_seq;
 
 drop sequence if exists working_group_seq;
 

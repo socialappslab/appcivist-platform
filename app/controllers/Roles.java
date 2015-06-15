@@ -7,7 +7,7 @@ import java.util.List;
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import models.User;
-import models.Role;
+import models.SecurityRole;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.mvc.*;
@@ -20,7 +20,7 @@ import http.Headers;
 @With(Headers.class)
 public class Roles extends Controller {
 
-	public static final Form<Role> ROLE_FORM = form(Role.class);
+	public static final Form<SecurityRole> ROLE_FORM = form(SecurityRole.class);
 	
 	/**
 	 * Return the full list of roles
@@ -29,19 +29,19 @@ public class Roles extends Controller {
 	 */
 	@Security.Authenticated(Secured.class)
 	public static Result findRoles() {
-		List<Role> roles = Role.findAll();
+		List<SecurityRole> roles = SecurityRole.findAll();
 		return ok(Json.toJson(roles));
 	}
 	
 	@Security.Authenticated(Secured.class)
 	public static Result findRole(Long roleId) {
-		Role role = Role.read(roleId);
+		SecurityRole role = SecurityRole.read(roleId);
 		return ok(Json.toJson(role));
 	}
 	
 	@Security.Authenticated(Secured.class)
 	public static Result deleteRole(Long roleId) {
-		Role.delete(roleId);
+		SecurityRole.delete(roleId);
 		return ok();
 	}
 	
@@ -53,7 +53,7 @@ public class Roles extends Controller {
 
 		// 2. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
+		final Form<SecurityRole> newRoleForm = ROLE_FORM.bindFromRequest();
 		
 		if (newRoleForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -62,19 +62,16 @@ public class Roles extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			
-			Role newRole = newRoleForm.get();
+			SecurityRole newRole = newRoleForm.get();
 			
-			if(newRole.getLang() == null) 
-				newRole.setLang(roleCreator.getLocale());
-
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if( Role.readByTitle(newRole.getName()) != null ){
+			if( SecurityRole.findByName(newRole.getName()) != null ){
 				Logger.info("Role already exists");
 			}
 			else{
 
-				Role.create(newRole);
+				SecurityRole.create(newRole);
 				Logger.info("Creating new role");
 				Logger.debug("=> " + newRoleForm.toString());
 
@@ -93,7 +90,7 @@ public class Roles extends Controller {
 	public static Result updateRole(Long roleId) {
 		// 1. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<Role> newRoleForm = ROLE_FORM.bindFromRequest();
+		final Form<SecurityRole> newRoleForm = ROLE_FORM.bindFromRequest();
 
 		if (newRoleForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -102,11 +99,11 @@ public class Roles extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 
-			Role newRole = newRoleForm.get();
+			SecurityRole newRole = newRoleForm.get();
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if( Role.readByTitle(newRole.getName()) != null ){
+			if( SecurityRole.findByName(newRole.getName()) != null ){
 				Logger.info("Role already exists");
 			}
 			else {
