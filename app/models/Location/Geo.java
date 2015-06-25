@@ -24,6 +24,8 @@ public class Geo extends AppCivistBaseModel {
     @OneToMany(cascade = CascadeType.ALL, mappedBy="geo")
     private List<Geometry> geometries = new ArrayList<Geometry>();
 
+    // Properties store human readable properties of the location like
+    // place name, textual address, city, etc. 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="geo")
     private List<Properties> properties = new ArrayList<Properties>();
 

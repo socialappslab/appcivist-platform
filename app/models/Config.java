@@ -95,8 +95,6 @@ public class Config extends AppCivistBaseModel {
         this.value = value;
     }
     
-    
-    
     public ConfigTargets getConfigTarget() {
 		return configTarget;
 	}
@@ -145,20 +143,30 @@ public class Config extends AppCivistBaseModel {
 		this.workingGroup = workingGroup;
 	}
 
+	/*
+	 * Basic Queries
+	 */
+    public static List<Config> findAll() {
+        return find.all();
+    }
+    
+    public static List<Config> findByAssembly(Long aid) {
+        return find.where().eq("assembly.assemblyID", aid).findList();
+    }
+    
 	public static Config read(Long configId) {
         return find.ref(configId);
     }
 
+	public static Config read(Long aid, Long configId) {
+        return find.where().eq("assembly.assemblyID", aid).eq("configId",configId).findUnique();
+    }
+	
     public static Integer readByKey(String key) {
         ExpressionList<Config> configs = find.where().eq("key", key);
         return configs.findList().size();
     }
-
-
-    public static List<Config> findAll() {
-        return find.all();
-    }
-
+    
     public static Config create(Config config) {
         config.save();
         config.refresh();
@@ -174,7 +182,13 @@ public class Config extends AppCivistBaseModel {
         find.ref(id).delete();
     }
 
-    public static void update(Long id) {
-        find.ref(id).update();
+    public static void delete(Long aid, Long id) {
+        find.where().eq("assembly.assemblyID", aid).eq("configId", id).findUnique().delete();
+    }
+
+    public static Config update(Config config) {
+    	config.update();
+    	config.refresh();
+    	return config;
     }
 }

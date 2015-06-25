@@ -157,11 +157,10 @@ create table contribution (
   title                     varchar(255),
   text                      varchar(255),
   type                      integer,
-  up_votes                  bigint,
-  down_votes                bigint,
   assembly_assembly_id      bigint,
   location_location_id      bigint,
-  constraint ck_contribution_type check (type in (0,1,2,3)),
+  stats_contribution_statistics_id bigint,
+  constraint ck_contribution_type check (type in (0,1,2,3,4,5)),
   constraint pk_contribution primary key (contribution_id))
 ;
 
@@ -174,14 +173,27 @@ create table contribution_connection (
   removed                   boolean,
   type                      integer,
   status                    integer,
-  up_votes                  bigint,
-  down_votes                bigint,
-  group_id                  bigint,
   source_contribution_contribution_id bigint,
   target_contribution_contribution_id bigint,
   constraint ck_contribution_connection_type check (type in (0,1,2,3,4,5)),
   constraint ck_contribution_connection_status check (status in (0,1,2,3)),
   constraint pk_contribution_connection primary key (contribution_connection_id))
+;
+
+create table contribution_statistics (
+  contribution_statistics_id bigint not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  ups                       bigint,
+  downs                     bigint,
+  favs                      bigint,
+  views                     bigint,
+  replies                   bigint,
+  flags                     bigint,
+  constraint pk_contribution_statistics primary key (contribution_statistics_id))
 ;
 
 create table geo (
@@ -571,7 +583,6 @@ create table working_group (
   is_public                 boolean,
   accept_requests           boolean,
   membership_role           integer,
-  test_field                bigint,
   constraint ck_working_group_membership_role check (membership_role in (0,1,2,3)),
   constraint pk_working_group primary key (group_id))
 ;
@@ -599,6 +610,12 @@ create table campaign_type_phase_definition (
   campaign_type_campaign_type_id bigint not null,
   phase_definition_phase_definition_id bigint not null,
   constraint pk_campaign_type_phase_definition primary key (campaign_type_campaign_type_id, phase_definition_phase_definition_id))
+;
+
+create table contribution_appcivist_user (
+  contribution_contribution_id   bigint not null,
+  appcivist_user_user_id         bigint not null,
+  constraint pk_contribution_appcivist_user primary key (contribution_contribution_id, appcivist_user_user_id))
 ;
 
 create table contribution_category (
@@ -681,6 +698,8 @@ create sequence config_definition_seq;
 create sequence contribution_seq;
 
 create sequence contribution_connection_seq;
+
+create sequence contribution_statistics_seq;
 
 create sequence geo_seq;
 
@@ -786,8 +805,8 @@ alter table contribution add constraint fk_contribution_assembly_17 foreign key 
 create index ix_contribution_assembly_17 on contribution (assembly_assembly_id);
 alter table contribution add constraint fk_contribution_location_18 foreign key (location_location_id) references geo (location_id);
 create index ix_contribution_location_18 on contribution (location_location_id);
-alter table contribution_connection add constraint fk_contribution_connection_ow_19 foreign key (group_id) references working_group (group_id);
-create index ix_contribution_connection_ow_19 on contribution_connection (group_id);
+alter table contribution add constraint fk_contribution_stats_19 foreign key (stats_contribution_statistics_id) references contribution_statistics (contribution_statistics_id);
+create index ix_contribution_stats_19 on contribution (stats_contribution_statistics_id);
 alter table contribution_connection add constraint fk_contribution_connection_so_20 foreign key (source_contribution_contribution_id) references contribution (contribution_id);
 create index ix_contribution_connection_so_20 on contribution_connection (source_contribution_contribution_id);
 alter table contribution_connection add constraint fk_contribution_connection_ta_21 foreign key (target_contribution_contribution_id) references contribution (contribution_id);
@@ -885,6 +904,10 @@ alter table campaign_type_phase_definition add constraint fk_campaign_type_phase
 
 alter table campaign_type_phase_definition add constraint fk_campaign_type_phase_defini_02 foreign key (phase_definition_phase_definition_id) references phase_definition (phase_definition_id);
 
+alter table contribution_appcivist_user add constraint fk_contribution_appcivist_use_01 foreign key (contribution_contribution_id) references contribution (contribution_id);
+
+alter table contribution_appcivist_user add constraint fk_contribution_appcivist_use_02 foreign key (appcivist_user_user_id) references appcivist_user (user_id);
+
 alter table contribution_category add constraint fk_contribution_category_cont_01 foreign key (contribution_contribution_id) references contribution (contribution_id);
 
 alter table contribution_category add constraint fk_contribution_category_cate_02 foreign key (category_category_id) references category (category_id);
@@ -955,11 +978,15 @@ drop table if exists config_definition cascade;
 
 drop table if exists contribution cascade;
 
+drop table if exists contribution_appcivist_user cascade;
+
 drop table if exists contribution_category cascade;
 
 drop table if exists contribution_hashtag cascade;
 
 drop table if exists contribution_connection cascade;
+
+drop table if exists contribution_statistics cascade;
 
 drop table if exists geo cascade;
 
@@ -1066,6 +1093,8 @@ drop sequence if exists config_definition_seq;
 drop sequence if exists contribution_seq;
 
 drop sequence if exists contribution_connection_seq;
+
+drop sequence if exists contribution_statistics_seq;
 
 drop sequence if exists geo_seq;
 

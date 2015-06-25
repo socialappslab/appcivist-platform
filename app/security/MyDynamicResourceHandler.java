@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import play.Logger;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.models.Permission;
@@ -23,6 +25,7 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 		HANDLERS.put("CoordinatorOfAssembly", new AssemblyDynamicResourceHandler()); // for this, meta must be GroupId
 		HANDLERS.put("CanInviteToGroup", new GroupDynamicResourceHandler()); // for this, meta must be AssemblyId
 		HANDLERS.put("CanInviteToAssembly", new AssemblyDynamicResourceHandler()); // for this, meta must be GroupId
+		HANDLERS.put("OnlyMe", new OnlyMeDynamicResourceHandler()); // for this, meta must be GroupId
 	}
 
 	@Override
@@ -44,12 +47,17 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 			DeadboltHandler deadboltHandler, Context ctx) {
 		DynamicResourceHandler handler = HANDLERS.get(name);
 		boolean result = false;
-		if (handler == null) {
+		if (handler == null)
 			Logger.error("No handler available for " + name);
-		} else {
+		else 
 			result = handler.isAllowed(name, meta, deadboltHandler, ctx);
-		}
 		return result;
 	}
-
+	
+	public static Long getIdFromPath(String path, String id_from){
+		String id = StringUtils.substringAfter(path, id_from);
+		if(StringUtils.contains(id, "/"))
+			id = id.split("/")[0];
+		return Long.parseLong(id);
+	}
 }

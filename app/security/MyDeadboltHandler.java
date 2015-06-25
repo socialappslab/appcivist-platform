@@ -62,7 +62,7 @@ public class MyDeadboltHandler extends AbstractDeadboltHandler {
 	public Promise<Result> onAuthFailure(Context context, String content) {
 		return Promise.promise(() -> forbidden(Json
 				.toJson(new TransferResponseStatus(ResponseStatus.UNAUTHORIZED,
-						"Authentication failed"))));
+						"Authentication failed: "+content))));
 	}
 
 	@Override

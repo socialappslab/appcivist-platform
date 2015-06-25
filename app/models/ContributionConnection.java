@@ -29,21 +29,8 @@ public class ContributionConnection extends AppCivistBaseModel {
 	private Long contributionConnectionId;
 	private ContributionConnectionTypes type;
 	private ContributionConnectionStatuses status = ContributionConnectionStatuses.NEW; 
-	private Long upVotes;
-	private Long downVotes;
-	private User creator;
+	private User author;
 	
-	
-	// Who is the group that moved or copied this contribution to its Campaign Phase
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinTable(name = "contribution_connection_group", 
-		joinColumns = 
-			@JoinColumn(name = "group_id", referencedColumnName = "group_id"), 
-		inverseJoinColumns = 
-			@JoinColumn(name = "contribution_connection_id", referencedColumnName = "contribution_connection_id")
-	)
-	private WorkingGroup ownerGroup;
-
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Contribution sourceContribution;
 
@@ -97,36 +84,12 @@ public class ContributionConnection extends AppCivistBaseModel {
 		this.status = status;
 	}
 
-	public Long getUpVotes() {
-		return upVotes;
+	public User getAuthor() {
+		return author;
 	}
 
-	public void setUpVotes(Long upVotes) {
-		this.upVotes = upVotes;
-	}
-
-	public Long getDownVotes() {
-		return downVotes;
-	}
-
-	public void setDownVotes(Long downVotes) {
-		this.downVotes = downVotes;
-	}
-
-	public User getCreator() {
-		return creator;
-	}
-
-	public void setCreator(User creator) {
-		this.creator = creator;
-	}
-
-	public WorkingGroup getOwnerGroup() {
-		return ownerGroup;
-	}
-
-	public void setOwnerGroup(WorkingGroup ownerGroup) {
-		this.ownerGroup = ownerGroup;
+	public void setAuthor(User creator) {
+		this.author = creator;
 	}
 
 	public Contribution getSourceContribution() {
@@ -168,11 +131,13 @@ public class ContributionConnection extends AppCivistBaseModel {
 		return object;
 	}
 
-	public static void delete(Long id) {
-		find.ref(id).delete();
+	public static void delete(ContributionConnection cc) {
+		cc.delete();
 	}
 
-	public static void update(Long id) {
-		find.ref(id).update();
+	public static ContributionConnection update(ContributionConnection cc) {
+		cc.update();
+		cc.refresh();
+		return cc;
 	}
 }

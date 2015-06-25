@@ -27,10 +27,15 @@ public class WorkingGroup extends AppCivistBaseModel {
     private Boolean acceptRequests = true;
     private MembershipRoles membershipRole = MembershipRoles.MEMBER;
     private User creator;
-
-    private Long testField;
     
     @ManyToMany(cascade=CascadeType.ALL)
+//    @JoinTable(name="working_groups_assembly",
+//    	joinColumns = { 
+//        	@JoinColumn(name = "assembly", referencedColumnName = "assembly_id")
+//    	}, 
+//    	inverseJoinColumns = { 
+//    		@JoinColumn(name = "group", referencedColumnName = "group_id")
+//    })
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -49,11 +54,19 @@ public class WorkingGroup extends AppCivistBaseModel {
         return find.ref(workingGroupId);
     }
 
+    public static WorkingGroup readInAssembly(Long aid, Long workingGroupId) {
+        return find.where().eq("assemblies.assembly_assembly_id",aid).eq("groupId", workingGroupId).findUnique();    
+    }
+    
     public static List<WorkingGroup> findAll() {
         return find.all();
     }
+    
+    public static List<WorkingGroup> findByAssembly(Long aid) {
+        return find.where().eq("assemblies.assembly_assembly_id",aid).findList();
+    }
 
-    public static Integer readByTitle(String name){
+    public static Integer numberByName(String name){
         ExpressionList<WorkingGroup> wGroups = find.where().eq("name", name);
         return wGroups.findList().size();
     }

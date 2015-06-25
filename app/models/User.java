@@ -255,9 +255,9 @@ public class User extends Model implements Subject {
 
 	@Override
 	public String getIdentifier() {
-		return this.username;
+		return this.userId.toString();
 	}
-	
+		
 	/************************************************************************************************
 	 * Basic Persistence queries
 	 ************************************************************************************************/

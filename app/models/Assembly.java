@@ -354,8 +354,10 @@ public class Assembly extends AppCivistBaseModel {
 		find.ref(id).delete();
 	}
 
-	public static void update(Long id) {
-		find.ref(id).update();
+	public static Assembly update(Assembly a) {
+		a.update();
+		a.refresh();
+		return a;
 	}
 
 	/*
