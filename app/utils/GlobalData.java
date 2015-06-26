@@ -9,7 +9,7 @@ public class GlobalData {
 	/**
 	 * Internationalization Messages Bindings
 	 */
-	public static final String DEFAULT_LOCALE = "en-EN";
+	public static final String DEFAULT_LANGUAGE = "en";
 	
 	// Assemblies
 	public static final String ASSEMBLY_CREATE_MSG_SUCCESS = "assemblies.creation.success";

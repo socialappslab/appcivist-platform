@@ -5,11 +5,11 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
+import be.objectify.deadbolt.core.models.Role;
 import play.db.ebean.Model;
 
 @Entity
-public class Role extends AppCivistBaseModel {
+public class SecurityRole extends Model implements Role {
 	/**
 	 * 
 	 */
@@ -20,32 +20,32 @@ public class Role extends AppCivistBaseModel {
 	private Long roleId;
 	private String name;
 
-	public Role(String name, List<Membership> memberships, List<User> users) {
+	public SecurityRole(String name) {
 		this.name = name;
 	}
 
-	public static Model.Finder<Long, Role> find = new Model.Finder<Long, Role>(
-			Long.class, Role.class);
+	public static Model.Finder<Long, SecurityRole> find = new Model.Finder<Long, SecurityRole>(
+			Long.class, SecurityRole.class);
 
-	public static Role read(Long roleId) {
+	public static SecurityRole read(Long roleId) {
 		return find.ref(roleId);
 	}
 
-	public static Role readByTitle(String name) {
+	public static SecurityRole findByName(String name) {
 		return find.where().eq("name", name).findUnique();
 	}
 
-	public static List<Role> findAll() {
+	public static List<SecurityRole> findAll() {
 		return find.all();
 	}
 
-	public static Role create(Role role) {
+	public static SecurityRole create(SecurityRole role) {
 		role.save();
 		role.refresh();
 		return role;
 	}
 
-	public static Role createObject(Role role) {
+	public static SecurityRole createObject(SecurityRole role) {
 		role.save();
 		return role;
 	}
@@ -54,8 +54,10 @@ public class Role extends AppCivistBaseModel {
 		find.ref(id).delete();
 	}
 
-	public static void update(Long id) {
-		find.ref(id).update();
+	public static SecurityRole update(SecurityRole role) {
+		role.update();
+		role.refresh();
+		return role;
 	}
 
 	public Long getRoleId() {

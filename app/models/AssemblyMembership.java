@@ -1,23 +1,15 @@
 package models;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-
-import utils.GlobalData;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import enums.MembershipRoles;
 import enums.MembershipStatus;
-import enums.Visibility;
 
 @Entity
 @DiscriminatorValue("ASSEMBLY")
@@ -35,12 +27,12 @@ public class AssemblyMembership extends Membership {
 		super();
 	}
 	public AssemblyMembership(Long expiration, MembershipStatus status,
-			User creator, User user, List<Role> roles, String membershipType) {
+			User creator, User user, List<SecurityRole> roles, String membershipType) {
 		super(expiration, status, creator, user, roles, membershipType);
 	}
 	
 	public AssemblyMembership(Long expiration, MembershipStatus status,
-			User creator, User user, List<Role> roles, String membershipType, 
+			User creator, User user, List<SecurityRole> roles, String membershipType, 
 			Assembly assembly) {
 		super(expiration, status, creator, user, roles, membershipType);
 		this.assembly = assembly;

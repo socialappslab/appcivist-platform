@@ -67,7 +67,7 @@ public class Secured extends Security.Authenticator {
 		Logger.debug("AUTH: authenticating session header: " + play_session);
 		if (play_session != null && !"".trim().equals(play_session)) {
 			try {
-				scala.collection.immutable.Map<String, String> values = Session.decode(play_session);
+				scala.collection.immutable.Map<String, String> values = (scala.collection.immutable.Map<String, String>) Session.decode(play_session);
 				if (values.size() > 0) {
 					String user_exp = values.get(PlayAuthenticateLocal.EXPIRES_KEY).get();
 					String provider_id = values.get(PlayAuthenticateLocal.PROVIDER_KEY).get();

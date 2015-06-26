@@ -1,12 +1,9 @@
 package engine;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import models.services.Service;
 import models.services.ServiceAuthentication;
@@ -18,7 +15,7 @@ import models.services.ServiceResource;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.libs.ws.WS;
-import play.libs.ws.WSRequestHolder;
+import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 
 /**
@@ -78,7 +75,7 @@ public class Runner {
 		String opName = opDef.getName();
 		Boolean nameOnPath = opDef.getNameOnPath();
 		// TODO: Use op_type to either call a REST service or another type
-		String opType = op.getDefinition().getType(); 
+		//String opType = op.getDefinition().getType(); 
 
 		if (nameOnPath) {
 			serviceUrl += "/" + opName;
@@ -88,7 +85,7 @@ public class Runner {
 			servicePath+="/";
 		}
 		
-		WSRequestHolder holder = WS.url(serviceUrl+servicePath);
+		WSRequest holder = WS.url(serviceUrl+servicePath);
 		
 		List<ServiceAuthentication> authHeaders = opService.getAuth();
 

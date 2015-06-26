@@ -8,7 +8,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -143,13 +142,25 @@ public class CampaignPhase extends AppCivistBaseModel {
 	}
 
 	public static CampaignPhase read(Long campaignId, Long phaseId) {
-		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("phase_id",phaseId);
+		ExpressionList<CampaignPhase> campaignPhases = find.where()
+				.eq("campaign.campaignId",campaignId)
+				.eq("phaseId", phaseId);
 		CampaignPhase phase = campaignPhases.findUnique();
 		return phase;
     }
 
     public static List<CampaignPhase> findAll(Long campaignId) {
-		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id",campaignId);
+//		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id",campaignId);
+		ExpressionList<CampaignPhase> campaignPhases = find.where()
+				.eq("campaign.campaignId",campaignId);
+		List<CampaignPhase> campaignPhaseList = campaignPhases.findList();
+		return campaignPhaseList;
+    }
+
+    public static List<CampaignPhase> findByAssemblyAndCampaign(Long aid, Long campaignId) {
+		ExpressionList<CampaignPhase> campaignPhases = find.where()
+				.eq("campaign.campaignId",campaignId)
+				.eq("campaign.assembly.assemblyId", aid);
 		List<CampaignPhase> campaignPhaseList = campaignPhases.findList();
 		return campaignPhaseList;
     }
@@ -181,7 +192,9 @@ public class CampaignPhase extends AppCivistBaseModel {
 		phase.delete();
     }
 
-    public static void update(Long id) {
-        find.ref(id).update();
+    public static CampaignPhase update(CampaignPhase cp) {
+        cp.update();
+        cp.refresh();
+        return cp;
     }
 }

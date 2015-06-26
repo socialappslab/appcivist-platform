@@ -1,10 +1,12 @@
 package controllers;
 
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import http.Headers;
+import models.Assembly;
 import models.Config;
-import models.Role;
 import models.User;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -13,7 +15,6 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
 import play.mvc.With;
 import utils.GlobalData;
 import static play.data.Form.form;
@@ -23,102 +24,97 @@ import java.util.List;
 @With(Headers.class)
 public class Configs extends Controller {
 
-    public static final Form<Config> CONFIG_FORM = form(Config.class);
+	public static final Form<Config> CONFIG_FORM = form(Config.class);
 
-    @Security.Authenticated(Secured.class)
-    public static Result findConfigs(){
-        List<Config> configs = Config.findAll();
-        return ok(Json.toJson(configs));
-    }
+	@SubjectPresent
+	public static Result findConfigs(Long aid) {
+		List<Config> configs = Config.findByAssembly(aid);
+		return ok(Json.toJson(configs));
+	}
 
-    @Security.Authenticated(Secured.class)
-    public static Result findConfig(Long configId){
-        Config config = Config.read(configId);
-        return ok(Json.toJson(config));
-    }
+	@SubjectPresent
+	public static Result findConfig(Long aid, Long configId) {
+		Config config = Config.read(aid, configId);
+		return ok(Json.toJson(config));
+	}
 
-    @Security.Authenticated(Secured.class)
-    public static Result deleteConfig(Long configId){
-        Config.delete(configId);
-        return ok();
-    }
+	@SubjectPresent
+	public static Result deleteConfig(Long aid, Long configId) {
+		Config.delete(aid, configId);
+		return ok();
+	}
 
-    @Security.Authenticated(Secured.class)
-    public static Result updateConfig(Long configId) {
-        // 1. read the new role data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
+	@SubjectPresent
+	public static Result updateConfig(Long aid, Long configId) {
+		final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
+		if (newConfigForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONFIG_CREATE_MSG_ERROR,
+					newConfigForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			Config updatedConfig = newConfigForm.get();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			// make sure the config that's being updated is id = configId
+			updatedConfig.setConfigId(configId);
+			updatedConfig = Config.update(updatedConfig);
+			Logger.info("Updating config");
+			Logger.debug("=> " + newConfigForm.toString());
 
-        if (newConfigForm.hasErrors()) {
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(Messages.get(
-                    GlobalData.CONFIG_CREATE_MSG_ERROR, newConfigForm.errorsAsJson()));
-            return badRequest(Json.toJson(responseBody));
-        } else {
+			responseBody.setNewResourceId(updatedConfig.getConfigId());
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONFIG_CREATE_MSG_SUCCESS,
+					updatedConfig.getKey()));
+			responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH + "/"
+					+ updatedConfig.getConfigId());
+			return ok(Json.toJson(responseBody));
+		}
+	}
 
-            Config newConfig = newConfigForm.get();
+	@SubjectPresent
+	public static Result createConfig(Long aid) {
+		// 1. obtaining the user of the requestor
+		User configCreator = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 
-            TransferResponseStatus responseBody = new TransferResponseStatus();
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
 
-            if( Config.readByKey(newConfig.getKey()) > 0 ){
-                Logger.info("Config already exists");
-            }
-            else {
-                newConfig.setConfigId(configId);
-                newConfig.update();
-                Logger.info("Updating config");
-                Logger.debug("=> " + newConfigForm.toString());
+		if (newConfigForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONFIG_CREATE_MSG_ERROR,
+					newConfigForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
 
-                responseBody.setNewResourceId(newConfig.getConfigId());
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.CONFIG_CREATE_MSG_SUCCESS,
-                        newConfig.getKey()));
-                responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH + "/" + newConfig.getConfigId());
-            }
+			Config newConfig = newConfigForm.get();
 
-            return ok(Json.toJson(responseBody));
-        }
-    }
+			if (newConfig.getLang() == null)
+				newConfig.setLang(configCreator.getLanguage());
 
-    @Security.Authenticated(Secured.class)
-    public static Result createConfig() {
-        // 1. obtaining the user of the requestor
-        User configCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-        // 2. read the new role data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
+			if (Config.readByKey(newConfig.getKey()) > 0) {
+				Logger.info("Config already exists");
+			} else {
+				Assembly a = Assembly.read(aid);
+				newConfig.setAssembly(a);
+				Config.create(newConfig);
+				Logger.info("Creating new config");
+				Logger.debug("=> " + newConfigForm.toString());
 
-        if (newConfigForm.hasErrors()) {
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(Messages.get(
-                    GlobalData.CONFIG_CREATE_MSG_ERROR,newConfigForm.errorsAsJson()));
-            return badRequest(Json.toJson(responseBody));
-        } else {
+				responseBody.setNewResourceId(newConfig.getConfigId());
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.CONFIG_CREATE_MSG_SUCCESS,
+						newConfig.getKey()));
+				responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH
+						+ "/" + newConfig.getConfigId());
+			}
 
-            Config newConfig = newConfigForm.get();
-
-            if(newConfig.getLang() == null)
-                newConfig.setLang(configCreator.getLocale());
-
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-
-            if( Config.readByKey(newConfig.getKey()) > 0 ){
-                Logger.info("Config already exists");
-            }
-            else{
-                Config.create(newConfig);
-                Logger.info("Creating new config");
-                Logger.debug("=> " + newConfigForm.toString());
-
-                responseBody.setNewResourceId(newConfig.getConfigId());
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.CONFIG_CREATE_MSG_SUCCESS,
-                        newConfig.getKey()));
-                responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH+"/"+newConfig.getConfigId());
-            }
-
-            return ok(Json.toJson(responseBody));
-        }
-    }
+			return ok(Json.toJson(responseBody));
+		}
+	}
 }

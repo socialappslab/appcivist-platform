@@ -87,3 +87,5 @@ conf/play-authenticate/smtp.local.conf
 project/activator-sbt-echo-shim.sbt
 project/activator-sbt-eclipse-shim.sbt
 project/activator-sbt-idea-shim.sbt
+test/outputs/demo-1-console-output-example.txt
+test/outputs/demo-2-console-output-example.txt

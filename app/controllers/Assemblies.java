@@ -25,6 +25,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
 import utils.GlobalData;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
@@ -41,7 +42,8 @@ public class Assemblies extends Controller {
 	 * 
 	 * @return models.AssemblyCollection
 	 */
-	@Security.Authenticated(Secured.class)
+	// @Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result findAssemblies() {
 		AssemblyCollection assemblies = Assembly.findAll();
 		return ok(Json.toJson(assemblies));
@@ -52,7 +54,7 @@ public class Assemblies extends Controller {
 	 * 
 	 * @return models.AssemblyCollection
 	 */
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result searchAssemblies(String query) {
 		// check the user who is accepting the invitation is
 		// TODO
@@ -61,20 +63,7 @@ public class Assemblies extends Controller {
 		return notFound(Json.toJson(responseBody));
 	}
 
-	/**
-	 * Return the full list of issues for one assembly
-	 * 
-	 * @return models.IssueCollection
-	 */
-	@Security.Authenticated(Secured.class)
-	public static Result findIssues(Long aid) {
-		ServiceAssembly assembly = ServiceAssembly.read(aid);
-		ServiceIssueCollection issues = new ServiceIssueCollection();
-		issues.setIssues(assembly.getServiceIssues());
-		return ok(Json.toJson(issues));
-	}
-
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result createAssembly() {
 		// 1. obtaining the user of the requestor
 		User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
@@ -97,7 +86,7 @@ public class Assemblies extends Controller {
 			// method for this in each model)
 			newAssembly.setCreator(groupCreator);
 			if (newAssembly.getLang() == null)
-				newAssembly.setLang(groupCreator.getLocale());
+				newAssembly.setLang(groupCreator.getLanguage());
 
 			// TODO: check if assembly with same title exists
 			// if not add it
@@ -119,21 +108,21 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result findAssembly(Long id) {
 		Assembly a = Assembly.read(id);
-		return a != null ? ok(Json.toJson(a))
-				: notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA,
+		return a != null ? ok(Json.toJson(a)) : notFound(Json
+				.toJson(new TransferResponseStatus(ResponseStatus.NODATA,
 						"No assembly with ID = " + id)));
 	}
 
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result deleteAssembly(Long id) {
 		Assembly.delete(id);
 		return ok();
 	}
 
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result updateAssembly(Long id) {
 		// 1. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
@@ -167,7 +156,7 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result createAssemblyMembership(Long id, String type) {
 		// 1. obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
@@ -217,6 +206,19 @@ public class Assemblies extends Controller {
 	/*******************************************************
 	 * OLD ENDPOINTS - TO BE DEPRECATED SHORTLY
 	 */
+
+	/**
+	 * Return the full list of issues for one assembly
+	 * 
+	 * @return models.IssueCollection
+	 */
+	@SubjectPresent
+	public static Result findIssues(Long aid) {
+		ServiceAssembly assembly = ServiceAssembly.read(aid);
+		ServiceIssueCollection issues = new ServiceIssueCollection();
+		issues.setIssues(assembly.getServiceIssues());
+		return ok(Json.toJson(issues));
+	}
 
 	/**
 	 * Return the full list of campaigns for one issue

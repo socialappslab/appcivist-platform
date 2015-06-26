@@ -45,7 +45,7 @@ public class Membership extends AppCivistBaseModel {
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(name = "MEMBERSHIP_ROLE", joinColumns = { @JoinColumn(name = "membership_membership_id", referencedColumnName = "membership_id", nullable = false) }, inverseJoinColumns = { @JoinColumn(name = "role_role_id", referencedColumnName = "role_id", nullable = false) })
-	private List<Role> roles = new ArrayList<Role>();
+	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
 
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)
 	private String membershipType;
@@ -60,7 +60,7 @@ public class Membership extends AppCivistBaseModel {
 			Long.class, Membership.class);
 
 	public Membership(Long expiration, MembershipStatus status, User creator,
-			User user, List<Role> roles, String membershipType) {
+			User user, List<SecurityRole> roles, String membershipType) {
 		super();
 		this.expiration = expiration;
 		this.status = status;
@@ -118,11 +118,11 @@ public class Membership extends AppCivistBaseModel {
 		this.status = status;
 	}
 
-	public List<Role> getRoles() {
+	public List<SecurityRole> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(List<Role> roles) {
+	public void setRoles(List<SecurityRole> roles) {
 		this.roles = roles;
 	}
 
@@ -164,14 +164,12 @@ public class Membership extends AppCivistBaseModel {
 
 	public static Membership create(Membership membership) {
 		membership.save();
-		membership.saveManyToManyAssociations("roles");
 		membership.refresh();
 		return membership;
 	}
 
 	public static Membership createObject(Membership membership) {
 		membership.save();
-		membership.saveManyToManyAssociations("roles");
 		return membership;
 	}
 
@@ -213,7 +211,7 @@ public class Membership extends AppCivistBaseModel {
 		Membership m = GroupMembership.findByUserAndGroup(user, workingGroup);
 
 		if (roleForInvitations != null && m != null) {
-			for (Role userRole : m.getRoles()) {
+			for (SecurityRole userRole : m.getRoles()) {
 				userCanInvite = roleForInvitations.toString().toUpperCase()
 						.equals(userRole.getName().toUpperCase());
 				if (userCanInvite)
@@ -231,7 +229,7 @@ public class Membership extends AppCivistBaseModel {
 		Membership m = AssemblyMembership.findByUserAndAssembly(user, assembly);
 
 		if (roleForInvitations != null && m != null) {
-			for (Role userRole : m.getRoles()) {
+			for (SecurityRole userRole : m.getRoles()) {
 				userCanInvite = roleForInvitations.toString().toUpperCase()
 						.equals(userRole.getName().toUpperCase());
 				if(userCanInvite)

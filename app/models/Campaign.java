@@ -211,6 +211,10 @@ public class Campaign extends AppCivistBaseModel {
 		return campaigns;
 	}
 
+	public static List<Campaign> findByAssembly(Long aid) {
+		return find.where().eq("assembly.assemblyId", aid).findList();
+	}
+	
 	private void addPhase(CampaignPhase phase) {
 		this.phases.add(phase);
 	}
@@ -241,7 +245,9 @@ public class Campaign extends AppCivistBaseModel {
 		find.ref(id).delete();
 	}
 
-	public static void update(Long id) {
-		find.ref(id).update();
+	public static Campaign update(Campaign c) {
+		c.update();
+		c.refresh();
+		return c;
 	}
 }

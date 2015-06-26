@@ -20,7 +20,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http.Session;
 import play.mvc.Result;
-import play.mvc.Security;
 import play.mvc.With;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
@@ -28,6 +27,11 @@ import providers.MyUsernamePasswordAuthProvider.MyIdentity;
 import providers.MyUsernamePasswordAuthProvider.MyLogin;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
+import security.SecurityModelConstants;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
@@ -39,31 +43,22 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * Read-Only Endpoints
 	 ***************************************************************************************************/
-	@Security.Authenticated(Secured.class)
+	@Restrict({ @Group("ADMIN") })
 	public static Result getUsers() {
 		List<User> users = User.findAll();
-
-		if (request().accepts("application/xml")) {
-			return ok("<errorMessage>Not Implemented Yet</errorMessage>");
-		} else {
-			return ok(Json.toJson(users));
-		}
+		return ok(Json.toJson(users));
 	}
 
-	// TODO
-	public static Result getLoginForm() {
-		// return ok(views.html.login.render());
-		return notFound("TODO: Not Implemented Yet");
-	}
-
-	@Security.Authenticated(Secured.class)
+	// TODO dynamic controller that allows only ADMINS and SELFs to get the full
+	// information of an user
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result getUser(Long id) {
-		Logger.info("Obtaining user with id = "+id);
+		Logger.info("Obtaining user with id = " + id);
 		User u = User.findByUserId(id);
 		return ok(Json.toJson(u));
 	}
 
-	@Security.Authenticated(Secured.class)
+	@SubjectPresent
 	public static Result getCurrentUser(Long id) {
 		final User localUser = getLocalUser(session());
 		// UserBean bean = PlayDozerMapper.getInstance().map(localUser,
@@ -80,7 +75,7 @@ public class Users extends Controller {
 	 * CREATE Endpoints
 	 ***************************************************************************************************/
 	public static Result doSignup() {
-		
+
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
 				.bindFromRequest();
@@ -120,31 +115,34 @@ public class Users extends Controller {
 
 	/****************************************************************************************************
 	 * AUTHENTICATION Endpoints
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * 
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 ***************************************************************************************************/
-	public static Result doLogin() throws InstantiationException, IllegalAccessException {
+	public static Result doLogin() throws InstantiationException,
+			IllegalAccessException {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		Logger.info("REQUEST: Login => " + ctx().request());
 		Logger.info("REQUEST: Login JSON => " + ctx().request().body().asJson());
-		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM.bindFromRequest();
-		Logger.info("REQUEST: Login Form => "+filledForm.toString());
+		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
+				.bindFromRequest();
+		Logger.info("REQUEST: Login Form => " + filledForm.toString());
 		if (filledForm.hasErrors()) {
 			// User did not fill everything properly
 			// return badRequest(login.render(filledForm));
-			return badRequest("Errors in Data: "+filledForm.errorsAsJson());
+			return badRequest("Errors in Data: " + filledForm.errorsAsJson());
 		} else {
 			// Everything was filled
 			return MyUsernamePasswordAuthProvider.handleLogin(ctx());
 		}
-		
+
 	}
-	
+
 	public static Result doLogout() {
 		return notFound("TODO: Not Implemented Yet");
 	}
 
-	/** 
+	/**
 	 * Authentication Auxiliary Classes
 	 */
 	public static class Accept {
@@ -340,8 +338,7 @@ public class Users extends Controller {
 	// return PlayAuthenticate.merge(ctx(), merge);
 	// }
 	// }
-	
-	
+
 	public static class PasswordReset extends Users.PasswordChange {
 
 		public PasswordReset() {
@@ -366,10 +363,10 @@ public class Users extends Controller {
 
 	public static Result unverified() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-			
+
 		// return the User
-		return ok(toJson(Messages.get("playauthenticate.verify.email.cta"))); 
-//TODO		return ok(unverified.render());
+		return ok(toJson(Messages.get("playauthenticate.verify.email.cta")));
+		// TODO return ok(unverified.render());
 	}
 
 	private static final Form<MyIdentity> FORGOT_PASSWORD_FORM = form(MyIdentity.class);
@@ -382,7 +379,7 @@ public class Users extends Controller {
 			form = FORGOT_PASSWORD_FORM.fill(new MyIdentity(email));
 		}
 		return ok();
-//TODO		return ok(password_forgot.render(form));
+		// TODO return ok(password_forgot.render(form));
 	}
 
 	public static Result doForgotPassword() {
@@ -392,7 +389,7 @@ public class Users extends Controller {
 		if (filledForm.hasErrors()) {
 			// User did not fill in his/her email
 			return badRequest();
-//TODO			return badRequest(password_forgot.render(filledForm));
+			// TODO return badRequest(password_forgot.render(filledForm));
 		} else {
 			// The email address given *BY AN UNKNWON PERSON* to the form - we
 			// should find out if we actually have a user with this email
@@ -446,7 +443,8 @@ public class Users extends Controller {
 	 * @param type
 	 * @return
 	 */
-	protected static TokenAction tokenIsValid(final String token, final Type type) {
+	protected static TokenAction tokenIsValid(final String token,
+			final Type type) {
 		TokenAction ret = null;
 		if (token != null && !token.trim().isEmpty()) {
 			final TokenAction ta = TokenAction.findByToken(token, type);
@@ -463,11 +461,11 @@ public class Users extends Controller {
 		final TokenAction ta = tokenIsValid(token, Type.PASSWORD_RESET);
 		if (ta == null) {
 			return badRequest();
-//TODO			return badRequest(no_token_or_invalid.render());
+			// TODO return badRequest(no_token_or_invalid.render());
 		}
-			return ok();
-//TODO		return ok(password_reset.render(PASSWORD_RESET_FORM
-//				.fill(new PasswordReset(token))));
+		return ok();
+		// TODO return ok(password_reset.render(PASSWORD_RESET_FORM
+		// .fill(new PasswordReset(token))));
 	}
 
 	public static Result doResetPassword() {
@@ -476,7 +474,7 @@ public class Users extends Controller {
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			return badRequest();
-//TODO			return badRequest(password_reset.render(filledForm));
+			// TODO return badRequest(password_reset.render(filledForm));
 		} else {
 			final String token = filledForm.get().token;
 			final String newPassword = filledForm.get().password;
@@ -484,7 +482,7 @@ public class Users extends Controller {
 			final TokenAction ta = tokenIsValid(token, Type.PASSWORD_RESET);
 			if (ta == null) {
 				return badRequest();
-//TODO				return badRequest(no_token_or_invalid.render());
+				// TODO return badRequest(no_token_or_invalid.render());
 			}
 			final User u = ta.targetUser;
 			try {
@@ -512,40 +510,39 @@ public class Users extends Controller {
 						Messages.get("playauthenticate.reset_password.message.success.manual_login"));
 			}
 			return redirect(routes.Application.index());
-//TODO			return redirect(routes.Application.login());
+			// TODO return redirect(routes.Application.login());
 		}
 	}
 
 	public static Result exists() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		return ok(toJson(Messages.get("playauthenticate.user.exists.message")));
-//		return ok();
-//TODO		return ok(exists.render());
+		// return ok();
+		// TODO return ok(exists.render());
 	}
 
 	public static Result verify(final String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = tokenIsValid(token, Type.EMAIL_VERIFICATION);
 		if (ta == null) {
-			return badRequest(toJson(Messages.get("playauthenticate.token.error.message")));
-//TODO			return badRequest(no_token_or_invalid.render());
+			return badRequest(toJson(Messages
+					.get("playauthenticate.token.error.message")));
+			// TODO return badRequest(no_token_or_invalid.render());
 		}
 		final String email = ta.targetUser.getEmail();
-		User.verify(ta.targetUser);;
-//		flash(Application.FLASH_MESSAGE_KEY,
-//				Messages.get("playauthenticate.verify_email.success", email));
-//		if (Application.getLocalUser(session()) != null) {
-//			return redirect(routes.Application.index());
-//		} else {
-//			return ok();
-			return ok(toJson(Messages.get("playauthenticate.verify_email.success", email)));
-//TODO			return redirect(routes.Application.login());
-//		}
+		User.verify(ta.targetUser);
+		;
+		// flash(Application.FLASH_MESSAGE_KEY,
+		// Messages.get("playauthenticate.verify_email.success", email));
+		// if (Application.getLocalUser(session()) != null) {
+		// return redirect(routes.Application.index());
+		// } else {
+		// return ok();
+		return ok(toJson(Messages.get("playauthenticate.verify_email.success",
+				email)));
+		// TODO return redirect(routes.Application.login());
+		// }
 	}
-
-	
-	
-	
 
 	/****************************************************************************************************
 	 * Auxiliary Operations
