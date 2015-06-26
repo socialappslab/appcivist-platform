@@ -33,8 +33,6 @@ public class ServiceCampaign extends Model {
 	private String startDate;
 	private String endDate;
 	private Boolean enabled = true;
-	
-	private String test;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "previous_campaign")
@@ -83,8 +81,6 @@ public class ServiceCampaign extends Model {
 
 	public static void create(ServiceCampaign campaign) {
 		campaign.save();
-		campaign.saveManyToManyAssociations("availableOperations");
-		campaign.saveManyToManyAssociations("campaignResources");
 		campaign.refresh();
 	}
 

@@ -4,7 +4,8 @@ import static play.data.Form.form;
 
 import java.util.List;
 
-import com.feth.play.module.pa.PlayAuthenticate;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 
 import models.User;
 import models.SecurityRole;
@@ -27,30 +28,26 @@ public class Roles extends Controller {
 	 * 
 	 * @return Roles list
 	 */
-	@Security.Authenticated(Secured.class)
+	@Restrict({ @Group("ADMIN") })
 	public static Result findRoles() {
 		List<SecurityRole> roles = SecurityRole.findAll();
 		return ok(Json.toJson(roles));
 	}
 	
-	@Security.Authenticated(Secured.class)
+	@Restrict({ @Group("ADMIN") })
 	public static Result findRole(Long roleId) {
 		SecurityRole role = SecurityRole.read(roleId);
 		return ok(Json.toJson(role));
 	}
 	
-	@Security.Authenticated(Secured.class)
+	@Restrict({ @Group("ADMIN") })
 	public static Result deleteRole(Long roleId) {
 		SecurityRole.delete(roleId);
 		return ok();
 	}
 	
-	@Security.Authenticated(Secured.class)
+	@Restrict({ @Group("ADMIN") })
 	public static Result createRole() {
-		// 1. obtaining the user of the requestor
-		// Deprecated, roles don't really need creators
-		User roleCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-
 		// 2. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<SecurityRole> newRoleForm = ROLE_FORM.bindFromRequest();
@@ -86,7 +83,7 @@ public class Roles extends Controller {
 		}
 	}
 
-	@Security.Authenticated(Secured.class)
+	@Restrict({ @Group("ADMIN") })
 	public static Result updateRole(Long roleId) {
 		// 1. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()

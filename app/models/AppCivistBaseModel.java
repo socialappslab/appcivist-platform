@@ -4,7 +4,7 @@ import java.util.Date;
 
 import javax.persistence.MappedSuperclass;
 
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 import utils.GlobalData;
 
 @MappedSuperclass

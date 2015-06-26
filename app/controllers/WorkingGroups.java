@@ -1,27 +1,28 @@
 package controllers;
 
 import static play.data.Form.form;
+import http.Headers;
 
 import java.util.List;
 
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import enums.ResponseStatus;
 import models.User;
 import models.WorkingGroup;
 import models.transfer.TransferMembership;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.mvc.*;
-import play.i18n.Messages;
 import play.data.Form;
+import play.i18n.Messages;
 import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security;
+import play.mvc.With;
 import utils.GlobalData;
-import http.Headers;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import enums.ResponseStatus;
 
 @With(Headers.class)
 public class WorkingGroups extends Controller {

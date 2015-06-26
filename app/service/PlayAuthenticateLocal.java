@@ -88,7 +88,8 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			
 			//encoded = java.net.URLEncoder.encode(sb.toString(), "UTF-8");
 			encoded = sb.toString();
-			signed = Crypto.sign(encoded);
+			Crypto cryptoObject = play.Play.application().injector().instanceOf(Crypto.class);
+			signed = cryptoObject.sign(encoded);
 		} catch (UnsupportedEncodingException e) {
 			Logger.error(e.getMessage());
 			e.printStackTrace();

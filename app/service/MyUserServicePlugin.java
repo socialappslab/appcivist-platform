@@ -9,6 +9,10 @@ import com.feth.play.module.pa.service.UserServicePlugin;
 
 public class MyUserServicePlugin extends UserServicePlugin {
 
+//	public MyUserServicePlugin() {
+//		super();
+//	}
+//	
 	public MyUserServicePlugin(final Application app) {
 		super(app);
 	}

@@ -14,7 +14,6 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
 import utils.GlobalData;
 import models.transfer.TransferResponseStatus;
 import static play.data.Form.form;

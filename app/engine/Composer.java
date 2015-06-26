@@ -109,6 +109,7 @@ public class Composer {
 		return operation;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static ServiceParameter prepareOperationParameter(
 			ServiceOperation operation, ServiceParameterDefinition pDef, Map<String, Object> paramValues) {
 		
@@ -157,6 +158,7 @@ public class Composer {
 	 * @param paramValues
 	 * @return
 	 */
+	@SuppressWarnings({ "unchecked" })
 	private static Map<String, Object> processDataModel(
 											String parentKey,
 											List<ServiceParameterDataModel> dmList, 
@@ -166,7 +168,7 @@ public class Composer {
 		for (ServiceParameterDataModel dm : dmList) {
 			String dmKey = dm.getDataKey();
 			String dmDefault = dm.getDefaultValue();
-			Boolean dmRequired = dm.getRequired();
+			//Boolean dmRequired = dm.getRequired();
 			Boolean dmIsList = dm.getList();
 			ServiceParameterDefinition dmDef = dm.getDefinition();
 			ServiceParameterDataModel parent = dm.getParentDataModel();

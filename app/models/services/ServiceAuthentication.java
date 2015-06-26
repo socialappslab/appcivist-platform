@@ -1,17 +1,13 @@
 package models.services;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 
-import org.hibernate.validator.constraints.Length;
+import com.avaje.ebean.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import play.db.ebean.Model;
 
 @Entity
 public class ServiceAuthentication extends Model {
@@ -38,7 +34,7 @@ public class ServiceAuthentication extends Model {
 	 * Basic Data Queries
 	 */
 	
-	public static Model.Finder<Long, ServiceAuthentication> find = new Model.Finder<Long, ServiceAuthentication>(
+	public static Finder<Long, ServiceAuthentication> find = new Finder<Long, ServiceAuthentication>(
 			Long.class, ServiceAuthentication.class);
 
 	public static void create(ServiceAuthentication serviceAuth) {

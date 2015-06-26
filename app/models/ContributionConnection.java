@@ -4,15 +4,9 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-
-import play.db.ebean.Model;
 import enums.ContributionConnectionStatuses;
 import enums.ContributionConnectionTypes;
 
@@ -41,7 +35,7 @@ public class ContributionConnection extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, ContributionConnection> find = new Model.Finder<Long, ContributionConnection>(
+	public static Finder<Long, ContributionConnection> find = new Finder<Long, ContributionConnection>(
 			Long.class, ContributionConnection.class);
 
 	public ContributionConnection(ContributionConnectionTypes type,
