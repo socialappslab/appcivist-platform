@@ -24,10 +24,11 @@ public class Contribution extends AppCivistBaseModel {
 	private String title;
 	private String text;
 	private ContributionTypes type = ContributionTypes.COMMENT;
-	private Long upVotes;
-	private Long downVotes;
-	private User creator;
+	private User author;
 
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<User> additionalAuthors = new ArrayList<User>();
+	
 	@ManyToOne
 	private Assembly assembly;
 
@@ -43,6 +44,9 @@ public class Contribution extends AppCivistBaseModel {
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
 	
+	@OneToOne(cascade = CascadeType.ALL)
+	private ContributionStatistics stats;
+	
 	// TODO think of how to connect and move through to the campaign phases
 	
 	/**
@@ -55,7 +59,7 @@ public class Contribution extends AppCivistBaseModel {
 	public Contribution(User creator, String title, String text,
 			ContributionTypes type) {
 		super();
-		this.creator = creator;
+		this.author = creator;
 		this.title = title;
 		this.text = text;
 		this.type = type;
@@ -63,7 +67,7 @@ public class Contribution extends AppCivistBaseModel {
 
 	public Contribution(User creator, String title, String brief,
 			ContributionTypes type, Assembly assembly) {
-		this.creator = creator;
+		this.author = creator;
 		this.title = title;
 		this.text = brief;
 		this.type = type;
@@ -110,28 +114,20 @@ public class Contribution extends AppCivistBaseModel {
 		this.type = type;
 	}
 
-	public Long getUpVotes() {
-		return upVotes;
+	public User getAuthor() {
+		return author;
 	}
 
-	public void setUpVotes(Long upVotes) {
-		this.upVotes = upVotes;
+	public void setAuthor(User creator) {
+		this.author = creator;
 	}
 
-	public Long getDownVotes() {
-		return downVotes;
+	public List<User> getAdditionalAuthors() {
+		return additionalAuthors;
 	}
 
-	public void setDownVotes(Long downVotes) {
-		this.downVotes = downVotes;
-	}
-
-	public User getCreator() {
-		return creator;
-	}
-
-	public void setCreator(User creator) {
-		this.creator = creator;
+	public void setAdditionalAuthors(List<User> additionalAuthors) {
+		this.additionalAuthors = additionalAuthors;
 	}
 
 	public Assembly getAssembly() {
@@ -174,6 +170,14 @@ public class Contribution extends AppCivistBaseModel {
 		this.hashtags = hashtags;
 	}
 
+	public ContributionStatistics getStats() {
+		return stats;
+	}
+
+	public void setStats(ContributionStatistics stats) {
+		this.stats = stats;
+	}
+
 	/*
 	 * Basic Data Operations
 	 */
@@ -191,6 +195,13 @@ public class Contribution extends AppCivistBaseModel {
 		return contribCollection;
 	}
 
+
+	public static ContributionCollection findAllByAssembly(Long aid) {
+		List<Contribution> contribs = find.where().eq("assembly.assemblyId", aid).findList();
+		ContributionCollection contribCollection = new ContributionCollection();
+		contribCollection.setContributions(contribs);
+		return contribCollection;
+	}
 	public static void create(Contribution issue) {
 		issue.save();
 		issue.refresh();
@@ -214,8 +225,14 @@ public class Contribution extends AppCivistBaseModel {
 		find.ref(id).delete();
 	}
 
-	public static void update(Long id) {
-		find.ref(id).update();
+	public static void delete(Contribution c) {
+		c.delete();
+	}
+
+	public static Contribution update(Contribution c) {
+		c.update();
+		c.refresh();
+		return c;
 	}
 
 	/*

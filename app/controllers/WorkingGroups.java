@@ -1,23 +1,28 @@
 package controllers;
 
 import static play.data.Form.form;
+import http.Headers;
 
 import java.util.List;
 
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import enums.ResponseStatus;
 import models.User;
 import models.WorkingGroup;
 import models.transfer.TransferMembership;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.mvc.*;
-import play.i18n.Messages;
 import play.data.Form;
+import play.i18n.Messages;
 import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Security;
+import play.mvc.With;
 import utils.GlobalData;
-import http.Headers;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import enums.ResponseStatus;
 
 @With(Headers.class)
 public class WorkingGroups extends Controller {
@@ -30,16 +35,16 @@ public class WorkingGroups extends Controller {
 	 * 
 	 * @return WorkingGroup list
 	 */
-	@Security.Authenticated(Secured.class)
-	public static Result findWorkingGroups() {
-		List<WorkingGroup> workingGroups = WorkingGroup.findAll();
+	@SubjectPresent
+	public static Result findWorkingGroups(Long aid) {
+		List<WorkingGroup> workingGroups = WorkingGroup.findByAssembly(aid);
 		return ok(Json.toJson(workingGroups));
 	}
 
 	// TODO make a read working group for non members
 	// TODO only members of the group can read the whole group
-	@Security.Authenticated(Secured.class)
-	public static Result findWorkingGroup(Long wGroupId) {
+	@SubjectPresent
+	public static Result findWorkingGroup(Long aid, Long wGroupId) {
 		WorkingGroup workingGroup = WorkingGroup.read(wGroupId);
 		return workingGroup != null ? ok(Json.toJson(workingGroup))
 				: notFound(Json
@@ -48,14 +53,16 @@ public class WorkingGroups extends Controller {
 										+ wGroupId)));
 	}
 
-	@Security.Authenticated(Secured.class)
-	public static Result deleteWorkingGroup(Long wGroupId) {
+	@SubjectPresent
+//	@Restrict({@Group("COORDINATOR")})
+	public static Result deleteWorkingGroup(Long aid, Long wGroupId) {
 		WorkingGroup.delete(wGroupId);
 		return ok();
 	}
 
-	@Security.Authenticated(Secured.class)
-	public static Result createWorkingGroup() {
+	// TODO ASSEMMBLY MEMBER can create if he/she is COORDINATOR or if the assembly is open to groups
+	@SubjectPresent
+	public static Result createWorkingGroup(Long aid) {
 		// 1. obtaining the user of the requestor
 		User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -79,7 +86,7 @@ public class WorkingGroups extends Controller {
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if (WorkingGroup.readByTitle(newWorkingGroup.getName()) > 0) {
+			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
 				Logger.info("Working Group already exists");
 			} else {
 				if (newWorkingGroup.getCreator() == null) {
@@ -108,7 +115,7 @@ public class WorkingGroups extends Controller {
 	}
 
 	@Security.Authenticated(Secured.class)
-	public static Result updateWorkingGroup(Long groupId) {
+	public static Result updateWorkingGroup(Long aid, Long groupId) {
 		// 1. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<WorkingGroup> newWorkingGroupForm = WORKING_GROUP_FORM
@@ -125,7 +132,7 @@ public class WorkingGroups extends Controller {
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if (WorkingGroup.readByTitle(newWorkingGroup.getName()) > 0) {
+			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
 				String status_message = "Working group already exists with the same name already exists";
 				Logger.info(status_message);
 				responseBody.setResponseStatus(ResponseStatus.UNAUTHORIZED);
@@ -153,10 +160,8 @@ public class WorkingGroups extends Controller {
 		}
 	}
 
-	// POST /api/group/:id/membership/:type
-	// controllers.WorkingGroups.createGroupMembership(id: Long, type: String)
-	@Security.Authenticated(Secured.class)
-	public static Result createGroupMembership(Long id, String type) {
+	@SubjectPresent
+	public static Result createGroupMembership(Long aid, Long id, String type) {
 		// 1. obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -181,10 +186,8 @@ public class WorkingGroups extends Controller {
 		}
 	}
 
-	// GET /api/group/:id/membership
-	// controllers.WorkingGroups.listMemberships(id: Long)
-	@Security.Authenticated(Secured.class)
-	public static Result listMemberships(Long id) {
+	@SubjectPresent
+	public static Result listMemberships(Long aid, Long id) {
 		// check the user who is accepting the invitation is
 		// TODO
 		TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -192,11 +195,8 @@ public class WorkingGroups extends Controller {
 		return notFound(Json.toJson(responseBody));
 	}
 
-	// GET /api/group/:id/membership/:status
-	// controllers.WorkingGroups.listMembershipsWithStatus(id: Long, status:
-	// String)
-	@Security.Authenticated(Secured.class)
-	public static Result listMembershipsWithStatus(Long id, String status) {
+	@SubjectPresent
+	public static Result listMembershipsWithStatus(Long aid, Long id, String status) {
 		// check the user who is accepting the invitation is
 		// TODO
 		TransferResponseStatus responseBody = new TransferResponseStatus();

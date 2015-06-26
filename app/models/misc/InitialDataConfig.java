@@ -1,15 +1,12 @@
 package models.misc;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import models.ConfigDefinition;
-import play.db.ebean.Model;
-import enums.TaskStatus;
+import com.avaje.ebean.Model;
 
 @Entity
 public class InitialDataConfig extends Model {
@@ -25,7 +22,7 @@ public class InitialDataConfig extends Model {
 	private String dataFile;
 	private Boolean loaded = true;
 
-	public static Model.Finder<Long, InitialDataConfig> find = new Model.Finder<Long, InitialDataConfig>(
+	public static Finder<Long, InitialDataConfig> find = new Finder<Long, InitialDataConfig>(
 			Long.class, InitialDataConfig.class);
 
 	public InitialDataConfig(String dataFile, Boolean loaded) {

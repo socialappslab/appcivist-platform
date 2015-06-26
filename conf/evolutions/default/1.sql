@@ -4,7 +4,7 @@
 # --- !Ups
 
 create table assembly (
-  assembly_id               bigint not null,
+  assembly_id               bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -22,11 +22,12 @@ create table assembly (
   location_location_id      bigint,
   constraint ck_assembly_visibiliy check (visibiliy in (0,1,2)),
   constraint ck_assembly_membership_role check (membership_role in (0,1,2,3)),
+  constraint uq_assembly_location_location_id unique (location_location_id),
   constraint pk_assembly primary key (assembly_id))
 ;
 
 create table assembly_connection (
-  assembly_connection_id    bigint not null,
+  assembly_connection_id    bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -40,7 +41,7 @@ create table assembly_connection (
 ;
 
 create table campaign (
-  campaign_id               bigint not null,
+  campaign_id               bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -55,11 +56,12 @@ create table campaign (
   assembly_assembly_id      bigint,
   type_campaign_type_id     bigint,
   constraint ck_campaign_visibility check (visibility in (0,1,2)),
+  constraint uq_campaign_type_campaign_type_i unique (type_campaign_type_id),
   constraint pk_campaign primary key (campaign_id))
 ;
 
 create table campaign_phase (
-  phase_id                  bigint not null,
+  phase_id                  bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -70,11 +72,12 @@ create table campaign_phase (
   campaign_campaign_id      bigint,
   definition_phase_definition_id bigint,
   can_overlap               boolean,
+  constraint uq_campaign_phase_definition_pha unique (definition_phase_definition_id),
   constraint pk_campaign_phase primary key (phase_id))
 ;
 
 create table campaign_phase_contribution (
-  campaign_phase_contribution_id bigint not null,
+  campaign_phase_contribution_id bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -85,11 +88,12 @@ create table campaign_phase_contribution (
   phase_phase_id            bigint,
   group_id                  bigint,
   constraint ck_campaign_phase_contribution_type check (type in (0,1,2)),
+  constraint uq_campaign_phase_contribution_g unique (group_id),
   constraint pk_campaign_phase_contribution primary key (campaign_phase_contribution_id))
 ;
 
 create table campaign_type (
-  campaign_type_id          bigint not null,
+  campaign_type_id          bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -102,7 +106,7 @@ create table campaign_type (
 ;
 
 create table category (
-  category_id               bigint not null,
+  category_id               bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -114,7 +118,7 @@ create table category (
 ;
 
 create table config (
-  config_id                 bigint not null,
+  config_id                 bigserial not null,
   module_mod_id             bigint not null,
   creation                  timestamp,
   last_update               timestamp,
@@ -130,11 +134,12 @@ create table config (
   assembly_assembly_id      bigint,
   working_group_group_id    bigint,
   constraint ck_config_config_target check (config_target in (0,1,2,3,4)),
+  constraint uq_config_definition_config_defi unique (definition_config_definition_id),
   constraint pk_config primary key (config_id))
 ;
 
 create table config_definition (
-  config_definition_id      bigint not null,
+  config_definition_id      bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -148,7 +153,7 @@ create table config_definition (
 ;
 
 create table contribution (
-  contribution_id           bigint not null,
+  contribution_id           bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -157,16 +162,17 @@ create table contribution (
   title                     varchar(255),
   text                      varchar(255),
   type                      integer,
-  up_votes                  bigint,
-  down_votes                bigint,
   assembly_assembly_id      bigint,
   location_location_id      bigint,
-  constraint ck_contribution_type check (type in (0,1,2,3)),
+  stats_contribution_statistics_id bigint,
+  constraint ck_contribution_type check (type in (0,1,2,3,4,5)),
+  constraint uq_contribution_location_locatio unique (location_location_id),
+  constraint uq_contribution_stats_contributi unique (stats_contribution_statistics_id),
   constraint pk_contribution primary key (contribution_id))
 ;
 
 create table contribution_connection (
-  contribution_connection_id bigint not null,
+  contribution_connection_id bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -174,9 +180,6 @@ create table contribution_connection (
   removed                   boolean,
   type                      integer,
   status                    integer,
-  up_votes                  bigint,
-  down_votes                bigint,
-  group_id                  bigint,
   source_contribution_contribution_id bigint,
   target_contribution_contribution_id bigint,
   constraint ck_contribution_connection_type check (type in (0,1,2,3,4,5)),
@@ -184,8 +187,24 @@ create table contribution_connection (
   constraint pk_contribution_connection primary key (contribution_connection_id))
 ;
 
+create table contribution_statistics (
+  contribution_statistics_id bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  ups                       bigint,
+  downs                     bigint,
+  favs                      bigint,
+  views                     bigint,
+  replies                   bigint,
+  flags                     bigint,
+  constraint pk_contribution_statistics primary key (contribution_statistics_id))
+;
+
 create table geo (
-  location_id               bigint not null,
+  location_id               bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -196,7 +215,7 @@ create table geo (
 ;
 
 create table geometry (
-  geometry_id               bigint not null,
+  geometry_id               bigserial not null,
   type                      integer,
   coordinates               varchar(255),
   geo_location_id           bigint,
@@ -205,7 +224,7 @@ create table geometry (
 ;
 
 create table hashtag (
-  hashtag_id                bigint not null,
+  hashtag_id                bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -216,14 +235,14 @@ create table hashtag (
 ;
 
 create table initial_data_config (
-  data_file_id              bigint not null,
+  data_file_id              bigserial not null,
   data_file                 varchar(255),
   loaded                    boolean,
   constraint pk_initial_data_config primary key (data_file_id))
 ;
 
 create table Linked_Account (
-  account_id                bigint not null,
+  account_id                bigserial not null,
   user_id                   bigint,
   provider_user_id          varchar(255),
   provider_key              varchar(255),
@@ -231,7 +250,7 @@ create table Linked_Account (
 ;
 
 create table meeting (
-  meeting_id                bigint not null,
+  meeting_id                bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -248,8 +267,8 @@ create table meeting (
 ;
 
 create table membership (
-  MEMBERSHIP_TYPE           varchar(31) not null,
-  membership_id             bigint not null,
+  membership_type           varchar(31) not null,
+  membership_id             bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -266,7 +285,7 @@ create table membership (
 ;
 
 create table message (
-  message_id                bigint not null,
+  message_id                bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -283,7 +302,7 @@ create table message (
 ;
 
 create table module (
-  mod_id                    bigint not null,
+  mod_id                    bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -295,7 +314,7 @@ create table module (
 ;
 
 create table note (
-  note_id                   bigint not null,
+  note_id                   bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -307,7 +326,7 @@ create table note (
 ;
 
 create table phase_definition (
-  phase_definition_id       bigint not null,
+  phase_definition_id       bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -318,7 +337,7 @@ create table phase_definition (
 ;
 
 create table properties (
-  properties_id             bigint not null,
+  properties_id             bigserial not null,
   key                       varchar(255),
   value                     varchar(255),
   geo_location_id           bigint,
@@ -326,7 +345,7 @@ create table properties (
 ;
 
 create table required_campaign_configuration (
-  required_phase_configuration_id bigint not null,
+  required_phase_configuration_id bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -338,7 +357,7 @@ create table required_campaign_configuration (
 ;
 
 create table required_phase_configuration (
-  required_phase_configuration_id bigint not null,
+  required_phase_configuration_id bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -350,7 +369,7 @@ create table required_phase_configuration (
 ;
 
 create table resource (
-  resource_id               bigint not null,
+  resource_id               bigserial not null,
   contribution_contribution_id bigint not null,
   creation                  timestamp,
   last_update               timestamp,
@@ -362,17 +381,18 @@ create table resource (
   url                       varchar(255),
   location_location_id      bigint,
   constraint ck_resource_type check (type in (0,1,2,3,4,5,6,7,8,9,10)),
+  constraint uq_resource_location_location_id unique (location_location_id),
   constraint pk_resource primary key (resource_id))
 ;
 
 create table security_role (
-  role_id                   bigint not null,
+  role_id                   bigserial not null,
   name                      varchar(255),
   constraint pk_security_role primary key (role_id))
 ;
 
 create table service (
-  service_id                bigint not null,
+  service_id                bigserial not null,
   name                      varchar(255),
   base_url                  varchar(255),
   assembly_assembly_id      bigint,
@@ -382,7 +402,7 @@ create table service (
 ;
 
 create table service_assembly (
-  assembly_id               bigint not null,
+  assembly_id               bigserial not null,
   name                      varchar(255),
   description               varchar(255),
   city                      varchar(255),
@@ -392,7 +412,7 @@ create table service_assembly (
 ;
 
 create table service_authentication (
-  service_authentication_id bigint not null,
+  service_authentication_id bigserial not null,
   auth_type                 varchar(255),
   token                     varchar(2048),
   token_injection           varchar(255),
@@ -402,29 +422,30 @@ create table service_authentication (
 ;
 
 create table service_campaign (
-  campaign_id               bigint not null,
+  campaign_id               bigserial not null,
   name                      varchar(255),
   url                       varchar(255),
   start_date                varchar(255),
   end_date                  varchar(255),
   enabled                   boolean,
-  test                      varchar(255),
   previous_campaign         bigint,
   next_campaign             bigint,
   issue_issue_id            bigint,
   start_operation_service_operation_id bigint,
   start_operation_type      varchar(255),
+  constraint uq_service_campaign_previous_cam unique (previous_campaign),
+  constraint uq_service_campaign_next_campaig unique (next_campaign),
   constraint pk_service_campaign primary key (campaign_id))
 ;
 
 create table service_definition (
-  service_definition_id     bigint not null,
+  service_definition_id     bigserial not null,
   name                      varchar(255),
   constraint pk_service_definition primary key (service_definition_id))
 ;
 
 create table service_issue (
-  issue_id                  bigint not null,
+  issue_id                  bigserial not null,
   title                     varchar(255),
   brief                     varchar(255),
   type                      varchar(255),
@@ -435,26 +456,28 @@ create table service_issue (
 ;
 
 create table service_operation (
-  service_operation_id      bigint not null,
+  service_operation_id      bigserial not null,
   app_civist_operation      varchar(255),
   expected_resource         varchar(255),
   operation_definition_id   bigint,
   service_service_id        bigint,
+  constraint uq_service_operation_operation_d unique (operation_definition_id),
   constraint pk_service_operation primary key (service_operation_id))
 ;
 
 create table service_operation_definition (
-  operation_definition_id   bigint not null,
+  operation_definition_id   bigserial not null,
   name                      varchar(255),
   type                      varchar(255),
   method                    varchar(255),
   service_definition_service_definition_id bigint,
   name_on_path              boolean,
+  constraint uq_service_operation_definition_ unique (service_definition_service_definition_id),
   constraint pk_service_operation_definition primary key (operation_definition_id))
 ;
 
 create table service_parameter (
-  service_parameter_id      bigint not null,
+  service_parameter_id      bigserial not null,
   value                     varchar(255),
   service_parameter_parameter_definition_id bigint,
   service_resource_service_resource_id bigint,
@@ -463,7 +486,7 @@ create table service_parameter (
 ;
 
 create table service_parameter_data_model (
-  data_model_id             bigint not null,
+  data_model_id             bigserial not null,
   data_key                  varchar(255),
   annotations               varchar(255),
   default_value             varchar(255),
@@ -475,7 +498,7 @@ create table service_parameter_data_model (
 ;
 
 create table service_parameter_definition (
-  parameter_definition_id   bigint not null,
+  parameter_definition_id   bigserial not null,
   service_operation_definition_operation_definition_id bigint not null,
   name                      varchar(255),
   type                      varchar(255),
@@ -487,7 +510,7 @@ create table service_parameter_definition (
 ;
 
 create table service_resource (
-  service_resource_id       bigint not null,
+  service_resource_id       bigserial not null,
   url                       varchar(255),
   type                      varchar(255),
   key_value                 varchar(255),
@@ -499,7 +522,7 @@ create table service_resource (
 ;
 
 create table task (
-  task_id                   bigint not null,
+  task_id                   bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -515,7 +538,7 @@ create table task (
 ;
 
 create table Token_Action (
-  token_id                  bigint not null,
+  token_id                  bigserial not null,
   token                     varchar(255),
   user_id                   bigint,
   type                      varchar(2),
@@ -527,7 +550,7 @@ create table Token_Action (
 ;
 
 create table appcivist_user (
-  user_id                   bigint not null,
+  user_id                   bigserial not null,
   email                     varchar(255),
   name                      varchar(255),
   username                  varchar(255),
@@ -539,13 +562,13 @@ create table appcivist_user (
 ;
 
 create table user_permission (
-  permission_id             bigint not null,
+  permission_id             bigserial not null,
   permission_value          varchar(255),
   constraint pk_user_permission primary key (permission_id))
 ;
 
 create table user_profile (
-  profile_id                bigint not null,
+  profile_id                bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -560,7 +583,7 @@ create table user_profile (
 ;
 
 create table working_group (
-  group_id                  bigint not null,
+  group_id                  bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -571,7 +594,6 @@ create table working_group (
   is_public                 boolean,
   accept_requests           boolean,
   membership_role           integer,
-  test_field                bigint,
   constraint ck_working_group_membership_role check (membership_role in (0,1,2,3)),
   constraint pk_working_group primary key (group_id))
 ;
@@ -599,6 +621,12 @@ create table campaign_type_phase_definition (
   campaign_type_campaign_type_id bigint not null,
   phase_definition_phase_definition_id bigint not null,
   constraint pk_campaign_type_phase_definition primary key (campaign_type_campaign_type_id, phase_definition_phase_definition_id))
+;
+
+create table contribution_appcivist_user (
+  contribution_contribution_id   bigint not null,
+  appcivist_user_user_id         bigint not null,
+  constraint pk_contribution_appcivist_user primary key (contribution_contribution_id, appcivist_user_user_id))
 ;
 
 create table contribution_category (
@@ -660,96 +688,6 @@ create table working_group_resource (
   resource_resource_id           bigint not null,
   constraint pk_working_group_resource primary key (working_group_group_id, resource_resource_id))
 ;
-create sequence assembly_seq;
-
-create sequence assembly_connection_seq;
-
-create sequence campaign_seq;
-
-create sequence campaign_phase_seq;
-
-create sequence campaign_phase_contribution_seq;
-
-create sequence campaign_type_seq;
-
-create sequence category_seq;
-
-create sequence config_seq;
-
-create sequence config_definition_seq;
-
-create sequence contribution_seq;
-
-create sequence contribution_connection_seq;
-
-create sequence geo_seq;
-
-create sequence geometry_seq;
-
-create sequence hashtag_seq;
-
-create sequence initial_data_config_seq;
-
-create sequence Linked_Account_seq;
-
-create sequence meeting_seq;
-
-create sequence membership_seq;
-
-create sequence message_seq;
-
-create sequence module_seq;
-
-create sequence note_seq;
-
-create sequence phase_definition_seq;
-
-create sequence properties_seq;
-
-create sequence required_campaign_configuration_seq;
-
-create sequence required_phase_configuration_seq;
-
-create sequence resource_seq;
-
-create sequence security_role_seq;
-
-create sequence service_seq;
-
-create sequence service_assembly_seq;
-
-create sequence service_authentication_seq;
-
-create sequence service_campaign_seq;
-
-create sequence service_definition_seq;
-
-create sequence service_issue_seq;
-
-create sequence service_operation_seq;
-
-create sequence service_operation_definition_seq;
-
-create sequence service_parameter_seq;
-
-create sequence service_parameter_data_model_seq;
-
-create sequence service_parameter_definition_seq;
-
-create sequence service_resource_seq;
-
-create sequence task_seq;
-
-create sequence Token_Action_seq;
-
-create sequence appcivist_user_seq;
-
-create sequence user_permission_seq;
-
-create sequence user_profile_seq;
-
-create sequence working_group_seq;
-
 alter table assembly add constraint fk_assembly_location_1 foreign key (location_location_id) references geo (location_id);
 create index ix_assembly_location_1 on assembly (location_location_id);
 alter table assembly_connection add constraint fk_assembly_connection_sourceA_2 foreign key (source_assembly_assembly_id) references assembly (assembly_id);
@@ -786,8 +724,8 @@ alter table contribution add constraint fk_contribution_assembly_17 foreign key 
 create index ix_contribution_assembly_17 on contribution (assembly_assembly_id);
 alter table contribution add constraint fk_contribution_location_18 foreign key (location_location_id) references geo (location_id);
 create index ix_contribution_location_18 on contribution (location_location_id);
-alter table contribution_connection add constraint fk_contribution_connection_ow_19 foreign key (group_id) references working_group (group_id);
-create index ix_contribution_connection_ow_19 on contribution_connection (group_id);
+alter table contribution add constraint fk_contribution_stats_19 foreign key (stats_contribution_statistics_id) references contribution_statistics (contribution_statistics_id);
+create index ix_contribution_stats_19 on contribution (stats_contribution_statistics_id);
 alter table contribution_connection add constraint fk_contribution_connection_so_20 foreign key (source_contribution_contribution_id) references contribution (contribution_id);
 create index ix_contribution_connection_so_20 on contribution_connection (source_contribution_contribution_id);
 alter table contribution_connection add constraint fk_contribution_connection_ta_21 foreign key (target_contribution_contribution_id) references contribution (contribution_id);
@@ -885,6 +823,10 @@ alter table campaign_type_phase_definition add constraint fk_campaign_type_phase
 
 alter table campaign_type_phase_definition add constraint fk_campaign_type_phase_defini_02 foreign key (phase_definition_phase_definition_id) references phase_definition (phase_definition_id);
 
+alter table contribution_appcivist_user add constraint fk_contribution_appcivist_use_01 foreign key (contribution_contribution_id) references contribution (contribution_id);
+
+alter table contribution_appcivist_user add constraint fk_contribution_appcivist_use_02 foreign key (appcivist_user_user_id) references appcivist_user (user_id);
+
 alter table contribution_category add constraint fk_contribution_category_cont_01 foreign key (contribution_contribution_id) references contribution (contribution_id);
 
 alter table contribution_category add constraint fk_contribution_category_cate_02 foreign key (category_category_id) references category (category_id);
@@ -955,11 +897,15 @@ drop table if exists config_definition cascade;
 
 drop table if exists contribution cascade;
 
+drop table if exists contribution_appcivist_user cascade;
+
 drop table if exists contribution_category cascade;
 
 drop table if exists contribution_hashtag cascade;
 
 drop table if exists contribution_connection cascade;
+
+drop table if exists contribution_statistics cascade;
 
 drop table if exists geo cascade;
 
@@ -1044,94 +990,4 @@ drop table if exists working_group cascade;
 drop table if exists working_group_assembly cascade;
 
 drop table if exists working_group_resource cascade;
-
-drop sequence if exists assembly_seq;
-
-drop sequence if exists assembly_connection_seq;
-
-drop sequence if exists campaign_seq;
-
-drop sequence if exists campaign_phase_seq;
-
-drop sequence if exists campaign_phase_contribution_seq;
-
-drop sequence if exists campaign_type_seq;
-
-drop sequence if exists category_seq;
-
-drop sequence if exists config_seq;
-
-drop sequence if exists config_definition_seq;
-
-drop sequence if exists contribution_seq;
-
-drop sequence if exists contribution_connection_seq;
-
-drop sequence if exists geo_seq;
-
-drop sequence if exists geometry_seq;
-
-drop sequence if exists hashtag_seq;
-
-drop sequence if exists initial_data_config_seq;
-
-drop sequence if exists Linked_Account_seq;
-
-drop sequence if exists meeting_seq;
-
-drop sequence if exists membership_seq;
-
-drop sequence if exists message_seq;
-
-drop sequence if exists module_seq;
-
-drop sequence if exists note_seq;
-
-drop sequence if exists phase_definition_seq;
-
-drop sequence if exists properties_seq;
-
-drop sequence if exists required_campaign_configuration_seq;
-
-drop sequence if exists required_phase_configuration_seq;
-
-drop sequence if exists resource_seq;
-
-drop sequence if exists security_role_seq;
-
-drop sequence if exists service_seq;
-
-drop sequence if exists service_assembly_seq;
-
-drop sequence if exists service_authentication_seq;
-
-drop sequence if exists service_campaign_seq;
-
-drop sequence if exists service_definition_seq;
-
-drop sequence if exists service_issue_seq;
-
-drop sequence if exists service_operation_seq;
-
-drop sequence if exists service_operation_definition_seq;
-
-drop sequence if exists service_parameter_seq;
-
-drop sequence if exists service_parameter_data_model_seq;
-
-drop sequence if exists service_parameter_definition_seq;
-
-drop sequence if exists service_resource_seq;
-
-drop sequence if exists task_seq;
-
-drop sequence if exists Token_Action_seq;
-
-drop sequence if exists appcivist_user_seq;
-
-drop sequence if exists user_permission_seq;
-
-drop sequence if exists user_profile_seq;
-
-drop sequence if exists working_group_seq;
 

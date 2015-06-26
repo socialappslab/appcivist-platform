@@ -6,7 +6,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
 import javax.persistence.Table;
 
 import play.db.ebean.Model;
@@ -28,7 +27,7 @@ public class LinkedAccount extends Model {
 	private Long accountId;
 
 	@ManyToOne
-	@MapsId
+	//@MapsId
 	@JoinColumn(name="user_id")
 	private User user;
 

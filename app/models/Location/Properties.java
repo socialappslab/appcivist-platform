@@ -10,7 +10,11 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Properties extends Model{
 
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2121615831020172363L;
+	@Id
     private Long propertiesId;
     private String key;
     private String value;

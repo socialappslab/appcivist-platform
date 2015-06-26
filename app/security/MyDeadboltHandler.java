@@ -17,10 +17,21 @@ import be.objectify.deadbolt.core.models.Subject;
 import be.objectify.deadbolt.java.AbstractDeadboltHandler;
 import be.objectify.deadbolt.java.DynamicResourceHandler;
 
+import java.util.Optional;
+
+/**
+ * Default authorization handler
+ * 
+ * @author cdparra
+ *
+ */
 public class MyDeadboltHandler extends AbstractDeadboltHandler {
 
-	@Override
-	public F.Promise<Result> beforeAuthCheck(Context context) {
+	public F.Promise<Optional<Result>> beforeAuthCheck(final Context context) {
+		// returning null means that everything is OK. Return a real result if
+		// you want a redirect to a login page or
+		// somewhere else
+
 		if (Secured.isLoggedIn(context)) {
 			// user is logged in
 			return null;
@@ -33,41 +44,33 @@ public class MyDeadboltHandler extends AbstractDeadboltHandler {
 			// defined by your resolver
 			final String originalUrl = context.request().uri();
 
-			//			context.flash().put("error",
-			//					"You need to log in first, to view '" + originalUrl + "'");
-			// return redirect(PlayAuthenticate.getResolver().login());
-			
-			return Promise.promise(() -> forbidden(Json
+			return Promise.promise(() -> Optional.of(forbidden(Json
 					.toJson(new TransferResponseStatus(
 							ResponseStatus.UNAUTHORIZED,
 							"You need to log in first, to view '" + originalUrl
-									+ "'"))));
+									+ "'")))));
 		}
-		
+
 	}
 
-	@Override
-	public Promise<Subject> getSubject(Context context) {
-		if (!Secured.isLoggedIn(context)) {
+	public Promise<Optional<Subject>> getSubject(Context context) {
+		if (!Secured.isLoggedIn(context))
 			return null;
-		}
 
 		final AuthUserIdentity u = PlayAuthenticate.getUser(context);
-		return Promise.promise(() -> User.findByAuthUserIdentity(u));
-		//return User.findByAuthUserIdentity(u);
-
+		return Promise.promise(() -> Optional.ofNullable(User
+				.findByAuthUserIdentity(u)));
 	}
 
-	@Override
 	public Promise<Result> onAuthFailure(Context context, String content) {
 		return Promise.promise(() -> forbidden(Json
 				.toJson(new TransferResponseStatus(ResponseStatus.UNAUTHORIZED,
-						"Authentication failed"))));
+						"Authentication failed: " + content))));
 	}
 
-	@Override
-	public DynamicResourceHandler getDynamicResourceHandler(Context context) {
-		return new MyDynamicResourceHandler();
+	public Promise<Optional<DynamicResourceHandler>> getDynamicResourceHandler(
+			Context context) {
+		return F.Promise.promise(() -> Optional
+				.of(new MyDynamicResourceHandler()));
 	}
-
 }

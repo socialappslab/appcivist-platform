@@ -54,8 +54,10 @@ public class SecurityRole extends Model implements Role {
 		find.ref(id).delete();
 	}
 
-	public static void update(Long id) {
-		find.ref(id).update();
+	public static SecurityRole update(SecurityRole role) {
+		role.update();
+		role.refresh();
+		return role;
 	}
 
 	public Long getRoleId() {

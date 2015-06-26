@@ -15,8 +15,7 @@ GET     /public/*file                                controllers.Assets.at(path=
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
 # TODO: cleanup, remove what is not used and keep what's important
-GET     /api/user                                     controllers.Users.getUsers() 
-GET     /api/user/login                               controllers.Users.getLoginForm()
+GET     /api/users                                    controllers.Users.getUsers() 
 GET     /api/user/:uid                                controllers.Users.getUser(uid: Long)
 GET     /api/user/loggedin/:uid                       controllers.Users.getCurrentUser(uid: Long)
 GET     /api/user/email/:email                        controllers.Users.getUserByEmail(email: String)
@@ -49,106 +48,107 @@ DELETE  /api/assembly/:id                             controllers.Assemblies.fin
 POST    /api/assembly/:id/membership/:type            controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
 GET     /api/assembly/:id/membership/:status          controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
 
-# TODO 
-#POST    /api/assembly/bulked                         controllers.Assemblies.createAssemblyBulked()
-#POST    /api/organization/:id/assembly               controllers.Assemblies.createAssemblyForOrganization()
-#GET     /api/assembly/:id                            controllers.Assemblies.exportAssembly(assemblyId: Long)
-
 # Deprecated, convert to ServiceAssemblies
 GET     /api/assembly/:aid/issues                     controllers.Assemblies.findIssues(aid: Long)
 
 # WorkingGroup API
-GET    /api/groups                                    controllers.WorkingGroups.findWorkingGroups()
-GET    /api/group/:gid                                controllers.WorkingGroups.findWorkingGroup(gid: Long)
-PUT    /api/group                                     controllers.WorkingGroups.updateWorkingGroup(gid: Long)
-POST   /api/group                                     controllers.WorkingGroups.createWorkingGroup()
-DELETE /api/group/:gid                                controllers.WorkingGroups.deleteWorkingGroup(gid: Long)
-POST   /api/group/:id/membership/:type                controllers.WorkingGroups.createGroupMembership(id: Long, type: String)  
-GET    /api/group/:id/membership                      controllers.WorkingGroups.listMemberships(id: Long)
-GET    /api/group/:id/membership/:status              controllers.WorkingGroups.listMembershipsWithStatus(id: Long, status: String)
+GET    /api/assembly/:aid/groups                                    controllers.WorkingGroups.findWorkingGroups(aid: Long)
+GET    /api/assembly/:aid/group/:gid                                controllers.WorkingGroups.findWorkingGroup(aid: Long, gid: Long)
+PUT    /api/assembly/:aid/group                                     controllers.WorkingGroups.updateWorkingGroup(aid: Long, gid: Long)
+POST   /api/assembly/:aid/group                                     controllers.WorkingGroups.createWorkingGroup(aid: Long)
+DELETE /api/assembly/:aid/group/:gid                                controllers.WorkingGroups.deleteWorkingGroup(aid: Long, gid: Long)
+POST   /api/assembly/:aid/group/:id/membership/:type                controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)  
+GET    /api/assembly/:aid/group/:id/membership                      controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
+GET    /api/assembly/:aid/group/:id/membership/:status              controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String)
 
 # Invitations and Requests to join a Group and/or and Assembly
 # For invitations membership, let's create a random 64 char token
-POST   /api/membership                                controllers.Memberships.createMembership()
-GET    /api/membership/:id                            controllers.Memberships.readMembership(id: Long)
-GET    /api/membership/:id/roles                      controllers.Memberships.readMembershipRoles(id: Long)
-POST   /api/membership/:id/role                       controllers.Memberships.addMembershipRole(id: Long)
-DELETE /api/membership/:id/role/:rid                  controllers.Memberships.deleteMembershipRole(id: Long, rid: Long)
-PUT    /api/membership/:id/:status                    controllers.Memberships.updateMembershipStatus(id: Long, status: String)
-DELETE /api/membership/:id                            controllers.Memberships.deleteMembership(id: Long) 
-GET    /api/membership/:id/verify/:token              controllers.Memberships.verifyMembership(id: Long, token: String) 
+POST   /api/membership                                              controllers.Memberships.createMembership()
+GET    /api/membership/:id                                          controllers.Memberships.readMembership(id: Long)
+GET    /api/membership/:id/roles                                    controllers.Memberships.readMembershipRoles(id: Long)
+POST   /api/membership/:id/role                                     controllers.Memberships.addMembershipRole(id: Long)
+DELETE /api/membership/:id/role/:rid                                controllers.Memberships.deleteMembershipRole(id: Long, rid: Long)
+PUT    /api/membership/:id/:status                                  controllers.Memberships.updateMembershipStatus(id: Long, status: String)
+DELETE /api/membership/:id                                          controllers.Memberships.deleteMembership(id: Long) 
+GET    /api/membership/:id/verify/:token                            controllers.Memberships.verifyMembership(id: Long, token: String) 
 
 #####################################################################################
 # Composition Engine endpoints 
 # TODO Move to a ServiceAssemblies controller
-GET    /api/assembly/:aid/services                    controllers.Assemblies.findServices(aid: Long)
-GET    /api/assembly/:aid/service/:sid/operations     controllers.Assemblies.findServiceOperations(aid: Long, sid: Long)
-GET    /api/assembly/:aid/service/:sid/operation/:oid controllers.Assemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
-
-#####################################################################################
-# Deprecated endpoints, move to ServiceAssemblies controller
-GET    /api/assembly/:aid/issue/:iid/campaigns         controllers.Assemblies.findIssueCampaigns(aid: Long, iid: Long)
-GET    /api/assembly/:aid/issue/:iid/campaign/:cid     controllers.Assemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
+GET    /api/assembly/:aid/services                                  controllers.ServiceAssemblies.findServices(aid: Long)
+GET    /api/assembly/:aid/service/:sid/operations                   controllers.ServiceAssemblies.findServiceOperations(aid: Long, sid: Long)
+GET    /api/assembly/:aid/service/:sid/operation/:oid               controllers.ServiceAssemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
+GET    /api/assembly/:aid/issue/:iid/campaigns                      controllers.ServiceAssemblies.findIssueCampaigns(aid: Long, iid: Long)
+GET    /api/assembly/:aid/issue/:iid/campaign/:cid                  controllers.ServiceAssemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)
 
 # Role API
-GET            /api/roles                                            controllers.Roles.findRoles()
-GET            /api/role/:rid                                        controllers.Roles.findRole(rid: Long)
-PUT            /api/role/:rid                                        controllers.Roles.updateRole(rid: Long)
-POST           /api/role                                             controllers.Roles.createRole()
-DELETE         /api/role/:rid                                        controllers.Roles.deleteRole(rid: Long)
+GET            /api/roles                                           controllers.Roles.findRoles()
+GET            /api/role/:rid                                       controllers.Roles.findRole(rid: Long)
+PUT            /api/role/:rid                                       controllers.Roles.updateRole(rid: Long)
+POST           /api/role                                            controllers.Roles.createRole()
+DELETE         /api/role/:rid                                       controllers.Roles.deleteRole(rid: Long)
 
 # Config API
-GET            /api/configs                                          controllers.Configs.findConfigs()
-GET            /api/config/:cid                                      controllers.Configs.findConfig(cid: Long)
-PUT            /api/config/:cid                                      controllers.Configs.updateConfig(cid: Long)
-POST           /api/config                                           controllers.Configs.createConfig()
-DELETE         /api/config/:cid                                      controllers.Configs.deleteConfig(cid: Long)
+GET            /api/assembly/:aid/configs                           controllers.Configs.findConfigs(aid: Long)
+GET            /api/assembly/:aid/config/:cid                       controllers.Configs.findConfig(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/config/:cid                       controllers.Configs.updateConfig(aid: Long, cid: Long)
+POST           /api/assembly/:aid/config                            controllers.Configs.createConfig(aid: Long)
+DELETE         /api/assembly/:aid/config/:cid                       controllers.Configs.deleteConfig(aid: Long, cid: Long)
 
 # Campaign API
-GET            /api/campaigns                                        controllers.Campaigns.findCampaigns()
-GET            /api/campaign/:cid                                    controllers.Campaigns.findCampaign(cid: Long)
-PUT            /api/campaign/:cid                                    controllers.Campaigns.updateCampaign(cid: Long)
-POST           /api/campaign                                         controllers.Campaigns.createCampaign()
-DELETE         /api/campaign/:cid                                    controllers.Campaigns.deleteCampaign(cid: Long)
+GET            /api/assembly/:aid/campaigns                         controllers.Campaigns.findCampaigns(aid: Long)
+GET            /api/assembly/:aid/campaign/:cid                     controllers.Campaigns.findCampaign(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/campaign/:cid                     controllers.Campaigns.updateCampaign(aid: Long, cid: Long)
+POST           /api/assembly/:aid/campaign                          controllers.Campaigns.createCampaign(aid: Long)
+DELETE         /api/assembly/:aid/campaign/:cid                     controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
 
 # CampaignPhase API
-GET            /api/campaign/:cid/phases                             controllers.CampaignPhases.findCampaignPhases(cid:Long)
-GET            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.findCampaignPhase(cid: Long, cpid: Long)
-PUT            /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.updateCampaignPhase(cid: Long, cpid: Long)
-POST           /api/campaign/:cid/phase                              controllers.CampaignPhases.createCampaignPhase(cid: Long)
-DELETE         /api/campaign/:cid/phase/:cpid                        controllers.CampaignPhases.deleteCampaignPhase(cid: Long, cpid: Long)
+GET            /api/assembly/:aid/campaign/:cid/phases              controllers.CampaignPhases.findCampaignPhases(aid: Long, cid:Long)
+GET            /api/assembly/:aid/campaign/:cid/phase/:cpid         controllers.CampaignPhases.findCampaignPhase(aid: Long, cid: Long, cpid: Long)
+PUT            /api/assembly/:aid/campaign/:cid/phase/:cpid         controllers.CampaignPhases.updateCampaignPhase(aid: Long, cid: Long, cpid: Long)
+POST           /api/assembly/:aid/campaign/:cid/phase               controllers.CampaignPhases.createCampaignPhase(aid: Long, cid: Long)
+DELETE         /api/assembly/:aid/campaign/:cid/phase/:cpid         controllers.CampaignPhases.deleteCampaignPhase(aid: Long, cid: Long, cpid: Long)
 
 # Contribution API
-GET            /api/contributions                                    controllers.Contributions.findContributions()
-GET            /api/contribution/:cid                                controllers.Contributions.findContribution(cid: Long)
-PUT            /api/contribution/:cid                                controllers.Contributions.updateContribution(cid: Long)
-POST           /api/contribution                                     controllers.Contributions.createContribution()
-DELETE         /api/contribution/:cid                                controllers.Contributions.deleteContribution(cid: Long)
+GET            /api/assembly/:aid/contributions                     controllers.Contributions.findContributions(aid: Long)
+GET            /api/assembly/:aid/contribution/:cid                 controllers.Contributions.findContribution(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/contribution/:cid                 controllers.Contributions.updateContribution(aid: Long, cid: Long)
+POST           /api/assembly/:aid/contribution                      controllers.Contributions.createContribution(aid: Long)
+DELETE         /api/assembly/:aid/contribution/:cid                 controllers.Contributions.deleteContribution(aid: Long, cid: Long)
 
 # Contribution ISSUE API
-GET            /api/issues                                           controllers.Contributions.findContributions()
-GET            /api/issue/:cid                                       controllers.Contributions.findContribution(cid: Long)
-PUT            /api/issue/:cid                                       controllers.Contributions.updateContribution(cid: Long)
-POST           /api/issue                                            controllers.Contributions.createContribution()
-DELETE         /api/issue/:cid                                       controllers.Contributions.deleteContribution(cid: Long)
+GET            /api/assembly/:aid/issues                                           controllers.Contributions.findContributions(aid: Long)
+GET            /api/assembly/:aid/issue/:cid                                       controllers.Contributions.findContribution(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/issue/:cid                                       controllers.Contributions.updateContribution(aid: Long, cid: Long)
+POST           /api/assembly/:aid/issue                                            controllers.Contributions.createContribution(aid: Long)
+DELETE         /api/assembly/:aid/issue/:cid                                       controllers.Contributions.deleteContribution(aid: Long, cid: Long)
 
 # Contribution IDEA API
-GET            /api/ideas                                            controllers.Contributions.findContributions()
-GET            /api/idea/:cid                                        controllers.Contributions.findContribution(cid: Long)
-PUT            /api/idea/:cid                                        controllers.Contributions.updateContribution(cid: Long)
-POST           /api/idea                                             controllers.Contributions.createContribution()
-DELETE         /api/idea/:cid                                        controllers.Contributions.deleteContribution(cid: Long)
+GET            /api/assembly/:aid/ideas                                            controllers.Contributions.findContributions(aid: Long)
+GET            /api/assembly/:aid/idea/:cid                                        controllers.Contributions.findContribution(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/idea/:cid                                        controllers.Contributions.updateContribution(aid: Long, cid: Long)
+POST           /api/assembly/:aid/idea                                             controllers.Contributions.createContribution(aid: Long)
+DELETE         /api/assembly/:aid/idea/:cid                                        controllers.Contributions.deleteContribution(aid: Long, cid: Long)
 
 # Contribution QUESTION API
-GET            /api/questions                                        controllers.Contributions.findContributions()
-GET            /api/question/:cid                                    controllers.Contributions.findContribution(cid: Long)
-PUT            /api/question/:cid                                    controllers.Contributions.updateContribution(cid: Long)
-POST           /api/question                                         controllers.Contributions.createContribution()
-DELETE         /api/question/:cid                                    controllers.Contributions.deleteContribution(cid: Long)
+GET            /api/assembly/:aid/questions                                        controllers.Contributions.findContributions(aid: Long)
+GET            /api/assembly/:aid/question/:cid                                    controllers.Contributions.findContribution(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/question/:cid                                    controllers.Contributions.updateContribution(aid: Long, cid: Long)
+POST           /api/assembly/:aid/question                                         controllers.Contributions.createContribution(aid: Long)
+DELETE         /api/assembly/:aid/question/:cid                                    controllers.Contributions.deleteContribution(aid: Long, cid: Long)
 
 # Contribution COMMENT API
-GET            /api/comments                                         controllers.Contributions.findContributions()
-GET            /api/comment/:cid                                     controllers.Contributions.findContribution(cid: Long)
-PUT            /api/comment/:cid                                     controllers.Contributions.updateContribution(cid: Long)
-POST           /api/comment                                          controllers.Contributions.createContribution()
-DELETE         /api/comment/:cid                                     controllers.Contributions.deleteContribution(cid: Long)
+GET            /api/assembly/:aid/comments                                         controllers.Contributions.findContributions(aid: Long)
+GET            /api/assembly/:aid/comment/:cid                                     controllers.Contributions.findContribution(aid: Long, cid: Long)
+PUT            /api/assembly/:aid/comment/:cid                                     controllers.Contributions.updateContribution(aid: Long, cid: Long)
+POST           /api/assembly/:aid/comment                                          controllers.Contributions.createContribution(aid: Long)
+DELETE         /api/assembly/:aid/comment/:cid                                     controllers.Contributions.deleteContribution(aid: Long, cid: Long)
+
+
+
+
+
+#####################################################################################
+# API Docs
+
+#GET  /api-docs.json  controllers.ApiHelpController.getResources

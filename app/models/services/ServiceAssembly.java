@@ -4,8 +4,7 @@ import java.util.*;
 
 import javax.persistence.*;
 
-import enums.ResponseStatus;
-import play.db.ebean.*;
+import com.avaje.ebean.Model;
 import utils.GlobalData;
 
 @Entity
@@ -45,7 +44,7 @@ public class ServiceAssembly extends Model {
 	 * Basic Data Queries
 	 */
 
-	public static Model.Finder<Long, ServiceAssembly> find = new Model.Finder<Long, ServiceAssembly>(
+	public static Finder<Long, ServiceAssembly> find = new Finder<Long, ServiceAssembly>(
 			Long.class, ServiceAssembly.class);
 
 	/**
