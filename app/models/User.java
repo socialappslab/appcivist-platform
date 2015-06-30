@@ -21,8 +21,11 @@ import javax.persistence.Transient;
 
 import models.TokenAction.Type;
 import play.Play;
-import play.db.ebean.Model;
+
+import com.avaje.ebean.Model;
+
 import play.db.ebean.Transactional;
+import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.core.models.Permission;
 import be.objectify.deadbolt.core.models.Subject;
@@ -37,6 +40,8 @@ import com.feth.play.module.pa.user.AuthUserIdentity;
 import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
+
+import enums.MyRoles;
 
 @Entity
 @Table(name="appcivist_user")
@@ -97,7 +102,7 @@ public class User extends Model implements Subject {
 	/**
 	 * Static finder property
 	 */
-	public static Model.Finder<Long, User> find = new Model.Finder<Long, User>(
+	public static Finder<Long, User> find = new Finder<Long, User>(
 			Long.class, User.class);
 	
     public User(){
@@ -255,7 +260,8 @@ public class User extends Model implements Subject {
 
 	@Override
 	public String getIdentifier() {
-		return this.userId.toString();
+		//return this.userId.toString();
+		return this.username;
 	}
 		
 	/************************************************************************************************
@@ -405,14 +411,14 @@ public class User extends Model implements Subject {
 		User user = new User();
 
 		/*
-		 * 1. We start by already adding the role MEMBER and a LINKEDACCOUNT to
+		 * 1. We start by already adding the role USER and a LINKEDACCOUNT to
 		 * the user instance to be created
 		 */
-//		user.roles = Collections.singletonList(SecurityRole
-//				.findByRoleName(MyRoles.MEMBER.toString()));
+		user.roles = Collections.singletonList(SecurityRole
+				.findByName(MyRoles.USER.toString()));
 		user.linkedAccounts = Collections.singletonList(LinkedAccount
 				.create(authUser));
-//		user.active = true;
+		user.active = true;
 		Long userId = null;
 
 		/*
@@ -496,6 +502,10 @@ public class User extends Model implements Subject {
 		}
 		
 		return user;
+	}
+
+	private void addRole(SecurityRole role) {
+		this.roles.add(role);	
 	}
 
 	private static String generateUsername(String email) {

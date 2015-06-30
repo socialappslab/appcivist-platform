@@ -22,12 +22,6 @@ import enums.Visibility;
 
 @Entity
 public class Assembly extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 128881028915968230L;
-
 	@Id
 	@GeneratedValue
 	private Long assemblyId;

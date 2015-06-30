@@ -4,7 +4,6 @@ import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.MembershipRoles;
-import play.db.ebean.Model;
 
 import javax.persistence.*;
 
@@ -13,11 +12,6 @@ import java.util.List;
 
 @Entity
 public class WorkingGroup extends AppCivistBaseModel {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 6809971288859856328L;
-	
 	@Id
 	@GeneratedValue
     private Long groupId;
@@ -47,7 +41,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
 	// TODO: all be connected in a P2P architecture. 
-	public static Model.Finder<Long, WorkingGroup> find = new Model.Finder<Long, WorkingGroup>(
+	public static Finder<Long, WorkingGroup> find = new Finder<Long, WorkingGroup>(
             Long.class, WorkingGroup.class);
 
     public static WorkingGroup read(Long workingGroupId) {

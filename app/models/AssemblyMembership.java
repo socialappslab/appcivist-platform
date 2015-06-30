@@ -78,4 +78,15 @@ public class AssemblyMembership extends Membership {
 		return find.where().eq("user", user).eq("assembly", target)
 				.findUnique();
 	}
+	/**
+	 * Find a membership record for userId and assemblyId
+	 * 
+	 * @param userId
+	 * @param assemblyId
+	 * @return
+	 */
+	public static Membership findByUserAndAssemblyIds(Long userId, Long assemblyId) {
+		return find.where().eq("user.userId", userId).eq("assembly.assemblyId", assemblyId)
+				.findUnique();		
+	}
 }

@@ -73,4 +73,15 @@ public class GroupMembership extends Membership {
 		return find.where().eq("user", user).eq("workingGroup", target)
 				.findUnique();
 	}
+	/**
+	 * Find a membership record for userId and groupId
+	 * 
+	 * @param userId
+	 * @param groupId
+	 * @return
+	 */
+	public static Membership findByUserAndGroupId(Long userId, Long groupId) {
+		return find.where().eq("user.userId", userId).eq("workingGroup.assemblyId", groupId)
+				.findUnique();		
+	}
 }

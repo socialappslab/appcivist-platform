@@ -10,10 +10,6 @@ import utils.GlobalData;
 @MappedSuperclass
 public class AppCivistBaseModel extends Model {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8474507825226089899L;
 	/** 
 	 * Properties that are common to all the entities in the model
 	 * 

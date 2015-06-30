@@ -21,6 +21,7 @@ import play.mvc.Controller;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.With;
+import views.html.*;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
 import providers.MyUsernamePasswordAuthProvider.MyIdentity;
@@ -28,29 +29,30 @@ import providers.MyUsernamePasswordAuthProvider.MyLogin;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
+import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.user.AuthUser;
 
+import enums.MyRoles;
 import enums.ResponseStatus;
 
 @With(Headers.class)
 public class Users extends Controller {
-
+	
 	/****************************************************************************************************
 	 * Read-Only Endpoints
 	 ***************************************************************************************************/
-	@Restrict({ @Group("ADMIN") })
+	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result getUsers() {
 		List<User> users = User.findAll();
 		return ok(Json.toJson(users));
 	}
 
-	// TODO dynamic controller that allows only ADMINS and SELFs to get the full
-	// information of an user
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result getUser(Long id) {
 		Logger.info("Obtaining user with id = " + id);
@@ -58,7 +60,7 @@ public class Users extends Controller {
 		return ok(Json.toJson(u));
 	}
 
-	@SubjectPresent
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result getCurrentUser(Long id) {
 		final User localUser = getLocalUser(session());
 		// UserBean bean = PlayDozerMapper.getInstance().map(localUser,
@@ -69,6 +71,12 @@ public class Users extends Controller {
 			return badRequest("User " + id
 					+ " is not the user registered in for this client");
 		}
+	}
+
+	@Restrict(@Group(GlobalData.USER_ROLE))
+	public static Result profile() {
+		final User localUser = getLocalUser(session());
+		return ok(profile.render(localUser));
 	}
 
 	/****************************************************************************************************
@@ -98,6 +106,7 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * UPDATE Endpoints
 	 ***************************************************************************************************/
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result updateUser(Long uid) {
 		return notFound("TODO: Not Implemented Yet");
 	}
@@ -105,10 +114,12 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * DELETE Endpoints
 	 ***************************************************************************************************/
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result deleteUser(Long uid) {
 		return notFound("TODO: Not Implemented Yet");
 	}
 
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result deleteUserForce(Long uid) {
 		return notFound("TODO: Not Implemented Yet");
 	}
@@ -123,7 +134,6 @@ public class Users extends Controller {
 			IllegalAccessException {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		Logger.info("REQUEST: Login => " + ctx().request());
-		Logger.info("REQUEST: Login JSON => " + ctx().request().body().asJson());
 		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
 				.bindFromRequest();
 		Logger.info("REQUEST: Login Form => " + filledForm.toString());
@@ -138,6 +148,7 @@ public class Users extends Controller {
 
 	}
 
+	@SubjectPresent
 	public static Result doLogout() {
 		return notFound("TODO: Not Implemented Yet");
 	}
@@ -195,149 +206,149 @@ public class Users extends Controller {
 		}
 	}
 
-	// private static final Form<Accept> ACCEPT_FORM = form(Accept.class);
-	// private static final Form<Account.PasswordChange> PASSWORD_CHANGE_FORM =
-	// form(Account.PasswordChange.class);
-	//
-	// @SubjectPresent
-	// public static Result link() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// return ok(link.render());
-	// }
-	//
-	// @Restrict(@Group(MyRoles.MEMBER))
-	// public static Result verifyEmail() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final User user = Application.getLocalUser(session());
-	// if (user.emailValidated) {
-	// // E-Mail has been validated already
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.verify_email.error.already_validated"));
-	// } else if (user.email != null && !user.email.trim().isEmpty()) {
-	// flash(Application.FLASH_MESSAGE_KEY, Messages.get(
-	// "playauthenticate.verify_email.message.instructions_sent",
-	// user.email));
-	// MyUsernamePasswordAuthProvider.getProvider()
-	// .sendVerifyEmailMailingAfterSignup(user, ctx());
-	// } else {
-	// flash(Application.FLASH_MESSAGE_KEY, Messages.get(
-	// "playauthenticate.verify_email.error.set_email_first",
-	// user.email));
-	// }
-	// return redirect(routes.Application.profile());
-	// }
-	//
-	// @Restrict(@Group(Application.USER_ROLE))
-	// public static Result changePassword() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final User u = Application.getLocalUser(session());
-	//
-	// if (!u.emailValidated) {
-	// return ok(unverified.render());
-	// } else {
-	// return ok(password_change.render(PASSWORD_CHANGE_FORM));
-	// }
-	// }
-	//
-	// @Restrict(@Group(Application.USER_ROLE))
-	// public static Result doChangePassword() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final Form<Account.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
-	// .bindFromRequest();
-	// if (filledForm.hasErrors()) {
-	// // User did not select whether to link or not link
-	// return badRequest(password_change.render(filledForm));
-	// } else {
-	// final User user = Application.getLocalUser(session());
-	// final String newPassword = filledForm.get().password;
-	// user.changePassword(new MyUsernamePasswordAuthUser(newPassword),
-	// true);
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.change_password.success"));
-	// return redirect(routes.Application.profile());
-	// }
-	// }
-	//
-	// @SubjectPresent
-	// public static Result askLink() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final AuthUser u = PlayAuthenticate.getLinkUser(session());
-	// if (u == null) {
-	// // account to link could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	// return ok(ask_link.render(ACCEPT_FORM, u));
-	// }
-	//
-	// @SubjectPresent
-	// public static Result doLink() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final AuthUser u = PlayAuthenticate.getLinkUser(session());
-	// if (u == null) {
-	// // account to link could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	//
-	// final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
-	// if (filledForm.hasErrors()) {
-	// // User did not select whether to link or not link
-	// return badRequest(ask_link.render(filledForm, u));
-	// } else {
-	// // User made a choice :)
-	// final boolean link = filledForm.get().accept;
-	// if (link) {
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.accounts.link.success"));
-	// }
-	// return PlayAuthenticate.link(ctx(), link);
-	// }
-	// }
-	//
-	// @SubjectPresent
-	// public static Result askMerge() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// // this is the currently logged in user
-	// final AuthUser aUser = PlayAuthenticate.getUser(session());
-	//
-	// // this is the user that was selected for a login
-	// final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
-	// if (bUser == null) {
-	// // user to merge with could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	//
-	// // You could also get the local user object here via
-	// // User.findByAuthUserIdentity(newUser)
-	// return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
-	// }
-	//
-	// @SubjectPresent
-	// public static Result doMerge() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// // this is the currently logged in user
-	// final AuthUser aUser = PlayAuthenticate.getUser(session());
-	//
-	// // this is the user that was selected for a login
-	// final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
-	// if (bUser == null) {
-	// // user to merge with could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	//
-	// final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
-	// if (filledForm.hasErrors()) {
-	// // User did not select whether to merge or not merge
-	// return badRequest(ask_merge.render(filledForm, aUser, bUser));
-	// } else {
-	// // User made a choice :)
-	// final boolean merge = filledForm.get().accept;
-	// if (merge) {
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.accounts.merge.success"));
-	// }
-	// return PlayAuthenticate.merge(ctx(), merge);
-	// }
-	// }
+	private static final Form<Accept> ACCEPT_FORM = form(Accept.class);
+	private static final Form<Users.PasswordChange> PASSWORD_CHANGE_FORM =
+			 form(Users.PasswordChange.class);
+	
+	@SubjectPresent
+	public static Result link() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		return ok(link.render());
+	}
+
+	@Restrict(@Group(GlobalData.USER_ROLE))
+	public static Result verifyEmail() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final User user = Users.getLocalUser(session());
+		if (user.isEmailVerified()) {
+			// E-Mail has been validated already
+			flash(Application.FLASH_MESSAGE_KEY,
+					Messages.get("playauthenticate.verify_email.error.already_validated"));
+		} else if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
+			flash(Application.FLASH_MESSAGE_KEY, Messages.get(
+					"playauthenticate.verify_email.message.instructions_sent",
+					user.getEmail()));
+			MyUsernamePasswordAuthProvider.getProvider()
+					.sendVerifyEmailMailingAfterSignup(user, ctx());
+		} else {
+			flash(Application.FLASH_MESSAGE_KEY, Messages.get(
+					"playauthenticate.verify_email.error.set_email_first",
+					user.getEmail()));
+		}
+		return redirect(routes.Users.profile());
+	}
+
+	@Restrict(@Group(GlobalData.USER_ROLE))
+	public static Result changePassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final User u = Users.getLocalUser(session());
+
+		if (!u.isEmailVerified()) {
+			return ok(unverified.render());
+		} else {
+			return ok(password_change.render(PASSWORD_CHANGE_FORM));
+		}
+	}
+
+	@Restrict(@Group(GlobalData.USER_ROLE))
+	public static Result doChangePassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final Form<Users.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
+				.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to link or not link
+			return badRequest(password_change.render(filledForm));
+		} else {
+			final User user = Users.getLocalUser(session());
+			final String newPassword = filledForm.get().password;
+			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),
+					true);
+			flash(Application.FLASH_MESSAGE_KEY,
+					Messages.get("playauthenticate.change_password.success"));
+			return redirect(routes.Users.profile());
+		}
+	}
+
+	@SubjectPresent
+	public static Result askLink() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final AuthUser u = PlayAuthenticate.getLinkUser(session());
+		if (u == null) {
+			// account to link could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+		return ok(ask_link.render(ACCEPT_FORM, u));
+	}
+
+	@SubjectPresent
+	public static Result doLink() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final AuthUser u = PlayAuthenticate.getLinkUser(session());
+		if (u == null) {
+			// account to link could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+
+		final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to link or not link
+			return badRequest(ask_link.render(filledForm, u));
+		} else {
+			// User made a choice :)
+			final boolean link = filledForm.get().accept;
+			if (link) {
+				flash(Application.FLASH_MESSAGE_KEY,
+						Messages.get("playauthenticate.accounts.link.success"));
+			}
+			return PlayAuthenticate.link(ctx(), link);
+		}
+	}
+
+	@SubjectPresent
+	public static Result askMerge() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		// this is the currently logged in user
+		final AuthUser aUser = PlayAuthenticate.getUser(session());
+
+		// this is the user that was selected for a login
+		final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+		if (bUser == null) {
+			// user to merge with could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+
+		// You could also get the local user object here via
+		// User.findByAuthUserIdentity(newUser)
+		return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
+	}
+
+	@SubjectPresent
+	public static Result doMerge() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		// this is the currently logged in user
+		final AuthUser aUser = PlayAuthenticate.getUser(session());
+
+		// this is the user that was selected for a login
+		final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+		if (bUser == null) {
+			// user to merge with could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+
+		final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to merge or not merge
+			return badRequest(ask_merge.render(filledForm, aUser, bUser));
+		} else {
+			// User made a choice :)
+			final boolean merge = filledForm.get().accept;
+			if (merge) {
+				flash(Application.FLASH_MESSAGE_KEY,
+						Messages.get("playauthenticate.accounts.merge.success"));
+			}
+			return PlayAuthenticate.merge(ctx(), merge);
+		}
+	}
 
 	public static class PasswordReset extends Users.PasswordChange {
 

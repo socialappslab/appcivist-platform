@@ -9,7 +9,6 @@ import play.mvc.Http;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security;
-import scala.collection.immutable.HashMap;
 import service.PlayAuthenticateLocal;
 
 import com.feth.play.module.pa.PlayAuthenticate;

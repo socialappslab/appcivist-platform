@@ -36,7 +36,7 @@
     email:      bob@example.com
     name:       Bob
     username:   bob
-    language:     es
+    language:   es
     roles:
       - *r1
       - *r2
@@ -49,7 +49,7 @@
     email:      jane@example.com
     name:       Jane
     username:   jane
-    language:     en
+    language:   en
     roles:
       - *r1
       - *r2
@@ -360,6 +360,20 @@
     status: ACCEPTED
     roles: 
       - *r3
+      - *r4
+  - &am6 !!models.AssemblyMembership
+    assembly: *a3
+    user: *u2
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &am7 !!models.AssemblyMembership
+    assembly: *a3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
       - *r4
 ##############################################################################################################################################################################################
 # Group Memberships

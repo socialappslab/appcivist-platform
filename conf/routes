@@ -9,8 +9,10 @@ GET     /                                            controllers.Application.ind
 OPTIONS /*path                                       controllers.Application.checkPreFlight(path)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                                controllers.Assets.at(path="/public", file)
-GET     /public/*file                                controllers.Assets.at(path="/public", file)
+#GET     /assets/*file                                controllers.Assets.at(path="/public", file)
+GET     /assets/*file  controllers.Assets.versioned(path="/public", file: Asset)
+#GET     /public/*file                                controllers.Assets.at(path="/public", file)
+GET     /public/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 
 #####################################################################################
 # Very basic User and Authentication Management based on play-authenticate
@@ -38,6 +40,26 @@ GET     /api/authenticated                            controllers.Restricted.ind
 GET     /api/login/:id                                controllers.Restricted.id(id: String)
 GET     /api/authenticate/:provider                   controllers.AuthenticateLocal.authenticate(provider: String)
 
+GET     /api/user/password/reset/:token     controllers.Users.resetPassword(token: String)
+POST    /api/user/password/reset            controllers.Users.doResetPassword
+
+GET    /api/user/password/change    controllers.Users.changePassword
+POST   /api/user/password/change    controllers.Users.doChangePassword
+
+GET     /api/user/verify            controllers.Users.verifyEmail
+
+GET     /api/user/linkedaccounts     controllers.Users.link
+
+GET     /api/user/account              controllers.Users.askLink
+POST    /api/user/account              controllers.Users.doLink
+
+GET     /api/user/merge             controllers.Users.askMerge
+POST    /api/user/merge             controllers.Users.doMerge
+
+GET     /api/user/password/forgot     controllers.Users.forgotPassword(email: String ?= "")
+POST    /api/user/password/forgot     controllers.Users.doForgotPassword
+
+GET     /api/user/profile                             controllers.Users.profile()
 
 # Assemblies API
 GET     /api/assemblies                               controllers.Assemblies.findAssemblies()

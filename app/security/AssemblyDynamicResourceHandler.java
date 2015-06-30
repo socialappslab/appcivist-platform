@@ -1,7 +1,15 @@
 package security;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import models.Assembly;
+import models.AssemblyMembership;
+import models.Membership;
+import models.User;
+import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
+import be.objectify.deadbolt.core.DeadboltAnalyzer;
 import be.objectify.deadbolt.java.AbstractDynamicResourceHandler;
 import be.objectify.deadbolt.java.DeadboltHandler;
 
@@ -13,27 +21,35 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
 		return super.checkPermission(permissionValue, deadboltHandler, ctx);
 	}
 
+	@Override
 	public Promise<Boolean> isAllowed(String name, String meta,
-			DeadboltHandler deadboltHandler, Context ctx) {
-//		Subject subject = (Subject) deadboltHandler.getSubject(ctx);
-//		boolean allowed = false;
-//		
-////		// TODO remove ADMINS when app is ready for production
-////		// if the user is an ADMIN user, we allow everything
-////		if(DeadboltAnalyzer.hasRole(subject, "ADMIN")) {
-////			Logger.debug("Requested by an ADMIN...");
-////			allowed = true;
-////		} else {
-//			User u = User.findByUserName(subject.getIdentifier());
-//			Logger.debug("Checking membership of User in Assembly...");
-//			Logger.debug("--> userName = " + u.getUsername());
-//			Logger.debug("--> assemblyId= " + meta);
-//			// TODO how to put the id of the assembly in the meta?? 
-//		}
-		
-		
-		
-		return super.isAllowed(name, meta, deadboltHandler, ctx);
+			DeadboltHandler deadboltHandler, Context context) {
+
+		 return deadboltHandler.getSubject(context)
+                               .map(subjectOption -> {
+                            	   final boolean[] allowed = {false};
+                            	   if (new DeadboltAnalyzer().hasRole(subjectOption, "ADMIN")) {
+                            		   allowed[0] = true;
+                            	   } else {
+                            		   subjectOption.ifPresent(subject -> {
+                            			   User u = User.findByUserName(subject.getIdentifier());
+                            			   Logger.debug("Checking membership of User in "+meta+"...");
+                            			   Logger.debug("--> userName = " + u.getUsername());
+                            			   String path = context.request().path();
+                            			   Long assemblyId = MyDynamicResourceHandler.getIdFromPath(path, meta);
+                            			   Logger.debug("--> assemblyId= " + assemblyId);
+                            			   Assembly a = Assembly.read(assemblyId);
+                            			   if (!a.getVisibiliy().equals(Visibility.PUBLIC_ONLY)) {
+                            				   allowed[0] = true;
+                            			   } else {
+                            				   Membership m = AssemblyMembership.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
+                            				   allowed[0] = m!=null;
+                            			   }
+                            			   
+                            		   });
+                            	   }
+                            	   return allowed[0];
+                               });	
 	}
 
 }
