@@ -3,7 +3,6 @@ package security;
 import models.GroupMembership;
 import models.Membership;
 import models.User;
-import models.WorkingGroup;
 import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
