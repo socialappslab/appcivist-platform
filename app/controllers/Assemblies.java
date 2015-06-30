@@ -24,7 +24,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
+import security.SecurityModelConstants;
 import utils.GlobalData;
+import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -108,7 +110,7 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@SubjectPresent
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findAssembly(Long id) {
 		Assembly a = Assembly.read(id);
 		return a != null ? ok(Json.toJson(a)) : notFound(Json

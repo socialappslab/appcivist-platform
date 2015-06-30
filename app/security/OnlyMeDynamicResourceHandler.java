@@ -1,5 +1,6 @@
 package security;
 
+import models.User;
 import play.Logger;
 import play.libs.F;
 import play.libs.F.Promise;
@@ -34,7 +35,10 @@ public class OnlyMeDynamicResourceHandler extends AbstractDynamicResourceHandler
 										subjectOption.ifPresent(subject -> {
 										    String path = context.request().path();
 										    Long requestedResourceId = MyDynamicResourceHandler.getIdFromPath(path, meta);
-										    Long requestorId = new Long(subject.getIdentifier());
+										    
+										    User u = User.findByUserName(subject.getIdentifier());
+										    
+										    Long requestorId = u.getUserId();
 										
 										    Logger.debug("Checking relationship of...");
 										    Logger.debug("--> userId = "+requestorId);

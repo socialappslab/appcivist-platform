@@ -28,13 +28,14 @@ import java.util.Optional;
 public class MyDeadboltHandler extends AbstractDeadboltHandler {
 
 	public F.Promise<Optional<Result>> beforeAuthCheck(final Context context) {
-		// returning null means that everything is OK. Return a real result if
+		// returning Result=null means that everything is OK. Return a real result if
 		// you want a redirect to a login page or
 		// somewhere else
 
 		if (Secured.isLoggedIn(context)) {
 			// user is logged in
-			return null;
+			return F.Promise.promise(() -> Optional.ofNullable(null));
+			
 		} else {
 			// user is not logged in
 
@@ -55,13 +56,14 @@ public class MyDeadboltHandler extends AbstractDeadboltHandler {
 
 	public Promise<Optional<Subject>> getSubject(Context context) {
 		if (!Secured.isLoggedIn(context))
-			return null;
+			return F.Promise.promise(() -> Optional.ofNullable(null));
 
 		final AuthUserIdentity u = PlayAuthenticate.getUser(context);
 		return Promise.promise(() -> Optional.ofNullable(User
 				.findByAuthUserIdentity(u)));
 	}
 
+	@Override
 	public Promise<Result> onAuthFailure(Context context, String content) {
 		return Promise.promise(() -> forbidden(Json
 				.toJson(new TransferResponseStatus(ResponseStatus.UNAUTHORIZED,

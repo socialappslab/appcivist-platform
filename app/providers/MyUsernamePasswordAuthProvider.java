@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.inject.Inject;
+
 import models.LinkedAccount;
 import models.Membership;
 import models.TokenAction;
@@ -51,7 +53,7 @@ public class MyUsernamePasswordAuthProvider
 	private static final String SETTING_KEY_LINK_LOGIN_AFTER_PASSWORD_RESET = "loginAfterPasswordReset";
 
 	private static final String EMAIL_TEMPLATE_FALLBACK_LANGUAGE = "it";
-
+	
 	@Override
 	protected List<String> neededSettingKeys() {
 		final List<String> needed = new ArrayList<String>(
@@ -156,6 +158,7 @@ public class MyUsernamePasswordAuthProvider
 	public static final Form<MySignup> SIGNUP_FORM = form(MySignup.class);
 	public static final Form<MyLogin> LOGIN_FORM = form(MyLogin.class);
 
+	@Inject
 	public MyUsernamePasswordAuthProvider(Application app) {
 		super(app);
 	}
@@ -185,7 +188,7 @@ public class MyUsernamePasswordAuthProvider
 
 		final User newUser = User.createFromAuthUser(user);
 		user.setUserId(newUser.getUserId());
-
+		
 		// TODO verify that the email is correct and valid
 		// Usually the email should be verified before allowing login, however
 		// if you return
@@ -554,7 +557,7 @@ public class MyUsernamePasswordAuthProvider
 		Object kase = null;
 		try {
 			Class<?> clazz = UsernamePasswordAuthProvider.class
-					.getDeclaredClasses()[4];
+					.getDeclaredClasses()[3];
 			Field field = clazz.getDeclaredField(enumName);
 			field.setAccessible(true);
 			kase = field.get(null);

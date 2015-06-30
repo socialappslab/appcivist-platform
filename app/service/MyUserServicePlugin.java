@@ -1,5 +1,7 @@
 package service;
 
+import javax.inject.Inject;
+
 import models.User;
 import play.Application;
 
@@ -10,9 +12,10 @@ import com.feth.play.module.pa.service.UserServicePlugin;
 public class MyUserServicePlugin extends UserServicePlugin {
 
 //	public MyUserServicePlugin() {
-//		super();
+//		super(null);
 //	}
-//	
+
+	@Inject
 	public MyUserServicePlugin(final Application app) {
 		super(app);
 	}
