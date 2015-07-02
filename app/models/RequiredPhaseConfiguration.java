@@ -10,16 +10,9 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import play.db.ebean.Model;
-
 @Entity
 public class RequiredPhaseConfiguration extends AppCivistBaseModel {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6546753271739021232L;
-	
 	@Id
 	@GeneratedValue
 	private Long requiredPhaseConfigurationId; 
@@ -34,7 +27,7 @@ public class RequiredPhaseConfiguration extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, RequiredPhaseConfiguration> find = new Model.Finder<Long, RequiredPhaseConfiguration>(
+	public static Finder<Long, RequiredPhaseConfiguration> find = new Finder<Long, RequiredPhaseConfiguration>(
 			Long.class, RequiredPhaseConfiguration.class);
 
 	

@@ -15,7 +15,6 @@ import javax.persistence.OneToOne;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import models.Location.Geo;
-import play.db.ebean.Model;
 import utils.GlobalData;
 import enums.MembershipRoles;
 import enums.Visibility;
@@ -84,7 +83,7 @@ public class Assembly extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, Assembly> find = new Model.Finder<Long, Assembly>(
+	public static Finder<Long, Assembly> find = new Finder<Long, Assembly>(
 			Long.class, Assembly.class);
 
 	/**
@@ -312,11 +311,9 @@ public class Assembly extends AppCivistBaseModel {
 	 * Returns all the assemblies in our system
 	 * @return
 	 */
-	public static AssemblyCollection findAll() {
+	public static List<Assembly>  findAll() {
 		List<Assembly> assemblies = find.all();
-		AssemblyCollection assemblyCollection = new AssemblyCollection();
-		assemblyCollection.setAssemblies(assemblies);
-		return assemblyCollection;
+		return assemblies;
 	}
 
 	public static void create(Assembly assembly) {

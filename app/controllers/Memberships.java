@@ -1,6 +1,7 @@
 package controllers;
 
 import static play.data.Form.form;
+import http.Headers;
 
 import java.util.List;
 
@@ -21,17 +22,24 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import play.mvc.With;
 import providers.MyUsernamePasswordAuthProvider;
 import utils.GlobalData;
 import play.Logger;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 import enums.MembershipCreationTypes;
 import enums.MembershipRoles;
 import enums.MembershipStatus;
 import enums.ResponseStatus;
 
+@Api(value = "/membership", description = "Group Management endpoints in the Assembly Making service")
+@With(Headers.class)
 public class Memberships extends Controller {
 
 	public static final Form<TransferMembership> TRANSFER_MEMBERSHIP_FORM = form(TransferMembership.class);
@@ -45,9 +53,8 @@ public class Memberships extends Controller {
 	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(
 			30 * 14 * 3600);
 
-
-	// TODO: TEST
-	@Security.Authenticated(Secured.class)
+	@ApiOperation(httpMethod = "POST", response = TransferMembership.class, produces = "application/json", value = "Create a membership within an Assembly or a Group")
+	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result createMembership() {
 		// 1. obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate

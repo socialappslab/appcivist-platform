@@ -5,8 +5,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import play.db.ebean.Model;
-
 @Entity
 public class RequiredCampaignConfiguration extends AppCivistBaseModel {
 
@@ -29,7 +27,7 @@ public class RequiredCampaignConfiguration extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, RequiredCampaignConfiguration> find = new Model.Finder<Long, RequiredCampaignConfiguration>(
+	public static Finder<Long, RequiredCampaignConfiguration> find = new Finder<Long, RequiredCampaignConfiguration>(
 			Long.class, RequiredCampaignConfiguration.class);
 
 	

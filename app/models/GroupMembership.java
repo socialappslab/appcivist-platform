@@ -12,11 +12,6 @@ import enums.MembershipStatus;
 @Entity
 @DiscriminatorValue("GROUP")
 public class GroupMembership extends Membership {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3737906484702711675L;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	private WorkingGroup workingGroup;

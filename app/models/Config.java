@@ -4,7 +4,6 @@ import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import enums.ConfigTargets;
-import play.db.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,11 +16,6 @@ import java.util.List;
 @Entity
 public class Config extends AppCivistBaseModel {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3340337591058459420L;
-	
 	@Id
     @GeneratedValue
     private Long configId;
@@ -68,7 +62,7 @@ public class Config extends AppCivistBaseModel {
         super();
     }
 
-    public static Model.Finder<Long, Config> find = new Model.Finder<Long, Config>(
+    public static Finder<Long, Config> find = new Finder<Long, Config>(
             Long.class, Config.class);
 
     public Long getConfigId() {

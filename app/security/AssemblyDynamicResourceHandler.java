@@ -1,11 +1,15 @@
 package security;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import enums.MyRoles;
 import models.Assembly;
 import models.AssemblyMembership;
 import models.Membership;
 import models.User;
+import models.SecurityRole;
 import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
@@ -43,7 +47,23 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                             				   allowed[0] = true;
                             			   } else {
                             				   Membership m = AssemblyMembership.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
-                            				   allowed[0] = m!=null;
+                            				   
+                            				   if (m!=null && name.equals("CoordinatorOfAssembly")) {
+                            					   List<SecurityRole> membershipRoles = m.getRoles();
+                            					   for (SecurityRole r : membershipRoles) {
+                            						   if(r.getName().equals(MyRoles.COORDINATOR.getName())) {
+                            							   allowed[0] = true;
+                            						   }
+                            					   }
+                            				   } else if (m!=null && name.equals("AssemblyMemberIsExpert")) {
+                            					   List<SecurityRole> membershipRoles = m.getRoles();
+                            					   for (SecurityRole r : membershipRoles) {
+                            						   if(r.getName().equals(MyRoles.EXPERT.getName())) {
+                            							   allowed[0] = true;
+                            						   }
+                            					   }
+                            				   } else 
+                            					   allowed[0] = m!=null;
                             			   }
                             			   
                             		   });
@@ -51,5 +71,4 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                             	   return allowed[0];
                                });	
 	}
-
 }

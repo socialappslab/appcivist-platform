@@ -7,14 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import be.objectify.deadbolt.core.models.Permission;
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 @Entity
 public class UserPermission extends Model implements Permission {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5209150394472354436L;
 
 	@Id
 	@GeneratedValue
@@ -28,7 +24,7 @@ public class UserPermission extends Model implements Permission {
 		this.value = value;
 	}
 
-	public static Model.Finder<Long, UserPermission> find = new Model.Finder<Long, UserPermission>(
+	public static Finder<Long, UserPermission> find = new Finder<Long, UserPermission>(
 			Long.class, UserPermission.class);
 
 	public static UserPermission read(Long permitId) {

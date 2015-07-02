@@ -324,5 +324,4 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		loginUser = u;
 		return loginUser;
 	}
-
 }

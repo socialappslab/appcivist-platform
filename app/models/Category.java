@@ -1,7 +1,5 @@
 package models;
 
-import play.db.ebean.Model;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -24,7 +22,7 @@ public class Category extends AppCivistBaseModel {
     /**
 	 * The find property is an static property that facilitates database query creation
 	 */
-    public static Model.Finder<Long, Category> find = new Model.Finder<Long, Category>(
+    public static Finder<Long, Category> find = new Finder<Long, Category>(
             Long.class, Category.class);
 
     /*

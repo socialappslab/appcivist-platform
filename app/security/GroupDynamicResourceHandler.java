@@ -1,7 +1,11 @@
 package security;
 
+import java.util.List;
+
+import enums.MyRoles;
 import models.GroupMembership;
 import models.Membership;
+import models.SecurityRole;
 import models.User;
 import play.Logger;
 import play.libs.F.Promise;
@@ -38,6 +42,24 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
                             			   // TODO: add visibility to group
                             			   // WorkingGroup g = WorkingGroup.read(groupId);
                             			   Membership m = GroupMembership.findByUserAndGroupId(u.getUserId(), groupId);
+                            			   
+                            			   if (m!=null && name.equals("CoordinatorOfGroup")) {
+                        					   List<SecurityRole> membershipRoles = m.getRoles();
+                        					   for (SecurityRole r : membershipRoles) {
+                        						   if(r.getName().equals(MyRoles.COORDINATOR.getName())) {
+                        							   allowed[0] = true;
+                        						   }
+                        					   }
+                            			   } else if (m!=null && name.equals("GroupMemberIsExpert")) {
+                        					   List<SecurityRole> membershipRoles = m.getRoles();
+                        					   for (SecurityRole r : membershipRoles) {
+                        						   if(r.getName().equals(MyRoles.EXPERT.getName())) {
+                        							   allowed[0] = true;
+                        						   }
+                        					   }
+                        				   } else 
+                        					   allowed[0] = m!=null;
+                            			   
                             			   allowed[0] = m!=null;						    
                             		   });
                             	   }

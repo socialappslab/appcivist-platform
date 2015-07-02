@@ -14,10 +14,6 @@ import enums.MembershipStatus;
 @Entity
 @DiscriminatorValue("ASSEMBLY")
 public class AssemblyMembership extends Membership {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6654162992798204503L;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "membershipRole", "campaigns", "assemblyConfigs"})

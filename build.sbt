@@ -15,7 +15,6 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 
 libraryDependencies ++= Seq(
   javaJdbc withSources(),
-//  "org.avaje.ebeanorm" % "avaje-ebeanorm" % "4.6.2" withSources(),     
   "org.avaje.ebeanorm" % "avaje-ebeanorm" % "4.7.3" withSources(),     
   "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "4.5.3" withSources(),
   cache,
@@ -32,8 +31,12 @@ libraryDependencies ++= Seq(
   "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
   "commons-io" % "commons-io" % "2.4",
   "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),       
-  "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc()        
+  "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc(),        
+  "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
+  "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc()
+  // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
   //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
+  // Another Implementation of swagger-play2
   //"com.markusjura" %% "swagger-play2" % "1.3.7" withSources() withJavadoc()
 )
 

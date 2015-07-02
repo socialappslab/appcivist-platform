@@ -17,13 +17,20 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
+import security.SecurityModelConstants;
 import utils.GlobalData;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 import enums.ResponseStatus;
 
+@Api(value = "/group", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
 public class WorkingGroups extends Controller {
 
@@ -35,7 +42,8 @@ public class WorkingGroups extends Controller {
 	 * 
 	 * @return WorkingGroup list
 	 */
-	@SubjectPresent
+	@ApiOperation(httpMethod = "GET", response = TransferMembership.class, produces = "application/json", value = "List groups of an assembly")
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findWorkingGroups(Long aid) {
 		List<WorkingGroup> workingGroups = WorkingGroup.findByAssembly(aid);
 		return ok(Json.toJson(workingGroups));

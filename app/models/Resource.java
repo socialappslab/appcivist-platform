@@ -15,15 +15,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 
 import models.Location.Geo;
-import play.db.ebean.Model;
 import enums.ResourceTypes;
 
 @Entity
 public class Resource extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2501353074091631217L;
 	@Id
 	@GeneratedValue
 	@Column(name = "resource_id")
@@ -53,7 +48,7 @@ public class Resource extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, Resource> find = new Model.Finder<Long, Resource>(
+	public static Finder<Long, Resource> find = new Finder<Long, Resource>(
 			Long.class, Resource.class);
 
 	public Resource(User creator, ResourceTypes type, URL externalURL,

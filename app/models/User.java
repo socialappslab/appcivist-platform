@@ -25,7 +25,6 @@ import play.Play;
 import com.avaje.ebean.Model;
 
 import play.db.ebean.Transactional;
-import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.core.models.Permission;
 import be.objectify.deadbolt.core.models.Subject;
@@ -47,10 +46,6 @@ import enums.MyRoles;
 @Table(name="appcivist_user")
 public class User extends Model implements Subject {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1771934342960424445L;
 	@Id
 	@GeneratedValue
 	private Long userId;
@@ -63,7 +58,7 @@ public class User extends Model implements Subject {
 	@Column(name = "profile_pic")
 	private String profilePic;
 	@Column
-	private boolean active;
+	private boolean active = true;
 	// TODO create a transfer model for user and place the session key only there
 	@Transient
 	private String sessionKey;
@@ -307,7 +302,7 @@ public class User extends Model implements Subject {
 	}
 	
 	private static ExpressionList<User> findByEmailList(final String email) {
-		return find.where().eq("email", email);
+		return find.where().eq("email", email).eq("active",true);
 	}
 
 	public static User findByUsernamePasswordIdentity(
@@ -387,7 +382,8 @@ public class User extends Model implements Subject {
 			final AuthUserIdentity identity) {
 		return find.where()//.eq("active", true) // adding users soft deletion capabilities
 				.eq("linkedAccounts.providerUserId", identity.getId())
-				.eq("linkedAccounts.providerKey", identity.getProvider());
+				.eq("linkedAccounts.providerKey", identity.getProvider())
+				.eq("active",true);
 	}
 	
 	public void merge(final User otherUser) {

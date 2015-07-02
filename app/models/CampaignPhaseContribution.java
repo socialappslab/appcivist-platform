@@ -12,16 +12,10 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
-import play.db.ebean.Model;
 import enums.CampaignPhaseContributionConnectionTypes;
 
 @Entity
 public class CampaignPhaseContribution extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -926173390197852051L;
 
 	@Id
 	@GeneratedValue
@@ -49,7 +43,7 @@ public class CampaignPhaseContribution extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, CampaignPhaseContribution> find = new Model.Finder<Long, CampaignPhaseContribution>(
+	public static Finder<Long, CampaignPhaseContribution> find = new Finder<Long, CampaignPhaseContribution>(
 			Long.class, CampaignPhaseContribution.class);
 
 	public CampaignPhaseContribution(CampaignPhaseContributionConnectionTypes type,

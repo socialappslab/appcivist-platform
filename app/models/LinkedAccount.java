@@ -7,19 +7,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 import com.feth.play.module.pa.user.AuthUser;
 
 @Entity
 @Table(name="Linked_Account")
 public class LinkedAccount extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue

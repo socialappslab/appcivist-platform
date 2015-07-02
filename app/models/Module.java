@@ -9,15 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import play.db.ebean.Model;
-
 @Entity
 public class Module extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1215339626510577704L;
 	@Id
 	@GeneratedValue
 	private Long modId;
@@ -39,7 +32,7 @@ public class Module extends AppCivistBaseModel {
 		super();
 	}
 
-	public static Model.Finder<Long, Module> find = new Model.Finder<Long, Module>(
+	public static Finder<Long, Module> find = new Finder<Long, Module>(
 			Long.class, Module.class);
 
 	public static Module read(Long moduleId) {

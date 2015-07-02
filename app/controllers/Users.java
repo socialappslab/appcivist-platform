@@ -75,7 +75,6 @@ public class Users extends Controller {
 		public void setAccept(Boolean accept) {
 			this.accept = accept;
 		}
-
 	}
 
 	public static class PasswordChange {
@@ -672,7 +671,6 @@ public class Users extends Controller {
 			// TODO return redirect(routes.Application.login());
 		}
 	}
-	
 
 	public static Result exists() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -681,9 +679,6 @@ public class Users extends Controller {
 		// TODO return ok(exists.render());
 	}
 	
-
-	
-
 	/****************************************************************************************************
 	 * Auxiliary Operations
 	 ***************************************************************************************************/
@@ -692,8 +687,6 @@ public class Users extends Controller {
 				.getUser(session));
 		return localUser;
 	}
-
-
 
 	public static Result onLoginUserNotFound() {
 		TransferResponseStatus response = new TransferResponseStatus();

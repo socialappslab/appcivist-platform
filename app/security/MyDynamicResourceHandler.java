@@ -13,7 +13,6 @@ import play.libs.F;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.models.Permission;
-import be.objectify.deadbolt.core.models.Subject;
 import be.objectify.deadbolt.java.DeadboltHandler;
 import be.objectify.deadbolt.java.DynamicResourceHandler;
 
@@ -41,18 +40,14 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 	static {
 		// for each, the "meta" propery is used to pass down information on how to recognize to what
 		// set of resources we are referring
-		HANDLERS.put("MemberOfGroup",
-				Optional.of(new GroupDynamicResourceHandler())); 
-		HANDLERS.put("MemberOfAssembly",
-				Optional.of(new AssemblyDynamicResourceHandler())); 
-		HANDLERS.put("CoordinatorOfGroup",
-				Optional.of(new GroupDynamicResourceHandler())); 
-		HANDLERS.put("CoordinatorOfAssembly",
-				Optional.of(new AssemblyDynamicResourceHandler())); 
-		HANDLERS.put("CanInviteToGroup",
-				Optional.of(new GroupDynamicResourceHandler())); 
-		HANDLERS.put("CanInviteToAssembly",
-				Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("MemberOfGroup", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("MemberOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("CoordinatorOfGroup", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("CoordinatorOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("GroupMemberIsExpert", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("AssemblyMemberIsExpert", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("CanInviteToGroup", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("CanInviteToAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
 		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler())); 
 	}
 

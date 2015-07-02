@@ -35,19 +35,14 @@ public class OnlyMeDynamicResourceHandler extends AbstractDynamicResourceHandler
 										subjectOption.ifPresent(subject -> {
 										    String path = context.request().path();
 										    Long requestedResourceId = MyDynamicResourceHandler.getIdFromPath(path, meta);
-										    
 										    User u = User.findByUserName(subject.getIdentifier());
-										    
 										    Long requestorId = u.getUserId();
-										
 										    Logger.debug("Checking relationship of...");
 										    Logger.debug("--> userId = "+requestorId);
 										    Logger.debug("--> requestedResourceId = "+requestedResourceId);
 										    Logger.debug("--> type of resource= "+meta);
 										    Logger.debug("Checking for path "+meta+requestedResourceId);
-										
 										    Long requestedId = MyDynamicResourceHandler.getIdFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
-										
 										    allowed[0] = requestorId == requestedId;
 										});
 									}

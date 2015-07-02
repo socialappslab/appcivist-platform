@@ -9,10 +9,6 @@ import be.objectify.deadbolt.core.models.Role;
 import com.avaje.ebean.Model;
 @Entity
 public class SecurityRole extends Model implements Role {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1734493746753409942L;
 
 	@Id
 	@GeneratedValue

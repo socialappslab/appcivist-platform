@@ -18,7 +18,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 import models.TokenAction.Type;
-import play.db.ebean.Model;
 
 import enums.MembershipRoles;
 import enums.MembershipStatus;
@@ -27,10 +26,6 @@ import enums.MembershipStatus;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "MEMBERSHIP_TYPE")
 public class Membership extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4939869903730586228L;
 	@Id
 	@GeneratedValue
 	private Long membershipId;
@@ -56,7 +51,7 @@ public class Membership extends AppCivistBaseModel {
 	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	private WorkingGroup targetGroup;
 
-	public static Model.Finder<Long, Membership> find = new Model.Finder<Long, Membership>(
+	public static Finder<Long, Membership> find = new Finder<Long, Membership>(
 			Long.class, Membership.class);
 
 	public Membership(Long expiration, MembershipStatus status, User creator,

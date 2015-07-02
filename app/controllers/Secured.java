@@ -51,9 +51,6 @@ public class Secured extends Security.Authenticator {
 		// return redirect(routes.Application.index());
 		return forbidden("you need to log in first!");
 	}
-
-	
-	
 	
 	/**
 	 * Analyzes the SESSION_KEY contained in the body of the request (as a header)

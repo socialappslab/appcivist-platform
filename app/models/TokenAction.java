@@ -10,7 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import play.data.format.Formats;
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.annotation.EnumValue;
@@ -32,11 +32,6 @@ public class TokenAction extends Model {
 		@EnumValue("MR")
 		MEMBERSHIP_REQUEST
 	}
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Verification time frame (until the user clicks on the link in the email)

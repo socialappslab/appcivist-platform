@@ -1,12 +1,13 @@
 package controllers;
 
+import java.util.List;
+
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import models.Assembly;
 import models.Contribution;
-import models.ContributionCollection;
 import models.User;
 import play.Logger;
 import play.data.Form;
@@ -29,7 +30,7 @@ public class Contributions extends Controller{
      */
     @SubjectPresent
     public static Result findContributions(Long aid) {
-        ContributionCollection contributions = Contribution.findAllByAssembly(aid);
+        List<Contribution> contributions = Contribution.findAllByAssembly(aid);
         return ok(Json.toJson(contributions));
     }
 

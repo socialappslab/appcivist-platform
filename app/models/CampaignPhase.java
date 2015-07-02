@@ -17,15 +17,8 @@ import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import play.db.ebean.Model;
-
 @Entity
 public class CampaignPhase extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4311376060179356946L;
 
 	@Id
 	@GeneratedValue
@@ -50,7 +43,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, CampaignPhase> find = new Model.Finder<Long, CampaignPhase>(
+	public static Finder<Long, CampaignPhase> find = new Finder<Long, CampaignPhase>(
 			Long.class, CampaignPhase.class);
 
 	public CampaignPhase() {
