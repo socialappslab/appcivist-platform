@@ -1,4 +1,4 @@
-@(localUser: models.User = null)
+@(localUser: models.UserProfile = null)
 
 @import com.feth.play.module.pa.views.html._
 
@@ -6,10 +6,10 @@
 
     <h1>@Messages("playauthenticate.profile.title")</h1>
     <p>
-    Your name is @localUser.getName() and your email address is @if(!localUser.getEmail()) {<em>&lt;unknown&gt;</em>.} else {
-    	@localUser.getEmail().
+    Your name is @localUser.getUser().getName() and your email address is @if(!localUser.getUser().getEmail()) {<em>&lt;unknown&gt;</em>.} else {
+    	@localUser.getUser().getEmail().
 	    <i>
-	    @if(!localUser.isEmailVerified() && localUser.getEmail()) {
+	    @if(!localUser.getUser().isEmailVerified() && localUser.getUser().getEmail()) {
 	      (<a href="@routes.Users.verifyEmail">unverified - click to verify</a>)
 	    } else {
 	      (verified)
@@ -17,7 +17,7 @@
     }
     <br />
       
-    @defining(localUser.getProviders()) { providers =>
+    @defining(localUser.getUser().getProviders()) { providers =>
         @if(providers.size() > 0) {
         @if(providers.size() ==1) {
             @Messages("playauthenticate.profile.providers_one")

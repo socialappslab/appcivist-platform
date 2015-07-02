@@ -32,7 +32,9 @@ libraryDependencies ++= Seq(
   "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
   "commons-io" % "commons-io" % "2.4",
   "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),       
-  "com.wordnik" %% "swagger-core" % "1.3.12"
+  "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc()        
+  //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
+  //"com.markusjura" %% "swagger-play2" % "1.3.7" withSources() withJavadoc()
 )
 
 libraryDependencies += evolutions
@@ -46,6 +48,8 @@ resolvers += Resolver.url("play-easymail (snapshot)", url("http://joscha.github.
 resolvers += Resolver.url("play-authenticate (release)", url("http://joscha.github.io/play-authenticate/repo/releases/"))(Resolver.ivyStylePatterns)
 
 resolvers += Resolver.url("play-authenticate (snapshot)", url("http://joscha.github.io/play-authenticate/repo/snapshots/"))(Resolver.ivyStylePatterns)
+
+resolvers += Resolver.bintrayRepo("markusjura", "maven")
 
 // Enable Java Ebean
 lazy val myProject = (project in file("."))

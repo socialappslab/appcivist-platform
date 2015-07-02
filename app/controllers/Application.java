@@ -3,11 +3,14 @@ package controllers;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.wordnik.swagger.annotations.Api;
+
 import play.*;
 import play.mvc.*;
 import views.html.*;
 import http.Headers;
 
+@Api(value="/")
 @With(Headers.class)
 public class Application extends Controller {
 

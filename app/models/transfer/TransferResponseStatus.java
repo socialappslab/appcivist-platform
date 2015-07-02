@@ -84,7 +84,33 @@ public class TransferResponseStatus implements Serializable {
 	public void setNewResourceURL(String newResourceURL) {
 		this.newResourceURL = newResourceURL;
 	}
+
+	public static TransferResponseStatus badMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.BADREQUEST, msg, error);
+	}
 	
+	public static TransferResponseStatus noDataMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.NODATA, msg, error);
+	}
 	
+	public static TransferResponseStatus notAvailableMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.NOTAVAILABLE, msg, error);
+	}
+	
+	public static TransferResponseStatus okMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.OK, msg, error);
+	}
+	
+	public static TransferResponseStatus errorMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.SERVERERROR, msg, error);
+	}
+	
+	public static TransferResponseStatus unauthorizedMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.UNAUTHORIZED, msg, error);
+	}
+
+
+
+
 	
 }
