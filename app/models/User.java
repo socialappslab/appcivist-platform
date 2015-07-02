@@ -21,7 +21,9 @@ import javax.persistence.Transient;
 
 import models.TokenAction.Type;
 import play.Play;
-import play.db.ebean.Model;
+
+import com.avaje.ebean.Model;
+
 import play.db.ebean.Transactional;
 import utils.GlobalData;
 import be.objectify.deadbolt.core.models.Permission;
@@ -38,14 +40,12 @@ import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
 
+import enums.MyRoles;
+
 @Entity
 @Table(name="appcivist_user")
 public class User extends Model implements Subject {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1771934342960424445L;
 	@Id
 	@GeneratedValue
 	private Long userId;
@@ -58,7 +58,7 @@ public class User extends Model implements Subject {
 	@Column(name = "profile_pic")
 	private String profilePic;
 	@Column
-	private boolean active;
+	private boolean active = true;
 	// TODO create a transfer model for user and place the session key only there
 	@Transient
 	private String sessionKey;
@@ -97,7 +97,7 @@ public class User extends Model implements Subject {
 	/**
 	 * Static finder property
 	 */
-	public static Model.Finder<Long, User> find = new Model.Finder<Long, User>(
+	public static Finder<Long, User> find = new Finder<Long, User>(
 			Long.class, User.class);
 	
     public User(){
@@ -255,7 +255,8 @@ public class User extends Model implements Subject {
 
 	@Override
 	public String getIdentifier() {
-		return this.userId.toString();
+		//return this.userId.toString();
+		return this.username;
 	}
 		
 	/************************************************************************************************
@@ -301,7 +302,7 @@ public class User extends Model implements Subject {
 	}
 	
 	private static ExpressionList<User> findByEmailList(final String email) {
-		return find.where().eq("email", email);
+		return find.where().eq("email", email).eq("active",true);
 	}
 
 	public static User findByUsernamePasswordIdentity(
@@ -381,7 +382,8 @@ public class User extends Model implements Subject {
 			final AuthUserIdentity identity) {
 		return find.where()//.eq("active", true) // adding users soft deletion capabilities
 				.eq("linkedAccounts.providerUserId", identity.getId())
-				.eq("linkedAccounts.providerKey", identity.getProvider());
+				.eq("linkedAccounts.providerKey", identity.getProvider())
+				.eq("active",true);
 	}
 	
 	public void merge(final User otherUser) {
@@ -405,14 +407,14 @@ public class User extends Model implements Subject {
 		User user = new User();
 
 		/*
-		 * 1. We start by already adding the role MEMBER and a LINKEDACCOUNT to
+		 * 1. We start by already adding the role USER and a LINKEDACCOUNT to
 		 * the user instance to be created
 		 */
-//		user.roles = Collections.singletonList(SecurityRole
-//				.findByRoleName(MyRoles.MEMBER.toString()));
+		user.roles = Collections.singletonList(SecurityRole
+				.findByName(MyRoles.USER.toString()));
 		user.linkedAccounts = Collections.singletonList(LinkedAccount
 				.create(authUser));
-//		user.active = true;
+		user.active = true;
 		Long userId = null;
 
 		/*
@@ -496,6 +498,10 @@ public class User extends Model implements Subject {
 		}
 		
 		return user;
+	}
+
+	private void addRole(SecurityRole role) {
+		this.roles.add(role);	
 	}
 
 	private static String generateUsername(String email) {

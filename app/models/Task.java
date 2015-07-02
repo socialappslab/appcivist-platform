@@ -6,15 +6,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import play.db.ebean.Model;
 import enums.TaskStatus;
 
 @Entity
 public class Task extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6574200018754738463L;
 	// Commons
 
 	@Id
@@ -39,7 +34,7 @@ public class Task extends AppCivistBaseModel {
 		this.places = places;
 	}
 
-	public static Model.Finder<Long, Task> find = new Model.Finder<Long, Task>(
+	public static Finder<Long, Task> find = new Finder<Long, Task>(
 			Long.class, Task.class);
 
 	public static Task read(Long taskId) {

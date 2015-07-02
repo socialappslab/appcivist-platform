@@ -579,6 +579,8 @@ create table user_profile (
   last_name                 varchar(255),
   birthdate                 timestamp,
   address                   varchar(255),
+  user_user_id              bigint,
+  constraint uq_user_profile_user_user_id unique (user_user_id),
   constraint pk_user_profile primary key (profile_id))
 ;
 
@@ -804,6 +806,8 @@ alter table service_resource add constraint fk_service_resource_parentRes_57 for
 create index ix_service_resource_parentRes_57 on service_resource (parent_resource_service_resource_id);
 alter table Token_Action add constraint fk_Token_Action_targetUser_58 foreign key (user_id) references appcivist_user (user_id);
 create index ix_Token_Action_targetUser_58 on Token_Action (user_id);
+alter table user_profile add constraint fk_user_profile_user_59 foreign key (user_user_id) references appcivist_user (user_id);
+create index ix_user_profile_user_59 on user_profile (user_user_id);
 
 
 

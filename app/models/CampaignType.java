@@ -9,16 +9,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
-import play.db.ebean.Model;
 import enums.CampaignTypesEnum;
 
 @Entity
 public class CampaignType extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8987815561364000335L;
 
 	@Id
 	@GeneratedValue
@@ -33,7 +27,7 @@ public class CampaignType extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, CampaignType> find = new Model.Finder<Long, CampaignType>(
+	public static Finder<Long, CampaignType> find = new Finder<Long, CampaignType>(
 			Long.class, CampaignType.class);
 
 	public CampaignType() {

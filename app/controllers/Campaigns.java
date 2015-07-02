@@ -1,8 +1,11 @@
 package controllers;
 
+import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 
 import http.Headers;
 import models.Assembly;
@@ -15,19 +18,23 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
+import security.SecurityModelConstants;
 import utils.GlobalData;
+import models.transfer.TransferMembership;
 import models.transfer.TransferResponseStatus;
 
 import java.util.List;
 
 import static play.data.Form.form;
 
+@Api(value="/campaign",description="Campaign management endpoints")
 @With(Headers.class)
 public class Campaigns extends Controller {
 
 	public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
 
-	@SubjectPresent
+	@ApiOperation(httpMethod = "GET", response = TransferMembership.class, produces = "application/json", value = "List campaigns of an Assembly")
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findCampaigns(Long aid) {
 		List<Campaign> campaigns = Campaign.findByAssembly(aid);
 		return ok(Json.toJson(campaigns));

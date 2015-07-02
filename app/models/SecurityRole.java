@@ -6,14 +6,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import be.objectify.deadbolt.core.models.Role;
-import play.db.ebean.Model;
-
+import com.avaje.ebean.Model;
 @Entity
 public class SecurityRole extends Model implements Role {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1734493746753409942L;
 
 	@Id
 	@GeneratedValue
@@ -24,7 +19,7 @@ public class SecurityRole extends Model implements Role {
 		this.name = name;
 	}
 
-	public static Model.Finder<Long, SecurityRole> find = new Model.Finder<Long, SecurityRole>(
+	public static Finder<Long, SecurityRole> find = new Finder<Long, SecurityRole>(
 			Long.class, SecurityRole.class);
 
 	public static SecurityRole read(Long roleId) {

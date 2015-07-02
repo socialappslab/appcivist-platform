@@ -1,8 +1,5 @@
 package models;
 
-
-import play.db.ebean.Model;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -10,12 +7,6 @@ import java.util.List;
 
 @Entity
 public class ConfigDefinition extends AppCivistBaseModel {
-
-
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -5550514904277749816L;
 	
 	@Id
     @GeneratedValue
@@ -37,7 +28,7 @@ public class ConfigDefinition extends AppCivistBaseModel {
         super();
     }
 
-    public static Model.Finder<Long, ConfigDefinition> find = new Model.Finder<Long, ConfigDefinition>(
+    public static Finder<Long, ConfigDefinition> find = new Finder<Long, ConfigDefinition>(
             Long.class, ConfigDefinition.class);
 
     public Long getConfigDefinitionId() {

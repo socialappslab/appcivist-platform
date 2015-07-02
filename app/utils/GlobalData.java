@@ -51,4 +51,11 @@ public class GlobalData {
 	public static String CONTRIBUTION_CREATE_MSG_SUCCESS = "contribution.creation.success";
 	public static String CONTRIBUTION_CREATE_MSG_ERROR = "contribution.creation.error";
 	public static String CONTRIBUTION_BASE_PATH = "/contribution";
+	
+
+	public final static String USER_ROLE = "USER";
+	public final static String ADMIN_ROLE = "ADMIN";
+	public final static String COORDINATOR_ROLE = "COORDINATOR";
+	public final static String MEMBER_ROLE = "MEMBER";
+	public final static String FOLLOWER_ROLE = "FOLLOWER";
 }

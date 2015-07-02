@@ -12,8 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
-import com.avaje.ebean.ExpressionList;
-import play.db.ebean.Model;
+import com.avaje.ebean.ExpressionList; 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,11 +22,6 @@ import enums.Visibility;
 
 @Entity
 public class Campaign extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3367429873420318943L;
 
 	@Id
 	@GeneratedValue
@@ -61,7 +55,7 @@ public class Campaign extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, Campaign> find = new Model.Finder<Long, Campaign>(
+	public static Finder<Long, Campaign> find = new Finder<Long, Campaign>(
 			Long.class, Campaign.class);
 
 	public Campaign() {

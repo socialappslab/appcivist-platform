@@ -12,11 +12,6 @@ import enums.MembershipStatus;
 @Entity
 @DiscriminatorValue("GROUP")
 public class GroupMembership extends Membership {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3737906484702711675L;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	private WorkingGroup workingGroup;
@@ -72,5 +67,16 @@ public class GroupMembership extends Membership {
 	public static Membership findByUserAndGroup(User user, WorkingGroup target) {
 		return find.where().eq("user", user).eq("workingGroup", target)
 				.findUnique();
+	}
+	/**
+	 * Find a membership record for userId and groupId
+	 * 
+	 * @param userId
+	 * @param groupId
+	 * @return
+	 */
+	public static Membership findByUserAndGroupId(Long userId, Long groupId) {
+		return find.where().eq("user.userId", userId).eq("workingGroup.assemblyId", groupId)
+				.findUnique();		
 	}
 }

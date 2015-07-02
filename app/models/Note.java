@@ -6,14 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import play.db.ebean.Model;
-
 @Entity
 public class Note extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8437512308326874898L;
 
 	@Id
 	@GeneratedValue
@@ -25,7 +19,7 @@ public class Note extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, Note> find = new Model.Finder<Long, Note>(
+	public static Finder<Long, Note> find = new Finder<Long, Note>(
 			Long.class, Note.class);
 
 	public Note(User creator,String title, String text) {

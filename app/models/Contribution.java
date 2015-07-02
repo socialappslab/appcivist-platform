@@ -8,15 +8,9 @@ import javax.persistence.*;
 import com.avaje.ebean.ExpressionList;
 import enums.ContributionTypes;
 import models.Location.Geo;
-import play.db.ebean.Model;
 
 @Entity
 public class Contribution extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7576572204861603387L;
 
 	@Id
 	@GeneratedValue
@@ -53,7 +47,7 @@ public class Contribution extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, Contribution> find = new Model.Finder<Long, Contribution>(
+	public static Finder<Long, Contribution> find = new Finder<Long, Contribution>(
 			Long.class, Contribution.class);
 
 	public Contribution(User creator, String title, String text,
@@ -188,19 +182,15 @@ public class Contribution extends AppCivistBaseModel {
 		return c;
 	}
 
-	public static ContributionCollection findAll() {
+	public static List<Contribution> findAll() {
 		List<Contribution> contribs = find.all();
-		ContributionCollection contribCollection = new ContributionCollection();
-		contribCollection.setContributions(contribs);
-		return contribCollection;
+		return contribs;
 	}
 
 
-	public static ContributionCollection findAllByAssembly(Long aid) {
+	public static List<Contribution> findAllByAssembly(Long aid) {
 		List<Contribution> contribs = find.where().eq("assembly.assemblyId", aid).findList();
-		ContributionCollection contribCollection = new ContributionCollection();
-		contribCollection.setContributions(contribs);
-		return contribCollection;
+		return contribs;
 	}
 	public static void create(Contribution issue) {
 		issue.save();

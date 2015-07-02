@@ -1,20 +1,14 @@
 package models;
 
-import play.db.ebean.Model;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import java.util.Date;
 
 @Entity
 public class UserProfile extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3661472286635903816L;
-
 	@Id
 	@GeneratedValue
 	private Long profileId;
@@ -23,11 +17,12 @@ public class UserProfile extends AppCivistBaseModel {
 	private String lastName;
 	private Date birthdate;
 	private String address;
-	private User creator;
+	@OneToOne
+	private User user;
 
 	public UserProfile(User creator, String name, String middleName, String lastName,
 			Date birthdate, String address) {
-		this.creator = creator;
+		this.user = creator;
 		this.name = name;
 		this.middleName = middleName;
 		this.lastName = lastName;
@@ -35,19 +30,19 @@ public class UserProfile extends AppCivistBaseModel {
 		this.address = address;
 	}
 
-	public static Model.Finder<Long, UserProfile> find = new Model.Finder<Long, UserProfile>(
+	public static Finder<Long, UserProfile> find = new Finder<Long, UserProfile>(
 			Long.class, UserProfile.class);
 
 	public static UserProfile read(Long profileId) {
 		return find.ref(profileId);
 	}
 
-	public User getCreator() {
-		return creator;
+	public User getUser() {
+		return user;
 	}
 
-	public void setCreator(User creator) {
-		this.creator = creator;
+	public void setUser(User creator) {
+		this.user = creator;
 	}
 
 	public Long getProfileId() {
@@ -96,5 +91,13 @@ public class UserProfile extends AppCivistBaseModel {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+	
+	/*
+	 * Other queries
+	 */
+	
+	public static UserProfile readByUserId(Long id) {
+		return find.where().eq("user.userId", id).findUnique();
 	}
 }

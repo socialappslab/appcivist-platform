@@ -7,17 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-import play.db.ebean.Model;
 import enums.AssemblyConnectionTypes;
 
 @Entity
 public class AssemblyConnection extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -926173390197852051L;
 
 	@Id
 	@GeneratedValue
@@ -34,7 +27,7 @@ public class AssemblyConnection extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, AssemblyConnection> find = new Model.Finder<Long, AssemblyConnection>(
+	public static Finder<Long, AssemblyConnection> find = new Finder<Long, AssemblyConnection>(
 			Long.class, AssemblyConnection.class);
 
 	public AssemblyConnection(AssemblyConnectionTypes type,

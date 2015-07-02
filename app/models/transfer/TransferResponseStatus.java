@@ -34,6 +34,14 @@ public class TransferResponseStatus implements Serializable {
 		this.statusMessage = statusMessage;
 		this.errorTrace = errorTrace;
 	}
+	
+	public TransferResponseStatus(ResponseStatus responseStatus,
+			String statusMessage, String errorTrace, Long newId) {
+		this.responseStatus = responseStatus;
+		this.statusMessage = statusMessage;
+		this.errorTrace = errorTrace;
+		this.newResourceId=newId;
+	}
 
 	public TransferResponseStatus() {
 		// TODO Auto-generated constructor stub
@@ -84,7 +92,37 @@ public class TransferResponseStatus implements Serializable {
 	public void setNewResourceURL(String newResourceURL) {
 		this.newResourceURL = newResourceURL;
 	}
+
+	public static TransferResponseStatus badMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.BADREQUEST, msg, error);
+	}
 	
+	public static TransferResponseStatus noDataMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.NODATA, msg, error);
+	}
 	
+	public static TransferResponseStatus notAvailableMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.NOTAVAILABLE, msg, error);
+	}
+	
+	public static TransferResponseStatus okMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.OK, msg, error);
+	}
+
+	public static TransferResponseStatus okMessage(String msg, String error, Long resourceId) {
+		return new TransferResponseStatus(ResponseStatus.OK, msg, error, resourceId);
+	}
+
+	public static TransferResponseStatus errorMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.SERVERERROR, msg, error);
+	}
+	
+	public static TransferResponseStatus unauthorizedMessage(String msg, String error) {
+		return new TransferResponseStatus(ResponseStatus.UNAUTHORIZED, msg, error);
+	}
+
+
+
+
 	
 }

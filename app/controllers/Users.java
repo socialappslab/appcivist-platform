@@ -8,7 +8,9 @@ import java.util.List;
 
 import models.TokenAction;
 import models.TokenAction.Type;
+import models.Assembly;
 import models.User;
+import models.UserProfile;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -21,6 +23,7 @@ import play.mvc.Controller;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.With;
+import views.html.*;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
 import providers.MyUsernamePasswordAuthProvider.MyIdentity;
@@ -28,125 +31,39 @@ import providers.MyUsernamePasswordAuthProvider.MyLogin;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
+import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.user.AuthUser;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
+import enums.MyRoles;
 import enums.ResponseStatus;
 
+@Api(value = "/user", description = "User Management operations, including authentication of users, "
+		+ "merging/linking of accounts reading information about users")
 @With(Headers.class)
 public class Users extends Controller {
-
-	/****************************************************************************************************
-	 * Read-Only Endpoints
-	 ***************************************************************************************************/
-	@Restrict({ @Group("ADMIN") })
-	public static Result getUsers() {
-		List<User> users = User.findAll();
-		return ok(Json.toJson(users));
-	}
-
-	// TODO dynamic controller that allows only ADMINS and SELFs to get the full
-	// information of an user
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result getUser(Long id) {
-		Logger.info("Obtaining user with id = " + id);
-		User u = User.findByUserId(id);
-		return ok(Json.toJson(u));
-	}
-
-	@SubjectPresent
-	public static Result getCurrentUser(Long id) {
-		final User localUser = getLocalUser(session());
-		// UserBean bean = PlayDozerMapper.getInstance().map(localUser,
-		// UserBean.class); // Example if we choose to use Dozer
-		if (localUser.getUserId().equals(id)) {
-			return ok(Json.toJson(localUser));
-		} else {
-			return badRequest("User " + id
-					+ " is not the user registered in for this client");
-		}
-	}
-
-	/****************************************************************************************************
-	 * CREATE Endpoints
-	 ***************************************************************************************************/
-	public static Result doSignup() {
-
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
-				.bindFromRequest();
-		if (filledForm.hasErrors()) {
-			// User did not fill everything properly
-			// return badRequest(signup.render(filledForm));
-			TransferResponseStatus response = new TransferResponseStatus();
-			response.setResponseStatus(ResponseStatus.BADREQUEST);
-			response.setStatusMessage("play.authenticate.filledFromHasErrors:"
-					+ filledForm.errorsAsJson());
-			return badRequest(Json.toJson(response));
-		} else {
-			// Everything was filled correctly
-			// Do something with your part of the form before handling the user
-			// signup
-			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
-		}
-	}
-
-	/****************************************************************************************************
-	 * UPDATE Endpoints
-	 ***************************************************************************************************/
-	public static Result updateUser(Long uid) {
-		return notFound("TODO: Not Implemented Yet");
-	}
-
-	/****************************************************************************************************
-	 * DELETE Endpoints
-	 ***************************************************************************************************/
-	public static Result deleteUser(Long uid) {
-		return notFound("TODO: Not Implemented Yet");
-	}
-
-	public static Result deleteUserForce(Long uid) {
-		return notFound("TODO: Not Implemented Yet");
-	}
-
-	/****************************************************************************************************
-	 * AUTHENTICATION Endpoints
-	 * 
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 ***************************************************************************************************/
-	public static Result doLogin() throws InstantiationException,
-			IllegalAccessException {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		Logger.info("REQUEST: Login => " + ctx().request());
-		Logger.info("REQUEST: Login JSON => " + ctx().request().body().asJson());
-		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
-				.bindFromRequest();
-		Logger.info("REQUEST: Login Form => " + filledForm.toString());
-		if (filledForm.hasErrors()) {
-			// User did not fill everything properly
-			// return badRequest(login.render(filledForm));
-			return badRequest("Errors in Data: " + filledForm.errorsAsJson());
-		} else {
-			// Everything was filled
-			return MyUsernamePasswordAuthProvider.handleLogin(ctx());
-		}
-
-	}
-
-	public static Result doLogout() {
-		return notFound("TODO: Not Implemented Yet");
-	}
+	public static final Form<User> USER_FORM = form(User.class);
+	public static final Form<UserProfile> USER_PROFILE_FORM = form(UserProfile.class);
+	private static final Form<Accept> ACCEPT_FORM = form(Accept.class);
+	private static final Form<Users.PasswordChange> PASSWORD_CHANGE_FORM = form(Users.PasswordChange.class);
+	private static final Form<PasswordReset> PASSWORD_RESET_FORM = form(PasswordReset.class);
+	private static final Form<MyIdentity> FORGOT_PASSWORD_FORM = form(MyIdentity.class);
 
 	/**
 	 * Authentication Auxiliary Classes
 	 */
 	public static class Accept {
-
 		@Required
 		@NonEmpty
 		public Boolean accept;
@@ -158,7 +75,6 @@ public class Users extends Controller {
 		public void setAccept(Boolean accept) {
 			this.accept = accept;
 		}
-
 	}
 
 	public static class PasswordChange {
@@ -195,150 +111,6 @@ public class Users extends Controller {
 		}
 	}
 
-	// private static final Form<Accept> ACCEPT_FORM = form(Accept.class);
-	// private static final Form<Account.PasswordChange> PASSWORD_CHANGE_FORM =
-	// form(Account.PasswordChange.class);
-	//
-	// @SubjectPresent
-	// public static Result link() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// return ok(link.render());
-	// }
-	//
-	// @Restrict(@Group(MyRoles.MEMBER))
-	// public static Result verifyEmail() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final User user = Application.getLocalUser(session());
-	// if (user.emailValidated) {
-	// // E-Mail has been validated already
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.verify_email.error.already_validated"));
-	// } else if (user.email != null && !user.email.trim().isEmpty()) {
-	// flash(Application.FLASH_MESSAGE_KEY, Messages.get(
-	// "playauthenticate.verify_email.message.instructions_sent",
-	// user.email));
-	// MyUsernamePasswordAuthProvider.getProvider()
-	// .sendVerifyEmailMailingAfterSignup(user, ctx());
-	// } else {
-	// flash(Application.FLASH_MESSAGE_KEY, Messages.get(
-	// "playauthenticate.verify_email.error.set_email_first",
-	// user.email));
-	// }
-	// return redirect(routes.Application.profile());
-	// }
-	//
-	// @Restrict(@Group(Application.USER_ROLE))
-	// public static Result changePassword() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final User u = Application.getLocalUser(session());
-	//
-	// if (!u.emailValidated) {
-	// return ok(unverified.render());
-	// } else {
-	// return ok(password_change.render(PASSWORD_CHANGE_FORM));
-	// }
-	// }
-	//
-	// @Restrict(@Group(Application.USER_ROLE))
-	// public static Result doChangePassword() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final Form<Account.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
-	// .bindFromRequest();
-	// if (filledForm.hasErrors()) {
-	// // User did not select whether to link or not link
-	// return badRequest(password_change.render(filledForm));
-	// } else {
-	// final User user = Application.getLocalUser(session());
-	// final String newPassword = filledForm.get().password;
-	// user.changePassword(new MyUsernamePasswordAuthUser(newPassword),
-	// true);
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.change_password.success"));
-	// return redirect(routes.Application.profile());
-	// }
-	// }
-	//
-	// @SubjectPresent
-	// public static Result askLink() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final AuthUser u = PlayAuthenticate.getLinkUser(session());
-	// if (u == null) {
-	// // account to link could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	// return ok(ask_link.render(ACCEPT_FORM, u));
-	// }
-	//
-	// @SubjectPresent
-	// public static Result doLink() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// final AuthUser u = PlayAuthenticate.getLinkUser(session());
-	// if (u == null) {
-	// // account to link could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	//
-	// final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
-	// if (filledForm.hasErrors()) {
-	// // User did not select whether to link or not link
-	// return badRequest(ask_link.render(filledForm, u));
-	// } else {
-	// // User made a choice :)
-	// final boolean link = filledForm.get().accept;
-	// if (link) {
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.accounts.link.success"));
-	// }
-	// return PlayAuthenticate.link(ctx(), link);
-	// }
-	// }
-	//
-	// @SubjectPresent
-	// public static Result askMerge() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// // this is the currently logged in user
-	// final AuthUser aUser = PlayAuthenticate.getUser(session());
-	//
-	// // this is the user that was selected for a login
-	// final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
-	// if (bUser == null) {
-	// // user to merge with could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	//
-	// // You could also get the local user object here via
-	// // User.findByAuthUserIdentity(newUser)
-	// return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
-	// }
-	//
-	// @SubjectPresent
-	// public static Result doMerge() {
-	// com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-	// // this is the currently logged in user
-	// final AuthUser aUser = PlayAuthenticate.getUser(session());
-	//
-	// // this is the user that was selected for a login
-	// final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
-	// if (bUser == null) {
-	// // user to merge with could not be found, silently redirect to login
-	// return redirect(routes.Application.index());
-	// }
-	//
-	// final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
-	// if (filledForm.hasErrors()) {
-	// // User did not select whether to merge or not merge
-	// return badRequest(ask_merge.render(filledForm, aUser, bUser));
-	// } else {
-	// // User made a choice :)
-	// final boolean merge = filledForm.get().accept;
-	// if (merge) {
-	// flash(Application.FLASH_MESSAGE_KEY,
-	// Messages.get("playauthenticate.accounts.merge.success"));
-	// }
-	// return PlayAuthenticate.merge(ctx(), merge);
-	// }
-	// }
-
 	public static class PasswordReset extends Users.PasswordChange {
 
 		public PasswordReset() {
@@ -359,7 +131,389 @@ public class Users extends Controller {
 		}
 	}
 
-	private static final Form<PasswordReset> PASSWORD_RESET_FORM = form(PasswordReset.class);
+	/****************************************************************************************************
+	 * Read-Only Endpoints
+	 ***************************************************************************************************/
+	@ApiOperation(httpMethod = "GET", response = User.class, responseContainer = "List", produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only availabe to ADMINS")
+	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
+	public static Result getUsers() {
+		List<User> users = User.findAll();
+		return ok(Json.toJson(users));
+	}
+
+	@ApiOperation(httpMethod = "GET", response = User.class, produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only availabe to ADMINS")
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result getUser(
+			@ApiParam(value = "ID of the user", required = true) Long id) {
+		Logger.info("Obtaining user with id = " + id);
+		User u = User.findByUserId(id);
+		return ok(Json.toJson(u));
+	}
+
+	@ApiOperation(nickname="loggedin", httpMethod = "GET", response = User.class, produces = "application/json", value = "Get session user", notes = "Get session user currently loggedin, as available in HTTP session")
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result getCurrentUser() {
+		final User localUser = getLocalUser(session());
+		if (localUser != null) 
+			return ok(Json.toJson(localUser));
+		else 
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
+					"No user logged in with session in this client", "")));
+	}
+	
+	@ApiOperation(httpMethod = "GET", response = User.class, produces = "application/json, text/html", value = "Get session user", notes = "Get session user currently loggedin, as available in HTTP session")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@ApiImplicitParam(name="profile", value="profile", paramType="path")
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result profile(@ApiParam(value="User id",required=true) Long uid) {
+		final UserProfile userProfile = UserProfile.readByUserId(uid);
+		if (userProfile!=null) {
+			if(request().getHeader("Content-Type") !=null && request().getHeader("Content-Type").equals("text/html"))
+				return ok(profile.render(userProfile));
+			else
+				return ok(Json.toJson(userProfile));
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
+					"No user logged in with session in this client", "")));
+		}
+	}
+	
+
+	/****************************************************************************************************
+	 * CREATE Endpoints
+	 ***************************************************************************************************/
+	/****************************************************************************************************
+	 * AUTHENTICATION Endpoints
+	 ***************************************************************************************************/	
+	@ApiOperation(nickname="signup", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new unverified user with an email and a password. Sends a verification email.")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
+	public static Result doSignup() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
+				.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not fill everything properly
+			// TODO: HTML rendered response return
+			// badRequest(signup.render(filledForm));
+			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+					Messages.get("play.authenticate.filledFromHasErrors"),
+					filledForm.errorsAsJson().toString())));
+		} else
+			// Everything was filled correctly
+			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
+	}
+	
+	@ApiOperation(nickname="login", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new session key for the requesting user, if the system authenticates him/her.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class),
+			@ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
+	public static Result doLogin() throws InstantiationException,
+			IllegalAccessException {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		Logger.info("REQUEST: Login => " + ctx().request());
+		final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
+				.bindFromRequest();
+		Logger.info("REQUEST: Login Form => " + filledForm.toString());
+		if (filledForm.hasErrors()) {
+			// User did not fill everything properly
+			// TODO: return badRequest(login.render(filledForm));
+			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+					Messages.get("play.authenticate.filledFromHasErrors"),
+					filledForm.errorsAsJson().toString())));
+		} else {
+			// Everything was filled
+			return MyUsernamePasswordAuthProvider.handleLogin(ctx());
+		}
+
+	}
+	
+	@ApiOperation(nickname="logout", httpMethod = "POST", response = User.class, produces = "text/html", value = "Expires the session key of the requesting user")
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result doLogout() {
+		// TODO: modify to return HTML or JSON instead of redirect
+		return com.feth.play.module.pa.controllers.Authenticate.logout();
+	}
+	
+
+	/****************************************************************************************************
+	 * UPDATE Endpoints
+	 ***************************************************************************************************/
+	@ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result updateUser(@ApiParam(value="userId", required=true) Long uid) {
+		final Form<User> updatedUserForm = USER_FORM.bindFromRequest();
+		if (updatedUserForm.hasErrors())
+			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+					"Errors in form", updatedUserForm.errorsAsJson().toString())));
+		else {
+			User updatedUser = updatedUserForm.get();
+			updatedUser.setUserId(uid);
+			updatedUser.update();
+			Logger.info("Updating User");
+			Logger.debug("=> " + updatedUserForm.toString());
+			
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setNewResourceId(updatedUser.getUserId());
+			responseBody.setStatusMessage("User "+updatedUser.getUserId()+"updated successfully");
+			responseBody.setNewResourceURL(routes.Users + "/" + updatedUser.getUserId());
+			return ok(Json.toJson(responseBody));
+		}
+	}
+	
+	@ApiOperation(nickname="profile", httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result updateUserProfile(@ApiParam(value="userId", required=true) Long uid) {
+		final Form<UserProfile> updatedUserForm = USER_PROFILE_FORM.bindFromRequest();
+		if (updatedUserForm.hasErrors())
+			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+					"Errors in form", updatedUserForm.errorsAsJson().toString())));
+		else {
+			UserProfile updatedUser = updatedUserForm.get();
+			User user = User.read(uid);
+			updatedUser.setUser(user);
+			updatedUser.update();
+			Logger.info("Updating User Profile");
+			Logger.debug("=> " + updatedUserForm.toString());
+			
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setNewResourceId(updatedUser.getUser().getUserId());
+			responseBody.setStatusMessage("User "+updatedUser.getUser().getUserId()+"updated successfully");
+			responseBody.setNewResourceURL(routes.Users + "/" + updatedUser.getUser().getUserId());
+			return ok(Json.toJson(responseBody));
+		}
+	}
+	
+
+	/****************************************************************************************************
+	 * DELETE Endpoints
+	 ***************************************************************************************************/
+	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Soft delete of an user", notes = "Soft delete of an user by simply deactivating it")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result deleteUser(
+			@ApiParam(value = "ID of the user", required = true) Long id) {
+		Logger.info("Obtaining user with id = " + id);
+		User u = User.findByUserId(id);
+
+		TransferResponseStatus responseBody = new TransferResponseStatus();
+
+		if (u != null) {
+			u.setActive(false);
+			u.update();
+			responseBody.setStatusMessage("User " + u.getUserId()
+					+ " deactivated with success");
+			responseBody.setNewResourceURL(routes.Users + "/" + u.getUserId());
+			return ok(Json.toJson(responseBody));
+		} else {
+			responseBody.setStatusMessage("User " + u.getUserId()
+					+ " not found");
+			return notFound(Json.toJson(responseBody));
+		}
+	}
+	
+	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a user", notes = "Delete a user, but not his/her contributions")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result deleteUserForce(
+			@ApiParam(value = "ID of the user", required = true) Long id) {
+		Logger.info("Obtaining user with id = " + id);
+		User u = User.findByUserId(id);
+
+		TransferResponseStatus responseBody = new TransferResponseStatus();
+
+		if (u != null) {
+			u.delete();
+			responseBody.setStatusMessage("User " + id
+					+ " deleted with success");
+			return ok(Json.toJson(responseBody));
+		} else {
+			responseBody.setStatusMessage("User " + id
+					+ " not found");
+			return notFound(Json.toJson(responseBody));
+		}
+	}
+
+	
+	/****************************************************************************************************
+	 * USER Accounts management endpoints
+	 ***************************************************************************************************/	
+	@ApiOperation(nickname="verify", httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify invitation token")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Error in Request", response = TransferResponseStatus.class) })
+	public static Result verify(
+			@ApiParam(name = "token", required = true) final String token) {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final TokenAction ta = tokenIsValid(token, Type.EMAIL_VERIFICATION);
+		if (ta == null) {
+			return badRequest(toJson(TransferResponseStatus.badMessage(
+					Messages.get("playauthenticate.token.error.message"),
+					"Token is null")));
+			// TODO return badRequest(no_token_or_invalid.render());
+		}
+		final String email = ta.targetUser.getEmail();
+		User.verify(ta.targetUser);
+		flash(Application.FLASH_MESSAGE_KEY,
+				Messages.get("playauthenticate.verify_email.success", email));
+		//if (Application.getLocalUser(session()) != null) {
+		//	   return redirect(routes.Application.index());
+		//} else {
+		//	   return ok();
+		//}
+		return ok(toJson(TransferResponseStatus.okMessage(
+				Messages.get("playauthenticate.verify_email.success", email),
+				"")));
+		// TODO return redirect(routes.Application.login());
+	}
+	
+	/**
+	 * TODO: document with swagger annotations
+	 */
+	@ApiOperation(nickname="link", httpMethod = "GET", produces = "text/html", value = "Returns a form to link external auth provider accounts")
+	public static Result link() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		return ok(link.render());
+	}
+	
+
+	
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result verifyEmail() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final User user = Users.getLocalUser(session());
+		if (user.isEmailVerified()) {
+			// E-Mail has been validated already
+			flash(Application.FLASH_MESSAGE_KEY,
+					Messages.get("playauthenticate.verify_email.error.already_validated"));
+		} else if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
+			flash(Application.FLASH_MESSAGE_KEY, Messages.get(
+					"playauthenticate.verify_email.message.instructions_sent",
+					user.getEmail()));
+			MyUsernamePasswordAuthProvider.getProvider()
+					.sendVerifyEmailMailingAfterSignup(user, ctx());
+		} else {
+			flash(Application.FLASH_MESSAGE_KEY, Messages.get(
+					"playauthenticate.verify_email.error.set_email_first",
+					user.getEmail()));
+		}
+		return redirect(routes.Users.profile(user.getUserId()));
+	}
+	
+
+	@Restrict(@Group(GlobalData.USER_ROLE))
+	public static Result changePassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final User u = Users.getLocalUser(session());
+
+		if (!u.isEmailVerified()) {
+			return ok(unverified.render());
+		} else {
+			return ok(password_change.render(PASSWORD_CHANGE_FORM));
+		}
+	}
+
+	@Restrict(@Group(GlobalData.USER_ROLE))
+	public static Result doChangePassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final Form<Users.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
+				.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to link or not link
+			return badRequest(password_change.render(filledForm));
+		} else {
+			final User user = Users.getLocalUser(session());
+			final String newPassword = filledForm.get().password;
+			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),
+					true);
+			flash(Application.FLASH_MESSAGE_KEY,
+					Messages.get("playauthenticate.change_password.success"));
+			return redirect(routes.Users.profile(user.getUserId()));
+		}
+	}
+
+	@SubjectPresent
+	public static Result askLink() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final AuthUser u = PlayAuthenticate.getLinkUser(session());
+		if (u == null) {
+			// account to link could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+		return ok(ask_link.render(ACCEPT_FORM, u));
+	}
+
+	@SubjectPresent
+	public static Result doLink() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final AuthUser u = PlayAuthenticate.getLinkUser(session());
+		if (u == null) {
+			// account to link could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+
+		final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to link or not link
+			return badRequest(ask_link.render(filledForm, u));
+		} else {
+			// User made a choice :)
+			final boolean link = filledForm.get().accept;
+			if (link) {
+				flash(Application.FLASH_MESSAGE_KEY,
+						Messages.get("playauthenticate.accounts.link.success"));
+			}
+			return PlayAuthenticate.link(ctx(), link);
+		}
+	}
+	
+
+	@SubjectPresent
+	public static Result askMerge() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		// this is the currently logged in user
+		final AuthUser aUser = PlayAuthenticate.getUser(session());
+
+		// this is the user that was selected for a login
+		final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+		if (bUser == null) {
+			// user to merge with could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+
+		// You could also get the local user object here via
+		// User.findByAuthUserIdentity(newUser)
+		return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
+	}
+	
+
+	@SubjectPresent
+	public static Result doMerge() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		// this is the currently logged in user
+		final AuthUser aUser = PlayAuthenticate.getUser(session());
+
+		// this is the user that was selected for a login
+		final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+		if (bUser == null) {
+			// user to merge with could not be found, silently redirect to login
+			return redirect(routes.Application.index());
+		}
+
+		final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to merge or not merge
+			return badRequest(ask_merge.render(filledForm, aUser, bUser));
+		} else {
+			// User made a choice :)
+			final boolean merge = filledForm.get().accept;
+			if (merge) {
+				flash(Application.FLASH_MESSAGE_KEY,
+						Messages.get("playauthenticate.accounts.merge.success"));
+			}
+			return PlayAuthenticate.merge(ctx(), merge);
+		}
+	}
+	
 
 	public static Result unverified() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -368,8 +522,8 @@ public class Users extends Controller {
 		return ok(toJson(Messages.get("playauthenticate.verify.email.cta")));
 		// TODO return ok(unverified.render());
 	}
+	
 
-	private static final Form<MyIdentity> FORGOT_PASSWORD_FORM = form(MyIdentity.class);
 
 	public static Result forgotPassword(final String email) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -381,6 +535,7 @@ public class Users extends Controller {
 		return ok();
 		// TODO return ok(password_forgot.render(form));
 	}
+	
 
 	public static Result doForgotPassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -435,6 +590,7 @@ public class Users extends Controller {
 			return redirect(routes.Application.index());
 		}
 	}
+	
 
 	/**
 	 * Returns a token object if valid, null if not
@@ -455,6 +611,7 @@ public class Users extends Controller {
 
 		return ret;
 	}
+	
 
 	public static Result resetPassword(final String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -467,6 +624,7 @@ public class Users extends Controller {
 		// TODO return ok(password_reset.render(PASSWORD_RESET_FORM
 		// .fill(new PasswordReset(token))));
 	}
+	
 
 	public static Result doResetPassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -520,30 +678,7 @@ public class Users extends Controller {
 		// return ok();
 		// TODO return ok(exists.render());
 	}
-
-	public static Result verify(final String token) {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final TokenAction ta = tokenIsValid(token, Type.EMAIL_VERIFICATION);
-		if (ta == null) {
-			return badRequest(toJson(Messages
-					.get("playauthenticate.token.error.message")));
-			// TODO return badRequest(no_token_or_invalid.render());
-		}
-		final String email = ta.targetUser.getEmail();
-		User.verify(ta.targetUser);
-		;
-		// flash(Application.FLASH_MESSAGE_KEY,
-		// Messages.get("playauthenticate.verify_email.success", email));
-		// if (Application.getLocalUser(session()) != null) {
-		// return redirect(routes.Application.index());
-		// } else {
-		// return ok();
-		return ok(toJson(Messages.get("playauthenticate.verify_email.success",
-				email)));
-		// TODO return redirect(routes.Application.login());
-		// }
-	}
-
+	
 	/****************************************************************************************************
 	 * Auxiliary Operations
 	 ***************************************************************************************************/
@@ -551,20 +686,6 @@ public class Users extends Controller {
 		final User localUser = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session));
 		return localUser;
-	}
-
-	public static Result getUserByEmail(String e) {
-		User u = User.findByEmail(e);
-
-		if (request().accepts("application/xml")) {
-			return ok("<errorMessage>Not Implemented Yet</errorMessage>");
-		} else {
-			return ok(Json.toJson(u));
-		}
-	}
-
-	public static Result getByEmail(String email) {
-		return getUserByEmail(email);
 	}
 
 	public static Result onLoginUserNotFound() {

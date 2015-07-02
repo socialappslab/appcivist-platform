@@ -4,7 +4,7 @@ version := "0.1-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.6"
 
 herokuAppName in Compile := "appcivist-pb"
 
@@ -15,8 +15,8 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 
 libraryDependencies ++= Seq(
   javaJdbc withSources(),
-  "org.avaje.ebeanorm" % "avaje-ebeanorm" % "3.3.4" withSources(),     
-  "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "3.2.2" withSources(),
+  "org.avaje.ebeanorm" % "avaje-ebeanorm" % "4.7.3" withSources(),     
+  "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "4.5.3" withSources(),
   cache,
   javaWs withSources(), 
   "javax.xml.bind" % "jaxb-api" % "2.2.12",           // library to support objects-to/from-xml mapping
@@ -28,10 +28,16 @@ libraryDependencies ++= Seq(
   "com.feth" %% "play-easymail" % "0.7.0-SNAPSHOT" withSources() withJavadoc(),        
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41", 
   "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0",
-  "org.springframework" % "spring-context" % "4.0.3.RELEASE" withSources(),
+  "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
   "commons-io" % "commons-io" % "2.4",
   "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),       
-  "com.wordnik" %% "swagger-core" % "1.3.12"
+  "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc(),        
+  "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
+  "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc()
+  // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
+  //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
+  // Another Implementation of swagger-play2
+  //"com.markusjura" %% "swagger-play2" % "1.3.7" withSources() withJavadoc()
 )
 
 libraryDependencies += evolutions
@@ -45,6 +51,8 @@ resolvers += Resolver.url("play-easymail (snapshot)", url("http://joscha.github.
 resolvers += Resolver.url("play-authenticate (release)", url("http://joscha.github.io/play-authenticate/repo/releases/"))(Resolver.ivyStylePatterns)
 
 resolvers += Resolver.url("play-authenticate (snapshot)", url("http://joscha.github.io/play-authenticate/repo/snapshots/"))(Resolver.ivyStylePatterns)
+
+resolvers += Resolver.bintrayRepo("markusjura", "maven")
 
 // Enable Java Ebean
 lazy val myProject = (project in file("."))

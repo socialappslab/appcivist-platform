@@ -7,15 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
-import play.db.ebean.Model;
-
 @Entity
 public class ContributionStatistics extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -926173390197852051L;
 
 	@Id
 	@GeneratedValue
@@ -34,7 +27,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, ContributionStatistics> find = new Model.Finder<Long, ContributionStatistics>(
+	public static Finder<Long, ContributionStatistics> find = new Finder<Long, ContributionStatistics>(
 			Long.class, ContributionStatistics.class);
 	
 	/*

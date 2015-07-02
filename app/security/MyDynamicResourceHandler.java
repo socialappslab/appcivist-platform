@@ -13,43 +13,48 @@ import play.libs.F;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.models.Permission;
-import be.objectify.deadbolt.core.models.Subject;
 import be.objectify.deadbolt.java.DeadboltHandler;
 import be.objectify.deadbolt.java.DynamicResourceHandler;
 
 public class MyDynamicResourceHandler implements DynamicResourceHandler {
 
-	private static final Map<String, Optional<DynamicResourceHandler>> HANDLERS = new HashMap<String, Optional<DynamicResourceHandler>>();
+    private static final Map<String, Optional<DynamicResourceHandler>> HANDLERS = new HashMap<String, Optional<DynamicResourceHandler>>();
 
-	private static final DynamicResourceHandler DENY = new DynamicResourceHandler()
-    {
+    private static final DynamicResourceHandler DENY = new DynamicResourceHandler() {
         @Override
-        public F.Promise<Boolean> isAllowed(String s, String s1, DeadboltHandler deadboltHandler, Context context)
-        {
-            return F.Promise.pure(false);
+        public F.Promise<Boolean> isAllowed( String s,
+        		                             String s1,
+        		                             DeadboltHandler deadboltHandler, 
+        		                             Context context) {
+            return F.Promise.pure(false);        
         }
 
         @Override
-        public F.Promise<Boolean> checkPermission(String s, DeadboltHandler deadboltHandler, Context context)
-        {
+        public F.Promise<Boolean> checkPermission( String s,
+                                                   DeadboltHandler deadboltHandler, 
+                                                   Context context) {
             return F.Promise.pure(false);
         }
     };
-	
+
 	static {
-		HANDLERS.put("MemberOfGroup", Optional.of(new GroupDynamicResourceHandler())); // for this, meta must be assembly
-		HANDLERS.put("MemberOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); // for this, meta must be group
-		HANDLERS.put("CoordinatorOfGroup", Optional.of(new GroupDynamicResourceHandler())); // for this, meta must be assembly
-		HANDLERS.put("CoordinatorOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); // for this, meta must be group
-		HANDLERS.put("CanInviteToGroup", Optional.of(new GroupDynamicResourceHandler())); // for this, meta must be assembly
-		HANDLERS.put("CanInviteToAssembly", Optional.of(new AssemblyDynamicResourceHandler())); // for this, meta must be group
-		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler())); // for this, meta must be "user"
+		// for each, the "meta" propery is used to pass down information on how to recognize to what
+		// set of resources we are referring
+		HANDLERS.put("MemberOfGroup", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("MemberOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("CoordinatorOfGroup", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("CoordinatorOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("GroupMemberIsExpert", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("AssemblyMemberIsExpert", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("CanInviteToGroup", Optional.of(new GroupDynamicResourceHandler())); 
+		HANDLERS.put("CanInviteToAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler())); 
 	}
 
-	@Override
-	public Promise<Boolean> checkPermission(String permissionValue,
-			DeadboltHandler deadboltHandler, Context ctx) {
-		return deadboltHandler.getSubject(ctx)
+    @Override
+    public Promise<Boolean> checkPermission(String permissionValue,
+            DeadboltHandler deadboltHandler, Context ctx) {
+        return deadboltHandler.getSubject(ctx)
                 .map(subjectOption -> {
                     final boolean[] permissionOk = {false};
                     subjectOption.ifPresent(subject -> {
@@ -63,29 +68,29 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 
                     return permissionOk[0];
                 });
-	
-	}
+    
+    }
 
-	@Override
-	public Promise<Boolean>  isAllowed(final String name, 
-									   final String meta, 
-									   final DeadboltHandler deadboltHandler, 
-									   final Context ctx) {
-		return HANDLERS.get(name)
-				       .orElseGet(() -> {
-				    	    Logger.error("No handler available for " + name);
-				    	    return DENY;
-				       })
-				       .isAllowed(name, 
-				    		   	  meta, 
-				    		   	  deadboltHandler, 
-				    		   	  ctx);
-	}
-	
-	public static Long getIdFromPath(String path, String id_from){
-		String id = StringUtils.substringAfter(path, id_from);
-		if(StringUtils.contains(id, "/"))
-			id = id.split("/")[0];
-		return Long.parseLong(id);
-	}
+    @Override
+    public Promise<Boolean>  isAllowed(final String name, 
+                                       final String meta, 
+                                       final DeadboltHandler deadboltHandler, 
+                                       final Context ctx) {
+        return HANDLERS.get(name)
+                       .orElseGet(() -> {
+                            Logger.error("No handler available for " + name);
+                            return DENY;
+                       })
+                       .isAllowed(name, 
+                                     meta, 
+                                     deadboltHandler, 
+                                     ctx);
+    }
+    
+    public static Long getIdFromPath(String path, String id_from){
+        String id = StringUtils.substringAfter(path, id_from);
+        if(StringUtils.contains(id, "/"))
+            id = id.split("/")[0];
+        return Long.parseLong(id);
+    }
 }

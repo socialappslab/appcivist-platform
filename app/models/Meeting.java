@@ -8,17 +8,10 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import play.db.ebean.Model;
 import enums.MeetingStatus;
 
 @Entity
 public class Meeting extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2788111418126466766L;
 	
 	@Id
 	@GeneratedValue
@@ -46,7 +39,7 @@ public class Meeting extends AppCivistBaseModel {
 		this.hangout = hangout;
 	}
 
-	public static Model.Finder<Long, Meeting> find = new Model.Finder<Long, Meeting>(
+	public static Finder<Long, Meeting> find = new Finder<Long, Meeting>(
 			Long.class, Meeting.class);
 
 	public static Meeting read(Long meetingId) {

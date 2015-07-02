@@ -6,14 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import play.db.ebean.Model;
-
 @Entity
 public class Hashtag extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7492500281250135749L;
 	@Id
 	@GeneratedValue
 	private Long hashtagId;
@@ -23,7 +17,7 @@ public class Hashtag extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Model.Finder<Long, Hashtag> find = new Model.Finder<Long, Hashtag>(
+	public static Finder<Long, Hashtag> find = new Finder<Long, Hashtag>(
 			Long.class, Hashtag.class);
 
 	public Hashtag(String hashtag) {

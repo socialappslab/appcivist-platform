@@ -1,10 +1,17 @@
 package controllers;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+
 import play.*;
 import play.mvc.*;
 import views.html.*;
 import http.Headers;
 
+@Api(value="/")
 @With(Headers.class)
 public class Application extends Controller {
 
@@ -12,11 +19,16 @@ public class Application extends Controller {
 	public static final String FLASH_ERROR_KEY = "error";
 
 
-	
 	public static Result index() {
 		return ok(index.render());
 	}
 
+	/**
+	 * Controller action added to support CORS requests
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public static Result checkPreFlight(String path) {
 		Logger.debug("--> OPTIONS Preflight REQUEST");
 		response().setHeader("Access-Control-Allow-Origin", "*");
@@ -25,5 +37,14 @@ public class Application extends Controller {
 				.setHeader("Access-Control-Allow-Headers",
 						"accept, origin, Content-type, x-json, x-prototype-version, x-requested-with, SESSION_KEY");
 		return ok();
+	}
+	
+	public static String formatTimestamp(final long t) {
+		return new SimpleDateFormat("yyyy-dd-MM HH:mm:ss").format(new Date(t));
+	}
+
+	@ApiOperation(produces="text/html", value="API Swagger-UI documentation", httpMethod="GET")
+	public static Result swaggerDocs() {
+		return ok(swagger.render());
 	}
 }

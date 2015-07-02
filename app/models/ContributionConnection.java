@@ -13,11 +13,6 @@ import enums.ContributionConnectionTypes;
 @Entity
 public class ContributionConnection extends AppCivistBaseModel {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -926173390197852051L;
-
 	@Id
 	@GeneratedValue
 	private Long contributionConnectionId;

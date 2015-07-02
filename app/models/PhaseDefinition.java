@@ -12,12 +12,9 @@ import javax.persistence.OneToMany;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import com.avaje.ebean.ExpressionList;
-import play.db.ebean.Model;
 
 @Entity
 public class PhaseDefinition extends AppCivistBaseModel {
-
-	private static final long serialVersionUID = -1114088974682512287L;
 
 	@Id
 	@GeneratedValue
@@ -32,7 +29,7 @@ public class PhaseDefinition extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, PhaseDefinition> find = new Model.Finder<Long, PhaseDefinition>(
+	public static Finder<Long, PhaseDefinition> find = new Finder<Long, PhaseDefinition>(
 			Long.class, PhaseDefinition.class);
 
 	public PhaseDefinition() {

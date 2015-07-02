@@ -7,16 +7,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import play.db.ebean.Model;
 import enums.MessageType;
 
 @Entity
 public class Message extends AppCivistBaseModel {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -2793007528040604050L;
-
 	@Id
 	@GeneratedValue
 	private Long messageId;
@@ -26,15 +20,12 @@ public class Message extends AppCivistBaseModel {
 	private User creator;
 	
 	@ManyToOne
-	// Un usuario o una lista de usuarios?
 	private User targetUser;
 
 	@ManyToOne
-	// Un workingGroup o una lista de workingGroups?
 	private WorkingGroup targetWorkingGroup;
 
 	@ManyToOne
-	// Una assembly o una lista de assemblies?
 	private Assembly targetAssembly;
 
 
@@ -53,7 +44,7 @@ public class Message extends AppCivistBaseModel {
 		super();
 	}
 
-	public static Model.Finder<Long, Message> find = new Model.Finder<Long, Message>(
+	public static Finder<Long, Message> find = new Finder<Long, Message>(
 			Long.class, Message.class);
 
 	public static Message read(Long messageId) {
