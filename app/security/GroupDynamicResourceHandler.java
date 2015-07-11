@@ -3,7 +3,7 @@ package security;
 import java.util.List;
 
 import enums.MyRoles;
-import models.GroupMembership;
+import models.MembershipGroup;
 import models.Membership;
 import models.SecurityRole;
 import models.User;
@@ -41,7 +41,7 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
                             			   Logger.debug("--> groupId= " + groupId);
                             			   // TODO: add visibility to group
                             			   // WorkingGroup g = WorkingGroup.read(groupId);
-                            			   Membership m = GroupMembership.findByUserAndGroupId(u.getUserId(), groupId);
+                            			   Membership m = MembershipGroup.findByUserAndGroupId(u.getUserId(), groupId);
                             			   
                             			   if (m!=null && name.equals("CoordinatorOfGroup")) {
                         					   List<SecurityRole> membershipRoles = m.getRoles();

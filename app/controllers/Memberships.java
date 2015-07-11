@@ -6,8 +6,8 @@ import http.Headers;
 import java.util.List;
 
 import models.Assembly;
-import models.AssemblyMembership;
-import models.GroupMembership;
+import models.MembershipAssembly;
+import models.MembershipGroup;
 import models.Membership;
 import models.SecurityRole;
 import models.TokenAction;
@@ -34,8 +34,9 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 import enums.MembershipCreationTypes;
-import enums.MembershipRoles;
+import enums.ManagementTypes;
 import enums.MembershipStatus;
+import enums.MyRoles;
 import enums.ResponseStatus;
 
 @Api(value = "/membership", description = "Group Management endpoints in the Assembly Making service")
@@ -193,7 +194,7 @@ public class Memberships extends Controller {
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED, "Requestor is not"
-								+ MembershipRoles.COORDINATOR)));
+								+ MyRoles.COORDINATOR)));
 			}
 
 		} else {
@@ -251,7 +252,7 @@ public class Memberships extends Controller {
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED, "Requestor is not"
-								+ MembershipRoles.COORDINATOR)));
+								+ MyRoles.COORDINATOR)));
 			}
 		} else {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -293,7 +294,7 @@ public class Memberships extends Controller {
 		} else {
 			return unauthorized(Json.toJson(new TransferResponseStatus(
 					ResponseStatus.UNAUTHORIZED, "Requestor is not"
-							+ MembershipRoles.COORDINATOR)));
+							+ MyRoles.COORDINATOR)));
 		}
 	}
 
@@ -335,7 +336,7 @@ public class Memberships extends Controller {
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED, "Requestor is not"
-								+ MembershipRoles.COORDINATOR)));
+								+ MyRoles.COORDINATOR)));
 			}
 
 		}
@@ -381,8 +382,8 @@ public class Memberships extends Controller {
 				.read(targetCollectionId) : null;
 		// 5.Create the correct type of membership depending on the
 		// targetCollection
-		Membership m = targetCollection.toUpperCase().equals("GROUP") ? new GroupMembership()
-				: new AssemblyMembership();
+		Membership m = targetCollection.toUpperCase().equals("GROUP") ? new MembershipGroup()
+				: new MembershipAssembly();
 
 		// 6. Make sure either the assembly or the group exists before
 		// proceeding
@@ -413,17 +414,17 @@ public class Memberships extends Controller {
 		m.setLang(targetUser.getLanguage());
 		m.setExpiration((System.currentTimeMillis() + 1000 * MEMBERSHIP_EXPIRATION_TIMEOUT));
 		if(targetCollection.toUpperCase().equals("GROUP")) {
-			((GroupMembership) m).setWorkingGroup(targetWorkingGroup);
+			((MembershipGroup) m).setWorkingGroup(targetWorkingGroup);
 		} else {
-			((AssemblyMembership) m).setAssembly(targetAssembly);
+			((MembershipAssembly) m).setAssembly(targetAssembly);
 		}
 		
 		// 9. check if the membership of this user on this assembly/group
 		// already exists
-		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? GroupMembership.checkIfExists(m) :
-				AssemblyMembership.checkIfExists(m);
+		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? MembershipGroup.checkIfExists(m) :
+				MembershipAssembly.checkIfExists(m);
 
-		SecurityRole role = SecurityRole.findByName(MembershipRoles.MEMBER.toString());
+		SecurityRole role = SecurityRole.findByName(MyRoles.MEMBER.toString());
 		if(defaultRoleId != null) 
 			role = SecurityRole.read(defaultRoleId);
 		else if (defaultRoleName != null)
@@ -509,11 +510,11 @@ public class Memberships extends Controller {
 			return m;
 		} else {
 			if (m.getMembershipType().equals("ASSEMBLY")) {
-				return AssemblyMembership.findByUserAndAssembly(requestor,
-						((AssemblyMembership) m).getAssembly());
+				return MembershipAssembly.findByUserAndAssembly(requestor,
+						((MembershipAssembly) m).getAssembly());
 			} else {
-				return GroupMembership.findByUserAndGroup(requestor,
-						((GroupMembership) m).getWorkingGroup());
+				return MembershipGroup.findByUserAndGroup(requestor,
+						((MembershipGroup) m).getWorkingGroup());
 			}
 		}
 
@@ -528,7 +529,7 @@ public class Memberships extends Controller {
 	 * @return
 	 */
 	protected static Boolean requestorIsCoordinator(User requestor, Membership m) {
-		return requestorHasRole(requestor, m, MembershipRoles.COORDINATOR);
+		return requestorHasRole(requestor, m, MyRoles.COORDINATOR);
 	}
 
 	/**
@@ -539,7 +540,7 @@ public class Memberships extends Controller {
 	 * @return
 	 */
 	protected static Boolean requestorHasRole(User requestor, Membership m,
-			MembershipRoles role) {
+			MyRoles role) {
 		if (m != null) {
 			for (SecurityRole requestorRole : m.getRoles()) {
 				if (requestorRole.getName().equals(role.toString())) {

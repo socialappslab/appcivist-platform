@@ -1,9 +1,12 @@
 package service;
 
+import java.net.MalformedURLException;
+
 import javax.inject.Inject;
 
 import models.User;
 import play.Application;
+import utils.security.HashGenerationException;
 
 import com.feth.play.module.pa.user.AuthUser;
 import com.feth.play.module.pa.user.AuthUserIdentity;
@@ -24,7 +27,17 @@ public class MyUserServicePlugin extends UserServicePlugin {
 	public Object save(final AuthUser authUser) {
 		final boolean isLinked = User.existsByAuthUserIdentity(authUser);
 		if (!isLinked) {
-			return User.createFromAuthUser(authUser).getUserId();
+			try {
+				return User.createFromAuthUser(authUser).getUserId();
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			} catch (HashGenerationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
 		} else {
 			// we have this user already, so return null
 			return null;

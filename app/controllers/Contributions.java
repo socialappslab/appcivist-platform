@@ -1,127 +1,183 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.util.List;
-
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.feth.play.module.pa.PlayAuthenticate;
 
 import models.Assembly;
 import models.Contribution;
 import models.User;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import security.SecurityModelConstants;
 import utils.GlobalData;
-import models.transfer.TransferResponseStatus;
-import static play.data.Form.form;
+import be.objectify.deadbolt.java.actions.Dynamic;
 
-public class Contributions extends Controller{
+import com.feth.play.module.pa.PlayAuthenticate;
+import com.wordnik.swagger.annotations.Api;
 
-    public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);
+import enums.ContributionTypes;
 
-    /**
-     * Return the full list of contributions
-     *
-     * @return Contribution list
-     */
-    @SubjectPresent
-    public static Result findContributions(Long aid) {
-        List<Contribution> contributions = Contribution.findAllByAssembly(aid);
-        return ok(Json.toJson(contributions));
-    }
+@Api(value = "/contribution", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
+public class Contributions extends Controller {
 
-    @SubjectPresent
-    public static Result findContribution(Long aid, Long contributionId) {
-        Contribution contribution = Contribution.read(contributionId);
-        return ok(Json.toJson(contribution));
-    }
+	public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);
 
-    @SubjectPresent
-    public static Result deleteContribution(Long aid, Long contributionId) {
-        Contribution.delete(contributionId);
-        return ok();
-    }
+	/**
+	 * Return the full list of contributions
+	 *
+	 * @return Contribution list
+	 */
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findContributions(Long aid) {
+		List<Contribution> contributions = Contribution.findAllByAssembly(aid);
+		return ok(Json.toJson(contributions));
+	}
 
-    @SubjectPresent
-    public static Result createContribution(Long aid) {
-        // 1. obtaining the user of the requestor
-        User contributionCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findContribution(Long aid, Long contributionId) {
+		Contribution contribution = Contribution.read(contributionId);
+		return ok(Json.toJson(contribution));
+	}
 
-        // 2. read the new role data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
+	// TODO: create a dynamic handler to check if the contribution belongs to
+	// the user
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result deleteContribution(Long aid, Long contributionId) {
+		Contribution.delete(contributionId);
+		return ok();
+	}
 
-        if (newContributionForm.hasErrors()) {
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(Messages.get(
-                    GlobalData.CONTRIBUTION_CREATE_MSG_ERROR, newContributionForm.errorsAsJson()));
-            return badRequest(Json.toJson(responseBody));
-        } else {
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createContribution(Long aid) {
+		// 1. obtaining the user of the requestor
+		User author = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 
-            Contribution newContribution = newContributionForm.get();
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+				.bindFromRequest();
 
-            if(newContribution.getLang() == null)
-                newContribution.setLang(contributionCreator.getLanguage());
-            newContribution.setAssembly(Assembly.read(aid));
-            
-            TransferResponseStatus responseBody = new TransferResponseStatus();
+		if (newContributionForm.hasErrors()) {
+			return contributionCreateError(newContributionForm);
+		} else {
 
-            if( Contribution.readByTitle(newContribution.getTitle()) > 0 ){
-                Logger.info("Contribution already exists");
-            }
-            else{
-                if (newContribution.getAuthor() == null){
-                    newContribution.setAuthor(contributionCreator);
-                }
+			Contribution newContribution = newContributionForm.get();
+			ContributionTypes type = newContribution.getType();
+			if (type == null) {
+				type = ContributionTypes.COMMENT;
+			}
+			return createContribution(newContribution, author,
+					Assembly.read(aid), type);
+		}
+	}
 
-                Contribution.create(newContribution);
-                Logger.info("Creating new contribution");
-                Logger.debug("=> " + newContributionForm.toString());
+	// TODO: create a dynamic handler to check if the contribution belongs to
+	// the user
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result updateContribution(Long aid, Long contributionId) {
+		// 1. read the new contribution data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+				.bindFromRequest();
 
-                responseBody.setNewResourceId(newContribution.getContributionId());
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.CONTRIBUTION_CREATE_MSG_SUCCESS,
-                        newContribution.getTitle()));
-                responseBody.setNewResourceURL(GlobalData.CONTRIBUTION_BASE_PATH+"/"+newContribution.getContributionId());
-            }
+		if (newContributionForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+					newContributionForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			Contribution newContribution = newContributionForm.get();
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			newContribution.setContributionId(contributionId);
+			Contribution.update(newContribution);
+			Logger.info("Creating new contribution");
+			Logger.debug("=> " + newContributionForm.toString());
 
-            return ok(Json.toJson(responseBody));
-        }
-    }
+			responseBody.setNewResourceId(newContribution.getContributionId());
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONTRIBUTION_CREATE_MSG_SUCCESS,
+					newContribution.getTitle()/*
+											 * , roleCreator.getIdentifier ()
+											 */));
+			responseBody.setNewResourceURL(GlobalData.CONTRIBUTION_BASE_PATH
+					+ "/" + newContribution.getContributionId());
 
-    @SubjectPresent
-    public static Result updateContribution(Long aid, Long contributionId) {
-        // 1. read the new contribution data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
+			return ok(Json.toJson(responseBody));
+		}
+	}
 
-        if (newContributionForm.hasErrors()) {
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(Messages.get(
-                    GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,newContributionForm.errorsAsJson()));
-            return badRequest(Json.toJson(responseBody));
-        } else {
+	public static Result createContribution(Contribution newContrib,
+			User author, Assembly assembly, ContributionTypes type) {
+		newContrib.setType(type);
+		newContrib.setAuthor(author);
+		newContrib.setAssembly(assembly);
+		if (newContrib.getLang() == null)
+			newContrib.setLang(author.getLanguage());
+		Contribution.create(newContrib);
+		newContrib.refresh();
+		Logger.info("Creating new contribution");
+		Logger.debug("=> " + newContrib.toString());
+		return ok(Json.toJson(newContrib));
+	}
 
-            Contribution newContribution = newContributionForm.get();
+	public static Result updateContribution(Long aid, Long id,
+			Contribution updatedContribution, ContributionTypes type) {
+		updatedContribution.setContributionId(id);
+		updatedContribution.setAssembly(Assembly.read(aid));
+		if (updatedContribution.getType().equals(type)) {
+			Contribution.update(updatedContribution);
+			Logger.info("Updating contribution");
+			Logger.debug("=> " + updatedContribution.toString());
+			return ok(Json.toJson(updatedContribution));
+		} else {
+			return contributionUpdateError(updatedContribution, "Update on "
+					+ type + " for Contribution that is not of this type");
+		}
+	}
 
-            TransferResponseStatus responseBody = new TransferResponseStatus();
+	public static Result contributionCreateError(
+			Form<Contribution> newContributionForm) {
+		return contributionOperationError(
+				GlobalData.CONTRIBUTION_CREATE_MSG_ERROR, newContributionForm
+						.errorsAsJson().toString());
+	}
 
-                newContribution.setContributionId(contributionId);
-                Contribution.update(newContribution);
-                Logger.info("Creating new contribution");
-                Logger.debug("=> " + newContributionForm.toString());
+	public static Result contributionUpdateError(
+			Form<Contribution> updatedContributionForm) {
+		return contributionOperationError(
+				GlobalData.CONTRIBUTION_UPDATE_MSG_ERROR,
+				updatedContributionForm.errorsAsJson().toString());
+	}
 
-                responseBody.setNewResourceId(newContribution.getContributionId());
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.CONTRIBUTION_CREATE_MSG_SUCCESS,
-                        newContribution.getTitle()/*, roleCreator.getIdentifier()*/));
-                responseBody.setNewResourceURL(GlobalData.CONTRIBUTION_BASE_PATH + "/" + newContribution.getContributionId());
-        
-            return ok(Json.toJson(responseBody));
-        }
-    }
+	public static Result contributionUpdateError(
+			Contribution updatedContribution, String errorMsg) {
+		return contributionOperationError(
+				GlobalData.CONTRIBUTION_UPDATE_MSG_ERROR,
+				"{ error : " + errorMsg + ", object : "
+						+ Json.toJson(updatedContribution));
+	}
+
+	public static Result contributionCreateError(Contribution newContribution,
+			String errorMsg) {
+		return contributionOperationError(
+				GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+				"{ error : " + errorMsg + ", object : "
+						+ Json.toJson(newContribution));
+	}
+
+	public static Result contributionOperationError(String msgi18nCode,
+			String msg) {
+		TransferResponseStatus responseBody = new TransferResponseStatus();
+		responseBody.setStatusMessage(Messages.get(msgi18nCode) + ": " + msg);
+		return badRequest(Json.toJson(responseBody));
+	}
+
 }

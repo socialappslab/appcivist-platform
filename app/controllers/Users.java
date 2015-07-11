@@ -152,7 +152,7 @@ public class Users extends Controller {
 
 	@ApiOperation(nickname="loggedin", httpMethod = "GET", response = User.class, produces = "application/json", value = "Get session user", notes = "Get session user currently loggedin, as available in HTTP session")
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result getCurrentUser() {
+	public static Result getCurrentUser(Long uid) {
 		final User localUser = getLocalUser(session());
 		if (localUser != null) 
 			return ok(Json.toJson(localUser));

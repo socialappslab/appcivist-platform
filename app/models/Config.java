@@ -22,6 +22,7 @@ public class Config extends AppCivistBaseModel {
     private String key;
     private String value;
     private ConfigTargets configTarget;
+    private Long targetId;
     
     @OneToOne
     private ConfigDefinition definition;
@@ -29,23 +30,10 @@ public class Config extends AppCivistBaseModel {
     /* Relatiohships
      * 
      */
-    
-    @ManyToOne
-	@JsonBackReference
-	private Campaign campaign;
-
-    @ManyToOne
-	@JsonBackReference
-	private CampaignPhase campaignPhase;
-    
     @ManyToOne
 	@JsonBackReference
 	private Assembly assembly;
-    
-    @ManyToOne
-	@JsonBackReference
-	private WorkingGroup workingGroup;
-    
+   
     public Config(String key, String value) {
         this.key = key;
         this.value = value;
@@ -97,6 +85,14 @@ public class Config extends AppCivistBaseModel {
 		this.configTarget = configTarget;
 	}
 
+	public Long getTargetId() {
+		return targetId;
+	}
+
+	public void setTargetId(Long targetId) {
+		this.targetId = targetId;
+	}
+
 	public ConfigDefinition getDefinition() {
 		return definition;
 	}
@@ -105,36 +101,12 @@ public class Config extends AppCivistBaseModel {
 		this.definition = definition;
 	}
 
-	public Campaign getCampaign() {
-		return campaign;
-	}
-
-	public void setCampaign(Campaign campaign) {
-		this.campaign = campaign;
-	}
-
-	public CampaignPhase getCampaignPhase() {
-		return campaignPhase;
-	}
-
-	public void setCampaignPhase(CampaignPhase campaignPhase) {
-		this.campaignPhase = campaignPhase;
-	}
-
 	public Assembly getAssembly() {
 		return assembly;
 	}
 
 	public void setAssembly(Assembly assembly) {
 		this.assembly = assembly;
-	}
-
-	public WorkingGroup getWorkingGroup() {
-		return workingGroup;
-	}
-
-	public void setWorkingGroup(WorkingGroup workingGroup) {
-		this.workingGroup = workingGroup;
 	}
 
 	/*

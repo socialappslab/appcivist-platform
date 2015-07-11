@@ -18,6 +18,8 @@ public class Category extends AppCivistBaseModel {
     private Long categoryId;
     private String title;
     private String description;
+    private String icon;
+    private String cover; 
 
     /**
 	 * The find property is an static property that facilitates database query creation
@@ -53,7 +55,23 @@ public class Category extends AppCivistBaseModel {
         this.description = description;
     }
     
-    /*
+    public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
+
+	public String getCover() {
+		return cover;
+	}
+
+	public void setCover(String cover) {
+		this.cover = cover;
+	}
+
+	/*
 	 * Basic Data operations
 	 */
     public static Category read(Long themeId) {

@@ -3,6 +3,9 @@ package models;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+
+import enums.ConfigTargets;
+
 import java.util.List;
 
 @Entity
@@ -14,14 +17,14 @@ public class ConfigDefinition extends AppCivistBaseModel {
     private String key;
     private String valueType;
     private String description;
-    private String category;
+    private ConfigTargets configTarget = ConfigTargets.ASSEMBLY;
     
-    public ConfigDefinition(String key, String valueType, String description, String category) {
+    public ConfigDefinition(String key, String valueType, String description, ConfigTargets configTarget) {
     	super();
     	this.key = key;
         this.valueType = valueType;
         this.description = description;
-        this.category = category;
+        this.configTarget = configTarget;
     }
     
     public ConfigDefinition(){
@@ -68,12 +71,12 @@ public class ConfigDefinition extends AppCivistBaseModel {
 	 * Basic Data operations
 	 */
 	
-	public String getCategory() {
-		return category;
+	public ConfigTargets getConfigTarget() {
+		return configTarget;
 	}
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setConfigTarget(ConfigTargets configTarget) {
+		this.configTarget = configTarget;
 	}
 
 	public static ConfigDefinition read(Long configId) {
