@@ -5,6 +5,7 @@ import static play.data.Form.form;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import play.mvc.Call;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import service.PlayAuthenticateLocal;
+import utils.security.HashGenerationException;
 
 import com.feth.play.module.mail.Mailer.Mail.Body;
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -186,8 +188,17 @@ public class MyUsernamePasswordAuthProvider
 			}
 		}
 
-		final User newUser = User.createFromAuthUser(user);
-		user.setUserId(newUser.getUserId());
+		User newUser;
+		try {
+			newUser = User.createFromAuthUser(user);
+			user.setUserId(newUser.getUserId());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (HashGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// TODO verify that the email is correct and valid
 		// Usually the email should be verified before allowing login, however

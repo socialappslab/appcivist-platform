@@ -1,49 +1,36 @@
 package models;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 
-import models.Location.Geo;
 import enums.ResourceTypes;
+import models.location.Location;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "RESOURCE_TYPE")
 public class Resource extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	@Column(name = "resource_id")
 	private Long resourceId;
-	private ResourceTypes type;
-	private String externalResourceType;
 	private URL url;
 	private User creator;
+	private Location location;
+	@Column(name = "RESOURCE_TYPE")
+	@Enumerated(EnumType.STRING)
+	private ResourceTypes resourceType;
 
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "RELATED_RESOURCES", joinColumns = { @JoinColumn(name = "source", referencedColumnName = "resource_id") }, inverseJoinColumns = { @JoinColumn(name = "target", referencedColumnName = "resource_id") })
-	private List<Resource> resources = new ArrayList<Resource>();
-
-	@OneToOne
-	private Geo location;
-/*
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinTable(name = "resource_contribution", 
-		joinColumns = 
-			@JoinColumn(name = "resource_id", referencedColumnName = "resource_id"),
-		inverseJoinColumns = 
-			@JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id")
-	)*/
-//	private Contribution contribution;
-	
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -51,18 +38,14 @@ public class Resource extends AppCivistBaseModel {
 	public static Finder<Long, Resource> find = new Finder<Long, Resource>(
 			Long.class, Resource.class);
 
-	public Resource(User creator, ResourceTypes type, URL externalURL,
-			List<Resource> resources) {
+	public Resource(User creator, URL url) {
 		this.creator = creator;
-		this.type = type;
-		this.url = externalURL;
-		this.resources = resources;
+		this.url = url;
 	}
 
 	/*
 	 * Getters and Setters
 	 */
-
 	public Long getResourceId() {
 		return resourceId;
 	}
@@ -71,27 +54,6 @@ public class Resource extends AppCivistBaseModel {
 		this.resourceId = resourceId;
 	}
 
-	public ResourceTypes getType() {
-		return type;
-	}
-
-	public void setType(ResourceTypes type) {
-		this.type = type;
-	}
-
-	/**
-	 * The external resource type is a string property reserved to further
-	 * explained what exactly the resource is (a google doc, spreadsheet, etc.)
-	 * 
-	 * @return
-	 */
-	public String getExternalResourceType() {
-		return externalResourceType;
-	}
-
-	public void setExternalResourceType(String externalResourceType) {
-		this.externalResourceType = externalResourceType;
-	}
 
 	public URL getUrl() {
 		return url;
@@ -101,22 +63,30 @@ public class Resource extends AppCivistBaseModel {
 		this.url = externalURL;
 	}
 
-	public List<Resource> getResources() {
-		return resources;
+	public User getCreator() {
+		return creator;
 	}
 
-	public void setResources(List<Resource> resources) {
-		this.resources = resources;
+	public void setCreator(User creator) {
+		this.creator = creator;
 	}
 
-	public Geo getLocation() {
+	public Location getLocation() {
 		return location;
 	}
 
-	public void setLocation(Geo location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 
+	public ResourceTypes getResourceType() {
+		return resourceType;
+	}
+
+	public void setResourceType(ResourceTypes resourceType) {
+		this.resourceType = resourceType;
+	}
+	
 	/*
 	 * Basic Data operations
 	 */
@@ -145,13 +115,5 @@ public class Resource extends AppCivistBaseModel {
 
 	public static void update(Long id) {
 		find.ref(id).update();
-	}
-
-	public User getCreator() {
-		return creator;
-	}
-
-	public void setCreator(User creator) {
-		this.creator = creator;
 	}
 }

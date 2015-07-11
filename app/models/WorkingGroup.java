@@ -3,7 +3,7 @@ package models;
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import enums.MembershipRoles;
+import enums.ManagementTypes;
 
 import javax.persistence.*;
 
@@ -19,7 +19,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     private String text;
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
-    private MembershipRoles membershipRole = MembershipRoles.MEMBER;
+    private ManagementTypes managementType = ManagementTypes.OPEN;
     private User creator;
     
     @ManyToMany(cascade=CascadeType.ALL)
@@ -35,10 +35,6 @@ public class WorkingGroup extends AppCivistBaseModel {
     @ManyToMany(cascade = CascadeType.ALL)
     private List<Resource> resources = new ArrayList<Resource>();
     
-	@OneToMany(mappedBy="workingGroup", cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private List<Config> workingGroupConfigs = new ArrayList<Config>();
-
 	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
 	// TODO: all be connected in a P2P architecture. 
 	public static Finder<Long, WorkingGroup> find = new Finder<Long, WorkingGroup>(
@@ -149,19 +145,11 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.acceptRequests = acceptRequests;
     }
 
-    public MembershipRoles getMembershipRole() {
-        return membershipRole;
+    public ManagementTypes getManagementType() {
+        return managementType;
     }
 
-    public void setMembershipRole(MembershipRoles membershipRole) {
-        this.membershipRole = membershipRole;
+    public void setManagementType(ManagementTypes membershipRole) {
+        this.managementType = membershipRole;
     }
-
-	public List<Config> getWorkingGroupConfigs() {
-		return workingGroupConfigs;
-	}
-
-	public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
-		this.workingGroupConfigs = workingGroupConfigs;
-	}
 }

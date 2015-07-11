@@ -51,6 +51,10 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonManagedReference
 	private List<Config> campaignConfigs = new ArrayList<Config>();
 
+	@OneToOne
+	private ResourcePad proposalTemplate;
+	
+
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -198,6 +202,14 @@ public class Campaign extends AppCivistBaseModel {
 
 	public void setCampaignConfigs(List<Config> campaignConfigs) {
 		this.campaignConfigs = campaignConfigs;
+	}
+	
+	public ResourcePad getProposalTemplate() {
+		return proposalTemplate;
+	}
+
+	public void setProposalTemplate(ResourcePad proposalTemplate) {
+		this.proposalTemplate = proposalTemplate;
 	}
 
 	public static List<Campaign> findAll() {

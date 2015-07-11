@@ -2,11 +2,11 @@ package security;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import enums.Visibility;
 
 import enums.MyRoles;
 import models.Assembly;
-import models.AssemblyMembership;
+import models.MembershipAssembly;
 import models.Membership;
 import models.User;
 import models.SecurityRole;
@@ -43,10 +43,10 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                             			   Long assemblyId = MyDynamicResourceHandler.getIdFromPath(path, meta);
                             			   Logger.debug("--> assemblyId= " + assemblyId);
                             			   Assembly a = Assembly.read(assemblyId);
-                            			   if (!a.getVisibiliy().equals(Visibility.PUBLIC_ONLY)) {
+                            			   if (!a.getVisibiliy().equals(Visibility.PUBLIC)) {
                             				   allowed[0] = true;
                             			   } else {
-                            				   Membership m = AssemblyMembership.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
+                            				   Membership m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
                             				   
                             				   if (m!=null && name.equals("CoordinatorOfAssembly")) {
                             					   List<SecurityRole> membershipRoles = m.getRoles();
