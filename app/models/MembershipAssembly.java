@@ -13,21 +13,21 @@ import enums.MembershipStatus;
 
 @Entity
 @DiscriminatorValue("ASSEMBLY")
-public class AssemblyMembership extends Membership {
+public class MembershipAssembly extends Membership {
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "membershipRole", "campaigns", "assemblyConfigs"})
 	private Assembly assembly;
 	
-	public AssemblyMembership() {
+	public MembershipAssembly() {
 		super();
 	}
-	public AssemblyMembership(Long expiration, MembershipStatus status,
+	public MembershipAssembly(Long expiration, MembershipStatus status,
 			User creator, User user, List<SecurityRole> roles, String membershipType) {
 		super(expiration, status, creator, user, roles, membershipType);
 	}
 	
-	public AssemblyMembership(Long expiration, MembershipStatus status,
+	public MembershipAssembly(Long expiration, MembershipStatus status,
 			User creator, User user, List<SecurityRole> roles, String membershipType, 
 			Assembly assembly) {
 		super(expiration, status, creator, user, roles, membershipType);
@@ -56,7 +56,7 @@ public class AssemblyMembership extends Membership {
 	 * @return
 	 */
 	public static boolean checkIfExists(Membership m) {
-		AssemblyMembership gm = (AssemblyMembership) m;
+		MembershipAssembly gm = (MembershipAssembly) m;
 		return find.where().eq("creator", gm.getCreator())
 				.eq("user", gm.getUser()).eq("assembly", gm.getAssembly())
 				.findUnique() != null;

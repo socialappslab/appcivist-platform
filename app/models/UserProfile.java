@@ -17,6 +17,7 @@ public class UserProfile extends AppCivistBaseModel {
 	private String lastName;
 	private Date birthdate;
 	private String address;
+	// TODO add contact information
 	@OneToOne
 	private User user;
 

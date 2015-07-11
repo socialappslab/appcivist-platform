@@ -1,4 +1,4 @@
-package models.Location;
+package models.location;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.GeoTypes;

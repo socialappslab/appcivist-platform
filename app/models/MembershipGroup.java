@@ -11,20 +11,20 @@ import enums.MembershipStatus;
 
 @Entity
 @DiscriminatorValue("GROUP")
-public class GroupMembership extends Membership {
+public class MembershipGroup extends Membership {
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	private WorkingGroup workingGroup;
 
-	public GroupMembership() {
+	public MembershipGroup() {
 		super();
 	}
-	public GroupMembership(Long expiration, MembershipStatus status,
+	public MembershipGroup(Long expiration, MembershipStatus status,
 			User creator, User user, List<SecurityRole> roles, String membershipType) {
 		super(expiration, status, creator, user, roles, membershipType);
 	}
 	
-	public GroupMembership(Long expiration, MembershipStatus status,
+	public MembershipGroup(Long expiration, MembershipStatus status,
 			User creator, User user, List<SecurityRole> roles, String membershipType, 
 			WorkingGroup workingGroup) {
 		super(expiration, status, creator, user, roles, membershipType);
@@ -50,7 +50,7 @@ public class GroupMembership extends Membership {
 	 * @return
 	 */
 	public static boolean checkIfExists(Membership m) {
-		GroupMembership gm = (GroupMembership) m;
+		MembershipGroup gm = (MembershipGroup) m;
 		return find.where().eq("creator", gm.getCreator())
 				.eq("user", gm.getUser())
 				.eq("workingGroup", gm.getWorkingGroup()).findUnique() != null;

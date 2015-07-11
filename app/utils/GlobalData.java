@@ -3,9 +3,8 @@ package utils;
 public class GlobalData {
 	public static final String APPCIVIST_BASE_URL = "/api";
 	public static final String APPCIVIST_ASSEMBLY_BASE_URL = APPCIVIST_BASE_URL+"/assembly";
-	public static String APPCIVIST_ASSEMBLY_DEFAULT_ICON = "/assets/images/justicia-140.png"; 
-	
-
+	public static final String APPCIVIST_ASSEMBLY_DEFAULT_ICON = "/assets/images/justicia-140.png"; 
+	public static final String APPCIVIST_ASSEMBLY_DEFAULT_COVER = "/assets/images/covers/2015_GoldenGateFromPointBonita-1920.JPG";
 	/**
 	 * Internationalization Messages Bindings
 	 */
@@ -50,6 +49,7 @@ public class GlobalData {
 	// Contribution
 	public static String CONTRIBUTION_CREATE_MSG_SUCCESS = "contribution.creation.success";
 	public static String CONTRIBUTION_CREATE_MSG_ERROR = "contribution.creation.error";
+	public static String CONTRIBUTION_UPDATE_MSG_ERROR = "contribution.update.error";
 	public static String CONTRIBUTION_BASE_PATH = "/contribution";
 	
 
@@ -58,4 +58,9 @@ public class GlobalData {
 	public final static String COORDINATOR_ROLE = "COORDINATOR";
 	public final static String MEMBER_ROLE = "MEMBER";
 	public final static String FOLLOWER_ROLE = "FOLLOWER";
+	
+	// External Services Constants
+	public final static String GRAVATAR_BASE_URL = "http://www.gravatar.com/avatar/";
+	public final static String ETHERPAD_BASE_URL = "http://localhost:9001/";
+	
 }

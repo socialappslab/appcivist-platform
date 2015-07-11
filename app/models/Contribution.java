@@ -6,10 +6,16 @@ import java.util.List;
 import javax.persistence.*;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import enums.ContributionTypes;
-import models.Location.Geo;
+import models.location.Geo;
+import models.location.Location;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "TYPE")
 public class Contribution extends AppCivistBaseModel {
 
 	@Id
@@ -17,12 +23,13 @@ public class Contribution extends AppCivistBaseModel {
 	private Long contributionId;
 	private String title;
 	private String text;
+	@Enumerated(EnumType.STRING)
 	private ContributionTypes type = ContributionTypes.COMMENT;
 	private User author;
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<User> additionalAuthors = new ArrayList<User>();
-	
+
 	@ManyToOne
 	private Assembly assembly;
 
@@ -33,16 +40,18 @@ public class Contribution extends AppCivistBaseModel {
 	private List<Resource> attachments = new ArrayList<Resource>();
 
 	@OneToOne
-	private Geo location;
-	
+	private Location location;
+
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
-	
+
 	@OneToOne(cascade = CascadeType.ALL)
+	@JsonIgnoreProperties({"contributionStatisticsId"})
+	@JsonManagedReference
 	private ContributionStatistics stats;
-	
+
 	// TODO think of how to connect and move through to the campaign phases
-	
+
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -75,7 +84,7 @@ public class Contribution extends AppCivistBaseModel {
 	/*
 	 * Getters and Setters
 	 */
-	
+
 	public Long getContributionId() {
 		return contributionId;
 	}
@@ -131,7 +140,7 @@ public class Contribution extends AppCivistBaseModel {
 	public void setAssembly(Assembly assembly) {
 		this.assembly = assembly;
 	}
-	
+
 	public List<Category> getContributionCategories() {
 		return contributionCategories;
 	}
@@ -148,11 +157,11 @@ public class Contribution extends AppCivistBaseModel {
 		this.attachments = attachments;
 	}
 
-	public Geo getLocation() {
+	public Location getLocation() {
 		return location;
 	}
 
-	public void setLocation(Geo location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 
@@ -187,11 +196,12 @@ public class Contribution extends AppCivistBaseModel {
 		return contribs;
 	}
 
-
 	public static List<Contribution> findAllByAssembly(Long aid) {
-		List<Contribution> contribs = find.where().eq("assembly.assemblyId", aid).findList();
+		List<Contribution> contribs = find.where()
+				.eq("assembly.assemblyId", aid).findList();
 		return contribs;
 	}
+
 	public static void create(Contribution issue) {
 		issue.save();
 		issue.refresh();
@@ -202,7 +212,8 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static Integer readByTitle(String title) {
-		ExpressionList<Contribution> contributions = find.where().eq("title", title);
+		ExpressionList<Contribution> contributions = find.where().eq("title",
+				title);
 		return contributions.findList().size();
 	}
 
@@ -226,36 +237,66 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	/*
-	 * Other Queries
-	 * DEPRECATED
+	 * Other Queries DEPRECATED
 	 */
-	public static Contribution readIssueOfAssembly(Long assemblyId, Long contributionId) {
-		return find.where().eq("assembly_assembly_id", assemblyId)
-				.eq("contributionId", contributionId)
-				.eq("type",ContributionTypes.ISSUE).findUnique();
+	public static Contribution readIssueOfAssembly(Long assemblyId,
+			Long contributionId) {
+		return readByIdAndType(assemblyId, contributionId,
+				ContributionTypes.ISSUE);
 	}
-	
+
+	public static Contribution readIdeaOfAssembly(Long assemblyId,
+			Long contributionId) {
+		return readByIdAndType(assemblyId, contributionId,
+				ContributionTypes.IDEA);
+	}
+
+	public static Contribution readQuestionOfAssembly(Long assemblyId,
+			Long contributionId) {
+		return readByIdAndType(assemblyId, contributionId,
+				ContributionTypes.QUESTION);
+	}
+
+	public static Contribution readCommentOfAssembly(Long assemblyId,
+			Long contributionId) {
+		return readByIdAndType(assemblyId, contributionId,
+				ContributionTypes.COMMENT);
+	}
+
 	public static List<Contribution> readContributionsOfAssembly(Long assemblyId) {
-		return find.where().eq("assembly_assembly_id", assemblyId).findList();
+		return find.where().eq("assemblyId", assemblyId).findList();
 	}
-	
+
 	public static List<Contribution> readIssuesOfAssembly(Long assemblyId) {
-		return find.where().eq("assembly_assembly_id", assemblyId)
-				.eq("type",ContributionTypes.ISSUE).findList();
+		return readListByAssemblyAndType(assemblyId, ContributionTypes.ISSUE);
 	}
-	
+
 	public static List<Contribution> readIdeasOfAssembly(Long assemblyId) {
-		return find.where().eq("assembly_assembly_id", assemblyId)
-				.eq("type",ContributionTypes.IDEA).findList();
+		return readListByAssemblyAndType(assemblyId, ContributionTypes.IDEA);
 	}
-	
+
 	public static List<Contribution> readQuestionsOfAssembly(Long assemblyId) {
-		return find.where().eq("assembly_assembly_id", assemblyId)
-				.eq("type",ContributionTypes.QUESTION).findList();
+		return readListByAssemblyAndType(assemblyId, ContributionTypes.QUESTION);
 	}
-	
+
 	public static List<Contribution> readCommentsOfAssembly(Long assemblyId) {
-		return find.where().eq("assembly_assembly_id", assemblyId)
-				.eq("type",ContributionTypes.COMMENT).findList();
+		return readListByAssemblyAndType(assemblyId, ContributionTypes.COMMENT);
+	}
+
+	public static Contribution readByIdAndType(Long assemblyId,
+			Long contributionId, ContributionTypes type) {
+		return find.where().eq("assemblyId", assemblyId)
+				.eq("contributionId", contributionId).eq("type", type)
+				.findUnique();
+	}
+
+	public static List<Contribution> readListByAssemblyAndType(Long assemblyId,
+			ContributionTypes type) {
+		return find.where().eq("assemblyId", assemblyId).eq("type", type)
+				.findList();
+	}
+
+	public static void deleteContributionByIdAndType(Long contributionId,ContributionTypes cType) {
+		find.where().eq("contributionId", contributionId).eq("type", cType).findUnique().delete();
 	}
 }

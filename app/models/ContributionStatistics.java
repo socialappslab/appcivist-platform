@@ -7,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 public class ContributionStatistics extends AppCivistBaseModel {
 
@@ -21,6 +23,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	private Long flags; 
 	
 	@OneToOne(mappedBy="stats")
+	@JsonBackReference
 	private Contribution contribution;
 	
 	/**

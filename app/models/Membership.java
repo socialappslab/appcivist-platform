@@ -19,7 +19,7 @@ import javax.persistence.ManyToOne;
 
 import models.TokenAction.Type;
 
-import enums.MembershipRoles;
+import enums.ManagementTypes;
 import enums.MembershipStatus;
 
 @Entity
@@ -202,8 +202,8 @@ public class Membership extends AppCivistBaseModel {
 	public static Boolean userCanInvite(User user, WorkingGroup workingGroup) {
 		Boolean userCanInvite = false;
 
-		MembershipRoles roleForInvitations = workingGroup.getMembershipRole();
-		Membership m = GroupMembership.findByUserAndGroup(user, workingGroup);
+		ManagementTypes roleForInvitations = workingGroup.getManagementType();
+		Membership m = MembershipGroup.findByUserAndGroup(user, workingGroup);
 
 		if (roleForInvitations != null && m != null) {
 			for (SecurityRole userRole : m.getRoles()) {
@@ -220,8 +220,8 @@ public class Membership extends AppCivistBaseModel {
 	public static Boolean userCanInvite(User user, Assembly assembly) {
 		Boolean userCanInvite = false;
 
-		MembershipRoles roleForInvitations = assembly.getMembershipRole();
-		Membership m = AssemblyMembership.findByUserAndAssembly(user, assembly);
+		ManagementTypes roleForInvitations = assembly.getManagementType();
+		Membership m = MembershipAssembly.findByUserAndAssembly(user, assembly);
 
 		if (roleForInvitations != null && m != null) {
 			for (SecurityRole userRole : m.getRoles()) {

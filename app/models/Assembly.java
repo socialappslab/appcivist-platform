@@ -12,14 +12,21 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import play.data.validation.Constraints.MaxLength;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import models.Location.Geo;
+import models.location.Geo;
+import models.location.Location;
 import utils.GlobalData;
-import enums.MembershipRoles;
+import enums.ManagementTypes;
 import enums.Visibility;
 
 @Entity
+@JsonInclude(Include.NON_NULL)
 public class Assembly extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
@@ -30,18 +37,20 @@ public class Assembly extends AppCivistBaseModel {
 	 */
 
 	private User creator;
-	private String name; // TODO limit to no more than what a title should be (150 chars maybe?)
+	@MaxLength(value=200)
+	private String name; 
+	@MaxLength(value=120)
+	private String shortname;
 	private String description;
-	private String city;
-	private String state;
-	private String country;
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON;
+	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;
 	private String url; 
-	private Visibility visibiliy = Visibility.MEMBERSONLY; // only members by default
-    private MembershipRoles membershipRole = MembershipRoles.COORDINATOR;
+	private Visibility visibiliy = Visibility.PUBLIC; // assemblies are public by default
+    private ManagementTypes managementType = ManagementTypes.COORDINATED; // assemblies are coordinated by default
 
 	// Relationships
 	@ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
+	@JsonIgnoreProperties({"categoryId"})
 	private List<Category> interestCategories = new ArrayList<Category>();
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
@@ -53,16 +62,8 @@ public class Assembly extends AppCivistBaseModel {
 	private List<Config> assemblyConfigs = new ArrayList<Config>();
 
 	@ManyToMany(cascade = CascadeType.ALL)
+	@JsonIgnoreProperties({"hashtagId"})
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
-
-// 	AssemblyConnections and Messages are managed in different entity
-// 	TODO check that this works
-//	@OneToMany(mappedBy = "targetAssembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//	private List<AssemblyConnection> connections = new ArrayList<AssemblyConnection>();
-//
-//	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//	private List<Message> messages = new ArrayList<Message>();
-
 
 	/**
 	 * Experimental properties (things we might want to have)
@@ -72,7 +73,7 @@ public class Assembly extends AppCivistBaseModel {
 	// Basically, with this location object, we can specify whether an entity is
 	// located in a specific geo point, route/line or area.
 	@OneToOne
-	private Geo location;
+	private Location location;
 
 	// If assemblies decide to collaborate on campaigns, then we might want to
 	// have
@@ -104,7 +105,7 @@ public class Assembly extends AppCivistBaseModel {
 		super();
 		this.name = assemblyTitle;
 		this.description = assemblyDescription;
-		this.city = assemblyCity;
+		this.location = new Location(null, assemblyCity, null, null, null);
 	}
 
 	public Assembly(User creator, String name, String description, String city,
@@ -113,9 +114,7 @@ public class Assembly extends AppCivistBaseModel {
 		this.creator = creator;
 		this.name = name;
 		this.description = description;
-		this.city = city;
-		this.state = state;
-		this.country = country;
+		this.location = new Location(null, city, state, null, country);
 		this.icon = icon;
 		this.visibiliy = visibility;
 	}
@@ -145,9 +144,7 @@ public class Assembly extends AppCivistBaseModel {
 		this.creator = creator;
 		this.name = name;
 		this.description = description;
-		this.city = city;
-		this.state = state;
-		this.country = country;
+		this.location = new Location(null, city, state, null, country);
 		this.icon = icon;
 		this.visibiliy = visibility;
 		this.interestCategories = interests;
@@ -183,6 +180,14 @@ public class Assembly extends AppCivistBaseModel {
 		this.name = name;
 	}
 
+	public String getShortname() {
+		return shortname;
+	}
+
+	public void setShortname(String shortname) {
+		this.shortname = shortname;
+	}
+
 	public String getDescription() {
 		return description;
 	}
@@ -191,36 +196,20 @@ public class Assembly extends AppCivistBaseModel {
 		this.description = description;
 	}
 
-	public String getCity() {
-		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
-	}
-
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
 	public String getIcon() {
 		return icon;
 	}
 
 	public void setIcon(String icon) {
 		this.icon = icon;
+	}
+
+	public String getCover() {
+		return cover;
+	}
+
+	public void setCover(String cover) {
+		this.cover = cover;
 	}
 
 	public String getUrl() {
@@ -239,12 +228,12 @@ public class Assembly extends AppCivistBaseModel {
 		this.visibiliy = visibiliy;
 	}
 
-	public MembershipRoles getMembershipRole() {
-		return membershipRole;
+	public ManagementTypes getManagementType() {
+		return managementType;
 	}
 
-	public void setMembershipRole(MembershipRoles membershipRole) {
-		this.membershipRole = membershipRole;
+	public void setManagementType(ManagementTypes membershipRole) {
+		this.managementType = membershipRole;
 	}
 
 	public List<Category> getInterestCategories() {
@@ -287,11 +276,11 @@ public class Assembly extends AppCivistBaseModel {
 		this.hashtags = hashtags;
 	}
 
-	public Geo getLocation() {
+	public Location getLocation() {
 		return location;
 	}
 
-	public void setLocation(Geo location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 

@@ -1,4 +1,4 @@
-package models.Location;
+package models.location;
 
 import play.db.ebean.Model;
 

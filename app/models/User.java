@@ -1,5 +1,7 @@
 package models;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +18,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -26,12 +29,15 @@ import com.avaje.ebean.Model;
 
 import play.db.ebean.Transactional;
 import utils.GlobalData;
+import utils.security.HashGenerationException;
+import utils.security.HashGeneratorUtils;
 import be.objectify.deadbolt.core.models.Permission;
 import be.objectify.deadbolt.core.models.Subject;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.AuthUser;
@@ -56,7 +62,9 @@ public class User extends Model implements Subject {
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
 	@Column(name = "profile_pic")
-	private String profilePic;
+	@OneToOne
+	@JsonIgnoreProperties({"creator", "resourceId", "location", "resourceType"})
+	private ResourcePicture profilePic;
 	@Column
 	private boolean active = true;
 	// TODO create a transfer model for user and place the session key only there
@@ -85,6 +93,7 @@ public class User extends Model implements Subject {
 		joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, 
 		inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) }
 	)
+	@JsonIgnoreProperties({"roleId"})
 	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
 	
 	@ManyToMany(cascade = CascadeType.ALL)
@@ -225,12 +234,12 @@ public class User extends Model implements Subject {
 	}
 
 
-	public String getProfilePic() {
+	public ResourcePicture getProfilePic() {
 		return profilePic;
 	}
 
 
-	public void setProfilePic(String profilePic) {
+	public void setProfilePic(ResourcePicture profilePic) {
 		this.profilePic = profilePic;
 	}
 
@@ -400,7 +409,7 @@ public class User extends Model implements Subject {
 		Ebean.save(Arrays.asList(new User[] { otherUser, this }));
 	}
 
-	public static User createFromAuthUser(final AuthUser authUser) {
+	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException {
 		/*
 		 * 0. Zero step, create a new User instance
 		 */
@@ -457,12 +466,16 @@ public class User extends Model implements Subject {
 			final PicturedIdentity identity = (PicturedIdentity) authUser;
 			final String picture = identity.getPicture();
 			if (picture != null) {
-				user.setProfilePic(picture);
+				// TODO: generate large, medium and thumbnail version of the "picture" URL
+				ResourcePicture profilePicResource = new ResourcePicture(user, new URL(picture), new URL(picture), new URL(picture), new URL(picture));				
+				user.setProfilePic(profilePicResource);
 			} else {
-				user.setProfilePic(Play.application().configuration().getString("default.profilepic"));
+				ResourcePicture profilePicResource = getDefaultProfilePictureResource(user);
+				user.setProfilePic(profilePicResource);
 			}
 		} else {
-			user.setProfilePic(Play.application().configuration().getString("default.profilepic"));
+			ResourcePicture profilePicResource = getDefaultProfilePictureResource(user); 	
+			user.setProfilePic(profilePicResource);
 		}
 
 		/*
@@ -476,7 +489,6 @@ public class User extends Model implements Subject {
 		 * 7. Generate the username
 		 * TODO add username to the signup form
 		 */
-
 		user.setUsername(models.User.generateUsername(user.getEmail()));
 		
 		/*
@@ -500,7 +512,21 @@ public class User extends Model implements Subject {
 		return user;
 	}
 
-	private void addRole(SecurityRole role) {
+	private static String getDefaultProfilePictureURL(String email) throws HashGenerationException {
+		String userMd5Hash = HashGeneratorUtils.generateMD5(email);
+		String gravatarURL = GlobalData.GRAVATAR_BASE_URL+userMd5Hash+"?d=identicon";
+		return gravatarURL;
+	}
+	
+	private static ResourcePicture getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
+		String picture = getDefaultProfilePictureURL(user.getEmail());
+		String large = picture="&s=128";
+		String medium = picture="&s=64";
+		String thumbnail = picture="&s=32"; 
+		ResourcePicture profilePicResource = new ResourcePicture(user, new URL(picture), new URL(large), new URL(medium), new URL(thumbnail));
+		return profilePicResource;
+	}
+	public void addRole(SecurityRole role) {
 		this.roles.add(role);	
 	}
 
