@@ -42,8 +42,8 @@
     username:   bob
     language:   es
     roles:
-      - *r1
-      - *r2
+      - *r1 # ADMIN
+      - *r2 # USER
     linkedAccounts:
     - &ua1 !!models.LinkedAccount
       providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
@@ -55,8 +55,8 @@
     username:   jane
     language:   en
     roles:
-      - *r1
-      - *r2
+      - *r1 # ADMIN
+      - *r2 # USER
     linkedAccounts:
     - &ua2 !!models.LinkedAccount
       providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
@@ -68,8 +68,8 @@
     username:   jeff
     language:     it
     roles:
-      - *r1
-      - *r2
+      - *r1 # ADMIN
+      - *r2 # USER
     linkedAccounts:
     - &ua3 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -81,7 +81,7 @@
     username:   sara
     language:     fr
     roles: 
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua4 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -93,7 +93,7 @@
     username:   alicia
     language:     es
     roles:
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua5 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -105,7 +105,7 @@
     username:   ted
     language:     en
     roles:
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua6 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -117,7 +117,7 @@
     username:   leia
     language:     it
     roles:
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua7 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -129,7 +129,7 @@
     username:   luke
     language:     es
     roles:
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua8 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -141,7 +141,7 @@
     username:   ahsoka
     language:     en
     roles:
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua9 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -153,7 +153,7 @@
     username:   jeff
     language:     it
     roles:
-      - *r2
+      - *r2 # USER
     linkedAccounts:
     - &ua10 !!models.LinkedAccount
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
@@ -165,37 +165,66 @@
     key: "maximum.contributions"
     valueType: Integer
     description: "Maximun number of Contributions to accept" 
-    category: "Phase Definition"
+    category: "Phase Definitions"
+    defaultValue: "100"
+    configTarget: PHASE
   - &config2 !!models.ConfigDefinition
     key: "enable.agreement.scores"
     valueType: Boolean
     description: "Enable the system of automatic computation of agreement on contributions" 
-    category: "Phase Definition"
+    category: "Phase Definitions"
+    defaultValue: "false"
+    configTarget: PHASE
   - &config3 !!models.ConfigDefinition
     key: "enable.comments.threads"
     valueType: Boolean
     description: "Enable comments on comments" 
-    category: "Phase Definition" 
+    category: "Phase Definitions"
+    defaultValue: "false" 
+    configTarget: PHASE
   - &config4 !!models.ConfigDefinition
     key: "maximum.level.thread"
     valueType: Integer
     description: "Maximum depth of threading in comments" 
-    category: "Phase Definition"
+    category: "Phase Definitions"
+    defaultValue: "false"
+    configTarget: PHASE
   - &config5 !!models.ConfigDefinition
     key: "voting.system"
     valueType: String
     description: "Unranked, Ranked, Range, Distributed" 
-    category: "Phase Definition"
+    category: "Phase Definitions"
+    configTarget: PHASE
+  - &config6 !!models.ConfigDefinition
+    key: "pb.budget"
+    valueType: Double
+    description: "Amount to spend in winning projects" 
+    category: "CAMPAIGN Definitions"
+    configTarget: CAMPAIGN
+  - &config7 !!models.ConfigDefinition
+    key: "pb.budget.currency"
+    valueType: String
+    description: "Currency of the amount to spend in winning projects" 
+    category: "Campaign Definitions"
+    configTarget: CAMPAIGN
+  - &config8 !!models.ConfigDefinition
+    key: "module.mobilizing.scheduling"
+    valueType: Boolean
+    description: "Enable face-to-face scheduling" 
+    category: "Assembly Module Configurations"
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+    
 ##############################################################################################################################################################################################    
 # Phase Definitions
   - &pd1 !!models.PhaseDefinition
-    name: "Proposal Making"
+    name: "Brainstorming"
     requiredConfigurations: 
     - &phaseConfig1 !!models.RequiredPhaseConfiguration
       phaseDefinition: *pd1
       configDefinition: *config1
   - &pd2 !!models.PhaseDefinition
-    name: "Versioning"
+    name: "Proposal Development"
     requiredConfigurations: 
     - &phaseConfig2 !!models.RequiredPhaseConfiguration
       phaseDefinition: *pd2
@@ -215,6 +244,12 @@
     - &phaseConfig5 !!models.RequiredPhaseConfiguration
       phaseDefinition: *pd4
       configDefinition: *config5
+  - &pd5 !!models.PhaseDefinition
+    name: "Scheduling"
+  - &pd6 !!models.PhaseDefinition
+    name: "Broadcasting"
+  - &pd7 !!models.PhaseDefinition
+    name: "Impact"
 ##############################################################################################################################################################################################
 # CampaignTypes
   - &ct1 !!models.CampaignType
@@ -225,14 +260,31 @@
       - *pd2
       - *pd3
       - *pd4
+    requiredConfigurations: 
+    - &campaignConfig1 !!models.RequiredCampaignConfiguration
+      campaignType: *ct1
+      configDefinition: *config6 
+    - &campaignConfig2 !!models.RequiredCampaignConfiguration
+      campaignType: *ct1
+      configDefinition: *config7
 ##############################################################################################################################################################################################
 # Assemblies
   - &a1 !!models.Assembly
     creator: *u1
-    name: "Participatory Budgeting Vallejo - City Council Assembly"
-    description: Participatory Budgeting of the Municipality of Vallejo for the year 2015
-    city: Vallejo
-    icon: /assets/images/sfskyline-small.jpg
+    name: "Assemblée Belleville"
+    shortname: "assemblee-belleville"
+    description: Assembly of residents of Belleville. We are using AppCivist to develop proposals to improve the neighborhood and then submit these proposals to the Mairie de Paris. We also use this medium to organize other civic actions.
+    cover: /assets/images/covers/brainstormng-kid
+    profile: &ap !!models.AssemblyProfile
+      targetAudience: Residents of Belleville 
+      icon: /assets/images/belleville-small.jpg
+      cover: /assets/images/covers/brainstormng-kid
+    location: 
+      placeName: "Vallejo, CA"
+      city: "Vallejo"
+      state: "CA"
+      country: "United States"
+      geoJson: "{   'type': 'FeatureCollection',   'features': [     {       'type': 'Feature',       'properties': {},       'geometry': {         'type': 'Polygon',         'coordinates': [           [             [               -122.28950500488281,               38.11808198029142             ],             [               -122.29568481445312,               38.111869281948955             ],             [               -122.30667114257812,               38.10511574955449             ],             [               -122.27611541748045,               38.06647354576796             ],             [               -122.25036621093749,               38.071338722995776             ],             [               -122.22633361816406,               38.06512205022704             ],             [               -122.20470428466797,               38.065932950547484             ],             [               -122.19406127929688,               38.07620357665235             ],             [               -122.18891143798828,               38.100793161158784             ],             [               -122.18135833740233,               38.10430528370985             ],             [               -122.18238830566406,               38.13428653167248             ],             [               -122.19165802001953,               38.14265747385727             ],             [               -122.20779418945311,               38.15129743915324             ],             [               -122.23079681396483,               38.161016176890456             ],             [               -122.23731994628905,               38.17289287509456             ],             [               -122.26821899414061,               38.15858661388428             ],             [               -122.27817535400389,               38.150757471302285             ],             [               -122.28710174560547,               38.133206340153684             ],             [               -122.28950500488281,               38.11808198029142             ]           ]         ]       }     }   ] }"
     interestCategories: 
       - *cat1
       - *cat2
@@ -243,6 +295,7 @@
     campaigns: 
       - &c1 !!models.Campaign
         title: "Participatory Budgeting cycle 4 - 2015"
+        shortname: pb-vallejo-2015
         startDate: "2015-06-30"
         endDate: "2015-10-30"
         visibility: PUBLIC

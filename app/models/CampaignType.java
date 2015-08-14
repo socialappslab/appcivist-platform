@@ -1,13 +1,23 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.CampaignTypesEnum;
 
@@ -17,18 +27,24 @@ public class CampaignType extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long campaignTypeId;
-	
+	@Enumerated(EnumType.STRING)
 	private CampaignTypesEnum nameKey;
 	private String name;
 	
 	@ManyToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="campaign_type_default_phases")
 	private List<PhaseDefinition> defaultPhases = new LinkedList<PhaseDefinition>();
 	
+	@ManyToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="campaign_type_required_configs")
+	@JsonManagedReference
+	@JsonInclude(content=Include.NON_EMPTY)
+	private List<RequiredCampaignConfiguration> requiredConfigurations = new ArrayList<RequiredCampaignConfiguration>();
+		
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<Long, CampaignType> find = new Finder<Long, CampaignType>(
-			Long.class, CampaignType.class);
+	public static Finder<Long, CampaignType> find = new Finder<>(CampaignType.class);
 
 	public CampaignType() {
 		super();
@@ -38,6 +54,14 @@ public class CampaignType extends AppCivistBaseModel {
 		super();
 		this.nameKey = name;
 		this.defaultPhases = defaultPhases;
+	}
+
+	public Long getCampaignTypeId() {
+		return campaignTypeId;
+	}
+
+	public void setCampaignTypeId(Long campaignTypeId) {
+		this.campaignTypeId = campaignTypeId;
 	}
 
 	public CampaignTypesEnum getNameKey() {
@@ -68,6 +92,15 @@ public class CampaignType extends AppCivistBaseModel {
 	 * Basic Data operations
 	 */
 	
+	public List<RequiredCampaignConfiguration> getRequiredConfigurations() {
+		return requiredConfigurations;
+	}
+
+	public void setRequiredConfigurations(
+			List<RequiredCampaignConfiguration> requiredConfigurations) {
+		this.requiredConfigurations = requiredConfigurations;
+	}
+
 	public static CampaignType read(Long id) {
         return find.ref(id);
     }
@@ -93,5 +126,9 @@ public class CampaignType extends AppCivistBaseModel {
 
     public static void update(Long id) {
         find.ref(id).update();
+    }
+    
+    public static CampaignType findByName(CampaignTypesEnum nameKey) {
+    	return find.where().eq("nameKey",nameKey).findUnique();
     }
 }

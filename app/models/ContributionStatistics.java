@@ -30,8 +30,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, ContributionStatistics> find = new Finder<Long, ContributionStatistics>(
-			Long.class, ContributionStatistics.class);
+	public static Finder<Long, ContributionStatistics> find = new Finder<>(ContributionStatistics.class);
 	
 	/*
 	 * Getters and Setters

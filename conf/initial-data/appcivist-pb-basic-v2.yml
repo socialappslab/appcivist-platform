@@ -1,0 +1,674 @@
+# AppCivist Test Data
+---
+##############################################################################################################################################################################################
+# Roles
+  - &r1 !!models.SecurityRole
+    name:       "ADMIN"
+  - &r2 !!models.SecurityRole
+    name:       "USER"
+  - &r3 !!models.SecurityRole
+    name:       "COORDINATOR"
+  - &r4 !!models.SecurityRole
+    name:       "MEMBER"
+  - &r5 !!models.SecurityRole
+    name:       "EXPERT"
+  - &r6 !!models.SecurityRole
+    name:       "FOLLOWER"
+  - &r7 !!models.SecurityRole
+    name:       "MODERATOR"
+##############################################################################################################################################################################################
+# Themes
+  - &cat1 !!models.Theme
+    title: "Streets and Transportation"
+    description: "Streets are the veins of our city. Transportation is its blood. They are the reason why we are moving, and to keep moving, they must be as healty as possible"
+  - &cat2 !!models.Theme
+    title: "Economic Development"
+    description: "What we do everyday has an impact in our local economy. What can we do to foster its growth? And how can we ensure that growth benefits us all?"
+  - &cat3 !!models.Theme
+    title: "Community and Culture"
+    description: "Culture speak to us about our history, values and traditions. It is the soul that keeps the heart of our communities pumping."
+  - &cat4 !!models.Theme
+    title: "Public Safety"
+    description: "To thrive, our communities need a safe space to live. Your contributions to improve public safety go here."
+  - &cat5 !!models.Theme
+    title: "Parks and Recreation"
+    description: "All work no play?. We all know life is so much more. Let's assure our parks give us all the recreation opportunities our communities need to enjoy life."
+  - &cat6 !!models.Theme
+    title: "Education"
+    description: "'Education is the most powerful weapon which you can use to change the world'. Indeed Mr. Mandela."
+  - &cat7 !!models.Theme
+    title: "Urban Infrastructure"
+    description: "Better infrastructure for our urban environments"
+##############################################################################################################################################################################################
+# Users (Testing Users)
+  - &u1 !!models.User
+    email:      bob@example.com
+    name:       Bob
+    username:   bob
+    language:   es
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua1 !!models.LinkedAccount
+      providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
+      providerKey: password
+      user: *u1
+  - &u2 !!models.User
+    email:      jane@example.com
+    name:       Jane
+    username:   jane
+    language:   en
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua2 !!models.LinkedAccount
+      providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
+      providerKey: password
+      user: *u2
+  - &u3 !!models.User
+    email:      jeff@example.com
+    name:       Jeff
+    username:   jeff
+    language:     it
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua3 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u3
+  - &u4 !!models.User
+    email:      sara@example.com
+    name:       Sara
+    username:   sara
+    language:     fr
+    roles: 
+      - *r2 # USER
+    linkedAccounts:
+    - &ua4 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u4
+  - &u5 !!models.User
+    email:      alicia@example.com
+    name:       Alicia
+    username:   alicia
+    language:     es
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua5 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u5
+  - &u6 !!models.User
+    email:      ted@example.com
+    name:       Ted
+    username:   ted
+    language:     en
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua6 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u6
+  - &u7 !!models.User
+    email:      leia@example.com
+    name:       Leia
+    username:   leia
+    language:     it
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua7 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u7
+  - &u8 !!models.User
+    email:      luke@example.com
+    name:       Luke
+    username:   luke
+    language:     es
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua8 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u8
+  - &u9 !!models.User
+    email:      ahsoka@example.com
+    name:       Ahsoka
+    username:   ahsoka
+    language:     en
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua9 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u9
+  - &u10 !!models.User
+    email:      jeff@example.com
+    name:       Jeff
+    username:   jeff
+    language:     it
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua10 !!models.LinkedAccount
+      providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
+      providerKey: password
+      user: *u10
+##############################################################################################################################################################################################
+# Configuration Definitions
+  - &config1 !!models.ConfigDefinition
+    key: "maximum.contributions"
+    valueType: Integer
+    description: "Maximun number of Contributions to accept" 
+    defaultValue: "100"
+    configTarget: PHASE
+  - &config2 !!models.ConfigDefinition
+    key: "enable.agreement.scores"
+    valueType: Boolean
+    description: "Enable the system of automatic computation of agreement on contributions" 
+    defaultValue: "false"
+    configTarget: PHASE
+  - &config3 !!models.ConfigDefinition
+    key: "enable.comments.threads"
+    valueType: Boolean
+    description: "Enable comments on comments" 
+    defaultValue: "false" 
+    configTarget: PHASE
+  - &config4 !!models.ConfigDefinition
+    key: "maximum.level.thread"
+    valueType: Integer
+    description: "Maximum depth of threading in comments" 
+    defaultValue: "false"
+    configTarget: PHASE
+  - &config5 !!models.ConfigDefinition
+    key: "voting.system"
+    valueType: String
+    description: "Unranked, Ranked, Range, Distributed" 
+    configTarget: PHASE
+  - &config6 !!models.ConfigDefinition
+    key: "pb.budget"
+    valueType: Double
+    description: "Amount to spend in winning projects" 
+    configTarget: CAMPAIGN
+  - &config7 !!models.ConfigDefinition
+    key: "pb.budget.currency"
+    valueType: String
+    description: "Currency of the amount to spend in winning projects" 
+    defaultValue: "USD"
+    configTarget: CAMPAIGN
+  - &config8 !!models.ConfigDefinition
+    key: "module.mobilizing.scheduling"
+    valueType: Boolean
+    description: "Enable face-to-face scheduling" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+    
+##############################################################################################################################################################################################    
+# Phase Definitions
+  - &pd1 !!models.PhaseDefinition
+    name: "Brainstorming"
+    requiredConfigurations: 
+    - &phaseConfig1 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd1
+      configDefinition: *config1
+  - &pd2 !!models.PhaseDefinition
+    name: "Versioning"
+    requiredConfigurations: 
+    - &phaseConfig2 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd2
+      configDefinition: *config2
+  - &pd3 !!models.PhaseDefinition
+    name: "Deliberation"
+    requiredConfigurations: 
+    - &phaseConfig3 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd3
+      configDefinition: *config3
+    - &phaseConfig4 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd3
+      configDefinition: *config4
+  - &pd4 !!models.PhaseDefinition
+    name: "Voting"
+    requiredConfigurations: 
+    - &phaseConfig5 !!models.RequiredPhaseConfiguration
+      phaseDefinition: *pd4
+      configDefinition: *config5
+  - &pd5 !!models.PhaseDefinition
+    name: "Scheduling"
+  - &pd6 !!models.PhaseDefinition
+    name: "Broadcasting"
+  - &pd7 !!models.PhaseDefinition
+    name: "Impact"
+##############################################################################################################################################################################################
+# CampaignTypes
+  - &ct1 !!models.CampaignType
+    nameKey: "PARTICIPATORY_BUDGETING"
+    name: "Participatory Budgeting" 
+    defaultPhases: 
+      - *pd1
+      - *pd2
+      - *pd3
+      - *pd4
+    requiredConfigurations: 
+    - &campaignConfig1 !!models.RequiredCampaignConfiguration
+      campaignType: *ct1
+      configDefinition: *config6 
+    - &campaignConfig2 !!models.RequiredCampaignConfiguration
+      campaignType: *ct1
+      configDefinition: *config7
+  - &ct2 !!models.CampaignType
+    nameKey: "FUNDRAISING"
+    name: "Fundraising" 
+  - &ct3 !!models.CampaignType
+    nameKey: "MOBILIZATION"
+    name: "Mobilization"
+##############################################################################################################################################################################################
+# Campaigns
+  - &c1 !!models.Campaign
+    title: "Belleville - Paris PB 2016"
+    shortname: belleville-paris-pb-2016
+    visibility: PUBLIC
+    #assembly: *a1
+    type: *ct1
+    uuidAsString: e1998630-4079-11e5-a151-feff819cdc9f
+    phases:
+      - &ph1 !!models.CampaignPhase
+        startDate: "2015-06-30"
+        endDate: "2015-07-10"
+        campaign: *c1
+        definition: *pd1
+      - &ph2 !!models.CampaignPhase
+        startDate: "2015-07-11"
+        endDate: "2015-08-10"
+        campaign: *c1
+        definition: *pd2
+      - &ph3 !!models.CampaignPhase
+        startDate: "2015-08-10"
+        endDate: "2015-08-30"
+        campaign: *c1
+        definition: *pd3
+      - &ph4 !!models.CampaignPhase
+        startDate: "2015-09-01"
+        endDate: "2015-10-15"
+        campaign: *c1
+        definition: *pd4
+  - &c2 !!models.Campaign
+    title: "Fundraising for art program at neighborhood school"
+    shortname: fundraising-art-program
+    visibility: PUBLIC
+    #assembly: *a1
+    type: *ct2
+    uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
+  - &c3 !!models.Campaign
+    title: "Mobilize anti-eviction initiative"
+    shortname: anti-eviction
+    visibility: PUBLIC
+    #assembly: *a1
+    type: *ct3
+    uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
+  - &c4 !!models.Campaign
+    title: "Paris PB 2016"
+    shortname: paris-pb-2016
+    visibility: PUBLIC
+    #assembly: *a1
+    type: *ct1
+    uuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+    phases:
+      - &ph5 !!models.CampaignPhase
+        startDate: "2015-08-10"
+        endDate: "2015-08-30"
+        campaign: *c1
+        definition: *pd3
+      - &ph6 !!models.CampaignPhase
+        startDate: "2015-09-01"
+        endDate: "2015-10-15"
+        campaign: *c1
+        definition: *pd4
+##############################################################################################################################################################################################
+# Resource spaces
+  - &rs1 !!models.ResourceSpace
+    type: ASSEMBLY
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+    campaigns: 
+      - *c1
+      - *c2
+      - *c3
+    configs: 
+      - &ac1 !!models.Config
+        key: face.to.face.scheduling
+        value: true
+        configTarget: ASSEMBLY
+        targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+      - &ac2 !!models.Config
+        key: enabled.messaging
+        value: true
+        configTarget: ASSEMBLY
+        targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+  - &rs2 !!models.ResourceSpace
+    type: ASSEMBLY
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+    campaigns: 
+      - *c4
+    configs:
+      - &ac3 !!models.Config
+        key: enabled.messaging
+        value: false
+        configTarget: ASSEMBLY
+        targetUuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+  - &rs3 !!models.ResourceSpace
+    type: ASSEMBLY
+  - &rs4 !!models.ResourceSpace
+    type: WORKING_GROUP
+    
+
+##############################################################################################################################################################################################
+# Assemblies
+  - &a1 !!models.Assembly
+    creator: *u1
+    name: "Assemblèe Belleville"
+    shortname: "assemblee-belleville"
+    description: Assembly of residents of Belleville. We are using AppCivist to develop proposals to improve the neighborhood and then submit these proposals to the Mairie de Paris. We also use this medium to organize other civic actions.
+    uuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+    profile: &ap1 !!models.AssemblyProfile
+      targetAudience: Residents of Belleville 
+      supportedMembership: OPEN
+      managementType: COORDINATED
+      icon: /assets/images/belleville-small.jpg
+      cover: /assets/images/covers/brainstormng-kid
+      primaryContactName: Carmen Taylor
+      primaryContactPhone: +33 0778805410
+      primaryContactEmail: carmen.taylor@example.com
+    location: &loc1 !!models.location.Location
+      placeName: "Belleville"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{   'type': 'FeatureCollection',   'features': [     {       'type': 'Feature',       'properties': {},       'geometry': {         'type': 'Polygon',         'coordinates': [           [             [               -122.28950500488281,               38.11808198029142             ],             [               -122.29568481445312,               38.111869281948955             ],             [               -122.30667114257812,               38.10511574955449             ],             [               -122.27611541748045,               38.06647354576796             ],             [               -122.25036621093749,               38.071338722995776             ],             [               -122.22633361816406,               38.06512205022704             ],             [               -122.20470428466797,               38.065932950547484             ],             [               -122.19406127929688,               38.07620357665235             ],             [               -122.18891143798828,               38.100793161158784             ],             [               -122.18135833740233,               38.10430528370985             ],             [               -122.18238830566406,               38.13428653167248             ],             [               -122.19165802001953,               38.14265747385727             ],             [               -122.20779418945311,               38.15129743915324             ],             [               -122.23079681396483,               38.161016176890456             ],             [               -122.23731994628905,               38.17289287509456             ],             [               -122.26821899414061,               38.15858661388428             ],             [               -122.27817535400389,               38.150757471302285             ],             [               -122.28710174560547,               38.133206340153684             ],             [               -122.28950500488281,               38.11808198029142             ]           ]         ]       }     }   ] }"
+    resources: *rs1
+    forum: *rs3
+  - &a2 !!models.Assembly
+    creator: *u1
+    name: "PB Paris - Mairie de Paris"
+    shortname: "pb-paris-mairie-de-paris"
+    description: Mayor's Office launches Participatory Budgeting 2016
+    uuidAsString: e1998748-4079-11e5-a151-feff819cdc9f
+    profile: &ap2 !!models.AssemblyProfile
+      targetAudience: Residents of Paris 
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: https://storage.googleapis.com/static.panoramio.com/photos/small/69912008.jpg
+      cover: https://storage.googleapis.com/static.panoramio.com/photos/large/69912008.jpg
+      primaryContactName: Anne Hidalgo
+      primaryContactPhone: +33 3975
+      primaryContactEmail: anne.hidalgo@example.com
+    location: &loc2 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
+    resources: *rs2
+  - &a3 !!models.Assembly
+    creator: *u1
+    name: "PB Belleville Paris"
+    shortname: "pb-belleville-paris"
+    description: Belleville assembly
+    uuidAsString: e199890a-4079-11e5-a151-feff819cdc9f
+    profile: &ap3 !!models.AssemblyProfile
+      targetAudience: Residents of Belleville 
+      supportedMembership: OPEN
+      managementType: OPEN
+      icon: https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Metro_de_Paris_-_Ligne_2_-_Belleville_02.jpg/320px-Metro_de_Paris_-_Ligne_2_-_Belleville_02.jpg
+      cover: https://upload.wikimedia.org/wikipedia/commons/b/b1/Metro_de_Paris_-_Ligne_2_-_Belleville_02.jpg
+      primaryContactName: Edith Piaf
+      primaryContactPhone: +33 3975
+      primaryContactEmail: edit.piaf@example.com
+    location: &loc3 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"   
+  - &a4 !!models.Assembly
+    creator: *u1
+    name: "Arrondissement 07"
+    shortname: "arrondissement7"
+    description: We are a group of activist collaborating to oppose the wrongdoings of article 19 in arrondissement 7
+    uuidAsString: e1998d4c-4079-11e5-a151-feff819cdc9f
+    profile: &ap4 !!models.AssemblyProfile
+      targetAudience: Residents of Arrondissement 07
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: /assets/images/article19-140.png
+      cover: /assets/images/covers/arch-800x400.jpeg
+      primaryContactName: Edith Piaf
+      primaryContactPhone: +33 3975
+      primaryContactEmail: edit.piaf@example.com
+    location: &loc4 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"  
+  - &a5 !!models.Assembly
+    creator: *u1
+    name: "Assemblé Droit au Logement"
+    shortname: "droit-au-logement"
+    description: We work to end evitcions in Paris and bring new housing infrastructures for the people
+    uuidAsString: c496bf24-408f-11e5-a151-feff819cdc9f
+    profile: &ap5 !!models.AssemblyProfile
+      targetAudience: Everyone in Paris
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: http://droitaulogement.org/wp-content/uploads/2015/03/A3-foule-sans-date1.jpeg
+      cover: http://droitaulogement.org/wp-content/uploads/2012/05/dal-logo1.png
+      primaryContactName: Jacques Brel
+      primaryContactPhone: +33 3975
+      primaryContactEmail: jacques.brel@example.com
+    location: &loc5 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
+  - &a6 !!models.Assembly
+    creator: *u1
+    name: "Doctors without borders"
+    shortname: "doctors-without-borders"
+    description: Assembly of the Non-Profit Doctors without borders, workin out proposals for our future initiatives
+    uuidAsString: c496c1fe-408f-11e5-a151-feff819cdc9f
+    profile: &ap6 !!models.AssemblyProfile
+      targetAudience: Doctors
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: /assets/images/barefootdoctor-140.png
+      cover: https://donate.doctorswithoutborders.org/images/header_msf_logo.png
+      primaryContactName: Charles Aznavour
+      primaryContactPhone: +33 3975
+      primaryContactEmail: charles.aznavour@example.com
+    location: &loc6 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
+    
+##############################################################################################################################################################################################
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Conseil Belleville" 
+    text: Commitee in charge of managing contributions in for PB Belleville
+    isPublic: false
+    acceptRequests: false
+    assemblies: 
+      - *a1
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Passionées du Parc de Belleville" 
+    text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    isPublic: true
+    acceptRequests: true
+    assemblies: 
+      - *a1
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    isPublic: true
+    acceptRequests: true
+    assemblies: 
+      - *a2
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    isPublic: false
+    acceptRequests: true
+    assemblies: 
+      - *a3
+##############################################################################################################################################################################################
+# Assembly Memberships
+  - &am1 !!models.MembershipAssembly
+    assembly: *a1
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am2 !!models.MembershipAssembly
+    status: ACCEPTED
+    creator: *u1
+    user: *u2
+    roles: 
+      - *r4
+    assembly: *a1
+  - &am3 !!models.MembershipAssembly
+    assembly: *a1
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &am4 !!models.MembershipAssembly
+    assembly: *a2
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am5 !!models.MembershipAssembly
+    assembly: *a3
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am6 !!models.MembershipAssembly
+    assembly: *a3
+    user: *u2
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &am7 !!models.MembershipAssembly
+    assembly: *a3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+##############################################################################################################################################################################################
+# Group Memberships
+  - &gm1 !!models.MembershipGroup
+    user: *u3
+    workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm2 !!models.MembershipGroup
+    user: *u4
+    workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm3 !!models.MembershipGroup
+    workingGroup: *wg2
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm4 !!models.MembershipGroup
+    workingGroup: *wg3
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm5 !!models.MembershipGroup
+    workingGroup: *wg3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm6 !!models.MembershipGroup
+    workingGroup: *wg3    
+    user: *u5
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm7 !!models.MembershipGroup
+    workingGroup: *wg3
+    user: *u6
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.MembershipGroup
+    workingGroup: *wg1    
+    user: *u3
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.MembershipGroup
+    workingGroup: *wg3    
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4

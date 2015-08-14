@@ -51,8 +51,7 @@ public class Membership extends AppCivistBaseModel {
 	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	private WorkingGroup targetGroup;
 
-	public static Finder<Long, Membership> find = new Finder<Long, Membership>(
-			Long.class, Membership.class);
+	public static Finder<Long, Membership> find = new Finder<>(Membership.class);
 
 	public Membership(Long expiration, MembershipStatus status, User creator,
 			User user, List<SecurityRole> roles, String membershipType) {
@@ -220,7 +219,7 @@ public class Membership extends AppCivistBaseModel {
 	public static Boolean userCanInvite(User user, Assembly assembly) {
 		Boolean userCanInvite = false;
 
-		ManagementTypes roleForInvitations = assembly.getManagementType();
+		ManagementTypes roleForInvitations = assembly.getProfile().getManagementType();
 		Membership m = MembershipAssembly.findByUserAndAssembly(user, assembly);
 
 		if (roleForInvitations != null && m != null) {

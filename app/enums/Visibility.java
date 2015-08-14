@@ -7,7 +7,5 @@ package enums;
  * @author cdparra
  */
 public enum Visibility {
-    PUBLIC, 	
-    PRIVATE, 
-    LISTED
+    PUBLIC, HIDDEN
 }

@@ -9,8 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import com.avaje.ebean.ExpressionList;
 
 @Entity
@@ -22,15 +20,17 @@ public class PhaseDefinition extends AppCivistBaseModel {
 	
 	private String name; 
 	
-	@OneToMany(mappedBy = "phaseDefinition", cascade=CascadeType.ALL)
-	@JsonManagedReference
+	@OneToMany(cascade=CascadeType.ALL)
+	private List<RequiredCampaignPhaseMilestone> requiredMilestones = new ArrayList<RequiredCampaignPhaseMilestone>();
+	
+	@OneToMany(cascade=CascadeType.ALL)
 	private List<RequiredPhaseConfiguration> requiredConfigurations = new ArrayList<RequiredPhaseConfiguration>();
+	
 	
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<Long, PhaseDefinition> find = new Finder<Long, PhaseDefinition>(
-			Long.class, PhaseDefinition.class);
+	public static Finder<Long, PhaseDefinition> find = new Finder<>(PhaseDefinition.class);
 
 	public PhaseDefinition() {
 		super();
@@ -55,6 +55,15 @@ public class PhaseDefinition extends AppCivistBaseModel {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public List<RequiredCampaignPhaseMilestone> getRequiredMilestones() {
+		return requiredMilestones;
+	}
+
+	public void setRequiredMilestones(
+			List<RequiredCampaignPhaseMilestone> requiredMilestones) {
+		this.requiredMilestones = requiredMilestones;
 	}
 
 	public List<RequiredPhaseConfiguration> getRequiredConfigurations() {

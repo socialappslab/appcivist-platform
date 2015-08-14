@@ -1,5 +1,6 @@
 package models.location;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,6 +17,7 @@ public class Location {
 	private String state; //: "asturias",
 	private String zip; //: "56298"
 	private String country; //: "spain"
+	@Column(columnDefinition="TEXT")
 	private String geoJson; 
 	
 	public Location(String street, String city, String state, String zip,

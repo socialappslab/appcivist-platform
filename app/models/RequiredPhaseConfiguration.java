@@ -27,8 +27,7 @@ public class RequiredPhaseConfiguration extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<Long, RequiredPhaseConfiguration> find = new Finder<Long, RequiredPhaseConfiguration>(
-			Long.class, RequiredPhaseConfiguration.class);
+	public static Finder<Long, RequiredPhaseConfiguration> find = new Finder<>(RequiredPhaseConfiguration.class);
 
 	
 	public RequiredPhaseConfiguration(Long requiredPhaseConfigurationId,

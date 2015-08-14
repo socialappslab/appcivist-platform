@@ -6,12 +6,14 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 public class UserProfile extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long profileId;
+	private UUID uuid;
 	private String name;
 	private String middleName;
 	private String lastName;
@@ -31,8 +33,7 @@ public class UserProfile extends AppCivistBaseModel {
 		this.address = address;
 	}
 
-	public static Finder<Long, UserProfile> find = new Finder<Long, UserProfile>(
-			Long.class, UserProfile.class);
+	public static Finder<Long, UserProfile> find = new Finder<>(UserProfile.class);
 
 	public static UserProfile read(Long profileId) {
 		return find.ref(profileId);
@@ -42,8 +43,9 @@ public class UserProfile extends AppCivistBaseModel {
 		return user;
 	}
 
-	public void setUser(User creator) {
-		this.user = creator;
+	public void setUser(User owner) {
+		this.user = owner;
+		this.uuid = owner.getUuid();
 	}
 
 	public Long getProfileId() {

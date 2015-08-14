@@ -7,39 +7,42 @@ import javax.persistence.Id;
 import enums.ConfigTargets;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class ConfigDefinition extends AppCivistBaseModel {
 	
 	@Id
-    @GeneratedValue
-    private Long configDefinitionId;
+    private UUID uuid;
     private String key;
     private String valueType;
     private String description;
+    private String defaultValue;
     private ConfigTargets configTarget = ConfigTargets.ASSEMBLY;
     
-    public ConfigDefinition(String key, String valueType, String description, ConfigTargets configTarget) {
+    public ConfigDefinition(String key, String valueType, String description, String defaultValue, ConfigTargets configTarget) {
     	super();
+    	this.uuid = UUID.randomUUID();
     	this.key = key;
         this.valueType = valueType;
         this.description = description;
+        this.defaultValue = defaultValue;
         this.configTarget = configTarget;
     }
     
     public ConfigDefinition(){
         super();
+    	this.uuid = UUID.randomUUID();
     }
 
-    public static Finder<Long, ConfigDefinition> find = new Finder<Long, ConfigDefinition>(
-            Long.class, ConfigDefinition.class);
+    public static Finder<UUID, ConfigDefinition> find = new Finder<>(ConfigDefinition.class);
 
-    public Long getConfigDefinitionId() {
-		return configDefinitionId;
+    public UUID getUuid() {
+		return uuid;
 	}
 
-	public void setConfigDefinitionId(Long configDefinitionId) {
-		this.configDefinitionId = configDefinitionId;
+	public void setUuid(UUID configDefinitionId) {
+		this.uuid = configDefinitionId;
 	}
 
 	public String getKey() {
@@ -71,6 +74,14 @@ public class ConfigDefinition extends AppCivistBaseModel {
 	 * Basic Data operations
 	 */
 	
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
 	public ConfigTargets getConfigTarget() {
 		return configTarget;
 	}
@@ -79,8 +90,8 @@ public class ConfigDefinition extends AppCivistBaseModel {
 		this.configTarget = configTarget;
 	}
 
-	public static ConfigDefinition read(Long configId) {
-        return find.ref(configId);
+	public static ConfigDefinition read(UUID uuid) {
+        return find.ref(uuid);
     }
 
     public static List<ConfigDefinition> findAll() {
@@ -98,11 +109,11 @@ public class ConfigDefinition extends AppCivistBaseModel {
         return config;
     }
 
-    public static void delete(Long id) {
+    public static void delete(UUID id) {
         find.ref(id).delete();
     }
 
-    public static void update(Long id) {
+    public static void update(UUID id) {
         find.ref(id).update();
     }
 }

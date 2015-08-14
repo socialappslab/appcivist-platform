@@ -11,6 +11,10 @@ public enum ManagementTypes {
     				// campaigns and manage the basic information of the Assembly 
     				// (its categories and info)
 
+    MODERATED, 		// moderators can control what content remains in the assembly
+
+    COORDINATED_AND_MODERATED, 		// moderators can control what content remains in the assembly
+
     DEMOCRATIC		//  role of members can be suggested by other members and 
     				// then subject to a vote
 }

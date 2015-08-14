@@ -3,21 +3,32 @@ package models;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList; 
-
+import com.avaje.ebean.annotation.Formula;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.ResourceSpaceTypes;
 import enums.Visibility;
 
 @Entity
@@ -25,57 +36,53 @@ public class Campaign extends AppCivistBaseModel {
 
 	@Id
 	@GeneratedValue
+	@Column(name="campaign_id")
 	private Long campaignId;
 	private String title; // e.g., "PB for Vallejo 2015"
-	private Date startDate;
-	private Date endDate;
+	private String shortname;
+	private String goal;	
 	private Boolean active = true;
 	private String url;
-	private Visibility visibility;
+	private UUID uuid;
+	@Transient
+	private String uuidAsString;
+	@Enumerated(EnumType.STRING)
+	private Visibility visibility = Visibility.PUBLIC;
 
-	// Relationships
+	// Relationships	
+	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonIgnoreProperties({"uuid"})
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace resources;
 
-	@ManyToOne
-	@JsonBackReference
-	private Assembly assembly;
-
-	@OneToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private CampaignType type;
 
 	@OneToMany(mappedBy="campaign", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<CampaignPhase> phases = new ArrayList<CampaignPhase>();
-
-	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private List<Config> campaignConfigs = new ArrayList<Config>();
-
-	@OneToOne
-	private ResourcePad proposalTemplate;
 	
-
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, Campaign> find = new Finder<Long, Campaign>(
-			Long.class, Campaign.class);
+	public static Finder<Long, Campaign> find = new Finder<>(Campaign.class);
 
 	public Campaign() {
 		super();
+		this.uuid =  UUID.randomUUID(); 
+		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 	}
 
 	public Campaign(String title, Date startDate, Date endDate, Boolean active,
-			String url, Assembly assembly, CampaignType type) {
+			String url, CampaignType type) {
 		super();
 		this.title = title;
-		this.startDate = startDate;
-		this.endDate = endDate;
 		this.active = active;
 		this.url = url;
-		this.assembly = assembly;
 		this.type = type;
+		this.uuid =  UUID.randomUUID(); 
+		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
 		if (type != null && type.getDefaultPhases() != null) {
@@ -89,28 +96,37 @@ public class Campaign extends AppCivistBaseModel {
 	}
 
 	public Campaign(String title, Date startDate, Date endDate, Boolean active,
-			String url, Assembly assembly, CampaignType type,
+			String url, CampaignType type,
 			List<Config> configs) {
 		super();
 		this.title = title;
-		this.startDate = startDate;
-		this.endDate = endDate;
 		this.active = active;
 		this.url = url;
-		this.assembly = assembly;
 		this.type = type;
-		this.campaignConfigs = configs;
+
+		this.uuid =  UUID.randomUUID(); 
+		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultPhases() != null) {
-			List<PhaseDefinition> defaultPhases = type.getDefaultPhases();
-
-			for (PhaseDefinition phaseDefinition : defaultPhases) {
-				CampaignPhase phase = new CampaignPhase(this, phaseDefinition);
-				this.addPhase(phase);
-			}
-		}
+		if (type != null && type.getDefaultPhases() != null) this.populateDefaultPhases(type.getDefaultPhases());
 	}
+
+	public Campaign(String title, String shortname, Visibility visibility, CampaignType type,
+String uuidAsString, List<CampaignPhase> phases) {
+		super();
+		this.title = title;
+		this.shortname = shortname;
+		this.visibility = visibility;
+		this.type = type;
+		this.uuidAsString = uuidAsString;
+		this.uuid =  UUID.fromString(uuidAsString);
+		this.phases = phases;
+		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
+
+		// automatically populate the phases based on the campaign type
+		if (type != null && type.getDefaultPhases() != null) this.populateDefaultPhases(type.getDefaultPhases());
+	}
+	
 
 	/*
 	 * Getters and Setters
@@ -132,20 +148,20 @@ public class Campaign extends AppCivistBaseModel {
 		this.title = title;
 	}
 
-	public Date getStartDate() {
-		return startDate;
+	public String getShortname() {
+		return shortname;
 	}
 
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
+	public void setShortname(String shortname) {
+		this.shortname = shortname;
 	}
 
-	public Date getEndDate() {
-		return endDate;
+	public String getGoal() {
+		return goal;
 	}
 
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
+	public void setGoal(String goal) {
+		this.goal = goal;
 	}
 
 	public Boolean getActive() {
@@ -164,6 +180,31 @@ public class Campaign extends AppCivistBaseModel {
 		this.url = url;
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getUuidAsString() {
+		return uuid.toString();
+	}
+
+	public void setUuidAsString(String uuidAsString) {
+		this.uuidAsString = uuidAsString;
+		this.uuid = UUID.fromString(uuidAsString);
+	}
+
+	public ResourceSpace getResources() {
+		return resources;
+	}
+
+	public void setResources(ResourceSpace resources) {
+		this.resources = resources;
+	}
+
 	public Visibility getVisibility() {
 		return visibility;
 	}
@@ -172,12 +213,12 @@ public class Campaign extends AppCivistBaseModel {
 		this.visibility = visibility;
 	}
 
-	public Assembly getAssembly() {
-		return assembly;
+	public ResourceSpace getAssemblyResourceSet() {
+		return resources;
 	}
 
-	public void setAssembly(Assembly assembly) {
-		this.assembly = assembly;
+	public void setAssemblyResourceSet(ResourceSpace assembly) {
+		this.resources = assembly;
 	}
 
 	public CampaignType getType() {
@@ -196,22 +237,6 @@ public class Campaign extends AppCivistBaseModel {
 		this.phases = phases;
 	}
 
-	public List<Config> getCampaignConfigs() {
-		return campaignConfigs;
-	}
-
-	public void setCampaignConfigs(List<Config> campaignConfigs) {
-		this.campaignConfigs = campaignConfigs;
-	}
-	
-	public ResourcePad getProposalTemplate() {
-		return proposalTemplate;
-	}
-
-	public void setProposalTemplate(ResourcePad proposalTemplate) {
-		this.proposalTemplate = proposalTemplate;
-	}
-
 	public static List<Campaign> findAll() {
 		List<Campaign> campaigns = find.all();
 		return campaigns;
@@ -225,6 +250,22 @@ public class Campaign extends AppCivistBaseModel {
 		this.phases.add(phase);
 	}
 
+	private Date getStartDate() {
+		if (phases != null) {
+			CampaignPhase firstPhase = phases.get(0);
+			return firstPhase.getStartDate();
+		}
+		return null;
+	}
+
+	private Date getEndDate() {
+		if (phases != null) {
+			CampaignPhase lastPhase = phases.get(phases.size()-1);
+			return lastPhase.getStartDate();
+		}
+		return null;
+	}
+		
 	/*
 	 * Basic Data Operations
 	 */
@@ -256,4 +297,15 @@ public class Campaign extends AppCivistBaseModel {
 		c.refresh();
 		return c;
 	}
+	
+	
+	private void populateDefaultPhases(List<PhaseDefinition> defaultPhaseDefinitions) {
+		List<PhaseDefinition> defaultPhases = this.type.getDefaultPhases();
+		for (PhaseDefinition phaseDefinition : defaultPhases) {
+			CampaignPhase phase = new CampaignPhase(this, phaseDefinition);
+			this.addPhase(phase);
+		}
+	}
+
+	
 }

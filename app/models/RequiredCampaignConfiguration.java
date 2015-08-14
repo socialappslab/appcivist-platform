@@ -1,65 +1,71 @@
 package models;
 
+import java.util.UUID;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 public class RequiredCampaignConfiguration extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6546753271739021232L;
-	
-	
 	@Id
 	@GeneratedValue
-	private Long requiredPhaseConfigurationId; 
+	private Long requiredCampaignConfigurationId; 
+	private UUID uuid = UUID.randomUUID();
 	
 	@ManyToOne
-	private PhaseDefinition phaseDefinition;
+	@JsonBackReference
+	private CampaignType campaignType;
 	
 	@ManyToOne
-	private Config configuration;
+	private ConfigDefinition configDefinition;
 
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<Long, RequiredCampaignConfiguration> find = new Finder<Long, RequiredCampaignConfiguration>(
-			Long.class, RequiredCampaignConfiguration.class);
+	public static Finder<Long, RequiredCampaignConfiguration> find = new Finder<>(RequiredCampaignConfiguration.class);
 
 	
 	public RequiredCampaignConfiguration(Long requiredPhaseConfigurationId,
-			PhaseDefinition phaseDefinition, Config configuration) {
+			CampaignType campaignType, ConfigDefinition configDefinition) {
 		super();
-		this.requiredPhaseConfigurationId = requiredPhaseConfigurationId;
-		this.phaseDefinition = phaseDefinition;
-		this.configuration = configuration;
+		this.requiredCampaignConfigurationId = requiredPhaseConfigurationId;
+		this.campaignType = campaignType;
+		this.configDefinition = configDefinition;
 	}
 
 	public Long getRequiredPhaseConfigurationId() {
-		return requiredPhaseConfigurationId;
+		return requiredCampaignConfigurationId;
 	}
 
 	public void setRequiredPhaseConfigurationId(Long requiredPhaseConfigurationId) {
-		this.requiredPhaseConfigurationId = requiredPhaseConfigurationId;
+		this.requiredCampaignConfigurationId = requiredPhaseConfigurationId;
 	}
 
-	public PhaseDefinition getPhaseDefinition() {
-		return phaseDefinition;
+	public CampaignType getCampaignType() {
+		return campaignType;
 	}
 
-	public void setPhaseDefinition(PhaseDefinition phaseDefinition) {
-		this.phaseDefinition = phaseDefinition;
+	public void setCampaignType(CampaignType campaignType) {
+		this.campaignType = campaignType;
 	}
 
-	public Config getConfiguration() {
-		return configuration;
+	public ConfigDefinition getConfigDefinition() {
+		return configDefinition;
 	}
 
-	public void setConfiguration(Config configuration) {
-		this.configuration = configuration;
+	public void setConfigDefinition(ConfigDefinition configDefinition) {
+		this.configDefinition = configDefinition;
+	}
+
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
 	}	
 }

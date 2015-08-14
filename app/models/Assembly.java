@@ -1,157 +1,165 @@
 package models;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
+import models.location.Location;
 import play.data.validation.Constraints.MaxLength;
+import utils.GlobalData;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import models.location.Geo;
-import models.location.Location;
-import utils.GlobalData;
-import enums.ManagementTypes;
-import enums.Visibility;
+import enums.ResourceSpaceTypes;
 
 @Entity
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_EMPTY)
 public class Assembly extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
+	@Column(name="assembly_id")
 	private Long assemblyId;
 
 	/**
 	 * Properties specific to the Assembly
 	 */
 
-	private User creator;
-	@MaxLength(value=200)
-	private String name; 
-	@MaxLength(value=120)
-	private String shortname;
-	private String description;
-	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON;
-	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;
-	private String url; 
-	private Visibility visibiliy = Visibility.PUBLIC; // assemblies are public by default
-    private ManagementTypes managementType = ManagementTypes.COORDINATED; // assemblies are coordinated by default
-
-	// Relationships
-	@ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
-	@JsonIgnoreProperties({"categoryId"})
-	private List<Category> interestCategories = new ArrayList<Category>();
-
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private List<Campaign> campaigns = new ArrayList<Campaign>();
-
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private List<Config> assemblyConfigs = new ArrayList<Config>();
-
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JsonIgnoreProperties({"hashtagId"})
-	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
-
-	/**
-	 * Experimental properties (things we might want to have)
-	 */
-	// A location specification that is more precise, based on the GeoJSON
-	// standard
-	// Basically, with this location object, we can specify whether an entity is
-	// located in a specific geo point, route/line or area.
-	@OneToOne
+	private User creator; // user who has created the assembly?
+	@MaxLength(value = 200)
+	private String name; // name of the assembly
+	@MaxLength(value = 120)
+	private String shortname; // shortname to access the assembly by name
+								// (automatically generated from the name)
+	private String description; // what's the assembly about
+	private String url; // URL to the assembly, using its shortname
+	
+	@ManyToOne(cascade=CascadeType.ALL)
 	private Location location;
 
-	// If assemblies decide to collaborate on campaigns, then we might want to
-	// have
-	// the notion of "shared campaigns
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Campaign> sharedCampaigns = new ArrayList<Campaign>();
-	
+	@OneToOne(mappedBy = "assembly", cascade=CascadeType.ALL)
+	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
+	@JsonInclude(Include.NON_EMPTY)
+	private AssemblyProfile profile;
+
 	/**
-	 * The find property is an static property that facilitates database query creation
+	 * The assembly resource set is where all the campaign, configurations,
+	 * themes and general contributions are stored. Other resource spaces will
+	 * be added if needed under proper names
 	 */
-	public static Finder<Long, Assembly> find = new Finder<Long, Assembly>(
-			Long.class, Assembly.class);
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	//@JoinColumn(name="resource_uuid", unique= true, nullable=true, insertable=true, updatable=true, referencedColumnName="uuid")
+//	@JoinTable(
+//		      name="assembly_resource_space",
+//		      joinColumns=
+//		        @JoinColumn(name="assemblyId", referencedColumnName="assembly_id"),
+//		      inverseJoinColumns=
+//		        @JoinColumn(name="uuid", referencedColumnName="resource_space"))
+	@JsonIgnoreProperties({ "uuid" })
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace resources;
+
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	//@JoinColumn(name="forum_uuid", unique= true, nullable=true, insertable=true, updatable=true, referencedColumnName="uuid")
+//	@JoinTable(
+//		      name="assembly_forum",
+//				      joinColumns=
+//				        @JoinColumn(name="assemblyId", referencedColumnName="assembly_id"),
+//				      inverseJoinColumns=
+//				        @JoinColumn(name="uuid", referencedColumnName="resource_space"))
+	@JsonIgnoreProperties({ "uuid" })
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace forum;
+
+	private UUID uuid;
+	@Transient
+	private String uuidAsString;
+	
+	// TODO:
+	/**
+	 * The find property is an static property that facilitates database query
+	 * creation
+	 */
+	public static Finder<Long, Assembly> find = new Finder<>(Assembly.class);
 
 	/**
 	 * Empty constructor
 	 */
 	public Assembly() {
 		super();
+		this.uuid = UUID.randomUUID();
+		this.setDefaultValues();
 	}
 
 	/**
 	 * Basic assembly constructor (with the most basic elements of an assembly)
-	 * @param assemblyTitle
+	 * 
+	 * @param The
+	 *            name of the assembly
 	 * @param assemblyDescription
 	 * @param assemblyCity
 	 */
-	public Assembly(String assemblyTitle, String assemblyDescription,
+	public Assembly(String assemblyName, String assemblyDescription,
 			String assemblyCity) {
 		super();
-		this.name = assemblyTitle;
+		this.uuid = UUID.randomUUID();
+		this.name = assemblyName;
 		this.description = assemblyDescription;
 		this.location = new Location(null, assemblyCity, null, null, null);
+		this.setDefaultValues();
 	}
 
 	public Assembly(User creator, String name, String description, String city,
-			String state, String country, String icon, Visibility visibility) {
+			String state, String country, AssemblyProfile profile) {
 		super();
+		this.uuid = UUID.randomUUID();
 		this.creator = creator;
 		this.name = name;
 		this.description = description;
 		this.location = new Location(null, city, state, null, country);
-		this.icon = icon;
-		this.visibiliy = visibility;
+		this.profile = profile;
+		this.setDefaultValues();
 	}
 
-	/** 
-	 * Assembly constructor, including the basic lists of categories (interests), hashtags
-	 * and configuration key/value pairs
-	 * @param lang 
-	 * @param creator
-	 * @param name
-	 * @param description
-	 * @param city
-	 * @param state
-	 * @param country
-	 * @param icon
-	 * @param interests
-	 * @param hashtags
-	 * @param configurations
-	 */
-	public Assembly(String lang, User creator, String name, String description, String city,
-			String state, String country, String icon, 
-			Visibility visibility,
-			List<Category> interests,
-			List<Hashtag> hashtags,
-			List<Config> assemblyConfigs) {
-		super(lang);
+	public Assembly(User creator, String name, String shortname,
+			String description, Location location, UUID uuid,
+			AssemblyProfile profile, ResourceSpace resources) {
+		super();
+		this.uuid = uuid;
 		this.creator = creator;
 		this.name = name;
+		this.shortname = shortname;
 		this.description = description;
-		this.location = new Location(null, city, state, null, country);
-		this.icon = icon;
-		this.visibiliy = visibility;
-		this.interestCategories = interests;
-		this.hashtags = hashtags;
-		this.assemblyConfigs = assemblyConfigs;
+		this.location = location;
+		this.profile = profile;
+		this.resources = resources;
 	}
 	
+	public Assembly(User creator, String name, String shortname,
+			String description, Location location, String uuid,
+			AssemblyProfile profile, ResourceSpace resources) {
+		super();
+		this.uuidAsString = uuid;
+		this.uuid = UUID.fromString(this.uuidAsString);
+		this.creator = creator;
+		this.name = name;
+		this.shortname = shortname;
+		this.description = description;
+		this.location = location;
+		this.profile = profile;
+		this.resources = resources;
+	}
+
 	/*
 	 * Getters and Setters
 	 */
@@ -163,7 +171,7 @@ public class Assembly extends AppCivistBaseModel {
 	public void setAssemblyId(Long assemblyId) {
 		this.assemblyId = assemblyId;
 	}
-	
+
 	public User getCreator() {
 		return creator;
 	}
@@ -196,84 +204,12 @@ public class Assembly extends AppCivistBaseModel {
 		this.description = description;
 	}
 
-	public String getIcon() {
-		return icon;
-	}
-
-	public void setIcon(String icon) {
-		this.icon = icon;
-	}
-
-	public String getCover() {
-		return cover;
-	}
-
-	public void setCover(String cover) {
-		this.cover = cover;
-	}
-
 	public String getUrl() {
 		return url;
 	}
 
 	public void setUrl(String url) {
 		this.url = url;
-	}
-
-	public Visibility getVisibiliy() {
-		return visibiliy;
-	}
-
-	public void setVisibiliy(Visibility visibiliy) {
-		this.visibiliy = visibiliy;
-	}
-
-	public ManagementTypes getManagementType() {
-		return managementType;
-	}
-
-	public void setManagementType(ManagementTypes membershipRole) {
-		this.managementType = membershipRole;
-	}
-
-	public List<Category> getInterestCategories() {
-		return interestCategories;
-	}
-
-	public void setInterestCategories(List<Category> interests) {
-		this.interestCategories = interests;
-	}
-	
-	public void addInterestCategory(Category category) {
-        this.interestCategories.add(category);
-    }
- 
-    public void removeInterestCategory(Category category) {
-        this.interestCategories.remove(category);
-    }
-
-	public List<Campaign> getCampaigns() {
-		return campaigns;
-	}
-
-	public void setCampaigns(List<Campaign> campaigns) {
-		this.campaigns = campaigns;
-	}
-
-	public List<Config> getAssemblyConfigs() {
-		return assemblyConfigs;
-	}
-
-	public void setAssemblyConfigs(List<Config> assemblyConfigs) {
-		this.assemblyConfigs = assemblyConfigs;
-	}
-
-	public List<Hashtag> getHashtags() {
-		return hashtags;
-	}
-
-	public void setHashtags(List<Hashtag> hashtags) {
-		this.hashtags = hashtags;
 	}
 
 	public Location getLocation() {
@@ -284,23 +220,57 @@ public class Assembly extends AppCivistBaseModel {
 		this.location = location;
 	}
 
-	public List<Campaign> getSharedCampaigns() {
-		return sharedCampaigns;
+	public AssemblyProfile getProfile() {
+		return this.profile;
 	}
 
-	public void setSharedCampaigns(List<Campaign> sharedCampaigns) {
-		this.sharedCampaigns = sharedCampaigns;
+	public void setProfile(AssemblyProfile p) {
+		this.profile = p;
 	}
 
 	/*
 	 * Basic Data Queries
 	 */
-	
+
+	public ResourceSpace getResources() {
+		return resources;
+	}
+
+	public void setResources(ResourceSpace resources) {
+		this.resources = resources;
+	}
+
+	public ResourceSpace getForum() {
+		return forum;
+	}
+
+	public void setForum(ResourceSpace forum) {
+		this.forum = forum;
+	}
+
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getUuidAsString() {
+		return uuid.toString();
+	}
+
+	public void setUuidAsString(String uuidAsString) {
+		this.uuidAsString = uuidAsString;
+		this.uuid = UUID.fromString(uuidAsString);
+	}
+
 	/**
 	 * Returns all the assemblies in our system
+	 * 
 	 * @return
 	 */
-	public static List<Assembly>  findAll() {
+	public static List<Assembly> findAll() {
 		List<Assembly> assemblies = find.all();
 		return assemblies;
 	}
@@ -340,32 +310,24 @@ public class Assembly extends AppCivistBaseModel {
 		return a;
 	}
 
-	/*
-	 * Other Queries
-	 * 
-	 * TODO: 
-	 * [done] Create an assembly
-		Create an assembly with a name, a description and a assembly logo/icon. 
-		Provide initial configuration
-		Establish if the assembly is public/private
-		Establish if members can create new issues
-		Establish if members can join by request or only by invitation
-		Associate hashtags
-		Invite users to become members of the assembly
-		Configure an assembly
-			can members create new issues?
-			update hashtags
-		Publish the assembly (make assembly public to all users) or keep private
-			update proposal template
-		Export issues from one assembly into another 
-		Export proposals from one assembly into an issue of another assembly
-		Import issues from another assembly
-		Import proposals from another assembly into an issue [what working group will be assigned to them?]
-		Import proposal template from another assembly		
-		Subscribe to another assembly
-		Publish issues (if assembly is public, all issues are automatically published, i.e., public)	
-		Publish proposals (if assembly is public, all proposals are automatically published unless the working group unpublishes the proposal)
-	 */
-	
+	public void setDefaultValues() {
+		// 1. Set default shortname if not given
+		if (this.shortname == null) {
+			if (this.name != null) {
+				this.shortname = name.replaceAll("[^\\w]", "")
+						.replaceAll("[\\s]", "-").toLowerCase();
+			}
+		}
 
+		this.resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
+		this.forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
+	}
+
+	public static List<Assembly> findBySimilarName(String query) {
+		return find.where().like("name", "%" + query + "%").findList();
+	}
+
+	public static List<Assembly> findFeaturedAssemblies() {
+		return find.setMaxRows(6).orderBy("creation").findList();
+	}
 }

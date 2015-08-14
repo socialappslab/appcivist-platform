@@ -2,6 +2,7 @@ package models;
 
 import java.net.URL;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -24,6 +25,7 @@ public class Resource extends AppCivistBaseModel {
 	@GeneratedValue
 	@Column(name = "resource_id")
 	private Long resourceId;
+	private UUID uuid = UUID.randomUUID();
 	private URL url;
 	private User creator;
 	private Location location;
@@ -35,8 +37,7 @@ public class Resource extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, Resource> find = new Finder<Long, Resource>(
-			Long.class, Resource.class);
+	public static Finder<Long, Resource> find = new Finder<>(Resource.class);
 
 	public Resource(User creator, URL url) {
 		this.creator = creator;
@@ -54,6 +55,14 @@ public class Resource extends AppCivistBaseModel {
 		this.resourceId = resourceId;
 	}
 
+
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
 
 	public URL getUrl() {
 		return url;

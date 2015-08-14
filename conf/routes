@@ -45,7 +45,7 @@ GET       /api/user/verify/:token                           controllers.Users.ve
 
 #####################################################################################
 # Assemblies API
-GET       /api/assembly                                     controllers.Assemblies.findAssemblies()
+GET       /api/assembly                                     controllers.Assemblies.findAssemblies(query ?="", filter ?= "")
 POST      /api/assembly                                     controllers.Assemblies.createAssembly()
 GET       /api/assembly/:id                                 controllers.Assemblies.findAssembly(id: Long)
 PUT       /api/assembly/:id                                 controllers.Assemblies.findAssembly(id: Long)
@@ -87,10 +87,10 @@ DELETE    /api/role/:rid                                    controllers.Roles.de
 #####################################################################################
 # Config API
 GET       /api/assembly/:aid/config                         controllers.Configs.findConfigs(aid: Long)
-GET       /api/assembly/:aid/config/:cid                    controllers.Configs.findConfig(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/config/:cid                    controllers.Configs.updateConfig(aid: Long, cid: Long)
+GET       /api/assembly/:aid/config/:cid                    controllers.Configs.findConfig(aid: Long, cid: String)
+PUT       /api/assembly/:aid/config/:cid                    controllers.Configs.updateConfig(aid: Long, cid: String)
 POST      /api/assembly/:aid/config                         controllers.Configs.createConfig(aid: Long)
-DELETE    /api/assembly/:aid/config/:cid                    controllers.Configs.deleteConfig(aid: Long, cid: Long)
+DELETE    /api/assembly/:aid/config/:cid                    controllers.Configs.deleteConfig(aid: Long, cid: String)
 
 #####################################################################################
 # Campaign API

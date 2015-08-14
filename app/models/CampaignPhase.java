@@ -1,50 +1,65 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.avaje.ebean.annotation.Formula;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import enums.ResourceSpaceTypes;
 
 @Entity
 public class CampaignPhase extends AppCivistBaseModel {
 
 	@Id
 	@GeneratedValue
+	@Column(name="phase_id")
 	private Long phaseId;
 	private Date startDate;
 	private Date endDate;
-
+	private UUID uuid = UUID.randomUUID();
+	
 	@ManyToOne
 	@JsonBackReference
 	private Campaign campaign;
 
-	@OneToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	private PhaseDefinition definition;
 
-	@JsonIgnore
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="campaignPhase")
-	@JsonManagedReference
-	private List<Config> campaignPhaseConfigs = new ArrayList<Config>();
-
+	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonIgnoreProperties({"uuid"})
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace resources;
+	
+	// TODO: probably, each milestone must have its resource space of contributions
+	@OneToMany(cascade=CascadeType.ALL)
+	private List<CampaignPhaseMilestone> milestones = new ArrayList<CampaignPhaseMilestone>();
+	
 	private Boolean canOverlap = false;
 	
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<Long, CampaignPhase> find = new Finder<Long, CampaignPhase>(
-			Long.class, CampaignPhase.class);
+	public static Finder<Long, CampaignPhase> find = new Finder<>(CampaignPhase.class);
 
 	public CampaignPhase() {
 		super();
@@ -54,6 +69,7 @@ public class CampaignPhase extends AppCivistBaseModel {
 		super();
 		this.campaign = c;
 		this.definition = definition;
+		this.populateDefaultMilestones();
 	}
 	
 	public CampaignPhase(Date startDate, Date endDate, Campaign campaign,
@@ -63,7 +79,8 @@ public class CampaignPhase extends AppCivistBaseModel {
 		this.endDate = endDate;
 		this.campaign = campaign;
 		this.definition = definition;
-		this.campaignPhaseConfigs = campaignPhaseConfigs;
+		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN_PHASE);
+		this.uuid = UUID.randomUUID();
 	}
 
 	public CampaignPhase(Campaign c, PhaseDefinition definition,
@@ -71,7 +88,8 @@ public class CampaignPhase extends AppCivistBaseModel {
 		super();
 		this.campaign = c;
 		this.definition = definition;
-		this.campaignPhaseConfigs = configs;
+		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN_PHASE);
+		this.uuid = UUID.randomUUID();
 	}
 
 	public Long getPhaseId() {
@@ -98,6 +116,14 @@ public class CampaignPhase extends AppCivistBaseModel {
 		this.endDate = endDate;
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
 	public Campaign getCampaign() {
 		return campaign;
 	}
@@ -114,17 +140,42 @@ public class CampaignPhase extends AppCivistBaseModel {
 		this.definition = definition;
 	}
 
-	public List<Config> getCampaignPhaseConfigs() {
-		return campaignPhaseConfigs;
-	}
-
-	public void setCampaignPhaseConfigs(List<Config> campaignPhaseConfigs) {
-		this.campaignPhaseConfigs = campaignPhaseConfigs;
-	}
-
 	/*
 	 * Basic Data operations
 	 */
+	
+	public List<CampaignPhaseMilestone> getMilestones() {
+		return milestones;
+	}
+
+	public void setMilestones(List<CampaignPhaseMilestone> milestones) {
+		this.milestones = milestones;
+		if (milestones != null) {
+			CampaignPhaseMilestone firstMilestone = milestones.get(0);
+			CampaignPhaseMilestone lastMilestone = milestones.get(milestones.size()-1);
+			this.startDate = firstMilestone.getStart();
+			
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(lastMilestone.getStart());
+			cal.add(Calendar.DATE, lastMilestone.getDays()); // add 10 days
+			 
+			this.endDate = cal.getTime(); 
+		}
+	}	
+	
+	private void populateDefaultMilestones() {
+		if(this.definition!=null) {
+			List<RequiredCampaignPhaseMilestone> reqMilestones = this.definition.getRequiredMilestones();
+			for (RequiredCampaignPhaseMilestone requiredCampaignPhaseMilestone : reqMilestones) {
+				CampaignPhaseMilestone m = new CampaignPhaseMilestone(requiredCampaignPhaseMilestone);
+				this.addMilestone(m);
+			}
+		}
+	}
+
+	private void addMilestone(CampaignPhaseMilestone m) {
+		this.milestones.add(m);		
+	}
 	
 	public Boolean getCanOverlap() {
 		return canOverlap;

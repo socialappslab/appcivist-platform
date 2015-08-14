@@ -1,60 +1,62 @@
 package models;
 
 import java.util.List;
+import java.util.UUID;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import enums.ContributionConnectionStatuses;
+
+import com.avaje.ebean.annotation.Formula;
+
 import enums.ContributionConnectionTypes;
 
 @Entity
 public class ContributionConnection extends AppCivistBaseModel {
 
 	@Id
-	@GeneratedValue
-	private Long contributionConnectionId;
+	private UUID uuid;
 	private ContributionConnectionTypes type;
-	private ContributionConnectionStatuses status = ContributionConnectionStatuses.NEW; 
 	private User author;
+	private UUID sourceUuid;
+	private UUID targetUuid;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@Formula(select="select c from contribution c where c.uuid=${ta}.sourceUuid")
 	private Contribution sourceContribution;
 
-	@ManyToOne(cascade=CascadeType.ALL)
+	@Formula(select="select c from contribution c where c.uuid=${ta}.targetUuid")
 	private Contribution targetContribution;
 	
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, ContributionConnection> find = new Finder<Long, ContributionConnection>(
-			Long.class, ContributionConnection.class);
+	public static Finder<UUID, ContributionConnection> find = new Finder<>(ContributionConnection.class);
 
 	public ContributionConnection(ContributionConnectionTypes type,
 			Contribution source, Contribution target) {
 		super();
+		this.uuid = UUID.randomUUID();
 		this.type = type;
-		this.sourceContribution = source;
-		this.targetContribution = target;
+//		this.sourceContribution = source;
+//		this.targetContribution = target;
 	}
 
 	public ContributionConnection() {
 		super();
+		this.uuid = UUID.randomUUID();
 	}
 
 	/*
 	 * Getters and Setters
 	 */
 
-	public Long getContributionConnectionId() {
-		return contributionConnectionId;
+	public UUID getUuid() {
+		return uuid;
 	}
 
-	public void setContributionConnectionId(Long contributionConnectionId) {
-		this.contributionConnectionId = contributionConnectionId;
+	public void setUuid(UUID contributionConnectionId) {
+		this.uuid = contributionConnectionId;
 	}
 
 	public ContributionConnectionTypes getType() {
@@ -65,14 +67,6 @@ public class ContributionConnection extends AppCivistBaseModel {
 		this.type = type;
 	}
 
-	public ContributionConnectionStatuses getStatus() {
-		return status;
-	}
-
-	public void setStatus(ContributionConnectionStatuses status) {
-		this.status = status;
-	}
-
 	public User getAuthor() {
 		return author;
 	}
@@ -81,27 +75,45 @@ public class ContributionConnection extends AppCivistBaseModel {
 		this.author = creator;
 	}
 
-	public Contribution getSourceContribution() {
-		return sourceContribution;
+	public UUID getSourceUuid() {
+		return sourceUuid;
 	}
 
-	public void setSourceContribution(Contribution sourceContribution) {
-		this.sourceContribution = sourceContribution;
+	public void setSourceUuid(UUID sourceUuid) {
+		this.sourceUuid = sourceUuid;
 	}
 
-	public Contribution getTargetContribution() {
-		return targetContribution;
+	public UUID getTargetUuid() {
+		return targetUuid;
 	}
 
-	public void setTargetContribution(Contribution targetContribution) {
-		this.targetContribution = targetContribution;
+	public void setTargetUuid(UUID targetUuid) {
+		this.targetUuid = targetUuid;
 	}
+
+//	public Contribution getSourceContribution() {
+//		return sourceContribution;
+//	}
+
+//	public void setSourceContribution(Contribution sourceContribution) {
+//		this.sourceContribution = sourceContribution;
+//		this.sourceUuid = targetContribution.getUuid();
+//	}
+//
+//	public Contribution getTargetContribution() {
+//		return targetContribution;
+//	}
+//
+//	public void setTargetContribution(Contribution targetContribution) {
+//		this.targetContribution = targetContribution;
+//		this.targetUuid = targetContribution.getUuid();
+//	}
 	
 	/*
 	 * Basic Data operations
 	 */
 
-	public static ContributionConnection read(Long id) {
+	public static ContributionConnection read(UUID id) {
 		return find.ref(id);
 	}
 

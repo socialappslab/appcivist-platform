@@ -4,6 +4,7 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 
+import enums.ConfigTargets;
 import http.Headers;
 import models.Assembly;
 import models.Config;
@@ -20,6 +21,7 @@ import utils.GlobalData;
 import static play.data.Form.form;
 
 import java.util.List;
+import java.util.UUID;
 
 @With(Headers.class)
 public class Configs extends Controller {
@@ -28,24 +30,29 @@ public class Configs extends Controller {
 
 	@SubjectPresent
 	public static Result findConfigs(Long aid) {
-		List<Config> configs = Config.findByAssembly(aid);
+		Assembly a = Assembly.read(aid);
+		List<Config> configs = Config.findByAssembly(a.getUuid());
 		return ok(Json.toJson(configs));
 	}
 
 	@SubjectPresent
-	public static Result findConfig(Long aid, Long configId) {
-		Config config = Config.read(aid, configId);
+	public static Result findConfig(Long aid, String configUuid) {
+		UUID uuid = UUID.fromString(configUuid);
+		Assembly a = Assembly.read(aid);
+		Config config = Config.read(a.getUuid(), uuid);
 		return ok(Json.toJson(config));
 	}
 
 	@SubjectPresent
-	public static Result deleteConfig(Long aid, Long configId) {
-		Config.delete(aid, configId);
+	public static Result deleteConfig(Long aid, String configUuid) {
+		UUID uuid = UUID.fromString(configUuid);
+		Assembly a = Assembly.read(aid);
+		Config.delete(a.getUuid(), uuid);
 		return ok();
 	}
 
 	@SubjectPresent
-	public static Result updateConfig(Long aid, Long configId) {
+	public static Result updateConfig(Long aid, String configUuid) {
 		final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
 		if (newConfigForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -57,17 +64,18 @@ public class Configs extends Controller {
 			Config updatedConfig = newConfigForm.get();
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			// make sure the config that's being updated is id = configId
-			updatedConfig.setConfigId(configId);
+			updatedConfig.setUuid(UUID.fromString(configUuid));
 			updatedConfig = Config.update(updatedConfig);
+			
 			Logger.info("Updating config");
 			Logger.debug("=> " + newConfigForm.toString());
 
-			responseBody.setNewResourceId(updatedConfig.getConfigId());
+			responseBody.setNewResourceUuid(updatedConfig.getUuid());
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.CONFIG_CREATE_MSG_SUCCESS,
 					updatedConfig.getKey()));
 			responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH + "/"
-					+ updatedConfig.getConfigId());
+					+ updatedConfig.getUuid());
 			return ok(Json.toJson(responseBody));
 		}
 	}
@@ -101,17 +109,18 @@ public class Configs extends Controller {
 				Logger.info("Config already exists");
 			} else {
 				Assembly a = Assembly.read(aid);
-				newConfig.setAssembly(a);
+				newConfig.setTargetUuid(a.getUuid());
+				newConfig.setConfigTarget(ConfigTargets.ASSEMBLY);
 				Config.create(newConfig);
 				Logger.info("Creating new config");
 				Logger.debug("=> " + newConfigForm.toString());
 
-				responseBody.setNewResourceId(newConfig.getConfigId());
+				responseBody.setNewResourceUuid(newConfig.getUuid());
 				responseBody.setStatusMessage(Messages.get(
 						GlobalData.CONFIG_CREATE_MSG_SUCCESS,
 						newConfig.getKey()));
 				responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH
-						+ "/" + newConfig.getConfigId());
+						+ "/" + newConfig.getUuid());
 			}
 
 			return ok(Json.toJson(responseBody));

@@ -1,8 +1,13 @@
 package models.transfer;
 import java.io.Serializable;
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ResponseStatus;
 
+@JsonInclude(Include.NON_EMPTY)
 public class TransferResponseStatus implements Serializable {
 
 	/**
@@ -16,6 +21,7 @@ public class TransferResponseStatus implements Serializable {
 	private String errorTrace;
 	private Long newResourceId;
 	private String newResourceURL;
+	private UUID newResourceUuid;
 
 	public TransferResponseStatus(ResponseStatus responseStatus,
 			String statusMessage) {
@@ -41,6 +47,24 @@ public class TransferResponseStatus implements Serializable {
 		this.statusMessage = statusMessage;
 		this.errorTrace = errorTrace;
 		this.newResourceId=newId;
+	}
+
+	public TransferResponseStatus(ResponseStatus responseStatus,
+			String statusMessage, String errorTrace, UUID newUuid) {
+		this.responseStatus = responseStatus;
+		this.statusMessage = statusMessage;
+		this.errorTrace = errorTrace;
+		this.newResourceUuid=newUuid;
+	}
+	
+
+	public TransferResponseStatus(ResponseStatus responseStatus,
+			String statusMessage, String errorTrace, Long newId, UUID newUuid) {
+		this.responseStatus = responseStatus;
+		this.statusMessage = statusMessage;
+		this.errorTrace = errorTrace;
+		this.newResourceId = newId;
+		this.newResourceUuid=newUuid;
 	}
 
 	public TransferResponseStatus() {
@@ -92,6 +116,16 @@ public class TransferResponseStatus implements Serializable {
 	public void setNewResourceURL(String newResourceURL) {
 		this.newResourceURL = newResourceURL;
 	}
+
+	public UUID getNewResourceUuid() {
+		return newResourceUuid;
+	}
+
+
+	public void setNewResourceUuid(UUID newResourceUuid) {
+		this.newResourceUuid = newResourceUuid;
+	}
+
 
 	public static TransferResponseStatus badMessage(String msg, String error) {
 		return new TransferResponseStatus(ResponseStatus.BADREQUEST, msg, error);
