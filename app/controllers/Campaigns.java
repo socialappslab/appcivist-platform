@@ -105,7 +105,7 @@ public class Campaigns extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			Campaign newCampaign = newCampaignForm.get();
-			newCampaign.setAssembly(Assembly.read(aid));
+			newCampaign.setAssemblyResourceSet(Assembly.read(aid).getResources());
 			if (newCampaign.getLang() == null)
 				newCampaign.setLang(campaignCreator.getLanguage());
 			TransferResponseStatus responseBody = new TransferResponseStatus();

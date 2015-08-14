@@ -39,8 +39,7 @@ public class Meeting extends AppCivistBaseModel {
 		this.hangout = hangout;
 	}
 
-	public static Finder<Long, Meeting> find = new Finder<Long, Meeting>(
-			Long.class, Meeting.class);
+	public static Finder<Long, Meeting> find = new Finder<>(Meeting.class);
 
 	public static Meeting read(Long meetingId) {
 		return find.ref(meetingId);

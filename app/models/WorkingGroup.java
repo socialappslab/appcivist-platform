@@ -1,26 +1,35 @@
 package models;
 
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.annotation.Formula;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ManagementTypes;
+import enums.ResourceSpaceTypes;
 
 import javax.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 public class WorkingGroup extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
     private Long groupId;
+	private UUID uuid = UUID.randomUUID();
     private String name;
     private String text;
     private Boolean isPublic = true;
     private Boolean acceptRequests = true;
+    @Enumerated(EnumType.STRING)
     private ManagementTypes managementType = ManagementTypes.OPEN;
     private User creator;
+    
+    @Formula(select="select c from config c where c.targetUuid=${ta}.uuid")
+	private List<Config> workingGroupConfigs = new ArrayList<Config>();
+
     
     @ManyToMany(cascade=CascadeType.ALL)
 //    @JoinTable(name="working_groups_assembly",
@@ -32,15 +41,20 @@ public class WorkingGroup extends AppCivistBaseModel {
 //    })
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Resource> resources = new ArrayList<Resource>();
+    @OneToOne(fetch=FetchType.LAZY,cascade = CascadeType.ALL)
+    private ResourceSpace resources;
     
 	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
 	// TODO: all be connected in a P2P architecture. 
-	public static Finder<Long, WorkingGroup> find = new Finder<Long, WorkingGroup>(
-            Long.class, WorkingGroup.class);
+	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
 
-    public static WorkingGroup read(Long workingGroupId) {
+    public WorkingGroup() {
+		super();
+		this.uuid = UUID.randomUUID();
+		this.resources = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
+	}
+
+	public static WorkingGroup read(Long workingGroupId) {
         return find.ref(workingGroupId);
     }
 
@@ -89,7 +103,15 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.creator = creator;
     }
 
-    public Long getGroupId() {
+    public List<Config> getWorkingGroupConfigs() {
+		return workingGroupConfigs;
+	}
+
+	public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
+		this.workingGroupConfigs = workingGroupConfigs;
+	}
+
+	public Long getGroupId() {
         return groupId;
     }
 
@@ -97,7 +119,15 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.groupId = groupId;
     }
 
-    public String getName() {
+    public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getName() {
         return name;
     }
 
@@ -121,11 +151,11 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.assemblies = assemblies;
     }
 
-    public List<Resource> getResources() {
+    public ResourceSpace getResources() {
         return resources;
     }
 
-    public void setResources(List<Resource> resources) {
+    public void setResourceSpace(ResourceSpace resources) {
         this.resources = resources;
     }
 

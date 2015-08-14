@@ -31,8 +31,7 @@ public class LinkedAccount extends Model {
 	@Column(name="provider_key")
 	private String providerKey;
 
-	public static final Finder<Long, LinkedAccount> find = new Finder<Long, LinkedAccount>(
-			Long.class, LinkedAccount.class);
+	public static final Finder<Long, LinkedAccount> find = new Finder<>(LinkedAccount.class);
 
 	public static LinkedAccount findByProviderKey(final User user, String key) {
 		return find.where().

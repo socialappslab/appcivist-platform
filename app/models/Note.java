@@ -19,8 +19,7 @@ public class Note extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<Long, Note> find = new Finder<Long, Note>(
-			Long.class, Note.class);
+	public static Finder<Long, Note> find = new Finder<>(Note.class);
 
 	public Note(User creator,String title, String text) {
 		this.creator = creator;

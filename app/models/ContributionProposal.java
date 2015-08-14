@@ -21,8 +21,8 @@ public class ContributionProposal extends Contribution {
 	@ManyToMany
 	private WorkingGroup groupAuthor;
 	
-	@ManyToMany
-	private List<Contribution> inspirations = new ArrayList<Contribution>();
+//	@ManyToMany
+//	private List<Contribution> inspirations = new ArrayList<Contribution>();
 
 	public ResourcePad getProposalPad() {
 		return proposalPad;

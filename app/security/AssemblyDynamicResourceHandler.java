@@ -43,7 +43,7 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                             			   Long assemblyId = MyDynamicResourceHandler.getIdFromPath(path, meta);
                             			   Logger.debug("--> assemblyId= " + assemblyId);
                             			   Assembly a = Assembly.read(assemblyId);
-                            			   if (!a.getVisibiliy().equals(Visibility.PUBLIC)) {
+                            			   if (!a.getProfile().getVisibility().equals(Visibility.PUBLIC)) {
                             				   allowed[0] = true;
                             			   } else {
                             				   Membership m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);

@@ -43,8 +43,7 @@ public class CampaignPhaseContribution extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, CampaignPhaseContribution> find = new Finder<Long, CampaignPhaseContribution>(
-			Long.class, CampaignPhaseContribution.class);
+	public static Finder<Long, CampaignPhaseContribution> find = new Finder<>(CampaignPhaseContribution.class);
 
 	public CampaignPhaseContribution(CampaignPhaseContributionConnectionTypes type,
 			Contribution source, CampaignPhase target) {

@@ -2,6 +2,7 @@ package models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.*;
 
@@ -21,6 +22,7 @@ public class Contribution extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long contributionId;
+	private UUID uuid = UUID.randomUUID();
 	private String title;
 	private String text;
 	@Enumerated(EnumType.STRING)
@@ -34,7 +36,7 @@ public class Contribution extends AppCivistBaseModel {
 	private Assembly assembly;
 
 	@ManyToMany(cascade = CascadeType.ALL)
-	private List<Category> contributionCategories = new ArrayList<Category>();
+	private List<Theme> contributionCategories = new ArrayList<Theme>();
 
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Resource> attachments = new ArrayList<Resource>();
@@ -56,8 +58,7 @@ public class Contribution extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, Contribution> find = new Finder<Long, Contribution>(
-			Long.class, Contribution.class);
+	public static Finder<Long, Contribution> find = new Finder<>(Contribution.class);
 
 	public Contribution(User creator, String title, String text,
 			ContributionTypes type) {
@@ -91,6 +92,14 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setContributionId(Long contributionId) {
 		this.contributionId = contributionId;
+	}
+
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
 	}
 
 	public String getTitle() {
@@ -141,11 +150,11 @@ public class Contribution extends AppCivistBaseModel {
 		this.assembly = assembly;
 	}
 
-	public List<Category> getContributionCategories() {
+	public List<Theme> getContributionCategories() {
 		return contributionCategories;
 	}
 
-	public void setContributionCategories(List<Category> contributionCategories) {
+	public void setContributionCategories(List<Theme> contributionCategories) {
 		this.contributionCategories = contributionCategories;
 	}
 

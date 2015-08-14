@@ -46,9 +46,10 @@ public class Assemblies extends Controller {
 	 */
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Get list of assemblies", notes = "Get the full list of assemblies. Only availabe to ADMINS")
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
-	public static Result findAssemblies() {
-		List<Assembly> assemblies = Assembly.findAll();
-		return ok(Json.toJson(assemblies));
+	public static Result findAssemblies(String query, String filter) {
+		if (query!=null && !query.isEmpty()) return searchAssemblies(query);
+		else if (filter!=null && !filter.isEmpty()) return findAssembliesWithFilter(filter);
+		else return ok(Json.toJson(Assembly.findAll()));
 	}
 
 	/**
@@ -58,9 +59,24 @@ public class Assemblies extends Controller {
 	 */
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result searchAssemblies(String query) {
-		// check the user who is accepting the invitation is
-		// TODO
-		return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Not implemented yet", "")));
+		List<Assembly> a = Assembly.findBySimilarName(query);
+		if (a!=null) return ok(Json.toJson(a));
+		else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("No assemblies with a title resembling query", "")));
+	}
+	
+
+	/**
+	 * Return queries based on a query
+	 * 
+	 * @return models.AssemblyCollection
+	 */
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result findAssembliesWithFilter(String filter) {
+		if (filter.equals("featured")) {
+			List<Assembly> a = Assembly.findFeaturedAssemblies();
+			if (a!=null) return ok(Json.toJson(a));
+			else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("No featured assemblies", "")));
+		} else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Not implemented yet", "")));
 	}
 
 	@ApiOperation(response = Assembly.class, produces = "application/json", value = "Create a new assembly")
@@ -68,7 +84,7 @@ public class Assemblies extends Controller {
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result createAssembly() {
 		// 1. obtaining the user of the requestor
-		User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
+		User creator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
 
 		// 2. read the new group data from the body
@@ -77,19 +93,20 @@ public class Assemblies extends Controller {
 
 		if (newAssemblyForm.hasErrors()) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-					Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
-							newAssemblyForm.errorsAsJson()), newAssemblyForm
+					Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR, newAssemblyForm.errorsAsJson()), newAssemblyForm
 							.errorsAsJson().toString())));
 		} else {
 			Assembly newAssembly = newAssemblyForm.get();
 
 			// setting default values (TODO: maybe we should create a dedicated
 			// method for this in each model)
-			newAssembly.setCreator(groupCreator);
+			newAssembly.setCreator(creator);
 			if (newAssembly.getLang() == null)
-				newAssembly.setLang(groupCreator.getLanguage());
+				newAssembly.setLang(creator.getLanguage());
 			// TODO: check if assembly with same title exists
 			// if not add it
+			
+			newAssembly.setDefaultValues();
 			newAssembly.save();
 			// TODO: return URL of the new group
 			Logger.info("Creating assembly");

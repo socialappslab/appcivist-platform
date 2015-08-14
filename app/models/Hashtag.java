@@ -17,8 +17,7 @@ public class Hashtag extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, Hashtag> find = new Finder<Long, Hashtag>(
-			Long.class, Hashtag.class);
+	public static Finder<Long, Hashtag> find = new Finder<>(Hashtag.class);
 
 	public Hashtag(String hashtag) {
 		super();

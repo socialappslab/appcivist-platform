@@ -44,8 +44,7 @@ public class Message extends AppCivistBaseModel {
 		super();
 	}
 
-	public static Finder<Long, Message> find = new Finder<Long, Message>(
-			Long.class, Message.class);
+	public static Finder<Long, Message> find = new Finder<>(Message.class);
 
 	public static Message read(Long messageId) {
 		return find.ref(messageId);

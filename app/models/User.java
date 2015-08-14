@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -55,6 +56,7 @@ public class User extends Model implements Subject {
 	@Id
 	@GeneratedValue
 	private Long userId;
+	private UUID uuid = UUID.randomUUID();
 	private String email;
 	private String name;
 	private String username;
@@ -126,6 +128,16 @@ public class User extends Model implements Subject {
 
 	public void setUserId(Long userId) {
 		this.userId = userId;
+	}
+
+
+	public UUID getUuid() {
+		return uuid;
+	}
+
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
 	}
 
 
