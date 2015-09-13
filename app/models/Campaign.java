@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -307,5 +308,26 @@ String uuidAsString, List<CampaignPhase> phases) {
 		}
 	}
 
+	public static List<Campaign> extractOngoingCampaignsFromAssembly(Assembly a) {
+		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+		ResourceSpace resources = a.getResources();
+		List<Campaign> campaigns = null;
+		if (resources !=null) campaigns = resources.getCampaigns();
+		if (campaigns != null && !campaigns.isEmpty()) {
+			for (Campaign c : campaigns) {
+				List<CampaignPhase> phases = c.getPhases();
+				if (phases != null && !phases.isEmpty()) {
+					for (CampaignPhase p : phases) {
+						Calendar today = Calendar.getInstance();
+						if (p.getStartDate().before(today.getTime()) && p.getEndDate().after(today.getTime())) {
+							ongoingCampaigns.add(c);
+							break;
+						}
+					}
+				}
+			}
+		}
+		return ongoingCampaigns;
+	}
 	
 }

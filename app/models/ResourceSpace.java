@@ -9,30 +9,18 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.Size;
 
-import models.location.Location;
-import play.data.validation.Constraints.MaxLength;
-import utils.GlobalData;
-
-import com.avaje.ebean.annotation.Formula;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.CampaignTypesEnum;
-import enums.ManagementTypes;
 import enums.ResourceSpaceTypes;
-import enums.SupportedMembershipRegistration;
-import enums.Visibility;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)

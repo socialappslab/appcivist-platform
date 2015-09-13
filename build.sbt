@@ -33,7 +33,8 @@ libraryDependencies ++= Seq(
   "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),       
   "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc(),        
   "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
-  "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc()
+  "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc(), 
+  "net.sf.dozer" % "dozer" % "5.5.1" withSources() withJavadoc()
   // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
   //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
   // Another Implementation of swagger-play2
@@ -57,3 +58,8 @@ resolvers += Resolver.bintrayRepo("markusjura", "maven")
 // Enable Java Ebean
 lazy val myProject = (project in file("."))
   .enablePlugins(PlayJava, PlayEbean)
+  
+// Eclipse configurations
+EclipseKeys.preTasks := Seq(compile in Compile)
+EclipseKeys.projectFlavor := EclipseProjectFlavor.Java           // Java project. Don't expect Scala IDE
+EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)  // Use .class files instead of generated .scala files for views and routes 

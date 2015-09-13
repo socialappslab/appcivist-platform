@@ -3,6 +3,7 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
@@ -12,10 +13,10 @@ import javax.persistence.OneToOne;
 @DiscriminatorValue("PROPOSAL")
 public class ContributionProposal extends Contribution {
 	
-	@OneToOne
+	@OneToOne(cascade=CascadeType.ALL)
 	private ResourcePad proposalPad;
-	
-	@OneToOne
+
+	@OneToOne(cascade=CascadeType.ALL)
 	private ResourcePad proposalTemplate;
 	
 	@ManyToMany

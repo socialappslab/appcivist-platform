@@ -13,10 +13,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ConfigTargets;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class Config extends AppCivistBaseModel {
 
 	@Id

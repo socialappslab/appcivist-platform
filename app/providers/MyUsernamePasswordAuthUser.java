@@ -1,6 +1,5 @@
 package providers;
 
-import models.ResourcePicture;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
@@ -16,14 +15,17 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	 */
 	private static final long serialVersionUID = 1L;
 	private final String name;
-	private Long userId;
 	private String picture;
-
+	
+	/**
+	 * Added userId to send in response after login or signup
+	 */
+	private Long userId;
+	private String lang;
 
 	public MyUsernamePasswordAuthUser(final MySignup signup) {
 		super(signup.password, signup.email);
 		this.name = signup.name;
-		this.userId = signup.getUserId();
 	}
 	
 	/**
@@ -36,7 +38,6 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	public MyUsernamePasswordAuthUser(final String name, final Long userId, final String email, final String password) {
 		super(password, email);
 		this.name = name;
-		this.userId = userId;
 	}
 
 	/**
@@ -46,7 +47,6 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	public MyUsernamePasswordAuthUser(final String password) {
 		super(password, null);
 		this.name = null;
-		this.userId = null;
 	}
 	
 	/**
@@ -56,7 +56,6 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	public MyUsernamePasswordAuthUser(String name,Long userId, String picture, String email, String password) {
 		super(password, email);
 		this.name = null;
-		this.userId = null;
 		this.picture=picture;
 	}
 
@@ -65,16 +64,26 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 		return name;
 	}
 
-	public Long getUserId() {
-		return userId;
-	}
-	
-	public void setUserId (Long userId) {
-		this.userId=userId;
-	}
-
 	@Override
 	public String getPicture() {
 		return this.picture;
 	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getLang() {
+		return lang;
+	}
+
+	public void setLang(String lang) {
+		this.lang = lang;
+	}
+	
+	
 }

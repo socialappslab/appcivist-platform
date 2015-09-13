@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,7 +49,8 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 		HANDLERS.put("AssemblyMemberIsExpert", Optional.of(new AssemblyDynamicResourceHandler())); 
 		HANDLERS.put("CanInviteToGroup", Optional.of(new GroupDynamicResourceHandler())); 
 		HANDLERS.put("CanInviteToAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
-		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler())); 
+		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler()));
+		HANDLERS.put("OnlyMeAndAdmin", Optional.of(new OnlyMeAndAdminDynamicResourceHandler())); 
 	}
 
     @Override
@@ -91,6 +93,17 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
         String id = StringUtils.substringAfter(path, id_from);
         if(StringUtils.contains(id, "/"))
             id = id.split("/")[0];
-        return Long.parseLong(id);
+        try {
+			return Long.parseLong(id);
+		} catch (Exception e) {
+			return new Long(-1);
+		}
+    }
+    
+    public static UUID getUUIDFromPath(String path, String id_from){
+        String id = StringUtils.substringAfter(path, id_from);
+        if(StringUtils.contains(id, "/"))
+            id = id.split("/")[0];
+        return UUID.fromString(id);
     }
 }

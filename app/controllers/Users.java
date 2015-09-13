@@ -8,7 +8,6 @@ import java.util.List;
 
 import models.TokenAction;
 import models.TokenAction.Type;
-import models.Assembly;
 import models.User;
 import models.UserProfile;
 import models.transfer.TransferResponseStatus;
@@ -23,7 +22,6 @@ import play.mvc.Controller;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.With;
-import views.html.*;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
 import providers.MyUsernamePasswordAuthProvider.MyIdentity;
@@ -32,6 +30,12 @@ import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import views.html.ask_link;
+import views.html.ask_merge;
+import views.html.link;
+import views.html.password_change;
+import views.html.profile;
+import views.html.unverified;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
@@ -41,16 +45,16 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-import enums.MyRoles;
 import enums.ResponseStatus;
 
 @Api(value = "/user", description = "User Management operations, including authentication of users, "
-		+ "merging/linking of accounts reading information about users")
+		+ "merging/linking of accounts and reading information about user profiles")
 @With(Headers.class)
 public class Users extends Controller {
 	public static final Form<User> USER_FORM = form(User.class);
@@ -135,6 +139,10 @@ public class Users extends Controller {
 	 * Read-Only Endpoints
 	 ***************************************************************************************************/
 	@ApiOperation(httpMethod = "GET", response = User.class, responseContainer = "List", produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({		
+		@ApiImplicitParam(name="SESSION_KEY", value = "User's auth key", dataType="String", paramType="header")
+	})
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result getUsers() {
 		List<User> users = User.findAll();
@@ -142,7 +150,7 @@ public class Users extends Controller {
 	}
 
 	@ApiOperation(httpMethod = "GET", response = User.class, produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only availabe to ADMINS")
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result getUser(
 			@ApiParam(value = "ID of the user", required = true) Long id) {
 		Logger.info("Obtaining user with id = " + id);
@@ -151,21 +159,26 @@ public class Users extends Controller {
 	}
 
 	@ApiOperation(nickname="loggedin", httpMethod = "GET", response = User.class, produces = "application/json", value = "Get session user", notes = "Get session user currently loggedin, as available in HTTP session")
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result getCurrentUser(Long uid) {
 		final User localUser = getLocalUser(session());
-		if (localUser != null) 
+		if (localUser != null) {
+			Logger.debug("Loggedin user: "+Json.toJson(localUser));
 			return ok(Json.toJson(localUser));
+		}
 		else 
 			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
 					"No user logged in with session in this client", "")));
 	}
 	
-	@ApiOperation(httpMethod = "GET", response = User.class, produces = "application/json, text/html", value = "Get session user", notes = "Get session user currently loggedin, as available in HTTP session")
+	@ApiOperation(httpMethod = "GET", response = UserProfile.class, produces = "application/json, text/html", value = "Get session user's profile", notes = "Get session user currently loggedin, as available in HTTP session")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
-	@ApiImplicitParam(name="profile", value="profile", paramType="path")
+	@ApiImplicitParams({	
+		@ApiImplicitParam(name="uid", paramType="path", dataType = "Long", value = "User's numerical ID"),
+		//@ApiImplicitParam(name="profile", value="profile", paramType="path")
+	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result profile(@ApiParam(value="User id",required=true) Long uid) {
+	public static Result profile(Long uid) {
 		final UserProfile userProfile = UserProfile.readByUserId(uid);
 		if (userProfile!=null) {
 			if(request().getHeader("Content-Type") !=null && request().getHeader("Content-Type").equals("text/html"))
@@ -187,6 +200,9 @@ public class Users extends Controller {
 	 ***************************************************************************************************/	
 	@ApiOperation(nickname="signup", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new unverified user with an email and a password. Sends a verification email.")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({		
+		@ApiImplicitParam(name="signup_form", value = "User's signup form", dataType="providers.MySignup", paramType="body")
+	})
 	public static Result doSignup() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
@@ -203,10 +219,17 @@ public class Users extends Controller {
 			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
 	}
 	
+	public static Result login() {
+		return ok("Not implemented yet");
+	}
+	
 	@ApiOperation(nickname="login", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new session key for the requesting user, if the system authenticates him/her.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class),
 			@ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="login_form", value="User's Login Credentials", dataType="providers.MyLogin", paramType="body")
+	})
 	public static Result doLogin() throws InstantiationException,
 			IllegalAccessException {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -227,7 +250,11 @@ public class Users extends Controller {
 
 	}
 	
-	@ApiOperation(nickname="logout", httpMethod = "POST", response = User.class, produces = "text/html", value = "Expires the session key of the requesting user")
+	@ApiOperation(nickname="logout", httpMethod = "POST", response = User.class, consumes = "application/json", value = "Expires the session key of the requesting user")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="user_body", value="Logout body must be empty JSON", dataType="String", paramType="body")
+	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result doLogout() {
 		// TODO: modify to return HTML or JSON instead of redirect
@@ -240,8 +267,13 @@ public class Users extends Controller {
 	 ***************************************************************************************************/
 	@ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="uid", value="User's ID", dataType="Long", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="user", value="User's updated information", dataType="models.User", paramType = "body")
+	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result updateUser(@ApiParam(value="userId", required=true) Long uid) {
+	public static Result updateUser(Long uid) {
 		final Form<User> updatedUserForm = USER_FORM.bindFromRequest();
 		if (updatedUserForm.hasErrors())
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
@@ -263,8 +295,13 @@ public class Users extends Controller {
 	
 	@ApiOperation(nickname="profile", httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="uid", value="User's ID", dataType="Long", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="user", value="User's updated profile information", dataType="models.UserProfile", paramType = "body")
+	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result updateUserProfile(@ApiParam(value="userId", required=true) Long uid) {
+	public static Result updateUserProfile(Long uid) {
 		final Form<UserProfile> updatedUserForm = USER_PROFILE_FORM.bindFromRequest();
 		if (updatedUserForm.hasErrors())
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
@@ -291,14 +328,15 @@ public class Users extends Controller {
 	 ***************************************************************************************************/
 	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Soft delete of an user", notes = "Soft delete of an user by simply deactivating it")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result deleteUser(
-			@ApiParam(value = "ID of the user", required = true) Long id) {
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="uid", value="User's ID", dataType="Long", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header")
+	})
+	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result deleteUser(Long id) {
 		Logger.info("Obtaining user with id = " + id);
 		User u = User.findByUserId(id);
-
 		TransferResponseStatus responseBody = new TransferResponseStatus();
-
 		if (u != null) {
 			u.setActive(false);
 			u.update();
@@ -307,17 +345,19 @@ public class Users extends Controller {
 			responseBody.setNewResourceURL(routes.Users + "/" + u.getUserId());
 			return ok(Json.toJson(responseBody));
 		} else {
-			responseBody.setStatusMessage("User " + u.getUserId()
-					+ " not found");
+			responseBody.setStatusMessage("User "+id+ " not found");
 			return notFound(Json.toJson(responseBody));
 		}
 	}
 	
 	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a user", notes = "Delete a user, but not his/her contributions")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result deleteUserForce(
-			@ApiParam(value = "ID of the user", required = true) Long id) {
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="uid", value="User's ID", dataType="Long", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header")
+	})
+	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result deleteUserForce(Long id) {
 		Logger.info("Obtaining user with id = " + id);
 		User u = User.findByUserId(id);
 
@@ -341,8 +381,10 @@ public class Users extends Controller {
 	 ***************************************************************************************************/	
 	@ApiOperation(nickname="verify", httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify invitation token")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Error in Request", response = TransferResponseStatus.class) })
-	public static Result verify(
-			@ApiParam(name = "token", required = true) final String token) {
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="token", value="Verification token", dataType="String", paramType="path")
+	})
+	public static Result verify(final String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = tokenIsValid(token, Type.EMAIL_VERIFICATION);
 		if (ta == null) {
@@ -370,13 +412,19 @@ public class Users extends Controller {
 	 * TODO: document with swagger annotations
 	 */
 	@ApiOperation(nickname="link", httpMethod = "GET", produces = "text/html", value = "Returns a form to link external auth provider accounts")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+	})
 	public static Result link() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		return ok(link.render());
 	}
 	
-
-	
+	@ApiOperation(httpMethod = "GET", value = "Gets page for email verification")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result verifyEmail() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -400,6 +448,10 @@ public class Users extends Controller {
 	}
 	
 
+	@ApiOperation(httpMethod = "GET", produces = "application/html", value = "Gets form to update password")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+	})
 	@Restrict(@Group(GlobalData.USER_ROLE))
 	public static Result changePassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -411,7 +463,12 @@ public class Users extends Controller {
 			return ok(password_change.render(PASSWORD_CHANGE_FORM));
 		}
 	}
-
+	
+	@ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="password_change_form", value="User's updated password form", dataType="controllers.Users.PassworChange", paramType = "body")
+	})
 	@Restrict(@Group(GlobalData.USER_ROLE))
 	public static Result doChangePassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -523,7 +580,6 @@ public class Users extends Controller {
 		// TODO return ok(unverified.render());
 	}
 	
-
 
 	public static Result forgotPassword(final String email) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
@@ -705,4 +761,9 @@ public class Users extends Controller {
 		return redirect(routes.Application.index());
 	}
 
+	public static Result redirectAfterLogout() {
+		return ok("You have been logout!. If you were trying to login, there was a session already from your browser for another user.");
+	}
+
+	
 }

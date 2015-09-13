@@ -110,11 +110,7 @@ public class MyUsernamePasswordAuthProvider
 		@Required
 		@MinLength(5)
 		private String repeatPassword;
-
-		public String name;
-
-		private Long userId;
-		
+		public String name;		
 		private String lang; 
 
 		public String validate() {
@@ -138,14 +134,6 @@ public class MyUsernamePasswordAuthProvider
 
 		public void setRepeatPassword(String repeatPassword) {
 			this.repeatPassword = repeatPassword;
-		}
-
-		public Long getUserId() {
-			return userId;
-		}
-
-		public void setUserId(Long userId) {
-			this.userId = userId;
 		}
 		
 		public void setLang(String lang) {

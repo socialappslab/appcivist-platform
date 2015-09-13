@@ -26,6 +26,8 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
@@ -39,16 +41,33 @@ public class Assemblies extends Controller {
 	public static final Form<Assembly> ASSEMBLY_FORM = form(Assembly.class);
 	public static final Form<TransferMembership> MEMBERSHIP_FORM = form(TransferMembership.class);
 
+//	@ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
+//	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+//	@ApiImplicitParams({
+//		@ApiImplicitParam(name="uid", value="User's ID", dataType="Long", paramType="path"),
+//		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+//		@ApiImplicitParam(name="user", value="User's updated information", dataType="models.User", paramType = "body")
+//	})
+	
 	/**
 	 * Return the full list of assemblies
 	 * 
 	 * @return models.AssemblyCollection
 	 */
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Get list of assemblies", notes = "Get the full list of assemblies. Only availabe to ADMINS")
-	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of assemblies based on query", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { 
+			@ApiResponse(code = 404, message = "No assembly found", response=TransferResponseStatus.class) 
+		})
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="query", value="Search query string (keywords in title)", dataType="String", paramType="query"),
+		@ApiImplicitParam(name="filter", value="Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", dataType="String", paramType="query", allowableValues="featured,nearby,summary,random"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header")
+//		@ApiImplicitParam(name="user", value="User's updated information", dataType="models.User", paramType = "body")
+	})
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result findAssemblies(String query, String filter) {
 		if (query!=null && !query.isEmpty()) return searchAssemblies(query);
-		else if (filter!=null && !filter.isEmpty()) return findAssembliesWithFilter(filter);
+		else if (filter!=null && !filter.isEmpty()) return findAssembliesWithFilter(query,filter);
 		else return ok(Json.toJson(Assembly.findAll()));
 	}
 
@@ -59,6 +78,7 @@ public class Assemblies extends Controller {
 	 */
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result searchAssemblies(String query) {
+		// TODO: use also the filter 
 		List<Assembly> a = Assembly.findBySimilarName(query);
 		if (a!=null) return ok(Json.toJson(a));
 		else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("No assemblies with a title resembling query", "")));
@@ -71,12 +91,18 @@ public class Assemblies extends Controller {
 	 * @return models.AssemblyCollection
 	 */
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result findAssembliesWithFilter(String filter) {
+	public static Result findAssembliesWithFilter(String query, String filter) {
+		List<Assembly> a = null;
 		if (filter.equals("featured")) {
-			List<Assembly> a = Assembly.findFeaturedAssemblies();
-			if (a!=null) return ok(Json.toJson(a));
-			else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("No featured assemblies", "")));
-		} else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Not implemented yet", "")));
+			a = Assembly.findFeaturedAssemblies(query);
+		} else if (filter.equals("random")) { 
+			a = Assembly.findRandomAssemblies(query);
+//		TODO: } else if (filter.equals("nearby")) { return Assembly.findNearbyAssemblies();
+//		TODO: } else if (filter.equals("summary")) { return Assembly.findAssembliesSummaries(query);
+		} else return internalServerError(Json.toJson(TransferResponseStatus.noDataMessage("Filter '"+filter+"' is not supported yet", "")));
+		
+		if (a!=null) return ok(Json.toJson(a));
+		else return notFound(Json.toJson(TransferResponseStatus.noDataMessage("No "+filter+" assemblies", "")));
 	}
 
 	@ApiOperation(response = Assembly.class, produces = "application/json", value = "Create a new assembly")

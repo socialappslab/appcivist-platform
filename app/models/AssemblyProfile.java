@@ -34,7 +34,7 @@ public class AssemblyProfile extends AppCivistBaseModel {
 	@Enumerated(EnumType.STRING)
 	private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST; //   OPEN, INVITATION, REQUEST, INVITATION_AND_REQUEST
 	@Enumerated(EnumType.STRING)
-	private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are coordinated by default
+	private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are OPEN by default
 	private Visibility visibility = Visibility.PUBLIC;
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
