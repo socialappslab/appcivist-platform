@@ -29,7 +29,8 @@ public class Resource extends AppCivistBaseModel {
 	private URL url;
 	private User creator;
 	private Location location;
-	@Column(name = "RESOURCE_TYPE")
+	
+	@Column(name = "RESOURCE_TYPE", insertable = false, updatable = false)
 	@Enumerated(EnumType.STRING)
 	private ResourceTypes resourceType;
 
@@ -92,9 +93,9 @@ public class Resource extends AppCivistBaseModel {
 		return resourceType;
 	}
 
-	public void setResourceType(ResourceTypes resourceType) {
-		this.resourceType = resourceType;
-	}
+//	public void setResourceType(ResourceTypes resourceType) {
+//		this.resourceType = resourceType;
+//	}
 	
 	/*
 	 * Basic Data operations

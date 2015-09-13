@@ -22,8 +22,9 @@ GET       /public/*file                                     controllers.Assets.v
 GET       /api/doc                                          controllers.Application.swaggerDocs()
 GET       /api/doc.json                                     @pl.matisoft.swagger.ApiHelpController.getResources()
 GET       /api/doc.json/user                                @pl.matisoft.swagger.ApiHelpController.getResource(path="/user")
+GET       /api/doc.json/notification                                @pl.matisoft.swagger.ApiHelpController.getResource(path="/notification")
 GET       /api/doc.json/assembly                            @pl.matisoft.swagger.ApiHelpController.getResource(path="/assembly")
-GET       /api/doc.json/group                               @pl.matisoft.swagger.ApiHelpController.getResource(path="/group")
+#GET       /api/doc.json/group                               @pl.matisoft.swagger.ApiHelpControllreer.getResource(path="/group")
 GET       /api/doc.json/membership                          @pl.matisoft.swagger.ApiHelpController.getResource(path="/membership")
 GET       /api/doc.json/campaign                            @pl.matisoft.swagger.ApiHelpController.getResource(path="/campaign")
 
@@ -31,17 +32,23 @@ GET       /api/doc.json/campaign                            @pl.matisoft.swagger
 # User and Authentication Management based on play-authenticate
 # TODO: cleanup, remove what is not used and keep what's important
 GET       /api/user                                         controllers.Users.getUsers() 
-GET       /api/user/:uid                                    controllers.Users.getUser(uid: Long)
-GET       /api/user/:uid/loggedin                           controllers.Users.getCurrentUser(uid: Long)
-GET       /api/user/:uid/profile                            controllers.Users.profile(uid: Long)
-POST      /api/user/signup                                  controllers.Users.doSignup()
-POST      /api/user/login                                   controllers.Users.doLogin()
-POST      /api/user/logout                                  controllers.Users.doLogout()
-PUT       /api/user/:uid                                    controllers.Users.updateUser(uid: Long)
-PUT       /api/user/:uid/profile                            controllers.Users.updateUserProfile(uid: Long)
-DELETE    /api/user/:uid                                    controllers.Users.deleteUser(uid: Long)
-DELETE    /api/user/:uid/force                              controllers.Users.deleteUserForce(uid: Long)
-GET       /api/user/verify/:token                           controllers.Users.verify(token: String)
+GET       /api/user/:uid                                    controllers.Users.getUser(uid: Long) 
+GET       /api/user/:uid/loggedin                           controllers.Users.getCurrentUser(uid: Long) 
+GET       /api/user/:uid/profile                            controllers.Users.profile(uid: Long) 
+POST      /api/user/signup                                  controllers.Users.doSignup() 
+POST      /api/user/login                                   controllers.Users.doLogin() 
+POST      /api/user/logout                                  controllers.Users.doLogout() 
+PUT       /api/user/:uid                                    controllers.Users.updateUser(uid: Long) 
+PUT       /api/user/:uid/profile                            controllers.Users.updateUserProfile(uid: Long) 
+DELETE    /api/user/:uid                                    controllers.Users.deleteUser(uid: Long) 
+DELETE    /api/user/:uid/force                              controllers.Users.deleteUserForce(uid: Long) 
+GET       /api/user/verify/:token                           controllers.Users.verify(token: String) 
+GET       /api/user/:uuid/campaign                          controllers.Campaigns.campaignsByUser(uuid: java.util.UUID, filter ?="ongoing")
+
+#####################################################################################
+# Notification Server
+# TODO: integrate a proper message queue manager like rabbitmq
+GET       /api/notification/user/:uuid                      controllers.Notifications.userInbox(uuid: java.util.UUID)
 
 #####################################################################################
 # Assemblies API
@@ -68,6 +75,7 @@ GET       /api/assembly/:aid/group/:id/membership/:status   controllers.WorkingG
 # Invitations and Requests to join a Group and/or and Assembly
 # For invitations membership, let's create a random 64 char token
 POST      /api/membership                                   controllers.Memberships.createMembership()
+GET       /api/membership/user/:uuid                        controllers.Memberships.findMembershipByUser(uuid: java.util.UUID, type ?="")
 GET       /api/membership/:id                               controllers.Memberships.readMembership(id: Long)
 GET       /api/membership/:id/role                          controllers.Memberships.readMembershipRoles(id: Long)
 POST      /api/membership/:id/role                          controllers.Memberships.addMembershipRole(id: Long)
@@ -99,6 +107,8 @@ GET       /api/assembly/:aid/campaign/:cid                  controllers.Campaign
 PUT       /api/assembly/:aid/campaign/:cid                  controllers.Campaigns.updateCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign                       controllers.Campaigns.createCampaign(aid: Long)
 DELETE    /api/assembly/:aid/campaign/:cid                  controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
+GET       /api/assembly/:uuid/campaign                      controllers.Campaigns.campaignsByAssembly(uuid: java.util.UUID, filter?="ongoing")
+
 
 #####################################################################################
 # CampaignPhase API
@@ -164,6 +174,7 @@ GET       /api/user/link                                    controllers.Users.li
 GET       /api/user/unverified                              controllers.Users.unverified()
 GET       /api/user/exists                                  controllers.Users.exists()
 GET       /api/user/login/denied                            controllers.Users.onLoginUserNotFound()
+GET       /api/user/login                                   controllers.Users.login()
 GET       /api/user/authenticate/:provider/denied           controllers.Users.oAuthDenied(provider: String)
 GET       /api/user/authenticated                           controllers.Restricted.index()
 GET       /api/user/login/:id                               controllers.Restricted.id(id: String)
@@ -179,6 +190,7 @@ GET       /api/user/merge                                   controllers.Users.as
 POST      /api/user/merge                                   controllers.Users.doMerge
 GET       /api/user/password/forgot                         controllers.Users.forgotPassword(email: String ?= "")
 POST      /api/user/password/forgot                         controllers.Users.doForgotPassword
+GET       /api/user/logout/redirect                         controllers.Users.redirectAfterLogout
 
 #####################################################################################
 # Composition Engine endpoints 

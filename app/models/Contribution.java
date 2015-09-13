@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ContributionTypes;
-import models.location.Geo;
 import models.location.Location;
 
 @Entity
@@ -27,6 +26,8 @@ public class Contribution extends AppCivistBaseModel {
 	private String text;
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type = ContributionTypes.COMMENT;
+	
+	@ManyToOne(cascade=CascadeType.ALL)	
 	private User author;
 
 	@ManyToMany(cascade = CascadeType.ALL)
@@ -38,7 +39,7 @@ public class Contribution extends AppCivistBaseModel {
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Theme> contributionCategories = new ArrayList<Theme>();
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Resource> attachments = new ArrayList<Resource>();
 
 	@OneToOne
@@ -307,5 +308,9 @@ public class Contribution extends AppCivistBaseModel {
 
 	public static void deleteContributionByIdAndType(Long contributionId,ContributionTypes cType) {
 		find.where().eq("contributionId", contributionId).eq("type", cType).findUnique().delete();
+	}
+
+	public static List<Contribution> readByCreator(User u) {
+		return find.where().eq("author",u).findList();
 	}
 }

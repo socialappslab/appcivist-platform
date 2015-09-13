@@ -17,6 +17,7 @@ import models.location.Location;
 import play.data.validation.Constraints.MaxLength;
 import utils.GlobalData;
 
+import com.avaje.ebean.Query;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -324,10 +325,29 @@ public class Assembly extends AppCivistBaseModel {
 	}
 
 	public static List<Assembly> findBySimilarName(String query) {
-		return find.where().like("name", "%" + query + "%").findList();
+		return find.where().ilike("name", "%" + query + "%").findList();
 	}
 
-	public static List<Assembly> findFeaturedAssemblies() {
-		return find.setMaxRows(6).orderBy("creation").findList();
+	public static List<Assembly> findFeaturedAssemblies(String query) {
+		Query<Assembly> q = find.setMaxRows(6).orderBy("creation");
+		q = addQueryCriteria("name",query, q);
+		return q.findList();
+	}
+
+	public static List<Assembly> findRandomAssemblies(String query) {
+		Query<Assembly> q = find.setMaxRows(6).orderBy("random()");
+		q = addQueryCriteria("name",query, q);
+		return q.findList();
+	}
+
+	private static Query<Assembly> addQueryCriteria(String property,  String query, Query<Assembly> q) {
+		if(query!=null && !query.isEmpty()) {
+			q = q.where().ilike(property, "%"+query+"%").query();
+		}
+		return q;
+	}
+
+	public static Assembly readByUUID(UUID assemblyUUID) {
+		return find.where().eq("uuid", assemblyUUID).findUnique();
 	}
 }

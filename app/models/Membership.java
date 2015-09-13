@@ -17,14 +17,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
-import models.TokenAction.Type;
+import com.avaje.ebean.Query;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import models.TokenAction.Type;
 import enums.ManagementTypes;
 import enums.MembershipStatus;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "MEMBERSHIP_TYPE")
+@JsonInclude(Include.NON_EMPTY)
 public class Membership extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
@@ -240,6 +244,14 @@ public class Membership extends AppCivistBaseModel {
 		m.refresh();
 		// user.update(unverified.getId());
 		TokenAction.deleteByUser(targetUser, Type.MEMBERSHIP_INVITATION);
+	}
+
+	public static List<Membership> findByUser(User u, String membershipType) {
+		Query<Membership> q = find.where().eq("user",u).query();
+		if (!membershipType.isEmpty()) 
+			q = q.where().eq("membershipType", membershipType).query();
+		List<Membership> membs = q.findList();
+		return membs;
 	}
 
 }

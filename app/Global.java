@@ -10,14 +10,25 @@ import play.GlobalSettings;
 import play.Logger;
 import play.Play;
 import play.libs.Yaml;
+import play.mvc.Call;
 
 import com.avaje.ebean.Ebean;
+import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.PlayAuthenticate.Resolver;
+import com.feth.play.module.pa.exceptions.AccessDeniedException;
+import com.feth.play.module.pa.exceptions.AuthException;
+
+import controllers.routes;
 
 public class Global extends GlobalSettings {
 
 	public void onStart(Application app) {
 		Logger.info("Application has started");
+		initializeData(app);
+		initializeAuthenticationResolver();
+	}
 
+	private void initializeData(Application app) {
 		/**
 		 * If the project configuration ask for the database to be clean,
 		 * rebuild it (for dev purposes only)
@@ -31,10 +42,61 @@ public class Global extends GlobalSettings {
 			cleanDBAndRebuild(app);
 		}
 
-		List<String> dataLoadFiles = Play.application().configuration()
-				.getStringList("appcivist.db.initial-data.files");
+		Boolean doNotLoadData = Play.application().configuration()
+				.getBoolean("appcivist.db.noInitialData");
+		if(doNotLoadData==null || !doNotLoadData) {
+			List<String> dataLoadFiles = Play.application().configuration()
+					.getStringList("appcivist.db.initial-data.files");
+	
+			loadDataFiles(dataLoadFiles);
+		}
+	}
 
-		loadDataFiles(dataLoadFiles);
+	private void initializeAuthenticationResolver() {
+		Logger.info("Initialiazing PlayAuthenticate Resolver");
+		PlayAuthenticate.setResolver(new Resolver() {
+
+			public Call login() {
+				// Your login page
+				return routes.Users.login();
+			}
+
+			public Call afterAuth() {
+				// The user will be redirected to this page after authentication
+				// if no original URL was saved
+				return routes.Application.index();
+			}
+
+			public Call afterLogout() {
+				return routes.Application.index();
+			}
+
+			public Call auth(final String provider) {
+				// You can provide your own authentication implementation,
+				// however the default should be sufficient for most cases
+				return routes.AuthenticateLocal
+						.authenticate(provider);
+			}
+
+			public Call askMerge() {
+				return routes.Users.askMerge();
+			}
+
+			public Call askLink() {
+				return routes.Users.askLink();
+			}
+
+			public Call onException(final AuthException e) {
+				if (e instanceof AccessDeniedException) {
+					return routes.Users
+							.oAuthDenied(((AccessDeniedException) e)
+									.getProviderKey());
+				}
+
+				// more custom problem handling here...
+				return super.onException(e);
+			}
+		});
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -46,7 +108,7 @@ public class Global extends GlobalSettings {
 			for (String dataFile : dataLoadFiles) {
 				InitialDataConfig fileConfig = InitialDataConfig
 						.readByFileName(dataFile);
-
+				Logger.info("---> AppCivist '" + dataFile + "' loading registry: "+fileConfig);
 				if (fileConfig == null || !fileConfig.getLoaded()) {
 					try {
 						Logger.info("---> AppCivist: Loading '" + dataFile

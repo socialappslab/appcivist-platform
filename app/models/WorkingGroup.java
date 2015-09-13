@@ -1,19 +1,30 @@
 package models;
 
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.annotation.Formula;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import enums.ManagementTypes;
-import enums.ResourceSpaceTypes;
-
-import javax.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.annotation.Formula;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import enums.ManagementTypes;
+import enums.ResourceSpaceTypes;
+
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class WorkingGroup extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
@@ -27,10 +38,9 @@ public class WorkingGroup extends AppCivistBaseModel {
     private ManagementTypes managementType = ManagementTypes.OPEN;
     private User creator;
     
-    @Formula(select="select c from config c where c.targetUuid=${ta}.uuid")
-	private List<Config> workingGroupConfigs = new ArrayList<Config>();
-
-    
+//    @Formula(select="select c from config c where c.targetUuid=${ta}.uuid")
+//	private List<Config> workingGroupConfigs = new ArrayList<Config>();
+   
     @ManyToMany(cascade=CascadeType.ALL)
 //    @JoinTable(name="working_groups_assembly",
 //    	joinColumns = { 
@@ -41,7 +51,18 @@ public class WorkingGroup extends AppCivistBaseModel {
 //    })
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
-    @OneToOne(fetch=FetchType.LAZY,cascade = CascadeType.ALL)
+    /**
+ 	 * The group resource space contains its configurations, themes, associated campaigns
+ 	 */
+ 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+ 	//@JoinColumn(name="resource_uuid", unique= true, nullable=true, insertable=true, updatable=true, referencedColumnName="uuid")
+	// 	@JoinTable(
+	// 		      name="assembly_resource_space",
+	// 		      joinColumns=
+	// 		        @JoinColumn(name="assemblyId", referencedColumnName="assembly_id"),
+	// 		      inverseJoinColumns=
+	// 		        @JoinColumn(name="uuid", referencedColumnName="resource_space"))
+ 	@JsonIgnoreProperties({ "uuid" })
     private ResourceSpace resources;
     
 	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
@@ -103,13 +124,18 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.creator = creator;
     }
 
-    public List<Config> getWorkingGroupConfigs() {
-		return workingGroupConfigs;
-	}
-
-	public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
-		this.workingGroupConfigs = workingGroupConfigs;
-	}
+//    public List<Config> getWorkingGroupConfigs() {
+//    	if (workingGroupConfigs == null) {
+//    		workingGroupConfigs = new ArrayList<Config>();
+//    	}
+//		return workingGroupConfigs;
+//	}
+//
+//   public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
+//	   if (workingGroupConfigs == null)
+//		   workingGroupConfigs = new ArrayList<Config>();
+//	   this.workingGroupConfigs = workingGroupConfigs;
+//	}
 
 	public Long getGroupId() {
         return groupId;

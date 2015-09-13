@@ -1,11 +1,5 @@
 # Override default Play's validation messages
 
-# --- reminiscens
-reminiscens.birth.headline = Nacimiento
-reminiscens.birth.text = La historia de mi nacimiento
-reminiscens.context.person.title=Colección contextual para el recuerdo para
-reminiscens.context.person.subtitle=Colección de contenido histórico para la estimulación de los recuerdos para
-
 # --- Constraints
 constraint.required=Required
 constraint.min=Minimum value: {0}
@@ -150,7 +144,6 @@ playauthenticate.index.intro_2=This is a template for a simple application with 
 playauthenticate.index.intro_3=Check the main navigation above for simple page examples including supported authentication features.
 playauthenticate.index.heading=Heading
 playauthenticate.index.details=View details
-
 # play-authenticate - sample: Restricted page
 playauthenticate.restricted.secrets=Secrets, everywhere!
 
@@ -159,23 +152,33 @@ playauthenticate.restricted.secrets=Secrets, everywhere!
 ### --- AppCivist Messages
 groups.creation.success = El grupo de trabajo {0} ha sido creado con exito por {1}
 groups.creation.error = El grupo de trabajo no fue creado. Hubo un problema con la peticion: {0}
-
 assemblies.creation.success = La asamblea {0} ha sido creada con exito por {1}
 assemblies.creation.error = La asamblea no fue creada. Hubo un problema con la peticion: {0}
-
 roles.creation.success = El rol {0} ha sido creado con exito por {1}
 roles.creation.error = El rol no fue creado. Hubo un problema con la peticion: {0}
-
 config.creation.success = La config {0} ha sido creada con exito por {1}
 config.creation.error = La config no fue creada. Hubo un problema con la peticion: {0}
-
 campaign.creation.success = La campaña {0} ha sido creada con exito por {1}
 campaign.creation.error = La campaña no fue creada. Hubo un problema con la peticion: {0}
-
 campaign.phase.creation.success = La fase de campaña {0} ha sido creada con exito por {1}
 campaign.phase.creation.error = La fase de campaña no fue creada. Hubo un problema con la peticion: {0}
-
 membership.invitation.creation.success = La invitacion a la membresia {0} ha sido creada con exito por {1}
 membership.invitation.creation.error = La invitacion a la membresia no fue creada. Hubo un problema con la peticion: {0}
-
 membership.invitation.email.message = Invitacion para membresia
+membership.invitation.creation.unauthorized = La membresía no pudo ser creada porque el usuario no está autorizado
+membership.invitation.email.subject=Invitación para unirse a AppCivist {0}
+membership.request.email.subject=Petición para unirse a AppCivist {0}
+membership.confirmation.email.subject=Bienvenido a AppCivist {0}
+
+notification.title.assembly.update=Nuevo en Asamblea
+notification.title.group.update=Nuevo en Grupo de Trabajo
+notification.title.contribution.update=Nuevo en Contribución
+notification.title.campaign.update=Nuevo en Campaña
+notification.title.campaign.update.milestone=Próximos Plazos
+notification.title.message.new=Nuevo Mensaje
+notification.title.message.reply=Nueva Respuesta
+notification.title.message.new.group=Nuevo Mensaje para Grupo de Trabajo
+notification.title.message.reply.group=Nueva Respuesta para Grupo de Trabajo
+notification.title.message.new.assembly=Nuevo Mensaje para Asamblea
+notification.title.message.reply.assembly=Nueva Respuesta para Asamblea
+

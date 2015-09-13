@@ -5,11 +5,23 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
+import enums.AppcivistNotificationTypes;
+import enums.AppcivistResourceTypes;
 import http.Headers;
 import models.Assembly;
 import models.Campaign;
+import models.CampaignPhase;
+import models.CampaignPhaseMilestone;
+import models.Contribution;
+import models.Membership;
+import models.MembershipAssembly;
+import models.ResourceSpace;
 import models.User;
 import play.Logger;
 import play.data.Form;
@@ -22,8 +34,14 @@ import security.SecurityModelConstants;
 import utils.GlobalData;
 import models.transfer.TransferMembership;
 import models.transfer.TransferResponseStatus;
+import models.transfer.TransferUpdate;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static play.data.Form.form;
 
@@ -124,5 +142,88 @@ public class Campaigns extends Controller {
 			}
 			return ok(Json.toJson(responseBody));
 		}
+	}
+	
+	@ApiOperation(httpMethod = "GET", response = TransferUpdate.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		//@ApiImplicitParam(name="user", value="user", dataType="String", defaultValue="user", paramType = "path"),
+		@ApiImplicitParam(name="uuid", value="Assembly's UUID", dataType="java.util.UUID", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="filter", value="Filter value", dataType="String", paramType="query", allowableValues="ongoing,past,future,all", defaultValue="ongoing")
+	})
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result campaignsByAssembly(UUID uuid, String filter) {
+		if (filter==null || filter.equals("ongoing")) {
+			return ongoingCampaignsByAssembly(uuid);
+		} else if (filter.equals("past")) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
+		} else if (filter.equals("future")) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
+		} else {
+			Assembly a = Assembly.readByUUID(uuid);
+			List<Campaign> campaigns = a.getResources().getCampaigns();
+			if (!campaigns.isEmpty()) return ok(Json.toJson(campaigns));
+			else
+				return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
+		}
+	}
+	
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		//@ApiImplicitParam(name="user", value="user", dataType="String", defaultValue="user", paramType = "path"),
+		@ApiImplicitParam(name="uuid", value="User's UUID", dataType="java.util.UUID", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="filter", value="Filter value", dataType="String", paramType="query", allowableValues="ongoing,past,future,all", defaultValue="ongoing")
+	})
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result campaignsByUser(UUID uuid, String filter) {
+		if (filter==null || filter.equals("ongoing")) {
+			return ongoingCampaignsByUser(uuid);
+		} else if (filter.equals("past")) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
+		} else if (filter.equals("future")) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
+		} else {
+			User u = User.findByUUID(uuid);
+			List<Membership> assemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
+			List<Campaign> campaigns = new ArrayList<Campaign>();
+			for (Membership membership : assemblyMemberships) {
+				Assembly a = ((MembershipAssembly) membership).getAssembly();
+				campaigns.addAll(a.getResources().getCampaigns());
+			}
+			if (!campaigns.isEmpty()) return ok(Json.toJson(campaigns));
+			else
+				return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
+		}
+	}
+	
+	private static Result ongoingCampaignsByUser(UUID uuid) {
+		User u = User.findByUUID(uuid);
+		List<Membership> assemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
+		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+		
+		for (Membership membership : assemblyMemberships) {
+			Assembly a = ((MembershipAssembly) membership).getAssembly();
+			ongoingCampaigns.addAll(Campaign.extractOngoingCampaignsFromAssembly(a));
+		}
+		
+		if (!ongoingCampaigns.isEmpty()) return ok(Json.toJson(ongoingCampaigns));
+		else
+			return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
+	}
+
+	
+	
+	
+	
+	private static Result ongoingCampaignsByAssembly(UUID uuid) {
+		Assembly a = Assembly.readByUUID(uuid);
+		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+		ongoingCampaigns.addAll(Campaign.extractOngoingCampaignsFromAssembly(a));
+		if (!ongoingCampaigns.isEmpty()) return ok(Json.toJson(ongoingCampaigns));
+		else
+			return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
 	}
 }

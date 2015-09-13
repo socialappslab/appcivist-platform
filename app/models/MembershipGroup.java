@@ -7,10 +7,14 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import enums.MembershipStatus;
 
 @Entity
 @DiscriminatorValue("GROUP")
+@JsonInclude(Include.NON_EMPTY)
 public class MembershipGroup extends Membership {
 	
 	@ManyToOne(cascade=CascadeType.ALL)

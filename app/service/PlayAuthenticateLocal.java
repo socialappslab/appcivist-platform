@@ -14,6 +14,7 @@ import play.mvc.Http.Context;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import providers.MyUsernamePasswordAuthProvider;
+import scala.reflect.internal.Trees.Super;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.exceptions.AuthException;
@@ -32,7 +33,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 	public static final String PROVIDER_KEY = "pa.p.id";
 	public static final String EXPIRES_KEY = "pa.u.exp";
 	public static final String SESSION_KEY_STRING = "SESSION_KEY";
-//	public static final String ORIGINAL_URL = "pa.url.orig";
+	private static final String SETTING_KEY_AFTER_LOGOUT_FALLBACK = "afterLogoutFallback";
 //	public static final String SESSION_ID_KEY = "pa.s.id";
 	
 	/**
@@ -202,6 +203,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 						// if isLoggedIn is false here, then the local user has
 						// been deleted/deactivated
 						// so kill the session
+						// TODO: REDIRECT TO THE ORIGIN URL
 						logout(session);
 						oldUser = null;
 					}
@@ -312,7 +314,19 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			}
 		}
 	}
-
+	
+//	public static Result logout(final Session session) {
+//		session.remove(USER_KEY);
+//		session.remove(PROVIDER_KEY);
+//		session.remove(EXPIRES_KEY);
+//
+//		
+//		Call c = getResolver().afterLogout();
+//		String fallback = SETTING_KEY_AFTER_LOGOUT_FALLBACK;
+//		
+//		return Controller.redirect(getUrl(c,fallback));
+//	}
+	
 	private static AuthUser signupUser(final AuthUser u) throws AuthException {
 		final AuthUser loginUser;
 		final Object id = getUserService().save(u);
@@ -324,4 +338,28 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		loginUser = u;
 		return loginUser;
 	}
+	
+//	private static String getUrl(final Call c, final String settingFallback) {
+//		// this can be null if the user did not correctly define the
+//		// resolver
+//		if (c != null) {
+//			return c.url();
+//		} else {
+//			// go to root instead, but log this
+//			Logger.warn("Resolver did not contain information about where to go - redirecting to /");
+//			final String afterAuthFallback = getConfiguration().getString(
+//					settingFallback);
+//			if (afterAuthFallback != null && !afterAuthFallback.equals("")) {
+//				return afterAuthFallback;
+//			}
+//			// Not even the config setting was there or valid...meh
+//			Logger.error("Config setting '" + settingFallback
+//					+ "' was not present!");
+//			return "/";
+//		}
+//	}
+	
+	
+	
+	
 }

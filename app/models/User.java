@@ -13,6 +13,7 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
@@ -64,7 +65,7 @@ public class User extends Model implements Subject {
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
 	@Column(name = "profile_pic")
-	@OneToOne
+	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "resourceId", "location", "resourceType"})
 	private ResourcePicture profilePic;
 	@Column
@@ -108,8 +109,7 @@ public class User extends Model implements Subject {
 	/**
 	 * Static finder property
 	 */
-	public static Finder<Long, User> find = new Finder<Long, User>(
-			Long.class, User.class);
+	public static Finder<Long, User> find = new Finder<>(User.class);
 	
     public User(){
 		super();
@@ -501,7 +501,7 @@ public class User extends Model implements Subject {
 		 * 7. Generate the username
 		 * TODO add username to the signup form
 		 */
-		user.setUsername(models.User.generateUsername(user.getEmail()));
+		user.setUsername(user.getEmail());
 		
 		/*
 		 * 8. Set language of user
@@ -532,16 +532,17 @@ public class User extends Model implements Subject {
 	
 	private static ResourcePicture getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
 		String picture = getDefaultProfilePictureURL(user.getEmail());
-		String large = picture="&s=128";
-		String medium = picture="&s=64";
-		String thumbnail = picture="&s=32"; 
+		String large = picture+"&s=128";
+		String medium = picture+"&s=64";
+		String thumbnail = picture+"&s=32"; 
 		ResourcePicture profilePicResource = new ResourcePicture(user, new URL(picture), new URL(large), new URL(medium), new URL(thumbnail));
 		return profilePicResource;
 	}
 	public void addRole(SecurityRole role) {
 		this.roles.add(role);	
 	}
-
+	
+	@SuppressWarnings("unused")
 	private static String generateUsername(String email) {
 		String newUsername = email.split("@")[0];
 		int count = models.User.usernameExists(newUsername);
@@ -590,5 +591,10 @@ public class User extends Model implements Subject {
                        userName)
                    .findUnique();
     }
+
+
+	public static User findByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
+	}
 
 }
