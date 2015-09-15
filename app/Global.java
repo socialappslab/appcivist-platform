@@ -1,9 +1,11 @@
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import models.misc.InitialDataConfig;
 
 import org.apache.commons.io.FileUtils;
+import org.dozer.DozerBeanMapper;
 
 import play.Application;
 import play.GlobalSettings;
@@ -21,13 +23,13 @@ import com.feth.play.module.pa.exceptions.AuthException;
 import controllers.routes;
 
 public class Global extends GlobalSettings {
-
+	
 	public void onStart(Application app) {
 		Logger.info("Application has started");
 		initializeData(app);
-		initializeAuthenticationResolver();
+		initializeAuthenticationResolver();		
 	}
-
+	
 	private void initializeData(Application app) {
 		/**
 		 * If the project configuration ask for the database to be clean,

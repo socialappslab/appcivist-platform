@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://dozer.sourceforge.net http://dozer.sourceforge.net/schema/beanmapping.xsd">
+    <configuration>
+        <copy-by-references>
+            <copy-by-reference>java.util.UUID</copy-by-reference>
+        </copy-by-references>
+    </configuration>
+    <mapping>
+        <class-a>models.AssemblyProfile</class-a>
+        <class-b>models.transfer.AssemblyProfileTransfer</class-b>
+    </mapping>
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.AssemblySummaryTransfer</class-b>
+    </mapping>
+</mappings>

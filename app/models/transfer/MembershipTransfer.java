@@ -6,7 +6,7 @@ package models.transfer;
  * @author cdparra
  *
  */
-public class TransferMembership {
+public class MembershipTransfer {
 
     /**
      * The id of the user to be added to the group or assembly

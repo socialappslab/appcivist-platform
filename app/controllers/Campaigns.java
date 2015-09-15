@@ -1,5 +1,29 @@
 package controllers;
 
+import static play.data.Form.form;
+import http.Headers;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import models.Assembly;
+import models.Campaign;
+import models.Membership;
+import models.MembershipAssembly;
+import models.User;
+import models.transfer.MembershipTransfer;
+import models.transfer.TransferResponseStatus;
+import models.transfer.UpdateTransfer;
+import play.Logger;
+import play.data.Form;
+import play.i18n.Messages;
+import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.With;
+import security.SecurityModelConstants;
+import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
@@ -11,47 +35,13 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-import enums.AppcivistNotificationTypes;
-import enums.AppcivistResourceTypes;
-import http.Headers;
-import models.Assembly;
-import models.Campaign;
-import models.CampaignPhase;
-import models.CampaignPhaseMilestone;
-import models.Contribution;
-import models.Membership;
-import models.MembershipAssembly;
-import models.ResourceSpace;
-import models.User;
-import play.Logger;
-import play.data.Form;
-import play.i18n.Messages;
-import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.With;
-import security.SecurityModelConstants;
-import utils.GlobalData;
-import models.transfer.TransferMembership;
-import models.transfer.TransferResponseStatus;
-import models.transfer.TransferUpdate;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import static play.data.Form.form;
-
 @Api(value="/campaign",description="Campaign management endpoints")
 @With(Headers.class)
 public class Campaigns extends Controller {
 
 	public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
 
-	@ApiOperation(httpMethod = "GET", response = TransferMembership.class, produces = "application/json", value = "List campaigns of an Assembly")
+	@ApiOperation(httpMethod = "GET", response = MembershipTransfer.class, produces = "application/json", value = "List campaigns of an Assembly")
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findCampaigns(Long aid) {
 		List<Campaign> campaigns = Campaign.findByAssembly(aid);
@@ -144,7 +134,7 @@ public class Campaigns extends Controller {
 		}
 	}
 	
-	@ApiOperation(httpMethod = "GET", response = TransferUpdate.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiOperation(httpMethod = "GET", response = UpdateTransfer.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
 	@ApiImplicitParams({
 		//@ApiImplicitParam(name="user", value="user", dataType="String", defaultValue="user", paramType = "path"),

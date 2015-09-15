@@ -7,6 +7,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import com.avaje.ebean.Query;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import enums.MembershipStatus;
@@ -84,5 +85,15 @@ public class MembershipAssembly extends Membership {
 	public static Membership findByUserAndAssemblyIds(Long userId, Long assemblyId) {
 		return find.where().eq("user.userId", userId).eq("assembly.assemblyId", assemblyId)
 				.findUnique();		
+	}
+
+	public static List<Membership> findByAssemblyIdAndStatus(Long id,
+			String status) {
+		Query<Membership> q = find.where().eq("assembly.assemblyId", id)
+				.query();
+		if (status != null && !status.isEmpty()
+				&& !status.toUpperCase().equals("ALL"))
+			q = q.where().eq("status", status.toUpperCase()).query();
+		return q.findList();
 	}
 }

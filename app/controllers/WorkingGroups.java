@@ -7,7 +7,7 @@ import java.util.List;
 
 import models.User;
 import models.WorkingGroup;
-import models.transfer.TransferMembership;
+import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -35,14 +35,14 @@ import enums.ResponseStatus;
 public class WorkingGroups extends Controller {
 
 	public static final Form<WorkingGroup> WORKING_GROUP_FORM = form(WorkingGroup.class);
-	public static final Form<TransferMembership> MEMBERSHIP_FORM = form(TransferMembership.class);
+	public static final Form<MembershipTransfer> MEMBERSHIP_FORM = form(MembershipTransfer.class);
 
 	/**
 	 * Return the full list of assemblies
 	 * 
 	 * @return WorkingGroup list
 	 */
-	@ApiOperation(httpMethod = "GET", response = TransferMembership.class, produces = "application/json", value = "List groups of an assembly")
+	@ApiOperation(httpMethod = "GET", response = MembershipTransfer.class, produces = "application/json", value = "List groups of an assembly")
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findWorkingGroups(Long aid) {
 		List<WorkingGroup> workingGroups = WorkingGroup.findByAssembly(aid);
@@ -176,7 +176,7 @@ public class WorkingGroups extends Controller {
 
 		// 2. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<TransferMembership> newMembershipForm = MEMBERSHIP_FORM
+		final Form<MembershipTransfer> newMembershipForm = MEMBERSHIP_FORM
 				.bindFromRequest();
 
 		if (newMembershipForm.hasErrors()) {
@@ -186,7 +186,7 @@ public class WorkingGroups extends Controller {
 					newMembershipForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-			TransferMembership newMembership = newMembershipForm.get();
+			MembershipTransfer newMembership = newMembershipForm.get();
 			return Memberships.createMembership(requestor, "group", id, type,
 					newMembership.getUserId(), newMembership.getEmail(),
 					newMembership.getDefaultRoleId(),

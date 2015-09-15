@@ -11,7 +11,7 @@ import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
 
 @JsonInclude(Include.NON_EMPTY)
-public class TransferUpdate {
+public class UpdateTransfer {
 	private AppcivistNotificationTypes type;
 	private AppcivistResourceTypes resourceType;
 	private AppcivistResourceTypes containerType;
@@ -24,11 +24,11 @@ public class TransferUpdate {
 	private UUID containerUUID;
 	private Date date;
 	
-	public TransferUpdate() {
+	public UpdateTransfer() {
 		super();
 	}
 
-	public TransferUpdate(AppcivistNotificationTypes type,
+	public UpdateTransfer(AppcivistNotificationTypes type,
 			AppcivistResourceTypes resourceType, AppcivistResourceTypes containerType, String title, String text,
 			String resourceSummary, Long resourceId, UUID resourceUUID, Long containerId, UUID containerUUID,  
 			Date date) {
@@ -123,7 +123,7 @@ public class TransferUpdate {
 	
 
 
-	public static TransferUpdate getInstance(
+	public static UpdateTransfer getInstance(
 			final AppcivistNotificationTypes updateType, 
 			final AppcivistResourceTypes resourceType, 
 			final AppcivistResourceTypes containerType,
@@ -148,7 +148,7 @@ public class TransferUpdate {
 		else 
 			desc = Messages.get(userLang, descriptionMessageKey, resourceTitle, resourceText, containerName);
 		
-		return new TransferUpdate(
+		return new UpdateTransfer(
 				updateType, 
 				resourceType, 
 				containerType, 

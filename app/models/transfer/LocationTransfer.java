@@ -1,13 +1,18 @@
 package models.transfer;
 
-public class TransferLocation {
+public class LocationTransfer {
 	private String street; //: "1969 calle de alberto aguilera",
 	private String city; //: "la coruña",
 	private String state; //: "asturias",
 	private String zip; //: "56298"
 	private String country; //: "spain"
+	private String geoJson;
 	
-	public TransferLocation(String street, String city, String state,
+	public LocationTransfer() {
+		super();
+	}
+	
+	public LocationTransfer(String street, String city, String state,
 			String zip, String country) {
 		super();
 		this.street = street;
@@ -46,5 +51,13 @@ public class TransferLocation {
 	}
 	public void setCountry(String country) {
 		this.country = country;
+	}
+
+	public String getGeoJson() {
+		return geoJson;
+	}
+
+	public void setGeoJson(String geoJson) {
+		this.geoJson = geoJson;
 	}	
 }
