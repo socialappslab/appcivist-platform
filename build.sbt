@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
   "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc(),        
   "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
   "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc(), 
-  "net.sf.dozer" % "dozer" % "5.5.1" withSources() withJavadoc()
+  "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc()
   // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
   //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
   // Another Implementation of swagger-play2

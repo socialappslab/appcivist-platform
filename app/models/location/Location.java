@@ -20,6 +20,10 @@ public class Location {
 	@Column(columnDefinition="TEXT")
 	private String geoJson; 
 	
+	public Location() {
+		super();
+	}
+	
 	public Location(String street, String city, String state, String zip,
 			String country) {
 		super();

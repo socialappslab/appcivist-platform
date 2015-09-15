@@ -15,19 +15,27 @@ import javax.persistence.Transient;
 
 import models.location.Location;
 import play.data.validation.Constraints.MaxLength;
+import play.data.validation.Constraints.Required;
 import utils.GlobalData;
 
 import com.avaje.ebean.Query;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ResourceSpaceTypes;
 
+/**
+ * An assembly represents the central repository of a group of people interested
+ * in organizing themselves as a community for engaging in social activism 
+ * 
+ * @author cdparra
+ */
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 public class Assembly extends AppCivistBaseModel {
-	@Id
+	@Id 
 	@GeneratedValue
 	@Column(name="assembly_id")
 	private Long assemblyId;
@@ -36,22 +44,33 @@ public class Assembly extends AppCivistBaseModel {
 	 * Properties specific to the Assembly
 	 */
 
-	private User creator; // user who has created the assembly?
+	private UUID uuid;
+	@Transient
+	private String uuidAsString;
 	@MaxLength(value = 200)
+	@Required
 	private String name; // name of the assembly
 	@MaxLength(value = 120)
-	private String shortname; // shortname to access the assembly by name
-								// (automatically generated from the name)
+	/**
+	 * Shortname to access the assembly by name (automatically generated from the name)
+	 */
+	private String shortname; 
+	@Required
 	private String description; // what's the assembly about
 	private String url; // URL to the assembly, using its shortname
+	private Boolean listed = true;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
-	private Location location;
-
 	@OneToOne(mappedBy = "assembly", cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
 	@JsonInclude(Include.NON_EMPTY)
 	private AssemblyProfile profile;
+
+	@ManyToOne(cascade=CascadeType.ALL)
+	private Location location;
+	
+	@Transient
+	@JsonIgnore
+	private List<Theme> themes;
 
 	/**
 	 * The assembly resource set is where all the campaign, configurations,
@@ -59,32 +78,19 @@ public class Assembly extends AppCivistBaseModel {
 	 * be added if needed under proper names
 	 */
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	//@JoinColumn(name="resource_uuid", unique= true, nullable=true, insertable=true, updatable=true, referencedColumnName="uuid")
-//	@JoinTable(
-//		      name="assembly_resource_space",
-//		      joinColumns=
-//		        @JoinColumn(name="assemblyId", referencedColumnName="assembly_id"),
-//		      inverseJoinColumns=
-//		        @JoinColumn(name="uuid", referencedColumnName="resource_space"))
 	@JsonIgnoreProperties({ "uuid" })
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace resources;
 
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	//@JoinColumn(name="forum_uuid", unique= true, nullable=true, insertable=true, updatable=true, referencedColumnName="uuid")
-//	@JoinTable(
-//		      name="assembly_forum",
-//				      joinColumns=
-//				        @JoinColumn(name="assemblyId", referencedColumnName="assembly_id"),
-//				      inverseJoinColumns=
-//				        @JoinColumn(name="uuid", referencedColumnName="resource_space"))
 	@JsonIgnoreProperties({ "uuid" })
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum;
 
-	private UUID uuid;
-	@Transient
-	private String uuidAsString;
+	/**
+	 * The User who created the Assembly
+	 */
+	private User creator; // user who has created the assembly?
 	
 	// TODO:
 	/**
@@ -266,14 +272,30 @@ public class Assembly extends AppCivistBaseModel {
 		this.uuid = UUID.fromString(uuidAsString);
 	}
 
+	public Boolean getListed() {
+		return listed;
+	}
+
+	public void setListed(Boolean listed) {
+		this.listed = listed;
+	}
+
+	public List<Theme> getThemes() {
+		return resources != null ? resources.getThemes() : null;
+	}
+
+	public void setThemes(List<Theme> themes) {
+		this.themes = themes;
+	}
+
 	/**
 	 * Returns all the assemblies in our system
 	 * 
 	 * @return
 	 */
-	public static List<Assembly> findAll() {
-		List<Assembly> assemblies = find.all();
-		return assemblies;
+	public static List<Assembly> findAll(Boolean onlyListed) {
+		if(onlyListed) return find.where().eq("listed",true).findList();
+		else return find.all();
 	}
 
 	public static void create(Assembly assembly) {
@@ -324,19 +346,24 @@ public class Assembly extends AppCivistBaseModel {
 		this.forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
 	}
 
-	public static List<Assembly> findBySimilarName(String query) {
-		return find.where().ilike("name", "%" + query + "%").findList();
+	public static List<Assembly> findBySimilarName(String query, Boolean onlyListed) {
+		Query<Assembly> q = find.where().ilike("name", "%" + query + "%").query();
+		if(onlyListed) q = q.where().eq("listed",true).query();
+		return q.findList();
+		
 	}
 
-	public static List<Assembly> findFeaturedAssemblies(String query) {
+	public static List<Assembly> findFeaturedAssemblies(String query, Boolean onlyListed) {
 		Query<Assembly> q = find.setMaxRows(6).orderBy("creation");
 		q = addQueryCriteria("name",query, q);
+		if(onlyListed) q = q.where().eq("listed",true).query();
 		return q.findList();
 	}
 
-	public static List<Assembly> findRandomAssemblies(String query) {
+	public static List<Assembly> findRandomAssemblies(String query, Boolean onlyListed) {
 		Query<Assembly> q = find.setMaxRows(6).orderBy("random()");
 		q = addQueryCriteria("name",query, q);
+		if(onlyListed) q = q.where().eq("listed",true).query();
 		return q.findList();
 	}
 

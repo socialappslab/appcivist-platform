@@ -39,13 +39,22 @@
   - &cat7 !!models.Theme
     title: "Urban Infrastructure"
     description: "Better infrastructure for our urban environments"
+    
+##############################################################################################################################################################################################      
+# User Picture
+  - &upic1 !!models.ResourcePicture     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/77.jpg"
+  - &upic2 !!models.ResourcePicture     
+    urlLargeString: "https://randomuser.me/api/portraits/med/women/77.jpg"
+
 ##############################################################################################################################################################################################
 # Users (Testing Users)
   - &u1 !!models.User
     email:      bob@example.com
     name:       Bob
     username:   bob
-    language:   es
+    language:   es 
+    profilePic: *upic1
     roles:
       - *r1 # ADMIN
       - *r2 # USER
@@ -59,6 +68,7 @@
     name:       Jane
     username:   jane
     language:   en
+    profilePic: *upic2
     roles:
       - *r1 # ADMIN
       - *r2 # USER
@@ -164,6 +174,44 @@
       providerUserId: "$2a$10$D2Q9/rDIlzaDcwXhEviLfeZzUQBz.tu4ngRZdXmELO38ErdpD9XjC"
       providerKey: password
       user: *u10
+
+##############################################################################################################################################################################################      
+# User Profiles
+  - &up1 !!models.UserProfile     
+    user: *u1
+    uuidAsString: "12f9fa2a-407a-11e5-a151-feff819cdc9f"
+    name: "Bob"
+    middleName: "Jameson" 
+    lastName: "Sager"
+    birthdate: "1982-08-19"
+    address: "1145 Shattuck Avenue, Berkeley, CA"
+    
+  - &up2 !!models.UserProfile     
+    user: *u2
+    uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+    name: "Jane"
+    middleName: "" 
+    lastName: "Doe"
+    birthdate: "1972-08-19"
+    address: "432 Berkeley Way, Berkeley, CA"
+  
+#12f9fd18-407a-11e5-a151-feff819cdc9f
+#12f9fe3a-407a-11e5-a151-feff819cdc9f
+#12fa0038-407a-11e5-a151-feff819cdc9f
+#12fa0196-407a-11e5-a151-feff819cdc9f
+#12fa0326-407a-11e5-a151-feff819cdc9f
+#12fa0538-407a-11e5-a151-feff819cdc9f
+#12fa0894-407a-11e5-a151-feff819cdc9f
+#12fa0970-407a-11e5-a151-feff819cdc9f
+#12fa0a2e-407a-11e5-a151-feff819cdc9f
+#12fa0b14-407a-11e5-a151-feff819cdc9f
+#12fa0f56-407a-11e5-a151-feff819cdc9f
+#12fa106e-407a-11e5-a151-feff819cdc9f
+#12fa1136-407a-11e5-a151-feff819cdc9f
+#12fa1208-407a-11e5-a151-feff819cdc9f
+#12fa12d0-407a-11e5-a151-feff819cdc9f
+#12fa1398-407a-11e5-a151-feff819cdc9f
+
 ##############################################################################################################################################################################################
 # Configuration Definitions
   - &config1 !!models.ConfigDefinition

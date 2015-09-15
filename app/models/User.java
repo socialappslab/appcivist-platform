@@ -596,5 +596,4 @@ public class User extends Model implements Subject {
 	public static User findByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
-
 }

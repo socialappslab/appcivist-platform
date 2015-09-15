@@ -15,7 +15,7 @@ import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
 import models.WorkingGroup;
-import models.transfer.TransferMembership;
+import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -28,6 +28,7 @@ import play.mvc.With;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.Pair;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
@@ -40,6 +41,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
+import delegates.MembershipsDelegate;
 import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
 import enums.MyRoles;
@@ -49,7 +51,7 @@ import enums.ResponseStatus;
 @With(Headers.class)
 public class Memberships extends Controller {
 
-	public static final Form<TransferMembership> TRANSFER_MEMBERSHIP_FORM = form(TransferMembership.class);
+	public static final Form<MembershipTransfer> TRANSFER_MEMBERSHIP_FORM = form(MembershipTransfer.class);
 	public static final Form<Membership> MEMBERSHIP_FORM = form(Membership.class);
 	public static final Form<SecurityRole> ROLE_FORM = form(SecurityRole.class);
 
@@ -60,7 +62,7 @@ public class Memberships extends Controller {
 	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(
 			30 * 14 * 3600);
 
-	@ApiOperation(httpMethod = "POST", response = TransferMembership.class, produces = "application/json", value = "Create a membership within an Assembly or a Group")
+	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership within an Assembly or a Group")
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result createMembership() {
 		// 1. obtaining the user of the requestor
@@ -69,7 +71,7 @@ public class Memberships extends Controller {
 
 		// 2. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<TransferMembership> newMembershipForm = TRANSFER_MEMBERSHIP_FORM
+		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM
 				.bindFromRequest();
 
 		if (newMembershipForm.hasErrors()) {
@@ -79,7 +81,7 @@ public class Memberships extends Controller {
 					newMembershipForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-			TransferMembership newMembership = newMembershipForm.get();
+			MembershipTransfer newMembership = newMembershipForm.get();
 			String targetCollection = newMembership.getTargetCollection();
 			Long targetCollectionId = targetCollection.toUpperCase().equals("GROUP") ? newMembership.getGroupId() : newMembership.getAssemblyId();
 			
@@ -152,10 +154,10 @@ public class Memberships extends Controller {
 			Boolean authorization = false;
 			// what's the requestor membership in the group/assembly related to
 			// this membership
-			Membership requestorMembership = requestorMembership(requestor, m);
+			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
-				authorization = requestorIsCoordinator(requestor,
+				authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
 						requestorMembership);
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
@@ -230,10 +232,10 @@ public class Memberships extends Controller {
 			Boolean authorization = false;
 			// what's the requestor membership in the group/assembly related to
 			// this membership
-			Membership requestorMembership = requestorMembership(requestor, m);
+			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
-				authorization = requestorIsCoordinator(requestor,
+				authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
 						requestorMembership);
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
@@ -279,10 +281,10 @@ public class Memberships extends Controller {
 		Boolean authorization = false;
 		// what's the requestor membership in the group/assembly related to
 		// this membership
-		Membership requestorMembership = requestorMembership(requestor, m);
+		Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
 
 		if (requestorMembership != null) {
-			authorization = requestorIsCoordinator(requestor,
+			authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
 					requestorMembership);
 		} else {
 			return unauthorized(Json
@@ -312,7 +314,7 @@ public class Memberships extends Controller {
 				.getUser(session()));
 
 		// Any user can delete their own memberships
-		if (isMembershipOfRequestor(requestor, m)) {
+		if (MembershipsDelegate.isMembershipOfRequestor(requestor, m)) {
 			m.delete();
 			return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK,
 					"Membership was deleted")));
@@ -323,10 +325,10 @@ public class Memberships extends Controller {
 
 			// what's the requestor membership in the group/assembly related to
 			// this membership
-			Membership requestorMembership = requestorMembership(requestor, m);
+			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
-				authorization = requestorIsCoordinator(requestor,
+				authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
 						requestorMembership);
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
@@ -364,7 +366,6 @@ public class Memberships extends Controller {
 		Membership.verify(id, ta.targetUser);
 		return ok(Json.toJson(Messages.get("playauthenticate.verify_email.success", email)));		
 	}
-
 	
 	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response=TransferResponseStatus.class) })
@@ -402,14 +403,10 @@ public class Memberships extends Controller {
 			return ok(Json.toJson(memberships));
 		
 	}
-	
-	
-	
+
 	/****************************************************************************************************************
 	 * Not exposed methods
 	 ****************************************************************************************************************/
-
-
 	/**
 	 * General create membership method (not exposed in the API)
 	 * 
@@ -420,183 +417,20 @@ public class Memberships extends Controller {
 			String targetCollection, Long targetCollectionId, String membershipType,
 			Long userId, String userEmail, Long defaultRoleId, String defaultRoleName) {
 
-		// 4. Read the target Group or Assembly from the Database depending
-		// on the targetCollection
-		WorkingGroup targetWorkingGroup = targetCollection.toUpperCase().equals("GROUP") ? WorkingGroup
-				.read(targetCollectionId) : null;
-		Assembly targetAssembly = targetCollection.toUpperCase().equals("ASSEMBLY") ? Assembly
-				.read(targetCollectionId) : null;
-		// 5.Create the correct type of membership depending on the
-		// targetCollection
-		Membership m = targetCollection.toUpperCase().equals("GROUP") ? new MembershipGroup()
-				: new MembershipAssembly();
-
-		// 6. Make sure either the assembly or the group exists before
-		// proceeding
-		if (targetAssembly == null && targetWorkingGroup == null) {
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			responseBody.setStatusMessage(Messages.get(
-					GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-					" The target " + targetCollection + " " + targetCollectionId
-							+ " does not exist"));
-			return unauthorized(Json.toJson(responseBody));
-		}
-
-		// 7. Set who created the membership
-		m.setCreator(requestor);
-
-		// 8. check if user exists
-		User targetUser = User.findByUserId(userId);
-		if (targetUser == null) {
-			// TODO create membership invitations for not members
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			responseBody.setStatusMessage(Messages.get(
-					GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-					" The target user " + userId + " does not exist"));
-			return unauthorized(Json.toJson(responseBody));
-		}
-
-		m.setUser(targetUser);
-		m.setLang(targetUser.getLanguage());
-		m.setExpiration((System.currentTimeMillis() + 1000 * MEMBERSHIP_EXPIRATION_TIMEOUT));
-		if(targetCollection.toUpperCase().equals("GROUP")) {
-			((MembershipGroup) m).setWorkingGroup(targetWorkingGroup);
+		Pair<Membership, TransferResponseStatus> result = MembershipsDelegate
+				.createMembership(requestor, targetCollection,
+						targetCollectionId, membershipType, userId, userEmail,
+						defaultRoleId, defaultRoleName);
+		Membership m = result.getFirst();
+		TransferResponseStatus r = result.getSecond();
+		if(r==null) {
+			return ok(Json.toJson(m));
 		} else {
-			((MembershipAssembly) m).setAssembly(targetAssembly);
-		}
-		
-		// 9. check if the membership of this user on this assembly/group
-		// already exists
-		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? MembershipGroup.checkIfExists(m) :
-				MembershipAssembly.checkIfExists(m);
-
-		SecurityRole role = SecurityRole.findByName(MyRoles.MEMBER.toString());
-		if(defaultRoleId != null) 
-			role = SecurityRole.read(defaultRoleId);
-		else if (defaultRoleName != null)
-			m.getRoles().add(role);
-
-		m.getRoles().add(role);
-		
-		if (!mExists) {
-			// 8. Set the initial status of the new membership depending of
-			// the type
-			if (membershipType.toUpperCase().equals(
-					MembershipCreationTypes.INVITATION.toString())) {
-
-				Boolean userCanInvite = targetCollection.toUpperCase().equals("ASSEMBLY") ? Membership.userCanInvite(requestor, targetAssembly) : Membership.userCanInvite(requestor, targetWorkingGroup);
-				// 8. Check if the creator is authorized
-				if (userCanInvite) {
-					m.setStatus(MembershipStatus.INVITED);
-					Membership.create(m);
-					m.refresh();
-					MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
-							.getProvider();
-					provider.sendMembershipInvitationEmail(m, targetCollection);
-					return ok(Json.toJson(m));
-
-				} else {
-					return unauthorized("You don't have the role to send invitations");
-				}
-			} else if (membershipType.toUpperCase().equals(
-					MembershipCreationTypes.REQUEST.toString())) {
-				m.setStatus(MembershipStatus.REQUESTED);
-				Membership.create(m);
-				return ok(Json.toJson(m));
-			} else if (membershipType.toUpperCase().equals(
-					MembershipCreationTypes.SUBSCRIPTION.toString())) {
-				m.setStatus(MembershipStatus.FOLLOWING);
-				Membership.create(m);
-				return ok(Json.toJson(m));
-			} else {
-				TransferResponseStatus responseBody = new TransferResponseStatus();
-				responseBody
-						.setStatusMessage(Messages
-								.get(GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-										" The request did not specified whether it was an invitation or a join request"));
-				return unauthorized(Json.toJson(responseBody));
-			}
-		} else {
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			responseBody.setStatusMessage(Messages.get(
-					GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-					" The target user " + userId
-							+ " has already a membership to this "
-							+ targetCollection));
-			return unauthorized(Json.toJson(responseBody));
+			if(r.getResponseStatus().equals(ResponseStatus.BADREQUEST)) return badRequest(Json.toJson(r));
+			else if (r.getResponseStatus().equals(ResponseStatus.NODATA)) return notFound(Json.toJson(r));
+			else if (r.getResponseStatus().equals(ResponseStatus.NOTAVAILABLE)) return notFound(Json.toJson(r));
+			else if (r.getResponseStatus().equals(ResponseStatus.SERVERERROR)) return internalServerError(Json.toJson(r));
+			else return unauthorized(Json.toJson(r));
 		}
 	}
-
-	/**
-	 * Checks is the user who sent the request is actually the user of this membership
-	 * @param requestor
-	 * @param m
-	 * @return
-	 */
-	protected static Boolean isMembershipOfRequestor(User requestor,
-			Membership m) {
-		// is requestor the user in this membership?
-		if (requestor.equals(m.getUser())) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Get the Membership of the requestor, associated to the group or assembly of the membership whose 
-	 * ID is given on the request
-	 * @param requestor
-	 * @param m
-	 * @return
-	 */
-	protected static Membership requestorMembership(User requestor, Membership m) {
-		// is requestor the user in this membership?
-		if (requestor.equals(m.getUser())) {
-			return m;
-		} else {
-			if (m.getMembershipType().equals("ASSEMBLY")) {
-				return MembershipAssembly.findByUserAndAssembly(requestor,
-						((MembershipAssembly) m).getAssembly());
-			} else {
-				return MembershipGroup.findByUserAndGroup(requestor,
-						((MembershipGroup) m).getWorkingGroup());
-			}
-		}
-
-	}
-
-
-	/**
-	 * Check if the requestor is COORDINATOR of the group or assembly associated to the membership whose 
-	 * ID is given on the request
-	 * @param requestor
-	 * @param m
-	 * @return
-	 */
-	protected static Boolean requestorIsCoordinator(User requestor, Membership m) {
-		return requestorHasRole(requestor, m, MyRoles.COORDINATOR);
-	}
-
-	/**
-	 * Check if the requestor has a given Role in the group or assembly associated to the membership whose 
-	 * ID is given on the request
-	 * @param requestor
-	 * @param m
-	 * @return
-	 */
-	protected static Boolean requestorHasRole(User requestor, Membership m,
-			MyRoles role) {
-		if (m != null) {
-			for (SecurityRole requestorRole : m.getRoles()) {
-				if (requestorRole.getName().equals(role.toString())) {
-					return true;
-				}
-			}
-			return false;
-		} else {
-			return false;
-		}
-	}
-
 }

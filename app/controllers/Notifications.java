@@ -18,7 +18,7 @@ import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
 import models.transfer.TransferResponseStatus;
-import models.transfer.TransferUpdate;
+import models.transfer.UpdateTransfer;
 import be.objectify.deadbolt.java.actions.Dynamic;
 
 import com.wordnik.swagger.annotations.Api;
@@ -78,7 +78,7 @@ public class Notifications extends Controller {
 	 * @param userUUID
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", response = TransferUpdate.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiOperation(httpMethod = "GET", response = UpdateTransfer.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
 	@ApiImplicitParams({
 		//@ApiImplicitParam(name="user", value="user", dataType="String", defaultValue="user", paramType = "path"),
@@ -96,7 +96,7 @@ public class Notifications extends Controller {
 		// 3. Get a list of Contributions by the user 
 		List<Contribution> myContribs = Contribution.readByCreator(u);
 		
-		List<TransferUpdate> updates = new ArrayList<TransferUpdate>();
+		List<UpdateTransfer> updates = new ArrayList<UpdateTransfer>();
 
 		// 4. Process AssemblyMemberships to get
 		// 4.1. New Assembly Forum Posts
@@ -116,8 +116,8 @@ public class Notifications extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus("No updates")));
 	}
 
-	private static List<TransferUpdate> processMyAssemblies(User u,
-			List<TransferUpdate> updates, List<Membership> myAssemblyMemberships) {
+	private static List<UpdateTransfer> processMyAssemblies(User u,
+			List<UpdateTransfer> updates, List<Membership> myAssemblyMemberships) {
 
 		for (Membership membership : myAssemblyMemberships) {
 			Assembly a = ((MembershipAssembly) membership).getAssembly();
@@ -129,7 +129,7 @@ public class Notifications extends Controller {
 			if (aForum !=null) posts = aForum.getContributions();
 			if (posts != null && !posts.isEmpty()) latestForumPost = posts.get(posts.size()-1);
 			if (latestForumPost != null)
-				updates.add(TransferUpdate.getInstance(
+				updates.add(UpdateTransfer.getInstance(
 						AppcivistNotificationTypes.ASSEMBLY_UPDATE,
 						AppcivistResourceTypes.CONTRIBUTION_COMMENT,
 						AppcivistResourceTypes.ASSEMBLY,
@@ -164,7 +164,7 @@ public class Notifications extends Controller {
 										cal.add(Calendar.DATE, m.getDays());
 										SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 										if(cal.getTime().after(today.getTime())) 
-											updates.add(TransferUpdate.getInstance(
+											updates.add(UpdateTransfer.getInstance(
 													AppcivistNotificationTypes.UPCOMING_MILESTONE,
 													AppcivistResourceTypes.CAMPAIGN_PHASE,
 													AppcivistResourceTypes.CAMPAIGN,
@@ -194,8 +194,8 @@ public class Notifications extends Controller {
 		return updates;
 	}
 
-	private static List<TransferUpdate> processMyGroups(User u,
-			List<TransferUpdate> updates, List<Membership> myGroupMemberships) {
+	private static List<UpdateTransfer> processMyGroups(User u,
+			List<UpdateTransfer> updates, List<Membership> myGroupMemberships) {
 		for (Membership membership : myGroupMemberships) {
 			WorkingGroup g = membership.getTargetGroup();
 			
@@ -224,8 +224,8 @@ public class Notifications extends Controller {
 		return updates;
 	}
 
-	private static List<TransferUpdate> processMyContributions(User u,
-			List<TransferUpdate> updates, List<Contribution> myContribs) {
+	private static List<UpdateTransfer> processMyContributions(User u,
+			List<UpdateTransfer> updates, List<Contribution> myContribs) {
 		// TODO
 		
 		return null;
