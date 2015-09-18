@@ -1,11 +1,9 @@
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import models.misc.InitialDataConfig;
 
 import org.apache.commons.io.FileUtils;
-import org.dozer.DozerBeanMapper;
 
 import play.Application;
 import play.GlobalSettings;
@@ -19,10 +17,17 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
 import com.feth.play.module.pa.exceptions.AuthException;
+import com.wordnik.swagger.converter.ModelConverters;
+import utils.IgnoreConverter;
 
 import controllers.routes;
 
 public class Global extends GlobalSettings {
+
+	public void beforeStart(Application app) {
+	    Logger.info("Registering custom converter");
+	    ModelConverters.addConverter(new IgnoreConverter(), true);
+	}
 	
 	public void onStart(Application app) {
 		Logger.info("Application has started");
