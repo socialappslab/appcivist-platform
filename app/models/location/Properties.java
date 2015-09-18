@@ -1,7 +1,7 @@
 package models.location;
 
+import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import play.db.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -9,11 +9,6 @@ import javax.persistence.ManyToOne;
 
 @Entity
 public class Properties extends Model{
-
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 2121615831020172363L;
 	@Id
     private Long propertiesId;
     private String key;
