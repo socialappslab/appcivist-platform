@@ -215,49 +215,55 @@
 ##############################################################################################################################################################################################
 # Configuration Definitions
   - &config1 !!models.ConfigDefinition
-    key: "maximum.contributions"
+    key: "phase.maximum.contributions"
     valueType: Integer
     description: "Maximun number of Contributions to accept" 
     defaultValue: "100"
     configTarget: PHASE
   - &config2 !!models.ConfigDefinition
-    key: "enable.agreement.scores"
+    key: "phase.enable.agreement.scores"
     valueType: Boolean
     description: "Enable the system of automatic computation of agreement on contributions" 
     defaultValue: "false"
     configTarget: PHASE
   - &config3 !!models.ConfigDefinition
-    key: "enable.comments.threads"
+    key: "phase.enable.comments.threads"
     valueType: Boolean
     description: "Enable comments on comments" 
     defaultValue: "false" 
     configTarget: PHASE
   - &config4 !!models.ConfigDefinition
-    key: "maximum.level.thread"
+    key: "phase.maximum.level.thread"
     valueType: Integer
     description: "Maximum depth of threading in comments" 
     defaultValue: "false"
     configTarget: PHASE
   - &config5 !!models.ConfigDefinition
-    key: "voting.system"
+    key: "phase.voting.system"
     valueType: String
     description: "Unranked, Ranked, Range, Distributed" 
     configTarget: PHASE
   - &config6 !!models.ConfigDefinition
-    key: "pb.budget"
+    key: "campaign.pb.budget"
     valueType: Double
     description: "Amount to spend in winning projects" 
     configTarget: CAMPAIGN
   - &config7 !!models.ConfigDefinition
-    key: "pb.budget.currency"
+    key: "campaign.pb.budget.currency"
     valueType: String
     description: "Currency of the amount to spend in winning projects" 
     defaultValue: "USD"
     configTarget: CAMPAIGN
   - &config8 !!models.ConfigDefinition
-    key: "module.mobilizing.scheduling"
+    key: "assembly.face-to-face.scheduling"
     valueType: Boolean
     description: "Enable face-to-face scheduling" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+  - &config9 !!models.ConfigDefinition
+    key: "assembly.enable.messaging"
+    valueType: Boolean
+    description: "Enable messaging for the assembly" 
     defaultValue: "true"
     configTarget: ASSEMBLY
     
@@ -398,15 +404,17 @@
       - *c3
     configs: 
       - &ac1 !!models.Config
-        key: face.to.face.scheduling
+        key: assembly.face-to-face.scheduling
         value: true
         configTarget: ASSEMBLY
         targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+        definition: *config8
       - &ac2 !!models.Config
-        key: enabled.messaging
+        key: assembly.enable.messaging
         value: true
         configTarget: ASSEMBLY
         targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+        definition: *config9
   - &rs2 !!models.ResourceSpace
     type: ASSEMBLY
     themes: 
@@ -420,10 +428,11 @@
       - *c4
     configs:
       - &ac3 !!models.Config
-        key: enabled.messaging
+        key: assembly.enable.messaging
         value: false
         configTarget: ASSEMBLY
         targetUuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+        definition: *config9
   - &rs3 !!models.ResourceSpace
     type: ASSEMBLY
   - &rs4 !!models.ResourceSpace
