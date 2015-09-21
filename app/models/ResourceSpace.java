@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import enums.CampaignTypesEnum;
+import enums.CampaignTemplatesEnum;
 import enums.ResourceSpaceTypes;
 
 @Entity
@@ -32,17 +32,9 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private UUID parent;
 	
 	/**
-	 * Assembly configuration parameters, e.g., modules and functionalities of modules that are enabled, 
+	 * Configuration parameters, e.g., modules and functionalities of modules that are enabled, 
 	 * things specific to one assembly, future plugins or extended services configurations
 	 */
-//	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
-//	@JsonManagedReference
-//	@OneToMany(cascade = CascadeType.ALL)
-//	@JoinColumn(name = "target_uuid", referencedColumnName="uuid")
-//    @JoinTable(name="Config", 
-//            joinColumns=@JoinColumn(name="uuid", referencedColumnName="targetUuid"),
-//    		inverseJoinColumns=@JoinColumn(name="uuid"))
-//	@Formula(select="select c from config c where c.targetUuid=${ta}.uuid")
 	@ManyToMany(cascade = {CascadeType.ALL})
 	@JoinTable(name="resource_space_config")
 	private List<Config> configs = new ArrayList<Config>();
@@ -59,7 +51,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
 	@JoinTable(name="resource_space_campaign_phases")
-	private List<CampaignPhase> phases = new ArrayList<CampaignPhase>();
+	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
 	
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
 	@JoinTable(name="resource_space_working_groups")
@@ -77,7 +69,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
 	@JoinTable(name="resource_space_resource")
 	private List<Resource> resources = new ArrayList<Resource>();
-
+	
 	// TODO: add assembly members list here
 	
 	/**
@@ -188,12 +180,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.configs = configs;
 	}
 
-	public List<CampaignPhase> getPhases() {
-		return phases;
+	public List<ComponentInstance> getComponents() {
+		return components;
 	}
 
-	public void setPhases(List<CampaignPhase> phases) {
-		this.phases = phases;
+	public void setComponents(List<ComponentInstance> components) {
+		this.components = components;
 	}
 
 	public List<WorkingGroup> getWorkingGroups() {
@@ -219,7 +211,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public void setAssemblies(List<Assembly> assemblies) {
 		this.assemblies = assemblies;
 	}
-
+	
 	/*
 	 * Basic Data Queries
 	 */
@@ -250,15 +242,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public void setDefaultValues() {
 		Campaign defaultCampaign = new Campaign();
 		defaultCampaign.setTitle("Default Campaign");
-		defaultCampaign.setActive(true);
-		CampaignType ct = CampaignType.findByName(CampaignTypesEnum.PARTICIPATORY_BUDGETING);
+		CampaignTemplate ct = CampaignTemplate.findByName(CampaignTemplatesEnum.PARTICIPATORY_BUDGETING);
 		defaultCampaign.setType(ct);
 		
-		List<PhaseDefinition> phases = ct.getDefaultPhases();
+		List<Component> components = ct.getDefaultComponents();
 		
-		for (PhaseDefinition phaseDefinition : phases) {
-			CampaignPhase phase = new CampaignPhase(defaultCampaign, phaseDefinition);
-			defaultCampaign.getPhases().add(phase);
+		for (Component component : components) {
+			ComponentInstance componentInstance = new ComponentInstance(defaultCampaign, component);
+			defaultCampaign.getResources().getComponents().add(componentInstance);
 		}
 		this.getCampaigns().add(defaultCampaign);
 	}

@@ -19,8 +19,7 @@ public class SecurityRole extends Model implements Role {
 		this.name = name;
 	}
 
-	public static Finder<Long, SecurityRole> find = new Finder<Long, SecurityRole>(
-			Long.class, SecurityRole.class);
+	public static Finder<Long, SecurityRole> find = new Finder<Long, SecurityRole>(SecurityRole.class);
 
 	public static SecurityRole read(Long roleId) {
 		return find.ref(roleId);

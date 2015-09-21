@@ -1,7 +1,9 @@
 package models;
 
 import java.util.List;
+import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -17,17 +19,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ManagementTypes;
 import enums.SupportedMembershipRegistration;
-import enums.Visibility;
 
 @Entity
 @JsonInclude(Include.NON_NULL)
 public class AssemblyProfile extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
+//	@Column(name="assembly_profile_id")
 	private Long assemblyProfileId;
 	
-	@OneToOne
-	@JoinColumn(name="assembly", unique= true, nullable=true, insertable=true, updatable=true)
+	@OneToOne(mappedBy="profile")
+	@JoinColumn(name="assembly_profile_id", unique= true, nullable=true, insertable=true, updatable=true)
 	private Assembly assembly; 
 	
 	private String targetAudience;
@@ -35,7 +37,6 @@ public class AssemblyProfile extends AppCivistBaseModel {
 	private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST; //   OPEN, INVITATION, REQUEST, INVITATION_AND_REQUEST
 	@Enumerated(EnumType.STRING)
 	private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are OPEN by default
-	private Visibility visibility = Visibility.PUBLIC;
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
 	
@@ -114,14 +115,6 @@ public class AssemblyProfile extends AppCivistBaseModel {
 		this.managementType = managementType;
 	}
 
-	public Visibility getVisibility() {
-		return visibility;
-	}
-
-	public void setVisibility(Visibility visibility) {
-		this.visibility = visibility;
-	}
-
 	public String getIcon() {
 		return icon;
 	}
@@ -191,7 +184,10 @@ public class AssemblyProfile extends AppCivistBaseModel {
 	}
 
 	public static List<AssemblyProfile> findBySimilarAudience(String query) {
-		return find.where().like("targetAudience","%"+query+"%").findList();
+		return find.where().ilike("targetAudience","%"+query+"%").findList();
 	}
-	
+
+	public static AssemblyProfile findByAssembly(UUID uuid) {
+		return find.where().eq("assembly.uuid", uuid).findUnique();
+	}		
 }

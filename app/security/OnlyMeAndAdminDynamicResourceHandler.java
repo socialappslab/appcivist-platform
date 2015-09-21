@@ -4,11 +4,9 @@ import java.util.UUID;
 
 import models.User;
 import play.Logger;
-import play.libs.F;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.DeadboltAnalyzer;
-import be.objectify.deadbolt.core.models.Subject;
 import be.objectify.deadbolt.java.AbstractDynamicResourceHandler;
 import be.objectify.deadbolt.java.DeadboltHandler;
 

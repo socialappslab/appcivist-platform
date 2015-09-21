@@ -2,6 +2,7 @@ package models;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -9,28 +10,20 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
-import com.avaje.ebean.ExpressionList; 
-import com.avaje.ebean.annotation.Formula;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ResourceSpaceTypes;
-import enums.Visibility;
 
 @Entity
 public class Campaign extends AppCivistBaseModel {
@@ -42,13 +35,12 @@ public class Campaign extends AppCivistBaseModel {
 	private String title; // e.g., "PB for Vallejo 2015"
 	private String shortname;
 	private String goal;	
-	private Boolean active = true;
 	private String url;
-	private UUID uuid;
+	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
-	@Enumerated(EnumType.STRING)
-	private Visibility visibility = Visibility.PUBLIC;
+	// If the assembly is listed, is basic profile is reading accessible by all 
+	private Boolean listed = true;
 
 	// Relationships	
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
@@ -57,11 +49,7 @@ public class Campaign extends AppCivistBaseModel {
 	private ResourceSpace resources;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	private CampaignType type;
-
-	@OneToMany(mappedBy="campaign", cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private List<CampaignPhase> phases = new ArrayList<CampaignPhase>();
+	private CampaignTemplate template;
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -76,56 +64,53 @@ public class Campaign extends AppCivistBaseModel {
 	}
 
 	public Campaign(String title, Date startDate, Date endDate, Boolean active,
-			String url, CampaignType type) {
+			String url, CampaignTemplate template) {
 		super();
 		this.title = title;
-		this.active = active;
 		this.url = url;
-		this.type = type;
+		this.template = template;
 		this.uuid =  UUID.randomUUID(); 
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultPhases() != null) {
-			List<PhaseDefinition> defaultPhases = type.getDefaultPhases();
+		if (template != null && template.getDefaultComponents() != null) {
+			List<Component> defaultPhases = template.getDefaultComponents();
 
-			for (PhaseDefinition phaseDefinition : defaultPhases) {
-				CampaignPhase phase = new CampaignPhase(this, phaseDefinition);
-				this.addPhase(phase);
+			for (Component phaseDefinition : defaultPhases) {
+				ComponentInstance phase = new ComponentInstance(this, phaseDefinition);
+				this.addComponent(phase);
 			}
 		}
 	}
 
 	public Campaign(String title, Date startDate, Date endDate, Boolean active,
-			String url, CampaignType type,
+			String url, CampaignTemplate type,
 			List<Config> configs) {
 		super();
 		this.title = title;
-		this.active = active;
 		this.url = url;
-		this.type = type;
+		this.template = type;
 
 		this.uuid =  UUID.randomUUID(); 
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultPhases() != null) this.populateDefaultPhases(type.getDefaultPhases());
+		if (type != null && type.getDefaultComponents() != null) this.populateDefaultPhases(type.getDefaultComponents());
 	}
 
-	public Campaign(String title, String shortname, Visibility visibility, CampaignType type,
-String uuidAsString, List<CampaignPhase> phases) {
+	public Campaign(String title, String shortname, Boolean listed, CampaignTemplate type,
+String uuidAsString, List<ComponentInstance> phases) {
 		super();
 		this.title = title;
 		this.shortname = shortname;
-		this.visibility = visibility;
-		this.type = type;
+		this.listed = listed;
+		this.template = type;
 		this.uuidAsString = uuidAsString;
 		this.uuid =  UUID.fromString(uuidAsString);
-		this.phases = phases;
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultPhases() != null) this.populateDefaultPhases(type.getDefaultPhases());
+		if (type != null && type.getDefaultComponents() != null) this.populateDefaultPhases(type.getDefaultComponents());
 	}
 	
 
@@ -166,11 +151,7 @@ String uuidAsString, List<CampaignPhase> phases) {
 	}
 
 	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
+		return getStartDate().before(Calendar.getInstance().getTime()) || getStartDate().equals(Calendar.getInstance().getTime()) ;
 	}
 
 	public String getUrl() {
@@ -206,14 +187,6 @@ String uuidAsString, List<CampaignPhase> phases) {
 		this.resources = resources;
 	}
 
-	public Visibility getVisibility() {
-		return visibility;
-	}
-
-	public void setVisibility(Visibility visibility) {
-		this.visibility = visibility;
-	}
-
 	public ResourceSpace getAssemblyResourceSet() {
 		return resources;
 	}
@@ -222,20 +195,12 @@ String uuidAsString, List<CampaignPhase> phases) {
 		this.resources = assembly;
 	}
 
-	public CampaignType getType() {
-		return type;
+	public CampaignTemplate getType() {
+		return template;
 	}
 
-	public void setType(CampaignType type) {
-		this.type = type;
-	}
-
-	public List<CampaignPhase> getPhases() {
-		return phases;
-	}
-
-	public void setPhases(List<CampaignPhase> phases) {
-		this.phases = phases;
+	public void setType(CampaignTemplate type) {
+		this.template = type;
 	}
 
 	public static List<Campaign> findAll() {
@@ -247,26 +212,40 @@ String uuidAsString, List<CampaignPhase> phases) {
 		return find.where().eq("assembly.assemblyId", aid).findList();
 	}
 	
-	private void addPhase(CampaignPhase phase) {
-		this.phases.add(phase);
+	private void addComponent(ComponentInstance phase) {
+		this.resources.getComponents().add(phase);
 	}
 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date getStartDate() {
-		if (phases != null) {
-			CampaignPhase firstPhase = phases.get(0);
+		List<ComponentInstance> components = this.resources.getComponents(); 
+		if (components != null) {
+			Collections.sort(components,new ComponentInstance());
+			ComponentInstance firstPhase = components.get(0);
 			return firstPhase.getStartDate();
 		}
 		return null;
 	}
 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date getEndDate() {
-		if (phases != null) {
-			CampaignPhase lastPhase = phases.get(phases.size()-1);
-			return lastPhase.getStartDate();
+		List<ComponentInstance> components = this.resources.getComponents(); 
+		if (components != null) {
+			Collections.sort(components,new ComponentInstance());
+			ComponentInstance lastPhase = components.get(components.size()-1);
+			return lastPhase.getEndDate();
 		}
 		return null;
 	}
 		
+	public Boolean getListed() {
+		return listed;
+	}
+
+	public void setListed(Boolean listed) {
+		this.listed = listed;
+	}
+
 	/*
 	 * Basic Data Operations
 	 */
@@ -300,11 +279,11 @@ String uuidAsString, List<CampaignPhase> phases) {
 	}
 	
 	
-	private void populateDefaultPhases(List<PhaseDefinition> defaultPhaseDefinitions) {
-		List<PhaseDefinition> defaultPhases = this.type.getDefaultPhases();
-		for (PhaseDefinition phaseDefinition : defaultPhases) {
-			CampaignPhase phase = new CampaignPhase(this, phaseDefinition);
-			this.addPhase(phase);
+	private void populateDefaultPhases(List<Component> defaultPhaseDefinitions) {
+		List<Component> defaultPhases = this.template.getDefaultComponents();
+		for (Component phaseDefinition : defaultPhases) {
+			ComponentInstance phase = new ComponentInstance(this, phaseDefinition);
+			this.addComponent(phase);
 		}
 	}
 
@@ -315,9 +294,9 @@ String uuidAsString, List<CampaignPhase> phases) {
 		if (resources !=null) campaigns = resources.getCampaigns();
 		if (campaigns != null && !campaigns.isEmpty()) {
 			for (Campaign c : campaigns) {
-				List<CampaignPhase> phases = c.getPhases();
+				List<ComponentInstance> phases = c.getResources().getComponents();
 				if (phases != null && !phases.isEmpty()) {
-					for (CampaignPhase p : phases) {
+					for (ComponentInstance p : phases) {
 						Calendar today = Calendar.getInstance();
 						if (p.getStartDate().before(today.getTime()) && p.getEndDate().after(today.getTime())) {
 							ongoingCampaigns.add(c);

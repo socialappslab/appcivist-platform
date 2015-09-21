@@ -6,7 +6,7 @@ import com.feth.play.module.pa.PlayAuthenticate;
 
 import http.Headers;
 import models.Campaign;
-import models.CampaignPhase;
+import models.ComponentInstance;
 import models.User;
 import play.Logger;
 import play.data.Form;
@@ -23,36 +23,36 @@ import java.util.List;
 import static play.data.Form.form;
 
 @With(Headers.class)
-public class CampaignPhases extends Controller {
+public class CampaignComponents extends Controller {
 
-	public static final Form<CampaignPhase> CAMPAIGN_PHASE_FORM = form(CampaignPhase.class);
+	public static final Form<ComponentInstance> CAMPAIGN_COMPONENT_FORM = form(ComponentInstance.class);
 
 	@SubjectPresent
-	public static Result findCampaignPhases(Long aid, Long campaignId) {
-		List<CampaignPhase> phases = CampaignPhase.findAll(campaignId);
+	public static Result findCampaignComponents(Long aid, Long campaignId) {
+		List<ComponentInstance> phases = ComponentInstance.findAll(campaignId);
 		return ok(Json.toJson(phases));
 	}
 
 	@SubjectPresent
-	public static Result findCampaignPhase(Long aid, Long campaignId,
+	public static Result findCampaignComponent(Long aid, Long campaignId,
 			Long phaseId) {
-		CampaignPhase campaignPhase = CampaignPhase.read(campaignId, phaseId);
+		ComponentInstance campaignPhase = ComponentInstance.read(campaignId, phaseId);
 		return ok(Json.toJson(campaignPhase));
 	}
 
 	@SubjectPresent
-	public static Result deleteCampaignPhase(Long aid, Long campaignId,
+	public static Result deleteCampaignComponent(Long aid, Long campaignId,
 			Long phaseId) {
-		CampaignPhase.delete(campaignId, phaseId);
+		ComponentInstance.delete(campaignId, phaseId);
 		return ok();
 	}
 
 	@SubjectPresent
-	public static Result updateCampaignPhase(Long aid, Long campaignId,
+	public static Result updateCampaignComponent(Long aid, Long campaignId,
 			Long phaseId) {
 		// 1. read the campaignPhase data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<CampaignPhase> newCampaignPhaseForm = CAMPAIGN_PHASE_FORM
+		final Form<ComponentInstance> newCampaignPhaseForm = CAMPAIGN_COMPONENT_FORM
 				.bindFromRequest();
 
 		if (newCampaignPhaseForm.hasErrors()) {
@@ -63,34 +63,34 @@ public class CampaignPhases extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 
-			CampaignPhase newCampaignPhase = newCampaignPhaseForm.get();
+			ComponentInstance newCampaignPhase = newCampaignPhaseForm.get();
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			newCampaignPhase.setPhaseId(phaseId);
-			CampaignPhase.update(newCampaignPhase);
+			newCampaignPhase.setComponentInstanceId(phaseId);
+			ComponentInstance.update(newCampaignPhase);
 			Logger.info("Updating phase in campaign =>" + campaignId);
 			Logger.debug("=> " + newCampaignPhaseForm.toString());
 
-			responseBody.setNewResourceId(newCampaignPhase.getPhaseId());
+			responseBody.setNewResourceId(newCampaignPhase.getComponentInstanceId());
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.CAMPAIGN_PHASE_CREATE_MSG_SUCCESS,
-					newCampaignPhase.getPhaseId()));
+					newCampaignPhase.getComponentInstanceId()));
 			responseBody.setNewResourceURL(GlobalData.CAMPAIGN_PHASE_BASE_PATH
-					+ "/" + newCampaignPhase.getPhaseId());
+					+ "/" + newCampaignPhase.getComponentInstanceId());
 
 			return ok(Json.toJson(responseBody));
 		}
 	}
 
 	@SubjectPresent
-	public static Result createCampaignPhase(Long aid, Long campaignId) {
+	public static Result createCampaignComponent(Long aid, Long campaignId) {
 		// 1. obtaining the user of the requestor
 		User campaignPhaseCreator = User
 				.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		// 2. read the new campaign data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<CampaignPhase> newCampaignPhaseForm = CAMPAIGN_PHASE_FORM
+		final Form<ComponentInstance> newCampaignPhaseForm = CAMPAIGN_COMPONENT_FORM
 				.bindFromRequest();
 
 		if (newCampaignPhaseForm.hasErrors()) {
@@ -100,22 +100,23 @@ public class CampaignPhases extends Controller {
 					newCampaignPhaseForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-			CampaignPhase newCampaignPhase = newCampaignPhaseForm.get();
+			ComponentInstance newCampaignPhase = newCampaignPhaseForm.get();
 			if (newCampaignPhase.getLang() == null)
 				newCampaignPhase.setLang(campaignPhaseCreator.getLanguage());
 			Campaign campaign = Campaign.read(campaignId);
-			newCampaignPhase.setCampaign(campaign);
 			TransferResponseStatus responseBody = new TransferResponseStatus();
-			CampaignPhase.create(campaignId, newCampaignPhase);
+			ComponentInstance.create(campaignId, newCampaignPhase);
+			campaign.getResources().getComponents().add(newCampaignPhase);
+			campaign.update();
 			Logger.info("Creating new campaign Phase");
 			Logger.debug("=> " + newCampaignPhaseForm.toString());
 
-			responseBody.setNewResourceId(newCampaignPhase.getPhaseId());
+			responseBody.setNewResourceId(newCampaignPhase.getComponentInstanceId());
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.CAMPAIGN_PHASE_CREATE_MSG_SUCCESS,
-					newCampaignPhase.getPhaseId()));
+					newCampaignPhase.getComponentInstanceId()));
 			responseBody.setNewResourceURL(GlobalData.CAMPAIGN_PHASE_BASE_PATH
-					+ "/" + newCampaignPhase.getPhaseId());
+					+ "/" + newCampaignPhase.getComponentInstanceId());
 
 			return ok(Json.toJson(responseBody));
 		}

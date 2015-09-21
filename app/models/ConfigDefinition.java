@@ -1,8 +1,8 @@
 package models;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.UniqueConstraint;
 
 import enums.ConfigTargets;
 
@@ -10,11 +10,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@UniqueConstraint(columnNames = { "key" })
 public class ConfigDefinition extends AppCivistBaseModel {
 	
 	@Id
     private UUID uuid;
-    private String key;
+	private String key;
     private String valueType;
     private String description;
     private String defaultValue;
@@ -116,4 +117,8 @@ public class ConfigDefinition extends AppCivistBaseModel {
     public static void update(UUID id) {
         find.ref(id).update();
     }
+
+	public static ConfigDefinition findByKey(String key2) {
+		return find.where().eq("key", key2).findUnique();
+	}
 }

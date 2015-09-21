@@ -2,6 +2,7 @@ package models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,6 +17,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
 
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -55,6 +57,8 @@ public class Membership extends AppCivistBaseModel {
 	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	private WorkingGroup targetGroup;
 
+	private UUID targetUuid;
+	
 	public static Finder<Long, Membership> find = new Finder<>(Membership.class);
 
 	public Membership(Long expiration, MembershipStatus status, User creator,
@@ -150,6 +154,14 @@ public class Membership extends AppCivistBaseModel {
 
 	public void setTargetGroup(WorkingGroup targetGroup) {
 		this.targetGroup = targetGroup;
+	}
+
+	public UUID getTargetUuid() {
+		return targetUuid;
+	}
+
+	public void setTargetUuid(UUID targetUuid) {
+		this.targetUuid = targetUuid;
 	}
 
 	public static Membership read(Long membershipId) {
@@ -254,4 +266,7 @@ public class Membership extends AppCivistBaseModel {
 		return membs;
 	}
 
+	public static List<Membership> findByUserAndTargetUuid(User u, UUID targetUuid) {
+		return find.where().eq("user",u).eq("targetUuid", targetUuid).findList();
+	}
 }

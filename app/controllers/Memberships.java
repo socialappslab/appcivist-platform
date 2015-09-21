@@ -6,15 +6,11 @@ import http.Headers;
 import java.util.List;
 import java.util.UUID;
 
-import models.Assembly;
 import models.Membership;
-import models.MembershipAssembly;
-import models.MembershipGroup;
 import models.SecurityRole;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
-import models.WorkingGroup;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -25,7 +21,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
-import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.Pair;
@@ -42,7 +37,6 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.MembershipsDelegate;
-import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
 import enums.MyRoles;
 import enums.ResponseStatus;
@@ -401,9 +395,34 @@ public class Memberships extends Controller {
 					ResponseStatus.NOTAVAILABLE, "No memberships for user with UUID = " + uuid)));
 		else 
 			return ok(Json.toJson(memberships));
-		
 	}
 
+	
+	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="targetUuid", value="Assembly/Group's target UUID", dataType="java.util.UUID", paramType="path"),
+		@ApiImplicitParam(name="type", value="type of membership requeste", dataType="String", paramType = "query", allowableValues ="assembly,group"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header")
+	})
+	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result findMembershipByTargetUUID(UUID uuid, UUID targetUuid) {
+		List<Membership> memberships = null;
+		User u = User.findByUUID(uuid);
+		if (u == null)
+			return notFound(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.NOTAVAILABLE, "No user in session")));
+				
+		memberships = Membership.findByUserAndTargetUuid(u,targetUuid);
+		if (memberships == null || memberships.isEmpty())
+			return notFound(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.NOTAVAILABLE, "No memberships for requesting user in target assembly/group:" + targetUuid)));
+		else 
+			return ok(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.OK, "User is Member")));
+		
+	}
+	
 	/****************************************************************************************************************
 	 * Not exposed methods
 	 ****************************************************************************************************************/

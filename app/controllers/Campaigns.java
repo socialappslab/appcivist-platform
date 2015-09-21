@@ -204,10 +204,6 @@ public class Campaigns extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
 	}
 
-	
-	
-	
-	
 	private static Result ongoingCampaignsByAssembly(UUID uuid) {
 		Assembly a = Assembly.readByUUID(uuid);
 		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();

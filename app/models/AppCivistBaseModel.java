@@ -3,8 +3,11 @@ package models;
 import java.util.Date;
 
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PreUpdate;
 
 import com.avaje.ebean.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import utils.GlobalData;
 
 @MappedSuperclass
@@ -14,13 +17,16 @@ public class AppCivistBaseModel extends Model {
 	 * Properties that are common to all the entities in the model
 	 * 
 	 */
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date creation = new Date(); // by Default, the creation is NOW
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date lastUpdate = new Date(); // by Default, the creation is NOW
 	private String lang = GlobalData.DEFAULT_LANGUAGE; // defaults language to English 
 													 // TODO get the language automatically from 
 													 // from the requests that creates it
 	
 	// Fields to implement 'soft' deletion 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date removal = null;
 	private Boolean removed = false;
 			
@@ -100,5 +106,11 @@ public class AppCivistBaseModel extends Model {
 		baseAppcivistObject.removal = new Date();
 		baseAppcivistObject.removed = true;
 		baseAppcivistObject.save();
+	}
+
+
+	@PreUpdate
+	public void onUpdate() {
+		this.lastUpdate = new Date();
 	}
 }

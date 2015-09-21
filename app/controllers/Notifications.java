@@ -9,8 +9,8 @@ import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
-import models.CampaignPhase;
-import models.CampaignPhaseMilestone;
+import models.ComponentInstance;
+import models.ComponentInstanceMilestone;
 import models.Contribution;
 import models.Membership;
 import models.MembershipAssembly;
@@ -149,15 +149,15 @@ public class Notifications extends Controller {
 			if (resources !=null) campaigns = resources.getCampaigns();
 			if (campaigns != null && !campaigns.isEmpty()) {
 				for (Campaign c : campaigns) {
-					List<CampaignPhase> phases = c.getPhases();
-					if (phases != null && !phases.isEmpty()) {
-						for (CampaignPhase p : phases) {
+					List<ComponentInstance> components = c.getResources().getComponents();
+					if (components != null && !components.isEmpty()) {
+						for (ComponentInstance p : components) {
 							Calendar today = Calendar.getInstance();
 							if (p.getEndDate().after(today.getTime())) {
 								// 4.2. Current Ongoing Campaigns Upcoming Milestones
-								List<CampaignPhaseMilestone> milestones = p.getMilestones();
+								List<ComponentInstanceMilestone> milestones = p.getMilestones();
 								if (milestones!=null && !milestones.isEmpty()) {
-									for (CampaignPhaseMilestone m : milestones) {
+									for (ComponentInstanceMilestone m : milestones) {
 										Date mStart = m.getStart();
 										Calendar cal = Calendar.getInstance();
 										cal.setTime(mStart); // Now use today date.
@@ -175,7 +175,7 @@ public class Notifications extends Controller {
 													c.getCampaignId(),
 													c.getUuid(),
 													c.getTitle(),
-													m.getCampaignPhaseMilestoneId(),
+													m.getComponentInstanceMilestoneId(),
 													m.getUuid(), m.getTitle(),
 													sdf.format(cal.getTime()),
 													a.getName(), m

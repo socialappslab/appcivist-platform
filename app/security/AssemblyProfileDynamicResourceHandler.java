@@ -1,11 +1,12 @@
 package security;
 
 import java.util.List;
+import java.util.UUID;
 
 import enums.Visibility;
-
 import enums.MyRoles;
 import models.Assembly;
+import models.AssemblyProfile;
 import models.MembershipAssembly;
 import models.Membership;
 import models.User;
@@ -17,7 +18,7 @@ import be.objectify.deadbolt.core.DeadboltAnalyzer;
 import be.objectify.deadbolt.java.AbstractDynamicResourceHandler;
 import be.objectify.deadbolt.java.DeadboltHandler;
 
-public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandler {
+public class AssemblyProfileDynamicResourceHandler extends AbstractDynamicResourceHandler {
 
 	public Promise<Boolean> checkPermission(String permissionValue,
 			DeadboltHandler deadboltHandler, Context ctx) {
@@ -37,30 +38,28 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                             	   } else {
                             		   subjectOption.ifPresent(subject -> {
                             			   User u = User.findByUserName(subject.getIdentifier());
-                            			   Logger.debug("Checking membership of User in "+meta+"...");
+                            			   Logger.info("Checking membership of User in "+meta+"...");
                             			   Logger.debug("--> userName = " + u.getUsername());
                             			   String path = context.request().path();
                             			   Long assemblyId = MyDynamicResourceHandler.getIdFromPath(path, meta);
-                            			   Logger.debug("--> assemblyId= " + assemblyId);
-                            			   Membership m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
-                        				   
-                        				     if (m!=null && name.equals("CoordinatorOfAssembly")) {
-                        					     List<SecurityRole> membershipRoles = m.getRoles();
-                        					     for (SecurityRole r : membershipRoles) {
-                        						     if(r.getName().equals(MyRoles.COORDINATOR.getName())) {
-                        							     allowed[0] = true;
-                        						     }
-                        					     }
-                        				     } else if (m!=null && name.equals("AssemblyMemberIsExpert")) {
-                        					     List<SecurityRole> membershipRoles = m.getRoles();
-                        					     for (SecurityRole r : membershipRoles) {
-                        						     if(r.getName().equals(MyRoles.EXPERT.getName())) {
-                        							     allowed[0] = true;
-                        						     }
-                        					     }
-                        				     } else 
-                        					   allowed[0] = m!=null;
+                            			   UUID assemblyUuid = null;
                             			   
+										   if(assemblyId<0) {
+											   assemblyUuid = MyDynamicResourceHandler.getUUIDFromPath(path, meta);
+											   Logger.debug("--> No assemblyId, using assemblyUuid = " + assemblyUuid);
+											   allowed[0]=Assembly.isAssemblyListed(assemblyUuid);
+										   } else {
+											   Logger.debug("--> assemblyId= " + assemblyId);
+											   allowed[0]=Assembly.isAssemblyListed(assemblyId);
+										   }
+	                        			   
+										   // If the Assembly is not listed, then we only care if the user is member
+										   if(!allowed[0]) {
+											   Membership m = null;
+											   if (assemblyId<0) m = MembershipAssembly.findByUserAndAssemblyUuid(u.getUserId(), assemblyUuid);
+											   else m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
+											   allowed[0] = m!=null;
+										   }
                             		   });
                             	   }
                             	   return allowed[0];

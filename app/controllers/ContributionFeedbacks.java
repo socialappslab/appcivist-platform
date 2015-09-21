@@ -1,27 +1,22 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.util.List;
 
+import models.Assembly;
+import models.Contribution;
+import models.User;
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.Result;
+import security.SecurityModelConstants;
 import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
 
 import enums.ContributionTypes;
-import models.Assembly;
-import models.Contribution;
-import models.User;
-import play.Logger;
-import play.data.Form;
-import play.i18n.Messages;
-import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Result;
-import security.SecurityModelConstants;
-import utils.GlobalData;
-import models.transfer.TransferResponseStatus;
-import static play.data.Form.form;
 
 @Api(value = "/feedback", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
 public class ContributionFeedbacks extends Contributions {

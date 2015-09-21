@@ -23,7 +23,7 @@ import com.wordnik.swagger.annotations.Api;
 
 import enums.ContributionTypes;
 
-@Api(value = "/contribution", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
+@Api(value = "/contribution", description = "Contritubion Making Service: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
 public class Contributions extends Controller {
 
 	public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);

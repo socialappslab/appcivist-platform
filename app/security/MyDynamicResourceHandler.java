@@ -51,6 +51,7 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 		HANDLERS.put("CanInviteToAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
 		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler()));
 		HANDLERS.put("OnlyMeAndAdmin", Optional.of(new OnlyMeAndAdminDynamicResourceHandler())); 
+		HANDLERS.put("MemberOrListed", Optional.of(new AssemblyProfileDynamicResourceHandler())); 
 	}
 
     @Override
