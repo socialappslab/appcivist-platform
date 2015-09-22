@@ -1,29 +1,23 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.util.List;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.feth.play.module.pa.PlayAuthenticate;
-import com.wordnik.swagger.annotations.Api;
-
-import enums.ContributionTypes;
 import models.Assembly;
 import models.Contribution;
 import models.User;
-import play.Logger;
 import play.data.Form;
-import play.i18n.Messages;
 import play.libs.Json;
-import play.mvc.Controller;
 import play.mvc.Result;
 import security.SecurityModelConstants;
-import utils.GlobalData;
-import models.transfer.TransferResponseStatus;
-import static play.data.Form.form;
+import be.objectify.deadbolt.java.actions.Dynamic;
 
-@Api(value = "/feedback", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import enums.ContributionTypes;
+
+//@Api(value = "/feedback", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
 public class ContributionFeedbacks extends Contributions {
 
 	public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);
@@ -32,7 +26,7 @@ public class ContributionFeedbacks extends Contributions {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findFeedbacks(Long aid) {
 		List<Contribution> contributions = Contribution
-				.readListByAssemblyAndType(aid, cType);
+				.readListByTargetSpaceAndType(Assembly.read(aid).getResources().getResourceSpaceId(), cType);
 		return ok(Json.toJson(contributions));
 	}
 
@@ -56,7 +50,7 @@ public class ContributionFeedbacks extends Contributions {
 			return contributionUpdateError(updatedContributionForm);
 		} else {
 			Contribution updatedContribution = updatedContributionForm.get();
-			return updateContribution(aid, id, updatedContribution, cType);
+			return updateContributionResult(aid, id, updatedContribution, cType);
 		}
 	}
 
@@ -80,7 +74,7 @@ public class ContributionFeedbacks extends Contributions {
 			return contributionCreateError(newContributionForm);
 		} else {
 			Contribution newContribution = newContributionForm.get();
-			return createContribution(newContribution, author,
+			return createContributionInAssembly(newContribution, author,
 					Assembly.read(aid), cType);
 		}
 	}

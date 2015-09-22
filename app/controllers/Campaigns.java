@@ -9,10 +9,11 @@ import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
+import models.CampaignTemplate;
 import models.Membership;
 import models.MembershipAssembly;
+import models.ResourceSpace;
 import models.User;
-import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.UpdateTransfer;
 import play.Logger;
@@ -35,35 +36,58 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-@Api(value="/campaign",description="Campaign management endpoints")
+@Api(value="/campaign",description="Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
 public class Campaigns extends Controller {
 
 	public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
 
-	@ApiOperation(httpMethod = "GET", response = MembershipTransfer.class, produces = "application/json", value = "List campaigns of an Assembly")
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", value = "List campaigns of an Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({ 
+		@ApiImplicitParam(name = "aid", value = "Assembly owner id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result findCampaigns(Long aid) {
+	public static Result findCampaignsByAssemblyId(Long aid) {
 		List<Campaign> campaigns = Campaign.findByAssembly(aid);
-		return ok(Json.toJson(campaigns));
+		return campaigns != null && !campaigns.isEmpty() ? ok(Json
+				.toJson(campaigns)) : ok(Json
+				.toJson(new TransferResponseStatus("No campaign found")));
 	}
 
-	// TODO create dynamic auth handler that controlls the campaigns belong to
-	// the specified assembly
-	// that's why assembly id is always a parameter
-	@SubjectPresent
-	public static Result findCampaign(Long aid, Long campaignId) {
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findCampaignByAssemblyId(Long aid, Long campaignId) {
 		Campaign campaign = Campaign.read(campaignId);
-		return ok(Json.toJson(campaign));
+		return campaign != null ? ok(Json
+				.toJson(campaign)) : ok(Json
+				.toJson(new TransferResponseStatus("No campaign found")));
 	}
 
-	@SubjectPresent
+	@ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result deleteCampaign(Long aid, Long campaignId) {
 		Campaign.delete(campaignId);
 		return ok();
 	}
 
-	@SubjectPresent
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result updateCampaign(Long aid, Long campaignId) {
 		// 1. read the campaign data from the body
 		// another way of getting the body content => request().body().asJson()
@@ -76,28 +100,23 @@ public class Campaigns extends Controller {
 					newCampaignForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-			Campaign newCampaign = newCampaignForm.get();
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			if (Campaign.readByTitle(newCampaign.getTitle()) > 0) {
-				Logger.info("Campaign already exists");
-			} else {
-				newCampaign.setCampaignId(campaignId);
-				newCampaign.update();
-				Logger.info("Updating campaign");
-				Logger.debug("=> " + newCampaignForm.toString());
-				responseBody.setNewResourceId(newCampaign.getCampaignId());
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.CAMPAIGN_CREATE_MSG_SUCCESS,
-						newCampaign.getTitle()));
-				responseBody.setNewResourceURL(GlobalData.CAMPAIGN_BASE_PATH
-						+ "/" + newCampaign.getCampaignId());
-			}
-			return ok(Json.toJson(responseBody));
+			Campaign updatedCampaign = newCampaignForm.get();
+			updatedCampaign.setCampaignId(campaignId);
+			updatedCampaign.update();
+			Logger.info("Updating campaign");
+			Logger.debug("=> " + newCampaignForm.toString());
+			return ok(Json.toJson(updatedCampaign));
 		}
 	}
 
-	@SubjectPresent
-	public static Result createCampaign(Long aid) {
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignInAssembly(Long aid) {
 		// 1. obtaining the user of the requestor
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -113,37 +132,31 @@ public class Campaigns extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			Campaign newCampaign = newCampaignForm.get();
-			newCampaign.setAssemblyResourceSet(Assembly.read(aid).getResources());
-			if (newCampaign.getLang() == null)
+			if (newCampaign.getLang() == null) 
 				newCampaign.setLang(campaignCreator.getLanguage());
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			if (Campaign.readByTitle(newCampaign.getTitle()) > 0) {
-				Logger.info("Campaign already exists");
-			} else {
-				Campaign.create(newCampaign);
-				Logger.info("Creating new campaign");
-				Logger.debug("=> " + newCampaignForm.toString());
-				responseBody.setNewResourceId(newCampaign.getCampaignId());
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.CAMPAIGN_CREATE_MSG_SUCCESS,
-						newCampaign.getTitle()));
-				responseBody.setNewResourceURL(GlobalData.CAMPAIGN_BASE_PATH
-						+ "/" + newCampaign.getCampaignId());
-			}
-			return ok(Json.toJson(responseBody));
+
+			Logger.info("Creating new campaign");
+			Logger.debug("=> " + newCampaignForm.toString());
+
+			// Adding the new campaign to the Assembly Resource Space
+			// Campaign.create(newCampaign);
+			ResourceSpace assemblyResources = Assembly.read(aid).getResources();
+			assemblyResources.addCampaign(newCampaign);
+			assemblyResources.update();
+			newCampaign.refresh();
+			return ok(Json.toJson(newCampaign));
 		}
 	}
 	
 	@ApiOperation(httpMethod = "GET", response = UpdateTransfer.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response=TransferResponseStatus.class) })
 	@ApiImplicitParams({
-		//@ApiImplicitParam(name="user", value="user", dataType="String", defaultValue="user", paramType = "path"),
 		@ApiImplicitParam(name="uuid", value="Assembly's UUID", dataType="java.util.UUID", paramType="path"),
 		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
 		@ApiImplicitParam(name="filter", value="Filter value", dataType="String", paramType="query", allowableValues="ongoing,past,future,all", defaultValue="ongoing")
 	})
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result campaignsByAssembly(UUID uuid, String filter) {
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result findCampaignsByAssemblyUUID(UUID uuid, String filter) {
 		if (filter==null || filter.equals("ongoing")) {
 			return ongoingCampaignsByAssembly(uuid);
 		} else if (filter.equals("past")) {
@@ -155,14 +168,13 @@ public class Campaigns extends Controller {
 			List<Campaign> campaigns = a.getResources().getCampaigns();
 			if (!campaigns.isEmpty()) return ok(Json.toJson(campaigns));
 			else
-				return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
+				return notFound(Json.toJson(new TransferResponseStatus("No campaign found")));
 		}
 	}
 	
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response=TransferResponseStatus.class) })
 	@ApiImplicitParams({
-		//@ApiImplicitParam(name="user", value="user", dataType="String", defaultValue="user", paramType = "path"),
 		@ApiImplicitParam(name="uuid", value="User's UUID", dataType="java.util.UUID", paramType="path"),
 		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
 		@ApiImplicitParam(name="filter", value="Filter value", dataType="String", paramType="query", allowableValues="ongoing,past,future,all", defaultValue="ongoing")
@@ -189,6 +201,22 @@ public class Campaigns extends Controller {
 		}
 	}
 	
+	
+	@ApiOperation(httpMethod = "GET", response = CampaignTemplate.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
+	@SubjectPresent
+	public static Result findCampaignTemplates() {
+		List<CampaignTemplate> cts = CampaignTemplate.findAll();
+		if (cts != null && !cts.isEmpty())
+			return ok(Json.toJson(cts));
+		else
+			return notFound(Json.toJson(new TransferResponseStatus(
+					"No campaign templates")));
+
+	}
+	
+	// Private not exposed Methods
 	private static Result ongoingCampaignsByUser(UUID uuid) {
 		User u = User.findByUUID(uuid);
 		List<Membership> assemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
@@ -196,7 +224,7 @@ public class Campaigns extends Controller {
 		
 		for (Membership membership : assemblyMemberships) {
 			Assembly a = ((MembershipAssembly) membership).getAssembly();
-			ongoingCampaigns.addAll(Campaign.extractOngoingCampaignsFromAssembly(a));
+			ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
 		}
 		
 		if (!ongoingCampaigns.isEmpty()) return ok(Json.toJson(ongoingCampaigns));
@@ -204,14 +232,10 @@ public class Campaigns extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
 	}
 
-	
-	
-	
-	
 	private static Result ongoingCampaignsByAssembly(UUID uuid) {
 		Assembly a = Assembly.readByUUID(uuid);
 		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
-		ongoingCampaigns.addAll(Campaign.extractOngoingCampaignsFromAssembly(a));
+		ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
 		if (!ongoingCampaigns.isEmpty()) return ok(Json.toJson(ongoingCampaigns));
 		else
 			return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));

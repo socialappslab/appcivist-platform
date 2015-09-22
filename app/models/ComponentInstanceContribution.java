@@ -15,7 +15,7 @@ import javax.persistence.OneToOne;
 import enums.CampaignPhaseContributionConnectionTypes;
 
 @Entity
-public class CampaignPhaseContribution extends AppCivistBaseModel {
+public class ComponentInstanceContribution extends AppCivistBaseModel {
 
 	@Id
 	@GeneratedValue
@@ -27,7 +27,7 @@ public class CampaignPhaseContribution extends AppCivistBaseModel {
 	private Contribution contribution;
 
 	@ManyToOne(cascade=CascadeType.ALL)
-	private CampaignPhase phase;
+	private ComponentInstance phase;
 	
 	// Who is the group that moved or copied this contribution to its Campaign Phase
 	@OneToOne(fetch = FetchType.LAZY)
@@ -43,17 +43,17 @@ public class CampaignPhaseContribution extends AppCivistBaseModel {
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, CampaignPhaseContribution> find = new Finder<>(CampaignPhaseContribution.class);
+	public static Finder<Long, ComponentInstanceContribution> find = new Finder<>(ComponentInstanceContribution.class);
 
-	public CampaignPhaseContribution(CampaignPhaseContributionConnectionTypes type,
-			Contribution source, CampaignPhase target) {
+	public ComponentInstanceContribution(CampaignPhaseContributionConnectionTypes type,
+			Contribution source, ComponentInstance target) {
 		super();
 		this.type = type;
 		this.contribution = source;
 		this.phase = target;
 	}
 
-	public CampaignPhaseContribution() {
+	public ComponentInstanceContribution() {
 		super();
 	}
 
@@ -92,11 +92,11 @@ public class CampaignPhaseContribution extends AppCivistBaseModel {
 		this.contribution = contribution;
 	}
 
-	public CampaignPhase getPhase() {
+	public ComponentInstance getPhase() {
 		return phase;
 	}
 
-	public void setPhase(CampaignPhase phase) {
+	public void setPhase(ComponentInstance phase) {
 		this.phase = phase;
 	}
 
@@ -113,21 +113,21 @@ public class CampaignPhaseContribution extends AppCivistBaseModel {
 		this.ownerGroup = ownerGroup;
 	}
 
-	public static CampaignPhaseContribution read(Long id) {
+	public static ComponentInstanceContribution read(Long id) {
 		return find.ref(id);
 	}
 
-	public static List<CampaignPhaseContribution> findAll() {
+	public static List<ComponentInstanceContribution> findAll() {
 		return find.all();
 	}
 	
-	public static CampaignPhaseContribution create(CampaignPhaseContribution object) {
+	public static ComponentInstanceContribution create(ComponentInstanceContribution object) {
 		object.save();
 		object.refresh();
 		return object;
 	}
 
-	public static CampaignPhaseContribution createObject(CampaignPhaseContribution object) {
+	public static ComponentInstanceContribution createObject(ComponentInstanceContribution object) {
 		object.save();
 		return object;
 	}

@@ -25,7 +25,7 @@ public class UserPermission extends Model implements Permission {
 	}
 
 	public static Finder<Long, UserPermission> find = new Finder<Long, UserPermission>(
-			Long.class, UserPermission.class);
+			UserPermission.class);
 
 	public static UserPermission read(Long permitId) {
 		return find.ref(permitId);

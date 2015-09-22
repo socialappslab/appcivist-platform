@@ -2,7 +2,7 @@ package models.location;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.GeoTypes;
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,11 +10,6 @@ import javax.persistence.ManyToOne;
 
 @Entity
 public class Geometry extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2184427152141444791L;
 	@Id
     private Long geometryId;
     private GeoTypes type = GeoTypes.Point;

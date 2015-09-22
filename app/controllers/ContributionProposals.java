@@ -14,11 +14,10 @@ import security.SecurityModelConstants;
 import be.objectify.deadbolt.java.actions.Dynamic;
 
 import com.feth.play.module.pa.PlayAuthenticate;
-import com.wordnik.swagger.annotations.Api;
 
 import enums.ContributionTypes;
 
-@Api(value = "/proposal", description = "Citizen Proposal Making services: turning ideas into proposals within assemblies")
+//@Api(value = "/proposal", description = "Citizen Proposal Making services: turning ideas into proposals within assemblies")
 public class ContributionProposals extends Contributions {
 
 	// TODO: ensure that proposals have one ore more connected ideas upon which they built
@@ -29,7 +28,7 @@ public class ContributionProposals extends Contributions {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findProposals(Long aid) {
 		List<Contribution> contributions = Contribution
-				.readListByAssemblyAndType(aid, cType);
+				.readListByTargetSpaceAndType(Assembly.read(aid).getResources().getResourceSpaceId(),cType);
 		return ok(Json.toJson(contributions));
 	}
 
@@ -53,7 +52,7 @@ public class ContributionProposals extends Contributions {
 			return contributionUpdateError(updatedContributionForm);
 		} else {
 			Contribution updatedContribution = updatedContributionForm.get();
-			return updateContribution(aid, id, updatedContribution, cType);
+			return updateContributionResult(aid, id, updatedContribution, cType);
 		}
 	}
 
@@ -77,7 +76,7 @@ public class ContributionProposals extends Contributions {
 			return contributionCreateError(newContributionForm);
 		} else {
 			Contribution newContribution = newContributionForm.get();
-			return createContribution(newContribution, author,
+			return createContributionInAssembly(newContribution, author,
 					Assembly.read(aid), cType);
 		}
 	}

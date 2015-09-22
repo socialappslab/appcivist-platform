@@ -46,9 +46,13 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import enums.ResponseStatus;
-
-@Api(value = "/user", description = "User Management operations, including authentication of users, "
-		+ "merging/linking of accounts and reading information about user profiles")
+/**
+ * User Management operations, including authentication of users, 
+ * merging/linking of accounts and reading information about user profiles
+ * @author cdparra
+ *
+ */
+@Api(value = "/user", description = "User Management operations")
 @With(Headers.class)
 public class Users extends Controller {
 	public static final Form<User> USER_FORM = form(User.class);
@@ -212,6 +216,7 @@ public class Users extends Controller {
 			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
 	}
 
+	// TODO return a HTML form
 	public static Result login() {
 		return ok("Not implemented yet");
 	}
@@ -317,6 +322,32 @@ public class Users extends Controller {
 		}
 	}
 
+	@ApiOperation(nickname = "profile", httpMethod = "POST", response = TransferResponseStatus.class, produces = "application/json", value = "Create user's profile")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "user", value = "User's new profile information", dataType = "models.UserProfile", paramType = "body") })
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result createUserProfile(Long uid) {
+		final Form<UserProfile> newUserForm = USER_PROFILE_FORM
+				.bindFromRequest();
+		if (newUserForm.hasErrors())
+			return badRequest(Json.toJson(TransferResponseStatus
+					.badMessage("Errors in form", newUserForm
+							.errorsAsJson().toString())));
+		else {
+			UserProfile newUserProfile = newUserForm.get();
+			User user = User.read(uid);
+			newUserProfile.setUser(user);
+			newUserProfile.save();
+			newUserProfile.refresh();
+			Logger.info("Creating User Profile for User: "+user.getUserId());
+			Logger.debug("=> " + newUserForm.toString());
+			return ok(Json.toJson(newUserProfile));
+		}
+	}
+	
 	/****************************************************************************************************
 	 * DELETE Endpoints
 	 ***************************************************************************************************/
@@ -437,7 +468,6 @@ public class Users extends Controller {
 	public static Result changePassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final User u = Users.getLocalUser(session());
-
 		if (!u.isEmailVerified()) {
 			return ok(unverified.render());
 		} else {

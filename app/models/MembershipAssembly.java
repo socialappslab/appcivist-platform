@@ -1,6 +1,7 @@
 package models;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
@@ -95,5 +96,11 @@ public class MembershipAssembly extends Membership {
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();
 		return q.findList();
+	}
+	
+	public static Membership findByUserAndAssemblyUuid(Long userId,
+			UUID assemblyUuid) {
+		return find.where().eq("user.userId", userId).eq("assembly.uuid", assemblyUuid)
+				.findUnique();		
 	}
 }

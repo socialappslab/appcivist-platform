@@ -1,8 +1,14 @@
 package controllers;
 
+import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 import enums.ConfigTargets;
 import http.Headers;
@@ -17,6 +23,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
+import security.SecurityModelConstants;
 import utils.GlobalData;
 import static play.data.Form.form;
 
@@ -80,12 +87,19 @@ public class Configs extends Controller {
 		}
 	}
 
-	@SubjectPresent
+	@ApiOperation(httpMethod = "POST", response = Assembly.class, produces = "application/json", value = "Add configuration to the assembly", notes = "If assembly is coordinated, only COORDINATORS can access this encpoint")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "config_form", value = "configuration details in body", dataType = "models.Config", paramType = "body", required = true),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createConfig(Long aid) {
 		// 1. obtaining the user of the requestor
 		User configCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
-
+		Assembly assembly = Assembly.read(aid);
+		
 		// 2. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
@@ -97,31 +111,36 @@ public class Configs extends Controller {
 					newConfigForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-
+			TransferResponseStatus responseBody = new TransferResponseStatus();			
 			Config newConfig = newConfigForm.get();
-
 			if (newConfig.getLang() == null)
 				newConfig.setLang(configCreator.getLanguage());
-
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-
-			if (Config.readByKey(newConfig.getKey()) > 0) {
-				Logger.info("Config already exists");
-			} else {
-				Assembly a = Assembly.read(aid);
-				newConfig.setTargetUuid(a.getUuid());
-				newConfig.setConfigTarget(ConfigTargets.ASSEMBLY);
-				Config.create(newConfig);
-				Logger.info("Creating new config");
-				Logger.debug("=> " + newConfigForm.toString());
-
-				responseBody.setNewResourceUuid(newConfig.getUuid());
+			Assembly a = Assembly.read(aid);
+			String key = newConfig.getKey();
+			if (a == null) {
+				responseBody = new TransferResponseStatus();
 				responseBody.setStatusMessage(Messages.get(
-						GlobalData.CONFIG_CREATE_MSG_SUCCESS,
-						newConfig.getKey()));
-				responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH
-						+ "/" + newConfig.getUuid());
+						GlobalData.CONFIG_CREATE_MSG_ERROR,"\nAssembly does not exists"));
+				return badRequest(Json.toJson(responseBody));
 			}
+		
+			newConfig.setTargetUuid(a.getUuid());
+			newConfig.setConfigTarget(ConfigTargets.ASSEMBLY);
+			newConfig = Config.create(newConfig);
+			if(newConfig==null) {
+				responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.CONFIG_CREATE_MSG_ERROR,"\nConfiguration '"+key+"' does not exists"));
+				return badRequest(Json.toJson(responseBody));					
+			}
+			Logger.info("Creating new config");
+			Logger.debug("=> " + newConfigForm.toString());
+
+			responseBody.setNewResourceUuid(newConfig.getUuid());
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONFIG_CREATE_MSG_SUCCESS, newConfig.getKey()));
+			responseBody.setNewResourceURL(GlobalData.CONFIG_BASE_PATH + "/"
+					+ newConfig.getUuid());
 
 			return ok(Json.toJson(responseBody));
 		}
