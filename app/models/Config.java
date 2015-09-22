@@ -150,6 +150,15 @@ public class Config extends AppCivistBaseModel {
     }
     
     public static Config create(Config config) {
+    	// check if there is a definition associated with thie configuration value, if not add it
+		if (config.getDefinition()==null) {
+			ConfigDefinition cd = ConfigDefinition.findByKey(config.getKey());
+			if(cd != null) {
+				config.setDefinition(cd);
+			} else {
+				return null;
+			}
+		}
         config.save();
         config.refresh();
         return config;

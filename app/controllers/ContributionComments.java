@@ -1,29 +1,22 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.util.List;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.feth.play.module.pa.PlayAuthenticate;
-import com.wordnik.swagger.annotations.Api;
-
-import enums.ContributionTypes;
 import models.Assembly;
 import models.Contribution;
 import models.User;
-import play.Logger;
 import play.data.Form;
-import play.i18n.Messages;
 import play.libs.Json;
-import play.mvc.Controller;
 import play.mvc.Result;
 import security.SecurityModelConstants;
-import utils.GlobalData;
-import models.transfer.TransferResponseStatus;
-import static play.data.Form.form;
+import be.objectify.deadbolt.java.actions.Dynamic;
 
-@Api(value = "/comment", description = "Citizen Contritubion Services for Comments: comments can be made only on other contributions")
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import enums.ContributionTypes;
+
 public class ContributionComments extends Contributions {
 
 	// TODO: ensure that comments have always a connected contribution
@@ -34,7 +27,7 @@ public class ContributionComments extends Contributions {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findComments(Long aid) {
 		List<Contribution> contributions = Contribution
-				.readListByAssemblyAndType(aid, cType);
+				.readListByTargetSpaceAndType(Assembly.read(aid).getResources().getResourceSpaceId(), cType);
 		return ok(Json.toJson(contributions));
 	}
 
@@ -58,7 +51,7 @@ public class ContributionComments extends Contributions {
 			return contributionUpdateError(updatedContributionForm);
 		} else {
 			Contribution updatedContribution = updatedContributionForm.get();
-			return updateContribution(aid, id, updatedContribution, cType);
+			return updateContributionResult(aid, id, updatedContribution, cType);
 		}
 	}
 
@@ -82,10 +75,9 @@ public class ContributionComments extends Contributions {
 			return contributionCreateError(newContributionForm);
 		} else {
 			Contribution newContribution = newContributionForm.get();
-			return createContribution(newContribution, author,
+			return createContributionInAssembly(newContribution, author,
 					Assembly.read(aid), cType);
 		}
 	}
-
 	// implement here other question related endpoints
 }

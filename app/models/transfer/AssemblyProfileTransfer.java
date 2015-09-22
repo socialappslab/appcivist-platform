@@ -9,7 +9,6 @@ public class AssemblyProfileTransfer {
 	private String targetAudience;
 	private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST; //   OPEN, INVITATION, REQUEST, INVITATION_AND_REQUEST
 	private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are OPEN by default
-	private Visibility visibility = Visibility.PUBLIC;
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
 	
@@ -34,12 +33,6 @@ public class AssemblyProfileTransfer {
 	}
 	public void setManagementType(ManagementTypes managementType) {
 		this.managementType = managementType;
-	}
-	public Visibility getVisibility() {
-		return visibility;
-	}
-	public void setVisibility(Visibility visibility) {
-		this.visibility = visibility;
 	}
 	public String getIcon() {
 		return icon;

@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
 import javax.persistence.Transient;
 
 import models.location.Location;
@@ -19,11 +21,13 @@ import play.data.validation.Constraints.Required;
 import utils.GlobalData;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.ConfigTargets;
 import enums.ResourceSpaceTypes;
 
 /**
@@ -35,38 +39,30 @@ import enums.ResourceSpaceTypes;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 public class Assembly extends AppCivistBaseModel {
-	@Id 
-	@GeneratedValue
-	@Column(name="assembly_id")
+	@Id @GeneratedValue @Column(name="assembly_id")
 	private Long assemblyId;
-
-	/**
-	 * Properties specific to the Assembly
-	 */
-
+	@Index
 	private UUID uuid;
 	@Transient
 	private String uuidAsString;
-	@MaxLength(value = 200)
-	@Required
+	@MaxLength(value = 200) @Required
 	private String name; // name of the assembly
 	@MaxLength(value = 120)
-	/**
-	 * Shortname to access the assembly by name (automatically generated from the name)
-	 */
-	private String shortname; 
+	private String shortname; // Shortname to access the assembly by name (automatically generated from the name)
 	@Required
 	private String description; // what's the assembly about
 	private String url; // URL to the assembly, using its shortname
+	// If the assembly is listed, is basic profile is reading accessible by all 
 	private Boolean listed = true;
-	
-	@OneToOne(mappedBy = "assembly", cascade=CascadeType.ALL)
+
+	@OneToOne(cascade=CascadeType.ALL)
+//	@JoinColumn(name="assembly_profile_id")
 	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
 	@JsonInclude(Include.NON_EMPTY)
-	private AssemblyProfile profile;
-
+	private AssemblyProfile profile = new AssemblyProfile();
+	
 	@ManyToOne(cascade=CascadeType.ALL)
-	private Location location;
+	private Location location = new Location();
 	
 	@Transient
 	@JsonIgnore
@@ -78,14 +74,12 @@ public class Assembly extends AppCivistBaseModel {
 	 * be added if needed under proper names
 	 */
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonIgnoreProperties({ "uuid" })
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace resources;
+	private ResourceSpace resources = new ResourceSpace();
 
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonIgnoreProperties({ "uuid" })
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace forum;
+	private ResourceSpace forum = new ResourceSpace();
 
 	/**
 	 * The User who created the Assembly
@@ -167,6 +161,26 @@ public class Assembly extends AppCivistBaseModel {
 		this.resources = resources;
 	}
 
+	
+	/**
+	 * Tasks to perform the first time an assembly is created/persisted
+	 */
+	@PrePersist
+	public void onPrePersist() {
+		// 1. Check configuration values targetUUID points to the assembly
+		if(this.resources!=null && this.resources.getConfigs()!=null) {
+			for (Config c : this.resources.getConfigs()) {
+				if(c.getTargetUuid()==null) {
+					c.setTargetUuid(this.uuid);
+					c.setConfigTarget(ConfigTargets.ASSEMBLY);
+					String key = c.getKey();
+					ConfigDefinition cd = ConfigDefinition.findByKey(key);
+					c.setDefinition(cd);
+				}
+			}
+		}
+	}
+	
 	/*
 	 * Getters and Setters
 	 */
@@ -341,8 +355,9 @@ public class Assembly extends AppCivistBaseModel {
 						.replaceAll("[\\s]", "-").toLowerCase();
 			}
 		}
-
-		this.resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
+		if (this.resources==null) {
+			this.resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
+		}
 		this.forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
 	}
 
@@ -376,5 +391,50 @@ public class Assembly extends AppCivistBaseModel {
 
 	public static Assembly readByUUID(UUID assemblyUUID) {
 		return find.where().eq("uuid", assemblyUUID).findUnique();
+	}
+
+	public List<Theme> extractExistingThemes() {
+		List<Theme> existing = new ArrayList<Theme>();
+		if (this.resources!=null) {
+			List<Theme> themes = this.resources.getThemes();
+			if(themes!=null) {
+				for (Theme theme : themes) {
+					Long id = theme.getThemeId();
+					if (id!=null) {
+						this.removeTheme(theme);
+						existing.add(theme);
+					}
+				}
+			}
+		}
+		return existing;
+	}
+
+	public void removeTheme(Theme theme) {
+		this.resources.removeTheme(theme);
+	}
+	
+	public void addTheme(Theme theme) {
+		this.resources.addTheme(theme);
+	}
+	
+	public void addThemes(List<Theme> themes) {
+		this.resources.getThemes().addAll(themes);
+	}
+	
+	public void updateResources() {
+		this.resources.update();
+	}
+	
+	public static Boolean isAssemblyListed(Long id) {
+		return find.where().eq("assemblyId",id).eq("listed",true).findUnique()!=null;
+	}
+	
+	public static Boolean isAssemblyListed(UUID uuid) {
+		return find.where().eq("assemblyUuid",uuid).eq("listed",true).findUnique()!=null;
+	}
+
+	public static int findCampaignWithTitle(Long aid, String title) {
+		return find.where().eq("assemblyId",aid).eq("resources.campaigns.title",title).findList().size();
 	}
 }

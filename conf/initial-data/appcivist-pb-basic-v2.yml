@@ -194,195 +194,419 @@
     lastName: "Doe"
     birthdate: "1972-08-19"
     address: "432 Berkeley Way, Berkeley, CA"
-  
-#12f9fd18-407a-11e5-a151-feff819cdc9f
-#12f9fe3a-407a-11e5-a151-feff819cdc9f
-#12fa0038-407a-11e5-a151-feff819cdc9f
-#12fa0196-407a-11e5-a151-feff819cdc9f
-#12fa0326-407a-11e5-a151-feff819cdc9f
-#12fa0538-407a-11e5-a151-feff819cdc9f
-#12fa0894-407a-11e5-a151-feff819cdc9f
-#12fa0970-407a-11e5-a151-feff819cdc9f
-#12fa0a2e-407a-11e5-a151-feff819cdc9f
-#12fa0b14-407a-11e5-a151-feff819cdc9f
-#12fa0f56-407a-11e5-a151-feff819cdc9f
-#12fa106e-407a-11e5-a151-feff819cdc9f
-#12fa1136-407a-11e5-a151-feff819cdc9f
-#12fa1208-407a-11e5-a151-feff819cdc9f
-#12fa12d0-407a-11e5-a151-feff819cdc9f
-#12fa1398-407a-11e5-a151-feff819cdc9f
 
 ##############################################################################################################################################################################################
 # Configuration Definitions
   - &config1 !!models.ConfigDefinition
-    key: "maximum.contributions"
+    key: "phase.maximum.contributions"
     valueType: Integer
     description: "Maximun number of Contributions to accept" 
     defaultValue: "100"
-    configTarget: PHASE
+    configTarget: COMPONENT
   - &config2 !!models.ConfigDefinition
-    key: "enable.agreement.scores"
+    key: "phase.enable.agreement.scores"
     valueType: Boolean
     description: "Enable the system of automatic computation of agreement on contributions" 
     defaultValue: "false"
-    configTarget: PHASE
+    configTarget: COMPONENT
   - &config3 !!models.ConfigDefinition
-    key: "enable.comments.threads"
+    key: "phase.enable.comments.threads"
     valueType: Boolean
     description: "Enable comments on comments" 
     defaultValue: "false" 
-    configTarget: PHASE
+    configTarget: COMPONENT
   - &config4 !!models.ConfigDefinition
-    key: "maximum.level.thread"
+    key: "phase.maximum.level.thread"
     valueType: Integer
     description: "Maximum depth of threading in comments" 
     defaultValue: "false"
-    configTarget: PHASE
+    configTarget: COMPONENT
   - &config5 !!models.ConfigDefinition
-    key: "voting.system"
+    key: "phase.voting.system"
     valueType: String
     description: "Unranked, Ranked, Range, Distributed" 
-    configTarget: PHASE
+    defaultValue: "Range" 
+    configTarget: COMPONENT
   - &config6 !!models.ConfigDefinition
-    key: "pb.budget"
+    key: "campaign.pb.budget"
     valueType: Double
     description: "Amount to spend in winning projects" 
     configTarget: CAMPAIGN
   - &config7 !!models.ConfigDefinition
-    key: "pb.budget.currency"
+    key: "campaign.pb.budget.currency"
     valueType: String
     description: "Currency of the amount to spend in winning projects" 
     defaultValue: "USD"
     configTarget: CAMPAIGN
   - &config8 !!models.ConfigDefinition
-    key: "module.mobilizing.scheduling"
+    key: "assembly.face-to-face.scheduling"
     valueType: Boolean
     description: "Enable face-to-face scheduling" 
     defaultValue: "true"
     configTarget: ASSEMBLY
+  - &config9 !!models.ConfigDefinition
+    key: "assembly.enable.messaging"
+    valueType: Boolean
+    description: "Enable messaging for the assembly" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
     
 ##############################################################################################################################################################################################    
-# Phase Definitions
-  - &pd1 !!models.PhaseDefinition
+# Components
+  - &pd1 !!models.Component
     name: "Brainstorming"
+    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
-    - &phaseConfig1 !!models.RequiredPhaseConfiguration
-      phaseDefinition: *pd1
+    - &componentConfig1 !!models.ComponentRequiredConfiguration
+      component: *pd1
       configDefinition: *config1
-  - &pd2 !!models.PhaseDefinition
+  - &pd2 !!models.Component
     name: "Versioning"
+    uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
-    - &phaseConfig2 !!models.RequiredPhaseConfiguration
-      phaseDefinition: *pd2
+    - &componentConfig2 !!models.ComponentRequiredConfiguration
+      component: *pd2
       configDefinition: *config2
-  - &pd3 !!models.PhaseDefinition
+  - &pd3 !!models.Component
     name: "Deliberation"
+    uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
-    - &phaseConfig3 !!models.RequiredPhaseConfiguration
-      phaseDefinition: *pd3
+    - &componentConfig3 !!models.ComponentRequiredConfiguration
+      component: *pd3
       configDefinition: *config3
-    - &phaseConfig4 !!models.RequiredPhaseConfiguration
-      phaseDefinition: *pd3
+    - &componentConfig4 !!models.ComponentRequiredConfiguration
+      component: *pd3
       configDefinition: *config4
-  - &pd4 !!models.PhaseDefinition
+  - &pd4 !!models.Component
     name: "Voting"
+    uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
-    - &phaseConfig5 !!models.RequiredPhaseConfiguration
-      phaseDefinition: *pd4
+    - &componentConfig5 !!models.ComponentRequiredConfiguration
+      component: *pd4
       configDefinition: *config5
-  - &pd5 !!models.PhaseDefinition
+  - &pd5 !!models.Component
     name: "Scheduling"
-  - &pd6 !!models.PhaseDefinition
+    uuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"
+  - &pd6 !!models.Component
     name: "Broadcasting"
-  - &pd7 !!models.PhaseDefinition
+    uuidAsString: "12fa0538-407a-11e5-a151-feff819cdc9f"
+  - &pd7 !!models.Component
     name: "Impact"
+    uuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9f"
+
 ##############################################################################################################################################################################################
-# CampaignTypes
-  - &ct1 !!models.CampaignType
+# Campaign Templates
+  - &ct1 !!models.CampaignTemplate
     nameKey: "PARTICIPATORY_BUDGETING"
     name: "Participatory Budgeting" 
-    defaultPhases: 
+    defaultComponents: 
       - *pd1
       - *pd2
       - *pd3
       - *pd4
     requiredConfigurations: 
-    - &campaignConfig1 !!models.RequiredCampaignConfiguration
-      campaignType: *ct1
+    - &campaignConfig1 !!models.CampaignRequiredConfiguration
+      campaignTemplate: *ct1
       configDefinition: *config6 
-    - &campaignConfig2 !!models.RequiredCampaignConfiguration
-      campaignType: *ct1
+    - &campaignConfig2 !!models.CampaignRequiredConfiguration
+      campaignTemplate: *ct1
       configDefinition: *config7
-  - &ct2 !!models.CampaignType
+    requiredMilestones:
+    - &m1 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Brainstorming
+      position: 0
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+    - &m2 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Working Group Formation
+      position: 1
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+    - &m3 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Proposal Drafting
+      position: 2
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+    - &m4 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Complete Draft
+      position: 3
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+    - &m5 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Proposal editing
+      position: 4
+      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+    - &m6 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Final proposal/s
+      position: 5
+      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+    - &m7 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Proposal selection
+      position: 6
+      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+    - &m8 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Deliberation starts
+      position: 7
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+    - &m9 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Technical Assessment
+      position: 8
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+    - &m10 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Deliberation finishes
+      position: 9
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+    - &m11 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Voting Starts
+      position: 10
+      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"      
+    - &m12 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Voting Ends
+      position: 11
+      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0538-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0970-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0a2e-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0b14-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa0f56-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa106e-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa1136-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa1208-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa12d0-407a-11e5-a151-feff819cdc9f"
+#targetUuidAsString: "12fa1398-407a-11e5-a151-feff819cdc9f"
+
+  - &ct2 !!models.CampaignTemplate
     nameKey: "FUNDRAISING"
     name: "Fundraising" 
-  - &ct3 !!models.CampaignType
+  - &ct3 !!models.CampaignTemplate
     nameKey: "MOBILIZATION"
     name: "Mobilization"
+
+
+
+##############################################################################################################################################################################################
+# Campaign Resource Spaces
+  - &rs5 !!models.ResourceSpace
+    type: CAMPAIGN
+    components:
+      - &ph1 !!models.ComponentInstance
+        position: 0
+        timeline: 1
+        component: *pd1
+        milestones: 
+          - &ci1 !!models.ComponentInstanceMilestone
+            title: Brainstorming
+            position: 0
+            start: "2015-09-01"
+            days: 60
+          - &ci2 !!models.ComponentInstanceMilestone
+            title: Working Group Formation
+            position: 1
+            start: "2015-11-11"
+            days: 5
+          - &ci3 !!models.ComponentInstanceMilestone
+            title: Proposal Drafting
+            position: 2
+            start: "2015-11-16"
+            days: 10
+          - &ci4 !!models.ComponentInstanceMilestone
+            title: Complete Draft
+            position: 3
+            start: "2015-11-26"
+            days: 1
+      - &ph2 !!models.ComponentInstance
+        position: 1
+        timeline: 1
+        component: *pd2
+        milestones: 
+          - &ci5 !!models.ComponentInstanceMilestone
+            title: Proposal editing
+            position: 4
+            start: "2015-11-27"
+            days: 15
+          - &ci6 !!models.ComponentInstanceMilestone
+            title: Final proposal/s
+            position: 5
+            start: "2015-12-11"
+            days: 1
+          - &ci7 !!models.ComponentInstanceMilestone
+            title: Proposal selection
+            position: 6
+            start: "2015-12-12"
+            days: 5
+      - &ph3 !!models.ComponentInstance
+        position: 2
+        timeline: 1
+        component: *pd3
+        milestones:
+          - &ci8 !!models.ComponentInstanceMilestone
+            title: Deliberation starts
+            position: 7
+            start: "2015-12-17"
+            days: 10
+          - &ci9 !!models.ComponentInstanceMilestone
+            title: Technical Assessment
+            position: 8
+            start: "2016-01-06"
+            days: 10
+          - &ci10 !!models.ComponentInstanceMilestone
+            title: Deliberation finishes
+            position: 9
+            start: "2016-01-16"
+            days: 1
+      - &ph4 !!models.ComponentInstance
+        position: 3
+        timeline: 1
+        component: *pd4
+        milestones:
+          - &ci11 !!models.ComponentInstanceMilestone
+            title: Voting Starts
+            position: 10
+            start: "2016-01-17"
+            days: 15
+          - &ci12 !!models.ComponentInstanceMilestone
+            title: Voting Ends
+            position: 11
+            start: "2016-02-01"
+            days: 1
+  - &rs6 !!models.ResourceSpace
+    type: CAMPAIGN
+    components:
+      - &ph5 !!models.ComponentInstance
+        position: 2
+        timeline: 1
+        component: *pd3
+        milestones: 
+          - &ci8 !!models.ComponentInstanceMilestone
+            title: Deliberation starts
+            position: 7
+            start: "2015-12-17"
+            days: 10
+          - &ci9 !!models.ComponentInstanceMilestone
+            title: Technical Assessment
+            position: 8
+            start: "2016-01-06"
+            days: 10
+          - &ci10 !!models.ComponentInstanceMilestone
+            title: Deliberation finishes
+            position: 9
+            start: "2016-01-16"
+            days: 1
+      - &ph4 !!models.ComponentInstance
+        position: 3
+        timeline: 1
+        component: *pd4
+        milestones: 
+          - &ci11 !!models.ComponentInstanceMilestone
+            title: Voting Starts
+            position: 10
+            start: "2016-01-17"
+            days: 15
+          - &ci12 !!models.ComponentInstanceMilestone
+            title: Voting Ends
+            position: 11
+            start: "2016-02-01"
+            days: 1
+        
 ##############################################################################################################################################################################################
 # Campaigns
   - &c1 !!models.Campaign
     title: "Belleville - Paris PB 2016"
     shortname: belleville-paris-pb-2016
-    visibility: PUBLIC
-    #assembly: *a1
+    listed: true
     type: *ct1
     uuidAsString: e1998630-4079-11e5-a151-feff819cdc9f
-    phases:
-      - &ph1 !!models.CampaignPhase
-        startDate: "2015-06-30"
-        endDate: "2015-07-10"
-        campaign: *c1
-        definition: *pd1
-      - &ph2 !!models.CampaignPhase
-        startDate: "2015-07-11"
-        endDate: "2015-08-10"
-        campaign: *c1
-        definition: *pd2
-      - &ph3 !!models.CampaignPhase
-        startDate: "2015-08-10"
-        endDate: "2015-08-30"
-        campaign: *c1
-        definition: *pd3
-      - &ph4 !!models.CampaignPhase
-        startDate: "2015-09-01"
-        endDate: "2015-10-15"
-        campaign: *c1
-        definition: *pd4
+    resources: *rs5
   - &c2 !!models.Campaign
     title: "Fundraising for art program at neighborhood school"
     shortname: fundraising-art-program
-    visibility: PUBLIC
-    #assembly: *a1
+    listed: true
     type: *ct2
     uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
   - &c3 !!models.Campaign
     title: "Mobilize anti-eviction initiative"
     shortname: anti-eviction
-    visibility: PUBLIC
-    #assembly: *a1
+    listed: true
     type: *ct3
     uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
   - &c4 !!models.Campaign
     title: "Paris PB 2016"
     shortname: paris-pb-2016
-    visibility: PUBLIC
-    #assembly: *a1
+    listed: true
     type: *ct1
     uuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
-    phases:
-      - &ph5 !!models.CampaignPhase
-        startDate: "2015-08-10"
-        endDate: "2015-08-30"
-        campaign: *c1
-        definition: *pd3
-      - &ph6 !!models.CampaignPhase
-        startDate: "2015-09-01"
-        endDate: "2015-10-15"
-        campaign: *c1
-        definition: *pd4
+    resources: *rs6
+
 ##############################################################################################################################################################################################
-# Resource spaces
+# Contributions
+  - &contrib5 !!models.Contribution
+    title: GREAT!
+    text: This sounds great. We should probably invite Mike to join the assembly. He has some great ideas about Urban Infrastructure
+    type: COMMENT
+    authors: 
+      - *u1
+  - &contrib7 !!models.Contribution
+    title: Hi
+    text: Just joined the Assembly. Will be happy to contribute with some ideas....
+    type: COMMENT
+    authors: 
+      - *u3
+
+##############################################################################################################################################################################################
+# Contribution Resource Space
+  - &rs7 !!models.ResourceSpace
+    type: CONTRIBUTION
+    contributions:
+      - *contrib5
+      - *contrib7
+      
+##############################################################################################################################################################################################
+# More Contributions
+  - &contrib1 !!models.Contribution
+    title: Proposals for Urban infrastructure
+    text: Hey guys, I think we should start a campaign to develop proposals for Urban Infrastructure. What do you think?
+    type: FORUM_POST
+    themes: 
+      - *cat1
+      - *cat2
+    resourceSpace: *rs7
+    authors: 
+      - *u2
+  - &contrib2 !!models.Contribution
+    title: Pizza 
+    text: Hi all! let's meet tomorrow and have pizza... Who's in?
+    type: FORUM_POST
+    authors: 
+      - *u1
+  - &contrib3 !!models.Contribution
+    title: When do we start creating groups for PB?
+    text: I'm not sure how the process go. Can somebody tell me how this groups thing works?
+    type: FORUM_POST
+    themes: 
+      - *cat1
+    authors: 
+      - *u3
+  - &contrib4 !!models.Contribution
+    title: PB 2014
+    text: Everyone, we just created a campaign to collaboratively create proposals for PB
+    type: FORUM_POST
+    authors: 
+      - *u1
+    
+
+  
+##############################################################################################################################################################################################
+# Assembly Resource spaces
   - &rs1 !!models.ResourceSpace
     type: ASSEMBLY
     themes: 
@@ -398,15 +622,17 @@
       - *c3
     configs: 
       - &ac1 !!models.Config
-        key: face.to.face.scheduling
+        key: assembly.face-to-face.scheduling
         value: true
         configTarget: ASSEMBLY
         targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+        definition: *config8
       - &ac2 !!models.Config
-        key: enabled.messaging
+        key: assembly.enable.messaging
         value: true
         configTarget: ASSEMBLY
         targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+        definition: *config9
   - &rs2 !!models.ResourceSpace
     type: ASSEMBLY
     themes: 
@@ -420,15 +646,20 @@
       - *c4
     configs:
       - &ac3 !!models.Config
-        key: enabled.messaging
+        key: assembly.enable.messaging
         value: false
         configTarget: ASSEMBLY
         targetUuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+        definition: *config9
   - &rs3 !!models.ResourceSpace
     type: ASSEMBLY
+    contributions:
+      - *contrib1
+      - *contrib2
+      - *contrib3
+      - *contrib4
   - &rs4 !!models.ResourceSpace
     type: WORKING_GROUP
-    
 
 ##############################################################################################################################################################################################
 # Assemblies
@@ -720,3 +951,7 @@
     roles: 
       - *r3
       - *r4
+      
+      
+ ## Useful UUIDs
+ 

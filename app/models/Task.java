@@ -34,8 +34,7 @@ public class Task extends AppCivistBaseModel {
 		this.places = places;
 	}
 
-	public static Finder<Long, Task> find = new Finder<Long, Task>(
-			Long.class, Task.class);
+	public static Finder<Long, Task> find = new Finder<>(Task.class);
 
 	public static Task read(Long taskId) {
 		return find.ref(taskId);

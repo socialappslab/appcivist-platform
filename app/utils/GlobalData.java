@@ -1,6 +1,6 @@
 package utils;
 
-import enums.CampaignTypesEnum;
+import enums.CampaignTemplatesEnum;
 
 public class GlobalData {
 	public static final String APPCIVIST_BASE_URL = "/api";
@@ -42,7 +42,7 @@ public class GlobalData {
 	public static String CAMPAIGN_CREATE_MSG_SUCCESS = "campaign.creation.success";
 	public static String CAMPAIGN_CREATE_MSG_ERROR = "campaign.creation.error";
 	public static String CAMPAIGN_BASE_PATH = "/campaign";
-	public static CampaignTypesEnum DEFAULT_CAMPAIGN_TYPE = CampaignTypesEnum.PARTICIPATORY_BUDGETING;
+	public static CampaignTemplatesEnum DEFAULT_CAMPAIGN_TYPE = CampaignTemplatesEnum.PARTICIPATORY_BUDGETING;
 
 	// Campaign Phase
 	public static String CAMPAIGN_PHASE_CREATE_MSG_SUCCESS = "campaign.phase.creation.success";

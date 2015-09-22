@@ -1,6 +1,6 @@
 package models.location;
 
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 import javax.persistence.*;
 
@@ -11,11 +11,6 @@ import java.util.List;
 
 @Entity
 public class Geo extends AppCivistBaseModel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4612546771988078421L;
 	@Id
     @GeneratedValue
     private Long locationId;
@@ -32,8 +27,7 @@ public class Geo extends AppCivistBaseModel {
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Model.Finder<Long, Geo> find = new Model.Finder<Long, Geo>(
-			Long.class, Geo.class);
+	public static Model.Finder<Long, Geo> find = new Model.Finder<Long, Geo>(Geo.class);
     
     public Long getLocationId() {
         return locationId;

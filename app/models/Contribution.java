@@ -3,56 +3,71 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.*;
 
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.annotation.Index;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ContributionTypes;
+import enums.ResourceSpaceTypes;
 import models.location.Location;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "TYPE")
+//@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+//@DiscriminatorColumn(name = "TYPE")
+@JsonInclude(Include.NON_EMPTY)
 public class Contribution extends AppCivistBaseModel {
 
 	@Id
 	@GeneratedValue
 	private Long contributionId;
+	@Index
 	private UUID uuid = UUID.randomUUID();
 	private String title;
 	private String text;
+	
+	@Transient
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type = ContributionTypes.COMMENT;
-	
-	@ManyToOne(cascade=CascadeType.ALL)	
-	private User author;
-
-	@ManyToMany(cascade = CascadeType.ALL)
-	private List<User> additionalAuthors = new ArrayList<User>();
-
-	@ManyToOne
-	private Assembly assembly;
-
-	@ManyToMany(cascade = CascadeType.ALL)
-	private List<Theme> contributionCategories = new ArrayList<Theme>();
-
-	@ManyToMany(cascade = CascadeType.ALL)
-	private List<Resource> attachments = new ArrayList<Resource>();
-
+	@JsonIgnore
+	@Index
+	private String textIndex;
 	@OneToOne
 	private Location location;
-
+	
 	@ManyToMany(cascade = CascadeType.ALL)
+	private List<User> authors = new ArrayList<User>();
+
+	@Transient	
+	private List<Theme> themes;
+
+	@Transient
+	private List<Resource> attachments;
+
+	@Transient
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
+
+	// TODO: check if it works
+	@ManyToMany(fetch=FetchType.LAZY,mappedBy="contributions")
+	private List<ResourceSpace> targetSpaces;
+	
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JsonIgnoreProperties({"contributionStatisticsId"})
 	@JsonManagedReference
 	private ContributionStatistics stats;
-
+	
 	// TODO think of how to connect and move through to the campaign phases
 
 	/**
@@ -64,19 +79,10 @@ public class Contribution extends AppCivistBaseModel {
 	public Contribution(User creator, String title, String text,
 			ContributionTypes type) {
 		super();
-		this.author = creator;
+		this.authors.add(creator);
 		this.title = title;
 		this.text = text;
 		this.type = type;
-	}
-
-	public Contribution(User creator, String title, String brief,
-			ContributionTypes type, Assembly assembly) {
-		this.author = creator;
-		this.title = title;
-		this.text = brief;
-		this.type = type;
-		this.assembly = assembly;
 	}
 
 	public Contribution() {
@@ -127,46 +133,42 @@ public class Contribution extends AppCivistBaseModel {
 		this.type = type;
 	}
 
-	public User getAuthor() {
-		return author;
+	public List<User> getAuthors() {
+		return authors;
 	}
 
-	public void setAuthor(User creator) {
-		this.author = creator;
+	public void setAuthors(List<User> authors) {
+		this.authors = authors;
 	}
 
-	public List<User> getAdditionalAuthors() {
-		return additionalAuthors;
+	public void addAuthor(User author) {
+		this.authors.add(author);
+	}
+	
+	public List<Theme> getThemes() {
+		return resourceSpace.getThemes();
+	}
+	
+	public void setThemes(List<Theme> themes) {
+		this.resourceSpace.setThemes(themes);
 	}
 
-	public void setAdditionalAuthors(List<User> additionalAuthors) {
-		this.additionalAuthors = additionalAuthors;
+	public void addTheme(Theme t) {
+		this.resourceSpace.addTheme(t);
 	}
-
-	public Assembly getAssembly() {
-		return assembly;
-	}
-
-	public void setAssembly(Assembly assembly) {
-		this.assembly = assembly;
-	}
-
-	public List<Theme> getContributionCategories() {
-		return contributionCategories;
-	}
-
-	public void setContributionCategories(List<Theme> contributionCategories) {
-		this.contributionCategories = contributionCategories;
-	}
-
+	
 	public List<Resource> getAttachments() {
-		return attachments;
+		return resourceSpace.getResources();
 	}
 
 	public void setAttachments(List<Resource> attachments) {
-		this.attachments = attachments;
+		this.resourceSpace.setResources(attachments);
 	}
 
+	public void addAttachment(Resource attach) {
+		this.resourceSpace.addResource(attach);
+	}
+	
 	public Location getLocation() {
 		return location;
 	}
@@ -176,11 +178,23 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Hashtag> getHashtags() {
-		return hashtags;
+		return resourceSpace.getHashtags();
 	}
 
 	public void setHashtags(List<Hashtag> hashtags) {
-		this.hashtags = hashtags;
+		this.resourceSpace.setHashtags(hashtags);
+	}
+	
+	public void addHashtag(Hashtag h) {
+		this.resourceSpace.addHashtag(h);
+	}
+
+	public ResourceSpace getResourceSpace() {
+		return resourceSpace;
+	}
+
+	public void setResourceSpace(ResourceSpace resourceSpace) {
+		this.resourceSpace = resourceSpace;
 	}
 
 	public ContributionStatistics getStats() {
@@ -205,31 +219,19 @@ public class Contribution extends AppCivistBaseModel {
 		List<Contribution> contribs = find.all();
 		return contribs;
 	}
-
-	public static List<Contribution> findAllByAssembly(Long aid) {
-		List<Contribution> contribs = find.where()
-				.eq("assembly.assemblyId", aid).findList();
-		return contribs;
+	
+	public static void create(Contribution c) {
+		c.save();
+		c.refresh();
 	}
 
-	public static void create(Contribution issue) {
-		issue.save();
-		issue.refresh();
+	public static Contribution read(Long contributionId) {
+		return find.ref(contributionId);
 	}
 
-	public static Contribution read(Long issueId) {
-		return find.ref(issueId);
-	}
-
-	public static Integer readByTitle(String title) {
-		ExpressionList<Contribution> contributions = find.where().eq("title",
-				title);
-		return contributions.findList().size();
-	}
-
-	public static Contribution createObject(Contribution issue) {
-		issue.save();
-		return issue;
+	public static Contribution createObject(Contribution c) {
+		c.save();
+		return c;
 	}
 
 	public static void delete(Long id) {
@@ -247,62 +249,53 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	/*
-	 * Other Queries DEPRECATED
+	 * Other Queries
 	 */
-	public static Contribution readIssueOfAssembly(Long assemblyId,
-			Long contributionId) {
-		return readByIdAndType(assemblyId, contributionId,
-				ContributionTypes.ISSUE);
+	
+	public static Contribution readByUUID(UUID contributionUUID) {
+		return find.where().eq("uuid", contributionUUID).findUnique();
 	}
 
-	public static Contribution readIdeaOfAssembly(Long assemblyId,
-			Long contributionId) {
-		return readByIdAndType(assemblyId, contributionId,
-				ContributionTypes.IDEA);
+	public static Integer readByTitle(String title) {
+		ExpressionList<Contribution> contributions = find.where().eq("title",
+				title);
+		return contributions.findList().size();
 	}
 
-	public static Contribution readQuestionOfAssembly(Long assemblyId,
-			Long contributionId) {
-		return readByIdAndType(assemblyId, contributionId,
-				ContributionTypes.QUESTION);
+	public static List<Contribution> findAllByTargetSpace(Long sid) {
+		List<Contribution> contribs = find.where()
+				.eq("targetSpaces.resourceSpaceId", sid).findList();
+		return contribs;
 	}
 
-	public static Contribution readCommentOfAssembly(Long assemblyId,
-			Long contributionId) {
-		return readByIdAndType(assemblyId, contributionId,
-				ContributionTypes.COMMENT);
+	public static List<Contribution> findAllByTargetSpaceAndQuery(Long sid, String query) {
+		List<Contribution> contribs = find.where()
+				.eq("targetSpaces.resourceSpaceId", sid)
+				.ilike("textIndex", "%"+query+"%")
+				.findList();
+		return contribs;
+	}
+	
+	public static List<Contribution> findAllByTargetSpaceAndUUID(UUID uuid) {
+		List<Contribution> contribs = find.where()
+				.eq("targetSpaces.uuid", uuid).findList();
+		return contribs;
 	}
 
-	public static List<Contribution> readContributionsOfAssembly(Long assemblyId) {
-		return find.where().eq("assemblyId", assemblyId).findList();
+	public static List<Contribution> readContributionsOfSpace(Long resourceSpaceId) {
+		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId).findList();
 	}
-
-	public static List<Contribution> readIssuesOfAssembly(Long assemblyId) {
-		return readListByAssemblyAndType(assemblyId, ContributionTypes.ISSUE);
-	}
-
-	public static List<Contribution> readIdeasOfAssembly(Long assemblyId) {
-		return readListByAssemblyAndType(assemblyId, ContributionTypes.IDEA);
-	}
-
-	public static List<Contribution> readQuestionsOfAssembly(Long assemblyId) {
-		return readListByAssemblyAndType(assemblyId, ContributionTypes.QUESTION);
-	}
-
-	public static List<Contribution> readCommentsOfAssembly(Long assemblyId) {
-		return readListByAssemblyAndType(assemblyId, ContributionTypes.COMMENT);
-	}
-
-	public static Contribution readByIdAndType(Long assemblyId,
+	
+	public static Contribution readByIdAndType(Long resourceSpaceId,
 			Long contributionId, ContributionTypes type) {
-		return find.where().eq("assemblyId", assemblyId)
+		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
 				.eq("contributionId", contributionId).eq("type", type)
 				.findUnique();
 	}
 
-	public static List<Contribution> readListByAssemblyAndType(Long assemblyId,
+	public static List<Contribution> readListByTargetSpaceAndType(Long resourceSpaceId,
 			ContributionTypes type) {
-		return find.where().eq("assemblyId", assemblyId).eq("type", type)
+		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId).eq("type", type)
 				.findList();
 	}
 
@@ -311,6 +304,89 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static List<Contribution> readByCreator(User u) {
-		return find.where().eq("author",u).findList();
+		return find.where().eq("authors.userId",u.getUserId()).findList();
+	}
+	
+	public static List<Contribution> findAllByTargetSpaceAndType(
+			ResourceSpace rs, String t) {
+		return find.where().eq("targetSpaces", rs).eq("type", t.toUpperCase())
+				.findList();
+	}
+	
+	public static List<Contribution> findAllByTargetSpaceAndTypeAndQuery(
+			ResourceSpace rs, String t, String query) {
+		return find.where().eq("targetSpaces", rs).eq("type", t.toUpperCase())
+				.ilike("textIndex", "%"+query+"%")
+				.findList();
+	}
+	
+	
+	public static Contribution readIssueOfSpace(Long resourceSpaceId,
+			Long contributionId) {
+		return readByIdAndType(resourceSpaceId, contributionId,
+				ContributionTypes.ISSUE);
+	}
+
+	public static Contribution readIdeaOfSpace(Long resourceSpaceId,
+			Long contributionId) {
+		return readByIdAndType(resourceSpaceId, contributionId,
+				ContributionTypes.IDEA);
+	}
+
+	public static Contribution readQuestionOfSpace(Long resourceSpaceId,
+			Long contributionId) {
+		return readByIdAndType(resourceSpaceId, contributionId,
+				ContributionTypes.QUESTION);
+	}
+
+	public static Contribution readCommentOfSpace(Long resourceSpaceId,
+			Long contributionId) {
+		return readByIdAndType(resourceSpaceId, contributionId,
+				ContributionTypes.COMMENT);
+	}
+	
+	public static Contribution readForumPostOfSpace(Long resourceSpaceId,
+			Long contributionId) {
+		return readByIdAndType(resourceSpaceId, contributionId,
+				ContributionTypes.FORUM_POST);
+	}
+	
+	public static Contribution readProposalOfSpace(Long resourceSpaceId,
+			Long contributionId) {
+		return readByIdAndType(resourceSpaceId, contributionId,
+				ContributionTypes.PROPOSAL);
+	}
+
+	public static List<Contribution> readIssuesOfSpace(Long resourceSpaceId) {
+		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.ISSUE);
+	}
+
+	public static List<Contribution> readIdeasOfSpace(Long resourceSpaceId) {
+		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.IDEA);
+	}
+
+	public static List<Contribution> readQuestionsOfSpace(Long resourceSpaceId) {
+		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.QUESTION);
+	}
+
+	public static List<Contribution> readCommentsOfSpace(Long resourceSpaceId) {
+		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.COMMENT);
+	}
+
+	// auxiliary
+	
+	// Extract hashtags from Text
+	@PrePersist
+	@PreUpdate
+	public void beforeSavingUpdating() {
+		// 1. Update text index
+		this.textIndex = this.title+"\n"+this.text;
+		// 2. extractHashtags
+		Pattern MY_PATTERN = Pattern.compile("#(\\w+|\\W+)");
+		Matcher mat = MY_PATTERN.matcher(this.textIndex);
+		while (mat.find()) {
+		  //System.out.println(mat.group(1));
+		  this.hashtags.add(new Hashtag(mat.group(1)));
+		}		
 	}
 }

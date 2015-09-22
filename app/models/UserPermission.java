@@ -6,10 +6,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+
 import be.objectify.deadbolt.core.models.Permission;
+
 import com.avaje.ebean.Model;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class UserPermission extends Model implements Permission {
 
 	@Id
@@ -24,8 +29,7 @@ public class UserPermission extends Model implements Permission {
 		this.value = value;
 	}
 
-	public static Finder<Long, UserPermission> find = new Finder<Long, UserPermission>(
-			Long.class, UserPermission.class);
+	public static Finder<Long, UserPermission> find = new Finder<>(UserPermission.class);
 
 	public static UserPermission read(Long permitId) {
 		return find.ref(permitId);

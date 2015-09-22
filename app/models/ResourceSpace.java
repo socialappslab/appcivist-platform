@@ -9,40 +9,41 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
+import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import enums.CampaignTypesEnum;
+import enums.CampaignTemplatesEnum;
 import enums.ResourceSpaceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 public class ResourceSpace extends AppCivistBaseModel {
+	
 	@Id
-	private UUID uuid;
+	@GeneratedValue
+	private Long resourceSpaceId; 
+	@Index
+	private UUID uuid = UUID.randomUUID();
+	@Transient
+	private String uuidAsString;
 	@Enumerated(EnumType.STRING)
 	private ResourceSpaceTypes type = ResourceSpaceTypes.ASSEMBLY;
 	private UUID parent;
 	
 	/**
-	 * Assembly configuration parameters, e.g., modules and functionalities of modules that are enabled, 
+	 * Configuration parameters, e.g., modules and functionalities of modules that are enabled, 
 	 * things specific to one assembly, future plugins or extended services configurations
 	 */
-//	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
-//	@JsonManagedReference
-//	@OneToMany(cascade = CascadeType.ALL)
-//	@JoinColumn(name = "target_uuid", referencedColumnName="uuid")
-//    @JoinTable(name="Config", 
-//            joinColumns=@JoinColumn(name="uuid", referencedColumnName="targetUuid"),
-//    		inverseJoinColumns=@JoinColumn(name="uuid"))
-//	@Formula(select="select c from config c where c.targetUuid=${ta}.uuid")
 	@ManyToMany(cascade = {CascadeType.ALL})
 	@JoinTable(name="resource_space_config")
 	private List<Config> configs = new ArrayList<Config>();
@@ -58,8 +59,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<Campaign> campaigns = new ArrayList<Campaign>();
 
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
-	@JoinTable(name="resource_space_campaign_phases")
-	private List<CampaignPhase> phases = new ArrayList<CampaignPhase>();
+	@JoinTable(name="resource_space_campaign_components")
+	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
 	
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
 	@JoinTable(name="resource_space_working_groups")
@@ -77,13 +78,17 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
 	@JoinTable(name="resource_space_resource")
 	private List<Resource> resources = new ArrayList<Resource>();
-
+	
+	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
+	@JoinTable(name="resource_space_hashtag")
+	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
+	
 	// TODO: add assembly members list here
 	
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
-	public static Finder<UUID, ResourceSpace> find = new Finder<>(ResourceSpace.class);
+	public static Finder<Long, ResourceSpace> find = new Finder<>(ResourceSpace.class);
 
 	/**
 	 * Empty constructor
@@ -131,6 +136,15 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.uuid = uuid;
 	}
 
+	public String getUuidAsString() {
+		return uuid.toString();
+	}
+
+	public void setUuidAsString(String uuidAsString) {
+		this.uuidAsString = uuidAsString;
+		this.uuid = UUID.fromString(uuidAsString);
+	}
+	
 	public ResourceSpaceTypes getType() {
 		return type;
 	}
@@ -155,8 +169,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.themes = interests;
 	}
 	
-	public void addTheme(Theme category) {
-        this.themes.add(category);
+	public void addTheme(Theme theme) {
+        this.themes.add(theme);
     }
  
     public void removeTheme(Theme category) {
@@ -180,6 +194,10 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.campaigns = campaigns;
 	}
 
+	public void addCampaign(Campaign c) {
+        this.campaigns.add(c);
+    }
+	
 	public List<Config> getConfigs() {
 		return configs;
 	}
@@ -187,15 +205,23 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public void setConfigs(List<Config> configs) {
 		this.configs = configs;
 	}
-
-	public List<CampaignPhase> getPhases() {
-		return phases;
+	
+	public void addConfig(Config c) {
+        this.configs.add(c);
+    }
+	
+	public List<ComponentInstance> getComponents() {
+		return components;
 	}
 
-	public void setPhases(List<CampaignPhase> phases) {
-		this.phases = phases;
+	public void setComponents(List<ComponentInstance> components) {
+		this.components = components;
 	}
 
+	public void addComponent(ComponentInstance c) {
+        this.components.add(c);
+    }
+	
 	public List<WorkingGroup> getWorkingGroups() {
 		return workingGroups;
 	}
@@ -204,12 +230,20 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.workingGroups = workingGroups;
 	}
 
+	public void addWorkingGroup(WorkingGroup wg) {
+        this.workingGroups.add(wg);
+    }
+	
 	public List<Contribution> getContributions() {
 		return contributions;
 	}
 
 	public void setContributions(List<Contribution> contributions) {
 		this.contributions = contributions;
+	}
+
+	public void addContribution(Contribution c) {
+		this.contributions.add(c);	
 	}
 
 	public List<Assembly> getAssemblies() {
@@ -220,16 +254,55 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.assemblies = assemblies;
 	}
 
+	public void addAssembly(Assembly a) {
+        this.assemblies.add(a);
+    }
+	
+	public Long getResourceSpaceId() {
+		return resourceSpaceId;
+	}
+
+	public void setResourceSpaceId(Long resourceSpaceId) {
+		this.resourceSpaceId = resourceSpaceId;
+	}
+
+	public List<Resource> getResources() {
+		return resources;
+	}
+
+	public void setResources(List<Resource> resources) {
+		this.resources = resources;
+	}
+
+	public void addResource(Resource resource) {
+		this.resources.add(resource);
+	}
+	public List<Hashtag> getHashtags() {
+		return hashtags;
+	}
+
+	public void setHashtags(List<Hashtag> hashtags) {
+		this.hashtags = hashtags;
+	}
+
+	public void addHashtag(Hashtag h) {
+		this.hashtags.add(h);	
+	}
+	
 	/*
 	 * Basic Data Queries
 	 */
-	public static void create(ResourceSpace assemblyResourceSet) {
-		assemblyResourceSet.save();
-		assemblyResourceSet.refresh();
+	public static void create(ResourceSpace resourceSet) {
+		resourceSet.save();
+		resourceSet.refresh();
 	}
 
-	public static ResourceSpace read(UUID resourceSetId) {
+	public static ResourceSpace read(Long resourceSetId) {
 		return find.ref(resourceSetId);
+	}
+
+	public static ResourceSpace readByUUID(UUID resourceSetUuid) {
+		return find.where().eq("uuid",resourceSetUuid).findUnique();
 	}
 
 	public static ResourceSpace createObject(ResourceSpace resourceSet) {
@@ -237,10 +310,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 		return resourceSet;
 	}
 
-	public static void delete(UUID id) {
+	public static void delete(Long id) {
 		find.ref(id).delete();
 	}
 
+	public static void deleteByUUID(UUID resourceSetUuid) {
+		find.where().eq("uuid",resourceSetUuid).findUnique().delete();
+	}
+	
 	public static ResourceSpace update(ResourceSpace resourceSet) {
 		resourceSet.update();
 		resourceSet.refresh();
@@ -250,20 +327,19 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public void setDefaultValues() {
 		Campaign defaultCampaign = new Campaign();
 		defaultCampaign.setTitle("Default Campaign");
-		defaultCampaign.setActive(true);
-		CampaignType ct = CampaignType.findByName(CampaignTypesEnum.PARTICIPATORY_BUDGETING);
+		CampaignTemplate ct = CampaignTemplate.findByName(CampaignTemplatesEnum.PARTICIPATORY_BUDGETING);
 		defaultCampaign.setType(ct);
 		
-		List<PhaseDefinition> phases = ct.getDefaultPhases();
+		List<Component> components = ct.getDefaultComponents();
 		
-		for (PhaseDefinition phaseDefinition : phases) {
-			CampaignPhase phase = new CampaignPhase(defaultCampaign, phaseDefinition);
-			defaultCampaign.getPhases().add(phase);
+		for (Component component : components) {
+			ComponentInstance componentInstance = new ComponentInstance(defaultCampaign, component);
+			defaultCampaign.getResources().getComponents().add(componentInstance);
 		}
 		this.getCampaigns().add(defaultCampaign);
 	}
 
-	public static List<ResourceSpace> findByCategory(String category) {
-		return find.where().like("assemblyThemes.title","%"+category+"%").findList();
+	public static List<ResourceSpace> findByTheme(String theme) {
+		return find.where().like("themes.title","%"+theme+"%").findList();
 	}
 }

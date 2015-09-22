@@ -2,6 +2,7 @@ package delegates;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import models.Assembly;
 import models.Membership;
@@ -46,6 +47,9 @@ public class MembershipsDelegate {
 				.equals("GROUP") ? WorkingGroup.read(targetCollectionId) : null;
 		Assembly targetAssembly = targetCollection.toUpperCase().equals(
 				"ASSEMBLY") ? Assembly.read(targetCollectionId) : null;
+				
+		UUID targetUuid = targetCollection.toUpperCase().equals("ASSEMBLY") ? targetAssembly.getUuid() : targetWorkingGroup.getUuid();
+				
 		// 5.Create the correct type of membership depending on the
 		// targetCollection
 		Membership m = targetCollection.toUpperCase().equals("GROUP") ? new MembershipGroup()
@@ -82,6 +86,7 @@ public class MembershipsDelegate {
 		m.setUser(targetUser);
 		m.setLang(targetUser.getLanguage());
 		m.setExpiration((System.currentTimeMillis() + 1000 * Memberships.MEMBERSHIP_EXPIRATION_TIMEOUT));
+		m.setTargetUuid(targetUuid);
 		if (targetCollection.toUpperCase().equals("GROUP")) {
 			((MembershipGroup) m).setWorkingGroup(targetWorkingGroup);
 		} else {
