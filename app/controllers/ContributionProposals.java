@@ -14,11 +14,10 @@ import security.SecurityModelConstants;
 import be.objectify.deadbolt.java.actions.Dynamic;
 
 import com.feth.play.module.pa.PlayAuthenticate;
-import com.wordnik.swagger.annotations.Api;
 
 import enums.ContributionTypes;
 
-@Api(value = "/proposal", description = "Citizen Proposal Making services: turning ideas into proposals within assemblies")
+//@Api(value = "/proposal", description = "Citizen Proposal Making services: turning ideas into proposals within assemblies")
 public class ContributionProposals extends Contributions {
 
 	// TODO: ensure that proposals have one ore more connected ideas upon which they built

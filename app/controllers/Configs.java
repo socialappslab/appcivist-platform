@@ -14,7 +14,6 @@ import enums.ConfigTargets;
 import http.Headers;
 import models.Assembly;
 import models.Config;
-import models.ConfigDefinition;
 import models.User;
 import models.transfer.TransferResponseStatus;
 import play.Logger;

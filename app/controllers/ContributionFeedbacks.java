@@ -14,11 +14,10 @@ import security.SecurityModelConstants;
 import be.objectify.deadbolt.java.actions.Dynamic;
 
 import com.feth.play.module.pa.PlayAuthenticate;
-import com.wordnik.swagger.annotations.Api;
 
 import enums.ContributionTypes;
 
-@Api(value = "/feedback", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
+//@Api(value = "/feedback", description = "Citizen Contritubion Services: asking questions, reporting issues, proposing ideas, turning ideas into proposals within assemblies")
 public class ContributionFeedbacks extends Contributions {
 
 	public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);

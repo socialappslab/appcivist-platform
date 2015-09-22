@@ -12,7 +12,7 @@ import play.libs.Json;
 import play.mvc.*;
 import http.Headers;
 
-@Api(value="/")
+@Api(value="/location")
 @With(Headers.class)
 public class Locations extends Controller {
 	@ApiOperation(produces="application/json", value="Simple search of existing locations", httpMethod="GET")

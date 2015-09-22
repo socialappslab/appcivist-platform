@@ -14,11 +14,9 @@ import security.SecurityModelConstants;
 import be.objectify.deadbolt.java.actions.Dynamic;
 
 import com.feth.play.module.pa.PlayAuthenticate;
-import com.wordnik.swagger.annotations.Api;
 
 import enums.ContributionTypes;
 
-@Api(value = "/comment", description = "Citizen Contritubion Services for Comments: comments can be made only on other contributions")
 public class ContributionComments extends Contributions {
 
 	// TODO: ensure that comments have always a connected contribution
