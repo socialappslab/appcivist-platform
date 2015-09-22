@@ -316,62 +316,62 @@
       campaignTemplate: *ct1
       title: Brainstorming
       position: 0
-      targetUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     - &m2 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Working Group Formation
       position: 1
-      targetUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
     - &m3 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Proposal Drafting
       position: 2
-      targetUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     - &m4 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Complete Draft
       position: 3
-      targetUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     - &m5 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Proposal editing
       position: 4
-      targetUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
     - &m6 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Final proposal/s
       position: 5
-      targetUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
     - &m7 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Proposal selection
       position: 6
-      targetUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
     - &m8 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Deliberation starts
       position: 7
-      targetUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     - &m9 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Technical Assessment
       position: 8
-      targetUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     - &m10 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Deliberation finishes
       position: 9
-      targetUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     - &m11 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Voting Starts
       position: 10
-      targetUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"      
+      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"      
     - &m12 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Voting Ends
       position: 11
-      targetUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
 #targetUuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"
 #targetUuidAsString: "12fa0538-407a-11e5-a151-feff819cdc9f"
 #targetUuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9f"
@@ -407,8 +407,8 @@
           - &ci1 !!models.ComponentInstanceMilestone
             title: Brainstorming
             position: 0
-            start: "2015-11-01"
-            days: 10
+            start: "2015-09-01"
+            days: 60
           - &ci2 !!models.ComponentInstanceMilestone
             title: Working Group Formation
             position: 1
@@ -524,30 +524,86 @@
     title: "Belleville - Paris PB 2016"
     shortname: belleville-paris-pb-2016
     listed: true
-    #assembly: *a1
     type: *ct1
     uuidAsString: e1998630-4079-11e5-a151-feff819cdc9f
+    resources: *rs5
   - &c2 !!models.Campaign
     title: "Fundraising for art program at neighborhood school"
     shortname: fundraising-art-program
     listed: true
-    #assembly: *a1
     type: *ct2
     uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
   - &c3 !!models.Campaign
     title: "Mobilize anti-eviction initiative"
     shortname: anti-eviction
     listed: true
-    #assembly: *a1
     type: *ct3
     uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
   - &c4 !!models.Campaign
     title: "Paris PB 2016"
     shortname: paris-pb-2016
     listed: true
-    #assembly: *a1
     type: *ct1
     uuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+    resources: *rs6
+
+##############################################################################################################################################################################################
+# Contributions
+  - &contrib5 !!models.Contribution
+    title: GREAT!
+    text: This sounds great. We should probably invite Mike to join the assembly. He has some great ideas about Urban Infrastructure
+    type: COMMENT
+    authors: 
+      - *u1
+  - &contrib7 !!models.Contribution
+    title: Hi
+    text: Just joined the Assembly. Will be happy to contribute with some ideas....
+    type: COMMENT
+    authors: 
+      - *u3
+
+##############################################################################################################################################################################################
+# Contribution Resource Space
+  - &rs7 !!models.ResourceSpace
+    type: CONTRIBUTION
+    contributions:
+      - *contrib5
+      - *contrib7
+      
+##############################################################################################################################################################################################
+# More Contributions
+  - &contrib1 !!models.Contribution
+    title: Proposals for Urban infrastructure
+    text: Hey guys, I think we should start a campaign to develop proposals for Urban Infrastructure. What do you think?
+    type: FORUM_POST
+    themes: 
+      - *cat1
+      - *cat2
+    resourceSpace: *rs7
+    authors: 
+      - *u2
+  - &contrib2 !!models.Contribution
+    title: Pizza 
+    text: Hi all! let's meet tomorrow and have pizza... Who's in?
+    type: FORUM_POST
+    authors: 
+      - *u1
+  - &contrib3 !!models.Contribution
+    title: When do we start creating groups for PB?
+    text: I'm not sure how the process go. Can somebody tell me how this groups thing works?
+    type: FORUM_POST
+    themes: 
+      - *cat1
+    authors: 
+      - *u3
+  - &contrib4 !!models.Contribution
+    title: PB 2014
+    text: Everyone, we just created a campaign to collaboratively create proposals for PB
+    type: FORUM_POST
+    authors: 
+      - *u1
+    
+
   
 ##############################################################################################################################################################################################
 # Assembly Resource spaces
@@ -597,6 +653,11 @@
         definition: *config9
   - &rs3 !!models.ResourceSpace
     type: ASSEMBLY
+    contributions:
+      - *contrib1
+      - *contrib2
+      - *contrib3
+      - *contrib4
   - &rs4 !!models.ResourceSpace
     type: WORKING_GROUP
 

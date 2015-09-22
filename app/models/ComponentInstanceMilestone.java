@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -31,6 +32,7 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 	@Transient
 	private String uuidAsString;
 	@ManyToOne
+	@JsonBackReference
 	private ComponentInstance componentInstance;
 	/**
 	 * The find property is a static property that facilitates database query creation

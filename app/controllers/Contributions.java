@@ -136,6 +136,7 @@ public class Contributions extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createContributionInResourceSpaceWithId(Long sid) {
@@ -173,6 +174,7 @@ public class Contributions extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createAssemblyContribution(Long aid, String space) {
@@ -213,6 +215,7 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "ciid", value = "Component id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createCampaignComponentContribution(Long aid, Long cid, Long ciid) {
@@ -251,6 +254,7 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "gid", value = "Working group id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createAssemblyGroupContribution(Long aid, Long gid, String space) {
@@ -291,6 +295,7 @@ public class Contributions extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result updateContribution(Long aid, Long contributionId) {

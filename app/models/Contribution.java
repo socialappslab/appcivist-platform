@@ -17,11 +17,12 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ContributionTypes;
+import enums.ResourceSpaceTypes;
 import models.location.Location;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "TYPE")
+//@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+//@DiscriminatorColumn(name = "TYPE")
 @JsonInclude(Include.NON_EMPTY)
 public class Contribution extends AppCivistBaseModel {
 
@@ -32,6 +33,8 @@ public class Contribution extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	private String title;
 	private String text;
+	
+	@Transient
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type = ContributionTypes.COMMENT;
 	@JsonIgnore
@@ -58,7 +61,7 @@ public class Contribution extends AppCivistBaseModel {
 	
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace resourceSpace = new ResourceSpace();
+	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JsonIgnoreProperties({"contributionStatisticsId"})
@@ -184,6 +187,14 @@ public class Contribution extends AppCivistBaseModel {
 	
 	public void addHashtag(Hashtag h) {
 		this.resourceSpace.addHashtag(h);
+	}
+
+	public ResourceSpace getResourceSpace() {
+		return resourceSpace;
+	}
+
+	public void setResourceSpace(ResourceSpace resourceSpace) {
+		this.resourceSpace = resourceSpace;
 	}
 
 	public ContributionStatistics getStats() {

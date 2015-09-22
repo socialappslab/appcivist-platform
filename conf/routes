@@ -45,7 +45,8 @@ POST      /api/user/signup                                                contro
 POST      /api/user/login                                                 controllers.Users.doLogin() 
 POST      /api/user/logout                                                controllers.Users.doLogout() 
 GET       /api/user/verify/:token                                         controllers.Users.verify(token: String) 
-GET       /api/user/:uuid/campaign                                        controllers.Campaigns.campaignsByUser(uuid: java.util.UUID, filter ?="ongoing")
+GET       /api/user/:uuid/campaign                                        controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
+GET       /api/user/:uid/campaign                                         controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
 
 #####################################################################################
 # Notification Server

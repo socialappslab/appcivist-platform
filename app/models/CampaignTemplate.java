@@ -1,8 +1,10 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -13,7 +15,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
+import utils.Pair;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -44,6 +50,7 @@ public class CampaignTemplate extends AppCivistBaseModel {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JsonManagedReference
 	@JsonInclude(content=Include.NON_EMPTY)
+	@JsonIgnore
 	private List<ComponentRequiredMilestone> requiredMilestones = new ArrayList<ComponentRequiredMilestone>();
 		
 	/**
@@ -86,6 +93,16 @@ public class CampaignTemplate extends AppCivistBaseModel {
 	}
 
 	public List<Component> getDefaultComponents() {
+		HashMap<UUID, Component> componentsTable = new HashMap<>();
+		for (Component c : defaultComponents) {
+			componentsTable.put(c.getUuid(), c);
+		}
+
+		for (ComponentRequiredMilestone milestone : requiredMilestones) {
+			UUID targetUUID = milestone.getTargetComponentUuid();
+			Component c = componentsTable.get(targetUUID);
+			c.getRequiredMilestones().add(milestone);
+		}
 		return defaultComponents;
 	}
 

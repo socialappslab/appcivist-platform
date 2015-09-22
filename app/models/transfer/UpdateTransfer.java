@@ -148,13 +148,16 @@ public class UpdateTransfer {
 		else 
 			desc = Messages.get(userLang, descriptionMessageKey, resourceTitle, resourceText, containerName);
 		
+		String text = resourceTitle+"/n"+resourceText;
+		int length = text.length();
+		if (length>256) length=256;
 		return new UpdateTransfer(
 				updateType, 
 				resourceType, 
 				containerType, 
 				title, 
 				desc,
-				(resourceTitle+"/n"+resourceText).substring(0, 256),
+				(resourceTitle+"/n"+resourceText).substring(0, length-1),
 				resourceId, resourceUUID, 
 				containerId, containerUUID,
 				resourceCreationDate);

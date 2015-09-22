@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.ResourceSpaceTypes;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class Campaign extends AppCivistBaseModel {
 
 	@Id
@@ -54,7 +55,6 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "campaigns")
 	private List<ResourceSpace> targetSpaces;
-
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private CampaignTemplate template;
@@ -159,7 +159,8 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	public Boolean getActive() {
-		return getStartDate().before(Calendar.getInstance().getTime()) || getStartDate().equals(Calendar.getInstance().getTime()) ;
+		return this.getStartDate()!=null && (this.getStartDate().before(Calendar.getInstance().getTime())
+				|| this.getStartDate().equals(Calendar.getInstance().getTime()));
 	}
 
 	public String getUrl() {
@@ -219,7 +220,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getStartDate() {
 		List<ComponentInstance> components = this.resources.getComponents(); 
-		if (components != null) {
+		if (components != null && !components.isEmpty()) {
 			Collections.sort(components,new ComponentInstance());
 			ComponentInstance firstPhase = components.get(0);
 			return firstPhase.getStartDate();
@@ -230,7 +231,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getEndDate() {
 		List<ComponentInstance> components = this.resources.getComponents(); 
-		if (components != null) {
+		if (components != null && !components.isEmpty()) {
 			Collections.sort(components,new ComponentInstance());
 			ComponentInstance lastPhase = components.get(components.size()-1);
 			return lastPhase.getEndDate();
@@ -296,21 +297,9 @@ String uuidAsString, List<ComponentInstance> phases) {
 		if (campaigns != null && !campaigns.isEmpty()) {
 			for (Campaign c : campaigns) {
 				Calendar today = Calendar.getInstance();
-				if (c.getStartDate().before(today.getTime())
+				if (c.getStartDate()!=null && c.getEndDate()!=null && c.getStartDate().before(today.getTime())
 						&& c.getEndDate().after(today.getTime())) {
 					ongoingCampaigns.add(c);
-
-					// List<ComponentInstance> phases = c.getResources()
-					// .getComponents();
-					// if (phases != null && !phases.isEmpty()) {
-					// for (ComponentInstance p : phases) {
-					// Calendar today = Calendar.getInstance();
-					// if (p.getStartDate().before(today.getTime())
-					// && p.getEndDate().after(today.getTime())) {
-					// ongoingCampaigns.add(c);
-					// break;
-					// }
-					// }
 				}
 			}
 		}

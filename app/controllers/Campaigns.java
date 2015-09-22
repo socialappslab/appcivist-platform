@@ -175,14 +175,43 @@ public class Campaigns extends Controller {
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response=TransferResponseStatus.class) })
 	@ApiImplicitParams({
+		@ApiImplicitParam(name="uid", value="User's ID", dataType="Long", paramType="path"),
+		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
+		@ApiImplicitParam(name="filter", value="Filter value", dataType="String", paramType="query", allowableValues="ongoing,past,future,all", defaultValue="ongoing")
+	})
+	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result campaignsByUserId(Long uid, String filter) {
+		if (filter==null || filter.equals("ongoing")) {
+			return ongoingCampaignsByUserId(uid);
+		} else if (filter.equals("past")) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
+		} else if (filter.equals("future")) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
+		} else {
+			User u = User.read(uid);
+			List<Membership> assemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
+			List<Campaign> campaigns = new ArrayList<Campaign>();
+			for (Membership membership : assemblyMemberships) {
+				Assembly a = ((MembershipAssembly) membership).getAssembly();
+				campaigns.addAll(a.getResources().getCampaigns());
+			}
+			if (!campaigns.isEmpty()) return ok(Json.toJson(campaigns));
+			else
+				return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
+		}
+	}
+	
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer="List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response=TransferResponseStatus.class) })
+	@ApiImplicitParams({
 		@ApiImplicitParam(name="uuid", value="User's UUID", dataType="java.util.UUID", paramType="path"),
 		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
 		@ApiImplicitParam(name="filter", value="Filter value", dataType="String", paramType="query", allowableValues="ongoing,past,future,all", defaultValue="ongoing")
 	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result campaignsByUser(UUID uuid, String filter) {
+	public static Result campaignsByUserUuid(UUID uuid, String filter) {
 		if (filter==null || filter.equals("ongoing")) {
-			return ongoingCampaignsByUser(uuid);
+			return ongoingCampaignsByUserUuid(uuid);
 		} else if (filter.equals("past")) {
 			return internalServerError(Json.toJson(new TransferResponseStatus("Not implemented")));
 		} else if (filter.equals("future")) {
@@ -196,8 +225,7 @@ public class Campaigns extends Controller {
 				campaigns.addAll(a.getResources().getCampaigns());
 			}
 			if (!campaigns.isEmpty()) return ok(Json.toJson(campaigns));
-			else
-				return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
+			else return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
 		}
 	}
 	
@@ -217,8 +245,17 @@ public class Campaigns extends Controller {
 	}
 	
 	// Private not exposed Methods
-	private static Result ongoingCampaignsByUser(UUID uuid) {
+	private static Result ongoingCampaignsByUserUuid(UUID uuid) {
 		User u = User.findByUUID(uuid);
+		return ongoingCampaignsByUser(u);
+	}
+
+	private static Result ongoingCampaignsByUserId(Long uid) {
+		User u = User.read(uid);
+		return ongoingCampaignsByUser(u);
+	}
+	
+	private static Result ongoingCampaignsByUser(User u) {
 		List<Membership> assemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
 		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
 		
@@ -232,6 +269,7 @@ public class Campaigns extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus("No ongoing campaigns")));
 	}
 
+	
 	private static Result ongoingCampaignsByAssembly(UUID uuid) {
 		Assembly a = Assembly.readByUUID(uuid);
 		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();

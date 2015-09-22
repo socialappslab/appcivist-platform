@@ -128,7 +128,7 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = Assembly.class, produces = "application/json", value = "Create a new assembly")
+	@ApiOperation(response = Assembly.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "assembly_form", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),

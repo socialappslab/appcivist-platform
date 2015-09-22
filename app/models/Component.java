@@ -31,7 +31,10 @@ public class Component extends AppCivistBaseModel {
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	private List<ComponentRequiredConfiguration> requiredConfigurations = new ArrayList<ComponentRequiredConfiguration>();
-		
+	
+	@Transient
+	private List<ComponentRequiredMilestone> requiredMilestones = new ArrayList<>();
+	
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
@@ -93,6 +96,15 @@ public class Component extends AppCivistBaseModel {
 	 * Basic Data operations
 	 */
 	
+	public List<ComponentRequiredMilestone> getRequiredMilestones() {
+		return requiredMilestones;
+	}
+
+	public void setRequiredMilestones(
+			List<ComponentRequiredMilestone> requiredMilestones) {
+		this.requiredMilestones = requiredMilestones;
+	}
+
 	public static Component read(Long id) {
         return find.ref(id);
     }

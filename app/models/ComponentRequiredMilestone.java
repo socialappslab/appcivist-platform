@@ -12,6 +12,7 @@ import javax.persistence.Transient;
 
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class ComponentRequiredMilestone extends AppCivistBaseModel implements Comparator<ComponentRequiredMilestone> {
@@ -24,9 +25,10 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
     private int position;	
     
     @Index 
-	private UUID targetUuid;
+    @JsonIgnore
+	private UUID targetComponentUuid;
     @Transient
-    private String targetUuidAsString;
+    private String targetComponentUuidAsString;
     
 	@ManyToOne
 	@JsonBackReference
@@ -73,22 +75,22 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 		this.position = order;
 	}
 
-	public UUID getTargetUuid() {
-		return targetUuid;
+	public UUID getTargetComponentUuid() {
+		return targetComponentUuid;
 	}
 
-	public void setTargetUuid(UUID targetUuid) {
-		this.targetUuid = targetUuid;
+	public void setTargetComponentUuid(UUID targetUuid) {
+		this.targetComponentUuid = targetUuid;
 	}
 
-	public String getTargetUuidAsString() {
-		this.targetUuidAsString = this.targetUuid.toString();
-		return targetUuidAsString;
+	public String getTargetComponentUuidAsString() {
+		this.targetComponentUuidAsString = this.targetComponentUuid.toString();
+		return targetComponentUuidAsString;
 	}
 
-	public void setTargetUuidAsString(String targetUuuidAsString) {
-		this.targetUuidAsString = targetUuuidAsString;
-		this.targetUuid = UUID.fromString(targetUuuidAsString);
+	public void setTargetComponentUuidAsString(String targetUuuidAsString) {
+		this.targetComponentUuidAsString = targetUuuidAsString;
+		this.targetComponentUuid = UUID.fromString(targetUuuidAsString);
 	}
 
 	public CampaignTemplate getCampaignTemplate() {
@@ -100,7 +102,7 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 	}
 	
 	public Component getComponent() {
-		return Component.findByUUID(this.targetUuid);
+		return Component.findByUUID(this.targetComponentUuid);
 	}
 
 	public static ComponentRequiredMilestone read(Long id) {

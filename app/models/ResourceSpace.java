@@ -59,7 +59,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<Campaign> campaigns = new ArrayList<Campaign>();
 
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
-	@JoinTable(name="resource_space_campaign_phases")
+	@JoinTable(name="resource_space_campaign_components")
 	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
 	
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)

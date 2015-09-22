@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ResourceSpaceTypes;
 
@@ -56,6 +57,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	
 	// TODO: probably, each milestone must have its resource space of contributions
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="componentInstance")
+	@JsonManagedReference
 	private List<ComponentInstanceMilestone> milestones = new ArrayList<ComponentInstanceMilestone>();
 		
 	/**
@@ -177,7 +179,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 			Collections.sort(reqMilestones,new ComponentRequiredMilestone());
 			ComponentInstanceMilestone previous = null;
 			for (ComponentRequiredMilestone requiredMilestone : reqMilestones) {
-				if(requiredMilestone.getTargetUuid().equals(this.component.getUuid())) {
+				if(requiredMilestone.getTargetComponentUuid().equals(this.component.getUuid())) {
 					ComponentInstanceMilestone m = new ComponentInstanceMilestone(requiredMilestone, previous);
 					this.addMilestone(m);
 					previous = m;
