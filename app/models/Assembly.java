@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -75,12 +74,10 @@ public class Assembly extends AppCivistBaseModel {
 	 * be added if needed under proper names
 	 */
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonIgnoreProperties({ "uuid" })
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace resources = new ResourceSpace();
 
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonIgnoreProperties({ "uuid" })
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace();
 
@@ -435,5 +432,9 @@ public class Assembly extends AppCivistBaseModel {
 	
 	public static Boolean isAssemblyListed(UUID uuid) {
 		return find.where().eq("assemblyUuid",uuid).eq("listed",true).findUnique()!=null;
+	}
+
+	public static int findCampaignWithTitle(Long aid, String title) {
+		return find.where().eq("assemblyId",aid).eq("resources.campaigns.title",title).findList().size();
 	}
 }

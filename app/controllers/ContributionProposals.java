@@ -29,7 +29,7 @@ public class ContributionProposals extends Contributions {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findProposals(Long aid) {
 		List<Contribution> contributions = Contribution
-				.readListByAssemblyAndType(aid, cType);
+				.readListByTargetSpaceAndType(Assembly.read(aid).getResources().getResourceSpaceId(),cType);
 		return ok(Json.toJson(contributions));
 	}
 
@@ -53,7 +53,7 @@ public class ContributionProposals extends Contributions {
 			return contributionUpdateError(updatedContributionForm);
 		} else {
 			Contribution updatedContribution = updatedContributionForm.get();
-			return updateContribution(aid, id, updatedContribution, cType);
+			return updateContributionResult(aid, id, updatedContribution, cType);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class ContributionProposals extends Contributions {
 			return contributionCreateError(newContributionForm);
 		} else {
 			Contribution newContribution = newContributionForm.get();
-			return createContribution(newContribution, author,
+			return createContributionInAssembly(newContribution, author,
 					Assembly.read(aid), cType);
 		}
 	}

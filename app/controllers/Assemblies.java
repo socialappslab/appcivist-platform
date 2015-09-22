@@ -11,7 +11,6 @@ import models.Assembly;
 import models.AssemblyProfile;
 import models.Membership;
 import models.MembershipAssembly;
-import models.ResourceSpace;
 import models.Theme;
 import models.User;
 import models.transfer.AssemblySummaryTransfer;
@@ -31,7 +30,6 @@ import utils.Pair;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectNotPresent;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;

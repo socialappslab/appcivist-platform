@@ -41,29 +41,19 @@ public class WorkingGroup extends AppCivistBaseModel {
 //	private List<Config> workingGroupConfigs = new ArrayList<Config>();
    
     @ManyToMany(cascade=CascadeType.ALL)
-//    @JoinTable(name="working_groups_assembly",
-//    	joinColumns = { 
-//        	@JoinColumn(name = "assembly", referencedColumnName = "assembly_id")
-//    	}, 
-//    	inverseJoinColumns = { 
-//    		@JoinColumn(name = "group", referencedColumnName = "group_id")
-//    })
     private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     /**
  	 * The group resource space contains its configurations, themes, associated campaigns
  	 */
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
- 	//@JoinColumn(name="resource_uuid", unique= true, nullable=true, insertable=true, updatable=true, referencedColumnName="uuid")
-	// 	@JoinTable(
-	// 		      name="assembly_resource_space",
-	// 		      joinColumns=
-	// 		        @JoinColumn(name="assemblyId", referencedColumnName="assembly_id"),
-	// 		      inverseJoinColumns=
-	// 		        @JoinColumn(name="uuid", referencedColumnName="resource_space"))
  	@JsonIgnoreProperties({ "uuid" })
     private ResourceSpace resources;
     
+ 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace forum = new ResourceSpace();
+ 	
 	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
 	// TODO: all be connected in a P2P architecture. 
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -180,7 +170,19 @@ public class WorkingGroup extends AppCivistBaseModel {
         return resources;
     }
 
-    public void setResourceSpace(ResourceSpace resources) {
+    public ResourceSpace getForum() {
+		return forum;
+	}
+
+	public void setForum(ResourceSpace forum) {
+		this.forum = forum;
+	}
+
+	public void setResources(ResourceSpace resources) {
+		this.resources = resources;
+	}
+
+	public void setResourceSpace(ResourceSpace resources) {
         this.resources = resources;
     }
 

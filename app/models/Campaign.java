@@ -13,12 +13,14 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -47,6 +49,12 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace resources;
+	
+	// TODO: check if it works
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "campaigns")
+	private List<ResourceSpace> targetSpaces;
+
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private CampaignTemplate template;
@@ -95,7 +103,7 @@ public class Campaign extends AppCivistBaseModel {
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultComponents() != null) this.populateDefaultPhases(type.getDefaultComponents());
+		if (type != null && type.getDefaultComponents() != null) this.populateDefaultComponents(type.getDefaultComponents());
 	}
 
 	public Campaign(String title, String shortname, Boolean listed, CampaignTemplate type,
@@ -110,7 +118,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultComponents() != null) this.populateDefaultPhases(type.getDefaultComponents());
+		if (type != null && type.getDefaultComponents() != null) this.populateDefaultComponents(type.getDefaultComponents());
 	}
 	
 
@@ -187,14 +195,6 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources = resources;
 	}
 
-	public ResourceSpace getAssemblyResourceSet() {
-		return resources;
-	}
-
-	public void setAssemblyResourceSet(ResourceSpace assembly) {
-		this.resources = assembly;
-	}
-
 	public CampaignTemplate getType() {
 		return template;
 	}
@@ -212,12 +212,12 @@ String uuidAsString, List<ComponentInstance> phases) {
 		return find.where().eq("assembly.assemblyId", aid).findList();
 	}
 	
-	private void addComponent(ComponentInstance phase) {
+	public void addComponent(ComponentInstance phase) {
 		this.resources.getComponents().add(phase);
 	}
 
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date getStartDate() {
+	public Date getStartDate() {
 		List<ComponentInstance> components = this.resources.getComponents(); 
 		if (components != null) {
 			Collections.sort(components,new ComponentInstance());
@@ -228,7 +228,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date getEndDate() {
+	public Date getEndDate() {
 		List<ComponentInstance> components = this.resources.getComponents(); 
 		if (components != null) {
 			Collections.sort(components,new ComponentInstance());
@@ -279,7 +279,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 	
 	
-	private void populateDefaultPhases(List<Component> defaultPhaseDefinitions) {
+	private void populateDefaultComponents(List<Component> defaultPhaseDefinitions) {
 		List<Component> defaultPhases = this.template.getDefaultComponents();
 		for (Component phaseDefinition : defaultPhases) {
 			ComponentInstance phase = new ComponentInstance(this, phaseDefinition);
@@ -287,26 +287,33 @@ String uuidAsString, List<ComponentInstance> phases) {
 		}
 	}
 
-	public static List<Campaign> extractOngoingCampaignsFromAssembly(Assembly a) {
+	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) {
 		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
 		ResourceSpace resources = a.getResources();
 		List<Campaign> campaigns = null;
-		if (resources !=null) campaigns = resources.getCampaigns();
+		if (resources != null)
+			campaigns = resources.getCampaigns();
 		if (campaigns != null && !campaigns.isEmpty()) {
 			for (Campaign c : campaigns) {
-				List<ComponentInstance> phases = c.getResources().getComponents();
-				if (phases != null && !phases.isEmpty()) {
-					for (ComponentInstance p : phases) {
-						Calendar today = Calendar.getInstance();
-						if (p.getStartDate().before(today.getTime()) && p.getEndDate().after(today.getTime())) {
-							ongoingCampaigns.add(c);
-							break;
-						}
-					}
+				Calendar today = Calendar.getInstance();
+				if (c.getStartDate().before(today.getTime())
+						&& c.getEndDate().after(today.getTime())) {
+					ongoingCampaigns.add(c);
+
+					// List<ComponentInstance> phases = c.getResources()
+					// .getComponents();
+					// if (phases != null && !phases.isEmpty()) {
+					// for (ComponentInstance p : phases) {
+					// Calendar today = Calendar.getInstance();
+					// if (p.getStartDate().before(today.getTime())
+					// && p.getEndDate().after(today.getTime())) {
+					// ongoingCampaigns.add(c);
+					// break;
+					// }
+					// }
 				}
 			}
 		}
 		return ongoingCampaigns;
-	}
-	
+	}	
 }

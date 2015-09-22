@@ -14,11 +14,13 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -46,6 +48,11 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace resources;
+	
+	// TODO: check if it works
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "components")
+	private List<ResourceSpace> targetSpaces;
 	
 	// TODO: probably, each milestone must have its resource space of contributions
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="componentInstance")
@@ -183,26 +190,40 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		this.milestones.add(m);		
 	}
 	
+	public ResourceSpace getResources() {
+		return resources;
+	}
+
+	public void setResources(ResourceSpace resources) {
+		this.resources = resources;
+	}
+
+	public List<ResourceSpace> getTargetSpaces() {
+		return targetSpaces;
+	}
+
+	public void setTargetSpaces(List<ResourceSpace> targetSpaces) {
+		this.targetSpaces = targetSpaces;
+	}
+
 	public static ComponentInstance read(Long campaignId, Long componentInstanceId) {
 		ExpressionList<ComponentInstance> campaignPhases = find.where()
-				.eq("campaign.campaignId",campaignId)
+				.eq("targetSpaces.campaigns.campaignId",campaignId)
 				.eq("componentInstanceId", componentInstanceId);
 		ComponentInstance phase = campaignPhases.findUnique();
 		return phase;
     }
 
     public static List<ComponentInstance> findAll(Long campaignId) {
-//		ExpressionList<CampaignPhase> campaignPhases = find.where().eq("campaign_campaign_id",campaignId);
 		ExpressionList<ComponentInstance> campaignPhases = find.where()
-				.eq("campaign.campaignId",campaignId);
+				.eq("targetSpaces.campaigns.campaignId",campaignId);
 		List<ComponentInstance> campaignPhaseList = campaignPhases.findList();
 		return campaignPhaseList;
     }
 
     public static List<ComponentInstance> findByAssemblyAndCampaign(Long aid, Long campaignId) {
 		ExpressionList<ComponentInstance> campaignPhases = find.where()
-				.eq("campaign.campaignId",campaignId)
-				.eq("campaign.assembly.assemblyId", aid);
+				.eq("targetSpaces.campaigns.campaignId",campaignId);
 		List<ComponentInstance> campaignPhaseList = campaignPhases.findList();
 		return campaignPhaseList;
     }
@@ -226,11 +247,13 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
         return object;
     }
 
-    public static void delete(Long campaignId, Long componentInstanceId) {
-		ExpressionList<ComponentInstance> campaignPhases = find.where().eq("campaign_campaign_id", campaignId).eq("component_instance_id",componentInstanceId);
+	public static void delete(Long campaignId, Long componentInstanceId) {
+		ExpressionList<ComponentInstance> campaignPhases = find.where()
+				.eq("targetSpaces.campaigns.campaignId", campaignId)
+				.eq("componentInstanceId", componentInstanceId);
 		ComponentInstance phase = campaignPhases.findUnique();
 		phase.delete();
-    }
+	}
 
     public static ComponentInstance update(ComponentInstance cp) {
         cp.update();

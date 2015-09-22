@@ -108,7 +108,6 @@ public class AppCivistBaseModel extends Model {
 		baseAppcivistObject.save();
 	}
 
-
 	@PreUpdate
 	public void onUpdate() {
 		this.lastUpdate = new Date();

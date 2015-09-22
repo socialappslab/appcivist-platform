@@ -139,7 +139,7 @@ public class Notifications extends Controller {
 						a.getUuid(), a.getName(), latestForumPost
 								.getContributionId(),
 						latestForumPost.getUuid(), latestForumPost.getTitle(),
-						latestForumPost.getText(), latestForumPost.getAuthor()
+						latestForumPost.getText(), latestForumPost.getAuthors().get(0)
 								.getName(), latestForumPost.getCreation()));
 			
 			

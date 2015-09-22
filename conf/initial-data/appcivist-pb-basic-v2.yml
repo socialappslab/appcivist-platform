@@ -392,6 +392,8 @@
     nameKey: "MOBILIZATION"
     name: "Mobilization"
 
+
+
 ##############################################################################################################################################################################################
 # Campaign Resource Spaces
   - &rs5 !!models.ResourceSpace
@@ -485,16 +487,36 @@
         timeline: 1
         component: *pd3
         milestones: 
-          - *ci8 
-          - *ci9 
-          - *ci10
+          - &ci8 !!models.ComponentInstanceMilestone
+            title: Deliberation starts
+            position: 7
+            start: "2015-12-17"
+            days: 10
+          - &ci9 !!models.ComponentInstanceMilestone
+            title: Technical Assessment
+            position: 8
+            start: "2016-01-06"
+            days: 10
+          - &ci10 !!models.ComponentInstanceMilestone
+            title: Deliberation finishes
+            position: 9
+            start: "2016-01-16"
+            days: 1
       - &ph4 !!models.ComponentInstance
         position: 3
         timeline: 1
         component: *pd4
         milestones: 
-          - *ci11 
-          - *ci12
+          - &ci11 !!models.ComponentInstanceMilestone
+            title: Voting Starts
+            position: 10
+            start: "2016-01-17"
+            days: 15
+          - &ci12 !!models.ComponentInstanceMilestone
+            title: Voting Ends
+            position: 11
+            start: "2016-02-01"
+            days: 1
         
 ##############################################################################################################################################################################################
 # Campaigns

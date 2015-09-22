@@ -45,7 +45,7 @@ public class CampaignTemplate extends AppCivistBaseModel {
 	@JsonManagedReference
 	@JsonInclude(content=Include.NON_EMPTY)
 	private List<ComponentRequiredMilestone> requiredMilestones = new ArrayList<ComponentRequiredMilestone>();
-	
+		
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
