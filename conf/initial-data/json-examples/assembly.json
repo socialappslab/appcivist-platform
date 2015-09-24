@@ -1,0 +1,22 @@
+{
+  "name": "Assembleè Saint Cyr",
+  "shortname": "assemblee-saint-cyr",
+  "description": "Saint Cyr Citoyens",
+  "listed": true,
+  "profile": {
+    "targetAudience": "Citonyens du Saint Cyr",
+    "supportedMembership": "INVITATION_AND_REGISTRATION",
+    "managementType": "OPEN",
+    "icon": "https://appcivist-pb.herokuapp.com/public/images/barefootdoctor-140.png",
+    "primaryContactName": "Jane Doe",
+    "primaryContactPhone": "+39 3456789",
+    "primaryContactEmail": "jane@doe.com",
+    "lang": "en"
+  },
+  "location": {
+    "placeName": "Saint Cyr",
+    "country": "France",
+    "geoJson": "{   'type': 'FeatureCollection',   'features': [     {       'type': 'Feature',       'properties': {},       'geometry': {         'type': 'Polygon',         'coordinates': [           [             [               2.0458602905273438,               48.800305780490156             ],             [               2.0413970947265625,               48.795330416333336             ],             [               2.055816650390625,               48.79125929678568             ],             [               2.0685195922851562,               48.78967599441185             ],             [               2.0757293701171875,               48.796687382771             ],             [               2.0853424072265625,               48.802341014504485             ],             [               2.0801925659179688,               48.80505453139158             ],             [               2.0650863647460938,               48.8118376812941             ],             [               2.0537567138671875,               48.815228912154815             ],             [               2.0496368408203125,               48.80505453139158             ],             [               2.0458602905273438,               48.800305780490156             ]           ]         ]       }     }   ] }"
+  },
+  "lang": "en"
+}

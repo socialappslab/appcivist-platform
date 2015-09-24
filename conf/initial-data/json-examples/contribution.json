@@ -1,0 +1,10 @@
+{
+  "title" : "Hello!",
+  "text" : "I am new to this", 
+  "type": "FORUM_POST", 
+  "location": {
+    "placeName":"UC Berkeley", 
+    "city":"Berkeley", 
+    "state":"California"
+   }
+}

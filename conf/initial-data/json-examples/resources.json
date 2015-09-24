@@ -1,0 +1,2136 @@
+"resources": {
+    "configs": [
+      {
+        "key": "assembly.face-to-face-scheduling",
+        "value": "NO",
+        "targetUuid": "string",
+        "targetUuidAsString": "string",
+        "definition": {
+          "uuid": "string",
+          "key": "string",
+          "valueType": "string",
+          "description": "string",
+          "defaultValue": "string",
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          },
+          "lang": "string",
+          "creation": "2015-09-15T15:17:14.784Z",
+          "lastUpdate": "2015-09-15T15:17:14.784Z",
+          "removal": "2015-09-15T15:17:14.784Z",
+          "removed": true
+        },
+        "_ebean_intercept": {
+          "embeddedOwnerIndex": 0,
+          "readOnly": true,
+          "dirty": true,
+          "disableLazyLoad": true,
+          "lazyLoadFailure": true,
+          "fullyLoadedBean": true,
+          "lazyLoadProperty": "string",
+          "loaded": true,
+          "new": true,
+          "newOrDirty": true,
+          "reference": true,
+          "propertyLength": 0,
+          "loadedPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyHash": 0,
+          "changed": [
+            true
+          ],
+          "lazyLoadPropertyIndex": 0
+        },
+        "lang": "string",
+        "creation": "2015-09-15T15:17:14.785Z",
+        "lastUpdate": "2015-09-15T15:17:14.785Z",
+        "removal": "2015-09-15T15:17:14.785Z",
+        "removed": true
+      }
+    ],
+    "themes": [
+      {
+        "themeId": 0,
+        "title": "string",
+        "description": "string",
+        "icon": "string",
+        "cover": "string",
+        "_ebean_intercept": {
+          "embeddedOwnerIndex": 0,
+          "readOnly": true,
+          "dirty": true,
+          "disableLazyLoad": true,
+          "lazyLoadFailure": true,
+          "fullyLoadedBean": true,
+          "lazyLoadProperty": "string",
+          "loaded": true,
+          "new": true,
+          "newOrDirty": true,
+          "reference": true,
+          "propertyLength": 0,
+          "loadedPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyHash": 0,
+          "changed": [
+            true
+          ],
+          "lazyLoadPropertyIndex": 0
+        },
+        "lang": "string",
+        "creation": "2015-09-15T15:17:14.785Z",
+        "lastUpdate": "2015-09-15T15:17:14.785Z",
+        "removal": "2015-09-15T15:17:14.785Z",
+        "removed": true
+      }
+    ],
+    "campaigns": [
+      {
+        "campaignId": 0,
+        "title": "string",
+        "shortname": "string",
+        "goal": "string",
+        "active": true,
+        "url": "string",
+        "uuid": "string",
+        "uuidAsString": "string",
+        "resources": {},
+        "type": {
+          "campaignTypeId": 0,
+          "name": "string",
+          "defaultPhases": [
+            {
+              "phaseDefinitionId": 0,
+              "name": "string",
+              "requiredMilestones": [
+                {
+                  "campaignPhaseMilestoneId": 0,
+                  "title": "string",
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  },
+                  "lang": "string",
+                  "creation": "2015-09-15T15:17:14.785Z",
+                  "lastUpdate": "2015-09-15T15:17:14.785Z",
+                  "removal": "2015-09-15T15:17:14.785Z",
+                  "removed": true
+                }
+              ],
+              "requiredConfigurations": [
+                {
+                  "requiredPhaseConfigurationId": 0,
+                  "phaseDefinition": {},
+                  "configDefinition": {
+                    "uuid": "string",
+                    "key": "string",
+                    "valueType": "string",
+                    "description": "string",
+                    "defaultValue": "string",
+                    "_ebean_intercept": {
+                      "embeddedOwnerIndex": 0,
+                      "readOnly": true,
+                      "dirty": true,
+                      "disableLazyLoad": true,
+                      "lazyLoadFailure": true,
+                      "fullyLoadedBean": true,
+                      "lazyLoadProperty": "string",
+                      "loaded": true,
+                      "new": true,
+                      "newOrDirty": true,
+                      "reference": true,
+                      "propertyLength": 0,
+                      "loadedPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyHash": 0,
+                      "changed": [
+                        true
+                      ],
+                      "lazyLoadPropertyIndex": 0
+                    },
+                    "lang": "string",
+                    "creation": "2015-09-15T15:17:14.786Z",
+                    "lastUpdate": "2015-09-15T15:17:14.786Z",
+                    "removal": "2015-09-15T15:17:14.786Z",
+                    "removed": true
+                  },
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  },
+                  "lang": "string",
+                  "creation": "2015-09-15T15:17:14.786Z",
+                  "lastUpdate": "2015-09-15T15:17:14.786Z",
+                  "removal": "2015-09-15T15:17:14.786Z",
+                  "removed": true
+                }
+              ],
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              },
+              "lang": "string",
+              "creation": "2015-09-15T15:17:14.786Z",
+              "lastUpdate": "2015-09-15T15:17:14.786Z",
+              "removal": "2015-09-15T15:17:14.786Z",
+              "removed": true
+            }
+          ],
+          "requiredConfigurations": [
+            {
+              "uuid": "string",
+              "campaignType": {},
+              "configDefinition": {
+                "uuid": "string",
+                "key": "string",
+                "valueType": "string",
+                "description": "string",
+                "defaultValue": "string",
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                },
+                "lang": "string",
+                "creation": "2015-09-15T15:17:14.787Z",
+                "lastUpdate": "2015-09-15T15:17:14.787Z",
+                "removal": "2015-09-15T15:17:14.787Z",
+                "removed": true
+              },
+              "requiredPhaseConfigurationId": 0,
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              },
+              "lang": "string",
+              "creation": "2015-09-15T15:17:14.787Z",
+              "lastUpdate": "2015-09-15T15:17:14.787Z",
+              "removal": "2015-09-15T15:17:14.787Z",
+              "removed": true
+            }
+          ],
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          },
+          "lang": "string",
+          "creation": "2015-09-15T15:17:14.787Z",
+          "lastUpdate": "2015-09-15T15:17:14.787Z",
+          "removal": "2015-09-15T15:17:14.787Z",
+          "removed": true
+        },
+        "phases": [
+          {
+            "phaseId": 0,
+            "startDate": "2015-09-15T15:17:14.787Z",
+            "endDate": "2015-09-15T15:17:14.787Z",
+            "uuid": "string",
+            "campaign": {},
+            "definition": {
+              "phaseDefinitionId": 0,
+              "name": "string",
+              "requiredMilestones": [
+                {
+                  "campaignPhaseMilestoneId": 0,
+                  "title": "string",
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  },
+                  "lang": "string",
+                  "creation": "2015-09-15T15:17:14.787Z",
+                  "lastUpdate": "2015-09-15T15:17:14.787Z",
+                  "removal": "2015-09-15T15:17:14.787Z",
+                  "removed": true
+                }
+              ],
+              "requiredConfigurations": [
+                {
+                  "requiredPhaseConfigurationId": 0,
+                  "phaseDefinition": {},
+                  "configDefinition": {
+                    "uuid": "string",
+                    "key": "string",
+                    "valueType": "string",
+                    "description": "string",
+                    "defaultValue": "string",
+                    "_ebean_intercept": {
+                      "embeddedOwnerIndex": 0,
+                      "readOnly": true,
+                      "dirty": true,
+                      "disableLazyLoad": true,
+                      "lazyLoadFailure": true,
+                      "fullyLoadedBean": true,
+                      "lazyLoadProperty": "string",
+                      "loaded": true,
+                      "new": true,
+                      "newOrDirty": true,
+                      "reference": true,
+                      "propertyLength": 0,
+                      "loadedPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyHash": 0,
+                      "changed": [
+                        true
+                      ],
+                      "lazyLoadPropertyIndex": 0
+                    },
+                    "lang": "string",
+                    "creation": "2015-09-15T15:17:14.788Z",
+                    "lastUpdate": "2015-09-15T15:17:14.788Z",
+                    "removal": "2015-09-15T15:17:14.788Z",
+                    "removed": true
+                  },
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  },
+                  "lang": "string",
+                  "creation": "2015-09-15T15:17:14.788Z",
+                  "lastUpdate": "2015-09-15T15:17:14.788Z",
+                  "removal": "2015-09-15T15:17:14.788Z",
+                  "removed": true
+                }
+              ],
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              },
+              "lang": "string",
+              "creation": "2015-09-15T15:17:14.788Z",
+              "lastUpdate": "2015-09-15T15:17:14.788Z",
+              "removal": "2015-09-15T15:17:14.788Z",
+              "removed": true
+            },
+            "milestones": [
+              {
+                "campaignPhaseMilestoneId": 0,
+                "title": "string",
+                "start": "2015-09-15T15:17:14.788Z",
+                "days": 0,
+                "uuid": "string",
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                },
+                "lang": "string",
+                "creation": "2015-09-15T15:17:14.789Z",
+                "lastUpdate": "2015-09-15T15:17:14.789Z",
+                "removal": "2015-09-15T15:17:14.789Z",
+                "removed": true
+              }
+            ],
+            "canOverlap": true,
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.789Z",
+            "lastUpdate": "2015-09-15T15:17:14.789Z",
+            "removal": "2015-09-15T15:17:14.789Z",
+            "removed": true
+          }
+        ],
+        "assemblyResourceSet": {},
+        "_ebean_intercept": {
+          "embeddedOwnerIndex": 0,
+          "readOnly": true,
+          "dirty": true,
+          "disableLazyLoad": true,
+          "lazyLoadFailure": true,
+          "fullyLoadedBean": true,
+          "lazyLoadProperty": "string",
+          "loaded": true,
+          "new": true,
+          "newOrDirty": true,
+          "reference": true,
+          "propertyLength": 0,
+          "loadedPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyHash": 0,
+          "changed": [
+            true
+          ],
+          "lazyLoadPropertyIndex": 0
+        },
+        "lang": "string",
+        "creation": "2015-09-15T15:17:14.789Z",
+        "lastUpdate": "2015-09-15T15:17:14.789Z",
+        "removal": "2015-09-15T15:17:14.789Z",
+        "removed": true
+      }
+    ],
+    "phases": [
+      {
+        "phaseId": 0,
+        "startDate": "2015-09-15T15:17:14.789Z",
+        "endDate": "2015-09-15T15:17:14.789Z",
+        "uuid": "string",
+        "campaign": {
+          "campaignId": 0,
+          "title": "string",
+          "shortname": "string",
+          "goal": "string",
+          "active": true,
+          "url": "string",
+          "uuid": "string",
+          "uuidAsString": "string",
+          "resources": {},
+          "type": {
+            "campaignTypeId": 0,
+            "name": "string",
+            "defaultPhases": [
+              {
+                "phaseDefinitionId": 0,
+                "name": "string",
+                "requiredMilestones": [
+                  {
+                    "campaignPhaseMilestoneId": 0,
+                    "title": "string",
+                    "_ebean_intercept": {
+                      "embeddedOwnerIndex": 0,
+                      "readOnly": true,
+                      "dirty": true,
+                      "disableLazyLoad": true,
+                      "lazyLoadFailure": true,
+                      "fullyLoadedBean": true,
+                      "lazyLoadProperty": "string",
+                      "loaded": true,
+                      "new": true,
+                      "newOrDirty": true,
+                      "reference": true,
+                      "propertyLength": 0,
+                      "loadedPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyHash": 0,
+                      "changed": [
+                        true
+                      ],
+                      "lazyLoadPropertyIndex": 0
+                    },
+                    "lang": "string",
+                    "creation": "2015-09-15T15:17:14.790Z",
+                    "lastUpdate": "2015-09-15T15:17:14.790Z",
+                    "removal": "2015-09-15T15:17:14.790Z",
+                    "removed": true
+                  }
+                ],
+                "requiredConfigurations": [
+                  {
+                    "requiredPhaseConfigurationId": 0,
+                    "phaseDefinition": {},
+                    "configDefinition": {
+                      "uuid": "string",
+                      "key": "string",
+                      "valueType": "string",
+                      "description": "string",
+                      "defaultValue": "string",
+                      "_ebean_intercept": {
+                        "embeddedOwnerIndex": 0,
+                        "readOnly": true,
+                        "dirty": true,
+                        "disableLazyLoad": true,
+                        "lazyLoadFailure": true,
+                        "fullyLoadedBean": true,
+                        "lazyLoadProperty": "string",
+                        "loaded": true,
+                        "new": true,
+                        "newOrDirty": true,
+                        "reference": true,
+                        "propertyLength": 0,
+                        "loadedPropertyNames": [
+                          "string"
+                        ],
+                        "dirtyPropertyNames": [
+                          "string"
+                        ],
+                        "dirtyPropertyHash": 0,
+                        "changed": [
+                          true
+                        ],
+                        "lazyLoadPropertyIndex": 0
+                      },
+                      "lang": "string",
+                      "creation": "2015-09-15T15:17:14.790Z",
+                      "lastUpdate": "2015-09-15T15:17:14.790Z",
+                      "removal": "2015-09-15T15:17:14.790Z",
+                      "removed": true
+                    },
+                    "_ebean_intercept": {
+                      "embeddedOwnerIndex": 0,
+                      "readOnly": true,
+                      "dirty": true,
+                      "disableLazyLoad": true,
+                      "lazyLoadFailure": true,
+                      "fullyLoadedBean": true,
+                      "lazyLoadProperty": "string",
+                      "loaded": true,
+                      "new": true,
+                      "newOrDirty": true,
+                      "reference": true,
+                      "propertyLength": 0,
+                      "loadedPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyNames": [
+                        "string"
+                      ],
+                      "dirtyPropertyHash": 0,
+                      "changed": [
+                        true
+                      ],
+                      "lazyLoadPropertyIndex": 0
+                    },
+                    "lang": "string",
+                    "creation": "2015-09-15T15:17:14.790Z",
+                    "lastUpdate": "2015-09-15T15:17:14.790Z",
+                    "removal": "2015-09-15T15:17:14.790Z",
+                    "removed": true
+                  }
+                ],
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                },
+                "lang": "string",
+                "creation": "2015-09-15T15:17:14.790Z",
+                "lastUpdate": "2015-09-15T15:17:14.790Z",
+                "removal": "2015-09-15T15:17:14.790Z",
+                "removed": true
+              }
+            ],
+            "requiredConfigurations": [
+              {
+                "uuid": "string",
+                "campaignType": {},
+                "configDefinition": {
+                  "uuid": "string",
+                  "key": "string",
+                  "valueType": "string",
+                  "description": "string",
+                  "defaultValue": "string",
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  },
+                  "lang": "string",
+                  "creation": "2015-09-15T15:17:14.791Z",
+                  "lastUpdate": "2015-09-15T15:17:14.791Z",
+                  "removal": "2015-09-15T15:17:14.791Z",
+                  "removed": true
+                },
+                "requiredPhaseConfigurationId": 0,
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                },
+                "lang": "string",
+                "creation": "2015-09-15T15:17:14.791Z",
+                "lastUpdate": "2015-09-15T15:17:14.791Z",
+                "removal": "2015-09-15T15:17:14.791Z",
+                "removed": true
+              }
+            ],
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.791Z",
+            "lastUpdate": "2015-09-15T15:17:14.791Z",
+            "removal": "2015-09-15T15:17:14.791Z",
+            "removed": true
+          },
+          "phases": [
+            {}
+          ],
+          "assemblyResourceSet": {},
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          },
+          "lang": "string",
+          "creation": "2015-09-15T15:17:14.792Z",
+          "lastUpdate": "2015-09-15T15:17:14.792Z",
+          "removal": "2015-09-15T15:17:14.792Z",
+          "removed": true
+        },
+        "definition": {
+          "phaseDefinitionId": 0,
+          "name": "string",
+          "requiredMilestones": [
+            {
+              "campaignPhaseMilestoneId": 0,
+              "title": "string",
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              },
+              "lang": "string",
+              "creation": "2015-09-15T15:17:14.792Z",
+              "lastUpdate": "2015-09-15T15:17:14.792Z",
+              "removal": "2015-09-15T15:17:14.792Z",
+              "removed": true
+            }
+          ],
+          "requiredConfigurations": [
+            {
+              "requiredPhaseConfigurationId": 0,
+              "phaseDefinition": {},
+              "configDefinition": {
+                "uuid": "string",
+                "key": "string",
+                "valueType": "string",
+                "description": "string",
+                "defaultValue": "string",
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                },
+                "lang": "string",
+                "creation": "2015-09-15T15:17:14.792Z",
+                "lastUpdate": "2015-09-15T15:17:14.792Z",
+                "removal": "2015-09-15T15:17:14.792Z",
+                "removed": true
+              },
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              },
+              "lang": "string",
+              "creation": "2015-09-15T15:17:14.793Z",
+              "lastUpdate": "2015-09-15T15:17:14.793Z",
+              "removal": "2015-09-15T15:17:14.793Z",
+              "removed": true
+            }
+          ],
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          },
+          "lang": "string",
+          "creation": "2015-09-15T15:17:14.793Z",
+          "lastUpdate": "2015-09-15T15:17:14.793Z",
+          "removal": "2015-09-15T15:17:14.793Z",
+          "removed": true
+        },
+        "milestones": [
+          {
+            "campaignPhaseMilestoneId": 0,
+            "title": "string",
+            "start": "2015-09-15T15:17:14.793Z",
+            "days": 0,
+            "uuid": "string",
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.793Z",
+            "lastUpdate": "2015-09-15T15:17:14.793Z",
+            "removal": "2015-09-15T15:17:14.793Z",
+            "removed": true
+          }
+        ],
+        "canOverlap": true,
+        "_ebean_intercept": {
+          "embeddedOwnerIndex": 0,
+          "readOnly": true,
+          "dirty": true,
+          "disableLazyLoad": true,
+          "lazyLoadFailure": true,
+          "fullyLoadedBean": true,
+          "lazyLoadProperty": "string",
+          "loaded": true,
+          "new": true,
+          "newOrDirty": true,
+          "reference": true,
+          "propertyLength": 0,
+          "loadedPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyHash": 0,
+          "changed": [
+            true
+          ],
+          "lazyLoadPropertyIndex": 0
+        },
+        "lang": "string",
+        "creation": "2015-09-15T15:17:14.793Z",
+        "lastUpdate": "2015-09-15T15:17:14.793Z",
+        "removal": "2015-09-15T15:17:14.793Z",
+        "removed": true
+      }
+    ],
+    "workingGroups": [
+      {
+        "groupId": 0,
+        "uuid": "string",
+        "name": "string",
+        "text": "string",
+        "isPublic": true,
+        "acceptRequests": true,
+        "creator": {
+          "userId": 0,
+          "uuid": "string",
+          "email": "string",
+          "name": "string",
+          "username": "string",
+          "language": "string",
+          "emailVerified": true,
+          "profilePic": {
+            "urlLargeString": "string",
+            "urlMediumString": "string",
+            "urlThumbnailString": "string",
+            "location": {
+              "locationId": 0,
+              "placeName": "string",
+              "street": "string",
+              "city": "string",
+              "state": "string",
+              "zip": "string",
+              "country": "string",
+              "geoJson": "string",
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              }
+            },
+            "url": {
+              "protocol": "string",
+              "host": "string",
+              "port": 0,
+              "file": "string",
+              "query": "string",
+              "authority": "string",
+              "path": "string",
+              "userInfo": "string",
+              "ref": "string",
+              "hashCode": 0,
+              "defaultPort": 0
+            },
+            "uuid": "string",
+            "creator": {},
+            "resourceId": 0,
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.794Z",
+            "lastUpdate": "2015-09-15T15:17:14.794Z",
+            "removal": "2015-09-15T15:17:14.794Z",
+            "removed": true
+          },
+          "active": true,
+          "sessionKey": "string",
+          "roles": [
+            {
+              "roleId": 0,
+              "name": "string",
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              }
+            }
+          ],
+          "identifier": "string",
+          "providers": [
+            "string"
+          ],
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          }
+        },
+        "assemblies": [
+          {}
+        ],
+        "resources": {},
+        "_ebean_intercept": {
+          "embeddedOwnerIndex": 0,
+          "readOnly": true,
+          "dirty": true,
+          "disableLazyLoad": true,
+          "lazyLoadFailure": true,
+          "fullyLoadedBean": true,
+          "lazyLoadProperty": "string",
+          "loaded": true,
+          "new": true,
+          "newOrDirty": true,
+          "reference": true,
+          "propertyLength": 0,
+          "loadedPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyHash": 0,
+          "changed": [
+            true
+          ],
+          "lazyLoadPropertyIndex": 0
+        },
+        "lang": "string",
+        "creation": "2015-09-15T15:17:14.795Z",
+        "lastUpdate": "2015-09-15T15:17:14.795Z",
+        "removal": "2015-09-15T15:17:14.795Z",
+        "removed": true
+      }
+    ],
+    "contributions": [
+      {
+        "contributionId": 0,
+        "uuid": "string",
+        "title": "string",
+        "text": "string",
+        "author": {
+          "userId": 0,
+          "uuid": "string",
+          "email": "string",
+          "name": "string",
+          "username": "string",
+          "language": "string",
+          "emailVerified": true,
+          "profilePic": {
+            "urlLargeString": "string",
+            "urlMediumString": "string",
+            "urlThumbnailString": "string",
+            "location": {
+              "locationId": 0,
+              "placeName": "string",
+              "street": "string",
+              "city": "string",
+              "state": "string",
+              "zip": "string",
+              "country": "string",
+              "geoJson": "string",
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              }
+            },
+            "url": {
+              "protocol": "string",
+              "host": "string",
+              "port": 0,
+              "file": "string",
+              "query": "string",
+              "authority": "string",
+              "path": "string",
+              "userInfo": "string",
+              "ref": "string",
+              "hashCode": 0,
+              "defaultPort": 0
+            },
+            "uuid": "string",
+            "creator": {},
+            "resourceId": 0,
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.796Z",
+            "lastUpdate": "2015-09-15T15:17:14.796Z",
+            "removal": "2015-09-15T15:17:14.796Z",
+            "removed": true
+          },
+          "active": true,
+          "sessionKey": "string",
+          "roles": [
+            {
+              "roleId": 0,
+              "name": "string",
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              }
+            }
+          ],
+          "identifier": "string",
+          "providers": [
+            "string"
+          ],
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          }
+        },
+        "additionalAuthors": [
+          {
+            "userId": 0,
+            "uuid": "string",
+            "email": "string",
+            "name": "string",
+            "username": "string",
+            "language": "string",
+            "emailVerified": true,
+            "profilePic": {
+              "urlLargeString": "string",
+              "urlMediumString": "string",
+              "urlThumbnailString": "string",
+              "location": {
+                "locationId": 0,
+                "placeName": "string",
+                "street": "string",
+                "city": "string",
+                "state": "string",
+                "zip": "string",
+                "country": "string",
+                "geoJson": "string",
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                }
+              },
+              "url": {
+                "protocol": "string",
+                "host": "string",
+                "port": 0,
+                "file": "string",
+                "query": "string",
+                "authority": "string",
+                "path": "string",
+                "userInfo": "string",
+                "ref": "string",
+                "hashCode": 0,
+                "defaultPort": 0
+              },
+              "uuid": "string",
+              "creator": {},
+              "resourceId": 0,
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              },
+              "lang": "string",
+              "creation": "2015-09-15T15:17:14.797Z",
+              "lastUpdate": "2015-09-15T15:17:14.797Z",
+              "removal": "2015-09-15T15:17:14.797Z",
+              "removed": true
+            },
+            "active": true,
+            "sessionKey": "string",
+            "roles": [
+              {
+                "roleId": 0,
+                "name": "string",
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                }
+              }
+            ],
+            "identifier": "string",
+            "providers": [
+              "string"
+            ],
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            }
+          }
+        ],
+        "assembly": {},
+        "contributionCategories": [
+          {
+            "themeId": 0,
+            "title": "string",
+            "description": "string",
+            "icon": "string",
+            "cover": "string",
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.798Z",
+            "lastUpdate": "2015-09-15T15:17:14.798Z",
+            "removal": "2015-09-15T15:17:14.798Z",
+            "removed": true
+          }
+        ],
+        "attachments": [
+          {
+            "resourceId": 0,
+            "uuid": "string",
+            "url": {
+              "protocol": "string",
+              "host": "string",
+              "port": 0,
+              "file": "string",
+              "query": "string",
+              "authority": "string",
+              "path": "string",
+              "userInfo": "string",
+              "ref": "string",
+              "hashCode": 0,
+              "defaultPort": 0
+            },
+            "creator": {
+              "userId": 0,
+              "uuid": "string",
+              "email": "string",
+              "name": "string",
+              "username": "string",
+              "language": "string",
+              "emailVerified": true,
+              "profilePic": {
+                "urlLargeString": "string",
+                "urlMediumString": "string",
+                "urlThumbnailString": "string",
+                "location": {
+                  "locationId": 0,
+                  "placeName": "string",
+                  "street": "string",
+                  "city": "string",
+                  "state": "string",
+                  "zip": "string",
+                  "country": "string",
+                  "geoJson": "string",
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  }
+                },
+                "url": {
+                  "protocol": "string",
+                  "host": "string",
+                  "port": 0,
+                  "file": "string",
+                  "query": "string",
+                  "authority": "string",
+                  "path": "string",
+                  "userInfo": "string",
+                  "ref": "string",
+                  "hashCode": 0,
+                  "defaultPort": 0
+                },
+                "uuid": "string",
+                "creator": {},
+                "resourceId": 0,
+                "_ebean_intercept": {
+                  "embeddedOwnerIndex": 0,
+                  "readOnly": true,
+                  "dirty": true,
+                  "disableLazyLoad": true,
+                  "lazyLoadFailure": true,
+                  "fullyLoadedBean": true,
+                  "lazyLoadProperty": "string",
+                  "loaded": true,
+                  "new": true,
+                  "newOrDirty": true,
+                  "reference": true,
+                  "propertyLength": 0,
+                  "loadedPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyNames": [
+                    "string"
+                  ],
+                  "dirtyPropertyHash": 0,
+                  "changed": [
+                    true
+                  ],
+                  "lazyLoadPropertyIndex": 0
+                },
+                "lang": "string",
+                "creation": "2015-09-15T15:17:14.897Z",
+                "lastUpdate": "2015-09-15T15:17:14.897Z",
+                "removal": "2015-09-15T15:17:14.897Z",
+                "removed": true
+              },
+              "active": true,
+              "sessionKey": "string",
+              "roles": [
+                {
+                  "roleId": 0,
+                  "name": "string",
+                  "_ebean_intercept": {
+                    "embeddedOwnerIndex": 0,
+                    "readOnly": true,
+                    "dirty": true,
+                    "disableLazyLoad": true,
+                    "lazyLoadFailure": true,
+                    "fullyLoadedBean": true,
+                    "lazyLoadProperty": "string",
+                    "loaded": true,
+                    "new": true,
+                    "newOrDirty": true,
+                    "reference": true,
+                    "propertyLength": 0,
+                    "loadedPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyNames": [
+                      "string"
+                    ],
+                    "dirtyPropertyHash": 0,
+                    "changed": [
+                      true
+                    ],
+                    "lazyLoadPropertyIndex": 0
+                  }
+                }
+              ],
+              "identifier": "string",
+              "providers": [
+                "string"
+              ],
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              }
+            },
+            "location": {
+              "locationId": 0,
+              "placeName": "string",
+              "street": "string",
+              "city": "string",
+              "state": "string",
+              "zip": "string",
+              "country": "string",
+              "geoJson": "string",
+              "_ebean_intercept": {
+                "embeddedOwnerIndex": 0,
+                "readOnly": true,
+                "dirty": true,
+                "disableLazyLoad": true,
+                "lazyLoadFailure": true,
+                "fullyLoadedBean": true,
+                "lazyLoadProperty": "string",
+                "loaded": true,
+                "new": true,
+                "newOrDirty": true,
+                "reference": true,
+                "propertyLength": 0,
+                "loadedPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyNames": [
+                  "string"
+                ],
+                "dirtyPropertyHash": 0,
+                "changed": [
+                  true
+                ],
+                "lazyLoadPropertyIndex": 0
+              }
+            },
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.898Z",
+            "lastUpdate": "2015-09-15T15:17:14.898Z",
+            "removal": "2015-09-15T15:17:14.898Z",
+            "removed": true
+          }
+        ],
+        "location": {
+          "locationId": 0,
+          "placeName": "string",
+          "street": "string",
+          "city": "string",
+          "state": "string",
+          "zip": "string",
+          "country": "string",
+          "geoJson": "string",
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          }
+        },
+        "hashtags": [
+          {
+            "hashtagId": 0,
+            "hashtag": "string",
+            "_ebean_intercept": {
+              "embeddedOwnerIndex": 0,
+              "readOnly": true,
+              "dirty": true,
+              "disableLazyLoad": true,
+              "lazyLoadFailure": true,
+              "fullyLoadedBean": true,
+              "lazyLoadProperty": "string",
+              "loaded": true,
+              "new": true,
+              "newOrDirty": true,
+              "reference": true,
+              "propertyLength": 0,
+              "loadedPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyNames": [
+                "string"
+              ],
+              "dirtyPropertyHash": 0,
+              "changed": [
+                true
+              ],
+              "lazyLoadPropertyIndex": 0
+            },
+            "lang": "string",
+            "creation": "2015-09-15T15:17:14.899Z",
+            "lastUpdate": "2015-09-15T15:17:14.899Z",
+            "removal": "2015-09-15T15:17:14.899Z",
+            "removed": true
+          }
+        ],
+        "stats": {
+          "contributionStatisticsId": 0,
+          "ups": 0,
+          "downs": 0,
+          "favs": 0,
+          "views": 0,
+          "replies": 0,
+          "flags": 0,
+          "contribution": {},
+          "_ebean_intercept": {
+            "embeddedOwnerIndex": 0,
+            "readOnly": true,
+            "dirty": true,
+            "disableLazyLoad": true,
+            "lazyLoadFailure": true,
+            "fullyLoadedBean": true,
+            "lazyLoadProperty": "string",
+            "loaded": true,
+            "new": true,
+            "newOrDirty": true,
+            "reference": true,
+            "propertyLength": 0,
+            "loadedPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyNames": [
+              "string"
+            ],
+            "dirtyPropertyHash": 0,
+            "changed": [
+              true
+            ],
+            "lazyLoadPropertyIndex": 0
+          },
+          "lang": "string",
+          "creation": "2015-09-15T15:17:14.899Z",
+          "lastUpdate": "2015-09-15T15:17:14.899Z",
+          "removal": "2015-09-15T15:17:14.899Z",
+          "removed": true
+        },
+        "_ebean_intercept": {
+          "embeddedOwnerIndex": 0,
+          "readOnly": true,
+          "dirty": true,
+          "disableLazyLoad": true,
+          "lazyLoadFailure": true,
+          "fullyLoadedBean": true,
+          "lazyLoadProperty": "string",
+          "loaded": true,
+          "new": true,
+          "newOrDirty": true,
+          "reference": true,
+          "propertyLength": 0,
+          "loadedPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyNames": [
+            "string"
+          ],
+          "dirtyPropertyHash": 0,
+          "changed": [
+            true
+          ],
+          "lazyLoadPropertyIndex": 0
+        },
+        "lang": "string",
+        "creation": "2015-09-15T15:17:14.899Z",
+        "lastUpdate": "2015-09-15T15:17:14.899Z",
+        "removal": "2015-09-15T15:17:14.899Z",
+        "removed": true
+      }
+    ],
+    "assemblies": [
+      {}
+    ],
+    "resourceSpaceUuid": "string",
+    "_ebean_intercept": {
+      "embeddedOwnerIndex": 0,
+      "readOnly": true,
+      "dirty": true,
+      "disableLazyLoad": true,
+      "lazyLoadFailure": true,
+      "fullyLoadedBean": true,
+      "lazyLoadProperty": "string",
+      "loaded": true,
+      "new": true,
+      "newOrDirty": true,
+      "reference": true,
+      "propertyLength": 0,
+      "loadedPropertyNames": [
+        "string"
+      ],
+      "dirtyPropertyNames": [
+        "string"
+      ],
+      "dirtyPropertyHash": 0,
+      "changed": [
+        true
+      ],
+      "lazyLoadPropertyIndex": 0
+    },
+    "lang": "string",
+    "creation": "2015-09-15T15:17:14.900Z",
+    "lastUpdate": "2015-09-15T15:17:14.900Z",
+    "removal": "2015-09-15T15:17:14.900Z",
+    "removed": true
+  },
+  

@@ -110,6 +110,7 @@ create table component_instance (
   lang                      varchar(255),
   removal                   timestamp,
   removed                   boolean,
+  title                     varchar(255),
   start_date                timestamp,
   end_date                  timestamp,
   uuid                      varchar(40),
