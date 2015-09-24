@@ -260,6 +260,7 @@ create table contribution_statistics (
   views                     bigint,
   replies                   bigint,
   flags                     bigint,
+  shares                    bigint,
   constraint pk_contribution_statistics primary key (contribution_statistics_id))
 ;
 

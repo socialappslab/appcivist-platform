@@ -23,6 +23,7 @@ public class UpdateTransfer {
 	private Long containerId;
 	private UUID containerUUID;
 	private Date date;
+	private String lang;
 	
 	public UpdateTransfer() {
 		super();
@@ -31,7 +32,7 @@ public class UpdateTransfer {
 	public UpdateTransfer(AppcivistNotificationTypes type,
 			AppcivistResourceTypes resourceType, AppcivistResourceTypes containerType, String title, String text,
 			String resourceSummary, Long resourceId, UUID resourceUUID, Long containerId, UUID containerUUID,  
-			Date date) {
+			Date date, String lang) {
 		super();
 		this.type = type;
 		this.resourceType = resourceType;
@@ -44,6 +45,7 @@ public class UpdateTransfer {
 		this.setContainerId(containerId);
 		this.setContainerUUID(containerUUID); 
 		this.date = date;
+		this.lang = lang;
 	}
 
 	public AppcivistNotificationTypes getType() {
@@ -120,8 +122,13 @@ public class UpdateTransfer {
 		this.date = date;
 	}
 	
-	
+	public String getLang() {
+		return lang;
+	}
 
+	public void setLang(String lang) {
+		this.lang = lang;
+	}
 
 	public static UpdateTransfer getInstance(
 			final AppcivistNotificationTypes updateType, 
@@ -157,10 +164,10 @@ public class UpdateTransfer {
 				containerType, 
 				title, 
 				desc,
-				(resourceTitle+"/n"+resourceText).substring(0, length-1),
+				(resourceTitle+". "+resourceText).substring(0, length-1),
 				resourceId, resourceUUID, 
 				containerId, containerUUID,
-				resourceCreationDate);
+				resourceCreationDate, userLang);
 				
 	}
 }
