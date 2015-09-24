@@ -49,7 +49,7 @@ public class Campaigns extends Controller {
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findCampaignsByAssemblyId(Long aid) {
-		List<Campaign> campaigns = Campaign.findByAssembly(aid);
+		List<Campaign> campaigns = Assembly.findCampaigns(aid);
 		return campaigns != null && !campaigns.isEmpty() ? ok(Json
 				.toJson(campaigns)) : ok(Json
 				.toJson(new TransferResponseStatus("No campaign found")));

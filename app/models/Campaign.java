@@ -42,7 +42,7 @@ public class Campaign extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
-	// If the assembly is listed, is basic profile is reading accessible by all 
+	// If the campaign is listed, its basic profile is reading accessible by all 
 	private Boolean listed = true;
 
 	// Relationships	
@@ -207,10 +207,6 @@ String uuidAsString, List<ComponentInstance> phases) {
 	public static List<Campaign> findAll() {
 		List<Campaign> campaigns = find.all();
 		return campaigns;
-	}
-
-	public static List<Campaign> findByAssembly(Long aid) {
-		return find.where().eq("assembly.assemblyId", aid).findList();
 	}
 	
 	public void addComponent(ComponentInstance phase) {
