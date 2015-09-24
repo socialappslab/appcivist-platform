@@ -19,19 +19,32 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	private Long downs;
 	private Long favs;
 	private Long views;
-	private Long replies; 
-	private Long flags; 
-	
-	@OneToOne(mappedBy="stats")
+	private Long replies;
+	private Long flags;
+	private Long shares;
+
+	@OneToOne(mappedBy = "stats")
 	@JsonBackReference
 	private Contribution contribution;
-	
+
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, ContributionStatistics> find = new Finder<>(ContributionStatistics.class);
-	
+	public static Finder<Long, ContributionStatistics> find = new Finder<>(
+			ContributionStatistics.class);
+
+	public ContributionStatistics() {
+		super();
+		this.ups = new Long(0);
+		this.downs = new Long(0);
+		this.favs = new Long(0);
+		this.views = new Long(0);
+		this.replies = new Long(0);
+		this.flags = new Long(0);
+		this.shares = new Long(0);
+	}
+
 	/*
 	 * Getters and Setters
 	 */
@@ -92,6 +105,14 @@ public class ContributionStatistics extends AppCivistBaseModel {
 		this.flags = flags;
 	}
 
+	public Long getShares() {
+		return shares;
+	}
+
+	public void setShares(Long shares) {
+		this.shares = shares;
+	}
+
 	public Contribution getContribution() {
 		return contribution;
 	}
@@ -99,7 +120,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	public void setContribution(Contribution contribution) {
 		this.contribution = contribution;
 	}
-	
+
 	/*
 	 * Basic Data operations
 	 */
@@ -118,7 +139,8 @@ public class ContributionStatistics extends AppCivistBaseModel {
 		return object;
 	}
 
-	public static ContributionStatistics createObject(ContributionStatistics object) {
+	public static ContributionStatistics createObject(
+			ContributionStatistics object) {
 		object.save();
 		return object;
 	}

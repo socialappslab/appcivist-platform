@@ -66,7 +66,7 @@ public class Contribution extends AppCivistBaseModel {
 	@OneToOne(cascade = CascadeType.ALL)
 	@JsonIgnoreProperties({"contributionStatisticsId"})
 	@JsonManagedReference
-	private ContributionStatistics stats;
+	private ContributionStatistics stats = new ContributionStatistics();
 	
 	// TODO think of how to connect and move through to the campaign phases
 
@@ -388,5 +388,7 @@ public class Contribution extends AppCivistBaseModel {
 		  //System.out.println(mat.group(1));
 		  this.hashtags.add(new Hashtag(mat.group(1)));
 		}		
+		
+		this.stats.setReplies(new Long(this.resourceSpace.getContributions().size()));
 	}
 }
