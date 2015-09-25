@@ -49,7 +49,15 @@ public class Campaign extends AppCivistBaseModel {
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonIgnore
 	private ResourceSpace resources;
+	
+	@Transient
+	private List<ComponentInstance> components = new ArrayList<>();
+	@Transient
+	private List<Config> configs = new ArrayList<>();
+	@Transient
+	private List<Theme> themes = new ArrayList<>();
 	
 	// TODO: check if it works
 	@JsonIgnore
@@ -80,7 +88,7 @@ public class Campaign extends AppCivistBaseModel {
 		this.uuid =  UUID.randomUUID(); 
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
-		// automatically populate the phases based on the campaign type
+		// automatically populate the phases based on the campaign template
 		if (template != null && template.getDefaultComponents() != null) {
 			List<Component> defaultPhases = template.getDefaultComponents();
 
@@ -92,33 +100,33 @@ public class Campaign extends AppCivistBaseModel {
 	}
 
 	public Campaign(String title, Date startDate, Date endDate, Boolean active,
-			String url, CampaignTemplate type,
+			String url, CampaignTemplate template,
 			List<Config> configs) {
 		super();
 		this.title = title;
 		this.url = url;
-		this.template = type;
+		this.template = template;
 
 		this.uuid =  UUID.randomUUID(); 
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
-		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultComponents() != null) this.populateDefaultComponents(type.getDefaultComponents());
+		// automatically populate the phases based on the campaign template
+		if (template != null && template.getDefaultComponents() != null) this.populateDefaultComponents(template.getDefaultComponents());
 	}
 
-	public Campaign(String title, String shortname, Boolean listed, CampaignTemplate type,
+	public Campaign(String title, String shortname, Boolean listed, CampaignTemplate template,
 String uuidAsString, List<ComponentInstance> phases) {
 		super();
 		this.title = title;
 		this.shortname = shortname;
 		this.listed = listed;
-		this.template = type;
+		this.template = template;
 		this.uuidAsString = uuidAsString;
 		this.uuid =  UUID.fromString(uuidAsString);
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
-		// automatically populate the phases based on the campaign type
-		if (type != null && type.getDefaultComponents() != null) this.populateDefaultComponents(type.getDefaultComponents());
+		// automatically populate the phases based on the campaign template
+		if (template != null && template.getDefaultComponents() != null) this.populateDefaultComponents(template.getDefaultComponents());
 	}
 	
 
@@ -196,12 +204,36 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources = resources;
 	}
 
-	public CampaignTemplate getType() {
+	public List<ComponentInstance> getComponents() {
+		return this.resources.getComponents();
+	}
+
+	public void setComponents(List<ComponentInstance> components) {
+		this.resources.setComponents(components);
+	}
+
+	public List<Config> getConfigs() {
+		return this.resources.getConfigs();
+	}
+
+	public void setConfigs(List<Config> configs) {
+		this.resources.setConfigs(configs);
+	}
+
+	public List<Theme> getThemes() {
+		return this.resources.getThemes();
+	}
+
+	public void setThemes(List<Theme> themes) {
+		this.resources.setThemes(themes);
+	}
+
+	public CampaignTemplate getTemplate() {
 		return template;
 	}
 
-	public void setType(CampaignTemplate type) {
-		this.template = type;
+	public void setTemplate(CampaignTemplate template) {
+		this.template = template;
 	}
 
 	public static List<Campaign> findAll() {

@@ -18,6 +18,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,22 +46,23 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Component component;
-
+	
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace resources;
+	private ResourceSpace resourceSpace = new ResourceSpace();
 	
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "components")
 	private List<ResourceSpace> targetSpaces;
 	
-	// TODO: probably, each milestone must have its resource space of contributions
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="componentInstance")
-	@JsonManagedReference
+	@Transient
 	private List<ComponentInstanceMilestone> milestones = new ArrayList<ComponentInstanceMilestone>();
 		
+	@Transient
+	private List<Contribution> contributions = new ArrayList<>();
+	
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
@@ -73,7 +75,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	public ComponentInstance(Campaign c, Component component) {
 		super();
 		this.component = component;
-		this.populateDefaultMilestones(c.getType());
+		this.populateDefaultMilestones(c.getTemplate());
 	}
 	
 	public ComponentInstance(Date startDate, Date endDate, Campaign campaign,
@@ -82,7 +84,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.component = component;
-		this.resources = new ResourceSpace(ResourceSpaceTypes.COMPONENT);
+		this.resourceSpace = new ResourceSpace(ResourceSpaceTypes.COMPONENT);
 		this.uuid = UUID.randomUUID();
 	}
 
@@ -90,7 +92,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 			List<Config> configs) {
 		super();
 		this.component = component;
-		this.resources = new ResourceSpace(ResourceSpaceTypes.COMPONENT);
+		this.resourceSpace = new ResourceSpace(ResourceSpaceTypes.COMPONENT);
 		this.uuid = UUID.randomUUID();
 	}
 
@@ -165,22 +167,23 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	 */
 	
 	public List<ComponentInstanceMilestone> getMilestones() {
-		return milestones;
+		return resourceSpace.getMilestones();
 	}
 
 	public void setMilestones(List<ComponentInstanceMilestone> milestones) {
-		this.milestones = milestones;
-	    if (milestones != null) {
-	    	Collections.sort(milestones, new ComponentInstanceMilestone()); // Sorts the array list
-			
-			ComponentInstanceMilestone firstMilestone = milestones.get(0);
-			ComponentInstanceMilestone lastMilestone = milestones.get(milestones.size()-1);
-			this.startDate = firstMilestone.getStart();
-			
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(lastMilestone.getStart());
-			cal.add(Calendar.DATE, lastMilestone.getDays()); // add duration of milestone 
-			this.endDate = cal.getTime(); 
+		if (milestones != null) {
+			this.resourceSpace.setMilestones(milestones);
+			if (!milestones.isEmpty()) {
+			    Collections.sort(milestones, new ComponentInstanceMilestone()); // Sorts the array list
+				ComponentInstanceMilestone firstMilestone = milestones.get(0);
+				ComponentInstanceMilestone lastMilestone = milestones.get(milestones.size()-1);
+				this.startDate = firstMilestone.getStart();
+				
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(lastMilestone.getStart());
+				cal.add(Calendar.DATE, lastMilestone.getDays()); // add duration of milestone 
+				this.endDate = cal.getTime(); 				
+			}
 		}
 	}	
 	
@@ -200,15 +203,23 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	}
 
 	private void addMilestone(ComponentInstanceMilestone m) {
-		this.milestones.add(m);		
+		this.resourceSpace.getMilestones().add(m);		
 	}
 	
-	public ResourceSpace getResources() {
-		return resources;
+	public List<Contribution> getContributions() {
+		return resourceSpace.getContributions();
 	}
 
-	public void setResources(ResourceSpace resources) {
-		this.resources = resources;
+	public void setContributions(List<Contribution> contributions) {
+		this.resourceSpace.setContributions(contributions);
+	}
+
+	public ResourceSpace getResourceSpace() {
+		return resourceSpace;
+	}
+
+	public void setResourceSpace(ResourceSpace resources) {
+		this.resourceSpace = resources;
 	}
 
 	public List<ResourceSpace> getTargetSpaces() {

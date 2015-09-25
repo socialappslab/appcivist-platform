@@ -21,8 +21,8 @@ import enums.ResourceSpaceTypes;
 import models.location.Location;
 
 @Entity
-//@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-//@DiscriminatorColumn(name = "TYPE")
+// @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+// @DiscriminatorColumn(name = "TYPE")
 @JsonInclude(Include.NON_EMPTY)
 public class Contribution extends AppCivistBaseModel {
 
@@ -30,10 +30,13 @@ public class Contribution extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long contributionId;
 	@Index
+	@JsonIgnore
 	private UUID uuid = UUID.randomUUID();
+	@Transient
+	private String uuidAsString;
 	private String title;
 	private String text;
-	
+
 	@Transient
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type = ContributionTypes.COMMENT;
@@ -42,11 +45,11 @@ public class Contribution extends AppCivistBaseModel {
 	private String textIndex;
 	@OneToOne
 	private Location location;
-	
+
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<User> authors = new ArrayList<User>();
 
-	@Transient	
+	@Transient
 	private List<Theme> themes;
 
 	@Transient
@@ -55,26 +58,32 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
 
+	@Transient
+	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
+
 	// TODO: check if it works
-	@ManyToMany(fetch=FetchType.LAZY,mappedBy="contributions")
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions")
 	private List<ResourceSpace> targetSpaces;
-	
-	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
+
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonIgnore
+	private ResourceSpace resourceSpace = new ResourceSpace(
+			ResourceSpaceTypes.CONTRIBUTION);
 
 	@OneToOne(cascade = CascadeType.ALL)
-	@JsonIgnoreProperties({"contributionStatisticsId"})
+	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	@JsonManagedReference
 	private ContributionStatistics stats = new ContributionStatistics();
-	
+
 	// TODO think of how to connect and move through to the campaign phases
 
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
-	public static Finder<Long, Contribution> find = new Finder<>(Contribution.class);
+	public static Finder<Long, Contribution> find = new Finder<>(
+			Contribution.class);
 
 	public Contribution(User creator, String title, String text,
 			ContributionTypes type) {
@@ -107,6 +116,14 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setUuid(UUID uuid) {
 		this.uuid = uuid;
+	}
+
+	public String getUuidAsString() {
+		return uuid.toString();
+	}
+
+	public void setUuidAsString(String uuidAsString) {
+		this.uuid = UUID.fromString(uuidAsString);
 	}
 
 	public String getTitle() {
@@ -144,11 +161,11 @@ public class Contribution extends AppCivistBaseModel {
 	public void addAuthor(User author) {
 		this.authors.add(author);
 	}
-	
+
 	public List<Theme> getThemes() {
 		return resourceSpace.getThemes();
 	}
-	
+
 	public void setThemes(List<Theme> themes) {
 		this.resourceSpace.setThemes(themes);
 	}
@@ -156,7 +173,7 @@ public class Contribution extends AppCivistBaseModel {
 	public void addTheme(Theme t) {
 		this.resourceSpace.addTheme(t);
 	}
-	
+
 	public List<Resource> getAttachments() {
 		return resourceSpace.getResources();
 	}
@@ -168,7 +185,7 @@ public class Contribution extends AppCivistBaseModel {
 	public void addAttachment(Resource attach) {
 		this.resourceSpace.addResource(attach);
 	}
-	
+
 	public Location getLocation() {
 		return location;
 	}
@@ -184,9 +201,18 @@ public class Contribution extends AppCivistBaseModel {
 	public void setHashtags(List<Hashtag> hashtags) {
 		this.resourceSpace.setHashtags(hashtags);
 	}
-	
+
 	public void addHashtag(Hashtag h) {
 		this.resourceSpace.addHashtag(h);
+	}
+
+	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
+		return this.resourceSpace.getMilestones();
+	}
+
+	public void setAssociatedMilestones(
+			List<ComponentInstanceMilestone> associatedMilestones) {
+		this.resourceSpace.setMilestones(associatedMilestones);
 	}
 
 	public ResourceSpace getResourceSpace() {
@@ -211,7 +237,11 @@ public class Contribution extends AppCivistBaseModel {
 	public static Contribution create(User creator, String title, String text,
 			ContributionTypes type) {
 		Contribution c = new Contribution(creator, title, text, type);
+		ResourceSpace rs = c.getResourceSpace();
+		c.setResourceSpace(new ResourceSpace());
 		c.save();
+		c.setResourceSpace(rs);
+		c.update();
 		return c;
 	}
 
@@ -219,7 +249,7 @@ public class Contribution extends AppCivistBaseModel {
 		List<Contribution> contribs = find.all();
 		return contribs;
 	}
-	
+
 	public static void create(Contribution c) {
 		c.save();
 		c.refresh();
@@ -251,7 +281,7 @@ public class Contribution extends AppCivistBaseModel {
 	/*
 	 * Other Queries
 	 */
-	
+
 	public static Contribution readByUUID(UUID contributionUUID) {
 		return find.where().eq("uuid", contributionUUID).findUnique();
 	}
@@ -268,24 +298,26 @@ public class Contribution extends AppCivistBaseModel {
 		return contribs;
 	}
 
-	public static List<Contribution> findAllByTargetSpaceAndQuery(Long sid, String query) {
+	public static List<Contribution> findAllByTargetSpaceAndQuery(Long sid,
+			String query) {
 		List<Contribution> contribs = find.where()
 				.eq("targetSpaces.resourceSpaceId", sid)
-				.ilike("textIndex", "%"+query+"%")
-				.findList();
+				.ilike("textIndex", "%" + query + "%").findList();
 		return contribs;
 	}
-	
+
 	public static List<Contribution> findAllByTargetSpaceAndUUID(UUID uuid) {
 		List<Contribution> contribs = find.where()
 				.eq("targetSpaces.uuid", uuid).findList();
 		return contribs;
 	}
 
-	public static List<Contribution> readContributionsOfSpace(Long resourceSpaceId) {
-		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId).findList();
+	public static List<Contribution> readContributionsOfSpace(
+			Long resourceSpaceId) {
+		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
+				.findList();
 	}
-	
+
 	public static Contribution readByIdAndType(Long resourceSpaceId,
 			Long contributionId, ContributionTypes type) {
 		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
@@ -293,34 +325,34 @@ public class Contribution extends AppCivistBaseModel {
 				.findUnique();
 	}
 
-	public static List<Contribution> readListByTargetSpaceAndType(Long resourceSpaceId,
-			ContributionTypes type) {
-		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId).eq("type", type)
-				.findList();
+	public static List<Contribution> readListByTargetSpaceAndType(
+			Long resourceSpaceId, ContributionTypes type) {
+		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
+				.eq("type", type).findList();
 	}
 
-	public static void deleteContributionByIdAndType(Long contributionId,ContributionTypes cType) {
-		find.where().eq("contributionId", contributionId).eq("type", cType).findUnique().delete();
+	public static void deleteContributionByIdAndType(Long contributionId,
+			ContributionTypes cType) {
+		find.where().eq("contributionId", contributionId).eq("type", cType)
+				.findUnique().delete();
 	}
 
 	public static List<Contribution> readByCreator(User u) {
-		return find.where().eq("authors.userId",u.getUserId()).findList();
+		return find.where().eq("authors.userId", u.getUserId()).findList();
 	}
-	
+
 	public static List<Contribution> findAllByTargetSpaceAndType(
 			ResourceSpace rs, String t) {
 		return find.where().eq("targetSpaces", rs).eq("type", t.toUpperCase())
 				.findList();
 	}
-	
+
 	public static List<Contribution> findAllByTargetSpaceAndTypeAndQuery(
 			ResourceSpace rs, String t, String query) {
 		return find.where().eq("targetSpaces", rs).eq("type", t.toUpperCase())
-				.ilike("textIndex", "%"+query+"%")
-				.findList();
+				.ilike("textIndex", "%" + query + "%").findList();
 	}
-	
-	
+
 	public static Contribution readIssueOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
@@ -344,13 +376,13 @@ public class Contribution extends AppCivistBaseModel {
 		return readByIdAndType(resourceSpaceId, contributionId,
 				ContributionTypes.COMMENT);
 	}
-	
+
 	public static Contribution readForumPostOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
 				ContributionTypes.FORUM_POST);
 	}
-	
+
 	public static Contribution readProposalOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
@@ -358,37 +390,42 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static List<Contribution> readIssuesOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.ISSUE);
+		return readListByTargetSpaceAndType(resourceSpaceId,
+				ContributionTypes.ISSUE);
 	}
 
 	public static List<Contribution> readIdeasOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.IDEA);
+		return readListByTargetSpaceAndType(resourceSpaceId,
+				ContributionTypes.IDEA);
 	}
 
 	public static List<Contribution> readQuestionsOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.QUESTION);
+		return readListByTargetSpaceAndType(resourceSpaceId,
+				ContributionTypes.QUESTION);
 	}
 
 	public static List<Contribution> readCommentsOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId, ContributionTypes.COMMENT);
+		return readListByTargetSpaceAndType(resourceSpaceId,
+				ContributionTypes.COMMENT);
 	}
 
 	// auxiliary
-	
+
 	// Extract hashtags from Text
 	@PrePersist
 	@PreUpdate
 	public void beforeSavingUpdating() {
 		// 1. Update text index
-		this.textIndex = this.title+"\n"+this.text;
+		this.textIndex = this.title + "\n" + this.text;
 		// 2. extractHashtags
 		Pattern MY_PATTERN = Pattern.compile("#(\\w+|\\W+)");
 		Matcher mat = MY_PATTERN.matcher(this.textIndex);
 		while (mat.find()) {
-		  //System.out.println(mat.group(1));
-		  this.hashtags.add(new Hashtag(mat.group(1)));
-		}		
-		
-		this.stats.setReplies(new Long(this.resourceSpace.getContributions().size()));
+			// System.out.println(mat.group(1));
+			this.hashtags.add(new Hashtag(mat.group(1)));
+		}
+
+		this.stats.setReplies(new Long(this.resourceSpace.getContributions()
+				.size()));
 	}
 }
