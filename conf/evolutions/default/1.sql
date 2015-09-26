@@ -110,14 +110,15 @@ create table component_instance (
   lang                      varchar(255),
   removal                   timestamp,
   removed                   boolean,
+  title                     varchar(255),
   start_date                timestamp,
   end_date                  timestamp,
   uuid                      varchar(40),
   position                  integer,
   timeline                  integer,
   component_component_id    bigint,
-  resources_resource_space_id bigint,
-  constraint uq_component_instance_resources_ unique (resources_resource_space_id),
+  resource_space_resource_space_id bigint,
+  constraint uq_component_instance_resource_s unique (resource_space_resource_space_id),
   constraint pk_component_instance primary key (component_instance_id))
 ;
 
@@ -259,6 +260,7 @@ create table contribution_statistics (
   views                     bigint,
   replies                   bigint,
   flags                     bigint,
+  shares                    bigint,
   constraint pk_contribution_statistics primary key (contribution_statistics_id))
 ;
 
@@ -711,6 +713,12 @@ create table resource_space_campaign_components (
   constraint pk_resource_space_campaign_components primary key (resource_space_resource_space_id, component_instance_component_instance_id))
 ;
 
+create table resource_space_campaign_components_milestones (
+  resource_space_resource_space_id bigint not null,
+  component_instance_milestone_component_instance_milestone_id bigint not null,
+  constraint pk_resource_space_campaign_components_milestones primary key (resource_space_resource_space_id, component_instance_milestone_component_instance_milestone_id))
+;
+
 create table resource_space_working_groups (
   resource_space_resource_space_id bigint not null,
   working_group_group_id         bigint not null,
@@ -788,8 +796,8 @@ alter table campaign_required_configuration add constraint fk_campaign_required_
 create index ix_campaign_required_configura_8 on campaign_required_configuration (config_definition_uuid);
 alter table component_instance add constraint fk_component_instance_componen_9 foreign key (component_component_id) references component (component_id);
 create index ix_component_instance_componen_9 on component_instance (component_component_id);
-alter table component_instance add constraint fk_component_instance_resourc_10 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
-create index ix_component_instance_resourc_10 on component_instance (resources_resource_space_id);
+alter table component_instance add constraint fk_component_instance_resourc_10 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
+create index ix_component_instance_resourc_10 on component_instance (resource_space_resource_space_id);
 alter table component_instance_contribution add constraint fk_component_instance_contrib_11 foreign key (contribution_contribution_id) references contribution (contribution_id);
 create index ix_component_instance_contrib_11 on component_instance_contribution (contribution_contribution_id);
 alter table component_instance_contribution add constraint fk_component_instance_contrib_12 foreign key (phase_component_instance_id) references component_instance (component_instance_id);
@@ -917,6 +925,10 @@ alter table resource_space_campaign_components add constraint fk_resource_space_
 
 alter table resource_space_campaign_components add constraint fk_resource_space_campaign_co_02 foreign key (component_instance_component_instance_id) references component_instance (component_instance_id);
 
+alter table resource_space_campaign_components_milestones add constraint fk_resource_space_campaign_co_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
+
+alter table resource_space_campaign_components_milestones add constraint fk_resource_space_campaign_co_02 foreign key (component_instance_milestone_component_instance_milestone_id) references component_instance_milestone (component_instance_milestone_id);
+
 alter table resource_space_working_groups add constraint fk_resource_space_working_gro_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
 alter table resource_space_working_groups add constraint fk_resource_space_working_gro_02 foreign key (working_group_group_id) references working_group (group_id);
@@ -991,6 +1003,8 @@ drop table if exists resource_space_campaign_components cascade;
 drop table if exists component_instance_contribution cascade;
 
 drop table if exists component_instance_milestone cascade;
+
+drop table if exists resource_space_campaign_components_milestones cascade;
 
 drop table if exists component_required_configuration cascade;
 

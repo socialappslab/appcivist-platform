@@ -63,6 +63,10 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
 	
 	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
+	@JoinTable(name="resource_space_campaign_components_milestones")
+	private List<ComponentInstanceMilestone> milestones = new ArrayList<ComponentInstanceMilestone>();
+	
+	@ManyToMany(cascade = {CascadeType.ALL}, fetch=FetchType.LAZY)
 	@JoinTable(name="resource_space_working_groups")
 	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
@@ -222,6 +226,14 @@ public class ResourceSpace extends AppCivistBaseModel {
         this.components.add(c);
     }
 	
+	public List<ComponentInstanceMilestone> getMilestones() {
+		return milestones;
+	}
+
+	public void setMilestones(List<ComponentInstanceMilestone> milestones) {
+		this.milestones = milestones;
+	}
+
 	public List<WorkingGroup> getWorkingGroups() {
 		return workingGroups;
 	}
@@ -328,7 +340,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 		Campaign defaultCampaign = new Campaign();
 		defaultCampaign.setTitle("Default Campaign");
 		CampaignTemplate ct = CampaignTemplate.findByName(CampaignTemplatesEnum.PARTICIPATORY_BUDGETING);
-		defaultCampaign.setType(ct);
+		defaultCampaign.setTemplate(ct);
 		
 		List<Component> components = ct.getDefaultComponents();
 		

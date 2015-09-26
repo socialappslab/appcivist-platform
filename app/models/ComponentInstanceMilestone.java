@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -31,9 +34,17 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 	private UUID uuid = UUID.randomUUID(); 
 	@Transient
 	private String uuidAsString;
+	
+	
 	@ManyToOne
 	@JsonBackReference
 	private ComponentInstance componentInstance;
+	
+	// TODO: check if it works
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "milestones")
+	private List<ResourceSpace> targetSpaces;
+	
 	/**
 	 * The find property is a static property that facilitates database query creation
 	 */

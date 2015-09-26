@@ -1,5 +1,6 @@
 package models;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.Transient;
 
 import enums.ResourceTypes;
 import models.location.Location;
@@ -27,6 +29,8 @@ public class Resource extends AppCivistBaseModel {
 	private Long resourceId;
 	private UUID uuid = UUID.randomUUID();
 	private URL url;
+	@Transient
+	private String urlAsString;
 	private User creator;
 	private Location location;
 	
@@ -40,7 +44,20 @@ public class Resource extends AppCivistBaseModel {
 	 */
 	public static Finder<Long, Resource> find = new Finder<>(Resource.class);
 
+	public Resource() {
+		super();
+	}
+	public Resource(URL url) {
+		super();
+		this.url = url;
+	}	
+	public Resource(String url) throws MalformedURLException {
+		super();
+		this.url = new URL(url);
+	}
+
 	public Resource(User creator, URL url) {
+		super();
 		this.creator = creator;
 		this.url = url;
 	}
@@ -125,5 +142,14 @@ public class Resource extends AppCivistBaseModel {
 
 	public static void update(Long id) {
 		find.ref(id).update();
+	}
+	
+	public String getUrlAsString() {
+		if (url!=null)
+			return this.url.toString();
+		return null;
+	}
+	public void setUrlAsString(String urlAsString) throws MalformedURLException {
+		this.url = new URL(urlAsString);
 	}
 }

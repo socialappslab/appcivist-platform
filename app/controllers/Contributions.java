@@ -85,7 +85,7 @@ public class Contributions extends Controller {
 			// rs = c.getForum();
 			// else
 			// rs = c.getResources();
-			rs = c.getResources();
+			rs = c.getResourceSpace();
 		}
 		List<Contribution> contributions = ContributionsDelegate
 				.findContributionsInResourceSpace(rs, type, null);
@@ -238,7 +238,7 @@ public class Contributions extends Controller {
 			}
 
 			ComponentInstance ci = ComponentInstance.read(cid,ciid);
-			ResourceSpace rs = ci.getResources();
+			ResourceSpace rs = ci.getResourceSpace();
 			Contribution c = createContribution(newContribution, author, type);
 			if (c != null) {
 				rs.addContribution(c);

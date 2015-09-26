@@ -1,0 +1,41 @@
+{
+  "name": "Assembleè Saint Cyr",
+  "shortname": "assemblee-saint-cyr",
+  "description": "Saint Cyr Citoyens",
+  "listed": true,
+  "profile": {
+    "targetAudience": "Citonyens du Saint Cyr",
+    "supportedMembership": "INVITATION_AND_REQUEST",
+    "managementType": "OPEN",
+    "icon": "https://appcivist-pb.herokuapp.com/public/images/barefootdoctor-140.png",
+    "primaryContactName": "Jane Doe",
+    "primaryContactPhone": "+39 3456789",
+    "primaryContactEmail": "jane@doe.com",
+    "lang": "en"
+  },
+  "location": {
+    "placeName": "Saint Cyr",
+    "country": "France"
+  },
+  "resources": {
+    "themes" : [
+       {
+         "themeId" : 7
+       }, 
+       {
+         "title" : "Housing"
+       }
+    ],
+    "configs": [
+       {
+          "key":"assembly.face-to-face.scheduling",
+          "value":"true"
+       },
+       {
+          "key":"assembly.enable.messaging",
+          "value":"true"
+       }
+    ]
+  },
+  "lang": "en"
+} 
