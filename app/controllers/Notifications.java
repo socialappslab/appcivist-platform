@@ -50,27 +50,23 @@ import http.Headers;
 @SuppressWarnings("unused")
 public class Notifications extends Controller {
 
-	final private static String NOTIFICATION_TITLE_ASSEMBLY_UPDATE = "notification.assembly.update";
-	final private static String NOTIFICATION_TITLE_GROUP_UPDATE  = "notification.group.update";
-	final private static String NOTIFICATION_TITLE_CONTRIBUTION_UPDATE  = "notification.contribution.update";
-	final private static String NOTIFICATION_TITLE_CAMPAIGN_UPDATE  = "notification.campaign.update";
-	final private static String NOTIFICATION_TITLE_MILESTONE_UPDATE  = "notification.campaign.update.milestone";
-	final private static String NOTIFICATION_TITLE_MESSAGE_NEW = "notification.message.new";
-	final private static String NOTIFICATION_TITLE_MESSAGE_REPLY = "notification.message.reply";
-	final private static String NOTIFICATION_TITLE_MESSAGE_GROUP_NEW = "notification.message.new.group";
-	final private static String NOTIFICATION_TITLE_MESSAGE_GROUP_REPLY = "notification.message.reply.group";
-	final private static String NOTIFICATION_TITLE_MESSAGE_ASSEMBLY_NEW = "notification.message.new.assembly";
-	final private static String NOTIFICATION_TITLE_MESSAGE_ASSEMBLY_REPLY = "notification.message.reply.assembly";
+	final private static String NOTIFICATION_TITLE_ASSEMBLY_UPDATE = "notification.title.assembly.update";
+	final private static String NOTIFICATION_TITLE_GROUP_UPDATE  = "notification.title.group.update";
+	final private static String NOTIFICATION_TITLE_CONTRIBUTION_UPDATE  = "notification.title.contribution.update";
+	final private static String NOTIFICATION_TITLE_CAMPAIGN_UPDATE  = "notification.title.campaign.update";
+	final private static String NOTIFICATION_TITLE_MILESTONE_UPDATE  = "notification.title.campaign.update.milestone";
+	final private static String NOTIFICATION_TITLE_MESSAGE_NEW = "notification.title.message.new";
+	final private static String NOTIFICATION_TITLE_MESSAGE_REPLY = "notification.title.message.reply";
+	final private static String NOTIFICATION_TITLE_MESSAGE_GROUP_NEW = "notification.title.message.new.group";
+	final private static String NOTIFICATION_TITLE_MESSAGE_GROUP_REPLY = "notification.title.message.reply.group";
+	final private static String NOTIFICATION_TITLE_MESSAGE_ASSEMBLY_NEW = "notification.title.message.new.assembly";
+	final private static String NOTIFICATION_TITLE_MESSAGE_ASSEMBLY_REPLY = "notification.title.message.reply.assembly";
 	
 	final private static String NOTIFICATION_DESCRIPTION_ASSEMBLY_FORUM_CONTRIBUTION = "notification.description.assembly.forum.contribution";
 	final private static String NOTIFICATION_DESCRIPTION_GROUP_FORUM_CONTRIBUTION = "notification.description.group.forum.contribution";
 	final private static String NOTIFICATION_DESCRIPTION_CONTRIBUTION_COMMENT = "notification.description.contribution.comment";
 	final private static String NOTIFICATION_DESCRIPTION_CAMPAIGN_CONTRIBUTION = "notification.description.campaign.contribution";
 	final private static String NOTIFICATION_DESCRIPTION_UPCOMING_MILESTONE = "notification.description.campaign.upcoming.milestone";
-
-
-
-
 	
 	/**
 	 * userInbox is the method called by the route GET /user/{uuid}/inbox

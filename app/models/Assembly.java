@@ -437,4 +437,8 @@ public class Assembly extends AppCivistBaseModel {
 	public static int findCampaignWithTitle(Long aid, String title) {
 		return find.where().eq("assemblyId",aid).eq("resources.campaigns.title",title).findList().size();
 	}
+
+	public static List<Campaign> findCampaigns(Long aid) {
+		return find.where().eq("assemblyId",aid).findUnique().getResources().getCampaigns();
+	}
 }

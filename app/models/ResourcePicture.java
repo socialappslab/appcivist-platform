@@ -26,6 +26,7 @@ public class ResourcePicture extends Resource {
 		this.urlLarge = large; 
 		this.urlMedium = medium; 
 		this.urlThumbnail = thumbnail;
+		this.setUrl(urlLarge);
 	}
 	
 	@JsonIgnore
@@ -34,19 +35,15 @@ public class ResourcePicture extends Resource {
 	private URL urlMedium;
 	@JsonIgnore
 	private URL urlThumbnail;
-//	@Transient
-//	private String urlLargeString; 
-//	@Transient
-//	private String urlMediumString;
-//	@Transient
-//	private String urlThumbnailString;
-//	
+
 	public URL getUrlLarge() {
 		return urlLarge;
 	}
 
 	public void setUrlLarge(URL urlLarge) {
 		this.urlLarge = urlLarge;
+		if (this.getUrl()==null)
+			this.setUrl(urlLarge);
 	}
 
 	public URL getUrlMedium() {
@@ -55,6 +52,8 @@ public class ResourcePicture extends Resource {
 
 	public void setUrlMedium(URL urlMedium) {
 		this.urlMedium = urlMedium;
+		if (this.getUrl()==null && this.urlLarge==null)
+			this.setUrl(urlMedium);
 	}
 
 	public URL getUrlThumbnail() {
@@ -63,6 +62,8 @@ public class ResourcePicture extends Resource {
 
 	public void setUrlThumbnail(URL urlThumbnail) {
 		this.urlThumbnail = urlThumbnail;
+		if (this.getUrl()==null && this.urlLarge==null && this.urlMedium==null)
+			this.setUrl(urlThumbnail);
 	}	
 	
 	@Transient
