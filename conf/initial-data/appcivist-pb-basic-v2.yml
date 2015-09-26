@@ -1001,6 +1001,42 @@
 
 
 ##############################################################################################################################################################################################
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Conseil Belleville" 
+    text: Commitee in charge of managing contributions in for PB Belleville
+    isPublic: false
+    acceptRequests: false
+#    assemblies: 
+#      - *a1
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Passionées du Parc de Belleville" 
+    text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    isPublic: true
+    acceptRequests: true
+#    assemblies: 
+#      - *a1
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    isPublic: true
+    acceptRequests: true
+#    assemblies: 
+#      - *a2
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    isPublic: false
+    acceptRequests: true
+#    assemblies: 
+#      - *a3
+
+
+##############################################################################################################################################################################################
 # Campaign Resource Spaces: 
   - &rs5 !!models.ResourceSpace
     type: CAMPAIGN
@@ -1012,12 +1048,17 @@
       - *ph4
       - *ph5
       - *ph6
+    workingGroups:
+      - *wg1
+      - *wg2
   - &rs6 !!models.ResourceSpace
     type: CAMPAIGN
     #configs
     components:
       - *ph7
       - *ph8
+    workingGroups:
+      - *wg3
       
 ##############################################################################################################################################################################################
 # Campaigns
@@ -1076,6 +1117,9 @@
         configTarget: ASSEMBLY
         targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
         definition: *config9
+    workingGroups: 
+      - *wg1
+      - *wg2
   - &rs2 !!models.ResourceSpace
     type: ASSEMBLY
     themes: 
@@ -1094,6 +1138,8 @@
         configTarget: ASSEMBLY
         targetUuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
         definition: *config9
+    workingGroups: 
+      - *wg3
   - &rs3 !!models.ResourceSpace
     type: ASSEMBLY
     contributions:
@@ -1101,6 +1147,8 @@
       - *contrib2
       - *contrib3
       - *contrib4
+    workingGroups: 
+      - *wg4
   - &rs4 !!models.ResourceSpace
     type: WORKING_GROUP
   - &rs10 !!models.ResourceSpace
@@ -1248,40 +1296,7 @@
       country: "France"
       geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
     
-##############################################################################################################################################################################################
-# Working Groups
-  - &wg1 !!models.WorkingGroup
-    creator: *u1
-    name: "Conseil Belleville" 
-    text: Commitee in charge of managing contributions in for PB Belleville
-    isPublic: false
-    acceptRequests: false
-    assemblies: 
-      - *a1
-  - &wg2 !!models.WorkingGroup
-    creator: *u1
-    name: "Passionées du Parc de Belleville" 
-    text: Group developing Urban Infrastructure proposals for Parc de Belleville
-    isPublic: true
-    acceptRequests: true
-    assemblies: 
-      - *a1
-  - &wg3 !!models.WorkingGroup
-    creator: *u1
-    name: "Neighborhood 14, Category Parks" 
-    text: Group of neighbors from district 13, focused on Parks
-    isPublic: true
-    acceptRequests: true
-    assemblies: 
-      - *a2
-  - &wg4 !!models.WorkingGroup
-    creator: *u1
-    name: "AntiEviction Proposals Team" 
-    text: Team in charge of turning Ideas into proposals
-    isPublic: false
-    acceptRequests: true
-    assemblies: 
-      - *a3
+
 ##############################################################################################################################################################################################
 # Assembly Memberships
   - &am1 !!models.MembershipAssembly
@@ -1406,7 +1421,3 @@
     roles: 
       - *r3
       - *r4
-      
-      
- ## Useful UUIDs
- 

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.AppcivistResourceTypes;
 import enums.ResourceSpaceTypes;
 
 @Entity
@@ -42,6 +43,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	private UUID uuid = UUID.randomUUID();
 	private int position; 
 	private int timeline;
+	private AppcivistResourceTypes mainContributionType = AppcivistResourceTypes.CONTRIBUTION_IDEA;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Component component;
@@ -50,7 +52,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnore
-	private ResourceSpace resourceSpace = new ResourceSpace();
+	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.COMPONENT);
 	
 	// TODO: check if it works
 	@JsonIgnore
@@ -191,6 +193,14 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		}
 	}	
 	
+	public AppcivistResourceTypes getMainContributionType() {
+		return mainContributionType;
+	}
+
+	public void setMainContributionType(AppcivistResourceTypes mainContributionType) {
+		this.mainContributionType = mainContributionType;
+	}
+
 	private void populateDefaultMilestones(CampaignTemplate ct) {
 		if(this.component!=null && ct != null) {
 			List<ComponentRequiredMilestone> reqMilestones = ct.getRequiredMilestones();

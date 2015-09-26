@@ -75,11 +75,11 @@ public class Assembly extends AppCivistBaseModel {
 	 */
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace resources = new ResourceSpace();
+	private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
 
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace forum = new ResourceSpace();
+	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
 
 	/**
 	 * The User who created the Assembly

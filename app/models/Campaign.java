@@ -133,7 +133,6 @@ String uuidAsString, List<ComponentInstance> phases) {
 	/*
 	 * Getters and Setters
 	 */
-
 	public Long getCampaignId() {
 		return campaignId;
 	}

@@ -15,6 +15,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -48,12 +49,17 @@ public class WorkingGroup extends AppCivistBaseModel {
  	 */
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
  	@JsonIgnoreProperties({ "uuid" })
-    private ResourceSpace resources;
+    private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
     
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
-	private ResourceSpace forum = new ResourceSpace();
+	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
  	
+ // TODO: check if it works
+ 	@JsonIgnore
+ 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
+ 	private List<ResourceSpace> targetSpaces;
+
 	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
 	// TODO: all be connected in a P2P architecture. 
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -185,6 +191,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public void setResourceSpace(ResourceSpace resources) {
         this.resources = resources;
     }
+	
+	public List<ResourceSpace> getTargetSpaces() {
+		return targetSpaces;
+	}
+
+	public void setTargetSpaces(List<ResourceSpace> targetSpaces) {
+		this.targetSpaces = targetSpaces;
+	}
 
     public Boolean getIsPublic() {
         return isPublic;

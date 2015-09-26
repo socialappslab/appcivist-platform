@@ -315,7 +315,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public static ResourceSpace readByUUID(UUID resourceSetUuid) {
 		return find.where().eq("uuid",resourceSetUuid).findUnique();
-	}
+	}	
 
 	public static ResourceSpace createObject(ResourceSpace resourceSet) {
 		resourceSet.save();

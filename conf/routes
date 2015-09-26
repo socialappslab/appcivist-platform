@@ -75,6 +75,7 @@ GET       /api/assembly/:aid/group                                        contro
 GET       /api/assembly/:aid/group/:gid                                   controllers.WorkingGroups.findWorkingGroup(aid: Long, gid: Long)
 PUT       /api/assembly/:aid/group                                        controllers.WorkingGroups.updateWorkingGroup(aid: Long, gid: Long)
 POST      /api/assembly/:aid/group                                        controllers.WorkingGroups.createWorkingGroup(aid: Long)
+POST      /api/assembly/:aid/campaing/:cid/group                          controllers.WorkingGroups.createWorkingGroupInCampaign(aid: Long, cid: Long) 
 DELETE    /api/assembly/:aid/group/:gid                                   controllers.WorkingGroups.deleteWorkingGroup(aid: Long, gid: Long)
 POST      /api/assembly/:aid/group/:id/membership/:type                   controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)  
 GET       /api/assembly/:aid/group/:id/membership                         controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
