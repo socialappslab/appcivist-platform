@@ -58,6 +58,8 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Config> configs = new ArrayList<>();
 	@Transient
 	private List<Theme> themes = new ArrayList<>();
+	@Transient
+	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	
 	// TODO: check if it works
 	@JsonIgnore
@@ -227,6 +229,22 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources.setThemes(themes);
 	}
 
+	public void addTheme(Theme t) {
+		this.resources.addTheme(t);
+	}
+	
+	public List<WorkingGroup> getWorkingGroups() {
+		return workingGroups;
+	}
+
+	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
+		this.workingGroups = workingGroups;
+	}
+	
+	public void addWorkingGroup(WorkingGroup wg) {
+		this.resources.addWorkingGroup(wg);
+	}
+	
 	public CampaignTemplate getTemplate() {
 		return template;
 	}
