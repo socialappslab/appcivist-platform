@@ -1006,32 +1006,32 @@
     creator: *u1
     name: "Conseil Belleville" 
     text: Commitee in charge of managing contributions in for PB Belleville
-    isPublic: false
-    acceptRequests: false
+    listed: false
+#    acceptRequests: false
 #    assemblies: 
 #      - *a1
   - &wg2 !!models.WorkingGroup
     creator: *u1
     name: "Passionées du Parc de Belleville" 
     text: Group developing Urban Infrastructure proposals for Parc de Belleville
-    isPublic: true
-    acceptRequests: true
+    listed: true
+#    acceptRequests: true
 #    assemblies: 
 #      - *a1
   - &wg3 !!models.WorkingGroup
     creator: *u1
     name: "Neighborhood 14, Category Parks" 
     text: Group of neighbors from district 13, focused on Parks
-    isPublic: true
-    acceptRequests: true
+    listed: true
+#    acceptRequests: true
 #    assemblies: 
 #      - *a2
   - &wg4 !!models.WorkingGroup
     creator: *u1
     name: "AntiEviction Proposals Team" 
     text: Team in charge of turning Ideas into proposals
-    isPublic: false
-    acceptRequests: true
+    listed: false
+#    acceptRequests: true
 #    assemblies: 
 #      - *a3
 

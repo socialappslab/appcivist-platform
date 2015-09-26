@@ -21,7 +21,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ManagementTypes;
+import enums.MembershipCreationTypes;
 import enums.ResourceSpaceTypes;
+import enums.SupportedMembershipRegistration;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -32,8 +34,9 @@ public class WorkingGroup extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
     private String name;
     private String text;
-    private Boolean isPublic = true;
-    private Boolean acceptRequests = true;
+    private Boolean listed = true;
+    @Enumerated(EnumType.STRING)
+    private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST;
     @Enumerated(EnumType.STRING)
     private ManagementTypes managementType = ManagementTypes.OPEN;
     private User creator;
@@ -200,20 +203,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 		this.targetSpaces = targetSpaces;
 	}
 
-    public Boolean getIsPublic() {
-        return isPublic;
+    public Boolean getListed() {
+        return listed;
     }
 
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
-    public Boolean getAcceptRequests() {
-        return acceptRequests;
-    }
-
-    public void setAcceptRequests(Boolean acceptRequests) {
-        this.acceptRequests = acceptRequests;
+    public void setListed(Boolean isPublic) {
+        this.listed = isPublic;
     }
 
     public ManagementTypes getManagementType() {
@@ -223,4 +218,13 @@ public class WorkingGroup extends AppCivistBaseModel {
     public void setManagementType(ManagementTypes membershipRole) {
         this.managementType = membershipRole;
     }
+
+	public SupportedMembershipRegistration getSupportedMembership() {
+		return supportedMembership;
+	}
+
+	public void setSupportedMembership(
+			SupportedMembershipRegistration supportedMembership) {
+		this.supportedMembership = supportedMembership;
+	}
 }
