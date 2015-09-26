@@ -15,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -29,6 +30,7 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 
 	private String title; // name of milestone
 	private int position;
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime();	// starting date of the milestone
 	private Integer days = 1; // duration in dates
 	private UUID uuid = UUID.randomUUID(); 

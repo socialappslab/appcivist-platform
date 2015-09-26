@@ -86,6 +86,7 @@ public class Campaigns extends Controller {
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
 		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "new campaign form", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result updateCampaign(Long aid, Long campaignId) {
@@ -109,11 +110,11 @@ public class Campaigns extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
-		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
+		@ApiImplicitParam(name = "new campaign form", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createCampaignInAssembly(Long aid) {
@@ -134,7 +135,7 @@ public class Campaigns extends Controller {
 			Campaign newCampaign = newCampaignForm.get();
 			if (newCampaign.getLang() == null) 
 				newCampaign.setLang(campaignCreator.getLanguage());
-
+			
 			Logger.info("Creating new campaign");
 			Logger.debug("=> " + newCampaignForm.toString());
 

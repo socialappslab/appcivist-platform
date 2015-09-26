@@ -116,8 +116,10 @@ create table component_instance (
   uuid                      varchar(40),
   position                  integer,
   timeline                  integer,
+  main_contribution_type    integer,
   component_component_id    bigint,
   resource_space_resource_space_id bigint,
+  constraint ck_component_instance_main_contribution_type check (main_contribution_type in (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)),
   constraint uq_component_instance_resource_s unique (resource_space_resource_space_id),
   constraint pk_component_instance primary key (component_instance_id))
 ;
