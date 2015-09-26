@@ -149,7 +149,7 @@ public class Notifications extends Controller {
 					if (components != null && !components.isEmpty()) {
 						for (ComponentInstance p : components) {
 							Calendar today = Calendar.getInstance();
-							if (p.getEndDate().after(today.getTime())) {
+							if (p.getEndDate() !=null && p.getEndDate().after(today.getTime())) {
 								// 4.2. Current Ongoing Campaigns Upcoming Milestones
 								List<ComponentInstanceMilestone> milestones = p.getMilestones();
 								if (milestones!=null && !milestones.isEmpty()) {
@@ -162,7 +162,7 @@ public class Notifications extends Controller {
 										if(cal.getTime().after(today.getTime())) 
 											updates.add(UpdateTransfer.getInstance(
 													AppcivistNotificationTypes.UPCOMING_MILESTONE,
-													AppcivistResourceTypes.CAMPAIGN_PHASE,
+													AppcivistResourceTypes.CAMPAIGN_COMPONENT,
 													AppcivistResourceTypes.CAMPAIGN,
 													NOTIFICATION_TITLE_MILESTONE_UPDATE,
 													NOTIFICATION_DESCRIPTION_UPCOMING_MILESTONE,
