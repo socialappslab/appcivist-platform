@@ -14,7 +14,7 @@ public enum AppcivistResourceTypes {
 	EXTERNAL,				// External resources can be anything that has a URL
 	ASSEMBLY, 
 	CAMPAIGN,
-	CAMPAIGN_PHASE,
+	CAMPAIGN_COMPONENT,
 	WORKING_GROUP,
 	
 	PICTURE, 
