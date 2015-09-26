@@ -58,8 +58,8 @@ public class CampaignComponents extends Controller {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findCampaignComponent(Long aid, Long campaignId,
 			Long componentId) {
-		ComponentInstance campaignPhase = ComponentInstance.read(campaignId, componentId);
-		return ok(Json.toJson(campaignPhase));
+		ComponentInstance campaignComponentInstance = ComponentInstance.read(campaignId, componentId);
+		return ok(Json.toJson(campaignComponentInstance));
 	}
 
 	@ApiOperation(httpMethod = "DELETE", response = ComponentInstance.class, produces = "application/json", value = "List components in assembly campaign")

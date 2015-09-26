@@ -16,16 +16,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ResourceSpaceTypes;
 
@@ -50,6 +49,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonIgnore
 	private ResourceSpace resourceSpace = new ResourceSpace();
 	
 	// TODO: check if it works
@@ -112,18 +112,22 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		this.title = title;
 	}
 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getStartDate() {
 		return startDate;
 	}
 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getEndDate() {
 		return endDate;
 	}
 
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
@@ -231,11 +235,11 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	}
 
 	public static ComponentInstance read(Long campaignId, Long componentInstanceId) {
-		ExpressionList<ComponentInstance> campaignPhases = find.where()
+		ExpressionList<ComponentInstance> componentInstances = find.where()
 				.eq("targetSpaces.campaigns.campaignId",campaignId)
 				.eq("componentInstanceId", componentInstanceId);
-		ComponentInstance phase = campaignPhases.findUnique();
-		return phase;
+		ComponentInstance componentInstance = componentInstances.findUnique();
+		return componentInstance;
     }
 
     public static List<ComponentInstance> findAll(Long campaignId) {

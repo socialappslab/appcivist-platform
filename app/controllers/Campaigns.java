@@ -113,7 +113,6 @@ public class Campaigns extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
-		@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createCampaignInAssembly(Long aid) {

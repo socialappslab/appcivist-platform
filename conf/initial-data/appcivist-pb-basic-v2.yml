@@ -934,15 +934,6 @@
       - *ci2
       - *ci3
       - *ci4
-  - &ph2 !!models.ComponentInstance
-    position: 1
-    timeline: 1
-    component: *pd2
-    #configs
-    milestones: 
-      - *ci5
-      - *ci6
-      - *ci7
     contributions: 
       - *contrib11 
       - *contrib12 
@@ -953,6 +944,15 @@
       - *contrib17 
       - *contrib18 
       - *contrib19
+  - &ph2 !!models.ComponentInstance
+    position: 1
+    timeline: 1
+    component: *pd2
+    #configs
+    milestones: 
+      - *ci5
+      - *ci6
+      - *ci7
   - &ph3 !!models.ComponentInstance
     position: 2
     timeline: 1

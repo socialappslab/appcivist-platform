@@ -24,10 +24,11 @@ GET       /api/doc.json                                                   @pl.ma
 GET       /api/doc.json/user                                              @pl.matisoft.swagger.ApiHelpController.getResource(path="/user")
 GET       /api/doc.json/notification                                      @pl.matisoft.swagger.ApiHelpController.getResource(path="/notification")
 GET       /api/doc.json/assembly                                          @pl.matisoft.swagger.ApiHelpController.getResource(path="/assembly")
-#GET       /api/doc.json/group                               @pl.matisoft.swagger.ApiHelpControllreer.getResource(path="/group")
+GET       /api/doc.json/group                                             @pl.matisoft.swagger.ApiHelpController.getResource(path="/group")
 GET       /api/doc.json/membership                                        @pl.matisoft.swagger.ApiHelpController.getResource(path="/membership")
 GET       /api/doc.json/campaign                                          @pl.matisoft.swagger.ApiHelpController.getResource(path="/campaign")
-GET       /api/doc.json/contribution                                          @pl.matisoft.swagger.ApiHelpController.getResource(path="/contribution")
+GET       /api/doc.json/contribution                                      @pl.matisoft.swagger.ApiHelpController.getResource(path="/contribution")
+GET       /api/doc.json/component                                         @pl.matisoft.swagger.ApiHelpController.getResource(path="/component")
 
 #####################################################################################
 # User and Authentication Management based on play-authenticate
