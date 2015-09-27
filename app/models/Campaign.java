@@ -61,12 +61,21 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	
+	@Transient
+	private List<ComponentInstance> existingComponents = new ArrayList<>();
+	@Transient
+	private List<Config> existingConfigs = new ArrayList<>();
+	@Transient
+	private List<Theme> existingThemes = new ArrayList<>();
+	@Transient
+	private List<WorkingGroup> existingWorkingGroups = new ArrayList<>();
+	
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "campaigns")
 	private List<ResourceSpace> targetSpaces;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	private CampaignTemplate template;
 	
 	/**
@@ -210,14 +219,22 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	public void setComponents(List<ComponentInstance> components) {
+		this.components = components;
 		this.resources.setComponents(components);
 	}
+
+	public void addComponent(ComponentInstance componentIsntance) {
+		this.components.add(componentIsntance);
+		this.resources.getComponents().add(componentIsntance);
+	}
+
 
 	public List<Config> getConfigs() {
 		return this.resources.getConfigs();
 	}
 
 	public void setConfigs(List<Config> configs) {
+		this.configs = configs;
 		this.resources.setConfigs(configs);
 	}
 
@@ -226,25 +243,61 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	public void setThemes(List<Theme> themes) {
+		this.themes = themes;
 		this.resources.setThemes(themes);
 	}
 
 	public void addTheme(Theme t) {
+		this.themes.add(t);
 		this.resources.addTheme(t);
 	}
 	
 	public List<WorkingGroup> getWorkingGroups() {
-		return workingGroups;
+		return this.resources.getWorkingGroups();
 	}
 
 	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
 		this.workingGroups = workingGroups;
+		this.resources.setWorkingGroups(workingGroups);
 	}
 	
 	public void addWorkingGroup(WorkingGroup wg) {
+		this.workingGroups.add(wg);
 		this.resources.addWorkingGroup(wg);
 	}
 	
+	public List<ComponentInstance> getExistingComponents() {
+		return existingComponents;
+	}
+
+	public void setExistingComponents(List<ComponentInstance> newComponents) {
+		this.existingComponents = newComponents;
+	}
+
+	public List<Config> getExistingConfigs() {
+		return existingConfigs;
+	}
+
+	public void setExistingConfigs(List<Config> newConfigs) {
+		this.existingConfigs = newConfigs;
+	}
+
+	public List<Theme> getExistingThemes() {
+		return existingThemes;
+	}
+
+	public void setExistingThemes(List<Theme> newThemes) {
+		this.existingThemes = newThemes;
+	}
+
+	public List<WorkingGroup> getExistingWorkingGroups() {
+		return existingWorkingGroups;
+	}
+
+	public void setExistingWorkingGroups(List<WorkingGroup> newWorkingGroups) {
+		this.existingWorkingGroups = newWorkingGroups;
+	}
+
 	public CampaignTemplate getTemplate() {
 		return template;
 	}
@@ -258,10 +311,6 @@ String uuidAsString, List<ComponentInstance> phases) {
 		return campaigns;
 	}
 	
-	public void addComponent(ComponentInstance phase) {
-		this.resources.getComponents().add(phase);
-	}
-
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getStartDate() {
 		List<ComponentInstance> components = this.resources.getComponents(); 
@@ -296,7 +345,28 @@ String uuidAsString, List<ComponentInstance> phases) {
 	 * Basic Data Operations
 	 */
 	public static void create(Campaign campaign) {
+		// 1. Check first for existing entities in ManyToMany relationships. 
+		//    Save them for later update
+		List<ComponentInstance> existingComponents = campaign.getExistingComponents();
+		List<Theme> existingThemes = campaign.getExistingThemes();
+		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
+		
+		// 2. Create the new campaign
 		campaign.save();
+		
+		// 3. Add existing entities in relationships to the manytomany resources
+		//    then update
+		ResourceSpace campaignResources = campaign.getResources();
+		
+		if (existingComponents!=null && !existingComponents.isEmpty())
+			campaignResources.getComponents().addAll(existingComponents);
+		if (existingThemes!=null && !existingThemes.isEmpty())
+			campaignResources.getThemes().addAll(existingThemes);
+		if (existingWorkingGroups!=null && !existingWorkingGroups.isEmpty())
+			campaignResources.getWorkingGroups().addAll(existingWorkingGroups);
+		campaignResources.update();
+		
+		// 4. Refresh the new campaign to get the newest version
 		campaign.refresh();
 	}
 
