@@ -45,7 +45,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	private int timeline;
 	private AppcivistResourceTypes mainContributionType = AppcivistResourceTypes.CONTRIBUTION_IDEA;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	private Component component;
 	
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
