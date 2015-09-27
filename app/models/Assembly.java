@@ -22,7 +22,6 @@ import utils.GlobalData;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -65,8 +64,37 @@ public class Assembly extends AppCivistBaseModel {
 	private Location location = new Location();
 	
 	@Transient
-	@JsonIgnore
-	private List<Theme> themes;
+	@JsonInclude(Include.NON_EMPTY)
+	private List<ComponentInstance> components = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Config> configs = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Theme> themes = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<WorkingGroup> workingGroups = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Campaign> campaigns = new ArrayList<>();
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<ComponentInstance> existingComponents = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Config> existingConfigs = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Theme> existingThemes = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<WorkingGroup> existingWorkingGroups = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Campaign> existingCampaigns = new ArrayList<>();
+	
 
 	/**
 	 * The assembly resource set is where all the campaign, configurations,
@@ -300,6 +328,79 @@ public class Assembly extends AppCivistBaseModel {
 
 	public void setThemes(List<Theme> themes) {
 		this.themes = themes;
+		this.resources.setThemes(themes);
+	}
+
+	public List<ComponentInstance> getComponents() {
+		return resources != null ? resources.getComponents() : null;
+	}
+
+	public void setComponents(List<ComponentInstance> components) {
+		this.components = components;
+		this.resources.setComponents(components);
+	}
+
+	public List<Config> getConfigs() {
+		return resources != null ? resources.getConfigs() : null;
+	}
+
+	public void setConfigs(List<Config> configs) {
+		this.configs = configs;
+		this.resources.setConfigs(configs);
+	}
+
+	public List<WorkingGroup> getWorkingGroups() {
+		return resources != null ? resources.getWorkingGroups() : null;
+	}
+
+	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
+		this.workingGroups = workingGroups;
+		this.resources.setWorkingGroups(workingGroups);
+	}
+	public List<Campaign> getCampaigns() {
+		return resources != null ? resources.getCampaigns() : null;
+	}
+	public void setCampaigns(List<Campaign> campaigns) {
+		this.campaigns = campaigns;
+		this.resources.setCampaigns(campaigns);
+	}
+
+	public List<ComponentInstance> getExistingComponents() {
+		return existingComponents;
+	}
+
+	public void setExistingComponents(List<ComponentInstance> existingComponents) {
+		this.existingComponents = existingComponents;
+	}
+
+	public List<Config> getExistingConfigs() {
+		return existingConfigs;
+	}
+
+	public void setExistingConfigs(List<Config> existingConfigs) {
+		this.existingConfigs = existingConfigs;
+	}
+
+	public List<Theme> getExistingThemes() {
+		return existingThemes;
+	}
+
+	public void setExistingThemes(List<Theme> existingThemes) {
+		this.existingThemes = existingThemes;
+	}
+
+	public List<WorkingGroup> getExistingWorkingGroups() {
+		return existingWorkingGroups;
+	}
+
+	public void setExistingWorkingGroups(List<WorkingGroup> existingWorkingGroups) {
+		this.existingWorkingGroups = existingWorkingGroups;
+	}
+	public List<Campaign> getExistingCampaigns() {
+		return existingCampaigns;
+	}
+	public void setExistingCampaigns(List<Campaign> existingCampaigns) {
+		this.existingCampaigns = existingCampaigns;
 	}
 
 	/**
@@ -319,7 +420,34 @@ public class Assembly extends AppCivistBaseModel {
 					+ assembly.getAssemblyId());
 		}
 
+		// 1. Check first for existing entities in ManyToMany relationships.
+		// Save them for later update
+		List<ComponentInstance> existingComponents = assembly
+				.getExistingComponents();
+		List<Theme> existingThemes = assembly.getExistingThemes();
+		List<WorkingGroup> existingWorkingGroups = assembly
+				.getExistingWorkingGroups();
+		List<Campaign> existingCampaigns = assembly.getExistingCampaigns();
+
+		// 2. Create the new campaign
 		assembly.save();
+
+		// 3. Add existing entities in relationships to the manytomany resources
+		// then update
+		ResourceSpace assemblyResources = assembly.getResources();
+
+		if (existingComponents != null && !existingComponents.isEmpty())
+			assemblyResources.getComponents().addAll(existingComponents);
+		if (existingThemes != null && !existingThemes.isEmpty())
+			assemblyResources.getThemes().addAll(existingThemes);
+		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
+			assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
+		if (existingCampaigns != null && !existingCampaigns.isEmpty())
+			assemblyResources.getCampaigns().addAll(existingCampaigns);
+		
+		assemblyResources.update();
+
+		// 4. Refresh the new campaign to get the newest version
 		assembly.refresh();
 
 		if (assembly.getUrl() == null || assembly.getUrl() == "") {
