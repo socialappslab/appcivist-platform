@@ -10,10 +10,13 @@ import java.util.UUID;
 import models.Assembly;
 import models.Campaign;
 import models.CampaignTemplate;
+import models.ComponentInstance;
 import models.Membership;
 import models.MembershipAssembly;
 import models.ResourceSpace;
+import models.Theme;
 import models.User;
+import models.WorkingGroup;
 import models.transfer.TransferResponseStatus;
 import models.transfer.UpdateTransfer;
 import play.Logger;
@@ -81,7 +84,7 @@ public class Campaigns extends Controller {
 		return ok();
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update campaign by ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
@@ -99,6 +102,8 @@ public class Campaigns extends Controller {
 			responseBody.setStatusMessage(Messages.get(
 					GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
 					newCampaignForm.errorsAsJson()));
+			Logger.info("Error pdating campaign");
+			Logger.debug("=> " + newCampaignForm.errorsAsJson());
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			Campaign updatedCampaign = newCampaignForm.get();
@@ -139,8 +144,9 @@ public class Campaigns extends Controller {
 			Logger.info("Creating new campaign");
 			Logger.debug("=> " + newCampaignForm.toString());
 
+			
 			// Adding the new campaign to the Assembly Resource Space
-			// Campaign.create(newCampaign);
+			Campaign.create(newCampaign);
 			ResourceSpace assemblyResources = Assembly.read(aid).getResources();
 			assemblyResources.addCampaign(newCampaign);
 			assemblyResources.update();

@@ -166,16 +166,18 @@ public class Assemblies extends Controller {
 			// space already exist
 			// TODO: find a way to do this with @PrePersist and @PostPersist JPA
 			// operations
-			List<Theme> existingThemes = newAssembly.extractExistingThemes();
+			//List<Theme> existingThemes = newAssembly.extractExistingThemes();
 			Logger.info("Creating assembly");
 			Logger.debug("=> " + newAssemblyForm.toString());
-			newAssembly.save();
-			if (!existingThemes.isEmpty()) {
-				Logger.info("=> Adding Existing Themes");
-				Logger.debug("=> " + existingThemes.toString());
-				newAssembly.addThemes(existingThemes);
-				newAssembly.updateResources();
-			}
+			Assembly.create(newAssembly);
+			
+			//newAssembly.save();
+//			if (!existingThemes.isEmpty()) {
+//				Logger.info("=> Adding Existing Themes");
+//				Logger.debug("=> " + existingThemes.toString());
+//				newAssembly.addThemes(existingThemes);
+//				newAssembly.updateResources();
+//			}
 
 			// TODO: return URL of the new group
 			Logger.info("Assembly created!");
