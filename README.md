@@ -4,13 +4,14 @@ Core of AppCivist services.
 
 ## Getting Started
 
-1. Download and install [Typesafe Activator][3]
+1. Download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
 2. Clone this repository
 3. Rename **conf/local.conf.sample** to **conf/local.conf**
 4. Rename **conf/play-authentica/deadbolt.conf.sample** to **conf/play-authentica/local.deadbolt.conf**
 5. Rename **conf/play-authentica/mine.conf.sample** to **conf/play-authentica/mine.local.conf** and replace email address with and email address you own 
 6. Rename **conf/play-authentica/smtp.conf.sample** to **conf/play-authentica/smpt.local.conf** and replace email and passwords with your own. 
-7. Make sure you never commit files in steps 3-6 into the repository 
+6. Rename **conf/heroku.logback.xml** to **conf/local.logback.xml**. 
+7. Make sure you never commit files in previous steps into the repository 
 8. On a console, access your local copy of appcivist-core source code: **cd <PATH_TO_YOUR_LOCAL_REPO>/appcivist-platform**
 9. Run the command **activator** to enter the typsafe activator console (or if you want to enable debugging from your IDE, use **activator -jvm-debug 9999 -D**). It will automatically download all the dependencies and setup the [play framework][1].  
 10. **OPTIONAL**. Follow Play Framework's [Get Started][2] guide to learn more about how the project is organized
