@@ -427,7 +427,12 @@
     description: "Quorum threshold percentage" 
     defaultValue: "0.6" 
     configTarget: COMPONENT
-    
+  - &config37 !!models.ConfigDefinition
+    key: "component.proposal-making.template-sections"
+    valueType: json
+    description: "Proposal Template" 
+    defaultValue: "[]" 
+    configTarget: COMPONENT    
 ##############################################################################################################################################################################################    
 # Components: definition of components avaialble to use in appcivist
   - &pd1 !!models.Component

@@ -216,6 +216,7 @@ create table config_definition (
 ;
 
 create table contribution (
+  type                      varchar(31) not null,
   contribution_id           bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
@@ -229,24 +230,12 @@ create table contribution (
   location_location_id      bigint,
   resource_space_resource_space_id bigint,
   stats_contribution_statistics_id bigint,
+  proposal_pad_resource_id  bigint,
   constraint uq_contribution_location_locatio unique (location_location_id),
   constraint uq_contribution_resource_space_r unique (resource_space_resource_space_id),
   constraint uq_contribution_stats_contributi unique (stats_contribution_statistics_id),
+  constraint uq_contribution_proposal_pad_res unique (proposal_pad_resource_id),
   constraint pk_contribution primary key (contribution_id))
-;
-
-create table contribution_connection (
-  uuid                      varchar(40) not null,
-  creation                  timestamp,
-  last_update               timestamp,
-  lang                      varchar(255),
-  removal                   timestamp,
-  removed                   boolean,
-  type                      integer,
-  source_uuid               varchar(40),
-  target_uuid               varchar(40),
-  constraint ck_contribution_connection_type check (type in (0,1,2,3,4)),
-  constraint pk_contribution_connection primary key (uuid))
 ;
 
 create table contribution_statistics (
@@ -264,6 +253,32 @@ create table contribution_statistics (
   flags                     bigint,
   shares                    bigint,
   constraint pk_contribution_statistics primary key (contribution_statistics_id))
+;
+
+create table contribution_template (
+  id                        bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  constraint pk_contribution_template primary key (id))
+;
+
+create table contribution_template_section (
+  id                        bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  title                     varchar(255),
+  description               varchar(255),
+  length                    integer,
+  order                     integer,
+  constraint pk_contribution_template_section primary key (id))
 ;
 
 create table geo (
@@ -823,76 +838,78 @@ alter table contribution add constraint fk_contribution_resourceSpace_20 foreign
 create index ix_contribution_resourceSpace_20 on contribution (resource_space_resource_space_id);
 alter table contribution add constraint fk_contribution_stats_21 foreign key (stats_contribution_statistics_id) references contribution_statistics (contribution_statistics_id);
 create index ix_contribution_stats_21 on contribution (stats_contribution_statistics_id);
-alter table geometry add constraint fk_geometry_geo_22 foreign key (geo_location_id) references geo (location_id);
-create index ix_geometry_geo_22 on geometry (geo_location_id);
-alter table Linked_Account add constraint fk_Linked_Account_user_23 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Linked_Account_user_23 on Linked_Account (user_id);
-alter table membership add constraint fk_membership_creator_24 foreign key (creator_user_id) references appcivist_user (user_id);
-create index ix_membership_creator_24 on membership (creator_user_id);
-alter table membership add constraint fk_membership_user_25 foreign key (user_user_id) references appcivist_user (user_id);
-create index ix_membership_user_25 on membership (user_user_id);
-alter table membership add constraint fk_membership_assembly_26 foreign key (assembly_assembly_id) references assembly (assembly_id);
-create index ix_membership_assembly_26 on membership (assembly_assembly_id);
-alter table membership add constraint fk_membership_workingGroup_27 foreign key (working_group_group_id) references working_group (group_id);
-create index ix_membership_workingGroup_27 on membership (working_group_group_id);
-alter table message add constraint fk_message_targetUser_28 foreign key (target_user_user_id) references appcivist_user (user_id);
-create index ix_message_targetUser_28 on message (target_user_user_id);
-alter table message add constraint fk_message_targetWorkingGroup_29 foreign key (target_working_group_group_id) references working_group (group_id);
-create index ix_message_targetWorkingGroup_29 on message (target_working_group_group_id);
-alter table message add constraint fk_message_targetAssembly_30 foreign key (target_assembly_assembly_id) references assembly (assembly_id);
-create index ix_message_targetAssembly_30 on message (target_assembly_assembly_id);
-alter table properties add constraint fk_properties_geo_31 foreign key (geo_location_id) references geo (location_id);
-create index ix_properties_geo_31 on properties (geo_location_id);
-alter table service add constraint fk_service_assembly_32 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
-create index ix_service_assembly_32 on service (assembly_assembly_id);
-alter table service add constraint fk_service_serviceDefinition_33 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_serviceDefinition_33 on service (service_definition_service_definition_id);
-alter table service_authentication add constraint fk_service_authentication_ser_34 foreign key (service_service_id) references service (service_id);
-create index ix_service_authentication_ser_34 on service_authentication (service_service_id);
-alter table service_campaign add constraint fk_service_campaign_previousC_35 foreign key (previous_campaign) references service_campaign (campaign_id);
-create index ix_service_campaign_previousC_35 on service_campaign (previous_campaign);
-alter table service_campaign add constraint fk_service_campaign_nextCampa_36 foreign key (next_campaign) references service_campaign (campaign_id);
-create index ix_service_campaign_nextCampa_36 on service_campaign (next_campaign);
-alter table service_campaign add constraint fk_service_campaign_issue_37 foreign key (issue_issue_id) references service_issue (issue_id);
-create index ix_service_campaign_issue_37 on service_campaign (issue_issue_id);
-alter table service_campaign add constraint fk_service_campaign_startOper_38 foreign key (start_operation_service_operation_id) references service_operation (service_operation_id);
-create index ix_service_campaign_startOper_38 on service_campaign (start_operation_service_operation_id);
-alter table service_issue add constraint fk_service_issue_assembly_39 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
-create index ix_service_issue_assembly_39 on service_issue (assembly_assembly_id);
-alter table service_issue add constraint fk_service_issue_resource_40 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_issue_resource_40 on service_issue (resource_service_resource_id);
-alter table service_operation add constraint fk_service_operation_definiti_41 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_operation_definiti_41 on service_operation (operation_definition_id);
-alter table service_operation add constraint fk_service_operation_service_42 foreign key (service_service_id) references service (service_id);
-create index ix_service_operation_service_42 on service_operation (service_service_id);
-alter table service_operation_definition add constraint fk_service_operation_definiti_43 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_operation_definiti_43 on service_operation_definition (service_definition_service_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceP_44 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_serviceP_44 on service_parameter (service_parameter_parameter_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceR_45 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_parameter_serviceR_45 on service_parameter (service_resource_service_resource_id);
-alter table service_parameter add constraint fk_service_parameter_serviceO_46 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
-create index ix_service_parameter_serviceO_46 on service_parameter (service_operation_service_operation_id);
-alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_47 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_data_mod_47 on service_parameter_data_model (definition_parameter_definition_id);
-alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_48 foreign key (parent_data_model_data_model_id) references service_parameter_data_model (data_model_id);
-create index ix_service_parameter_data_mod_48 on service_parameter_data_model (parent_data_model_data_model_id);
-alter table service_parameter_definition add constraint fk_service_parameter_definiti_49 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_parameter_definiti_49 on service_parameter_definition (service_operation_definition_operation_definition_id);
-alter table service_resource add constraint fk_service_resource_service_50 foreign key (service_service_id) references service (service_id);
-create index ix_service_resource_service_50 on service_resource (service_service_id);
-alter table service_resource add constraint fk_service_resource_parentRes_51 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_resource_parentRes_51 on service_resource (parent_resource_service_resource_id);
-alter table Token_Action add constraint fk_Token_Action_targetUser_52 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Token_Action_targetUser_52 on Token_Action (user_id);
-alter table appcivist_user add constraint fk_appcivist_user_profilePic_53 foreign key (profile_pic_resource_id) references resource (resource_id);
-create index ix_appcivist_user_profilePic_53 on appcivist_user (profile_pic_resource_id);
-alter table user_profile add constraint fk_user_profile_user_54 foreign key (user_user_id) references appcivist_user (user_id);
-create index ix_user_profile_user_54 on user_profile (user_user_id);
-alter table working_group add constraint fk_working_group_resources_55 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
-create index ix_working_group_resources_55 on working_group (resources_resource_space_id);
-alter table working_group add constraint fk_working_group_forum_56 foreign key (forum_resource_space_id) references resource_space (resource_space_id);
-create index ix_working_group_forum_56 on working_group (forum_resource_space_id);
+alter table contribution add constraint fk_contribution_proposalPad_22 foreign key (proposal_pad_resource_id) references resource (resource_id);
+create index ix_contribution_proposalPad_22 on contribution (proposal_pad_resource_id);
+alter table geometry add constraint fk_geometry_geo_23 foreign key (geo_location_id) references geo (location_id);
+create index ix_geometry_geo_23 on geometry (geo_location_id);
+alter table Linked_Account add constraint fk_Linked_Account_user_24 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Linked_Account_user_24 on Linked_Account (user_id);
+alter table membership add constraint fk_membership_creator_25 foreign key (creator_user_id) references appcivist_user (user_id);
+create index ix_membership_creator_25 on membership (creator_user_id);
+alter table membership add constraint fk_membership_user_26 foreign key (user_user_id) references appcivist_user (user_id);
+create index ix_membership_user_26 on membership (user_user_id);
+alter table membership add constraint fk_membership_assembly_27 foreign key (assembly_assembly_id) references assembly (assembly_id);
+create index ix_membership_assembly_27 on membership (assembly_assembly_id);
+alter table membership add constraint fk_membership_workingGroup_28 foreign key (working_group_group_id) references working_group (group_id);
+create index ix_membership_workingGroup_28 on membership (working_group_group_id);
+alter table message add constraint fk_message_targetUser_29 foreign key (target_user_user_id) references appcivist_user (user_id);
+create index ix_message_targetUser_29 on message (target_user_user_id);
+alter table message add constraint fk_message_targetWorkingGroup_30 foreign key (target_working_group_group_id) references working_group (group_id);
+create index ix_message_targetWorkingGroup_30 on message (target_working_group_group_id);
+alter table message add constraint fk_message_targetAssembly_31 foreign key (target_assembly_assembly_id) references assembly (assembly_id);
+create index ix_message_targetAssembly_31 on message (target_assembly_assembly_id);
+alter table properties add constraint fk_properties_geo_32 foreign key (geo_location_id) references geo (location_id);
+create index ix_properties_geo_32 on properties (geo_location_id);
+alter table service add constraint fk_service_assembly_33 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
+create index ix_service_assembly_33 on service (assembly_assembly_id);
+alter table service add constraint fk_service_serviceDefinition_34 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_serviceDefinition_34 on service (service_definition_service_definition_id);
+alter table service_authentication add constraint fk_service_authentication_ser_35 foreign key (service_service_id) references service (service_id);
+create index ix_service_authentication_ser_35 on service_authentication (service_service_id);
+alter table service_campaign add constraint fk_service_campaign_previousC_36 foreign key (previous_campaign) references service_campaign (campaign_id);
+create index ix_service_campaign_previousC_36 on service_campaign (previous_campaign);
+alter table service_campaign add constraint fk_service_campaign_nextCampa_37 foreign key (next_campaign) references service_campaign (campaign_id);
+create index ix_service_campaign_nextCampa_37 on service_campaign (next_campaign);
+alter table service_campaign add constraint fk_service_campaign_issue_38 foreign key (issue_issue_id) references service_issue (issue_id);
+create index ix_service_campaign_issue_38 on service_campaign (issue_issue_id);
+alter table service_campaign add constraint fk_service_campaign_startOper_39 foreign key (start_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_campaign_startOper_39 on service_campaign (start_operation_service_operation_id);
+alter table service_issue add constraint fk_service_issue_assembly_40 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
+create index ix_service_issue_assembly_40 on service_issue (assembly_assembly_id);
+alter table service_issue add constraint fk_service_issue_resource_41 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_issue_resource_41 on service_issue (resource_service_resource_id);
+alter table service_operation add constraint fk_service_operation_definiti_42 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_operation_definiti_42 on service_operation (operation_definition_id);
+alter table service_operation add constraint fk_service_operation_service_43 foreign key (service_service_id) references service (service_id);
+create index ix_service_operation_service_43 on service_operation (service_service_id);
+alter table service_operation_definition add constraint fk_service_operation_definiti_44 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_operation_definiti_44 on service_operation_definition (service_definition_service_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceP_45 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_serviceP_45 on service_parameter (service_parameter_parameter_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceR_46 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_parameter_serviceR_46 on service_parameter (service_resource_service_resource_id);
+alter table service_parameter add constraint fk_service_parameter_serviceO_47 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_parameter_serviceO_47 on service_parameter (service_operation_service_operation_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_48 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_data_mod_48 on service_parameter_data_model (definition_parameter_definition_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_49 foreign key (parent_data_model_data_model_id) references service_parameter_data_model (data_model_id);
+create index ix_service_parameter_data_mod_49 on service_parameter_data_model (parent_data_model_data_model_id);
+alter table service_parameter_definition add constraint fk_service_parameter_definiti_50 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_parameter_definiti_50 on service_parameter_definition (service_operation_definition_operation_definition_id);
+alter table service_resource add constraint fk_service_resource_service_51 foreign key (service_service_id) references service (service_id);
+create index ix_service_resource_service_51 on service_resource (service_service_id);
+alter table service_resource add constraint fk_service_resource_parentRes_52 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_resource_parentRes_52 on service_resource (parent_resource_service_resource_id);
+alter table Token_Action add constraint fk_Token_Action_targetUser_53 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Token_Action_targetUser_53 on Token_Action (user_id);
+alter table appcivist_user add constraint fk_appcivist_user_profilePic_54 foreign key (profile_pic_resource_id) references resource (resource_id);
+create index ix_appcivist_user_profilePic_54 on appcivist_user (profile_pic_resource_id);
+alter table user_profile add constraint fk_user_profile_user_55 foreign key (user_user_id) references appcivist_user (user_id);
+create index ix_user_profile_user_55 on user_profile (user_user_id);
+alter table working_group add constraint fk_working_group_resources_56 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
+create index ix_working_group_resources_56 on working_group (resources_resource_space_id);
+alter table working_group add constraint fk_working_group_forum_57 foreign key (forum_resource_space_id) references resource_space (resource_space_id);
+create index ix_working_group_forum_57 on working_group (forum_resource_space_id);
 
 
 
@@ -971,13 +988,13 @@ alter table User_User_Permission add constraint fk_User_User_Permission_user__02
 alter table working_group_assembly add constraint fk_working_group_assembly_wor_01 foreign key (working_group_group_id) references working_group (group_id);
 
 alter table working_group_assembly add constraint fk_working_group_assembly_ass_02 foreign key (assembly_assembly_id) references assembly (assembly_id);
-create index ix_assembly_uuid_57 on assembly(uuid);
-create index ix_component_uuid_58 on component(uuid);
-create index ix_component_required_milesto_59 on component_required_milestone(target_component_uuid);
-create index ix_contribution_uuid_60 on contribution(uuid);
-create index ix_contribution_text_index_61 on contribution(text_index);
-create index ix_location_serialized_locati_62 on location(serialized_location);
-create index ix_resource_space_uuid_63 on resource_space(uuid);
+create index ix_assembly_uuid_58 on assembly(uuid);
+create index ix_component_uuid_59 on component(uuid);
+create index ix_component_required_milesto_60 on component_required_milestone(target_component_uuid);
+create index ix_contribution_uuid_61 on contribution(uuid);
+create index ix_contribution_text_index_62 on contribution(text_index);
+create index ix_location_serialized_locati_63 on location(serialized_location);
+create index ix_resource_space_uuid_64 on resource_space(uuid);
 
 # --- !Downs
 
@@ -1023,9 +1040,11 @@ drop table if exists contribution_appcivist_user cascade;
 
 drop table if exists resource_space_contributions cascade;
 
-drop table if exists contribution_connection cascade;
-
 drop table if exists contribution_statistics cascade;
+
+drop table if exists contribution_template cascade;
+
+drop table if exists contribution_template_section cascade;
 
 drop table if exists geo cascade;
 

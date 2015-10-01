@@ -34,7 +34,7 @@ public class Resource extends AppCivistBaseModel {
 	private User creator;
 	private Location location;
 	
-	@Column(name = "RESOURCE_TYPE", insertable = false, updatable = false)
+	@Column(name = "RESOURCE_TYPE", insertable = true, updatable = true)
 	@Enumerated(EnumType.STRING)
 	private ResourceTypes resourceType;
 

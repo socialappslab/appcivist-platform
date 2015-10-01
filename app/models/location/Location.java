@@ -8,7 +8,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.PrePersist;
 
-import models.Theme;
 import utils.services.MapBoxWrapper;
 
 import com.avaje.ebean.Model.Finder;
@@ -21,7 +20,7 @@ public class Location {
 	@Id
 	@GeneratedValue
 	private Long locationId;
-	private String placeName;
+	private String placeName; // "1969 calle de alberto aguilera en la coruña"
 	private String street; //: "1969 calle de alberto aguilera",
 	private String city; //: "la coruña",
 	private String state; //: "asturias",

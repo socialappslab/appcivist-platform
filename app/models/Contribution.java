@@ -3,26 +3,39 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Transient;
+
+import models.location.Location;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
-import models.location.Location;
 
 @Entity
-// @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-// @DiscriminatorColumn(name = "TYPE")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "type")
 @JsonInclude(Include.NON_EMPTY)
 public class Contribution extends AppCivistBaseModel {
 
@@ -39,7 +52,7 @@ public class Contribution extends AppCivistBaseModel {
 
 	@Transient
 	@Enumerated(EnumType.STRING)
-	private ContributionTypes type = ContributionTypes.COMMENT;
+	private ContributionTypes type;
 	@JsonIgnore
 	@Index
 	private String textIndex;
@@ -57,11 +70,10 @@ public class Contribution extends AppCivistBaseModel {
 
 	@Transient
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
-
+	
 	@Transient
 	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
 
-	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions")
 	private List<ResourceSpace> targetSpaces;
@@ -415,17 +427,22 @@ public class Contribution extends AppCivistBaseModel {
 	@PrePersist
 	@PreUpdate
 	public void beforeSavingUpdating() {
-		// 1. Update text index
-		this.textIndex = this.title + "\n" + this.text;
-		// 2. extractHashtags
-		Pattern MY_PATTERN = Pattern.compile("#(\\w+|\\W+)");
-		Matcher mat = MY_PATTERN.matcher(this.textIndex);
-		while (mat.find()) {
-			// System.out.println(mat.group(1));
-			this.hashtags.add(new Hashtag(mat.group(1)));
-		}
 
-		this.stats.setReplies(new Long(this.resourceSpace.getContributions()
-				.size()));
+		// 1. Update text index if needed
+		String newTextIndex = this.title + "\n" + this.text;
+		if (this.textIndex != null && !this.textIndex.equals(newTextIndex))
+			this.textIndex = newTextIndex;
+
+		// 2. Update replies stats
+		int numberComments = this.resourceSpace.getContributions().size();
+		if (numberComments != this.stats.getReplies())
+			this.stats.setReplies(new Long(numberComments));
+
+		// 3. Check if there is not a type
+		if (this.type == null)
+			this.type = ContributionTypes.COMMENT;
+
+		// TODO: 4. Add auditing
+
 	}
 }

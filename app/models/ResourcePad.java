@@ -8,7 +8,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("PAD")
 public class ResourcePad extends Resource {
 
-	private String padId;	
+	private String padId;
+	
 	public ResourcePad(User creator, URL url) {
 		super(creator,url);
 	}
