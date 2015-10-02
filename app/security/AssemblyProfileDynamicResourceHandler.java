@@ -1,16 +1,11 @@
 package security;
 
-import java.util.List;
 import java.util.UUID;
 
-import enums.Visibility;
-import enums.MyRoles;
 import models.Assembly;
-import models.AssemblyProfile;
-import models.MembershipAssembly;
 import models.Membership;
+import models.MembershipAssembly;
 import models.User;
-import models.SecurityRole;
 import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;

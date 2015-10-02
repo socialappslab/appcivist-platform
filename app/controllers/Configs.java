@@ -98,7 +98,7 @@ public class Configs extends Controller {
 		// 1. obtaining the user of the requestor
 		User configCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
-		Assembly assembly = Assembly.read(aid);
+	//	Assembly assembly = Assembly.read(aid);
 		
 		// 2. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()

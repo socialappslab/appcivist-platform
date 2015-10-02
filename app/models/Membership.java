@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ManagementTypes;
 import enums.MembershipStatus;
-import enums.MyRoles;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
