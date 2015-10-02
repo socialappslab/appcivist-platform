@@ -1,50 +1,57 @@
-package models;
+package models.audit;
 
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PreUpdate;
-import javax.persistence.Transient;
 
 import com.avaje.ebean.Model;
-import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import utils.GlobalData;
+import enums.AuditEventTypes;
+
+// TODO replace this auditing with History annotations http://ebean-orm.github.io/docs/history
 
 @MappedSuperclass
-@Where(clause="removed=false")
-public class AppCivistBaseModel extends Model {
+public class AuditAppCivistBaseModel extends Model {
 
 	/** 
 	 * Properties that are common to all the entities in the model
 	 * 
 	 */
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date creation = new Date(); // by Default, the creation is NOW
+	private Date creation; // by Default, the creation is NOW
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date lastUpdate = new Date(); // by Default, the creation is NOW
-	private String lang = GlobalData.DEFAULT_LANGUAGE; // defaults language to English 
+	private Date lastUpdate; // by Default, the creation is NOW
+	private String lang; // defaults language to English 
 													 // TODO get the language automatically from 
 													 // from the requests that creates it
 	
 	// Fields to implement 'soft' deletion 
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date removal = null;
+	private Date removal;
 	@Column(name="removed")
-	private Boolean removed = false;
+	private Boolean removed;
 			
-	@Transient
-	private Long contextUserId;
+	
+	// auditing fields
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
+	private Date auditDate = new Date();
+	@Enumerated(EnumType.STRING)
+	private AuditEventTypes auditEvent;
+	private Long auditUserId;
+	
 	/**
 	 * Empty constructor
 	 */
-	public AppCivistBaseModel() {
+	public AuditAppCivistBaseModel() {
 		super();
 	}
 	
-	public AppCivistBaseModel(Date creation, String lang) {
+	public AuditAppCivistBaseModel(Date creation, String lang) {
 		super();
 		this.creation = creation;
 		this.lang = lang;
@@ -52,7 +59,7 @@ public class AppCivistBaseModel extends Model {
 	
 	
 
-	public AppCivistBaseModel(Date creation, Date lastUpdate, String lang,
+	public AuditAppCivistBaseModel(Date creation, Date lastUpdate, String lang,
 			Date removal, Boolean removed) {
 		super();
 		this.creation = creation;
@@ -66,7 +73,7 @@ public class AppCivistBaseModel extends Model {
 	 * Constructor with a specific language
 	 * @param lang
 	 */
-	public AppCivistBaseModel(String lang) {
+	public AuditAppCivistBaseModel(String lang) {
 		super();
 		this.lang = lang;
 	}
@@ -111,12 +118,28 @@ public class AppCivistBaseModel extends Model {
 		this.lang = lang;
 	}
 	
-	public Long getContextUserId() {
-		return contextUserId;
+	public Date getAuditDate() {
+		return auditDate;
 	}
 
-	public void setContextUserId(Long contextUserId) {
-		this.contextUserId = contextUserId;
+	public void setAuditDate(Date auditDate) {
+		this.auditDate = auditDate;
+	}
+
+	public AuditEventTypes getAuditEvent() {
+		return auditEvent;
+	}
+
+	public void setAuditEvent(AuditEventTypes auditEvent) {
+		this.auditEvent = auditEvent;
+	}
+
+	public Long getAuditUserId() {
+		return auditUserId;
+	}
+
+	public void setAuditUserId(Long auditUserId) {
+		this.auditUserId = auditUserId;
 	}
 
 	public void updateNow() {
@@ -129,7 +152,7 @@ public class AppCivistBaseModel extends Model {
 		this.save();
 	}
 	
-	public static void softRemove(AppCivistBaseModel baseAppcivistObject) {
+	public static void softRemove(AuditAppCivistBaseModel baseAppcivistObject) {
 		baseAppcivistObject.removal = new Date();
 		baseAppcivistObject.removed = true;
 		baseAppcivistObject.save();

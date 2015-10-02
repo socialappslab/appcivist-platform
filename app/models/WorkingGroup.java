@@ -3,6 +3,7 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -13,15 +14,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.ContributionTypes;
 import enums.ManagementTypes;
-import enums.MembershipCreationTypes;
 import enums.ResourceSpaceTypes;
 import enums.SupportedMembershipRegistration;
 
@@ -38,22 +39,17 @@ public class WorkingGroup extends AppCivistBaseModel {
     @Enumerated(EnumType.STRING)
     private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST;
     @Enumerated(EnumType.STRING)
-    private ManagementTypes managementType = ManagementTypes.OPEN;
+    private ManagementTypes managementType = ManagementTypes.COORDINATED_AND_MODERATED;
     private User creator;
-    
-//    @Formula(select="select c from config c where c.targetUuid=${ta}.uuid")
-//	private List<Config> workingGroupConfigs = new ArrayList<Config>();
-   
-    @ManyToMany(cascade=CascadeType.ALL)
-    private List<Assembly> assemblies = new ArrayList<Assembly>();
 
     /**
  	 * The group resource space contains its configurations, themes, associated campaigns
  	 */
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
- 	@JsonIgnoreProperties({ "uuid" })
+ 	@JsonIgnore
     private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
     
+ 	@JsonIgnore
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
@@ -61,10 +57,25 @@ public class WorkingGroup extends AppCivistBaseModel {
  // TODO: check if it works
  	@JsonIgnore
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
- 	private List<ResourceSpace> targetSpaces;
-
-	// TODO: think about how to make Assemblies, Groups, Users, Contributions, and Proposals; 
-	// TODO: all be connected in a P2P architecture. 
+ 	private List<ResourceSpace> containingSpaces;
+ 	
+ 	/* Transient direct access to entities in the resources resource space */
+ 	@Transient
+ 	private List<Theme> themes;
+ 	@Transient
+ 	private List<Config> configs;
+ 	@Transient
+ 	private List<Contribution> forumPosts;
+ 	@Transient
+ 	private List<Contribution> brainstormingContributions;
+ 	@Transient
+ 	private List<Contribution> proposals;
+ 	
+	@Transient
+	private List<Theme> existingThemes;
+	@Transient
+	private List<Contribution> existingContributions;
+ 	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
 
     public WorkingGroup() {
@@ -122,19 +133,6 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.creator = creator;
     }
 
-//    public List<Config> getWorkingGroupConfigs() {
-//    	if (workingGroupConfigs == null) {
-//    		workingGroupConfigs = new ArrayList<Config>();
-//    	}
-//		return workingGroupConfigs;
-//	}
-//
-//   public void setWorkingGroupConfigs(List<Config> workingGroupConfigs) {
-//	   if (workingGroupConfigs == null)
-//		   workingGroupConfigs = new ArrayList<Config>();
-//	   this.workingGroupConfigs = workingGroupConfigs;
-//	}
-
 	public Long getGroupId() {
         return groupId;
     }
@@ -167,14 +165,6 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.text = text;
     }
 
-    public List<Assembly> getAssemblies() {
-        return assemblies;
-    }
-
-    public void setAssemblies(List<Assembly> assemblies) {
-        this.assemblies = assemblies;
-    }
-
     public ResourceSpace getResources() {
         return resources;
     }
@@ -195,12 +185,12 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.resources = resources;
     }
 	
-	public List<ResourceSpace> getTargetSpaces() {
-		return targetSpaces;
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
 	}
 
-	public void setTargetSpaces(List<ResourceSpace> targetSpaces) {
-		this.targetSpaces = targetSpaces;
+	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
+		this.containingSpaces = containingSpaces;
 	}
 
     public Boolean getListed() {
@@ -227,4 +217,81 @@ public class WorkingGroup extends AppCivistBaseModel {
 			SupportedMembershipRegistration supportedMembership) {
 		this.supportedMembership = supportedMembership;
 	}
+
+	
+	public List<Theme> getThemes() {
+		return resources.getThemes();
+	}
+
+	public void setThemes(List<Theme> themes) {
+		this.resources.setThemes(themes);
+	}
+
+	public List<Config> getConfigs() {
+		return resources.getConfigs();
+	}
+
+	public void setConfigs(List<Config> configs) {
+		this.resources.setConfigs(configs);
+	}
+
+	public List<Contribution> getForumPosts() {
+		// TODO: use only resources return resources.getContributionsFilteredByType(ContributionTypes.FORUM_POST);
+		return forum.getContributions();
+	}
+
+	public void setForumPosts(List<Contribution> forumPosts) {
+		this.forum.setContributions(forumPosts);
+	}
+
+	public List<Contribution> getBrainstormingContributions() {
+		return resources.getContributionsFilteredByType(ContributionTypes.BRAINSTORMING);
+	}
+
+	public void setBrainstormingContributions(
+			List<Contribution> brainstormingContributions) {
+		this.resources.getContributions().addAll(brainstormingContributions);
+	}
+
+	public List<Contribution> getProposals() {
+		return resources.getContributionsFilteredByType(ContributionTypes.PROPOSAL);
+	}
+
+	public void setProposals(List<Contribution> proposals) {
+		this.resources.getContributions().addAll(proposals);
+	}
+	
+	@JsonIgnore
+	public List<Theme> getExistingThemes() {
+		return existingThemes;
+	}
+
+	public void setExistingThemes(List<Theme> existingThemes) {
+		this.existingThemes = existingThemes;
+	}	
+	
+	@JsonIgnore
+	public List<Contribution> getExistingContributions() {
+		return existingContributions;
+	}
+
+	public void setExistingContributions(List<Contribution> existingContributions) {
+		this.existingContributions = existingContributions;
+	}
+	
+	public List<ResourceSpace> getContainingSpacesFilteredByType(ResourceSpaceTypes type) {
+		return containingSpaces.stream()
+				.filter(p -> p.getType() == type)
+				.collect(Collectors.toList());
+	}
+	
+	public List<Campaign> getWorkingGroupCampaigns(String status) {
+		List<ResourceSpace> campaignSpaces = getContainingSpacesFilteredByType(ResourceSpaceTypes.CAMPAIGN);
+		List<Campaign> campaigns = new ArrayList<>();
+		for (ResourceSpace rs : campaignSpaces) {
+			campaigns.addAll(rs.getCampaignsFilteredByStatus(status));
+		}
+		return campaigns;
+	}
+	
 }

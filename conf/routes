@@ -138,10 +138,18 @@ GET       /api/assembly/:aid/group/:gid/contribution                      contro
 GET       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.findContribution(aid: Long, cid: Long)
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
-POST      /api/assembly/:aid/campaign/:cid/component/:cid/contribution    controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
+POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
 POST      /api/assembly/:aid/group/:gid/contribution                      controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
+POST      /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.createContributionComment(aid: Long, cid: Long)
+# MVP facilitators endpoints
+POST      /api/assembly/:aid/forumpost                                    controllers.Contributions.createAssemblyForumPost(aid: Long)
+POST      /api/assembly/:aid/group/:gid/forumpost                         controllers.Contributions.createWorkingGroupForumPost(aid: Long, gid: Long)
+# GET ongoing campaigns of a group
 PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.updateContribution(aid: Long, cid: Long)
-DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.deleteContribution(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.deleteContribution(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.recoverContribution(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:cid/stats/:stid                controllers.Contributions.updateContributionStats(aid: Long, cid: Long, stid: Long)
+DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
 
 #####################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

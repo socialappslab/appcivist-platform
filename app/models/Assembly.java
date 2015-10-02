@@ -22,6 +22,8 @@ import utils.GlobalData;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -55,7 +57,6 @@ public class Assembly extends AppCivistBaseModel {
 	private Boolean listed = true;
 
 	@OneToOne(cascade=CascadeType.ALL)
-//	@JoinColumn(name="assembly_profile_id")
 	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
 	@JsonInclude(Include.NON_EMPTY)
 	private AssemblyProfile profile = new AssemblyProfile();
@@ -74,10 +75,23 @@ public class Assembly extends AppCivistBaseModel {
 	private List<Theme> themes = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonIgnoreProperties({ "configs", "forumPosts", "proposals", "brainstormingContributions"})
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	@Transient
-	@JsonInclude(Include.NON_EMPTY)
+	@JsonInclude(Include.NON_EMPTY)	
+	@JsonIgnoreProperties({ "configs", "components", "workingGroups"})
 	private List<Campaign> campaigns = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Contribution> forumPosts = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
+	private List<Assembly> followedAssemblies = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
+	private List<Assembly> followingAssemblies = new ArrayList<>();
 
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -103,10 +117,14 @@ public class Assembly extends AppCivistBaseModel {
 	 */
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
+	@Where(clause="${ta}.removed=false")
+	@JsonIgnore
 	private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
 
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
+	@Where(clause="${ta}.removed=false")
+	@JsonIgnore
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
 
 	/**
@@ -365,6 +383,34 @@ public class Assembly extends AppCivistBaseModel {
 		this.resources.setCampaigns(campaigns);
 	}
 
+	public List<Contribution> getForumPosts() {
+		return forum.getContributions();
+	}
+
+	public void setForumPosts(List<Contribution> forumPosts) {
+		this.forum.setContributions(forumPosts);
+	}
+
+	public void addForumPosts(Contribution forumPost) {
+		this.forum.getContributions().add(forumPost);
+	}
+
+	public List<Assembly> getFollowedAssemblies() {
+		return this.resources.getAssemblies();
+	}
+
+	public void setFollowedAssemblies(List<Assembly> followedAssemblies) {
+		this.resources.setAssemblies(followedAssemblies);
+	}
+
+	public List<Assembly> getFollowingAssemblies() {
+		return followingAssemblies;
+	}
+
+	public void setFollowingAssemblies(List<Assembly> followingAssemblies) {
+		this.followingAssemblies = followingAssemblies;
+	}
+
 	public List<ComponentInstance> getExistingComponents() {
 		return existingComponents;
 	}
@@ -413,28 +459,27 @@ public class Assembly extends AppCivistBaseModel {
 		else return find.all();
 	}
 
-	public static void create(Assembly assembly) {
-		if (assembly.getAssemblyId() != null
-				&& (assembly.getUrl() == null || assembly.getUrl() == "")) {
-			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
-					+ assembly.getAssemblyId());
+	public static void create(Assembly a) {
+		if (a.getAssemblyId() != null
+				&& (a.getUrl() == null || a.getUrl() == "")) {
+			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
+					+ a.getAssemblyId());
 		}
 
 		// 1. Check first for existing entities in ManyToMany relationships.
 		// Save them for later update
-		List<ComponentInstance> existingComponents = assembly
-				.getExistingComponents();
-		List<Theme> existingThemes = assembly.getExistingThemes();
-		List<WorkingGroup> existingWorkingGroups = assembly
-				.getExistingWorkingGroups();
-		List<Campaign> existingCampaigns = assembly.getExistingCampaigns();
+		List<ComponentInstance> existingComponents = a.getExistingComponents();
+		List<Theme> existingThemes = a.getExistingThemes();
+		List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
+		List<Campaign> existingCampaigns = a.getExistingCampaigns();
+		List<Assembly> followedAssemblies = a.getFollowedAssemblies();
 
 		// 2. Create the new campaign
-		assembly.save();
+		a.save();
 
 		// 3. Add existing entities in relationships to the manytomany resources
 		// then update
-		ResourceSpace assemblyResources = assembly.getResources();
+		ResourceSpace assemblyResources = a.getResources();
 
 		if (existingComponents != null && !existingComponents.isEmpty())
 			assemblyResources.getComponents().addAll(existingComponents);
@@ -444,15 +489,17 @@ public class Assembly extends AppCivistBaseModel {
 			assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
 		if (existingCampaigns != null && !existingCampaigns.isEmpty())
 			assemblyResources.getCampaigns().addAll(existingCampaigns);
+		if (followedAssemblies != null && !followedAssemblies.isEmpty())
+			assemblyResources.getAssemblies().addAll(followedAssemblies);
 		
 		assemblyResources.update();
 
 		// 4. Refresh the new campaign to get the newest version
-		assembly.refresh();
+		a.refresh();
 
-		if (assembly.getUrl() == null || assembly.getUrl() == "") {
-			assembly.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
-					+ assembly.getAssemblyId());
+		if (a.getUrl() == null || a.getUrl() == "") {
+			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
+					+ a.getAssemblyId());
 		}
 	}
 

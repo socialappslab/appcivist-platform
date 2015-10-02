@@ -2,20 +2,17 @@ package security;
 
 import java.util.List;
 
-import enums.Visibility;
-
-import enums.MyRoles;
-import models.Assembly;
-import models.MembershipAssembly;
 import models.Membership;
-import models.User;
+import models.MembershipAssembly;
 import models.SecurityRole;
+import models.User;
 import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.DeadboltAnalyzer;
 import be.objectify.deadbolt.java.AbstractDynamicResourceHandler;
 import be.objectify.deadbolt.java.DeadboltHandler;
+import enums.MyRoles;
 
 public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandler {
 
@@ -55,6 +52,13 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                         					     List<SecurityRole> membershipRoles = m.getRoles();
                         					     for (SecurityRole r : membershipRoles) {
                         						     if(r.getName().equals(MyRoles.EXPERT.getName())) {
+                        							     allowed[0] = true;
+                        						     }
+                        					     }
+                        				     } else if (m!=null && name.equals("ModeratorOfAssembly")) {
+                        					     List<SecurityRole> membershipRoles = m.getRoles();
+                        					     for (SecurityRole r : membershipRoles) {
+                        						     if(r.getName().equals(MyRoles.MODERATOR.getName())) {
                         							     allowed[0] = true;
                         						     }
                         					     }

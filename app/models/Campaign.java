@@ -73,7 +73,7 @@ public class Campaign extends AppCivistBaseModel {
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "campaigns")
-	private List<ResourceSpace> targetSpaces;
+	private List<ResourceSpace> containingSpaces;
 
 	@ManyToOne
 	private CampaignTemplate template;
@@ -179,6 +179,14 @@ String uuidAsString, List<ComponentInstance> phases) {
 	public Boolean getActive() {
 		return this.getStartDate()!=null && (this.getStartDate().before(Calendar.getInstance().getTime())
 				|| this.getStartDate().equals(Calendar.getInstance().getTime()));
+	}
+	
+	public Boolean getPast() {
+		return this.getEndDate()!=null && (this.getEndDate().before(Calendar.getInstance().getTime()));
+	}
+
+	public Boolean getUpcoming() {
+		return this.getStartDate()!=null && (this.getStartDate().after(Calendar.getInstance().getTime()));
 	}
 
 	public String getUrl() {

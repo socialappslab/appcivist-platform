@@ -1,95 +1,128 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
-import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PostUpdate;
 import javax.persistence.PrePersist;
+import javax.persistence.PreRemove;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
+import models.audit.AuditContribution;
 import models.location.Location;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import enums.AuditEventTypes;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 
-@Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "type")
-@JsonInclude(Include.NON_EMPTY)
+@Entity @JsonInclude(Include.NON_EMPTY)
+@Where(clause="removed=false")
 public class Contribution extends AppCivistBaseModel {
 
-	@Id
-	@GeneratedValue
+	@Id @GeneratedValue
 	private Long contributionId;
-	@Index
-	@JsonIgnore
+	@Index @JsonIgnore
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	private String title;
 	private String text;
-
-	@Transient
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type;
-	@JsonIgnore
-	@Index
+	@JsonIgnore @Index
 	private String textIndex;
-	@OneToOne
+	@OneToOne @Index
 	private Location location;
-
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.REFRESH)
+	@Where(clause="${ta}.active=true")
+	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
 	private List<User> authors = new ArrayList<User>();
-
-	@Transient
-	private List<Theme> themes;
-
-	@Transient
-	private List<Resource> attachments;
-
-	@Transient
-	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
-	
-	@Transient
-	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
-
-	@JsonIgnore
+	@JsonIgnore 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions")
-	private List<ResourceSpace> targetSpaces;
-
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
-	private ResourceSpace resourceSpace = new ResourceSpace(
-			ResourceSpaceTypes.CONTRIBUTION);
-
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) 
+	@JsonIgnoreProperties({ "contributionStatisticsId" })
+	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
+	@OneToOne(cascade = CascadeType.ALL) 
 	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	@JsonManagedReference
 	private ContributionStatistics stats = new ContributionStatistics();
 
-	// TODO think of how to connect and move through to the campaign phases
+	/* 
+	 * Transient properties that take their values from the associated resource space
+	 */
+	@Transient
+	private List<Theme> themes;
+	@Transient
+	private List<Resource> attachments;
+	@Transient
+	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
+	@Transient
+	private List<Contribution> comments = new ArrayList<Contribution>();
+	@Transient
+	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
 
+	/* 
+	 * The following fields are specific to each type of contribution
+	 */
+	
+	/* 
+	 * Fields specific to the type ACTION_ITEM
+	 */
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
+	private Date actionDueDate; 
+	private Boolean actionDone = false;
+	private String action; 
+	
+	// Fields Fields specific to the type ASSESSMENT
+	private String assessmentSummary;
+	
+	// Fields specific to the type PROPOSAL and ASSESSMENT 
+	@OneToOne(cascade=CascadeType.ALL)
+	private Resource extendedTextPad;
+
+	// Fields specific to the type PROPOSAL
+	@Transient
+	private List<Contribution> assessments;
+
+	@Transient
+	private List<WorkingGroup> responsibleWorkingGroups;
+	
+	/* 
+	 * @Transient existing entities in resource space
+	 */
+	@Transient
+	private List<Hashtag> existingHashtags;
+	@Transient
+	private List<WorkingGroup> existingResponsibleWorkingGroups;
+	@Transient
+	private List<Contribution> existingContributions;
+	@Transient
+	private List<Resource> existingResources;	
+	
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -179,6 +212,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public void setThemes(List<Theme> themes) {
+		this.themes = themes;
 		this.resourceSpace.setThemes(themes);
 	}
 
@@ -191,6 +225,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public void setAttachments(List<Resource> attachments) {
+		this.attachments = attachments;
 		this.resourceSpace.setResources(attachments);
 	}
 
@@ -211,19 +246,30 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public void setHashtags(List<Hashtag> hashtags) {
+		this.hashtags = hashtags;
 		this.resourceSpace.setHashtags(hashtags);
 	}
 
 	public void addHashtag(Hashtag h) {
 		this.resourceSpace.addHashtag(h);
 	}
+	
+	public List<Contribution> getComments() {
+		return resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
+	}
 
+	public void addComment(Contribution c) {
+		if (c.getType() == ContributionTypes.COMMENT) 
+			this.resourceSpace.addContribution(c);
+	}
+	
 	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
 		return this.resourceSpace.getMilestones();
 	}
 
 	public void setAssociatedMilestones(
 			List<ComponentInstanceMilestone> associatedMilestones) {
+		this.associatedMilestones = associatedMilestones;
 		this.resourceSpace.setMilestones(associatedMilestones);
 	}
 
@@ -243,16 +289,112 @@ public class Contribution extends AppCivistBaseModel {
 		this.stats = stats;
 	}
 
+	public Date getActionDueDate() {
+		return actionDueDate;
+	}
+
+	public void setActionDueDate(Date actionDueDate) {
+		this.actionDueDate = actionDueDate;
+	}
+
+	public Boolean getActionDone() {
+		return actionDone;
+	}
+
+	public void setActionDone(Boolean actionDone) {
+		this.actionDone = actionDone;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+	public String getAssessmentSummary() {
+		return assessmentSummary;
+	}
+
+	public void setAssessmentSummary(String assessmentSummary) {
+		this.assessmentSummary = assessmentSummary;
+	}
+
+	public Resource getExtendedTextPad() {
+		return extendedTextPad;
+	}
+
+	public void setExtendedTextPad(Resource extendedTextPad) {
+		this.extendedTextPad = extendedTextPad;
+	}
+
+	public List<Contribution> getAssessments() {
+		return this.resourceSpace.getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
+	}
+
+	public void addAssessment(Contribution assessment) {
+		if(assessment.getType()==ContributionTypes.ASSESSMENT)
+			this.resourceSpace.addContribution(assessment);
+	}
+
+	public List<WorkingGroup> getResponsibleWorkingGroups() {
+		return this.resourceSpace.getWorkingGroups();
+	}
+
+	public void setResponsibleWorkingGroups(
+			List<WorkingGroup> responsibleWorkingGroups) {
+		this.resourceSpace.setWorkingGroups(responsibleWorkingGroups);
+	}
+
+	/* 
+	 * @Transient getting/setting methods existing entities in resource space
+	 */
+
+	@JsonIgnore
+	public List<Hashtag> getExistingHashtags() {
+		return existingHashtags;
+	}
+
+	public void setExistingHashtags(List<Hashtag> existingHashtags) {
+		this.existingHashtags = existingHashtags;
+	}
+
+	@JsonIgnore
+	public List<WorkingGroup> getExistingResponsibleWorkingGroups() {
+		return existingResponsibleWorkingGroups;
+	}
+
+	public void setExistingResponsibleWorkingGroups(
+			List<WorkingGroup> existingResponsibleWorkingGroups) {
+		this.existingResponsibleWorkingGroups = existingResponsibleWorkingGroups;
+	}
+
+	@JsonIgnore
+	public List<Contribution> getExistingContributions() {
+		return existingContributions;
+	}
+
+	public void setExistingContributions(List<Contribution> existingContributions) {
+		this.existingContributions = existingContributions;
+	}
+
+	@JsonIgnore
+	public List<Resource> getExistingResources() {
+		return existingResources;
+	}
+
+	public void setExistingResources(List<Resource> existingResources) {
+		this.existingResources = existingResources;
+	}
+
 	/*
 	 * Basic Data Operations
 	 */
 	public static Contribution create(User creator, String title, String text,
 			ContributionTypes type) {
 		Contribution c = new Contribution(creator, title, text, type);
-		ResourceSpace rs = c.getResourceSpace();
-		c.setResourceSpace(new ResourceSpace());
 		c.save();
-		c.setResourceSpace(rs);
 		c.update();
 		return c;
 	}
@@ -263,7 +405,39 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static void create(Contribution c) {
+		
+		// 1. Check first for existing entities in ManyToMany relationships.
+		// Save them for later update
+		//List<User> authors = c.getAuthors();
+		List<Theme> themes = c.getThemes(); // new themes are never created from contributions
+		c.setThemes(new ArrayList<>());
+		List<ComponentInstanceMilestone> associatedMilestones = c.getAssociatedMilestones(); // new milestones are never created from contributions
+		c.setAssociatedMilestones(new ArrayList<>());
+		List<Hashtag> existingHashtags = c.getExistingHashtags();
+		List<WorkingGroup> existingWorkingGroups = c.getExistingResponsibleWorkingGroups();
+		List<Contribution> existingContributions = c.getExistingContributions();
+		List<Resource> existingResources = c.getExistingResources();
+		
 		c.save();
+
+		// 3. Add existing entities in relationships to the manytomany resources
+		// then update
+		ResourceSpace cResSpace = c.getResourceSpace();
+		if (themes != null && !themes.isEmpty())
+			cResSpace.getThemes().addAll(themes);
+		if (associatedMilestones != null && !associatedMilestones.isEmpty())
+			cResSpace.getMilestones().addAll(associatedMilestones);
+		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
+			cResSpace.getWorkingGroups().addAll(existingWorkingGroups);
+		if (existingHashtags!= null && !existingHashtags.isEmpty())
+			cResSpace.getHashtags().addAll(existingHashtags);
+		if (existingContributions!= null && !existingContributions.isEmpty())
+			cResSpace.getContributions().addAll(existingContributions);
+		if (existingResources!= null && !existingResources.isEmpty())
+			cResSpace.getResources().addAll(existingResources);
+		
+		cResSpace.update();
+		
 		c.refresh();
 	}
 
@@ -282,6 +456,32 @@ public class Contribution extends AppCivistBaseModel {
 
 	public static void delete(Contribution c) {
 		c.delete();
+	}
+
+	public static void softDelete(Long id) {
+		Contribution c = find.ref(id);
+		c.setRemoved(true);
+		c.setRemoval(new Date());
+		c.update();
+	}
+	
+	public static void softDelete(Contribution c) {
+		c.setRemoved(true);
+		c.setRemoval(new Date());
+		c.update();
+	}
+
+	public static void softRecovery(Long id) {
+		Contribution c = find.ref(id);
+		c.setRemoved(false);
+		c.setRemoval(null);
+		c.update();
+	}
+	
+	public static void softRecovery(Contribution c) {
+		c.setRemoved(false);
+		c.setRemoval(null);
+		c.update();
 	}
 
 	public static Contribution update(Contribution c) {
@@ -304,42 +504,42 @@ public class Contribution extends AppCivistBaseModel {
 		return contributions.findList().size();
 	}
 
-	public static List<Contribution> findAllByTargetSpace(Long sid) {
+	public static List<Contribution> findAllByContainingSpace(Long sid) {
 		List<Contribution> contribs = find.where()
-				.eq("targetSpaces.resourceSpaceId", sid).findList();
+				.eq("containingSpaces.resourceSpaceId", sid).findList();
 		return contribs;
 	}
 
-	public static List<Contribution> findAllByTargetSpaceAndQuery(Long sid,
+	public static List<Contribution> findAllByContainingSpaceAndQuery(Long sid,
 			String query) {
 		List<Contribution> contribs = find.where()
-				.eq("targetSpaces.resourceSpaceId", sid)
+				.eq("containingSpaces.resourceSpaceId", sid)
 				.ilike("textIndex", "%" + query + "%").findList();
 		return contribs;
 	}
 
-	public static List<Contribution> findAllByTargetSpaceAndUUID(UUID uuid) {
+	public static List<Contribution> findAllByContainingSpaceAndUUID(UUID uuid) {
 		List<Contribution> contribs = find.where()
-				.eq("targetSpaces.uuid", uuid).findList();
+				.eq("containingSpaces.uuid", uuid).findList();
 		return contribs;
 	}
 
 	public static List<Contribution> readContributionsOfSpace(
 			Long resourceSpaceId) {
-		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
+		return find.where().eq("containingSpaces.resourceSpaceId", resourceSpaceId)
 				.findList();
 	}
 
 	public static Contribution readByIdAndType(Long resourceSpaceId,
 			Long contributionId, ContributionTypes type) {
-		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
+		return find.where().eq("containingSpaces.resourceSpaceId", resourceSpaceId)
 				.eq("contributionId", contributionId).eq("type", type)
 				.findUnique();
 	}
 
-	public static List<Contribution> readListByTargetSpaceAndType(
+	public static List<Contribution> readListByContainingSpaceAndType(
 			Long resourceSpaceId, ContributionTypes type) {
-		return find.where().eq("targetSpaces.resourceSpaceId", resourceSpaceId)
+		return find.where().eq("containingSpaces.resourceSpaceId", resourceSpaceId)
 				.eq("type", type).findList();
 	}
 
@@ -353,18 +553,20 @@ public class Contribution extends AppCivistBaseModel {
 		return find.where().eq("authors.userId", u.getUserId()).findList();
 	}
 
-	public static List<Contribution> findAllByTargetSpaceAndType(
+	public static List<Contribution> findAllByContainingSpaceAndType(
 			ResourceSpace rs, String t) {
-		return find.where().eq("targetSpaces", rs).eq("type", t.toUpperCase())
+		return find.where().eq("containingSpaces", rs).eq("type", t.toUpperCase())
 				.findList();
 	}
 
-	public static List<Contribution> findAllByTargetSpaceAndTypeAndQuery(
+	public static List<Contribution> findAllByContainingSpaceAndTypeAndQuery(
 			ResourceSpace rs, String t, String query) {
-		return find.where().eq("targetSpaces", rs).eq("type", t.toUpperCase())
+		return find.where().eq("containingSpaces", rs).eq("type", t.toUpperCase())
 				.ilike("textIndex", "%" + query + "%").findList();
 	}
 
+	/* Single Contribution queries */
+	
 	public static Contribution readIssueOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
@@ -388,7 +590,10 @@ public class Contribution extends AppCivistBaseModel {
 		return readByIdAndType(resourceSpaceId, contributionId,
 				ContributionTypes.COMMENT);
 	}
-
+	
+	
+	/* List Contribution queries */
+	
 	public static Contribution readForumPostOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
@@ -402,47 +607,66 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static List<Contribution> readIssuesOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId,
+		return readListByContainingSpaceAndType(resourceSpaceId,
 				ContributionTypes.ISSUE);
 	}
 
 	public static List<Contribution> readIdeasOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId,
+		return readListByContainingSpaceAndType(resourceSpaceId,
 				ContributionTypes.IDEA);
 	}
 
 	public static List<Contribution> readQuestionsOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId,
+		return readListByContainingSpaceAndType(resourceSpaceId,
 				ContributionTypes.QUESTION);
 	}
 
 	public static List<Contribution> readCommentsOfSpace(Long resourceSpaceId) {
-		return readListByTargetSpaceAndType(resourceSpaceId,
+		return readListByContainingSpaceAndType(resourceSpaceId,
 				ContributionTypes.COMMENT);
 	}
 
-	// auxiliary
-
-	// Extract hashtags from Text
 	@PrePersist
-	@PreUpdate
-	public void beforeSavingUpdating() {
+	private void onCreate() {
+		// 3. Check if there is not a type
+		if (this.type == null)
+			this.type = ContributionTypes.COMMENT;
+		AuditContribution ac = new AuditContribution(this);
+		ac.setAuditEvent(AuditEventTypes.CREATION);
+		ac.setAuditUserId(this.getContextUserId());
+		ac.save();
+	}
+	
+	@PreRemove
+	private void onDelete() {
+		AuditContribution ac = new AuditContribution(this);
+		ac.setAuditEvent(AuditEventTypes.DELETE);
+		ac.setAuditUserId(this.getContextUserId());
+		ac.save();
+	}
 
+	
+	@PreUpdate
+	private void onUpdateContribution() {
 		// 1. Update text index if needed
 		String newTextIndex = this.title + "\n" + this.text;
 		if (this.textIndex != null && !this.textIndex.equals(newTextIndex))
 			this.textIndex = newTextIndex;
 
+		// 4. Add auditing
+		AuditContribution ac = new AuditContribution(this);
+		ac.setAuditEvent(AuditEventTypes.UPDATE);
+		// get user from context? 
+		ac.setAuditUserId(this.getContextUserId());		
+		ac.save();
+	}
+
+	@PostUpdate
+	private void afterUpdate() {
 		// 2. Update replies stats
-		int numberComments = this.resourceSpace.getContributions().size();
+		int numberComments = this.resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT).size();
 		if (numberComments != this.stats.getReplies())
 			this.stats.setReplies(new Long(numberComments));
-
-		// 3. Check if there is not a type
-		if (this.type == null)
-			this.type = ContributionTypes.COMMENT;
-
-		// TODO: 4. Add auditing
-
+		this.stats.update();
 	}
 }

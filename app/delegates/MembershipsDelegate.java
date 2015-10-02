@@ -1,6 +1,5 @@
 package delegates;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,23 +10,20 @@ import models.MembershipGroup;
 import models.SecurityRole;
 import models.User;
 import models.WorkingGroup;
-import models.transfer.AssemblySummaryTransfer;
 import models.transfer.TransferResponseStatus;
 
 import org.dozer.DozerBeanMapper;
 
+import play.Play;
+import play.i18n.Messages;
+import providers.MyUsernamePasswordAuthProvider;
+import utils.GlobalData;
+import utils.Pair;
 import controllers.Memberships;
 import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
 import enums.MyRoles;
 import enums.ResponseStatus;
-import play.Play;
-import play.i18n.Messages;
-import play.libs.Json;
-import play.mvc.Result;
-import providers.MyUsernamePasswordAuthProvider;
-import utils.GlobalData;
-import utils.Pair;
 
 public class MembershipsDelegate {
 

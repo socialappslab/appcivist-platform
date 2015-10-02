@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.ContributionTypes;
+
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 public class ComponentInstanceMilestone extends AppCivistBaseModel implements Comparator<ComponentInstanceMilestone> {
@@ -42,10 +44,13 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 	@JsonBackReference
 	private ComponentInstance componentInstance;
 	
+	private ContributionTypes mainContributionType = ContributionTypes.BRAINSTORMING;
+
+	
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "milestones")
-	private List<ResourceSpace> targetSpaces;
+	private List<ResourceSpace> containingSpaces;
 	
 	/**
 	 * The find property is a static property that facilitates database query creation
@@ -147,6 +152,14 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 
 	public void setComponentInstance(ComponentInstance componentInstance) {
 		this.componentInstance = componentInstance;
+	}
+
+	public ContributionTypes getMainContributionType() {
+		return mainContributionType;
+	}
+
+	public void setMainContributionType(ContributionTypes mainContributionType) {
+		this.mainContributionType = mainContributionType;
 	}
 
 	public static ComponentInstanceMilestone read(Long id) {

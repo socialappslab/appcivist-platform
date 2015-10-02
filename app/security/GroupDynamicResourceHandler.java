@@ -57,6 +57,13 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
                         							   allowed[0] = true;
                         						   }
                         					   }
+                        				   } else if (m!=null && name.equals("ModeratorOfGroup")) {
+                        					   List<SecurityRole> membershipRoles = m.getRoles();
+                        					   for (SecurityRole r : membershipRoles) {
+                        						   if(r.getName().equals(MyRoles.MODERATOR.getName())) {
+                        							   allowed[0] = true;
+                        						   }
+                        					   }
                         				   } else 
                         					   allowed[0] = m!=null;
                             			   

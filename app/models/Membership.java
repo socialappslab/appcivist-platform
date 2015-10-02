@@ -3,6 +3,7 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -13,24 +14,27 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.PrePersist;
+
+import models.TokenAction.Type;
 
 import com.avaje.ebean.Query;
+import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import models.TokenAction.Type;
 import enums.ManagementTypes;
 import enums.MembershipStatus;
+import enums.MyRoles;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "MEMBERSHIP_TYPE")
 @JsonInclude(Include.NON_EMPTY)
+@Where(clause="removed=false")
 public class Membership extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
@@ -231,7 +235,6 @@ public class Membership extends AppCivistBaseModel {
 		return userCanInvite;
 	}
 
-	// TODO: rethink the whole role rules using http://deadbolt.ws/#/java-docs
 	public static Boolean userCanInvite(User user, Assembly assembly) {
 		Boolean userCanInvite = false;
 
@@ -268,5 +271,11 @@ public class Membership extends AppCivistBaseModel {
 
 	public static List<Membership> findByUserAndTargetUuid(User u, UUID targetUuid) {
 		return find.where().eq("user",u).eq("targetUuid", targetUuid).findList();
+	}
+
+	public List<SecurityRole> getRolesFilteredByName(String roleName) {
+		return this.roles.stream()
+				.filter(p-> p.getName().equals(roleName))
+				.collect(Collectors.toList());
 	}
 }

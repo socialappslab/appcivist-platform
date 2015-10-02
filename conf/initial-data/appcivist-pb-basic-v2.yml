@@ -42,10 +42,12 @@
     
 ##############################################################################################################################################################################################      
 # User Picture
-  - &upic1 !!models.ResourcePicture     
+  - &upic1 !!models.Resource     
     urlLargeString: "https://randomuser.me/api/portraits/med/men/77.jpg"
-  - &upic2 !!models.ResourcePicture     
+    resourceType: PICTURE
+  - &upic2 !!models.Resource     
     urlLargeString: "https://randomuser.me/api/portraits/med/women/77.jpg"
+    resourceType: PICTURE
 
 ##############################################################################################################################################################################################
 # Users (Testing Users)
@@ -436,7 +438,7 @@
 ##############################################################################################################################################################################################    
 # Components: definition of components avaialble to use in appcivist
   - &pd1 !!models.Component
-    name: "Brainstorming"
+    name: "Proposal Making"
     uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig1 !!models.ComponentRequiredConfiguration
@@ -652,86 +654,103 @@
     position: 0
     start: "2015-09-01"
     days: 60
+    mainContributionType: BRAINSTORMING
   - &ci2 !!models.ComponentInstanceMilestone
     title: Working Group Formation
     position: 1
     start: "2015-11-11"
     days: 5
+    mainContributionType: BRAINSTORMING
   - &ci3 !!models.ComponentInstanceMilestone
     title: Proposal Drafting
     position: 2
     start: "2015-11-16"
     days: 10
+    mainContributionType: PROPOSAL
   - &ci4 !!models.ComponentInstanceMilestone
     title: Complete Draft
     position: 3
     start: "2015-11-26"
     days: 1
+    mainContributionType: PROPOSAL
   - &ci5 !!models.ComponentInstanceMilestone
     title: Proposal editing
     position: 4
     start: "2015-11-27"
     days: 15
+    mainContributionType: PROPOSAL
   - &ci6 !!models.ComponentInstanceMilestone
     title: Final proposal/s
     position: 5
     start: "2015-12-11"
     days: 1
+    mainContributionType: PROPOSAL
   - &ci7 !!models.ComponentInstanceMilestone
     title: Proposal selection
     position: 6
     start: "2015-12-12"
     days: 5
+    mainContributionType: PROPOSAL
   - &ci8 !!models.ComponentInstanceMilestone
     title: Deliberation starts
     position: 7
     start: "2015-12-17"
     days: 10
+    mainContributionType: PROPOSAL
   - &ci9 !!models.ComponentInstanceMilestone
     title: Technical Assessment
     position: 8
     start: "2016-01-06"
     days: 10
+    mainContributionType: PROPOSAL
   - &ci10 !!models.ComponentInstanceMilestone
     title: Deliberation finishes
     position: 9
     start: "2016-01-16"
     days: 1
+    mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
     title: Voting Starts
     position: 10
     start: "2016-01-17"
     days: 15
+    mainContributionType: PROPOSAL
   - &ci12 !!models.ComponentInstanceMilestone
     title: Voting Ends
     position: 11
     start: "2016-02-01"
     days: 1
+    mainContributionType: PROPOSAL
   - &ci8 !!models.ComponentInstanceMilestone
     title: Deliberation starts
     position: 7
     start: "2015-12-17"
     days: 10
+    mainContributionType: PROPOSAL
   - &ci9 !!models.ComponentInstanceMilestone
     title: Technical Assessment
     position: 8
     start: "2016-01-06"
     days: 10
+    mainContributionType: PROPOSAL
   - &ci10 !!models.ComponentInstanceMilestone
     title: Deliberation finishes
     position: 9
     start: "2016-01-16"
     days: 1
+    mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
     title: Voting Starts
     position: 10
     start: "2016-01-17"
     days: 15
+    mainContributionType: PROPOSAL
   - &ci12 !!models.ComponentInstanceMilestone
     title: Voting Ends
     position: 11
     start: "2016-02-01"
     days: 1
+    mainContributionType: PROPOSAL
 
 ##############################################################################################################################################################################################
 # Contributions for Contributions
@@ -774,12 +793,12 @@
       
 ##############################################################################################################################################################################################
 # Resources for Attachments
-  - &r1 !!models.ResourcePicture
+  - &r1 !!models.Resource
     url: "http://www.ritholtz.com/blog/wp-content/uploads/2008/11/price-to-rent-ratio.png"
-    #resourceType: PICTURE
-  - &r2 !!models.ResourcePicture
+    resourceType: PICTURE
+  - &r2 !!models.Resource
     url: "https://upload.wikimedia.org/wikipedia/commons/e/e4/A_plaza_and_garden_at_Calle_Mayor%2C_Madrid_01.JPG"
-    #resourceType: PICTURE
+    resourceType: PICTURE
 
 ##############################################################################################################################################################################################
 # Contribution Resource Space
@@ -834,7 +853,7 @@
   - &contrib11 !!models.Contribution
     title: Empty lot in Channing and Telegraph
     text: For the past 10 years, this empty lot has been a problem for the community
-    type: ISSUE
+    type: BRAINSTORMING
     resourceSpace: *rs8
     authors: 
       - *u3
@@ -845,7 +864,7 @@
   - &contrib12 !!models.Contribution
     title: Little or no awareness about rising housing prices
     text: Housing prices are wy up and poeople's is doing nothing to get them down. I present a graph of the housing prices evolution in the last ten years. We need to stop this!
-    type: ISSUE
+    type: BRAINSTORMING
     resourceSpace: *rs9
     authors: 
       - *u1
@@ -858,7 +877,7 @@
   - &contrib13 !!models.Contribution
     title: A Garden for the empty lot
     text: We can give a good use to the empty lot in channing by simply creating a cooperative garden on it
-    type: IDEA
+    type: BRAINSTORMING
     authors: 
       - *u2
     themes: 
@@ -869,7 +888,7 @@
       - *r2
   - &contrib14 !!models.Contribution
     title: A library for the empty lot
-    type: IDEA
+    type: BRAINSTORMING
     authors: 
       - *u3
     themes: 
@@ -879,7 +898,7 @@
   - &contrib15 !!models.Contribution
     title: A park for the empty lot
     text: "let's build a children's park! One of those with the safe floor made of rubber or something"
-    type: IDEA
+    type: BRAINSTORMING
     authors: 
       - *u1
     themes: 
@@ -889,7 +908,7 @@
   - &contrib16 !!models.Contribution
     title: A park for the empty lot
     text: "let's build a children's park! One of those with the safe floor made of rubber or something"
-    type: IDEA
+    type: BRAINSTORMING
     authors: 
       - *u1
     themes: 
@@ -899,7 +918,7 @@
   - &contrib17 !!models.Contribution
     title: Cycling path
     text: "This is not entirely fleshed out yet, but I would definitely like to see more entirely dedicated cycling path parks"
-    type: IDEA
+    type: BRAINSTORMING
     authors: 
       - *u3
     themes: 
@@ -909,7 +928,7 @@
   - &contrib18 !!models.Contribution
     title: Why is this neighborhood so poorly serviced by Public Transportation and how can we get a better service?
     text: 
-    type: QUESTION
+    type: BRAINSTORMING
     authors: 
       - *u2
     themes: 
@@ -919,7 +938,7 @@
   - &contrib19 !!models.Contribution
     title: We need more empathy towards inmigrants
     text: 
-    type: ISSUE
+    type: BRAINSTORMING
     authors: 
       - *u3
     themes: 
@@ -930,6 +949,7 @@
 ####################################################################################################################################################################################
 # Component Instances: 
   - &ph1 !!models.ComponentInstance
+    title: Proposal Making
     position: 0
     timeline: 1
     component: *pd1
@@ -950,6 +970,7 @@
       - *contrib18 
       - *contrib19
   - &ph2 !!models.ComponentInstance
+    title: Versioning
     position: 1
     timeline: 1
     component: *pd2
@@ -959,6 +980,7 @@
       - *ci6
       - *ci7
   - &ph3 !!models.ComponentInstance
+    title: Deliberation
     position: 2
     timeline: 1
     component: *pd3
@@ -968,6 +990,7 @@
       - *ci9 
       - *ci10
   - &ph4 !!models.ComponentInstance
+    title: Voting
     position: 3
     timeline: 1
     component: *pd4
@@ -976,16 +999,19 @@
       - *ci11 
       - *ci12
   - &ph5 !!models.ComponentInstance
+    title: Mapping
     position: 0
     #configs
     timeline: 0
     component: *pd11
   - &ph6 !!models.ComponentInstance
+    title: Visualization
     position: 0
     #configs
     timeline: 0
     component: *pd9
   - &ph7 !!models.ComponentInstance
+    title: Deliberation
     position: 3
     #configs
     timeline: 1
@@ -995,6 +1021,7 @@
       - *ci9
       - *ci10
   - &ph8 !!models.ComponentInstance
+    title: Voting
     position: 4
     #configs
     timeline: 1

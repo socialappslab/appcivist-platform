@@ -4,7 +4,10 @@ public enum AppcivistResourceTypes {
 	CONTRIBUTION_IDEA,    	// Contributions are resources that are introduced in the system by single users
 	CONTRIBUTION_QUESTION,  
 	CONTRIBUTION_COMMENT, 
-	CONTRIBUTION_ISSUE, 
+	CONTRIBUTION_ISSUE,   
+	CONTRIBUTION_FORUM_POST,
+	CONTRIBUTION_ACTION_ITEM,
+	CONTRIBUTION_BRAINSTORMING,
 	CONTRIBUTION_PROPOSAL, 				// Proposals are created and edited by Working Groups
 	CONTRIBUTION_DISCUSSION, 			// Discussions are created and edited by Assemblies or Working Groups
 	ELECTION, 				// Discussions are created and edited by Assemblies 

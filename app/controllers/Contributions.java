@@ -8,6 +8,7 @@ import java.util.List;
 import models.Assembly;
 import models.ComponentInstance;
 import models.Contribution;
+import models.ContributionStatistics;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
@@ -22,6 +23,8 @@ import play.mvc.With;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
@@ -39,6 +42,7 @@ import enums.ContributionTypes;
 public class Contributions extends Controller {
 
 	public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);
+	public static final Form<ContributionStatistics> CONTRIBUTION_STATS_FORM = form(ContributionStatistics.class);
 
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
@@ -91,7 +95,7 @@ public class Contributions extends Controller {
 				.findContributionsInResourceSpace(rs, type, null);
 		return contributions != null ? ok(Json.toJson(contributions))
 				: notFound(Json.toJson(new TransferResponseStatus(
-						"No resource space for assembly: " + aid)));
+						"No contributions for {assembly, campaign, component}: " + aid+", "+cid+", "+ciid + "in space: "+space)));
 	}
 
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
@@ -160,6 +164,7 @@ public class Contributions extends Controller {
 			}
 
 			ResourceSpace rs = ResourceSpace.read(sid);
+			newContribution.setContextUserId(author.getUserId());
 			Contribution c = createContribution(newContribution, author, type);
 			if (c != null) {
 				rs.addContribution(c);
@@ -199,6 +204,8 @@ public class Contributions extends Controller {
 			Assembly a = Assembly.read(aid);
 			ResourceSpace rs = space != null && space.equals("forum") ? a
 					.getForum() : a.getResources();
+			
+			newContribution.setContextUserId(author.getUserId());		
 			Contribution c = createContribution(newContribution, author, type);
 			if (c != null) {
 				rs.addContribution(c);
@@ -214,7 +221,6 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "ciid", value = "Component id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
 			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
@@ -239,6 +245,7 @@ public class Contributions extends Controller {
 
 			ComponentInstance ci = ComponentInstance.read(cid,ciid);
 			ResourceSpace rs = ci.getResourceSpace();
+			newContribution.setContextUserId(author.getUserId());
 			Contribution c = createContribution(newContribution, author, type);
 			if (c != null) {
 				rs.addContribution(c);
@@ -288,8 +295,151 @@ public class Contributions extends Controller {
 		}
 	}
 
-	// TODO: create a dynamic handler to check if the contribution belongs to
-	// the user
+	
+	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createContributionComment(Long aid, Long cid) {
+		// 1. obtaining the user of the requestor
+		User author = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+				.bindFromRequest();
+
+		if (newContributionForm.hasErrors()) {
+			return contributionCreateError(newContributionForm);
+		} else {
+			Contribution newContribution = newContributionForm.get();
+			ContributionTypes type = newContribution.getType();
+			if (type == null) {
+				type = ContributionTypes.COMMENT;
+			}
+
+			Contribution c = Contribution.read(cid);
+			ResourceSpace rs = c.getResourceSpace();
+			Contribution cNew = createContribution(newContribution, author, type);
+			if (cNew != null) {
+				rs.addContribution(cNew);
+				rs.update();
+			}
+			return ok(Json.toJson(cNew));
+		}
+	}
+	
+	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createAssemblyForumPost(Long aid) {
+		// 1. obtaining the user of the requestor
+		User author = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+				.bindFromRequest();
+
+		if (newContributionForm.hasErrors()) {
+			return contributionCreateError(newContributionForm);
+		} else {
+			Contribution newContribution = newContributionForm.get();
+			ContributionTypes type = newContribution.getType();
+			if (type == null) {
+				type = ContributionTypes.COMMENT;
+			}
+
+			Assembly a = Assembly.read(aid);
+			ResourceSpace rs = a.getForum();
+			Contribution cNew = createContribution(newContribution, author, type);
+			if (cNew != null) {
+				rs.addContribution(cNew);
+				rs.update();
+			}
+			return ok(Json.toJson(cNew));
+		}
+	}
+	
+	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "gid", value = "working group id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createWorkingGroupForumPost(Long aid, Long gid) {
+		// 1. obtaining the user of the requestor
+		User author = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+				.bindFromRequest();
+
+		if (newContributionForm.hasErrors()) {
+			return contributionCreateError(newContributionForm);
+		} else {
+			Contribution newContribution = newContributionForm.get();
+			ContributionTypes type = newContribution.getType();
+			if (type == null) {
+				type = ContributionTypes.COMMENT;
+			}
+
+			WorkingGroup wg = WorkingGroup.read(gid);
+			ResourceSpace rs = wg.getForum();
+			Contribution c = createContribution(newContribution, author, type);
+			if (c != null) {
+				rs.addContribution(c);
+				rs.update();
+			}
+			return ok(Json.toJson(c));
+		}
+	}
+
+
+	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "stid", value = "Contribution Stats id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_stats_form", value = "Body of Contribution Statistics in JSON", required = true, dataType = "models.ContributionStatistics", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result updateContributionStats(Long aid, Long cid, Long stid) {
+		// 1. obtaining the user of the requestor
+//		User author = User.findByAuthUserIdentity(PlayAuthenticate
+//				.getUser(session()));
+// TODO: ASSOCIATE likes of users
+		
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<ContributionStatistics> newStatsForm = CONTRIBUTION_STATS_FORM
+				.bindFromRequest();
+
+		if (newStatsForm.hasErrors()) {
+			return contributionStatsCreateError(newStatsForm);
+		} else {
+			ContributionStatistics newStats = newStatsForm.get();
+			newStats.setContributionStatisticsId(stid);
+			newStats.update();
+			return ok(Json.toJson(newStats));
+		}
+	}
+	
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -303,6 +453,8 @@ public class Contributions extends Controller {
 		// another way of getting the body content => request().body().asJson()
 		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
 				.bindFromRequest();
+		User author = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 
 		if (newContributionForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -314,6 +466,7 @@ public class Contributions extends Controller {
 			Contribution newContribution = newContributionForm.get();
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			newContribution.setContributionId(contributionId);
+			newContribution.setContextUserId(author.getUserId());
 			Contribution.update(newContribution);
 			Logger.info("Creating new contribution");
 			Logger.debug("=> " + newContributionForm.toString());
@@ -333,18 +486,44 @@ public class Contributions extends Controller {
 
 	// TODO: create a dynamic handler to check if the contribution belongs to
 	// the user
+	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result deleteContribution(Long aid, Long contributionId) {
+		Contribution.softDelete(contributionId);
+		return ok();
+	}
+
+	// TODO: create a dynamic handler to check if the contribution belongs to
+	// the user
+	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result recoverContribution(Long aid, Long contributionId) {
+		Contribution.softRecovery(contributionId);
+		return ok();
+	}
+	
 	@ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result deleteContribution(Long aid, Long contributionId) {
+	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
+	public static Result forceDeleteContribution(Long aid, Long contributionId) {
 		Contribution.delete(contributionId);
 		return ok();
 	}
-
+	
 	public static Result createContributionResult(Contribution newContrib,
 			User author, ContributionTypes type) {
 		return ok(Json.toJson(createContribution(newContrib, author, type)));
@@ -356,6 +535,7 @@ public class Contributions extends Controller {
 		newContrib.addAuthor(author);
 		if (newContrib.getLang() == null)
 			newContrib.setLang(author.getLanguage());
+		newContrib.setContextUserId(author.getUserId());
 		Contribution.create(newContrib);
 		newContrib.refresh();
 		Logger.info("Creating new contribution");
@@ -392,6 +572,14 @@ public class Contributions extends Controller {
 			Form<Contribution> newContributionForm) {
 		return contributionOperationError(
 				GlobalData.CONTRIBUTION_CREATE_MSG_ERROR, newContributionForm
+						.errorsAsJson().toString());
+	}
+	
+	private static Result contributionStatsCreateError(
+			Form<ContributionStatistics> newStatsForm) {
+		// TODO Auto-generated method stub
+		return contributionOperationError(
+				GlobalData.CONTRIBUTION_CREATE_MSG_ERROR, newStatsForm
 						.errorsAsJson().toString());
 	}
 

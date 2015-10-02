@@ -19,7 +19,7 @@ public class ContributionTemplateSection extends AppCivistBaseModel {
 	private String title;
 	private String description;
 	private int length;
-	private int order;
+	private int position;
 
 	public ContributionTemplateSection(String title, String description,
 			int length, int order) {
@@ -27,7 +27,7 @@ public class ContributionTemplateSection extends AppCivistBaseModel {
 		this.title = title;
 		this.description = description;
 		this.length = length;
-		this.order = order;
+		this.position = order;
 	}
 
 	public Long getId() {
@@ -78,11 +78,11 @@ public class ContributionTemplateSection extends AppCivistBaseModel {
 		this.length = length;
 	}
 
-	public int getOrder() {
-		return order;
+	public int getPosition() {
+		return position;
 	}
 
-	public void setOrder(int order) {
-		this.order = order;
+	public void setPositions(int order) {
+		this.position = order;
 	}
 }

@@ -45,6 +45,8 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 		HANDLERS.put("MemberOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
 		HANDLERS.put("CoordinatorOfGroup", Optional.of(new GroupDynamicResourceHandler())); 
 		HANDLERS.put("CoordinatorOfAssembly", Optional.of(new AssemblyDynamicResourceHandler())); 
+		HANDLERS.put("ModeratorOfAssembly", Optional.of(new AssemblyDynamicResourceHandler()));
+		HANDLERS.put("ModeratorOfGroup", Optional.of(new GroupDynamicResourceHandler())); 
 		HANDLERS.put("GroupMemberIsExpert", Optional.of(new GroupDynamicResourceHandler())); 
 		HANDLERS.put("AssemblyMemberIsExpert", Optional.of(new AssemblyDynamicResourceHandler())); 
 		HANDLERS.put("CanInviteToGroup", Optional.of(new GroupDynamicResourceHandler())); 

@@ -3,7 +3,6 @@ package models;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -23,15 +22,11 @@ import enums.SupportedMembershipRegistration;
 @Entity
 @JsonInclude(Include.NON_NULL)
 public class AssemblyProfile extends AppCivistBaseModel {
-	@Id
-	@GeneratedValue
-//	@Column(name="assembly_profile_id")
+	@Id @GeneratedValue
 	private Long assemblyProfileId;
-	
 	@OneToOne(mappedBy="profile")
 	@JoinColumn(name="assembly_profile_id", unique= true, nullable=true, insertable=true, updatable=true)
 	private Assembly assembly; 
-	
 	private String targetAudience;
 	@Enumerated(EnumType.STRING)
 	private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST; //   OPEN, INVITATION, REQUEST, INVITATION_AND_REQUEST
@@ -39,7 +34,6 @@ public class AssemblyProfile extends AppCivistBaseModel {
 	private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are OPEN by default
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
-	
 	private String primaryContactName;
 	private String primaryContactPhone;
 	private String primaryContactEmail;

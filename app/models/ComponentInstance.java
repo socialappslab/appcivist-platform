@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import enums.AppcivistResourceTypes;
 import enums.ResourceSpaceTypes;
 
 @Entity
@@ -43,7 +42,6 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	private UUID uuid = UUID.randomUUID();
 	private int position; 
 	private int timeline;
-	private AppcivistResourceTypes mainContributionType = AppcivistResourceTypes.CONTRIBUTION_IDEA;
 	
 	@ManyToOne
 	private Component component;
@@ -57,7 +55,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "components")
-	private List<ResourceSpace> targetSpaces;
+	private List<ResourceSpace> containingSpaces;
 	
 	@Transient
 	private List<ComponentInstanceMilestone> milestones = new ArrayList<ComponentInstanceMilestone>();
@@ -173,7 +171,9 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	 */
 	
 	public List<ComponentInstanceMilestone> getMilestones() {
-		return resourceSpace.getMilestones();
+		List<ComponentInstanceMilestone> milestones = resourceSpace.getMilestones();
+		Collections.sort(milestones, new ComponentInstanceMilestone());
+		return milestones;
 	}
 
 	public void setMilestones(List<ComponentInstanceMilestone> milestones) {
@@ -193,14 +193,6 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		}
 	}	
 	
-	public AppcivistResourceTypes getMainContributionType() {
-		return mainContributionType;
-	}
-
-	public void setMainContributionType(AppcivistResourceTypes mainContributionType) {
-		this.mainContributionType = mainContributionType;
-	}
-
 	private void populateDefaultMilestones(CampaignTemplate ct) {
 		if(this.component!=null && ct != null) {
 			List<ComponentRequiredMilestone> reqMilestones = ct.getRequiredMilestones();
@@ -236,17 +228,17 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		this.resourceSpace = resources;
 	}
 
-	public List<ResourceSpace> getTargetSpaces() {
-		return targetSpaces;
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
 	}
 
-	public void setTargetSpaces(List<ResourceSpace> targetSpaces) {
-		this.targetSpaces = targetSpaces;
+	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
+		this.containingSpaces = containingSpaces;
 	}
 
 	public static ComponentInstance read(Long campaignId, Long componentInstanceId) {
 		ExpressionList<ComponentInstance> componentInstances = find.where()
-				.eq("targetSpaces.campaigns.campaignId",campaignId)
+				.eq("containingSpaces.campaign.campaignId",campaignId)
 				.eq("componentInstanceId", componentInstanceId);
 		ComponentInstance componentInstance = componentInstances.findUnique();
 		return componentInstance;
@@ -254,14 +246,14 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 
     public static List<ComponentInstance> findAll(Long campaignId) {
 		ExpressionList<ComponentInstance> campaignPhases = find.where()
-				.eq("targetSpaces.campaigns.campaignId",campaignId);
+				.eq("containingSpaces.campaign.campaignId",campaignId);
 		List<ComponentInstance> campaignPhaseList = campaignPhases.findList();
 		return campaignPhaseList;
     }
 
     public static List<ComponentInstance> findByAssemblyAndCampaign(Long aid, Long campaignId) {
 		ExpressionList<ComponentInstance> campaignPhases = find.where()
-				.eq("targetSpaces.campaigns.campaignId",campaignId);
+				.eq("containingSpaces.campaign.campaignId",campaignId);
 		List<ComponentInstance> campaignPhaseList = campaignPhases.findList();
 		return campaignPhaseList;
     }
@@ -287,7 +279,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 
 	public static void delete(Long campaignId, Long componentInstanceId) {
 		ExpressionList<ComponentInstance> campaignPhases = find.where()
-				.eq("targetSpaces.campaigns.campaignId", campaignId)
+				.eq("containingSpaces.campaign.campaignId", campaignId)
 				.eq("componentInstanceId", componentInstanceId);
 		ComponentInstance phase = campaignPhases.findUnique();
 		phase.delete();

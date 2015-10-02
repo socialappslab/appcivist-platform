@@ -38,6 +38,7 @@ import be.objectify.deadbolt.core.models.Subject;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
@@ -52,6 +53,7 @@ import enums.MyRoles;
 
 @Entity
 @Table(name="appcivist_user")
+@Where(clause="active=true")
 public class User extends Model implements Subject {
 
 	@Id
@@ -67,7 +69,7 @@ public class User extends Model implements Subject {
 	@Column(name = "profile_pic")
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "resourceId", "location", "resourceType"})
-	private ResourcePicture profilePic;
+	private Resource profilePic;
 	@Column
 	private boolean active = true;
 	// TODO create a transfer model for user and place the session key only there
@@ -246,12 +248,12 @@ public class User extends Model implements Subject {
 	}
 
 
-	public ResourcePicture getProfilePic() {
+	public Resource getProfilePic() {
 		return profilePic;
 	}
 
 
-	public void setProfilePic(ResourcePicture profilePic) {
+	public void setProfilePic(Resource profilePic) {
 		this.profilePic = profilePic;
 	}
 
@@ -479,14 +481,14 @@ public class User extends Model implements Subject {
 			final String picture = identity.getPicture();
 			if (picture != null) {
 				// TODO: generate large, medium and thumbnail version of the "picture" URL
-				ResourcePicture profilePicResource = new ResourcePicture(user, new URL(picture), new URL(picture), new URL(picture), new URL(picture));				
+				Resource profilePicResource = new Resource(user, new URL(picture), new URL(picture), new URL(picture), new URL(picture));				
 				user.setProfilePic(profilePicResource);
 			} else {
-				ResourcePicture profilePicResource = getDefaultProfilePictureResource(user);
+				Resource profilePicResource = getDefaultProfilePictureResource(user);
 				user.setProfilePic(profilePicResource);
 			}
 		} else {
-			ResourcePicture profilePicResource = getDefaultProfilePictureResource(user); 	
+			Resource profilePicResource = getDefaultProfilePictureResource(user); 	
 			user.setProfilePic(profilePicResource);
 		}
 
@@ -530,12 +532,12 @@ public class User extends Model implements Subject {
 		return gravatarURL;
 	}
 	
-	private static ResourcePicture getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
+	private static Resource getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
 		String picture = getDefaultProfilePictureURL(user.getEmail());
 		String large = picture+"&s=128";
 		String medium = picture+"&s=64";
 		String thumbnail = picture+"&s=32"; 
-		ResourcePicture profilePicResource = new ResourcePicture(user, new URL(picture), new URL(large), new URL(medium), new URL(thumbnail));
+		Resource profilePicResource = new Resource(user, new URL(picture), new URL(large), new URL(medium), new URL(thumbnail));
 		return profilePicResource;
 	}
 	public void addRole(SecurityRole role) {
