@@ -14,6 +14,7 @@ import javax.persistence.Transient;
 
 import models.location.Location;
 
+import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import enums.ResourceTypes;
@@ -22,6 +23,7 @@ import enums.ResourceTypes;
 public class Resource extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long resourceId;
+	@Index
 	private UUID uuid = UUID.randomUUID();
 	private URL url;
 	@Transient

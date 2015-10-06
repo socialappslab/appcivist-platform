@@ -68,12 +68,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 	 * refer to the existing related entities and therefore issue an upudate on 
 	 * the resource space rather than a save
 	 */
-	@ManyToMany(cascade = { CascadeType.ALL })
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_config")
 	@Where(clause="${ta}.removed=false")
 	private List<Config> configs = new ArrayList<Config>();
 
-	@ManyToMany(cascade = { CascadeType.ALL })
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")
@@ -101,7 +101,6 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
-	@Size(max = 20)
 	@JoinTable(name = "resource_space_contributions")
 	@Where(clause="${ta}.removed=false")
 	private List<Contribution> contributions = new ArrayList<Contribution>();

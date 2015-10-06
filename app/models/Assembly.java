@@ -132,7 +132,6 @@ public class Assembly extends AppCivistBaseModel {
 	 */
 	private User creator; // user who has created the assembly?
 	
-	// TODO:
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation

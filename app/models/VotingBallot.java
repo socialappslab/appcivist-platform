@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -8,15 +9,23 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.annotation.Index;
+import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import enums.ResourceSpaceTypes;
 import enums.VotingSystemTypes;
 
 @Entity
@@ -30,6 +39,7 @@ public class VotingBallot extends AppCivistBaseModel {
 	private String uuidAsString;
 	private String instructions;
 	private String notes;
+	private String password; // TODO: encrypt, for prototype, leave it cleartext
 	@Enumerated(EnumType.STRING)
 	private VotingSystemTypes system;
 	
@@ -38,16 +48,89 @@ public class VotingBallot extends AppCivistBaseModel {
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date ends;
 	
-	@OneToMany(cascade=CascadeType.ALL)
-	private List<VotingCandidate> candidates;
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="ballot")
+	@JsonManagedReference
+	private List<VotingCandidate> candidates = new ArrayList<>();
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Config> configs = new ArrayList<>();
 	
-	public static Finder<Long, VotingBallot> find = new Finder<>(
-			VotingBallot.class);
+	@OneToOne(cascade=CascadeType.ALL)
+	private VotingBallotRegistrationForm registrationForm;
+		
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	@Where(clause="${ta}.removed=false")
+	@JsonIgnore
+	private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.VOTING_BALLOT);
+	
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "ballots")
+	@JsonInclude(Include.NON_EMPTY)
+	private List<ResourceSpace> containingSpaces;
+	
+	/** 
+ 	 * The find property is an static property that facilitates database query
+	 * creation
+	 */
+	public static Finder<Long, VotingBallot> find = new Finder<>(VotingBallot.class);
 
 	public VotingBallot() {
 		super();
+		this.uuid = UUID.randomUUID();
 	}
 
+	/* Basic Data Queries */
+
+	/*
+ 	 * Returns all the assemblies in our system
+	 * 
+	 * @return
+	 */
+	public static List<VotingBallot> findAll() {
+		return find.all();
+	}
+
+	public static void create(VotingBallot a) {
+		a.save();
+		a.refresh();
+	}
+
+	public static VotingBallot read(Long ballotId) {
+		return find.ref(ballotId);
+	}
+
+	public static VotingBallot createObject(VotingBallot ballot) {
+		ballot.save();
+		return ballot;
+	}
+
+	public static void delete(Long id) {
+		find.ref(id).delete();
+	}
+	
+	public static void softDelete(Long id) {
+		VotingBallot b = find.ref(id);
+		b.setRemoved(true);
+		b.setRemoval(new Date());
+		b.update();
+	}
+	
+	public static void softRecovery(Long id) {
+		VotingBallot b = find.ref(id);
+		b.setRemoved(false);
+		b.setRemoval(new Date());
+		b.update();
+	}
+	
+	public static VotingBallot update(VotingBallot a) {
+		a.update();
+		a.refresh();
+		return a;
+	}
+
+	/* Getters and setters */
 	public Long getVotingBallotId() {
 		return votingBallotId;
 	}
@@ -119,4 +202,34 @@ public class VotingBallot extends AppCivistBaseModel {
 	public void setCandidates(List<VotingCandidate> candidates) {
 		this.candidates = candidates;
 	}
+	
+	public void addCandidates(List<VotingCandidate> candidates) {
+		this.candidates.addAll(candidates);
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public List<Config> getConfigs() {
+		return resources.getConfigs();
+	}
+
+	public void setConfigs(List<Config> configs) {
+		this.resources.setConfigs(configs);
+	}
+
+	public VotingBallotRegistrationForm getRegistrationForm() {
+		return registrationForm;
+	}
+
+	public void setRegistrationForm(VotingBallotRegistrationForm registrationForm) {
+		this.registrationForm = registrationForm;
+	}
+	
+	/* Other Data Queries */
 }
