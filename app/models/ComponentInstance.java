@@ -63,6 +63,10 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@Transient
 	private List<Contribution> contributions = new ArrayList<>();
 	
+	@Transient
+	private List<VotingBallot> ballots = new ArrayList<>();
+	
+	
 	/**
 	 * The find property is an static property that facilitates database query creation
 	 */
@@ -218,6 +222,14 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 
 	public void setContributions(List<Contribution> contributions) {
 		this.resourceSpace.setContributions(contributions);
+	}
+
+	public List<VotingBallot> getBallots() {
+		return resourceSpace.getBallots();
+	}
+
+	public void setBallots(List<VotingBallot> ballots) {
+		this.resourceSpace.setBallots(ballots);
 	}
 
 	public ResourceSpace getResourceSpace() {

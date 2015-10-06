@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClassDiagram>
+    <Class name="models.VotingBallotRegistrationForm" x="466" y="197">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association
+            destinationClassName="models.VotingBallotRegistrationFormField"
+            endpointName="fields" kind="Simple"/>
+    </Class>
+    <Class name="models.VotingBallotTally" x="50" y="312">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association destinationClassName="models.VotingBallot"
+            endpointName="ballot" kind="Simple"/>
+        <Association
+            destinationClassName="models.VotingCandidateVoteResult"
+            endpointName="talliedResults" kind="Simple"/>
+    </Class>
+    <Class name="models.VotingBallot" x="13" y="8">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association destinationClassName="models.VotingCandidate"
+            endpointName="candidates" kind="Simple"/>
+        <Association destinationClassName="models.Config"
+            endpointName="configs" kind="Simple"/>
+        <Association
+            destinationClassName="models.VotingBallotRegistrationForm"
+            endpointName="registrationForm" kind="Simple"/>
+    </Class>
+    <Class name="models.VotingCandidateVote" x="712" y="305">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association destinationClassName="models.VotingCandidate"
+            endpointName="selectedCandidate" kind="Simple"/>
+    </Class>
+    <Class name="models.VotingBallotVote" x="459" y="303">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association destinationClassName="models.VotingBallot"
+            endpointName="ballot" kind="Simple"/>
+        <Association destinationClassName="models.VotingCandidateVote"
+            endpointName="voteValues" kind="Simple"/>
+    </Class>
+    <Class name="models.VotingCandidateVoteResult" x="33" y="655">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association destinationClassName="models.VotingCandidate"
+            endpointName="selectedCandidate" kind="Simple"/>
+    </Class>
+    <Class name="models.VotingBallotRegistrationFormField" x="779" y="191">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+    </Class>
+    <Class name="models.VotingCandidate" x="409" y="503">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Association destinationClassName="models.VotingBallot"
+            endpointName="ballot" kind="Simple"/>
+    </Class>
+    <Class name="models.Config" x="555" y="29">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+    </Class>
+</ClassDiagram>
