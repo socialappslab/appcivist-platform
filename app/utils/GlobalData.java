@@ -66,4 +66,7 @@ public class GlobalData {
 	public final static String GRAVATAR_BASE_URL = "http://www.gravatar.com/avatar/";
 	public final static String ETHERPAD_BASE_URL = "http://localhost:9001/";
 	
+	// Config keys
+	public static String CONFIG_ETHERPAD_SERVER = "component.proposal-making.etherpad-server";
+	public static String CONFIG_ETHERPAD_API_KEY = "component.proposal-making.etherpad-api-key";
 }

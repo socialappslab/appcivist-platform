@@ -42,12 +42,8 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                             			   Membership m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
                         				   
                         				     if (m!=null && name.equals("CoordinatorOfAssembly")) {
-                        					     List<SecurityRole> membershipRoles = m.getRoles();
-                        					     for (SecurityRole r : membershipRoles) {
-                        						     if(r.getName().equals(MyRoles.COORDINATOR.getName())) {
-                        							     allowed[0] = true;
-                        						     }
-                        					     }
+                        					     List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+                        					     allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
                         				     } else if (m!=null && name.equals("AssemblyMemberIsExpert")) {
                         					     List<SecurityRole> membershipRoles = m.getRoles();
                         					     for (SecurityRole r : membershipRoles) {

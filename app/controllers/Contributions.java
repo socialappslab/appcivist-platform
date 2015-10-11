@@ -3,12 +3,16 @@ package controllers;
 import static play.data.Form.form;
 import http.Headers;
 
+import java.net.MalformedURLException;
 import java.util.List;
+import java.util.UUID;
 
 import models.Assembly;
 import models.ComponentInstance;
 import models.Contribution;
 import models.ContributionStatistics;
+import models.ContributionTemplate;
+import models.Resource;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
@@ -36,6 +40,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.ContributionsDelegate;
 import enums.ContributionTypes;
+import enums.ResponseStatus;
 
 @Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -135,6 +140,8 @@ public class Contributions extends Controller {
 		Contribution contribution = Contribution.read(contributionId);
 		return ok(Json.toJson(contribution));
 	}
+
+	/* CREATE ENDPOINTS */
 	
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
@@ -164,8 +171,23 @@ public class Contributions extends Controller {
 			}
 
 			ResourceSpace rs = ResourceSpace.read(sid);
+			ContributionTemplate template = null;
+
+			if(rs!=null &&newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates!=null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);				
+			}
 			newContribution.setContextUserId(author.getUserId());
-			Contribution c = createContribution(newContribution, author, type);
+			Contribution c;
+			try {
+				c = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (c != null) {
 				rs.addContribution(c);
 				rs.update();
@@ -205,8 +227,23 @@ public class Contributions extends Controller {
 			ResourceSpace rs = space != null && space.equals("forum") ? a
 					.getForum() : a.getResources();
 			
+			ContributionTemplate template = null;
+			if (newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates != null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);
+			}
+					
 			newContribution.setContextUserId(author.getUserId());		
-			Contribution c = createContribution(newContribution, author, type);
+			Contribution c;
+			try {
+				c = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (c != null) {
 				rs.addContribution(c);
 				rs.update();
@@ -245,8 +282,22 @@ public class Contributions extends Controller {
 
 			ComponentInstance ci = ComponentInstance.read(cid,ciid);
 			ResourceSpace rs = ci.getResourceSpace();
+			ContributionTemplate template = null;
+			if(newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates!=null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);
+			}
 			newContribution.setContextUserId(author.getUserId());
-			Contribution c = createContribution(newContribution, author, type);
+			Contribution c;
+			try {
+				c = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (c != null) {
 				rs.addContribution(c);
 				rs.update();
@@ -286,7 +337,21 @@ public class Contributions extends Controller {
 			WorkingGroup wg = WorkingGroup.read(gid);
 			ResourceSpace rs = space != null && space.equals("forum") ? wg
 					.getForum() : wg.getResources();
-			Contribution c = createContribution(newContribution, author, type);
+			ContributionTemplate template = null;
+			if (newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates != null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);
+			}
+			Contribution c;
+			try {
+				c = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (c != null) {
 				rs.addContribution(c);
 				rs.update();
@@ -294,7 +359,6 @@ public class Contributions extends Controller {
 			return ok(Json.toJson(c));
 		}
 	}
-
 	
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
@@ -325,7 +389,21 @@ public class Contributions extends Controller {
 
 			Contribution c = Contribution.read(cid);
 			ResourceSpace rs = c.getResourceSpace();
-			Contribution cNew = createContribution(newContribution, author, type);
+			ContributionTemplate template = null;
+			if(newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates!=null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);
+			}
+			Contribution cNew;
+			try {
+				cNew = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (cNew != null) {
 				rs.addContribution(cNew);
 				rs.update();
@@ -362,7 +440,21 @@ public class Contributions extends Controller {
 
 			Assembly a = Assembly.read(aid);
 			ResourceSpace rs = a.getForum();
-			Contribution cNew = createContribution(newContribution, author, type);
+			ContributionTemplate template = null;
+			if(newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates!=null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);
+			}
+			Contribution cNew;
+			try {
+				cNew = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (cNew != null) {
 				rs.addContribution(cNew);
 				rs.update();
@@ -400,7 +492,21 @@ public class Contributions extends Controller {
 
 			WorkingGroup wg = WorkingGroup.read(gid);
 			ResourceSpace rs = wg.getForum();
-			Contribution c = createContribution(newContribution, author, type);
+			ContributionTemplate template = null;
+			if(newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
+				List<ContributionTemplate> templates = rs.getTemplates();
+				if (templates!=null && !templates.isEmpty())
+					template = rs.getTemplates().get(0);
+			}
+			Contribution c;
+			try {
+				c = createContribution(newContribution, author, type, template, rs.getUuid());
+			} catch (MalformedURLException e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error in etherpad server URL: " + e.toString())));
+			}
 			if (c != null) {
 				rs.addContribution(c);
 				rs.update();
@@ -512,6 +618,23 @@ public class Contributions extends Controller {
 		return ok();
 	}
 	
+	@ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "AuthorOfContribution", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+	public static Result findContributionPadId(Long aid, Long contributionId) {
+		Contribution c = Contribution.read(contributionId);
+		if (c!=null) {
+			Resource pad = c.getExtendedTextPad();
+			String padId = pad.getPadId();
+			return ok(Json.toJson(padId));
+		} 
+		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
+	}
+	
 	@ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -525,32 +648,65 @@ public class Contributions extends Controller {
 	}
 	
 	public static Result createContributionResult(Contribution newContrib,
-			User author, ContributionTypes type) {
-		return ok(Json.toJson(createContribution(newContrib, author, type)));
+			User author, ContributionTypes type, ContributionTemplate t, UUID resourceSpaceUUID) {
+		try {
+			return ok(Json.toJson(createContribution(newContrib, author, type, t, resourceSpaceUUID)));
+		} catch (MalformedURLException e) {
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"Error in etherpad server URL: " + e.toString())));
+		}
 	}
 
 	public static Contribution createContribution(Contribution newContrib,
-			User author, ContributionTypes type) {
-		newContrib.setType(type);
+			User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey, 
+			ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException {
+		newContrib.setType(type);		
 		newContrib.addAuthor(author);
 		if (newContrib.getLang() == null)
 			newContrib.setLang(author.getLanguage());
 		newContrib.setContextUserId(author.getUserId());
-		Contribution.create(newContrib);
-		newContrib.refresh();
+		
+		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
+			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadServerUrl, newContrib, resourceSpaceConfigsUUID);				
+		}
+		
 		Logger.info("Creating new contribution");
 		Logger.debug("=> " + newContrib.toString());
+		Contribution.create(newContrib);
+		newContrib.refresh();
 		return newContrib;
 	}
-
+		
+	public static Contribution createContribution(Contribution newContrib, User author, ContributionTypes type, ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException {
+		// TODO: dynamically obtain etherpad server URL and Key from component configuration
+		return createContribution(newContrib, author, type, null, null, t, resourceSpaceConfigsUUID);
+	}
+	
 	public static Result createContributionInAssembly(
 			Contribution newContrib, User author, Assembly a,
 			ContributionTypes type) {
-		Contribution c = createContribution(newContrib, author, type);
 		ResourceSpace rs = a.getResources();
+		
+		ContributionTemplate template = null;
+		if(newContrib.getType()!=null && newContrib.getType().equals(ContributionTypes.PROPOSAL)) {
+			List<ContributionTemplate> templates = rs.getTemplates();
+			if (templates!=null && !templates.isEmpty())
+				template = rs.getTemplates().get(0);
+		}
+		
+		Contribution c;
+		try {
+			c = createContribution(newContrib, author, type, template, rs.getUuid());
+		} catch (MalformedURLException e) {
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"Error in etherpad server URL: " + e.toString())));
+		}
 		rs.addContribution(c);
 		rs.update();
-		// TODO Auto-generated method stub
 		return ok(Json.toJson(c));
 	}
 	
@@ -612,5 +768,4 @@ public class Contributions extends Controller {
 		responseBody.setStatusMessage(Messages.get(msgi18nCode) + ": " + msg);
 		return badRequest(Json.toJson(responseBody));
 	}
-
 }

@@ -41,7 +41,7 @@ public class VotingBallot extends AppCivistBaseModel {
 	private String notes;
 	private String password; // TODO: encrypt, for prototype, leave it cleartext
 	@Enumerated(EnumType.STRING)
-	private VotingSystemTypes system;
+	private VotingSystemTypes systemType;
 	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date starts;
@@ -171,12 +171,12 @@ public class VotingBallot extends AppCivistBaseModel {
 		this.notes = notes;
 	}
 
-	public VotingSystemTypes getSystem() {
-		return system;
+	public VotingSystemTypes getSystemType() {
+		return systemType;
 	}
 
-	public void setSystem(VotingSystemTypes system) {
-		this.system = system;
+	public void setSystemType(VotingSystemTypes system) {
+		this.systemType = system;
 	}
 
 	public Date getStarts() {

@@ -1,15 +1,9 @@
 package models.services;
 
 import java.util.List;
-
-import play.db.ebean.*;
+import com.avaje.ebean.Model;
 
 public class ServiceIssueCollection extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2917884641256561757L;
 	private List<ServiceIssue> issues;
 
 	public List<ServiceIssue> getIssues() {

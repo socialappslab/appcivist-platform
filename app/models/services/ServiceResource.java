@@ -13,16 +13,10 @@ import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 @Entity
 public class ServiceResource extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3024829103843292751L;
-
 	@Id
 	private Long serviceResourceId;
 	private String url;

@@ -13,14 +13,10 @@ import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 @Entity
 public class ServiceOperation extends Model {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1132649868643820086L;
 
 	@Id
 	private Long serviceOperationId;

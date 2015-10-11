@@ -4,9 +4,9 @@ Core of AppCivist services.
 
 ## Getting Started
 
-1. Download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
+1. You can either use the **activator** binary in the root folder or download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
 2. Clone this repository
-3. Rename **conf/local.conf.sample** to **conf/local.conf**
+3. Rename **conf/local.conf.sample** to **conf/local.conf** and to **conf/local.test.conf**. Make sure test configurations point to a test database. 
 4. Rename **conf/play-authentica/deadbolt.conf.sample** to **conf/play-authentica/local.deadbolt.conf**
 5. Rename **conf/play-authentica/mine.conf.sample** to **conf/play-authentica/mine.local.conf** and replace email address with and email address you own 
 6. Rename **conf/play-authentica/smtp.conf.sample** to **conf/play-authentica/smpt.local.conf** and replace email and passwords with your own. 

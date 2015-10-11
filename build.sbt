@@ -34,7 +34,13 @@ libraryDependencies ++= Seq(
   "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc(),        
   "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
   "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc(), 
-  "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc()
+  "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc(), 
+  "net.gjerull.etherpad" % "etherpad_lite_client" % "1.2.12" withSources() withJavadoc(), 
+  "com.squareup.retrofit" % "retrofit" % "2.0.0-beta2" withSources() withJavadoc(), 
+  "com.squareup.retrofit" % "converter-gson" % "2.0.0-beta2" withSources() withJavadoc(), 
+  "com.squareup.retrofit" % "adapter-rxjava" % "2.0.0-beta2" withSources() withJavadoc(), 
+  "org.hamcrest" % "hamcrest-library" % "1.3",
+  "com.novocode" % "junit-interface" % "0.8" % "test->default"
   // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
   //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
   // Another Implementation of swagger-play2

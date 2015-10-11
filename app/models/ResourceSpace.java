@@ -16,7 +16,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
-import javax.validation.constraints.Size;
 
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -91,7 +90,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
-	@JoinTable(name = "resource_space_campaign_components_milestones")
+	@JoinTable(name = "resource_space_campaign_milestones")
 	@Where(clause="${ta}.removed=false")
 	private List<ComponentInstanceMilestone> milestones = new ArrayList<ComponentInstanceMilestone>();
 
@@ -124,6 +123,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@JoinTable(name = "resource_space_voting_ballots")
 	@Where(clause="${ta}.removed=false")
 	private List<VotingBallot> ballots = new ArrayList<VotingBallot>();
+
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_contribution_templates")
+	@Where(clause="${ta}.removed=false")
+	private List<ContributionTemplate> templates = new ArrayList<ContributionTemplate>();
 
 	
 	/*
@@ -379,7 +383,6 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.hashtags.add(h);
 	}
 
-	
 	public List<VotingBallot> getBallots() {
 		return ballots;
 	}
@@ -392,7 +395,17 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.ballots.add(b);
 	}
 
-	
+	public List<ContributionTemplate> getTemplates() {
+		return templates;
+	}
+
+	public void setTemplates(List<ContributionTemplate> templates) {
+		this.templates = templates;
+	}
+
+	public void addTemplates(ContributionTemplate ct) {
+		this.templates.add(ct);
+	}
 	
 	public Assembly getAssemblyResources() {
 		return assemblyResources;
@@ -519,7 +532,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 				.filter(r -> r.getResourceType() == type )
 				.collect(Collectors.toList());
 	}
-
+	
 	/**
 	 * Filter campaign by status where status can be "ongoing", "past" or "upcoming"
 	 * @param status
@@ -539,5 +552,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 			}
 		}
 		return this.campaigns;
+	}
+	
+	public Config getConfigByKey(String key) {
+		List<Config> matchingConfigs = this.configs.stream().filter(p -> p.getKey().equals(key)).collect(Collectors.toList());
+		if (matchingConfigs != null && !matchingConfigs.isEmpty()) {
+			return matchingConfigs.get(0);
+		} 
+		return null;
 	}
 }

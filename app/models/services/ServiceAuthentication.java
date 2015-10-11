@@ -12,11 +12,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class ServiceAuthentication extends Model {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6076927164603033420L;
-
 	@Id
 	private Long serviceAuthenticationId;
 	private String authType; // TODO: replace with Enum
@@ -34,8 +29,7 @@ public class ServiceAuthentication extends Model {
 	 * Basic Data Queries
 	 */
 	
-	public static Finder<Long, ServiceAuthentication> find = new Finder<Long, ServiceAuthentication>(
-			Long.class, ServiceAuthentication.class);
+	public static Finder<Long, ServiceAuthentication> find = new Finder<Long, ServiceAuthentication>(ServiceAuthentication.class);
 
 	public static void create(ServiceAuthentication serviceAuth) {
 		serviceAuth.save();
