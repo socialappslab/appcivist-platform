@@ -434,6 +434,18 @@
     valueType: json
     description: "Proposal Template" 
     defaultValue: "[]" 
+    configTarget: COMPONENT
+  - &config38 !!models.ConfigDefinition
+    key: "component.proposal-making.etherpad-server"
+    valueType: String
+    description: "Proposal Template" 
+    defaultValue: "" 
+    configTarget: COMPONENT    
+  - &config39 !!models.ConfigDefinition
+    key: "component.proposal-making.etherpad-api-key"
+    valueType: json
+    description: "Proposal Template" 
+    defaultValue: "[]" 
     configTarget: COMPONENT    
 ##############################################################################################################################################################################################    
 # Components: definition of components avaialble to use in appcivist
