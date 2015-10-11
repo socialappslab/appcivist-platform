@@ -38,6 +38,7 @@ libraryDependencies ++= Seq(
   "net.gjerull.etherpad" % "etherpad_lite_client" % "1.2.12" withSources() withJavadoc(), 
   "com.squareup.retrofit" % "retrofit" % "2.0.0-beta2" withSources() withJavadoc(), 
   "com.squareup.retrofit" % "converter-gson" % "2.0.0-beta2" withSources() withJavadoc(), 
+  "com.squareup.retrofit" % "adapter-rxjava" % "2.0.0-beta2" withSources() withJavadoc(), 
   "org.hamcrest" % "hamcrest-library" % "1.3",
   "com.novocode" % "junit-interface" % "0.8" % "test->default"
   // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
