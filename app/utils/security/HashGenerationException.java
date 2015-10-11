@@ -5,6 +5,7 @@ package utils.security;
  * @author www.codejava.net
  * Source: http://www.codejava.net/coding/how-to-calculate-md5-and-sha-hash-values-in-java
  */
+@SuppressWarnings("serial")
 public class HashGenerationException extends Exception {
 
 	public HashGenerationException() {
