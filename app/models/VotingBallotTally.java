@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,7 +28,7 @@ public class VotingBallotTally extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	private String status = "PARTIAL"; // PARTIAL, FINISHED
 
-	@OneToMany
+	@OneToMany(cascade=CascadeType.ALL)
 	private Set<VotingCandidateVoteResult> talliedResults = new TreeSet<>();
 	
 	@OneToOne

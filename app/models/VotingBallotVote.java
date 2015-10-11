@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,7 +28,7 @@ public class VotingBallotVote extends AppCivistBaseModel {
 	private String signature; // based on input in the registration form
 	private String status = "DRAFT"; // "DRAFT", "FINISHED"
 
-	@OneToMany
+	@OneToMany(cascade=CascadeType.ALL)
 	private List<VotingCandidateVote> voteValues = new ArrayList<>();
 	
 	@ManyToOne

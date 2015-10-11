@@ -1,33 +1,21 @@
 package models;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
 
-import com.avaje.ebean.Model.Finder;
 import com.avaje.ebean.annotation.Index;
-import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import enums.ResourceSpaceTypes;
-import enums.VotingSystemTypes;
 
-@Entity
+@Entity(name="voting_ballot_registration_form")
 @JsonInclude(Include.NON_EMPTY)
 public class VotingBallotRegistrationForm extends AppCivistBaseModel {
 
@@ -37,8 +25,8 @@ public class VotingBallotRegistrationForm extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	private String uuidAsString;
 	
-	@OneToMany
-	private List<VotingBallotRegistrationFormField> fields;
+	@OneToMany(cascade=CascadeType.ALL)
+	private List<VotingBallotRegistrationField> fields;
 		
 	/** 
  	 * The find property is an static property that facilitates database query
