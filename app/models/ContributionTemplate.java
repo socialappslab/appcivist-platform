@@ -18,7 +18,7 @@ public class ContributionTemplate extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long id;
-	private UUID uuid;
+	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 
@@ -60,7 +60,7 @@ public class ContributionTemplate extends AppCivistBaseModel {
 		return templateSections;
 	}
 
-	public void setTemplateSection(List<ContributionTemplateSection> templateSections) {
+	public void setTemplateSections(List<ContributionTemplateSection> templateSections) {
 		this.templateSections = templateSections;
 	}
 }

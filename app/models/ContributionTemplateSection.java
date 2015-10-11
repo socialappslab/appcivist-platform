@@ -87,7 +87,7 @@ public class ContributionTemplateSection extends AppCivistBaseModel implements C
 		return position;
 	}
 
-	public void setPositions(int order) {
+	public void setPosition(int order) {
 		this.position = order;
 	}
 	@Override

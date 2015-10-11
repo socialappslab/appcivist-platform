@@ -55,6 +55,7 @@ public class Contribution extends AppCivistBaseModel {
 	private String textIndex;
 	@OneToOne @Index
 	private Location location;
+	private String budget;
 	@ManyToMany(cascade = CascadeType.REFRESH)
 	@Where(clause="${ta}.active=true")
 	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
@@ -261,6 +262,14 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+
+	public String getBudget() {
+		return budget;
+	}
+
+	public void setBudget(String budget) {
+		this.budget = budget;
 	}
 
 	public List<Hashtag> getHashtags() {

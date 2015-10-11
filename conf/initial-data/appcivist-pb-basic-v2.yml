@@ -435,18 +435,6 @@
     description: "Proposal Template" 
     defaultValue: "[]" 
     configTarget: COMPONENT
-  - &config38 !!models.ConfigDefinition
-    key: "component.proposal-making.etherpad-server"
-    valueType: String
-    description: "Proposal Template" 
-    defaultValue: "" 
-    configTarget: COMPONENT    
-  - &config39 !!models.ConfigDefinition
-    key: "component.proposal-making.etherpad-api-key"
-    valueType: json
-    description: "Proposal Template" 
-    defaultValue: "[]" 
-    configTarget: COMPONENT    
 ##############################################################################################################################################################################################    
 # Components: definition of components avaialble to use in appcivist
   - &pd1 !!models.Component
@@ -679,24 +667,24 @@
     start: "2015-11-16"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci4 !!models.ComponentInstanceMilestone
-    title: Complete Draft
-    position: 3
-    start: "2015-11-26"
-    days: 1
-    mainContributionType: PROPOSAL
+#  - &ci4 !!models.ComponentInstanceMilestone
+#    title: Complete Draft
+#    position: 3
+#    start: "2015-11-26"
+#    days: 1
+#    mainContributionType: PROPOSAL
   - &ci5 !!models.ComponentInstanceMilestone
     title: Proposal editing
     position: 4
     start: "2015-11-27"
     days: 15
     mainContributionType: PROPOSAL
-  - &ci6 !!models.ComponentInstanceMilestone
-    title: Final proposal/s
-    position: 5
-    start: "2015-12-11"
-    days: 1
-    mainContributionType: PROPOSAL
+#  - &ci6 !!models.ComponentInstanceMilestone
+#    title: Final proposal/s
+#    position: 5
+#    start: "2015-12-11"
+#    days: 1
+#    mainContributionType: PROPOSAL
   - &ci7 !!models.ComponentInstanceMilestone
     title: Proposal selection
     position: 6
@@ -704,7 +692,7 @@
     days: 5
     mainContributionType: PROPOSAL
   - &ci8 !!models.ComponentInstanceMilestone
-    title: Deliberation starts
+    title: Public Deliberation
     position: 7
     start: "2015-12-17"
     days: 10
@@ -715,54 +703,54 @@
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci10 !!models.ComponentInstanceMilestone
-    title: Deliberation finishes
-    position: 9
-    start: "2016-01-16"
-    days: 1
-    mainContributionType: PROPOSAL
+#  - &ci10 !!models.ComponentInstanceMilestone
+#    title: Deliberation finishes
+#    position: 9
+#    start: "2016-01-16"
+#    days: 1
+#    mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
-    title: Voting Starts
+    title: Voting period
     position: 10
     start: "2016-01-17"
     days: 15
     mainContributionType: PROPOSAL
-  - &ci12 !!models.ComponentInstanceMilestone
-    title: Voting Ends
-    position: 11
-    start: "2016-02-01"
-    days: 1
-    mainContributionType: PROPOSAL
-  - &ci8 !!models.ComponentInstanceMilestone
-    title: Deliberation starts
+#  - &ci12 !!models.ComponentInstanceMilestone
+#    title: Voting Ends
+#    position: 11
+#    start: "2016-02-01"
+#    days: 1
+#    mainContributionType: PROPOSAL
+  - &ci13 !!models.ComponentInstanceMilestone
+    title: General Deliberation
     position: 7
     start: "2015-12-17"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci9 !!models.ComponentInstanceMilestone
+  - &ci14 !!models.ComponentInstanceMilestone
     title: Technical Assessment
     position: 8
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci10 !!models.ComponentInstanceMilestone
-    title: Deliberation finishes
-    position: 9
-    start: "2016-01-16"
-    days: 1
-    mainContributionType: PROPOSAL
-  - &ci11 !!models.ComponentInstanceMilestone
-    title: Voting Starts
+#  - &ci15 !!models.ComponentInstanceMilestone
+#    title: Deliberation finishes
+#    position: 9
+#    start: "2016-01-16"
+#    days: 1
+#    mainContributionType: PROPOSAL
+  - &ci16 !!models.ComponentInstanceMilestone
+    title: Voting period
     position: 10
     start: "2016-01-17"
     days: 15
     mainContributionType: PROPOSAL
-  - &ci12 !!models.ComponentInstanceMilestone
-    title: Voting Ends
-    position: 11
-    start: "2016-02-01"
-    days: 1
-    mainContributionType: PROPOSAL
+#  - &ci16 !!models.ComponentInstanceMilestone
+#    title: Voting Ends
+#    position: 11
+#    start: "2016-02-01"
+#    days: 1
+#    mainContributionType: PROPOSAL
 
 ##############################################################################################################################################################################################
 # Contributions for Contributions
@@ -829,6 +817,40 @@
       - *contrib10 
       - *contrib21
 
+##############################################################################################################################################################################################
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Conseil Belleville" 
+    text: Commitee in charge of managing contributions in for PB Belleville
+    listed: false
+#    acceptRequests: false
+#    assemblies: 
+#      - *a1
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Passionées du Parc de Belleville" 
+    text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    listed: true
+#    acceptRequests: true
+#    assemblies: 
+#      - *a1
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    listed: true
+#    acceptRequests: true
+#    assemblies: 
+#      - *a2
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    listed: false
+#    acceptRequests: true
+#    assemblies: 
+#      - *a3
       
 ##############################################################################################################################################################################################
 # More Contributions for Assembly Forum and Campaign Copmonent Instances
@@ -873,6 +895,7 @@
       - *cat7
     associatedMilestones:
       - *ci1
+      - *ci2
   - &contrib12 !!models.Contribution
     title: Little or no awareness about rising housing prices
     text: Housing prices are wy up and poeople's is doing nothing to get them down. I present a graph of the housing prices evolution in the last ten years. We need to stop this!
@@ -884,6 +907,7 @@
       - *cat6
     associatedMilestones:
       - *ci1
+      - *ci2
     attachments: 
       - *r1
   - &contrib13 !!models.Contribution
@@ -896,6 +920,7 @@
       - *cat7
     associatedMilestones:
       - *ci1
+      - *ci2
     attachments: 
       - *r2
   - &contrib14 !!models.Contribution
@@ -907,6 +932,7 @@
       - *cat7
     associatedMilestones:
       - *ci1
+      - *ci2
   - &contrib15 !!models.Contribution
     title: A park for the empty lot
     text: "let's build a children's park! One of those with the safe floor made of rubber or something"
@@ -917,6 +943,7 @@
       - *cat5
     associatedMilestones:
       - *ci1
+      - *ci2
   - &contrib16 !!models.Contribution
     title: A park for the empty lot
     text: "let's build a children's park! One of those with the safe floor made of rubber or something"
@@ -927,6 +954,7 @@
       - *cat5
     associatedMilestones:
       - *ci1
+      - *ci2
   - &contrib17 !!models.Contribution
     title: Cycling path
     text: "This is not entirely fleshed out yet, but I would definitely like to see more entirely dedicated cycling path parks"
@@ -937,6 +965,7 @@
       - *cat1
     associatedMilestones:
       - *ci1
+      - *ci2
   - &contrib18 !!models.Contribution
     title: Why is this neighborhood so poorly serviced by Public Transportation and how can we get a better service?
     text: 
@@ -947,6 +976,7 @@
       - *cat1
     associatedMilestones:
       - *ci1
+      - *ci2
   - &contrib19 !!models.Contribution
     title: We need more empathy towards inmigrants
     text: 
@@ -957,7 +987,75 @@
       - *cat6
     associatedMilestones:
       - *ci1
-  
+      - *ci2
+  - &contrib20 !!models.Contribution
+    title: Interactive Lights Project
+    text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg1
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *r1
+      - *r2
+  - &contrib21 !!models.Contribution
+    title: Smart Traffic Lights
+    text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg3
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *r2
+      - *r1
+  - &contrib22 !!models.Contribution
+    title: Library at Rue Ramponeau
+    text: Let's create a public library
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg2
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *r2
+      - *r1
+      
+      
+      
+      
+####################################################################################################################################################################################
+# Component Instances: 
+  - &temp1 !!models.ContributionTemplate
+    templateSections:
+      - &tempSection1 !!models.ContributionTemplateSection
+        title: Total Budget
+        description: How much is the estimated total cost of your project proposal?  
+        position: 1
+      - &tempSection2 !!models.ContributionTemplateSection
+        title: Background
+        description: Describe what is the background that led to this project?   
+        position: 2
+      - &tempSection3 !!models.ContributionTemplateSection
+        title: Description
+        description: Describe all the details about your project   
+        position: 3
+      - &tempSection4 !!models.ContributionTemplateSection
+        title: Supporting Evidence 
+        description: What's the evidence behind your idea?    
+        position: 4
+      - &tempSection5 !!models.ContributionTemplateSection
+        title: Detailed Budget 
+        description: Use this section to detail the costs of your project    
+        position: 5
+      
 ####################################################################################################################################################################################
 # Component Instances: 
   - &ph1 !!models.ComponentInstance
@@ -970,7 +1068,6 @@
       - *ci1
       - *ci2
       - *ci3
-      - *ci4
     contributions: 
       - *contrib11 
       - *contrib12 
@@ -981,6 +1078,8 @@
       - *contrib17 
       - *contrib18 
       - *contrib19
+    templates: 
+      - *temp1
   - &ph2 !!models.ComponentInstance
     title: Versioning
     position: 1
@@ -989,7 +1088,6 @@
     #configs
     milestones: 
       - *ci5
-      - *ci6
       - *ci7
   - &ph3 !!models.ComponentInstance
     title: Deliberation
@@ -1000,7 +1098,6 @@
     milestones:
       - *ci8 
       - *ci9 
-      - *ci10
   - &ph4 !!models.ComponentInstance
     title: Voting
     position: 3
@@ -1008,8 +1105,7 @@
     component: *pd4
     #configs
     milestones:
-      - *ci11 
-      - *ci12
+      - *ci11
   - &ph5 !!models.ComponentInstance
     title: Mapping
     position: 0
@@ -1031,7 +1127,6 @@
     milestones: 
       - *ci8
       - *ci9
-      - *ci10
   - &ph8 !!models.ComponentInstance
     title: Voting
     position: 4
@@ -1040,44 +1135,6 @@
     component: *pd4
     milestones: 
       - *ci11
-      - *ci12 
-
-
-
-##############################################################################################################################################################################################
-# Working Groups
-  - &wg1 !!models.WorkingGroup
-    creator: *u1
-    name: "Conseil Belleville" 
-    text: Commitee in charge of managing contributions in for PB Belleville
-    listed: false
-#    acceptRequests: false
-#    assemblies: 
-#      - *a1
-  - &wg2 !!models.WorkingGroup
-    creator: *u1
-    name: "Passionées du Parc de Belleville" 
-    text: Group developing Urban Infrastructure proposals for Parc de Belleville
-    listed: true
-#    acceptRequests: true
-#    assemblies: 
-#      - *a1
-  - &wg3 !!models.WorkingGroup
-    creator: *u1
-    name: "Neighborhood 14, Category Parks" 
-    text: Group of neighbors from district 13, focused on Parks
-    listed: true
-#    acceptRequests: true
-#    assemblies: 
-#      - *a2
-  - &wg4 !!models.WorkingGroup
-    creator: *u1
-    name: "AntiEviction Proposals Team" 
-    text: Team in charge of turning Ideas into proposals
-    listed: false
-#    acceptRequests: true
-#    assemblies: 
-#      - *a3
 
 
 ##############################################################################################################################################################################################
@@ -1095,6 +1152,7 @@
     workingGroups:
       - *wg1
       - *wg2
+      - *wg3
   - &rs6 !!models.ResourceSpace
     type: CAMPAIGN
     #configs
@@ -1164,6 +1222,7 @@
     workingGroups: 
       - *wg1
       - *wg2
+      - *wg3
   - &rs2 !!models.ResourceSpace
     type: ASSEMBLY
     themes: 
@@ -1182,7 +1241,9 @@
         configTarget: ASSEMBLY
         targetUuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
         definition: *config9
-    workingGroups: 
+    workingGroups:  
+      - *wg1
+      - *wg2
       - *wg3
   - &rs3 !!models.ResourceSpace
     type: ASSEMBLY
