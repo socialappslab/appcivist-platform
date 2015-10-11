@@ -10,10 +10,6 @@ import utils.GlobalData;
 @Entity
 public class ServiceAssembly extends Model {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 128881028915968230L;
 
 	@Id
 	@GeneratedValue
@@ -44,8 +40,7 @@ public class ServiceAssembly extends Model {
 	 * Basic Data Queries
 	 */
 
-	public static Finder<Long, ServiceAssembly> find = new Finder<Long, ServiceAssembly>(
-			Long.class, ServiceAssembly.class);
+	public static Finder<Long, ServiceAssembly> find = new Finder<Long, ServiceAssembly>(ServiceAssembly.class);
 
 	/**
 	 * Empty constructor

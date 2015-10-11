@@ -16,15 +16,10 @@ import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 @Entity
 public class ServiceCampaign extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3367429873420318943L;
 
 	@Id
 	private Long campaignId;

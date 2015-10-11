@@ -7,15 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 @Entity
 public class ServiceParameterDefinition extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -299889021493432330L;
 
 	@Id
 	private Long parameterDefinitionId;

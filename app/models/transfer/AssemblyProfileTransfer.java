@@ -3,7 +3,6 @@ package models.transfer;
 import utils.GlobalData;
 import enums.ManagementTypes;
 import enums.SupportedMembershipRegistration;
-import enums.Visibility;
 
 public class AssemblyProfileTransfer {
 	private String targetAudience;

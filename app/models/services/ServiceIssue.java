@@ -9,15 +9,10 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import models.services.ServiceAssembly;
-import play.db.ebean.Model;
+import com.avaje.ebean.Model;
 
 @Entity
 public class ServiceIssue extends Model {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7576572204861603387L;
 
 	@Id
 	private Long issueId;

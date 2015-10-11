@@ -2,13 +2,9 @@ package models.services;
 
 import java.util.*;
 
-import play.db.ebean.*;
+import com.avaje.ebean.Model;
 
 public class ServiceAssemblyCollection extends Model {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7213623744477425962L;
 	private List<ServiceAssembly> serviceAssemblies;
 
 	public List<ServiceAssembly> getServiceAssemblies() {
