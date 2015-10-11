@@ -1,5 +1,8 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -19,12 +22,13 @@ public class ContributionTemplate extends AppCivistBaseModel {
 	@Transient
 	private String uuidAsString;
 
+	// TODO: implemente as an ordered list
 	@OneToMany(cascade = CascadeType.ALL)
-	private ContributionTemplateSection templateSection;
+	private List<ContributionTemplateSection> templateSections = new ArrayList<>();
 
-	public ContributionTemplate(ContributionTemplateSection templateSection) {
+	public ContributionTemplate(List<ContributionTemplateSection> templateSections) {
 		super();
-		this.templateSection = templateSection;
+		this.templateSections = templateSections;
 	}
 
 	public Long getId() {
@@ -51,11 +55,12 @@ public class ContributionTemplate extends AppCivistBaseModel {
 		this.uuid = UUID.fromString(uuidAsString);
 	}
 
-	public ContributionTemplateSection getTemplateSection() {
-		return templateSection;
+	public List<ContributionTemplateSection> getTemplateSections() {
+		Collections.sort(templateSections, new ContributionTemplateSection());
+		return templateSections;
 	}
 
-	public void setTemplateSection(ContributionTemplateSection templateSection) {
-		this.templateSection = templateSection;
+	public void setTemplateSection(List<ContributionTemplateSection> templateSections) {
+		this.templateSections = templateSections;
 	}
 }

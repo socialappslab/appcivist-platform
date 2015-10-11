@@ -13,6 +13,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
@@ -54,6 +55,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
  	
+ 	
  // TODO: check if it works
  	@JsonIgnore
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
@@ -70,10 +72,15 @@ public class WorkingGroup extends AppCivistBaseModel {
  	private List<Contribution> brainstormingContributions;
  	@Transient
  	private List<Contribution> proposals;
+ 	@JsonIgnore
+ 	@OneToMany(cascade = CascadeType.REMOVE, mappedBy="workingGroup",fetch=FetchType.LAZY)
+ 	private List<MembershipGroup> members; 
  	
 	@Transient
+	@JsonIgnore
 	private List<Theme> existingThemes;
 	@Transient
+	@JsonIgnore
 	private List<Contribution> existingContributions;
  	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -260,7 +267,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public void setProposals(List<Contribution> proposals) {
 		this.resources.getContributions().addAll(proposals);
 	}
-	
+
+	public List<MembershipGroup> getMembers() {
+		return this.members;
+	}
+		
 	@JsonIgnore
 	public List<Theme> getExistingThemes() {
 		return existingThemes;

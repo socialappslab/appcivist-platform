@@ -59,6 +59,12 @@ public class Contribution extends AppCivistBaseModel {
 	@Where(clause="${ta}.active=true")
 	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
 	private List<User> authors = new ArrayList<User>();
+	@ManyToMany(cascade = CascadeType.REFRESH)
+	@Where(clause="${ta}.removed=false")
+	@JsonIgnoreProperties({ "supportedMembership", "managementType",
+			"resources", "forum", "containingSpaces", "themes", "configs",
+			"forumPosts", "brainstormingContributions", "proposals" })
+	private List<WorkingGroup> workingGroupAuthors = new ArrayList<WorkingGroup>();
 	@JsonIgnore 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions")
 	private List<ResourceSpace> containingSpaces;
@@ -85,6 +91,9 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
 
+	@Transient
+	private String padUrl;
+	
 	/* 
 	 * The following fields are specific to each type of contribution
 	 */
@@ -138,7 +147,7 @@ public class Contribution extends AppCivistBaseModel {
 		this.text = text;
 		this.type = type;
 	}
-
+	
 	public Contribution() {
 		super();
 	}
@@ -207,6 +216,19 @@ public class Contribution extends AppCivistBaseModel {
 		this.authors.add(author);
 	}
 
+	public List<WorkingGroup> getWorkingGroupAuthors() {
+		return resourceSpace.getWorkingGroups();
+	}
+
+	public void setWorkingGroupAuthors(List<WorkingGroup> workingGroupAuthors) {
+		this.workingGroupAuthors = workingGroupAuthors;
+		this.resourceSpace.setWorkingGroups(workingGroupAuthors);
+	}
+
+	public void addWorkingGroupAuthor(WorkingGroup workingGroupAuthor) {
+		this.resourceSpace.addWorkingGroup(workingGroupAuthor);
+	}
+
 	public List<Theme> getThemes() {
 		return resourceSpace.getThemes();
 	}
@@ -263,6 +285,18 @@ public class Contribution extends AppCivistBaseModel {
 			this.resourceSpace.addContribution(c);
 	}
 	
+	public String getPadUrl() {
+		return extendedTextPad !=null ? extendedTextPad.getUrlAsString() : null;
+	}	
+		
+	public void setComments(List<Contribution> comments) {
+		this.comments = comments;
+	}
+
+	public void setAssessments(List<Contribution> assessments) {
+		this.assessments = assessments;
+	}
+
 	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
 		return this.resourceSpace.getMilestones();
 	}
@@ -328,7 +362,7 @@ public class Contribution extends AppCivistBaseModel {
 	public void setExtendedTextPad(Resource extendedTextPad) {
 		this.extendedTextPad = extendedTextPad;
 	}
-
+	
 	public List<Contribution> getAssessments() {
 		return this.resourceSpace.getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
 	}
@@ -625,6 +659,7 @@ public class Contribution extends AppCivistBaseModel {
 		return readListByContainingSpaceAndType(resourceSpaceId,
 				ContributionTypes.COMMENT);
 	}
+	
 
 	@PrePersist
 	private void onCreate() {
@@ -668,5 +703,14 @@ public class Contribution extends AppCivistBaseModel {
 		if (numberComments != this.stats.getReplies())
 			this.stats.setReplies(new Long(numberComments));
 		this.stats.update();
+	}
+
+	public static boolean isUserAuthor(User u, Long contributionId) {
+		return find.where()
+				.eq("contributionId",contributionId)
+				.eq("authors.userId",u.getUserId()).findUnique() != null 
+				|| find.where()
+					.eq("contributionId", contributionId)
+					.eq("workingGroupAuthors.members.user.userId",u.getUserId()).findUnique() != null;
 	}
 }

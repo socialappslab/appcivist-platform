@@ -1,5 +1,6 @@
 package models;
 
+import java.util.Comparator;
 import java.util.UUID;
 
 import javax.persistence.Entity;
@@ -8,7 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 
 @Entity
-public class ContributionTemplateSection extends AppCivistBaseModel {
+public class ContributionTemplateSection extends AppCivistBaseModel implements Comparator<ContributionTemplateSection> {
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -21,6 +22,10 @@ public class ContributionTemplateSection extends AppCivistBaseModel {
 	private int length;
 	private int position;
 
+	public ContributionTemplateSection() {
+		super();
+	}
+	
 	public ContributionTemplateSection(String title, String description,
 			int length, int order) {
 		super();
@@ -84,5 +89,9 @@ public class ContributionTemplateSection extends AppCivistBaseModel {
 
 	public void setPositions(int order) {
 		this.position = order;
+	}
+	@Override
+	public int compare(ContributionTemplateSection o1, ContributionTemplateSection o2) {
+		return o1.getPosition() - o2.getPosition();
 	}
 }

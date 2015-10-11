@@ -277,4 +277,8 @@ public class Membership extends AppCivistBaseModel {
 				.filter(p-> p.getName().equals(roleName))
 				.collect(Collectors.toList());
 	}
+	
+	public List<SecurityRole> filterByRoleName(String name) {
+		return this.roles.stream().filter(p -> p.getName().toString().equals(name)).collect(Collectors.toList());
+	}
 }

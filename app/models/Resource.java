@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
+import utils.services.EtherpadWrapper;
 import models.location.Location;
 
 import com.avaje.ebean.annotation.Index;
@@ -40,7 +41,10 @@ public class Resource extends AppCivistBaseModel {
 	/*
 	 * Fields specific to type PAD
 	 */
+	@JsonIgnore
 	private String padId;
+	private String readOnlyPadId;
+	private UUID resourceSpaceWithServerConfigs;
 
 	/*
 	 * Fields specific to type PICTURE
@@ -147,9 +151,24 @@ public class Resource extends AppCivistBaseModel {
 	public void setPadId(String padId) {
 		this.padId = padId;
 	}
+
+	public String getReadOnlyPadId() {
+		return readOnlyPadId;
+	}
+
+	public void setReadOnlyPadId(String padId) {
+		this.readOnlyPadId = padId;
+	}
 	
 	// TODO @Transient getPadContent => GET using Etherpad Client
 	
+	public UUID getResourceSpaceWithServerConfigs() {
+		return resourceSpaceWithServerConfigs;
+	}
+	public void setResourceSpaceWithServerConfigs(
+			UUID resourceSpaceWithServerConfigs) {
+		this.resourceSpaceWithServerConfigs = resourceSpaceWithServerConfigs;
+	}
 	public URL getUrlLarge() {
 		return urlLarge;
 	}
@@ -245,7 +264,15 @@ public class Resource extends AppCivistBaseModel {
 			return this.url.toString();
 		return null;
 	}
+	
 	public void setUrlAsString(String urlAsString) throws MalformedURLException {
 		this.url = new URL(urlAsString);
+	}
+	
+	public void createPad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException {
+		EtherpadWrapper eth = new EtherpadWrapper(etherpadServerUrl,etherpadApiKey);
+		eth.createPad(this.padId);
+		eth.setHTML(this.padId, text);
+		this.setUrl(new URL(eth.getReadOnlyUrl(this.padId)));
 	}
 }
