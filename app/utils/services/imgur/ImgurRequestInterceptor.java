@@ -7,11 +7,13 @@ import play.Play;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.okhttp.Interceptor.Chain; // in some servers, not importing this produces a compilation error
 
 /**
  * This interceptor compresses the HTTP request body. Many webservers can't
  * handle this!
  */
+@SuppressWarnings("unused")
 public class ImgurRequestInterceptor implements Interceptor {
 	private static String MY_IMGUR_CLIENT_ID = "";
 	private static String MY_IMGUR_CLIENT_SECRET = "";

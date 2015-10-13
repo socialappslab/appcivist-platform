@@ -14,7 +14,6 @@ import play.mvc.Http.Context;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import providers.MyUsernamePasswordAuthProvider;
-import scala.reflect.internal.Trees.Super;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.exceptions.AuthException;
