@@ -8,11 +8,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
+import com.avaje.ebean.annotation.Index;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 @Entity
+@JsonInclude(content=Include.NON_NULL)
 public class ContributionTemplateSection extends AppCivistBaseModel implements Comparator<ContributionTemplateSection> {
 	@Id
 	@GeneratedValue
 	private Long id;
+	@Index
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
@@ -22,8 +28,11 @@ public class ContributionTemplateSection extends AppCivistBaseModel implements C
 	private int length;
 	private int position;
 
+	public static Finder<Long, ContributionTemplateSection> find = new Finder<>(ContributionTemplateSection.class);
+	
 	public ContributionTemplateSection() {
 		super();
+		this.uuid = UUID.randomUUID();
 	}
 	
 	public ContributionTemplateSection(String title, String description,

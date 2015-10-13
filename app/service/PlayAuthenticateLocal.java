@@ -14,7 +14,6 @@ import play.mvc.Http.Context;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import providers.MyUsernamePasswordAuthProvider;
-import scala.reflect.internal.Trees.Super;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.exceptions.AuthException;
@@ -33,9 +32,6 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 	public static final String PROVIDER_KEY = "pa.p.id";
 	public static final String EXPIRES_KEY = "pa.u.exp";
 	public static final String SESSION_KEY_STRING = "SESSION_KEY";
-	private static final String SETTING_KEY_AFTER_LOGOUT_FALLBACK = "afterLogoutFallback";
-//	public static final String SESSION_ID_KEY = "pa.s.id";
-	
 	/**
 	 * Deprecated by public static Result loginAndRedirect(final Context
 	 * context, final AuthUser loginUser, Object payload)

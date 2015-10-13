@@ -12,23 +12,32 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
+import com.avaje.ebean.annotation.Index;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 @Entity
+@JsonInclude(content=Include.NON_NULL)
 public class ContributionTemplate extends AppCivistBaseModel {
 
 	@Id
 	@GeneratedValue
 	private Long id;
+	@Index
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 
-	// TODO: implemente as an ordered list
+	// TODO: implement as an ordered list
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<ContributionTemplateSection> templateSections = new ArrayList<>();
+
+	public static Finder<Long, ContributionTemplate> find = new Finder<>(ContributionTemplate.class);
 
 	public ContributionTemplate(List<ContributionTemplateSection> templateSections) {
 		super();
 		this.templateSections = templateSections;
+		this.uuid = UUID.randomUUID();
 	}
 
 	public Long getId() {

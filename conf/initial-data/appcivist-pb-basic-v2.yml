@@ -1034,6 +1034,7 @@
 ####################################################################################################################################################################################
 # Component Instances: 
   - &temp1 !!models.ContributionTemplate
+    uuidAsString: "92e6b80e-717b-11e5-9d70-feff819cdc9f"
     templateSections:
       - &tempSection1 !!models.ContributionTemplateSection
         title: Total Budget
