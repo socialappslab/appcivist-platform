@@ -232,4 +232,12 @@ public class VotingBallot extends AppCivistBaseModel {
 	}
 	
 	/* Other Data Queries */
+
+
+	/* 
+	* @params uuid, queries database based on uuid
+	*/
+	public static VotingBallot queryByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
+	}
 }
