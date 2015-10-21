@@ -22,7 +22,9 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 	private Long componentRequiredMilestoneId;
 
 	private String title; // name of milestone
+	private String description;
     private int position;	
+    private boolean noDuration = false;
     
     @Index 
     @JsonIgnore
@@ -67,12 +69,28 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 		this.title = title;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public int getPosition() {
 		return position;
 	}
 
 	public void setPosition(int order) {
 		this.position = order;
+	}
+
+	public boolean isNoDuration() {
+		return noDuration;
+	}
+
+	public void setNoDuration(boolean noDuration) {
+		this.noDuration = noDuration;
 	}
 
 	public UUID getTargetComponentUuid() {
