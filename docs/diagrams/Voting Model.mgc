@@ -9,7 +9,7 @@
             default-accepted="false" static-accepted="false"
             accessors-accepted="false" constructors-accepted="false"/>
         <Association
-            destinationClassName="models.VotingBallotRegistrationFormField"
+            destinationClassName="models.VotingBallotRegistrationField"
             endpointName="fields" kind="Simple"/>
     </Class>
     <Class name="models.VotingBallotTally" x="50" y="312">
@@ -66,7 +66,16 @@
         <Association destinationClassName="models.VotingCandidateVote"
             endpointName="voteValues" kind="Simple"/>
     </Class>
-    <Class name="models.VotingCandidateVoteResult" x="33" y="655">
+    <Class name="models.VotingBallotRegistrationField" x="717" y="191">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+    </Class>
+    <Class name="models.VotingCandidateVoteResult" x="30" y="474">
         <AttributesDisplayFilter public-accepted="true"
             private-accepted="true" protected-accepted="true"
             default-accepted="true" static-accepted="false"/>
@@ -77,16 +86,7 @@
         <Association destinationClassName="models.VotingCandidate"
             endpointName="selectedCandidate" kind="Simple"/>
     </Class>
-    <Class name="models.VotingBallotRegistrationFormField" x="779" y="191">
-        <AttributesDisplayFilter public-accepted="true"
-            private-accepted="true" protected-accepted="true"
-            default-accepted="true" static-accepted="false"/>
-        <MethodDisplayFilter public-accepted="true"
-            private-accepted="false" protected-accepted="false"
-            default-accepted="false" static-accepted="false"
-            accessors-accepted="false" constructors-accepted="false"/>
-    </Class>
-    <Class name="models.VotingCandidate" x="409" y="503">
+    <Class name="models.VotingCandidate" x="409" y="473">
         <AttributesDisplayFilter public-accepted="true"
             private-accepted="true" protected-accepted="true"
             default-accepted="true" static-accepted="false"/>
