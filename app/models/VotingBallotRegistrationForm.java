@@ -41,6 +41,14 @@ public class VotingBallotRegistrationForm extends AppCivistBaseModel {
 
 	/* Basic Data Queries */
 
+	public List<VotingBallotRegistrationField> getFields() {
+		return fields;
+	}
+
+	public void setFields(List<VotingBallotRegistrationField> fields) {
+		this.fields = fields;
+	}
+
 	/*
  	 * Returns all the voting candidates in our system
 	 * 
