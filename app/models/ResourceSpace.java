@@ -125,7 +125,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<VotingBallot> ballots = new ArrayList<VotingBallot>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinTable(name = "resource_space_contribution_templates")
+	@JoinTable(name = "resource_space_templates")
 	@Where(clause="${ta}.removed=false")
 	private List<ContributionTemplate> templates = new ArrayList<ContributionTemplate>();
 

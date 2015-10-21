@@ -70,7 +70,7 @@
     resourceType: VIDEO
   - &res4 !!models.Resource
     url: "http://www.ign.com/videos/2015/10/20/every-shot-so-far-from-star-wars-the-force-awakens-in-order-we-think"
-    resourceType: WEBSITE
+    resourceType: WEBPAGE
   - &res5 !!models.Resource
     url: "https://farm4.staticflickr.com/3385/4597658105_06ec2519ee_o_d.gif"
     resourceType: PICTURE
