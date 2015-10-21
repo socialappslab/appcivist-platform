@@ -41,14 +41,43 @@
     description: "Better infrastructure for our urban environments"
     
 ##############################################################################################################################################################################################      
-# User Picture
+# Resources for Attachments and User Profile Pics
   - &upic1 !!models.Resource     
     urlLargeString: "https://randomuser.me/api/portraits/med/men/77.jpg"
     resourceType: PICTURE
   - &upic2 !!models.Resource     
     urlLargeString: "https://randomuser.me/api/portraits/med/women/77.jpg"
     resourceType: PICTURE
-
+  - &upic3 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/66.jpg"
+    resourceType: PICTURE
+  - &upic4 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/women/66.jpg"
+  - &upic5 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/55.jpg"
+    resourceType: PICTURE
+  - &upic6 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/women/55.jpg"
+    resourceType: PICTURE
+  - &res1 !!models.Resource
+    url: "http://www.ritholtz.com/blog/wp-content/uploads/2008/11/price-to-rent-ratio.png"
+    resourceType: PICTURE
+  - &res2 !!models.Resource
+    url: "https://upload.wikimedia.org/wikipedia/commons/e/e4/A_plaza_and_garden_at_Calle_Mayor%2C_Madrid_01.JPG"
+    resourceType: PICTURE
+  - &res3 !!models.Resource
+    url: "https://www.youtube.com/watch?v=sGbxmsDFVnE"
+    resourceType: VIDEO
+  - &res4 !!models.Resource
+    url: "http://www.ign.com/videos/2015/10/20/every-shot-so-far-from-star-wars-the-force-awakens-in-order-we-think"
+    resourceType: WEBSITE
+  - &res5 !!models.Resource
+    url: "https://farm4.staticflickr.com/3385/4597658105_06ec2519ee_o_d.gif"
+    resourceType: PICTURE
+  - &res6 !!models.Resource
+    url: "https://farm1.staticflickr.com/191/506378526_1ee84e7114_z_d.jpg"
+    resourceType: PICTURE
+    
 ##############################################################################################################################################################################################
 # Users (Testing Users)
   - &u1 !!models.User
@@ -84,6 +113,7 @@
     name:       Jeff
     username:   jeff
     language:     it
+    profilePic: *upic3
     roles:
       - *r1 # ADMIN
       - *r2 # USER
@@ -97,6 +127,7 @@
     name:       Sara
     username:   sara
     language:     fr
+    profilePic: *upic4
     roles: 
       - *r2 # USER
     linkedAccounts:
@@ -109,6 +140,7 @@
     name:       Alicia
     username:   alicia
     language:     es
+    profilePic: *upic5
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -121,6 +153,7 @@
     name:       Ted
     username:   ted
     language:     en
+    profilePic: *upic6
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -583,21 +616,25 @@
     - &m1 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Brainstorming
+      description: Identify problems and make suggestions for proposals
       position: 0
       targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     - &m2 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Working Group Formation
+      title: Working Groups
+      description: Join or create a group to develop proposals. Browse the problems and suggestions from brainstorming and form groups around them to turn them into proposals
       position: 1
       targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
     - &m3 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Proposal Drafting
+      title: Proposal Drafts
+      description: Explore existing proposals or start one with your working group
       position: 2
+      noDuration: true
       targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     - &m4 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Complete Draft
+      title: Final Drafts
       position: 3
       targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     - &m5 !!models.ComponentRequiredMilestone
@@ -648,7 +685,7 @@
     name: "Mobilization"
 
 ########################################################################################################################################
-# Component Instances: specific instation of components associated to campaigns, assemblies or groups through their resource spaces
+# Milestones: milestones that define steps and deadlines in the process followed by each component
   - &ci1 !!models.ComponentInstanceMilestone
     title: Brainstorming
     position: 0
@@ -667,24 +704,12 @@
     start: "2015-11-16"
     days: 10
     mainContributionType: PROPOSAL
-#  - &ci4 !!models.ComponentInstanceMilestone
-#    title: Complete Draft
-#    position: 3
-#    start: "2015-11-26"
-#    days: 1
-#    mainContributionType: PROPOSAL
   - &ci5 !!models.ComponentInstanceMilestone
     title: Proposal editing
     position: 4
     start: "2015-11-27"
     days: 15
     mainContributionType: PROPOSAL
-#  - &ci6 !!models.ComponentInstanceMilestone
-#    title: Final proposal/s
-#    position: 5
-#    start: "2015-12-11"
-#    days: 1
-#    mainContributionType: PROPOSAL
   - &ci7 !!models.ComponentInstanceMilestone
     title: Proposal selection
     position: 6
@@ -703,24 +728,12 @@
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
-#  - &ci10 !!models.ComponentInstanceMilestone
-#    title: Deliberation finishes
-#    position: 9
-#    start: "2016-01-16"
-#    days: 1
-#    mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
     title: Voting period
     position: 10
     start: "2016-01-17"
     days: 15
     mainContributionType: PROPOSAL
-#  - &ci12 !!models.ComponentInstanceMilestone
-#    title: Voting Ends
-#    position: 11
-#    start: "2016-02-01"
-#    days: 1
-#    mainContributionType: PROPOSAL
   - &ci13 !!models.ComponentInstanceMilestone
     title: General Deliberation
     position: 7
@@ -733,27 +746,38 @@
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
-#  - &ci15 !!models.ComponentInstanceMilestone
-#    title: Deliberation finishes
-#    position: 9
-#    start: "2016-01-16"
-#    days: 1
-#    mainContributionType: PROPOSAL
   - &ci16 !!models.ComponentInstanceMilestone
     title: Voting period
     position: 10
     start: "2016-01-17"
     days: 15
     mainContributionType: PROPOSAL
-#  - &ci16 !!models.ComponentInstanceMilestone
-#    title: Voting Ends
-#    position: 11
-#    start: "2016-02-01"
-#    days: 1
-#    mainContributionType: PROPOSAL
 
 ##############################################################################################################################################################################################
-# Contributions for Contributions
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Conseil Belleville" 
+    text: Commitee in charge of managing contributions in for PB Belleville
+    listed: false
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Passionées du Parc de Belleville" 
+    text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    listed: true
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    listed: true
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    listed: false
+
+##############################################################################################################################################################################################
+# Contributions for Contributions ==> COMMENTS
   - &contrib5 !!models.Contribution
     title: GREAT!
     text: This sounds great. We should probably invite Mike to join the assembly. He has some great ideas about Urban Infrastructure
@@ -792,15 +816,6 @@
       - *u2
       
 ##############################################################################################################################################################################################
-# Resources for Attachments
-  - &r1 !!models.Resource
-    url: "http://www.ritholtz.com/blog/wp-content/uploads/2008/11/price-to-rent-ratio.png"
-    resourceType: PICTURE
-  - &r2 !!models.Resource
-    url: "https://upload.wikimedia.org/wikipedia/commons/e/e4/A_plaza_and_garden_at_Calle_Mayor%2C_Madrid_01.JPG"
-    resourceType: PICTURE
-
-##############################################################################################################################################################################################
 # Contribution Resource Space
   - &rs7 !!models.ResourceSpace
     type: CONTRIBUTION
@@ -816,41 +831,6 @@
     contributions: 
       - *contrib10 
       - *contrib21
-
-##############################################################################################################################################################################################
-# Working Groups
-  - &wg1 !!models.WorkingGroup
-    creator: *u1
-    name: "Conseil Belleville" 
-    text: Commitee in charge of managing contributions in for PB Belleville
-    listed: false
-#    acceptRequests: false
-#    assemblies: 
-#      - *a1
-  - &wg2 !!models.WorkingGroup
-    creator: *u1
-    name: "Passionées du Parc de Belleville" 
-    text: Group developing Urban Infrastructure proposals for Parc de Belleville
-    listed: true
-#    acceptRequests: true
-#    assemblies: 
-#      - *a1
-  - &wg3 !!models.WorkingGroup
-    creator: *u1
-    name: "Neighborhood 14, Category Parks" 
-    text: Group of neighbors from district 13, focused on Parks
-    listed: true
-#    acceptRequests: true
-#    assemblies: 
-#      - *a2
-  - &wg4 !!models.WorkingGroup
-    creator: *u1
-    name: "AntiEviction Proposals Team" 
-    text: Team in charge of turning Ideas into proposals
-    listed: false
-#    acceptRequests: true
-#    assemblies: 
-#      - *a3
       
 ##############################################################################################################################################################################################
 # More Contributions for Assembly Forum and Campaign Copmonent Instances
@@ -909,7 +889,7 @@
       - *ci1
       - *ci2
     attachments: 
-      - *r1
+      - *res1
   - &contrib13 !!models.Contribution
     title: A Garden for the empty lot
     text: We can give a good use to the empty lot in channing by simply creating a cooperative garden on it
@@ -922,7 +902,7 @@
       - *ci1
       - *ci2
     attachments: 
-      - *r2
+      - *res2
   - &contrib14 !!models.Contribution
     title: A library for the empty lot
     type: BRAINSTORMING
@@ -999,8 +979,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *r1
-      - *r2
+      - *res1
+      - *res2
   - &contrib21 !!models.Contribution
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
@@ -1012,8 +992,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *r2
-      - *r1
+      - *res6
+      - *res1
   - &contrib22 !!models.Contribution
     title: Library at Rue Ramponeau
     text: Let's create a public library
@@ -1025,15 +1005,91 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *r2
-      - *r1
-      
-      
-      
+      - *res2
+      - *res1
+  - &contrib30 !!models.Contribution
+    title: Interactive Lights Project
+    text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg1
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *res1
+      - *res2
+  - &contrib31 !!models.Contribution
+    title: Smart Traffic Lights
+    text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg3
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *res6
+      - *res1
+  - &contrib32 !!models.Contribution
+    title: Library at Rue Ramponeau
+    text: Let's create a public library
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg2
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *res2
+      - *res1
+  - &contrib40 !!models.Contribution
+    title: Interactive Lights Project
+    text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg1
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *res1
+      - *res2
+  - &contrib41 !!models.Contribution
+    title: Smart Traffic Lights
+    text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg3
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *res6
+      - *res1
+  - &contrib42 !!models.Contribution
+    title: Library at Rue Ramponeau
+    text: Let's create a public library
+    type: PROPOSAL
+    workingGroupAuthors: 
+      - *wg2
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *res2
+      - *res1
       
 ####################################################################################################################################################################################
 # Component Instances: 
   - &temp1 !!models.ContributionTemplate
+    uuidAsString: "92e6b80e-717b-11e5-9d70-feff819cdc9f"
     templateSections:
       - &tempSection1 !!models.ContributionTemplateSection
         title: Total Budget
@@ -1089,6 +1145,16 @@
     milestones: 
       - *ci5
       - *ci7
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
   - &ph3 !!models.ComponentInstance
     title: Deliberation
     position: 2
@@ -1098,6 +1164,16 @@
     milestones:
       - *ci8 
       - *ci9 
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
   - &ph4 !!models.ComponentInstance
     title: Voting
     position: 3
@@ -1106,6 +1182,16 @@
     #configs
     milestones:
       - *ci11
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
   - &ph5 !!models.ComponentInstance
     title: Mapping
     position: 0
@@ -1127,6 +1213,10 @@
     milestones: 
       - *ci8
       - *ci9
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22
   - &ph8 !!models.ComponentInstance
     title: Voting
     position: 4
@@ -1135,7 +1225,16 @@
     component: *pd4
     milestones: 
       - *ci11
-
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
 
 ##############################################################################################################################################################################################
 # Campaign Resource Spaces: 

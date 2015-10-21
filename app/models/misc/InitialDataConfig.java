@@ -10,20 +10,13 @@ import com.avaje.ebean.Model;
 
 @Entity
 public class InitialDataConfig extends Model {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6574200018754738463L;
-	// Commons
-
 	@Id
 	@GeneratedValue
 	private Long dataFileId;
 	private String dataFile;
 	private Boolean loaded = true;
 
-	public static Finder<Long, InitialDataConfig> find = new Finder<Long, InitialDataConfig>(
-			Long.class, InitialDataConfig.class);
+	public static Finder<Long, InitialDataConfig> find = new Finder<Long, InitialDataConfig>(InitialDataConfig.class);
 
 	public InitialDataConfig(String dataFile, Boolean loaded) {
 		super();

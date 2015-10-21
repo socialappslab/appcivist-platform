@@ -32,6 +32,7 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 
 	private String title; // name of milestone
 	private int position;
+	private String description;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime();	// starting date of the milestone
 	private Integer days = 1; // duration in dates
@@ -77,6 +78,7 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 		super(requiredComponentMilestone.getLang());
 
 		this.title = requiredComponentMilestone.getTitle();
+		this.description = requiredComponentMilestone.getDescription();
 
 		if (previousInstance == null) {
 			this.start = Calendar.getInstance().getTime();
@@ -110,6 +112,14 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 
 	public void setPosition(int order) {
 		this.position = order;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public Date getStart() {
