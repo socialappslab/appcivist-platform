@@ -188,6 +188,11 @@ GET       /api/campaign/template                                          contro
 # Utilities endpoints
 POST      /api/file                                                       controllers.Files.uploadPictureToImgur(title, description, albumId)
 
+
+### 
+# Voting Services
+GET /api/voting/:uuid     controllers.VotingServices.getVotingRegistrationForm(uuid: java.util.UUID)
+
 ##################################################################################################################################################################
 # Composition Engine endpoints 
 GET       /api/assembly/:aid/issue                                        controllers.ServiceAssemblies.findIssues(aid: Long)

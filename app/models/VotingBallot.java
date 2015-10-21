@@ -36,6 +36,7 @@ public class VotingBallot extends AppCivistBaseModel {
 	private Long votingBallotId;
 	@Index
 	private UUID uuid = UUID.randomUUID();
+	@Transient
 	private String uuidAsString;
 	private String instructions;
 	private String notes;
@@ -148,11 +149,11 @@ public class VotingBallot extends AppCivistBaseModel {
 	}
 
 	public String getUuidAsString() {
-		return uuidAsString;
+		return uuid.toString();
 	}
 
 	public void setUuidAsString(String uuidAsString) {
-		this.uuidAsString = uuidAsString;
+		this.uuid = UUID.fromString(uuidAsString);
 	}
 
 	public String getInstructions() {
@@ -232,4 +233,12 @@ public class VotingBallot extends AppCivistBaseModel {
 	}
 	
 	/* Other Data Queries */
+
+
+	/* 
+	* @params uuid, queries database based on uuid
+	*/
+	public static VotingBallot queryByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
+	}
 }

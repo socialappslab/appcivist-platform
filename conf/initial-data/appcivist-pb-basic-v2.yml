@@ -1625,3 +1625,31 @@
     roles: 
       - *r3
       - *r4
+
+
+##############
+# Votin Ballot Examples
+  
+  - &vb1 !!models.VotingBallot
+    uuidAsString: "1db111f0-714a-11e5-9d70-feff819cdc9f"
+    instructions: "These are instructions"
+    notes: "These are notes"
+    password: secret
+    systemType: RANGE
+    starts: "2015-12-01"
+    ends: "2015-12-31"
+    registrationForm: !!models.VotingBallotRegistrationForm
+      fields:
+        - &vbf1 !!models.VotingBallotRegistrationField
+          fieldName: Name
+          fieldDescription: This is the name
+        - &vbf2 !!models.VotingBallotRegistrationField
+          fieldName: Zip
+          fieldDescription: This is the zip
+          expectedValue: 94702
+
+        
+
+
+
+
