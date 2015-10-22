@@ -58,9 +58,11 @@ public class OnlyMeAndAdminDynamicResourceHandler extends AbstractDynamicResourc
 										    UUID requestedUUID = null;
 										    if(requestedId<0) {
 										    	requestedUUID = MyDynamicResourceHandler.getUUIDFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
-											    allowed[0] = requestorUUID == requestedUUID;
+											    allowed[0] = requestorUUID.equals(requestedUUID);
+											    Logger.debug("Allowed = "+allowed[0]);	
 										    } else {
-											    allowed[0] = requestorId == requestedId;
+											    allowed[0] = requestorId.equals(requestedId);
+											    Logger.debug("Allowed = "+allowed[0]);	
 										    }
 										});
 									}

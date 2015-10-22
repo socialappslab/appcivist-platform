@@ -45,9 +45,9 @@ import http.Headers;
  * @author cdparra
  *
  */
+@SuppressWarnings("unused")
 @Api(value="/notification")
 @With(Headers.class)
-@SuppressWarnings("unused")
 public class Notifications extends Controller {
 
 	final private static String NOTIFICATION_TITLE_ASSEMBLY_UPDATE = "notification.title.assembly.update";
