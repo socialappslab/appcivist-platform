@@ -32,10 +32,9 @@ public class Application extends Controller {
 	public static Result checkPreFlight(String path) {
 		Logger.debug("--> OPTIONS Preflight REQUEST");
 		response().setHeader("Access-Control-Allow-Origin", "*");
+		response().setHeader("Allow", "*");
 		response().setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
-		response()
-				.setHeader("Access-Control-Allow-Headers",
-						"accept, origin, Content-type, x-json, x-prototype-version, x-requested-with, SESSION_KEY");
+		response().setHeader("Access-Control-Allow-Headers","Accept, Origin, Content-Type, X-Json, X-Prototype-Version, X-Requested-With, Referer, User-Agent, SESSION_KEY");
 		return ok();
 	}
 	

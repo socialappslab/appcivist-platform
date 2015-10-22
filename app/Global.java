@@ -22,6 +22,12 @@ import utils.IgnoreConverter;
 
 import controllers.routes;
 
+
+import play.libs.F.Promise;
+import play.mvc.Action;
+import play.mvc.Http;
+import play.mvc.Result;
+
 public class Global extends GlobalSettings {
 
 	public void beforeStart(Application app) {
@@ -182,4 +188,28 @@ public class Global extends GlobalSettings {
 	public void onStop(Application app) {
 		Logger.info("Application shutdown...");
 	}
+	
+	// For CORS
+	private class ActionWrapper extends Action.Simple {
+		public ActionWrapper(Action<?> action) {
+			this.delegate = action;
+		}
+
+		@Override
+		public Promise<Result> call(Http.Context ctx)
+				throws java.lang.Throwable {
+			Promise<Result> result = this.delegate.call(ctx);
+			Http.Response response = ctx.response();
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			Logger.debug("--> Setting CORRS HEADERs for path: "+ctx.request().path());
+			return result;
+		}
+	}
+
+	@Override
+	public Action<?> onRequest(Http.Request request,
+			java.lang.reflect.Method actionMethod) {
+		return new ActionWrapper(super.onRequest(request, actionMethod));
+	}
+	
 }
