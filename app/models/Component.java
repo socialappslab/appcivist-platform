@@ -28,6 +28,7 @@ public class Component extends AppCivistBaseModel {
 	@Transient
 	private String uuidAsString;
 	private String name; 
+	private String description;
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	private List<ComponentRequiredConfiguration> requiredConfigurations = new ArrayList<ComponentRequiredConfiguration>();
@@ -81,6 +82,14 @@ public class Component extends AppCivistBaseModel {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public List<ComponentRequiredConfiguration> getRequiredConfigurations() {

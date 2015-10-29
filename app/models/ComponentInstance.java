@@ -37,6 +37,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@Column(name="component_instance_id")
 	private Long componentInstanceId;
 	private String title;
+	private String description;
 	private Date startDate;
 	private Date endDate;
 	private UUID uuid = UUID.randomUUID();
@@ -119,6 +120,14 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		this.title = title;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getStartDate() {
 		return startDate;
@@ -170,6 +179,8 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	public void setComponent(Component definition) {
 		if (title==null || title.isEmpty())
 			this.title = definition.getName();
+		if (description==null || description.isEmpty())
+			this.description = definition.getDescription();
 		this.component = definition;
 	}
 
