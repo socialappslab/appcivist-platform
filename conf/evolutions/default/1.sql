@@ -367,13 +367,13 @@ create table membership (
   removal                   timestamp,
   removed                   boolean,
   expiration                bigint,
-  status                    integer,
+  status                    varchar(9),
   creator_user_id           bigint,
   user_user_id              bigint,
   target_uuid               varchar(40),
   assembly_assembly_id      bigint,
   working_group_group_id    bigint,
-  constraint ck_membership_status check (status in (0,1,2,3)),
+  constraint ck_membership_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING')),
   constraint pk_membership primary key (membership_id))
 ;
 
@@ -650,6 +650,7 @@ create table voting_ballot_tally (
   removed                   boolean,
   uuid                      varchar(40),
   status                    varchar(255),
+  number_of_winners         integer,
   ballot_voting_ballot_id   bigint,
   constraint uq_voting_ballot_tally_ballot_vo unique (ballot_voting_ballot_id),
   constraint pk_voting_ballot_tally primary key (voting_ballot_tally_id))
