@@ -27,7 +27,8 @@ public class VotingBallotTally extends AppCivistBaseModel {
 	@Index
 	private UUID uuid = UUID.randomUUID();
 	private String status = "PARTIAL"; // PARTIAL, FINISHED
-
+	private int numberOfWinners = 3;
+	
 	@OneToMany(cascade=CascadeType.ALL)
 	private Set<VotingCandidateVoteResult> talliedResults = new TreeSet<>();
 	
@@ -127,5 +128,13 @@ public class VotingBallotTally extends AppCivistBaseModel {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public int getNumberOfWinners() {
+		return numberOfWinners;
+	}
+
+	public void setNumberOfWinners(int numberOfWinners) {
+		this.numberOfWinners = numberOfWinners;
 	}
 }
