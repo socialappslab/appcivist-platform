@@ -124,6 +124,7 @@ create table component (
   removed                   boolean,
   uuid                      varchar(40),
   name                      varchar(255),
+  description               varchar(255),
   constraint pk_component primary key (component_id))
 ;
 
@@ -135,6 +136,7 @@ create table component_instance (
   removal                   timestamp,
   removed                   boolean,
   title                     varchar(255),
+  description               varchar(255),
   start_date                timestamp,
   end_date                  timestamp,
   uuid                      varchar(40),
@@ -729,15 +731,29 @@ create table working_group (
   name                      varchar(255),
   text                      varchar(255),
   listed                    boolean,
-  supported_membership      varchar(22),
-  management_type           varchar(25),
+  profile_working_group_profile_id bigint,
   resources_resource_space_id bigint,
   forum_resource_space_id   bigint,
-  constraint ck_working_group_supported_membership check (supported_membership in ('OPEN','INVITATION','REQUEST','INVITATION_AND_REQUEST')),
-  constraint ck_working_group_management_type check (management_type in ('OPEN','COORDINATED','MODERATED','COORDINATED_AND_MODERATED','DEMOCRATIC')),
+  constraint uq_working_group_profile_working unique (profile_working_group_profile_id),
   constraint uq_working_group_resources_resou unique (resources_resource_space_id),
   constraint uq_working_group_forum_resource_ unique (forum_resource_space_id),
   constraint pk_working_group primary key (group_id))
+;
+
+create table working_group_profile (
+  working_group_profile_id  bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  supported_membership      varchar(22),
+  management_type           varchar(25),
+  icon                      varchar(255),
+  cover                     varchar(255),
+  constraint ck_working_group_profile_supported_membership check (supported_membership in ('OPEN','INVITATION','REQUEST','INVITATION_AND_REQUEST')),
+  constraint ck_working_group_profile_management_type check (management_type in ('OPEN','COORDINATED','MODERATED','COORDINATED_AND_MODERATED','DEMOCRATIC')),
+  constraint pk_working_group_profile primary key (working_group_profile_id))
 ;
 
 create table voting_ballot_registration_field (
@@ -1010,12 +1026,14 @@ alter table voting_candidate_vote_result add constraint fk_voting_candidate_vote
 create index ix_voting_candidate_vote_resu_58 on voting_candidate_vote_result (voting_ballot_tally_voting_ballot_tally_id);
 alter table voting_candidate_vote_result add constraint fk_voting_candidate_vote_resu_59 foreign key (selected_candidate_voting_candidate_id) references voting_candidate (voting_candidate_id);
 create index ix_voting_candidate_vote_resu_59 on voting_candidate_vote_result (selected_candidate_voting_candidate_id);
-alter table working_group add constraint fk_working_group_resources_60 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
-create index ix_working_group_resources_60 on working_group (resources_resource_space_id);
-alter table working_group add constraint fk_working_group_forum_61 foreign key (forum_resource_space_id) references resource_space (resource_space_id);
-create index ix_working_group_forum_61 on working_group (forum_resource_space_id);
-alter table voting_ballot_registration_field add constraint fk_voting_ballot_registration_62 foreign key (voting_ballot_registration_form_voting_ballot_registration_form_id) references voting_ballot_registration_form (voting_ballot_registration_form_id);
-create index ix_voting_ballot_registration_62 on voting_ballot_registration_field (voting_ballot_registration_form_voting_ballot_registration_form_id);
+alter table working_group add constraint fk_working_group_profile_60 foreign key (profile_working_group_profile_id) references working_group_profile (working_group_profile_id);
+create index ix_working_group_profile_60 on working_group (profile_working_group_profile_id);
+alter table working_group add constraint fk_working_group_resources_61 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
+create index ix_working_group_resources_61 on working_group (resources_resource_space_id);
+alter table working_group add constraint fk_working_group_forum_62 foreign key (forum_resource_space_id) references resource_space (resource_space_id);
+create index ix_working_group_forum_62 on working_group (forum_resource_space_id);
+alter table voting_ballot_registration_field add constraint fk_voting_ballot_registration_63 foreign key (voting_ballot_registration_form_voting_ballot_registration_form_id) references voting_ballot_registration_form (voting_ballot_registration_form_id);
+create index ix_voting_ballot_registration_63 on voting_ballot_registration_field (voting_ballot_registration_form_voting_ballot_registration_form_id);
 
 
 
@@ -1102,24 +1120,24 @@ alter table User_Security_Roles add constraint fk_User_Security_Roles_securi_02 
 alter table User_User_Permission add constraint fk_User_User_Permission_appci_01 foreign key (user_id) references appcivist_user (user_id);
 
 alter table User_User_Permission add constraint fk_User_User_Permission_user__02 foreign key (permission_id) references user_permission (permission_id);
-create index ix_assembly_uuid_63 on assembly(uuid);
-create index ix_audit_contribution_contrib_64 on audit_contribution(contribution_id);
-create index ix_audit_contribution_uuid_65 on audit_contribution(uuid);
-create index ix_component_uuid_66 on component(uuid);
-create index ix_component_required_milesto_67 on component_required_milestone(target_component_uuid);
-create index ix_contribution_uuid_68 on contribution(uuid);
-create index ix_contribution_text_index_69 on contribution(text_index);
-create index ix_contribution_template_uuid_70 on contribution_template(uuid);
-create index ix_contribution_template_sect_71 on contribution_template_section(uuid);
-create index ix_location_serialized_locati_72 on location(serialized_location);
-create index ix_resource_uuid_73 on resource(uuid);
-create index ix_resource_space_uuid_74 on resource_space(uuid);
-create index ix_voting_ballot_uuid_75 on voting_ballot(uuid);
-create index ix_voting_ballot_tally_uuid_76 on voting_ballot_tally(uuid);
-create index ix_voting_ballot_vote_uuid_77 on voting_ballot_vote(uuid);
-create index ix_voting_candidate_vote_uuid_78 on voting_candidate_vote(uuid);
-create index ix_voting_candidate_vote_resu_79 on voting_candidate_vote_result(uuid);
-create index ix_voting_ballot_registration_80 on voting_ballot_registration_form(uuid);
+create index ix_assembly_uuid_64 on assembly(uuid);
+create index ix_audit_contribution_contrib_65 on audit_contribution(contribution_id);
+create index ix_audit_contribution_uuid_66 on audit_contribution(uuid);
+create index ix_component_uuid_67 on component(uuid);
+create index ix_component_required_milesto_68 on component_required_milestone(target_component_uuid);
+create index ix_contribution_uuid_69 on contribution(uuid);
+create index ix_contribution_text_index_70 on contribution(text_index);
+create index ix_contribution_template_uuid_71 on contribution_template(uuid);
+create index ix_contribution_template_sect_72 on contribution_template_section(uuid);
+create index ix_location_serialized_locati_73 on location(serialized_location);
+create index ix_resource_uuid_74 on resource(uuid);
+create index ix_resource_space_uuid_75 on resource_space(uuid);
+create index ix_voting_ballot_uuid_76 on voting_ballot(uuid);
+create index ix_voting_ballot_tally_uuid_77 on voting_ballot_tally(uuid);
+create index ix_voting_ballot_vote_uuid_78 on voting_ballot_vote(uuid);
+create index ix_voting_candidate_vote_uuid_79 on voting_candidate_vote(uuid);
+create index ix_voting_candidate_vote_resu_80 on voting_candidate_vote_result(uuid);
+create index ix_voting_ballot_registration_81 on voting_ballot_registration_form(uuid);
 
 # --- !Downs
 
@@ -1268,6 +1286,8 @@ drop table if exists voting_candidate_vote cascade;
 drop table if exists voting_candidate_vote_result cascade;
 
 drop table if exists working_group cascade;
+
+drop table if exists working_group_profile cascade;
 
 drop table if exists voting_ballot_registration_field cascade;
 

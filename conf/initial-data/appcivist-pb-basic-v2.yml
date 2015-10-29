@@ -472,6 +472,7 @@
 # Components: definition of components avaialble to use in appcivist
   - &pd1 !!models.Component
     name: "Proposal Making"
+    description: "Proposal Making includes brainstorming ideas, forming working groups, and starting proposals."
     uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig1 !!models.ComponentRequiredConfiguration
@@ -479,6 +480,7 @@
       configDefinition: *config1
   - &pd2 !!models.Component
     name: "Versioning"
+    description: "Versioning is the process by which Working Groups develop proposals to their final form."
     uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig21 !!models.ComponentRequiredConfiguration
@@ -492,6 +494,7 @@
       configDefinition: *config13
   - &pd3 !!models.Component
     name: "Deliberation"
+    description: "Deliberation is the careful consideration of proposals through comments and evidence. In this stage, proposals can only be discussed, praised or criticized, but not edited."
     uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig31 !!models.ComponentRequiredConfiguration
@@ -526,6 +529,7 @@
       configDefinition: *config23
   - &pd4 !!models.Component
     name: "Voting"
+    description: "Voting determines the winning proposal/s, based on the voting system selected and the number of winners allowed"
     uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig51 !!models.ComponentRequiredConfiguration
@@ -688,48 +692,56 @@
 # Milestones: milestones that define steps and deadlines in the process followed by each component
   - &ci1 !!models.ComponentInstanceMilestone
     title: Brainstorming
+    description: "Identify problems and make suggestions for proposals"
     position: 0
     start: "2015-09-01"
     days: 60
     mainContributionType: BRAINSTORMING
   - &ci2 !!models.ComponentInstanceMilestone
     title: Working Group Formation
+    description: "Join or create a group to develop proposals"
     position: 1
     start: "2015-11-11"
     days: 5
     mainContributionType: BRAINSTORMING
   - &ci3 !!models.ComponentInstanceMilestone
     title: Proposal Drafting
+    description: "Explore existing proposals or start one with your working group"
     position: 2
     start: "2015-11-16"
     days: 10
     mainContributionType: PROPOSAL
   - &ci5 !!models.ComponentInstanceMilestone
     title: Proposal editing
+    description: "Versioning of existing proposals"
     position: 4
     start: "2015-11-27"
     days: 15
     mainContributionType: PROPOSAL
   - &ci7 !!models.ComponentInstanceMilestone
     title: Proposal selection
+    description: "Versioning period over. Working Groups must now select the proposals they want to put forward to the Assembly for deliberation and voting. While this process is ongoing, proposals will be available in read only mode, open to comments from the Assembly."
     position: 6
     start: "2015-12-12"
     days: 5
     mainContributionType: PROPOSAL
   - &ci8 !!models.ComponentInstanceMilestone
     title: Public Deliberation
+    description: "Explore and discuss published proposals for deliberation"
     position: 7
     start: "2015-12-17"
     days: 10
     mainContributionType: PROPOSAL
   - &ci9 !!models.ComponentInstanceMilestone
     title: Technical Assessment
+    description: "Explore and discuss published proposals for deliberation"
     position: 8
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
     title: Voting period
+    description: "Explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime untill the votin period is over."
     position: 10
     start: "2016-01-17"
     days: 15
