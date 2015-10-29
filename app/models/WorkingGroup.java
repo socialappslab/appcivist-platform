@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,6 +17,7 @@ import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -37,11 +36,12 @@ public class WorkingGroup extends AppCivistBaseModel {
     private String name;
     private String text;
     private Boolean listed = true;
-    @Enumerated(EnumType.STRING)
-    private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST;
-    @Enumerated(EnumType.STRING)
-    private ManagementTypes managementType = ManagementTypes.COORDINATED_AND_MODERATED;
     private User creator;
+    
+    @OneToOne(cascade=CascadeType.ALL)
+	@JsonIgnoreProperties({ "workingGroupProfileId", "workingGroup" })
+	@JsonInclude(Include.NON_EMPTY)
+	private WorkingGroupProfile profile = new WorkingGroupProfile();
 
     /**
  	 * The group resource space contains its configurations, themes, associated campaigns
@@ -83,6 +83,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonIgnore
 	private List<Contribution> existingContributions;
  	
+	@Transient
+	private List<Long> assemblies;
+	@Transient
+	private List<Long> campaigns;
+	
+	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
 
     public WorkingGroup() {
@@ -139,6 +145,14 @@ public class WorkingGroup extends AppCivistBaseModel {
     public void setCreator(User creator) {
         this.creator = creator;
     }
+
+	public WorkingGroupProfile getProfile() {
+		return profile;
+	}
+
+	public void setProfile(WorkingGroupProfile profile) {
+		this.profile = profile;
+	}
 
 	public Long getGroupId() {
         return groupId;
@@ -209,20 +223,20 @@ public class WorkingGroup extends AppCivistBaseModel {
     }
 
     public ManagementTypes getManagementType() {
-        return managementType;
+        return this.profile.getManagementType();
     }
 
     public void setManagementType(ManagementTypes membershipRole) {
-        this.managementType = membershipRole;
+        this.profile.setManagementType(membershipRole);;
     }
 
 	public SupportedMembershipRegistration getSupportedMembership() {
-		return supportedMembership;
+		return this.profile.getSupportedMembership();
 	}
 
 	public void setSupportedMembership(
 			SupportedMembershipRegistration supportedMembership) {
-		this.supportedMembership = supportedMembership;
+		this.profile.setSupportedMembership(supportedMembership);
 	}
 
 	
@@ -288,6 +302,32 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	public void setExistingContributions(List<Contribution> existingContributions) {
 		this.existingContributions = existingContributions;
+	}
+	
+	public List<Long> getAssemblies() {
+		List <Long> assemblyIds = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY).collect(Collectors.toList());
+		
+		for (ResourceSpace resourceSpace : spaces) {
+			Assembly a = resourceSpace.getAssemblyResources();
+			if(a!=null) {
+				assemblyIds.add(a.getAssemblyId());
+			}
+		}
+		return assemblyIds;
+	}
+	
+	public List<Long> getCampaigns() {
+		List <Long> campaignIds = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.CAMPAIGN).collect(Collectors.toList());
+		
+		for (ResourceSpace resourceSpace : spaces) {
+			Campaign a = resourceSpace.getCampaign();
+			if(a!=null) {
+				campaignIds.add(a.getCampaignId());
+			}
+		}
+		return campaignIds;
 	}
 	
 	public List<ResourceSpace> getContainingSpacesFilteredByType(ResourceSpaceTypes type) {
