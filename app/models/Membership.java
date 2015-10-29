@@ -9,6 +9,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -39,6 +41,7 @@ public class Membership extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long membershipId;
 	private Long expiration;
+	@Enumerated(EnumType.STRING)
 	private MembershipStatus status;
 
 	@ManyToOne

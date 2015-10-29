@@ -297,8 +297,7 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result listMembershipsWithStatus(Long id, String status) {
-		List<Membership> m = MembershipAssembly.findByAssemblyIdAndStatus(id,
-				status);
+		List<Membership> m = MembershipAssembly.findByAssemblyIdAndStatus(id,status);
 		if (m != null && !m.isEmpty())
 			return ok(Json.toJson(m));
 		return notFound(Json.toJson(new TransferResponseStatus(
