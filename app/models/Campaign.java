@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,6 +18,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
+
+import scala.Array;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -60,7 +63,9 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Theme> themes = new ArrayList<>();
 	@Transient
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
-	
+	@Transient
+	private List<Long> assemblies = new ArrayList<>();
+
 	@Transient
 	private List<ComponentInstance> existingComponents = new ArrayList<>();
 	@Transient
@@ -274,6 +279,20 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources.addWorkingGroup(wg);
 	}
 	
+	public List<Long> getAssemblies() {
+		List <Long> assemblyIds = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
+		.collect(Collectors.toList());
+		
+		for (ResourceSpace resourceSpace : spaces) {
+			Assembly a = resourceSpace.getAssemblyResources();
+			if(a!=null) {
+				assemblyIds.add(a.getAssemblyId());
+			}
+		}
+		return assemblyIds;
+	}
+
 	public List<ComponentInstance> getExistingComponents() {
 		return existingComponents;
 	}
