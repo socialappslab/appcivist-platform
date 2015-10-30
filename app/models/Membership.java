@@ -25,6 +25,7 @@ import models.TokenAction.Type;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -45,6 +46,7 @@ public class Membership extends AppCivistBaseModel {
 	private MembershipStatus status;
 
 	@ManyToOne
+	@JsonIgnore
 	private User creator;
 
 	@ManyToOne
