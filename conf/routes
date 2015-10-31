@@ -67,6 +67,7 @@ PUT       /api/assembly/:id                                               contro
 DELETE    /api/assembly/:id                                               controllers.Assemblies.deleteAssembly(id: Long)
 POST      /api/assembly/:id/membership/:type                              controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
 GET       /api/assembly/:id/membership/:status                            controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
+GET       /api/assembly/:aid/user/:uid                                    controllers.Assemblies.isUserMemberOfAssembly(aid: Long, uid: Long)
 POST      /api/assembly/:id/invitations                                   controllers.Assemblies.inviteNewMembers(id: Long)
 
 ##################################################################################################################################################################
@@ -80,6 +81,7 @@ DELETE    /api/assembly/:aid/group/:gid                                   contro
 POST      /api/assembly/:aid/group/:id/membership/:type                   controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)  
 GET       /api/assembly/:aid/group/:id/membership                         controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
 GET       /api/assembly/:aid/group/:id/membership/:status                 controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String)
+GET       /api/assembly/:aid/group/:gid/user/:uid                         controllers.WorkingGroups.isUserMemberOfGroup(aid: Long, gid: Long, uid: Long)
 
 
 ##################################################################################################################################################################
@@ -191,7 +193,7 @@ POST      /api/file                                                       contro
 
 ### 
 # Voting Services
-GET /api/voting/:uuid     controllers.VotingServices.getVotingRegistrationForm(uuid: java.util.UUID)
+GET       /api/voting/:uuid                                               controllers.VotingServices.getVotingRegistrationForm(uuid: java.util.UUID)
 
 ##################################################################################################################################################################
 # Composition Engine endpoints 

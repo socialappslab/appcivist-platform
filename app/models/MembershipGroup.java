@@ -81,13 +81,13 @@ public class MembershipGroup extends Membership {
 	 * @return
 	 */
 	public static Membership findByUserAndGroupId(Long userId, Long groupId) {
-		return find.where().eq("user.userId", userId).eq("workingGroup.workingGroupId", groupId)
+		return find.where().eq("user.userId", userId).eq("workingGroup.groupId", groupId)
 				.findUnique();		
 	}
 
 	public static Boolean isUserMemberOfGroup(Long userId, Long groupId) {
 		Membership m = find.where().eq("user.userId", userId)
-				.eq("workingGroup.workingGroupId", groupId)
+				.eq("workingGroup.groupId", groupId)
 				.eq("status",MembershipStatus.ACCEPTED)
 				.findUnique();		
 		return m==null ? false : true;
@@ -95,7 +95,7 @@ public class MembershipGroup extends Membership {
 
 	public static List<Membership> findByAssemblyIdGroupIdAndStatus(Long aid,
 			Long gid, String status) {
-		Query<Membership> q = find.where().eq("workingGroup.workingGroupId", gid).query();
+		Query<Membership> q = find.where().eq("workingGroup.groupId", gid).query();
 		if (status != null && !status.isEmpty()
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();

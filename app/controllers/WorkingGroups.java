@@ -343,7 +343,7 @@ public class WorkingGroups extends Controller {
 		Boolean result = MembershipGroup.isUserMemberOfGroup(userId, gid);
 		if (result) return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, 
 					"User '" + userId + "' is a member of Working Group '"+ gid + "'")));
-		else return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, 
+		else return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, 
 				"User '" + userId + "' is not a member of Working Group '"+ gid + "'")));
 	}
 	
