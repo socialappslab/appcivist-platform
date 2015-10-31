@@ -48,6 +48,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies += evolutions
+libraryDependencies += filters
 
 resolvers += Resolver.url("Objectify Play Repository", url("http://schaloner.github.com/releases/"))(Resolver.ivyStylePatterns)
 

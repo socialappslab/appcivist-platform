@@ -304,7 +304,22 @@ public class Assemblies extends Controller {
 				"No memberships with status '" + status + "' in Assembly '"
 						+ id + "'")));
 	}
-
+	
+	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "uid", value = "User id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	//@SubjectPresent
+	public static Result isUserMemberOfAssembly(Long aid, Long userId) {
+		Boolean result = MembershipAssembly.isUserMemberOfAssembly(userId,aid);
+		if (result) return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, 
+					"User '" + userId + "' is a member of Assembly '"+ aid + "'")));
+		else return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, 
+				"User '" + userId + "' is not a member of Assembly '"+ aid + "'")));
+	}
+	
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Add membership to the assembly by listing AppCivist's users emails", notes = "Get the full list of assemblies. Only availabe to ADMINS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
