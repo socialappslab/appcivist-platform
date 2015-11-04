@@ -255,7 +255,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addTheme(Theme theme) {
-		this.themes.add(theme);
+		if (!this.themes.contains(theme)) 
+			this.themes.add(theme);
 	}
 
 	public void removeTheme(Theme category) {
@@ -280,7 +281,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addCampaign(Campaign c) {
-		this.campaigns.add(c);
+		if(!this.campaigns.contains(c))
+			this.campaigns.add(c);
 	}
 
 	public List<Config> getConfigs() {
@@ -292,7 +294,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addConfig(Config c) {
-		this.configs.add(c);
+		if(!this.configs.contains(c))
+			this.configs.add(c);
 	}
 
 	public List<ComponentInstance> getComponents() {
@@ -304,7 +307,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addComponent(ComponentInstance c) {
-		this.components.add(c);
+		if(!this.components.contains(c))
+			this.components.add(c);
 	}
 
 	public List<ComponentInstanceMilestone> getMilestones() {
@@ -324,7 +328,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addWorkingGroup(WorkingGroup wg) {
-		this.workingGroups.add(wg);
+		if(!this.workingGroups.contains(wg))
+			this.workingGroups.add(wg);
 	}
 
 	public List<Contribution> getContributions() {
@@ -348,7 +353,9 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addAssembly(Assembly a) {
-		this.assemblies.add(a);
+		if (!this.assemblies.contains(a)) {
+			this.assemblies.add(a);
+		}
 	}
 
 	public Long getResourceSpaceId() {
