@@ -61,19 +61,16 @@ public class AssembliesDelegate {
 		return result;
 	}
 
-	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
-			User creator) {
+	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer, User creator) {
 		
 		Assembly newAssembly =  mapper.map(newAssemblyTransfer, Assembly.class);
-
+		
 		newAssembly.setCreator(creator);
 		if (newAssembly.getLang() == null)
 			newAssembly.setLang(creator.getLanguage());
+		
 		newAssembly.setDefaultValues();
 
-		// TODO: find a way to do this with @PrePersist and @PostPersist JPA
-		// operations
-		// List<Theme> existingThemes = newAssembly.extractExistingThemes();
 		Logger.info("Creating assembly");
 		Logger.debug("=> " + newAssembly.toString());
 		Assembly.create(newAssembly);

@@ -47,13 +47,14 @@ public class Assembly extends AppCivistBaseModel {
 	@Transient
 	private String uuidAsString;
 	@MaxLength(value = 200) @Required
-	private String name; // name of the assembly
+	private String name; 
+	// Short, url friendly, version of the Name
 	@MaxLength(value = 120)
-	private String shortname; // Shortname to access the assembly by name (automatically generated from the name)
+	private String shortname; 
 	@Required
-	private String description; // what's the assembly about
-	private String url; // URL to the assembly, using its shortname
-	// If the assembly is listed, is basic profile is reading accessible by all 
+	private String description; 
+	private String url; 
+	// If true, the 'profile' is public
 	private Boolean listed = true;
 
 	@OneToOne(cascade=CascadeType.ALL)
@@ -63,7 +64,32 @@ public class Assembly extends AppCivistBaseModel {
 	
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Location location = new Location();
+
+	/**
+	 * The assembly resource set is where all the campaign, configurations,
+	 * themes and general contributions are stored. Other resource spaces will
+	 * be added if needed under proper names
+	 */
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	@Where(clause="${ta}.removed=false")
+	@JsonIgnore
+	private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
+
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	@Where(clause="${ta}.removed=false")
+	@JsonIgnore
+	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
+
+	/**
+	 * The User who created the Assembly
+	 */
+	private User creator; // user who has created the assembly?
 	
+	
+	
+	// Shortcuts to resources in the Assembly Resource Space ('resources')
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<ComponentInstance> components = new ArrayList<>();
@@ -108,28 +134,6 @@ public class Assembly extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Campaign> existingCampaigns = new ArrayList<>();
-	
-	/**
-	 * The assembly resource set is where all the campaign, configurations,
-	 * themes and general contributions are stored. Other resource spaces will
-	 * be added if needed under proper names
-	 */
-	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonInclude(Include.NON_EMPTY)
-	@Where(clause="${ta}.removed=false")
-	@JsonIgnore
-	private ResourceSpace resources = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
-
-	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonInclude(Include.NON_EMPTY)
-	@Where(clause="${ta}.removed=false")
-	@JsonIgnore
-	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.ASSEMBLY);
-
-	/**
-	 * The User who created the Assembly
-	 */
-	private User creator; // user who has created the assembly?
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -613,5 +617,10 @@ public class Assembly extends AppCivistBaseModel {
 
 	public static List<Campaign> findCampaigns(Long aid) {
 		return find.where().eq("assemblyId",aid).findUnique().getResources().getCampaigns();
+	}
+
+	public static Assembly findByName(String n) {
+		List<Assembly> as = find.where().eq("name", n).findList();
+		return as!=null && as.size()>0 ? as.get(0) : null;	
 	}
 }
