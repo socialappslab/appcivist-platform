@@ -14,6 +14,7 @@ import models.MembershipAssembly;
 import models.Theme;
 import models.User;
 import models.transfer.AssemblySummaryTransfer;
+import models.transfer.AssemblyTransfer;
 import models.transfer.MembershipCollectionTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
@@ -49,6 +50,7 @@ import enums.ResponseStatus;
 public class Assemblies extends Controller {
 
 	public static final Form<Assembly> ASSEMBLY_FORM = form(Assembly.class);
+	public static final Form<AssemblyTransfer> ASSEMBLY_TRANSFER_FORM = form(AssemblyTransfer.class);
 	public static final Form<MembershipTransfer> MEMBERSHIP_FORM = form(MembershipTransfer.class);
 	public static final Form<MembershipCollectionTransfer> INVITEES_FORM = form(MembershipCollectionTransfer.class);
 	public static final Form<AssemblyProfile> PROFILE_FORM = form(AssemblyProfile.class);
@@ -128,7 +130,7 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = Assembly.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
+	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "assembly_form", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
@@ -136,12 +138,9 @@ public class Assemblies extends Controller {
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result createAssembly() {
 		// 1. obtaining the user of the requestor
-		User creator = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
-
-		// 2. read the new group data from the body
-		// another way of getting the body content => request().body().asJson()
-		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
+		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+//		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
+		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
 
 		if (newAssemblyForm.hasErrors()) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
@@ -149,39 +148,9 @@ public class Assemblies extends Controller {
 							newAssemblyForm.errorsAsJson()), newAssemblyForm
 							.errorsAsJson().toString())));
 		} else {
-			Assembly newAssembly = newAssemblyForm.get();
-			// setting default values (TODO: maybe we should create a dedicated
-			// method for this in each model)
-			newAssembly.setCreator(creator);
-			if (newAssembly.getLang() == null)
-				newAssembly.setLang(creator.getLanguage());
-			// TODO: check if assembly with same title exists
-			// if not add it
-
-			newAssembly.setDefaultValues();
-			// Since JPA does not support saving ManyToMany associations with
-			// elements that already exist, we remove those from the resources
-			// space and then add them again through an update, once the
-			// resource
-			// space already exist
-			// TODO: find a way to do this with @PrePersist and @PostPersist JPA
-			// operations
-			//List<Theme> existingThemes = newAssembly.extractExistingThemes();
-			Logger.info("Creating assembly");
-			Logger.debug("=> " + newAssemblyForm.toString());
-			Assembly.create(newAssembly);
-			
-			//newAssembly.save();
-//			if (!existingThemes.isEmpty()) {
-//				Logger.info("=> Adding Existing Themes");
-//				Logger.debug("=> " + existingThemes.toString());
-//				newAssembly.addThemes(existingThemes);
-//				newAssembly.updateResources();
-//			}
-
-			// TODO: return URL of the new group
-			Logger.info("Assembly created!");
-			return ok(Json.toJson(newAssembly));
+			AssemblyTransfer newAssembly = newAssemblyForm.get();
+			AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
+			return ok(Json.toJson(created));
 		}
 	}
 

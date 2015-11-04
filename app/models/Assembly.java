@@ -109,7 +109,6 @@ public class Assembly extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Campaign> existingCampaigns = new ArrayList<>();
 	
-
 	/**
 	 * The assembly resource set is where all the campaign, configurations,
 	 * themes and general contributions are stored. Other resource spaces will

@@ -14,4 +14,8 @@
         <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.AssemblySummaryTransfer</class-b>
     </mapping>
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.AssemblyTransfer</class-b>
+    </mapping>
 </mappings>

@@ -17,6 +17,7 @@ import models.Membership;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
+import models.transfer.InvitationTransfer;
 import play.Application;
 import play.Logger;
 import play.Play;
@@ -332,7 +333,14 @@ public class MyUsernamePasswordAuthProvider
 		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, u);
 		return token;
 	}
-	
+
+	protected String generateNewInvitation(final String email) {
+		final String token = generateToken();
+		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, null);
+		return token;
+	}
+
+
 	protected String generateNewMembershipRequest(final User u) {
 		final String token = generateToken();
 		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, u);
@@ -531,11 +539,51 @@ public class MyUsernamePasswordAuthProvider
 		return new Body(text, html);
 	}	
 	
+	protected Body getInvitationEmailBody(final String token, final Long id, final InvitationTransfer invitation, final String targetCollection) {
+		String baseURL = Play.application().configuration().getString("application.uiUrl");
+		//final String url = baseURL + routes.Memberships.verifyMembership(m.getMembershipId(),token).url();
+		final String url = baseURL + "/invitation/"+token+"/"
+				+targetCollection.toLowerCase()
+				+"/"+id+"?moderator="+invitation.getModerator()
+				+"&coordinator="+invitation.getCoordinator();
+
+		String locale = "en";
+
+		// Checking if the language is in ISO format e.g., it-IT, it_IT
+		String[] isoLocale = locale.split("-");
+		if(isoLocale!=null && isoLocale.length>0)
+			locale = isoLocale[0]; // we will use only the short code for lang = "it", "es", "en" 
+		else {
+			isoLocale = locale.split("_");
+			if(isoLocale != null && isoLocale.length>0)
+				locale = isoLocale[0];
+		}
+		
+		// TODO: what we do with Users that don't have emails? 
+		String name = invitation.getEmail();
+		String email = invitation.getEmail();
+		final String html = getEmailTemplate(
+				"views.html.account.membership.invitation_email", locale, url, token,
+				name, email);
+		final String text = getEmailTemplate(
+				"views.html.account.membership.invitation_email", locale, url, token,
+				name, email);
+
+		return new Body(text, html);
+	}	
+	
 	public void sendMembershipInvitationEmail(final Membership m, String targetCollection) {
 		final String subject = getMembershipInvitationEmail(targetCollection);
 		final String token = generateNewMembershipInvitation(m.getUser());
 		final Body body = getMembershipInvitationEmailBody(token, m);
 		mailer.sendMail(subject, body, getEmailName(m.getUser()));
+	}
+	
+	public void sendInvitationByEmail(final InvitationTransfer invitation, String targetCollection, Long id) {
+		final String subject = getMembershipInvitationEmail(targetCollection);
+		final String token = generateNewInvitation(invitation.getEmail());
+		final Body body = getInvitationEmailBody(token, id, invitation, targetCollection);
+		mailer.sendMail(subject, body, invitation.getEmail());
 	}
 
 	private String getEmailName(final User user) {
