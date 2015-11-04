@@ -24,8 +24,8 @@ libraryDependencies ++= Seq(
   "org.webjars" % "angularjs" % "1.3.14",			        // jar-packaged version of twitter angularjs
   "org.webjars" % "angular-ui-bootstrap" % "0.12.0",  // jar-packaged version of twitter angularjs-ui-bootstrap
   "org.webjars" % "jquery" % "2.1.3",
-  "com.feth" %% "play-authenticate" % "0.7.0-SNAPSHOT" withSources() withJavadoc(),        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
-  "com.feth" %% "play-easymail" % "0.7.0-SNAPSHOT" withSources() withJavadoc(),        
+  "com.feth" %% "play-authenticate" % "0.7.0" withSources() withJavadoc(),        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
+  "com.feth" %% "play-easymail" % "0.7.0" withSources() withJavadoc(),        
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41", 
   "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0",
   "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
@@ -52,13 +52,13 @@ libraryDependencies += filters
 
 resolvers += Resolver.url("Objectify Play Repository", url("http://schaloner.github.com/releases/"))(Resolver.ivyStylePatterns)
 
-resolvers += Resolver.url("play-easymail (release)", url("http://joscha.github.io/play-easymail/repo/releases/"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("play-easymail (release)", url("http://joscha.github.io/play-easymail/repo/releases/"))
 
-resolvers += Resolver.url("play-easymail (snapshot)", url("http://joscha.github.io/play-easymail/repo/snapshots/"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("play-easymail (snapshot)", url("http://joscha.github.io/play-easymail/repo/snapshots/"))
 
-resolvers += Resolver.url("play-authenticate (release)", url("http://joscha.github.io/play-authenticate/repo/releases/"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("play-authenticate (release)", url("http://joscha.github.io/play-authenticate/repo/releases/"))
 
-resolvers += Resolver.url("play-authenticate (snapshot)", url("http://joscha.github.io/play-authenticate/repo/snapshots/"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("play-authenticate (snapshot)", url("http://joscha.github.io/play-authenticate/repo/snapshots/"))
 
 resolvers += Resolver.bintrayRepo("markusjura", "maven")
 
