@@ -149,8 +149,23 @@ public class Assemblies extends Controller {
 							.errorsAsJson().toString())));
 		} else {
 			AssemblyTransfer newAssembly = newAssemblyForm.get();
-			AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
-			return ok(Json.toJson(created));
+			// Check if assembly with a similar title already exists
+			Assembly a = Assembly.findByName(newAssembly.getName());
+			if (a==null) {
+				try {
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
+					return ok(Json.toJson(created));
+				} catch (Exception e) {
+					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
+							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+									e.getMessage()), "")));
+				}
+			} else {
+				return internalServerError(Json
+						.toJson(TransferResponseStatus.errorMessage(
+								"An assembly with the same title already exists: "
+										+ "'" + newAssembly.getName() + "'", "")));
+			}
 		}
 	}
 
