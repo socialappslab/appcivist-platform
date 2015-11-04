@@ -32,6 +32,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.ContributionsDelegate;
+import delegates.RedundanciesDelegate;
 import enums.ContributionTypes;
 
 //@Api(value = "/redundancy", description = "find similar contributions to encourage collaboration between activists with similar ideas")
@@ -61,11 +62,13 @@ public class Redundancies extends Controller {
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	//@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.REDUNDANCY_RESOURCE_PATH)
 	public static Result find_keywords(Long id) {
-		RedundanciesDelegate a = RedundanciesDelegate.find_keywords(id);
-		return a != null ? ok(Json.toJson(a)) : notFound(Json
+		ArrayList<String> list = RedundanciesDelegate.find_keywords(id);
+		return list != null ? ok(Json.toJson(list)) : notFound(Json
 				.toJson(new TransferResponseStatus(ResponseStatus.NODATA,
 						"No keywords found")));
 	}
+
+
 
 	// 1. Redundancy class is a Delegate (put it in delegates package)
 	// 2. Existing contributions in the database can be Retrieved using the Contribution model 

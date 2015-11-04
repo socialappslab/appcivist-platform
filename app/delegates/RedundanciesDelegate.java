@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.io.IOException;
 
+import delegates.ContributionsDelegate;
+import models.Contribution;
 import models.Assembly;
 import models.transfer.AssemblySummaryTransfer;
 
@@ -202,6 +204,7 @@ public class RedundanciesDelegate {
 		getKeywordsTable.put(contriID, all_keywords); /// this is newly added! <<<may contain errors
 		return all_keywords;
 	}
+
 
 
 		/* Given a list of keywords from this.contribution, 
