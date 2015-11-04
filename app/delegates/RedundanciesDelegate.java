@@ -42,68 +42,67 @@ public class RedundanciesDelegate {
 		mapper = new DozerBeanMapper(mappingFiles);
 	}
 
-	private Hashtable<String, ArrayList<Long>> contributionsTable = new Hashtable<String, ArrayList<Long>>();
+	private static Hashtable<String, ArrayList<Long>> contributionsTable = new Hashtable<String, ArrayList<Long>>();
 
-	private Hashtable<String, ArrayList<Long>> similiarContriTable = new Hashtable<Long, ArrayList<Long>>();
+	private static Hashtable<Long, ArrayList<Long>> similarContriTable = new Hashtable<Long, ArrayList<Long>>();
 
-	private Hashtable<Long, ArrayList<String>> keywordsTable = new Hashtable<Long, ArrayList<String>>();
+	private static Hashtable<Long, ArrayList<String>> keywordsTable = new Hashtable<Long, ArrayList<String>>();
 
 
-	public ArrayList<String> get_keywordsList_byID(Long id) {
+	public static ArrayList<String> get_keywordsList_byID(Long id) {
 		return keywordsTable.get(id);
 	}
 
-	public Hashtable<Long, ArrayList<String>> getKeywordsTable() {
+	public static Hashtable<Long, ArrayList<String>> getKeywordsTable() {
 		return keywordsTable;
 	}
 
-	public Hashtable<Long, ArrayList<Long>> getSimiliarContriTable() {
-		return similiarContriTable;
+	public static Hashtable<Long, ArrayList<Long>> getSimilarContriTable() {
+		return similarContriTable;
 	}
 
-	public Hashtable<String, ArrayList<Long>> getContributionsTable() {
+	public static Hashtable<String, ArrayList<Long>> getContributionsTable() {
 		return contributionsTable;
 	}
 
 
-		/* returns a list of contributions by its contribution ID for an inputed keyword*/
-	public ArrayList<Long> get(String keyword, Hashtable table) {
-		return table.get(keyword);
-	}
-
-	/* adds a contribution by its ID to the hashtable based on the keyword */
-	public void put(String keyword, Long contributionID, Hashtable table) {
-		if (keyword == null || contributionID == null) {
-            throw new IllegalArgumentException("null argument");
-        }
-        if (table.containsKey(keyword)) {
-        	table.get(keyword).add(contributionID);
-        } else {
-        	ArrayList<Long> new_list = new ArrayList<Long>();
-        	new_list.add(contributionID);
-        	table.put(keyword, new_list);
-        }
-	}
-
-	public void put_list (ArrayList<String> keywords, Long contributionID, Hashtable table) {
-		for (int i =0; i < keywords.size(); i++) {
-			table.put(keywords.get(i), contributionID);
-	    }
-	}
+//		/* returns a list of contributions by its contribution ID for an inputed keyword*/
+//	public static ArrayList<> get(String keyword, Hashtable table) {
+//		return table.get(keyword);
+//	}
+//
+//	/* adds a contribution by its ID to the hashtable based on the keyword */
+//	public void put(String keyword, Long contributionID, Hashtable table) {
+//		if (keyword == null || contributionID == null) {
+//            throw new IllegalArgumentException("null argument");
+//        }
+//        if (table.containsKey(keyword)) {
+//        	table.get(keyword).add(contributionID);
+//        } else {
+//        	ArrayList<Long> new_list = new ArrayList<Long>();
+//        	new_list.add(contributionID);
+//        	table.put(keyword, new_list);
+//        }
+//	}
+//
+//	public void put_list (ArrayList<String> keywords, Long contributionID, Hashtable table) {
+//		for (int i =0; i < keywords.size(); i++) {
+//			table.put(keywords.get(i), contributionID);
+//	    }
+//	}
 
 
 
 
 		/* reads the stopwords file and turn the file into an array of stopwords*/
-	public static void get_stops(String filename) {
+	public static ArrayList<String> get_stops(String filename) {
 
-		ArrayList<String> stop_words = new ArrayList<String>(); 
+		ArrayList<String> stop_words = new ArrayList<>();
 		BufferedReader input;
 		input = null;
 		try {
 			input = new BufferedReader (new FileReader(filename + ".txt"));
 			String line;
-			stop_words = new ArrayList<String>();
 			while ((line = input.readLine()) != null) {
 				line.replaceAll("\\s+","");
 				stop_words.add(line);
@@ -125,7 +124,7 @@ public class RedundanciesDelegate {
 		ArrayList<String> stop_words = get_stops("stop-words-english1");
 		String removed_symbols = contributionBody.replaceAll("[;/$*,.!?&]", "");
 		String[] text = removed_symbols.split(" ");
-		cleared_words = new ArrayList<String>();
+		ArrayList<String> cleared_words = new ArrayList<>();
 		for (int i = 0; i < text.length; i++) {
 			if (!stop_words.contains(text[i])) {
 				cleared_words.add(text[i]);
@@ -135,7 +134,7 @@ public class RedundanciesDelegate {
 	}
 
 		public static ArrayList<String> get_important_keywords(ArrayList<String> cleared_text) {
-		ArrayList<String> important_words = new ArrayList<String>();
+		ArrayList<String> important_words = new ArrayList<>();
 		Boolean previous = false; 
 		String previous_word;
 		for (int i = 0; i < cleared_text.size(); i++) {
@@ -181,7 +180,7 @@ public class RedundanciesDelegate {
 
 		// convert text string into an array of words
 
-		Map<String, Integer> times_occurred = new HashMap<String, Integer>();
+		Map<String, Integer> times_occurred = new HashMap<>();
 		for (int i = 0; i < cleared_text.size(); i++) {
 			String word = cleared_text.get(i);
 		   Integer oldCount = times_occurred.get(word);
@@ -193,7 +192,7 @@ public class RedundanciesDelegate {
 		/* Sorts the keywords by te number of repetitions, 
 			then return a list of keywords with atleast 2 repetition) */
 		Map<String, Integer> sortedMap = sortByComparator(times_occurred, false);
-		ArrayList<String> keywords = new ArrayList<String>();
+		ArrayList<String> keywords = new ArrayList<>();
 		for (Entry<String, Integer> entry : sortedMap.entrySet()) {
 			if (entry.getValue() >= 2) {
 				keywords.add(entry.getKey());
@@ -201,7 +200,7 @@ public class RedundanciesDelegate {
 			}
 		}
 		ArrayList<String> all_keywords = merge_lists(keywords, get_important_keywords(text_string));
-		getKeywordsTable.put(contriID, all_keywords); /// this is newly added! <<<may contain errors
+		getKeywordsTable().put(contriID, all_keywords); /// this is newly added! <<<may contain errors
 		return all_keywords;
 	}
 
@@ -210,20 +209,20 @@ public class RedundanciesDelegate {
 		/* Given a list of keywords from this.contribution, 
 		search through the hashtable and find contributions that match most with this.contribution
 		this is based on some type of heuristic/standard */
-	public static ArrayList<Long> match_keywords(ArrayList<String> keywordsList, Long id) {
+	public static ArrayList<Long> match_keywords(ArrayList<String> keywordsList, Long ID) {
 		Map<Long, Integer> matched_contributions = new HashMap<Long, Integer>();
-		ArrayList<String> a = get_keywordsList_byID(id); // dont think i used this anywhere
+		ArrayList<String> a = get_keywordsList_byID(ID); // dont think i used this anywhere
 
 		for (int i = 0; i < keywordsList.size(); i++) {
 			int matched_counts = 0;
 			String word = keywordsList.get(i);
-			ArrayList<Long> id_List = _table.get(word);
+			ArrayList<Long> id_List = getContributionsTable().get(word);
 			if (id_List != null) {
 				for (int j = 0; j < id_List.size(); j++) {
 					Long id = id_List.get(j);
 					if (get_keywordsList_byID(id).contains(word)) {
 			   			matched_counts += 1;
-			   		} if (get_tags(id).contains(word)) {
+			   		} if (Contribution.read(id).getHashtags().contains(word)) {
 			   			matched_counts += 1;
 			   		} if (matched_counts >= 1) {
 			   			if (matched_contributions.containsKey(id)) {
@@ -235,13 +234,13 @@ public class RedundanciesDelegate {
 				}
 			}
 		}
-		ArrayList<Long> similiarContri = new ArrayList<Long>();
+		ArrayList<Long> similiarContri = new ArrayList<>();
 		Map<Long, Integer> sortedMap = longSortByComparator(matched_contributions, false);
 		for (Entry<Long, Integer> entry : sortedMap.entrySet()) {
 			similiarContri.add(entry.getKey());
 		}
 
-		similiarContriTable.put(id, similiarContri);  // this is also new! may contain errors
+		getSimilarContriTable().put(ID, similiarContri);  // this is also new! may contain errors
 		return similiarContri;
 	}
 
