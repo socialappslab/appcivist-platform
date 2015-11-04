@@ -193,7 +193,7 @@ POST      /api/file                                                       contro
 
 ### 
 # Voting Services
-GET       /api/voting/:uuid                                               controllers.VotingServices.getVotingRegistrationForm(uuid: java.util.UUID)
+GET       /api/ballot/:uuid/registration                                  controllers.VotingServices.getVotingRegistrationForm(uuid: java.util.UUID)
 
 ##################################################################################################################################################################
 # Composition Engine endpoints 
