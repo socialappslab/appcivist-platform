@@ -69,6 +69,7 @@ POST      /api/assembly/:id/membership/:type                              contro
 GET       /api/assembly/:id/membership/:status                            controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
 GET       /api/assembly/:aid/user/:uid                                    controllers.Assemblies.isUserMemberOfAssembly(aid: Long, uid: Long)
 POST      /api/assembly/:id/invitations                                   controllers.Assemblies.inviteNewMembers(id: Long)
+GET       /api/assembly/:aid/linked                                       controllers.Assemblies.findAssembliesLinked(aid: Long)
 
 ##################################################################################################################################################################
 # WorkingGroup API

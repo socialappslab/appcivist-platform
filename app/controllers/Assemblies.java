@@ -130,6 +130,31 @@ public class Assemblies extends Controller {
 		}
 	}
 
+
+	/**
+	 * Return the full list of assemblies
+	 * 
+	 * @return models.AssemblyCollection
+	 */
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of linked assemblies to a single assembly", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result findAssembliesLinked(Long aid) {
+		Assembly a = Assembly.read(aid);
+		if (a != null) {
+			List<Assembly> linked = a.getFollowedAssemblies();
+			if (linked!=null && !linked.isEmpty())
+				return ok(Json.toJson(linked));
+			else 
+				return notFound(Json.toJson(TransferResponseStatus.noDataMessage("This assembly is not following any other assembly", "")));
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' does not exists", "")));
+		}
+	}
+	
+	
 	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({

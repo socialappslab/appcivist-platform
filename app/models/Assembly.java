@@ -115,6 +115,7 @@ public class Assembly extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
 	private List<Assembly> followedAssemblies = new ArrayList<>();
+	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})

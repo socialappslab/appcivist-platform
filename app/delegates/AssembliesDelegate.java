@@ -15,7 +15,6 @@ import org.dozer.DozerBeanMapper;
 
 import play.Logger;
 import play.Play;
-import play.libs.Json;
 import providers.MyUsernamePasswordAuthProvider;
 
 public class AssembliesDelegate {
