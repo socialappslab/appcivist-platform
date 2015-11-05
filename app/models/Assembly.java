@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ConfigTargets;
+import enums.MembershipStatus;
 import enums.ResourceSpaceTypes;
 
 /**
@@ -495,10 +496,26 @@ public class Assembly extends AppCivistBaseModel {
 			assemblyResources.getAssemblies().addAll(followedAssemblies);
 		
 		assemblyResources.update();
-
+		
 		// 4. Refresh the new campaign to get the newest version
 		a.refresh();
 
+		// 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
+		MembershipAssembly ma = new MembershipAssembly();
+		ma.setAssembly(a);
+		ma.setCreator(a.getCreator());
+		ma.setUser(a.getCreator());
+		ma.setStatus(MembershipStatus.ACCEPTED);
+		ma.setLang(a.getLang());
+	
+		List<SecurityRole> roles = new ArrayList<SecurityRole>();
+		roles.add(SecurityRole.findByName("MEMBER"));
+		roles.add(SecurityRole.findByName("COORDINATOR"));
+		roles.add(SecurityRole.findByName("MODERATOR"));
+		ma.setRoles(roles);
+		
+		MembershipAssembly.create(ma);
+		
 		if (a.getUrl() == null || a.getUrl() == "") {
 			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
 					+ a.getAssemblyId());

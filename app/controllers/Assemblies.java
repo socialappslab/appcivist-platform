@@ -137,11 +137,11 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result createAssembly() {
-		// 1. obtaining the user of the requestor
+		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-//		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
 
+		// Check for errors in received data
 		if (newAssemblyForm.hasErrors()) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
 					Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
@@ -149,7 +149,7 @@ public class Assemblies extends Controller {
 							.errorsAsJson().toString())));
 		} else {
 			AssemblyTransfer newAssembly = newAssemblyForm.get();
-			// Check if assembly with a similar title already exists
+			// Do not create assemblies with names that already exist
 			Assembly a = Assembly.findByName(newAssembly.getName());
 			if (a==null) {
 				try {

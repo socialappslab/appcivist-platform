@@ -17,6 +17,7 @@ public class AssemblyTransfer {
 	private List<ConfigTransfer> configs;
 	private List<InvitationTransfer> invitations;
 	private List<LinkedAssemblyTransfer> linkedAssemblies;
+	private List<Long> linkedAssembliesIds;
 	public AssemblyTransfer() {
 		super();
 	}
@@ -97,5 +98,11 @@ public class AssemblyTransfer {
 	}
 	public void setLinkedAssemblies(List<LinkedAssemblyTransfer> linkedAssemblies) {
 		this.linkedAssemblies = linkedAssemblies;
+	}
+	public List<Long> getLinkedAssembliesIds() {
+		return linkedAssembliesIds;
+	}
+	public void setLinkedAssembliesIds(List<Long> linkedAssembliesIds) {
+		this.linkedAssembliesIds = linkedAssembliesIds;
 	}
 }
