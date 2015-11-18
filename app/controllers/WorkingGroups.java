@@ -8,7 +8,6 @@ import java.util.List;
 import models.Assembly;
 import models.Campaign;
 import models.Membership;
-import models.MembershipAssembly;
 import models.MembershipGroup;
 import models.ResourceSpace;
 import models.User;

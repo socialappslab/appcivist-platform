@@ -124,19 +124,27 @@ public class Notifications extends Controller {
 			Contribution latestForumPost = null;
 			if (aForum !=null) posts = aForum.getContributions();
 			if (posts != null && !posts.isEmpty()) latestForumPost = posts.get(posts.size()-1);
-			if (latestForumPost != null)
-				updates.add(UpdateTransfer.getInstance(
+			if (latestForumPost != null) {
+				UpdateTransfer up = UpdateTransfer.getInstance(
 						AppcivistNotificationTypes.ASSEMBLY_UPDATE,
 						AppcivistResourceTypes.CONTRIBUTION_COMMENT,
 						AppcivistResourceTypes.ASSEMBLY,
 						NOTIFICATION_TITLE_ASSEMBLY_UPDATE,
-						NOTIFICATION_DESCRIPTION_ASSEMBLY_FORUM_CONTRIBUTION, u
-								.getName(), u.getLanguage(), a.getAssemblyId(),
-						a.getUuid(), a.getName(), latestForumPost
-								.getContributionId(),
-						latestForumPost.getUuid(), latestForumPost.getTitle(),
-						latestForumPost.getText(), latestForumPost.getAuthors().get(0)
-								.getName(), latestForumPost.getCreation()));
+						NOTIFICATION_DESCRIPTION_ASSEMBLY_FORUM_CONTRIBUTION, 
+						u.getName(), 
+						u.getLanguage(), 
+						a.getAssemblyId(),
+						a.getUuid(), 
+						a.getName(), 
+						latestForumPost.getContributionId(),
+						latestForumPost.getUuid(), 
+						latestForumPost.getTitle(),
+						latestForumPost.getText(), 
+						latestForumPost.getAuthors().get(0).getName(), 
+						latestForumPost.getCreation());
+				up.setRelativeUrl("/assembly/"+a.getAssemblyId()+"/forum");
+				updates.add(up);
+			}
 			
 			
 			// 4.2. Current Ongoing Campaigns Upcoming Milestones
@@ -159,8 +167,8 @@ public class Notifications extends Controller {
 										cal.setTime(mStart); // Now use today date.
 										cal.add(Calendar.DATE, m.getDays());
 										SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-										if(cal.getTime().after(today.getTime())) 
-											updates.add(UpdateTransfer.getInstance(
+										if(cal.getTime().after(today.getTime())) {
+											UpdateTransfer up = UpdateTransfer.getInstance(
 													AppcivistNotificationTypes.UPCOMING_MILESTONE,
 													AppcivistResourceTypes.CAMPAIGN_COMPONENT,
 													AppcivistResourceTypes.CAMPAIGN,
@@ -174,8 +182,15 @@ public class Notifications extends Controller {
 													m.getComponentInstanceMilestoneId(),
 													m.getUuid(), m.getTitle(),
 													sdf.format(cal.getTime()),
-													a.getName(), m
-															.getCreation()));
+													a.getName(), 
+													m.getCreation());
+											up.setRelativeUrl(
+													"/assembly/"+a.getAssemblyId()
+													+"/campaign/"+c.getCampaignId()
+													+"/"+p.getComponentInstanceId()
+													+"/"+m.getComponentInstanceMilestoneId());
+											updates.add(up);
+										}
 									}
 								}
 							}

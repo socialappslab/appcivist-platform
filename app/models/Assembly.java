@@ -106,7 +106,7 @@ public class Assembly extends AppCivistBaseModel {
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)	
-	@JsonIgnoreProperties({ "configs", "components", "workingGroups"})
+	@JsonIgnoreProperties({ "configs", "workingGroups"})
 	private List<Campaign> campaigns = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)

@@ -24,6 +24,7 @@ public class UpdateTransfer {
 	private UUID containerUUID;
 	private Date date;
 	private String lang;
+	private String relativeUrl;
 	
 	public UpdateTransfer() {
 		super();
@@ -32,7 +33,7 @@ public class UpdateTransfer {
 	public UpdateTransfer(AppcivistNotificationTypes type,
 			AppcivistResourceTypes resourceType, AppcivistResourceTypes containerType, String title, String text,
 			String resourceSummary, Long resourceId, UUID resourceUUID, Long containerId, UUID containerUUID,  
-			Date date, String lang) {
+			Date date, String lang, String rel) {
 		super();
 		this.type = type;
 		this.resourceType = resourceType;
@@ -46,6 +47,7 @@ public class UpdateTransfer {
 		this.setContainerUUID(containerUUID); 
 		this.date = date;
 		this.lang = lang;
+		this.relativeUrl = rel;
 	}
 
 	public AppcivistNotificationTypes getType() {
@@ -130,6 +132,14 @@ public class UpdateTransfer {
 		this.lang = lang;
 	}
 
+	public String getRelativeUrl() {
+		return relativeUrl;
+	}
+
+	public void setRelativeUrl(String relativeUrli) {
+		this.relativeUrl = relativeUrli;
+	}
+
 	public static UpdateTransfer getInstance(
 			final AppcivistNotificationTypes updateType, 
 			final AppcivistResourceTypes resourceType, 
@@ -167,7 +177,7 @@ public class UpdateTransfer {
 				(resourceTitle+". "+resourceText).substring(0, length-1),
 				resourceId, resourceUUID, 
 				containerId, containerUUID,
-				resourceCreationDate, userLang);
+				resourceCreationDate, userLang, "");
 				
 	}
 }

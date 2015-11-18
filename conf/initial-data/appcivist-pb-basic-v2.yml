@@ -376,9 +376,9 @@
     defaultValue: "false" 
     configTarget: COMPONENT
   - &config18 !!models.ConfigDefinition
-    key: "component.deliberation.enable.additional.versioning-deliberation"
+    key: "component.deliberation.disable.additional.versioning-deliberation"
     valueType: Boolean
-    description: "Enable additional rounds of versioning and deliberation" 
+    description: "Disable additional rounds of versioning and deliberation" 
     defaultValue: "false" 
     configTarget: COMPONENT
   - &config19 !!models.ConfigDefinition
@@ -410,8 +410,8 @@
   - &config23 !!models.ConfigDefinition
     key: "component.deliberation.who-deliberates.jury.percentage"
     valueType: Double
-    description: "What percentage of the Assembly 25% should be in the Jury?" 
-    defaultValue: "0.25" 
+    description: "How many people should be on the Jury?" 
+    defaultValue: "20" 
     #defaultValue: "From campaign WG members"
     configTarget: COMPONENT
   - &config24 !!models.ConfigDefinition
@@ -463,10 +463,13 @@
     defaultValue: "0.1" 
     configTarget: COMPONENT
   - &config31 !!models.ConfigDefinition
-    key: "component.voting.system.winners.fixed"
-    valueType: Boolean
-    description: "Fixed regardless of budget" 
-    defaultValue: "true" 
+    key: "component.voting.system.winners"
+    valueType: String
+    description: "Configure number of winners"
+    #description: "Fixed regardless of budget" 
+    defaultValue: "FIXED" 
+    #defaultValue: "DYNAMIC1"
+    #defaultValue: "DYNAMIC2"
     configTarget: COMPONENT
   - &config32 !!models.ConfigDefinition
     key: "component.voting.system.winners.fixed.number"
@@ -1309,6 +1312,10 @@
       - *wg1
       - *wg2
       - *wg3
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
   - &rs6 !!models.ResourceSpace
     type: CAMPAIGN
     #configs
