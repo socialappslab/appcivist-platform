@@ -113,6 +113,13 @@ public class Assembly extends AppCivistBaseModel {
 	private List<Contribution> forumPosts = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
+	private Long forumResourceSpaceId;
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long resourcesResourceSpaceId;
+	
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
 	private List<Assembly> followedAssemblies = new ArrayList<>();
 	
@@ -397,6 +404,14 @@ public class Assembly extends AppCivistBaseModel {
 
 	public void addForumPosts(Contribution forumPost) {
 		this.forum.getContributions().add(forumPost);
+	}
+
+	public Long getForumResourceSpaceId() {
+		return forum !=null ? forum.getResourceSpaceId() : null;
+	}
+
+	public Long getResourcesResourceSpaceId() {
+		return resources !=null ? resources.getResourceSpaceId() : null;
 	}
 
 	public List<Assembly> getFollowedAssemblies() {

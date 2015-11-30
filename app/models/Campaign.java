@@ -56,6 +56,11 @@ public class Campaign extends AppCivistBaseModel {
 	private ResourceSpace resources;
 	
 	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long resourceSpaceId;
+	
+	
+	@Transient
 	private List<ComponentInstance> components = new ArrayList<>();
 	@Transient
 	private List<Config> configs = new ArrayList<>();
@@ -225,6 +230,10 @@ String uuidAsString, List<ComponentInstance> phases) {
 
 	public void setResources(ResourceSpace resources) {
 		this.resources = resources;
+	}
+
+	public Long getResourceSpaceId() {
+		return resources != null ? resources.getResourceSpaceId() : null;
 	}
 
 	public List<ComponentInstance> getComponents() {
