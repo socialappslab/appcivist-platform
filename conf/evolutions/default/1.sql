@@ -714,6 +714,7 @@ create table voting_candidate_vote_result (
   removed                   boolean,
   uuid                      varchar(40),
   selected_candidate_voting_candidate_id bigint,
+  position                  integer,
   vote_value                varchar(255),
   vote_value_type           varchar(255),
   constraint uq_voting_candidate_vote_result_ unique (selected_candidate_voting_candidate_id),

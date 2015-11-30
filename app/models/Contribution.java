@@ -92,9 +92,6 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
 
-	@Transient
-	private String padUrl;
-	
 	/* 
 	 * The following fields are specific to each type of contribution
 	 */
@@ -294,7 +291,7 @@ public class Contribution extends AppCivistBaseModel {
 			this.resourceSpace.addContribution(c);
 	}
 	
-	public String getPadUrl() {
+	public String getReadOnlyPadUrl() {
 		return extendedTextPad !=null ? extendedTextPad.getUrlAsString() : null;
 	}	
 		

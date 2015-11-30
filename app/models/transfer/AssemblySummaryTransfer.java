@@ -8,7 +8,6 @@ public class AssemblySummaryTransfer {
 	private String shortname;
 	private String name;
 	private AssemblyProfileTransfer profile;
-	//private LocationTransfer location;
 	private List<ThemeTransfer> themes;
 	
 	public UUID getUuid() {
@@ -29,12 +28,6 @@ public class AssemblySummaryTransfer {
 	public void setName(String n) {
 		this.name = n;
 	}
-//	public LocationTransfer getLocation() {
-//		return location;
-//	}
-//	public void setLocation(LocationTransfer location) {
-//		this.location = location;
-//	}
 	public AssemblyProfileTransfer getProfile() {
 		return profile;
 	}

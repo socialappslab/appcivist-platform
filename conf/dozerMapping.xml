@@ -14,4 +14,24 @@
         <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.AssemblySummaryTransfer</class-b>
     </mapping>
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.AssemblyTransfer</class-b>
+    </mapping>
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.ComponentInstance</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.ComponentTransfer</class-b>
+        <field>
+            <a>componentInstanceId</a>
+            <b>componentId</b>
+        </field>
+    </mapping> 
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.ComponentInstanceMilestone</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.ComponentMilestoneTransfer</class-b>
+        <field>
+            <a>componentInstanceMilestoneId</a>
+            <b>milestoneId</b>
+        </field>
+    </mapping>    
 </mappings>

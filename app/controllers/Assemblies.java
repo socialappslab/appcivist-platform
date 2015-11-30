@@ -14,6 +14,7 @@ import models.MembershipAssembly;
 import models.Theme;
 import models.User;
 import models.transfer.AssemblySummaryTransfer;
+import models.transfer.AssemblyTransfer;
 import models.transfer.MembershipCollectionTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
@@ -49,6 +50,7 @@ import enums.ResponseStatus;
 public class Assemblies extends Controller {
 
 	public static final Form<Assembly> ASSEMBLY_FORM = form(Assembly.class);
+	public static final Form<AssemblyTransfer> ASSEMBLY_TRANSFER_FORM = form(AssemblyTransfer.class);
 	public static final Form<MembershipTransfer> MEMBERSHIP_FORM = form(MembershipTransfer.class);
 	public static final Form<MembershipCollectionTransfer> INVITEES_FORM = form(MembershipCollectionTransfer.class);
 	public static final Form<AssemblyProfile> PROFILE_FORM = form(AssemblyProfile.class);
@@ -128,60 +130,67 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = Assembly.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
+
+	/**
+	 * Return the full list of assemblies
+	 * 
+	 * @return models.AssemblyCollection
+	 */
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of linked assemblies to a single assembly", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result findAssembliesLinked(Long aid) {
+		Assembly a = Assembly.read(aid);
+		if (a != null) {
+			List<Assembly> linked = a.getFollowedAssemblies();
+			if (linked!=null && !linked.isEmpty())
+				return ok(Json.toJson(linked));
+			else 
+				return notFound(Json.toJson(TransferResponseStatus.noDataMessage("This assembly is not following any other assembly", "")));
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' does not exists", "")));
+		}
+	}
+	
+	
+	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "assembly_form", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result createAssembly() {
-		// 1. obtaining the user of the requestor
-		User creator = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
+		// Get the user record of the creator
+		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
 
-		// 2. read the new group data from the body
-		// another way of getting the body content => request().body().asJson()
-		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
-
+		// Check for errors in received data
 		if (newAssemblyForm.hasErrors()) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
 					Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
 							newAssemblyForm.errorsAsJson()), newAssemblyForm
 							.errorsAsJson().toString())));
 		} else {
-			Assembly newAssembly = newAssemblyForm.get();
-			// setting default values (TODO: maybe we should create a dedicated
-			// method for this in each model)
-			newAssembly.setCreator(creator);
-			if (newAssembly.getLang() == null)
-				newAssembly.setLang(creator.getLanguage());
-			// TODO: check if assembly with same title exists
-			// if not add it
-
-			newAssembly.setDefaultValues();
-			// Since JPA does not support saving ManyToMany associations with
-			// elements that already exist, we remove those from the resources
-			// space and then add them again through an update, once the
-			// resource
-			// space already exist
-			// TODO: find a way to do this with @PrePersist and @PostPersist JPA
-			// operations
-			//List<Theme> existingThemes = newAssembly.extractExistingThemes();
-			Logger.info("Creating assembly");
-			Logger.debug("=> " + newAssemblyForm.toString());
-			Assembly.create(newAssembly);
-			
-			//newAssembly.save();
-//			if (!existingThemes.isEmpty()) {
-//				Logger.info("=> Adding Existing Themes");
-//				Logger.debug("=> " + existingThemes.toString());
-//				newAssembly.addThemes(existingThemes);
-//				newAssembly.updateResources();
-//			}
-
-			// TODO: return URL of the new group
-			Logger.info("Assembly created!");
-			return ok(Json.toJson(newAssembly));
+			AssemblyTransfer newAssembly = newAssemblyForm.get();
+			// Do not create assemblies with names that already exist
+			Assembly a = Assembly.findByName(newAssembly.getName());
+			if (a==null) {
+				try {
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
+					return ok(Json.toJson(created));
+				} catch (Exception e) {
+					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
+							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+									e.getMessage()), "")));
+				}
+			} else {
+				return internalServerError(Json
+						.toJson(TransferResponseStatus.errorMessage(
+								"An assembly with the same title already exists: "
+										+ "'" + newAssembly.getName() + "'", "")));
+			}
 		}
 	}
 
@@ -304,7 +313,22 @@ public class Assemblies extends Controller {
 				"No memberships with status '" + status + "' in Assembly '"
 						+ id + "'")));
 	}
-
+	
+	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "uid", value = "User id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	//@SubjectPresent
+	public static Result isUserMemberOfAssembly(Long aid, Long userId) {
+		Boolean result = MembershipAssembly.isUserMemberOfAssembly(userId,aid);
+		if (result) return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, 
+					"User '" + userId + "' is a member of Assembly '"+ aid + "'")));
+		else return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, 
+				"User '" + userId + "' is not a member of Assembly '"+ aid + "'")));
+	}
+	
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Add membership to the assembly by listing AppCivist's users emails", notes = "Get the full list of assemblies. Only availabe to ADMINS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({

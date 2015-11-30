@@ -206,7 +206,7 @@ public class Resource extends AppCivistBaseModel {
 
 	@Transient
 	public void setUrlLargeString(String urlLargeString) throws MalformedURLException {
-		this.urlLarge = new URL(urlLargeString);
+		setUrlLarge(new URL(urlLargeString));
 	}
 
 	@Transient
@@ -216,7 +216,7 @@ public class Resource extends AppCivistBaseModel {
 
 	@Transient
 	public void setUrlMediumString(String urlMediumString) throws MalformedURLException {
-		this.urlMedium = new URL(urlMediumString);
+		setUrlMedium( new URL(urlMediumString));
 	}
 
 	@Transient
@@ -226,7 +226,7 @@ public class Resource extends AppCivistBaseModel {
 
 	@Transient
 	public void setUrlThumbnailString(String urlThumbnailString) throws MalformedURLException {
-		this.urlThumbnail = new URL(urlThumbnailString);
+		setUrlThumbnail(new URL(urlThumbnailString));
 	}
 	
 	/*

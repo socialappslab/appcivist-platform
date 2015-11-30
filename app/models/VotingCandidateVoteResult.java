@@ -24,6 +24,7 @@ public class VotingCandidateVoteResult extends AppCivistBaseModel {
 	
 	@OneToOne
 	private VotingCandidate selectedCandidate;
+	private int position;
 	
 	private String voteValue; // "80/100"
 	private String voteValueType; // "RANGE"
@@ -129,6 +130,14 @@ public class VotingCandidateVoteResult extends AppCivistBaseModel {
 
 	public void setVoteValueType(String voteValueType) {
 		this.voteValueType = voteValueType;
+	}
+
+	public int getPosition() {
+		return position;
+	}
+
+	public void setPosition(int position) {
+		this.position = position;
 	}
 
 	// TODO check entered values against expected ones

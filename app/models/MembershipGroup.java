@@ -7,6 +7,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import com.avaje.ebean.Query;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -80,7 +81,24 @@ public class MembershipGroup extends Membership {
 	 * @return
 	 */
 	public static Membership findByUserAndGroupId(Long userId, Long groupId) {
-		return find.where().eq("user.userId", userId).eq("workingGroup.assemblyId", groupId)
+		return find.where().eq("user.userId", userId).eq("workingGroup.groupId", groupId)
 				.findUnique();		
+	}
+
+	public static Boolean isUserMemberOfGroup(Long userId, Long groupId) {
+		Membership m = find.where().eq("user.userId", userId)
+				.eq("workingGroup.groupId", groupId)
+				.eq("status",MembershipStatus.ACCEPTED)
+				.findUnique();		
+		return m==null ? false : true;
+	}
+
+	public static List<Membership> findByAssemblyIdGroupIdAndStatus(Long aid,
+			Long gid, String status) {
+		Query<Membership> q = find.where().eq("workingGroup.groupId", gid).query();
+		if (status != null && !status.isEmpty()
+				&& !status.toUpperCase().equals("ALL"))
+			q = q.where().eq("status", status.toUpperCase()).query();
+		return q.findList();		
 	}
 }

@@ -198,10 +198,10 @@ public class Global extends GlobalSettings {
 		@Override
 		public Promise<Result> call(Http.Context ctx)
 				throws java.lang.Throwable {
-			Promise<Result> result = this.delegate.call(ctx);
 			Http.Response response = ctx.response();
 			response.setHeader("Access-Control-Allow-Origin", "*");
 			Logger.debug("--> Setting CORRS HEADERs for path: "+ctx.request().path());
+			Promise<Result> result = this.delegate.call(ctx);
 			return result;
 		}
 	}

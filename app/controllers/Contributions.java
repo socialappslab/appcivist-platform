@@ -16,6 +16,7 @@ import models.Resource;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
+import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -630,7 +631,13 @@ public class Contributions extends Controller {
 		if (c!=null) {
 			Resource pad = c.getExtendedTextPad();
 			String padId = pad.getPadId();
-			return ok(Json.toJson(padId));
+			PadTransfer p = new PadTransfer();
+			p.setPadId(padId);
+			if(padId!=null) {
+				return ok(Json.toJson(p));	
+			} else {
+				return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad id for this Contribution")));
+			}
 		} 
 		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
 	}

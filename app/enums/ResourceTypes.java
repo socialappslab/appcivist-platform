@@ -12,12 +12,10 @@ public enum ResourceTypes {
 //	VOTE, 					// Votes are created by single Users
 //	PROPOSAL_TEMPLATE,		// Templates are created and edited by Assemblies
 //	EXTERNAL				// External resources can be anything that has a URL
-	
 	PICTURE, 
 	VIDEO, 
 	PAD,
 	TEXT, 
 	WEBPAGE, 
 	FILE
-	
 }

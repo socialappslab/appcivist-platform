@@ -7,6 +7,8 @@ import java.util.List;
 
 import models.Assembly;
 import models.Campaign;
+import models.Membership;
+import models.MembershipGroup;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
@@ -310,14 +312,39 @@ public class WorkingGroups extends Controller {
 		return notFound(Json.toJson(responseBody));
 	}
 
-	@SubjectPresent
-	public static Result listMembershipsWithStatus(Long aid, Long id,
-			String status) {
-		// check the user who is accepting the invitation is
-		// TODO
-		TransferResponseStatus responseBody = new TransferResponseStatus();
-		responseBody.setStatusMessage("Not implemented yet");
-		return notFound(Json.toJson(responseBody));
+	
+	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "gid", value = "Group id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true, paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result listMembershipsWithStatus(Long aid, Long gid, String status) {
+		List<Membership> m = MembershipGroup.findByAssemblyIdGroupIdAndStatus(aid, gid, status);
+		if (m != null && !m.isEmpty())
+			return ok(Json.toJson(m));
+		return notFound(Json.toJson(new TransferResponseStatus(
+				"No memberships with status '" + status + "' in Working Group '"
+						+ gid + "'")));
 	}
+
+	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User is not Member of Group", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "gid", value = "Group id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "uid", value = "User id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	//@SubjectPresent
+	public static Result isUserMemberOfGroup(Long aid, Long gid, Long userId) {
+		Boolean result = MembershipGroup.isUserMemberOfGroup(userId, gid);
+		if (result) return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, 
+					"User '" + userId + "' is a member of Working Group '"+ gid + "'")));
+		else return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, 
+				"User '" + userId + "' is not a member of Working Group '"+ gid + "'")));
+	}
+	
 
 }
