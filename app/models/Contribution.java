@@ -20,6 +20,7 @@ import javax.persistence.PreRemove;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
+import play.data.validation.Constraints.Required;
 import models.audit.AuditContribution;
 import models.location.Location;
 
@@ -47,9 +48,12 @@ public class Contribution extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
+	@Required
 	private String title;
+	@Required
 	private String text;
 	@Enumerated(EnumType.STRING)
+	@Required
 	private ContributionTypes type;
 	@JsonIgnore @Index
 	private String textIndex;
@@ -92,6 +96,9 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
 
+	
+	
+	
 	/* 
 	 * The following fields are specific to each type of contribution
 	 */
@@ -280,6 +287,10 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void addHashtag(Hashtag h) {
 		this.resourceSpace.addHashtag(h);
+	}
+
+	public Long getResourceSpaceId() {
+		return this.resourceSpace != null ? this.resourceSpace.getResourceSpaceId() : null;
 	}
 	
 	public List<Contribution> getComments() {

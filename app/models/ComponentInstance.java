@@ -53,6 +53,10 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@JsonIgnore
 	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.COMPONENT);
 	
+	@Transient 
+	@JsonInclude(Include.NON_EMPTY)
+	private Long resourceSpaceId; 
+	
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "components")
@@ -260,6 +264,10 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 
 	public void setResourceSpace(ResourceSpace resources) {
 		this.resourceSpace = resources;
+	}
+
+	public Long getResourceSpaceId() {
+		return this.resourceSpace !=null ? this.resourceSpace.getResourceSpaceId() : null;
 	}
 
 	public List<ResourceSpace> getContainingSpaces() {

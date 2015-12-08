@@ -61,17 +61,6 @@ public class WorkingGroup extends AppCivistBaseModel {
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
  	private List<ResourceSpace> containingSpaces;
  	
- 	/* Transient direct access to entities in the resources resource space */
- 	@Transient
- 	private List<Theme> themes;
- 	@Transient
- 	private List<Config> configs;
- 	@Transient
- 	private List<Contribution> forumPosts;
- 	@Transient
- 	private List<Contribution> brainstormingContributions;
- 	@Transient
- 	private List<Contribution> proposals;
  	@JsonIgnore
  	@OneToMany(cascade = CascadeType.REMOVE, mappedBy="workingGroup",fetch=FetchType.LAZY)
  	private List<MembershipGroup> members; 
@@ -263,6 +252,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	public void setForumPosts(List<Contribution> forumPosts) {
 		this.forum.setContributions(forumPosts);
+	}
+	
+	public Long getForumResourceSpaceId() {
+		return forum !=null ? forum.getResourceSpaceId() : null;
 	}
 
 	public List<Contribution> getBrainstormingContributions() {
