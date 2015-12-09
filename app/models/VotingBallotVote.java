@@ -22,7 +22,7 @@ public class VotingBallotVote extends AppCivistBaseModel {
 
 	@Id
 	@GeneratedValue
-	private Long votingBallotVote;
+	private Long votingBallotVoteId;
 	@Index
 	private UUID uuid = UUID.randomUUID();
 	private String signature; // based on input in the registration form
@@ -62,13 +62,13 @@ public class VotingBallotVote extends AppCivistBaseModel {
 		a.refresh();
 	}
 
-	public static VotingBallotVote read(Long ballotId) {
-		return find.ref(ballotId);
+	public static VotingBallotVote read(Long votingBallotVoteId) {
+		return find.ref(votingBallotVoteId);
 	}
-
-	public static VotingBallotVote createObject(VotingBallotVote ballot) {
-		ballot.save();
-		return ballot;
+	
+	public static VotingBallotVote createObject(VotingBallotVote ballotVote) {
+		ballotVote.save();
+		return ballotVote;
 	}
 
 	public static void delete(Long id) {
@@ -97,12 +97,12 @@ public class VotingBallotVote extends AppCivistBaseModel {
 
 	/* Getters and setters */
 
-	public Long getVotingBallotVote() {
-		return votingBallotVote;
+	public Long getVotingBallotVoteId() {
+		return votingBallotVoteId;
 	}
 
-	public void setVotingBallotVote(Long votingBallotVote) {
-		this.votingBallotVote = votingBallotVote;
+	public void setVotingBallotVoteId(Long votingBallotVote) {
+		this.votingBallotVoteId = votingBallotVote;
 	}
 
 	public UUID getUuid() {
@@ -147,5 +147,11 @@ public class VotingBallotVote extends AppCivistBaseModel {
 
 	public void setBallot(VotingBallot ballot) {
 		this.ballot = ballot;
+	}
+	
+	
+	
+	public static VotingBallotVote findBySignature(String s) {
+		return find.where().eq("signature", s).findUnique();
 	}
 }

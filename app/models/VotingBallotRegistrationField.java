@@ -19,6 +19,7 @@ public class VotingBallotRegistrationField extends AppCivistBaseModel {
 	private String fieldName; // e.g., Secret Code
 	private String fieldDescription; // e.g., Enter the secret code received fromt he Assembly
 	private String expectedValue; // TODO: encrypt, for prototype, leave it cleartext
+	private String value; 
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -114,6 +115,14 @@ public class VotingBallotRegistrationField extends AppCivistBaseModel {
 
 	public void setExpectedValue(String expectedValue) {
 		this.expectedValue = expectedValue;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
 	}
 
 	// TODO check entered values against expected ones

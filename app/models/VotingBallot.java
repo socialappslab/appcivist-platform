@@ -234,7 +234,11 @@ public class VotingBallot extends AppCivistBaseModel {
 	
 	/* Other Data Queries */
 
-
+	/* YADEL: creating a readbyUUID method,ASK:the difference b/n query
+	 */
+//	public static VotingBallot readByUUID(UUID uuid) {
+//		return find.where().eq("uuid", uuid).findUnique();
+//	}
 	/* 
 	* @params uuid, queries database based on uuid
 	*/

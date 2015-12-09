@@ -124,6 +124,10 @@ public class VotingCandidate extends AppCivistBaseModel {
 		this.targetUuid = targetUuid;
 	}
 
+	public Contribution getTargetContribution() {
+		return Contribution.readByUUID(this.targetUuid);
+	}
+	
 	public AppcivistResourceTypes getCandidateType() {
 		return candidateType;
 	}
