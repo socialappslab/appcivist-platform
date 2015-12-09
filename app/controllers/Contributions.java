@@ -150,7 +150,6 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createContributionInResourceSpaceWithId(Long sid) {
 		// 1. obtaining the user of the requestor
 		User author = User.findByAuthUserIdentity(PlayAuthenticate
