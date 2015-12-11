@@ -25,6 +25,7 @@ public class UpdateTransfer {
 	private Date date;
 	private String lang;
 	private String relativeUrl;
+	private Object resource;
 	
 	public UpdateTransfer() {
 		super();
@@ -179,5 +180,13 @@ public class UpdateTransfer {
 				containerId, containerUUID,
 				resourceCreationDate, userLang, "");
 				
+	}
+
+	public Object getResource() {
+		return resource;
+	}
+
+	public void setResource(Object resource) {
+		this.resource = resource;
 	}
 }

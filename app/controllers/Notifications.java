@@ -143,6 +143,7 @@ public class Notifications extends Controller {
 						latestForumPost.getAuthors().get(0).getName(), 
 						latestForumPost.getCreation());
 				up.setRelativeUrl("/assembly/"+a.getAssemblyId()+"/forum");
+				up.setResource(latestForumPost);
 				updates.add(up);
 			}
 			
