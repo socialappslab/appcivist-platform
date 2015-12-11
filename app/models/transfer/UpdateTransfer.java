@@ -1,6 +1,8 @@
 package models.transfer;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -25,7 +27,8 @@ public class UpdateTransfer {
 	private Date date;
 	private String lang;
 	private String relativeUrl;
-	private Object resource;
+	private Map<String, Object> resource = new HashMap<>();
+	private Map<String, Object> container = new HashMap<>();
 	
 	public UpdateTransfer() {
 		super();
@@ -182,11 +185,27 @@ public class UpdateTransfer {
 				
 	}
 
-	public Object getResource() {
+	public Map<String, Object> getResource() {
 		return resource;
 	}
 
-	public void setResource(Object resource) {
+	public void setResource(Map<String, Object> resource) {
 		this.resource = resource;
+	}
+
+	public void setResourceProperty(String key, Object value) {
+		this.resource.put(key, value);
+	}
+	
+	public Map<String, Object> getContainer() {
+		return container;
+	}
+
+	public void setContainer(Map<String, Object> container) {
+		this.container = container;
+	}
+	
+	public void setContainerProperty(String key, Object value) {
+		this.container.put(key, value);
 	}
 }

@@ -11,6 +11,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Transient;
@@ -86,7 +87,15 @@ public class Assembly extends AppCivistBaseModel {
 	/**
 	 * The User who created the Assembly
 	 */
+	@ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	@Where(clause="${ta}.removed=false")
 	private User creator; // user who has created the assembly?
+	
+	// Back reference relationships to ignore when parsing to json but to keep to allow cascade deletion
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="assembly")
+	@JsonIgnore
+	private List<MembershipAssembly> memberships;
 	
 	
 	
@@ -117,17 +126,14 @@ public class Assembly extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourcesResourceSpaceId;
-	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
 	private List<Assembly> followedAssemblies = new ArrayList<>();
-	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
 	private List<Assembly> followingAssemblies = new ArrayList<>();
-
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<ComponentInstance> existingComponents = new ArrayList<>();
