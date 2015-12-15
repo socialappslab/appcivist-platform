@@ -120,6 +120,10 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	public void setContribution(Contribution contribution) {
 		this.contribution = contribution;
 	}
+	
+	public Long getPoints() {
+		return this.getUps() - this.getDowns();
+	}
 
 	/*
 	 * Basic Data operations
