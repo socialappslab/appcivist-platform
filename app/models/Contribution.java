@@ -75,7 +75,6 @@ public class Contribution extends AppCivistBaseModel {
 	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) 
-	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 	@OneToOne(cascade = CascadeType.ALL) 
 	@JsonManagedReference
