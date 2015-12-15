@@ -78,7 +78,6 @@ public class Contribution extends AppCivistBaseModel {
 	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 	@OneToOne(cascade = CascadeType.ALL) 
-	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	@JsonManagedReference
 	private ContributionStatistics stats = new ContributionStatistics();
 
