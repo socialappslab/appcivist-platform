@@ -75,10 +75,8 @@ public class Contribution extends AppCivistBaseModel {
 	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) 
-	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 	@OneToOne(cascade = CascadeType.ALL) 
-	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	@JsonManagedReference
 	private ContributionStatistics stats = new ContributionStatistics();
 
@@ -212,7 +210,16 @@ public class Contribution extends AppCivistBaseModel {
 	public List<User> getAuthors() {
 		return authors;
 	}
-
+	
+	public User getFirstAuthor() {
+		return authors != null && authors.size() > 0 ? authors.get(0) : null;
+	}
+	
+	public String getFirstAuthorName() {
+		User fa = getFirstAuthor();
+		return fa != null ? fa.getName() : null;
+	}
+	
 	public void setAuthors(List<User> authors) {
 		this.authors = authors;
 	}

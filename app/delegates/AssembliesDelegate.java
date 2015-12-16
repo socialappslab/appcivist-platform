@@ -77,20 +77,22 @@ public class AssembliesDelegate {
 		// Add List of Followed Assemblies
 		ResourceSpace rs = newAssembly.getResources();
 		List<LinkedAssemblyTransfer> linked = newAssemblyTransfer.getLinkedAssemblies();
-		for (LinkedAssemblyTransfer linkedAssemblyTransfer : linked) {
-			Assembly a = Assembly.read(linkedAssemblyTransfer.getAssemblyId());
-			rs.addAssembly(a);
+		if(linked!=null) {
+			for (LinkedAssemblyTransfer linkedAssemblyTransfer : linked) {
+				Assembly a = Assembly.read(linkedAssemblyTransfer.getAssemblyId());
+				rs.addAssembly(a);
+			}
 		}
-		
 		rs.update();
 		
 		// Send invitations
 		List<InvitationTransfer> invitations = newAssemblyTransfer.getInvitations();
-		for (InvitationTransfer invitation : invitations) {
-			MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-			provider.sendInvitationByEmail(invitation, "ASSEMBLY", newAssembly.getAssemblyId());
-		}
-		
+		if(invitations!=null) {
+			for (InvitationTransfer invitation : invitations) {
+				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+				provider.sendInvitationByEmail(invitation, "ASSEMBLY", newAssembly.getAssemblyId());
+			}
+		}		
 		Logger.info("Assembly created!");
 		newAssembly.refresh();
 		AssemblyTransfer created = mapper.map(newAssembly, AssemblyTransfer.class);

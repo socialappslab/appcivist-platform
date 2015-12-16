@@ -30,6 +30,7 @@ import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
@@ -150,7 +151,7 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	@SubjectPresent
 	public static Result createContributionInResourceSpaceWithId(Long sid) {
 		// 1. obtaining the user of the requestor
 		User author = User.findByAuthUserIdentity(PlayAuthenticate
@@ -546,6 +547,37 @@ public class Contributions extends Controller {
 			return ok(Json.toJson(newStats));
 		}
 	}
+	
+	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "stid", value = "Contribution Stats id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "contribution_stats_form", value = "Body of Contribution Statistics in JSON", required = true, dataType = "models.ContributionStatistics", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result updateContributionStatsByStatsId(Long stid) {
+		// 1. obtaining the user of the requestor
+//		User author = User.findByAuthUserIdentity(PlayAuthenticate
+//				.getUser(session()));
+// TODO: ASSOCIATE likes of users
+		
+		// 2. read the new role data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<ContributionStatistics> newStatsForm = CONTRIBUTION_STATS_FORM
+				.bindFromRequest();
+
+		if (newStatsForm.hasErrors()) {
+			return contributionStatsCreateError(newStatsForm);
+		} else {
+			ContributionStatistics newStats = newStatsForm.get();
+			newStats.setContributionStatisticsId(stid);
+			newStats.update();
+			return ok(Json.toJson(newStats));
+		}
+	}
+	
 	
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })

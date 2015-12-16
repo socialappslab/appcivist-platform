@@ -17,7 +17,7 @@ import enums.MembershipStatus;
 @DiscriminatorValue("ASSEMBLY")
 public class MembershipAssembly extends Membership {
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	@JsonIgnoreProperties({"creator", "membershipRole", "campaigns", "assemblyConfigs"})
 	private Assembly assembly;
 	

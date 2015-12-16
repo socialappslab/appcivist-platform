@@ -33,6 +33,7 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
+import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiImplicitParam;
@@ -130,7 +131,6 @@ public class Assemblies extends Controller {
 		}
 	}
 
-
 	/**
 	 * Return the full list of assemblies
 	 * 
@@ -154,7 +154,6 @@ public class Assemblies extends Controller {
 		}
 	}
 	
-	
 	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -177,10 +176,14 @@ public class Assemblies extends Controller {
 			// Do not create assemblies with names that already exist
 			Assembly a = Assembly.findByName(newAssembly.getName());
 			if (a==null) {
+				Ebean.beginTransaction();
 				try {
 					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
+					Ebean.commitTransaction();
 					return ok(Json.toJson(created));
 				} catch (Exception e) {
+					Logger.error(e.getStackTrace().toString());
+					Ebean.rollbackTransaction();
 					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
 							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
 									e.getMessage()), "")));

@@ -118,7 +118,7 @@ public class Campaigns extends Controller {
 		@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
 		@ApiImplicitParam(name = "new campaign form", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	//@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createCampaignInAssembly(Long aid) {
 		// 1. obtaining the user of the requestor
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate

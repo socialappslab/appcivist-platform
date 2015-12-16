@@ -396,7 +396,6 @@ public class Memberships extends Controller {
 		else 
 			return ok(Json.toJson(memberships));
 	}
-
 	
 	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response=TransferResponseStatus.class) })

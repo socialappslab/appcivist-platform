@@ -93,7 +93,8 @@ public class WorkingGroups extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "new group form", value = "New Working Group in json", dataType = "models.WorkingGroup", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	//@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	@SubjectPresent
 	public static Result createWorkingGroup(Long aid) {
 		// 1. obtaining the user of the requestor
 		User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
@@ -311,7 +312,6 @@ public class WorkingGroups extends Controller {
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
 	}
-
 	
 	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })

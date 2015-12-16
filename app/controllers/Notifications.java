@@ -143,6 +143,11 @@ public class Notifications extends Controller {
 						latestForumPost.getAuthors().get(0).getName(), 
 						latestForumPost.getCreation());
 				up.setRelativeUrl("/assembly/"+a.getAssemblyId()+"/forum");
+				up.setResourceProperty("author",latestForumPost.getFirstAuthorName());
+				up.setResourceProperty("title",latestForumPost.getTitle());
+				up.setResourceProperty("text",latestForumPost.getText());
+				up.setResourceProperty("themes", latestForumPost.getThemes());
+				up.setContainerProperty("title",a.getName());
 				updates.add(up);
 			}
 			
@@ -189,6 +194,7 @@ public class Notifications extends Controller {
 													+"/campaign/"+c.getCampaignId()
 													+"/"+p.getComponentInstanceId()
 													+"/"+m.getComponentInstanceMilestoneId());
+											up.setContainerProperty("title",c.getTitle());
 											updates.add(up);
 										}
 									}
