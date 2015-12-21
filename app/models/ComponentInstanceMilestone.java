@@ -14,6 +14,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import org.hibernate.validator.constraints.Length;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,6 +34,7 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 
 	private String title; // name of milestone
 	private int position;
+	@Length(max=500)
 	private String description;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime();	// starting date of the milestone

@@ -7,7 +7,7 @@
 <body>
     <h1>Upload a file:</h1>
     @helper.form(action = routes.Files.upload, 'enctype -> "multipart/form-data") {
-        <input type="file" name="upload">
+        <input type="file" name="file">
         <input type="submit">
     }
 

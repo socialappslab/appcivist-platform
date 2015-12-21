@@ -22,9 +22,14 @@ public class Files extends Controller {
 		return ok(files.render(uploads));
 	}
 
+	public static Result list() {
+		List<S3File> uploads = S3File.findAll();
+		return ok(Json.toJson(uploads));
+	}
+	
 	public static Result upload() {
 		Http.MultipartFormData body = request().body().asMultipartFormData();
-		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("upload");
+		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
 		if (uploadFilePart != null) {
 			S3File s3File = new S3File();
 			s3File.name = uploadFilePart.getFilename();
