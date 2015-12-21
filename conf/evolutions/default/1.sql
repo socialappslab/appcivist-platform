@@ -422,6 +422,13 @@ create table resource_space (
   constraint pk_resource_space primary key (resource_space_id))
 ;
 
+create table s3file (
+  id                        varchar(40) not null,
+  bucket                    varchar(255),
+  name                      varchar(255),
+  constraint pk_s3file primary key (id))
+;
+
 create table security_role (
   role_id                   bigserial not null,
   name                      varchar(255),
@@ -1232,6 +1239,8 @@ drop table if exists resource_space_hashtag cascade;
 drop table if exists resource_space_voting_ballots cascade;
 
 drop table if exists resource_space_templates cascade;
+
+drop table if exists s3file cascade;
 
 drop table if exists security_role cascade;
 

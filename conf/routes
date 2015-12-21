@@ -190,8 +190,8 @@ GET       /api/campaign/template                                          contro
 
 ##################################################################################################################################################################
 # Utilities endpoints
-POST      /api/file                                                       controllers.Files.uploadPictureToImgur(title, description, albumId)
-
+GET       /api/files                                                      controllers.Files.index()
+POST      /api/upload                                                     controllers.Files.upload()
 
 ### 
 # Voting Services
