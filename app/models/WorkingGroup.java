@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -34,6 +35,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     private Long groupId;
 	private UUID uuid = UUID.randomUUID();
     private String name;
+	@Column(name="text", columnDefinition="text")
     private String text;
     private Boolean listed = true;
     private User creator;

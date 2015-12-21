@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
@@ -26,9 +27,11 @@ public class ContributionTransfer {
 	private UUID uuid = UUID.randomUUID();
 	private String uuidAsString;
 	private String title;
+	@Column(name="text", columnDefinition="text")
 	private String text;
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type;
+	@Column(name="text_index", columnDefinition="text")
 	private String textIndex;
 	private Location location;
 	private String budget;

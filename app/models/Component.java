@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -28,6 +29,7 @@ public class Component extends AppCivistBaseModel {
 	@Transient
 	private String uuidAsString;
 	private String name; 
+	@Column(name="description", columnDefinition="text")
 	private String description;
 	
 	@OneToMany(cascade=CascadeType.ALL)

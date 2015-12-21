@@ -33,7 +33,8 @@ public class Resource extends AppCivistBaseModel {
 	private Location location;
 	@Enumerated(EnumType.STRING)
 	private ResourceTypes resourceType;
-	
+
+	private String name;
 	/*
 	 * Fields specific to each type
 	 */
@@ -144,6 +145,12 @@ public class Resource extends AppCivistBaseModel {
 		this.resourceType = resourceType;
 	}
 
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	public String getPadId() {
 		return padId;
 	}

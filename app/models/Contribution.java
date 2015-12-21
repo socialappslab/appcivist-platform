@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -50,12 +51,12 @@ public class Contribution extends AppCivistBaseModel {
 	private String uuidAsString;
 	@Required
 	private String title;
-	@Required
+	@Required @Column(name="text", columnDefinition="text")
 	private String text;
 	@Enumerated(EnumType.STRING)
 	@Required
 	private ContributionTypes type;
-	@JsonIgnore @Index
+	@JsonIgnore @Index 	@Column(name="text_index", columnDefinition="text")
 	private String textIndex;
 	@OneToOne @Index
 	private Location location;

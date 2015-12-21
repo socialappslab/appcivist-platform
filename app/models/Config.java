@@ -25,6 +25,7 @@ public class Config extends AppCivistBaseModel {
 	@Id
 	private UUID uuid = UUID.randomUUID();
     private String key;
+	@Column(name="value", columnDefinition="text")
     private String value;
     @Enumerated(EnumType.STRING)
     private ConfigTargets configTarget;

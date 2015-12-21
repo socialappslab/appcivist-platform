@@ -54,6 +54,7 @@ public class Assembly extends AppCivistBaseModel {
 	@MaxLength(value = 120)
 	private String shortname; 
 	@Required
+	@Column(name="description", columnDefinition="text")
 	private String description; 
 	private String url; 
 	// If true, the 'profile' is public

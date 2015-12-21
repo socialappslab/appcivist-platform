@@ -37,6 +37,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@Column(name="component_instance_id")
 	private Long componentInstanceId;
 	private String title;
+	@Column(name="description", columnDefinition="text")
 	private String description;
 	private Date startDate;
 	private Date endDate;

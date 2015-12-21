@@ -40,6 +40,7 @@ public class Campaign extends AppCivistBaseModel {
 	private Long campaignId;
 	private String title; // e.g., "PB for Vallejo 2015"
 	private String shortname;
+	@Column(name="goal", columnDefinition="text")
 	private String goal;	
 	private String url;
 	private UUID uuid = UUID.randomUUID();

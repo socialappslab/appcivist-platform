@@ -1,5 +1,6 @@
 package models;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -12,6 +13,7 @@ public class Theme extends AppCivistBaseModel {
 	@GeneratedValue
     private Long themeId;
     private String title;
+	@Column(name="description", columnDefinition="text")
     private String description;
     private String icon;
     private String cover; 

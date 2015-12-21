@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -34,7 +35,7 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 
 	private String title; // name of milestone
 	private int position;
-	@Length(max=500)
+	@Column(name="description", columnDefinition="text")
 	private String description;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime();	// starting date of the milestone
