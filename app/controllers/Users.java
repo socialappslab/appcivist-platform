@@ -250,7 +250,6 @@ public class Users extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "user_body", value = "Logout body must be empty JSON", dataType = "String", paramType = "body") })
-	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result doLogout() {
 		// TODO: modify to return HTML or JSON instead of redirect
 		return com.feth.play.module.pa.controllers.Authenticate.logout();

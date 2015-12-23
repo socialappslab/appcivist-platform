@@ -108,6 +108,6 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
         String id = StringUtils.substringAfter(path, id_from);
         if(StringUtils.contains(id, "/"))
             id = id.split("/")[0];
-        return UUID.fromString(id);
+        return id !=null ? UUID.fromString(id) : null;
     }
 }
