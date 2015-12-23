@@ -57,6 +57,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
  	
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long forumResourceSpaceId;
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long resourcesResourceSpaceId;
  	
  // TODO: check if it works
  	@JsonIgnore
@@ -260,6 +266,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return forum !=null ? forum.getResourceSpaceId() : null;
 	}
 
+	public Long getResourcesResourceSpaceId() {
+		return resources !=null ? resources.getResourceSpaceId() : null;
+	}
+	
 	public List<Contribution> getBrainstormingContributions() {
 		return resources.getContributionsFilteredByType(ContributionTypes.BRAINSTORMING);
 	}

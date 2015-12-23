@@ -53,15 +53,14 @@ public class Contribution extends AppCivistBaseModel {
 	private String title;
 	@Required @Column(name="text", columnDefinition="text")
 	private String text;
-	@Enumerated(EnumType.STRING)
-	@Required
+	@Enumerated(EnumType.STRING) @Required
 	private ContributionTypes type;
 	@JsonIgnore @Index 	@Column(name="text_index", columnDefinition="text")
 	private String textIndex;
 	@OneToOne @Index
 	private Location location;
 	private String budget;
-	@ManyToMany(cascade = CascadeType.REFRESH)
+	@ManyToMany(cascade = CascadeType.ALL)
 	@Where(clause="${ta}.active=true")
 	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
 	private List<User> authors = new ArrayList<User>();
@@ -72,17 +71,17 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private Long assemblyId;
 	
-	@ManyToMany(cascade = CascadeType.REFRESH)
+	@ManyToMany(cascade = CascadeType.ALL)
 	@Where(clause="${ta}.removed=false")
 	@JsonIgnoreProperties({ "supportedMembership", "managementType",
 			"resources", "forum", "containingSpaces", "themes", "configs",
 			"forumPosts", "brainstormingContributions", "proposals" })
 	private List<WorkingGroup> workingGroupAuthors = new ArrayList<WorkingGroup>();
 	@JsonIgnore 
-	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions")
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions", cascade=CascadeType.ALL)
 	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST) 
+	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}) 
 	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 	@OneToOne(cascade = CascadeType.ALL) 
 	@JsonManagedReference
