@@ -405,7 +405,7 @@ create table resource (
   url_large                 varchar(255),
   url_medium                varchar(255),
   url_thumbnail             varchar(255),
-  constraint ck_resource_resource_type check (resource_type in ('PICTURE','VIDEO','PAD','TEXT','WEBPAGE','FILE')),
+  constraint ck_resource_resource_type check (resource_type in ('PICTURE','VIDEO','PAD','TEXT','WEBPAGE','FILE','AUDIO')),
   constraint pk_resource primary key (resource_id))
 ;
 

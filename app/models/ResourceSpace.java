@@ -72,7 +72,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	private List<Config> configs = new ArrayList<Config>();
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")

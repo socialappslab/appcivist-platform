@@ -65,6 +65,13 @@ public class Contribution extends AppCivistBaseModel {
 	@Where(clause="${ta}.active=true")
 	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
 	private List<User> authors = new ArrayList<User>();
+	@Transient
+	private User firstAuthor;
+	@Transient
+	private String firstAuthorName;
+	@Transient
+	private Long assemblyId;
+	
 	@ManyToMany(cascade = CascadeType.REFRESH)
 	@Where(clause="${ta}.removed=false")
 	@JsonIgnoreProperties({ "supportedMembership", "managementType",
@@ -75,7 +82,7 @@ public class Contribution extends AppCivistBaseModel {
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions")
 	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) 
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST) 
 	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 	@OneToOne(cascade = CascadeType.ALL) 
 	@JsonManagedReference
@@ -94,8 +101,6 @@ public class Contribution extends AppCivistBaseModel {
 	private List<Contribution> comments = new ArrayList<Contribution>();
 	@Transient
 	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
-
-	
 	
 	
 	/* 
@@ -135,6 +140,8 @@ public class Contribution extends AppCivistBaseModel {
 	private List<Contribution> existingContributions;
 	@Transient
 	private List<Resource> existingResources;	
+	@Transient
+	private List<Theme> existingThemes;	
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -212,13 +219,35 @@ public class Contribution extends AppCivistBaseModel {
 		return authors;
 	}
 	
+	@Transient
 	public User getFirstAuthor() {
 		return authors != null && authors.size() > 0 ? authors.get(0) : null;
 	}
+
+	@Transient
+	public void setFirstAuthor(User u) {
+		this.firstAuthor = u;
+	}
 	
+	@Transient
 	public String getFirstAuthorName() {
 		User fa = getFirstAuthor();
 		return fa != null ? fa.getName() : null;
+	}
+	
+	@Transient
+	public void setFirstAuthorName(String name) {
+		this.firstAuthorName = name;
+	}
+
+	@Transient
+	public Long getAssemblyId() {
+		return assemblyId;
+	}
+	
+	@Transient
+	public void setAssemblyId(Long aid) {
+		this.assemblyId = aid;
 	}
 	
 	public void setAuthors(List<User> authors) {
@@ -235,37 +264,37 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setWorkingGroupAuthors(List<WorkingGroup> workingGroupAuthors) {
 		this.workingGroupAuthors = workingGroupAuthors;
-		this.resourceSpace.setWorkingGroups(workingGroupAuthors);
 	}
 
 	public void addWorkingGroupAuthor(WorkingGroup workingGroupAuthor) {
-		this.resourceSpace.addWorkingGroup(workingGroupAuthor);
+		this.workingGroupAuthors.add(workingGroupAuthor);
+//		this.resourceSpace.addWorkingGroup(workingGroupAuthor);
 	}
 
 	public List<Theme> getThemes() {
-		return resourceSpace.getThemes();
+		this.themes = resourceSpace.getThemes();
+		return this.themes;
 	}
 
 	public void setThemes(List<Theme> themes) {
 		this.themes = themes;
-		this.resourceSpace.setThemes(themes);
 	}
 
 	public void addTheme(Theme t) {
-		this.resourceSpace.addTheme(t);
+//		this.resourceSpace.addTheme(t);
 	}
 
 	public List<Resource> getAttachments() {
-		return resourceSpace.getResources();
+		this.attachments = resourceSpace.getResources();
+		return this.attachments;
 	}
 
 	public void setAttachments(List<Resource> attachments) {
 		this.attachments = attachments;
-		this.resourceSpace.setResources(attachments);
 	}
 
 	public void addAttachment(Resource attach) {
-		this.resourceSpace.addResource(attach);
+//		this.resourceSpace.addResource(attach);
 	}
 
 	public Location getLocation() {
@@ -285,16 +314,16 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Hashtag> getHashtags() {
-		return resourceSpace.getHashtags();
+		this.hashtags = resourceSpace.getHashtags();
+		return this.hashtags;
 	}
 
 	public void setHashtags(List<Hashtag> hashtags) {
 		this.hashtags = hashtags;
-		this.resourceSpace.setHashtags(hashtags);
 	}
 
 	public void addHashtag(Hashtag h) {
-		this.resourceSpace.addHashtag(h);
+//		this.resourceSpace.addHashtag(h);
 	}
 
 	public Long getResourceSpaceId() {
@@ -302,12 +331,13 @@ public class Contribution extends AppCivistBaseModel {
 	}
 	
 	public List<Contribution> getComments() {
-		return resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
+		this.comments = resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
+		return this.comments;
 	}
 
 	public void addComment(Contribution c) {
-		if (c.getType() == ContributionTypes.COMMENT) 
-			this.resourceSpace.addContribution(c);
+//		if (c.getType() == ContributionTypes.COMMENT) 
+//			this.resourceSpace.addContribution(c);
 	}
 	
 	public String getReadOnlyPadUrl() {
@@ -323,13 +353,13 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
-		return this.resourceSpace.getMilestones();
+		this.associatedMilestones = this.resourceSpace.getMilestones();
+		return this.associatedMilestones;
 	}
 
 	public void setAssociatedMilestones(
 			List<ComponentInstanceMilestone> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
-		this.resourceSpace.setMilestones(associatedMilestones);
 	}
 
 	public ResourceSpace getResourceSpace() {
@@ -389,21 +419,23 @@ public class Contribution extends AppCivistBaseModel {
 	}
 	
 	public List<Contribution> getAssessments() {
-		return this.resourceSpace.getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
+		this.assessments = this.resourceSpace.getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
+		return this.assessments;
 	}
 
 	public void addAssessment(Contribution assessment) {
-		if(assessment.getType()==ContributionTypes.ASSESSMENT)
-			this.resourceSpace.addContribution(assessment);
+//		if(assessment.getType()==ContributionTypes.ASSESSMENT)
+//			this.resourceSpace.addContribution(assessment);
 	}
 
 	public List<WorkingGroup> getResponsibleWorkingGroups() {
-		return this.resourceSpace.getWorkingGroups();
+		this.responsibleWorkingGroups = this.resourceSpace.getWorkingGroups();
+		return this.responsibleWorkingGroups;
 	}
 
 	public void setResponsibleWorkingGroups(
 			List<WorkingGroup> responsibleWorkingGroups) {
-		this.resourceSpace.setWorkingGroups(responsibleWorkingGroups);
+		this.responsibleWorkingGroups = responsibleWorkingGroups;
 	}
 
 	/* 
@@ -446,6 +478,15 @@ public class Contribution extends AppCivistBaseModel {
 	public void setExistingResources(List<Resource> existingResources) {
 		this.existingResources = existingResources;
 	}
+	
+	@JsonIgnore
+	public List<Theme> getExistingThemes() {
+		return existingThemes;
+	}
+
+	public void setExistingThemes(List<Theme> existingThemes) {
+		this.existingThemes = existingThemes;
+	}
 
 	/*
 	 * Basic Data Operations
@@ -476,6 +517,7 @@ public class Contribution extends AppCivistBaseModel {
 		List<WorkingGroup> existingWorkingGroups = c.getExistingResponsibleWorkingGroups();
 		List<Contribution> existingContributions = c.getExistingContributions();
 		List<Resource> existingResources = c.getExistingResources();
+		List<Theme> existingThemes = c.getExistingThemes();
 		
 		c.save();
 
@@ -494,6 +536,8 @@ public class Contribution extends AppCivistBaseModel {
 			cResSpace.getContributions().addAll(existingContributions);
 		if (existingResources!= null && !existingResources.isEmpty())
 			cResSpace.getResources().addAll(existingResources);
+		if (existingThemes!= null && !existingThemes.isEmpty())
+			cResSpace.getThemes().addAll(existingThemes);
 		
 		cResSpace.update();
 		

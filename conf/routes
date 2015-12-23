@@ -155,6 +155,7 @@ PUT       /api/assembly/:aid/contribution/:cid                            contro
 PUT       /api/assembly/:aid/contribution/:cid/stats/:stid                controllers.Contributions.updateContributionStats(aid: Long, cid: Long, stid: Long)
 PUT       /api/stats/:stid                                                controllers.Contributions.updateContributionStatsByStatsId(stid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
+POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

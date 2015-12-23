@@ -50,6 +50,7 @@ public class Contributions extends Controller {
 
 	public static final Form<Contribution> CONTRIBUTION_FORM = form(Contribution.class);
 	public static final Form<ContributionStatistics> CONTRIBUTION_STATS_FORM = form(ContributionStatistics.class);
+	public static final Form<Resource> ATTACHMENT_FORM = form(Resource.class);
 
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
@@ -517,7 +518,6 @@ public class Contributions extends Controller {
 		}
 	}
 
-
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -578,7 +578,6 @@ public class Contributions extends Controller {
 		}
 	}
 	
-	
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -590,10 +589,8 @@ public class Contributions extends Controller {
 	public static Result updateContribution(Long aid, Long contributionId) {
 		// 1. read the new contribution data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
-				.bindFromRequest();
-		User author = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
+		final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
+		User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
 		if (newContributionForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -603,24 +600,44 @@ public class Contributions extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			Contribution newContribution = newContributionForm.get();
-			TransferResponseStatus responseBody = new TransferResponseStatus();
 			newContribution.setContributionId(contributionId);
 			newContribution.setContextUserId(author.getUserId());
 			Contribution.update(newContribution);
-			Logger.info("Creating new contribution");
-			Logger.debug("=> " + newContributionForm.toString());
-
-			responseBody.setNewResourceId(newContribution.getContributionId());
-			responseBody.setStatusMessage(Messages.get(
-					GlobalData.CONTRIBUTION_CREATE_MSG_SUCCESS,
-					newContribution.getTitle()/*
-											 * , roleCreator.getIdentifier ()
-											 */));
-			responseBody.setNewResourceURL(GlobalData.CONTRIBUTION_BASE_PATH
-					+ "/" + newContribution.getContributionId());
-
-			return ok(Json.toJson(responseBody));
+			return ok(Json.toJson(newContribution));
 		}
+	}
+	
+	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "attachment_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result addAttachmentContribution(Long aid, Long contributionId) {
+		// 1. read the new contribution data from the body
+				// another way of getting the body content => request().body().asJson()
+				final Form<Resource> newAttachmentForm = ATTACHMENT_FORM
+						.bindFromRequest();
+				User author = User.findByAuthUserIdentity(PlayAuthenticate
+						.getUser(session()));
+
+				if (newAttachmentForm.hasErrors()) {
+					TransferResponseStatus responseBody = new TransferResponseStatus();
+					responseBody.setStatusMessage(Messages.get(
+							GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+							newAttachmentForm.errorsAsJson()));
+					return badRequest(Json.toJson(responseBody));
+				} else {
+					Contribution c = Contribution.read(contributionId);
+					ResourceSpace contributionRs = c.getResourceSpace();
+					Resource newAttachment = newAttachmentForm.get();
+					newAttachment.setCreator(author);
+					contributionRs.addResource(newAttachment);
+					contributionRs.update();
+					return ok(Json.toJson(newAttachment));
+				}
 	}
 
 	// TODO: create a dynamic handler to check if the contribution belongs to

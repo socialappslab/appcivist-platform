@@ -17,5 +17,6 @@ public enum ResourceTypes {
 	PAD,
 	TEXT, 
 	WEBPAGE, 
-	FILE
+	FILE, 
+	AUDIO
 }
