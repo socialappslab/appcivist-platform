@@ -1,9 +1,14 @@
 package models;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 
@@ -17,7 +22,10 @@ public class Theme extends AppCivistBaseModel {
     private String description;
     private String icon;
     private String cover; 
-
+	@JsonIgnore 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "themes", cascade=CascadeType.ALL)
+	private List<ResourceSpace> containingSpaces;
+	
     /**
 	 * The find property is an static property that facilitates database query creation
 	 */
@@ -65,6 +73,14 @@ public class Theme extends AppCivistBaseModel {
 
 	public void setCover(String cover) {
 		this.cover = cover;
+	}
+
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
+
+	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
+		this.containingSpaces = containingSpaces;
 	}
 
 	/*

@@ -271,6 +271,11 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 		return this.resourceSpace !=null ? this.resourceSpace.getResourceSpaceId() : null;
 	}
 
+	public void setResourceSpaceId(Long id) {
+		if (this.resourceSpace !=null && this.resourceSpace.getResourceSpaceId() == null) 
+			this.resourceSpace.setResourceSpaceId(id);
+	}
+
 	public List<ResourceSpace> getContainingSpaces() {
 		return containingSpaces;
 	}

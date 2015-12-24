@@ -416,9 +416,19 @@ public class Assembly extends AppCivistBaseModel {
 	public Long getForumResourceSpaceId() {
 		return forum !=null ? forum.getResourceSpaceId() : null;
 	}
+	
+	public void setForumResourceSpaceId(Long id) {
+		if(this.forum!=null && this.forum.getResourceSpaceId() == null)
+			this.forum.setResourceSpaceId(id);
+	}
 
 	public Long getResourcesResourceSpaceId() {
 		return resources !=null ? resources.getResourceSpaceId() : null;
+	}
+	
+	public void setResourcesResourceSpaceId(Long id) {
+		if(this.resources!=null && this.resources.getResourceSpaceId() == null)
+			this.resources.setResourceSpaceId(id);
 	}
 
 	public List<Assembly> getFollowedAssemblies() {

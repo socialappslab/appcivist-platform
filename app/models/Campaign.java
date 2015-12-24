@@ -234,6 +234,12 @@ String uuidAsString, List<ComponentInstance> phases) {
 	public Long getResourceSpaceId() {
 		return resources != null ? resources.getResourceSpaceId() : null;
 	}
+	
+	public void setResourceSpaceId(Long id) {
+		if (this.resources !=null && this.resources.getResourceSpaceId() == null) 
+			this.resources .setResourceSpaceId(id);
+	}
+
 
 	public List<ComponentInstance> getComponents() {
 		return this.resources.getComponents();

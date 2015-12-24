@@ -57,7 +57,7 @@ public class Contribution extends AppCivistBaseModel {
 	private ContributionTypes type;
 	@JsonIgnore @Index 	@Column(name="text_index", columnDefinition="text")
 	private String textIndex;
-	@OneToOne @Index
+	@OneToOne(cascade=CascadeType.ALL) @Index
 	private Location location;
 	private String budget;
 	@ManyToMany(cascade = CascadeType.ALL)
@@ -263,11 +263,12 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setWorkingGroupAuthors(List<WorkingGroup> workingGroupAuthors) {
 		this.workingGroupAuthors = workingGroupAuthors;
+		this.resourceSpace.setWorkingGroups(workingGroupAuthors);
 	}
 
 	public void addWorkingGroupAuthor(WorkingGroup workingGroupAuthor) {
 		this.workingGroupAuthors.add(workingGroupAuthor);
-//		this.resourceSpace.addWorkingGroup(workingGroupAuthor);
+		this.resourceSpace.addWorkingGroup(workingGroupAuthor);
 	}
 
 	public List<Theme> getThemes() {
@@ -277,10 +278,11 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setThemes(List<Theme> themes) {
 		this.themes = themes;
+		this.resourceSpace.setThemes(themes);
 	}
 
 	public void addTheme(Theme t) {
-//		this.resourceSpace.addTheme(t);
+		this.resourceSpace.addTheme(t);
 	}
 
 	public List<Resource> getAttachments() {
@@ -290,10 +292,11 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setAttachments(List<Resource> attachments) {
 		this.attachments = attachments;
+		this.resourceSpace.setResources(attachments);
 	}
 
 	public void addAttachment(Resource attach) {
-//		this.resourceSpace.addResource(attach);
+		this.resourceSpace.addResource(attach);
 	}
 
 	public Location getLocation() {
@@ -319,14 +322,20 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setHashtags(List<Hashtag> hashtags) {
 		this.hashtags = hashtags;
+		this.resourceSpace.setHashtags(hashtags);
 	}
 
 	public void addHashtag(Hashtag h) {
-//		this.resourceSpace.addHashtag(h);
+		this.resourceSpace.addHashtag(h);
 	}
-
+	
 	public Long getResourceSpaceId() {
 		return this.resourceSpace != null ? this.resourceSpace.getResourceSpaceId() : null;
+	}
+
+	public void setResourceSpaceId(Long id) {
+		if (this.resourceSpace !=null && this.resourceSpace.getResourceSpaceId() == null) 
+			this.resourceSpace.setResourceSpaceId(id);
 	}
 	
 	public List<Contribution> getComments() {
@@ -335,20 +344,24 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public void addComment(Contribution c) {
-//		if (c.getType() == ContributionTypes.COMMENT) 
-//			this.resourceSpace.addContribution(c);
+		if (c.getType() == ContributionTypes.COMMENT) 
+			this.resourceSpace.addContribution(c);
 	}
 	
 	public String getReadOnlyPadUrl() {
 		return extendedTextPad !=null ? extendedTextPad.getUrlAsString() : null;
 	}	
 		
+	// TODO see if setting contributions on resource space is better through updating the space directly
+	@JsonIgnore
 	public void setComments(List<Contribution> comments) {
 		this.comments = comments;
+		this.resourceSpace.setContributionsFilteredByType(comments, ContributionTypes.COMMENT);
 	}
 
 	public void setAssessments(List<Contribution> assessments) {
 		this.assessments = assessments;
+		this.resourceSpace.setContributionsFilteredByType(assessments, ContributionTypes.ASSESSMENT);
 	}
 
 	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
@@ -356,11 +369,12 @@ public class Contribution extends AppCivistBaseModel {
 		return this.associatedMilestones;
 	}
 
-	public void setAssociatedMilestones(
-			List<ComponentInstanceMilestone> associatedMilestones) {
+	public void setAssociatedMilestones(List<ComponentInstanceMilestone> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
+		this.resourceSpace.setMilestones(associatedMilestones);
 	}
 
+	@JsonIgnore
 	public ResourceSpace getResourceSpace() {
 		return resourceSpace;
 	}
@@ -435,6 +449,7 @@ public class Contribution extends AppCivistBaseModel {
 	public void setResponsibleWorkingGroups(
 			List<WorkingGroup> responsibleWorkingGroups) {
 		this.responsibleWorkingGroups = responsibleWorkingGroups;
+		this.resourceSpace.setWorkingGroups(responsibleWorkingGroups);
 	}
 
 	/* 
@@ -512,14 +527,22 @@ public class Contribution extends AppCivistBaseModel {
 		c.setThemes(new ArrayList<>());
 		List<ComponentInstanceMilestone> associatedMilestones = c.getAssociatedMilestones(); // new milestones are never created from contributions
 		c.setAssociatedMilestones(new ArrayList<>());
+		
 		List<Hashtag> existingHashtags = c.getExistingHashtags();
 		List<WorkingGroup> existingWorkingGroups = c.getExistingResponsibleWorkingGroups();
 		List<Contribution> existingContributions = c.getExistingContributions();
 		List<Resource> existingResources = c.getExistingResources();
 		List<Theme> existingThemes = c.getExistingThemes();
 		
+		// 2. Check if there are working group associated and create them only if they don't have ids yet
+		List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors(); // new working groups are never created from contributions
+		if (workingGroupAuthors != null && workingGroupAuthors.size()>0 && workingGroupAuthors.get(0).getGroupId() != null){
+			// Group exists, remove it from the contribution entity and update it after creation
+			c.setWorkingGroupAuthors(new ArrayList<>());
+		} // else, group is new, allow it to be created
+		
 		c.save();
-
+		
 		// 3. Add existing entities in relationships to the manytomany resources
 		// then update
 		ResourceSpace cResSpace = c.getResourceSpace();
@@ -539,6 +562,14 @@ public class Contribution extends AppCivistBaseModel {
 			cResSpace.getThemes().addAll(existingThemes);
 		
 		cResSpace.update();
+		
+		// Update the working group author
+		if (workingGroupAuthors != null && workingGroupAuthors.size()>0 && workingGroupAuthors.get(0).getGroupId() != null){
+			// Group exists, remove it from the contribution entity and update it after creation
+			c.setWorkingGroupAuthors(workingGroupAuthors);
+			c.update();
+		} // else, group is new, allow it to be created
+
 		
 		c.refresh();
 	}
