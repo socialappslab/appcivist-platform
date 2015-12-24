@@ -21,13 +21,14 @@ import javax.persistence.PreRemove;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
-import play.data.validation.Constraints.Required;
 import models.audit.AuditContribution;
 import models.location.Location;
+import play.data.validation.Constraints.Required;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -76,6 +77,7 @@ public class Contribution extends AppCivistBaseModel {
 	@JsonIgnoreProperties({ "supportedMembership", "managementType",
 			"resources", "forum", "containingSpaces", "themes", "configs",
 			"forumPosts", "brainstormingContributions", "proposals" })
+	@JsonManagedReference	
 	private List<WorkingGroup> workingGroupAuthors = new ArrayList<WorkingGroup>();
 	@JsonIgnore 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions", cascade=CascadeType.ALL)

@@ -7,6 +7,7 @@ import java.util.List;
 
 import models.Assembly;
 import models.Campaign;
+import models.Contribution;
 import models.Membership;
 import models.MembershipGroup;
 import models.ResourceSpace;
@@ -346,5 +347,9 @@ public class WorkingGroups extends Controller {
 				"User '" + userId + "' is not a member of Working Group '"+ gid + "'")));
 	}
 	
-
+	public static Result listWorkingGroupProposals(Long aid, Long gid) {
+		WorkingGroup wg = WorkingGroup.read(gid);
+		List<Contribution> proposals = wg.getProposals();
+		return ok(Json.toJson(proposals));
+	}
 }

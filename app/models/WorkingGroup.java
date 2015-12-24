@@ -17,10 +17,13 @@ import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ContributionTypes;
 import enums.ManagementTypes;
@@ -56,6 +59,11 @@ public class WorkingGroup extends AppCivistBaseModel {
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
+ 
+	@ManyToMany(cascade = CascadeType.ALL, mappedBy="workingGroupAuthors")
+	@JsonBackReference
+	@Where(clause="${ta}.removed=false")
+	private List<Contribution> proposals = new ArrayList<Contribution>();
  	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -290,11 +298,13 @@ public class WorkingGroup extends AppCivistBaseModel {
 	}
 
 	public List<Contribution> getProposals() {
-		return resources.getContributionsFilteredByType(ContributionTypes.PROPOSAL);
+//		return resources.getContributionsFilteredByType(ContributionTypes.PROPOSAL);
+		return this.proposals;
 	}
 
 	public void setProposals(List<Contribution> proposals) {
-		this.resources.getContributions().addAll(proposals);
+//		this.resources.getContributions().addAll(proposals);
+		this.proposals = proposals;
 	}
 
 	public List<MembershipGroup> getMembers() {
