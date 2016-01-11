@@ -741,6 +741,8 @@ create table working_group (
   name                      varchar(255),
   text                      text,
   listed                    boolean,
+  majority_threshold        varchar(255),
+  block_majority            boolean,
   profile_working_group_profile_id bigint,
   resources_resource_space_id bigint,
   forum_resource_space_id   bigint,
