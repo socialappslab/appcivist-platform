@@ -122,6 +122,15 @@ public class WorkingGroups extends Controller {
 
 			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
 				Logger.info("Working Group already exists");
+				
+				responseBody.setNewResourceId(newWorkingGroup.getGroupId());
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.GROUP_CREATE_MSG_ERROR,
+						newWorkingGroup.getName()/*
+												 * ,
+												 * groupCreator.getIdentifier()
+												 */));
+				return internalServerError(Json.toJson(responseBody));
 			} else {
 				if (newWorkingGroup.getCreator() == null) {
 					newWorkingGroup.setCreator(groupCreator);
@@ -133,23 +142,8 @@ public class WorkingGroups extends Controller {
 				ResourceSpace rs = Assembly.read(aid).getResources();
 				rs.addWorkingGroup(newWorkingGroup);
 				rs.update();
-
-				// TODO: return URL of the new group
-				Logger.info("Creating working group");
-				Logger.debug("=> " + newWorkingGroupForm.toString());
-
-				responseBody.setNewResourceId(newWorkingGroup.getGroupId());
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.GROUP_CREATE_MSG_SUCCESS,
-						newWorkingGroup.getName()/*
-												 * ,
-												 * groupCreator.getIdentifier()
-												 */));
-				responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
-						+ newWorkingGroup.getGroupId());
 			}
-
-			return ok(Json.toJson(responseBody));
+			return ok(Json.toJson(newWorkingGroup));
 		}
 	}
 
