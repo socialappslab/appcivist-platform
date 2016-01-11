@@ -19,8 +19,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
-import scala.Array;
-
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,6 +38,7 @@ public class Campaign extends AppCivistBaseModel {
 	private Long campaignId;
 	private String title; // e.g., "PB for Vallejo 2015"
 	private String shortname;
+	@Column(name="goal", columnDefinition="text")
 	private String goal;	
 	private String url;
 	private UUID uuid = UUID.randomUUID();
@@ -235,6 +234,12 @@ String uuidAsString, List<ComponentInstance> phases) {
 	public Long getResourceSpaceId() {
 		return resources != null ? resources.getResourceSpaceId() : null;
 	}
+	
+	public void setResourceSpaceId(Long id) {
+		if (this.resources !=null && this.resources.getResourceSpaceId() == null) 
+			this.resources .setResourceSpaceId(id);
+	}
+
 
 	public List<ComponentInstance> getComponents() {
 		return this.resources.getComponents();

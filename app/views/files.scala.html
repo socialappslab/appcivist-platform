@@ -1,0 +1,22 @@
+@(s3Files: List[models.misc.S3File])
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Files uploaded to AppCivist</title>
+</head>
+<body>
+    <h1>Upload a file:</h1>
+    @helper.form(action = routes.Files.upload, 'enctype -> "multipart/form-data") {
+        <input type="file" name="file">
+        <input type="submit">
+    }
+
+    <h1>Uploads:</h1>
+    <ul>
+    @for(upload <- s3Files) {
+        <li><a href="@upload.getUrl()">@upload.name</a></li>
+    }
+    </ul>
+
+</body>
+</html>

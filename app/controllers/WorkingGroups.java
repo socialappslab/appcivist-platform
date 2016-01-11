@@ -7,6 +7,7 @@ import java.util.List;
 
 import models.Assembly;
 import models.Campaign;
+import models.Contribution;
 import models.Membership;
 import models.MembershipGroup;
 import models.ResourceSpace;
@@ -26,6 +27,7 @@ import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
+import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiImplicitParam;
@@ -121,34 +123,33 @@ public class WorkingGroups extends Controller {
 
 			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
 				Logger.info("Working Group already exists");
+				responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+				responseBody.setStatusMessage("Working Group already exists");
+				return internalServerError(Json.toJson(responseBody));
 			} else {
-				if (newWorkingGroup.getCreator() == null) {
-					newWorkingGroup.setCreator(groupCreator);
+				Ebean.beginTransaction();
+				try {
+					if (newWorkingGroup.getCreator() == null) {
+						newWorkingGroup.setCreator(groupCreator);
+					}
+
+					newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+
+					// Add the working group to the assembly
+					ResourceSpace rs = Assembly.read(aid).getResources();
+					rs.addWorkingGroup(newWorkingGroup);
+					rs.update();
+				} catch (Exception e) {
+					Ebean.rollbackTransaction();
+					e.printStackTrace();
+					Logger.info("Error creating Working Group: "+e.getMessage());
+					responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+					responseBody.setStatusMessage("Error creating Working Group: "+e.getMessage());
+					return internalServerError(Json.toJson(responseBody));
 				}
-
-				newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-
-				// Add the working group to the assembly
-				ResourceSpace rs = Assembly.read(aid).getResources();
-				rs.addWorkingGroup(newWorkingGroup);
-				rs.update();
-
-				// TODO: return URL of the new group
-				Logger.info("Creating working group");
-				Logger.debug("=> " + newWorkingGroupForm.toString());
-
-				responseBody.setNewResourceId(newWorkingGroup.getGroupId());
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.GROUP_CREATE_MSG_SUCCESS,
-						newWorkingGroup.getName()/*
-												 * ,
-												 * groupCreator.getIdentifier()
-												 */));
-				responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
-						+ newWorkingGroup.getGroupId());
+				Ebean.commitTransaction();
 			}
-
-			return ok(Json.toJson(responseBody));
+			return ok(Json.toJson(newWorkingGroup));
 		}
 	}
 
@@ -346,5 +347,9 @@ public class WorkingGroups extends Controller {
 				"User '" + userId + "' is not a member of Working Group '"+ gid + "'")));
 	}
 	
-
+	public static Result listWorkingGroupProposals(Long aid, Long gid) {
+		WorkingGroup wg = WorkingGroup.read(gid);
+		List<Contribution> proposals = wg.getProposals();
+		return ok(Json.toJson(proposals));
+	}
 }

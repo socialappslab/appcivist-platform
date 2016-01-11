@@ -13,7 +13,7 @@ create table assembly (
   uuid                      varchar(40),
   name                      varchar(255),
   shortname                 varchar(255),
-  description               varchar(255),
+  description               text,
   url                       varchar(255),
   listed                    boolean,
   profile_assembly_profile_id bigint,
@@ -80,7 +80,7 @@ create table campaign (
   removed                   boolean,
   title                     varchar(255),
   shortname                 varchar(255),
-  goal                      varchar(255),
+  goal                      text,
   url                       varchar(255),
   uuid                      varchar(40),
   listed                    boolean,
@@ -125,7 +125,7 @@ create table component (
   removed                   boolean,
   uuid                      varchar(40),
   name                      varchar(255),
-  description               varchar(255),
+  description               text,
   constraint pk_component primary key (component_id))
 ;
 
@@ -137,7 +137,7 @@ create table component_instance (
   removal                   timestamp,
   removed                   boolean,
   title                     varchar(255),
-  description               varchar(255),
+  description               text,
   start_date                timestamp,
   end_date                  timestamp,
   uuid                      varchar(40),
@@ -158,7 +158,7 @@ create table component_instance_milestone (
   removed                   boolean,
   title                     varchar(255),
   position                  integer,
-  description               varchar(255),
+  description               text,
   start                     timestamp,
   days                      integer,
   uuid                      varchar(40),
@@ -188,7 +188,7 @@ create table component_required_milestone (
   removal                   timestamp,
   removed                   boolean,
   title                     varchar(255),
-  description               varchar(255),
+  description               text,
   position                  integer,
   no_duration               boolean,
   target_component_uuid     varchar(40),
@@ -204,7 +204,7 @@ create table config (
   removal                   timestamp,
   removed                   boolean,
   key                       varchar(255),
-  value                     varchar(255),
+  value                     text,
   config_target             varchar(13),
   target_uuid               varchar(40),
   definition_uuid           varchar(40),
@@ -221,7 +221,7 @@ create table config_definition (
   removed                   boolean,
   key                       varchar(255),
   value_type                varchar(255),
-  description               varchar(255),
+  description               text,
   default_value             varchar(255),
   config_target             varchar(13),
   constraint ck_config_definition_config_target check (config_target in ('ASSEMBLY','CAMPAIGN','COMPONENT','WORKING_GROUP','MODULE','PROPOSAL','CONTRIBUTION')),
@@ -238,9 +238,9 @@ create table contribution (
   removed                   boolean,
   uuid                      varchar(40),
   title                     varchar(255),
-  text                      varchar(255),
+  text                      text,
   type                      varchar(23),
-  text_index                varchar(255),
+  text_index                text,
   location_location_id      bigint,
   budget                    varchar(255),
   resource_space_resource_space_id bigint,
@@ -296,7 +296,7 @@ create table contribution_template_section (
   removed                   boolean,
   uuid                      varchar(40),
   title                     varchar(255),
-  description               varchar(255),
+  description               text,
   length                    integer,
   position                  integer,
   constraint pk_contribution_template_section primary key (id))
@@ -398,13 +398,14 @@ create table resource (
   uuid                      varchar(40),
   url                       varchar(255),
   resource_type             varchar(7),
+  name                      varchar(255),
   pad_id                    varchar(255),
   read_only_pad_id          varchar(255),
   resource_space_with_server_configs varchar(40),
   url_large                 varchar(255),
   url_medium                varchar(255),
   url_thumbnail             varchar(255),
-  constraint ck_resource_resource_type check (resource_type in ('PICTURE','VIDEO','PAD','TEXT','WEBPAGE','FILE')),
+  constraint ck_resource_resource_type check (resource_type in ('PICTURE','VIDEO','PAD','TEXT','WEBPAGE','FILE','AUDIO')),
   constraint pk_resource primary key (resource_id))
 ;
 
@@ -420,6 +421,13 @@ create table resource_space (
   parent                    varchar(40),
   constraint ck_resource_space_type check (type in ('ASSEMBLY','CAMPAIGN','WORKING_GROUP','COMPONENT','CONTRIBUTION','VOTING_BALLOT')),
   constraint pk_resource_space primary key (resource_space_id))
+;
+
+create table s3file (
+  id                        varchar(40) not null,
+  bucket                    varchar(255),
+  name                      varchar(255),
+  constraint pk_s3file primary key (id))
 ;
 
 create table security_role (
@@ -566,7 +574,7 @@ create table theme (
   removal                   timestamp,
   removed                   boolean,
   title                     varchar(255),
-  description               varchar(255),
+  description               text,
   icon                      varchar(255),
   cover                     varchar(255),
   constraint pk_theme primary key (theme_id))
@@ -616,7 +624,7 @@ create table user_profile (
   middle_name               varchar(255),
   last_name                 varchar(255),
   birthdate                 timestamp,
-  address                   varchar(255),
+  address                   text,
   user_user_id              bigint,
   constraint uq_user_profile_user_user_id unique (user_user_id),
   constraint pk_user_profile primary key (profile_id))
@@ -731,8 +739,10 @@ create table working_group (
   removed                   boolean,
   uuid                      varchar(40),
   name                      varchar(255),
-  text                      varchar(255),
+  text                      text,
   listed                    boolean,
+  majority_threshold        varchar(255),
+  block_majority            boolean,
   profile_working_group_profile_id bigint,
   resources_resource_space_id bigint,
   forum_resource_space_id   bigint,
@@ -1232,6 +1242,8 @@ drop table if exists resource_space_hashtag cascade;
 drop table if exists resource_space_voting_ballots cascade;
 
 drop table if exists resource_space_templates cascade;
+
+drop table if exists s3file cascade;
 
 drop table if exists security_role cascade;
 

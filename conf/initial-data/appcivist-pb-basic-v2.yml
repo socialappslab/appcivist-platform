@@ -731,28 +731,28 @@
 # Milestones: milestones that define steps and deadlines in the process followed by each component
   - &ci1 !!models.ComponentInstanceMilestone
     title: Brainstorming
-    description: "Identify problems and make suggestions for proposals"
+    description: "Identify problems and make suggestions for proposals."
     position: 0
     start: "2015-09-01"
     days: 60
     mainContributionType: BRAINSTORMING
   - &ci2 !!models.ComponentInstanceMilestone
-    title: Working Group Formation
-    description: "Join or create a group to develop proposals"
+    title: Working groups formation
+    description: "Join or create a group to develop proposals."
     position: 1
     start: "2015-11-11"
     days: 5
     mainContributionType: BRAINSTORMING
   - &ci3 !!models.ComponentInstanceMilestone
-    title: Proposal Drafting
-    description: "Explore existing proposals or start one with your working group"
+    title: Proposal drafting
+    description: "Explore existing proposals or start one with your working group."
     position: 2
     start: "2015-11-16"
     days: 10
     mainContributionType: PROPOSAL
   - &ci5 !!models.ComponentInstanceMilestone
     title: Proposal editing
-    description: "Versioning of existing proposals"
+    description: "Versioning of existing proposals."
     position: 4
     start: "2015-11-27"
     days: 15
@@ -765,40 +765,43 @@
     days: 5
     mainContributionType: PROPOSAL
   - &ci8 !!models.ComponentInstanceMilestone
-    title: Public Deliberation
-    description: "Explore and discuss published proposals for deliberation"
+    title: Public deliberation
+    description: "Explore and discuss published proposals for deliberation."
     position: 7
     start: "2015-12-17"
     days: 10
     mainContributionType: PROPOSAL
   - &ci9 !!models.ComponentInstanceMilestone
-    title: Technical Assessment
-    description: "Explore and discuss published proposals for deliberation"
+    title: Technical assessment
+    description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
     position: 8
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
     title: Voting period
-    description: "Explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime untill the votin period is over."
+    description: "Explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
     position: 10
     start: "2016-01-17"
     days: 15
     mainContributionType: PROPOSAL
   - &ci13 !!models.ComponentInstanceMilestone
-    title: General Deliberation
+    title: Public deliberation
+    description: "Explore and discuss published proposals for deliberation."
     position: 7
     start: "2015-12-17"
     days: 10
     mainContributionType: PROPOSAL
   - &ci14 !!models.ComponentInstanceMilestone
-    title: Technical Assessment
+    title: Technical assessment
+    description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
     position: 8
     start: "2016-01-06"
     days: 10
     mainContributionType: PROPOSAL
   - &ci16 !!models.ComponentInstanceMilestone
     title: Voting period
+    description: "Explore and discuss published proposals for deliberation."
     position: 10
     start: "2016-01-17"
     days: 15

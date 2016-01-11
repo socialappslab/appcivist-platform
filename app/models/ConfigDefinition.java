@@ -1,5 +1,6 @@
 package models;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.UniqueConstraint;
@@ -17,6 +18,7 @@ public class ConfigDefinition extends AppCivistBaseModel {
     private UUID uuid;
 	private String key;
     private String valueType;
+	@Column(name="description", columnDefinition="text")
     private String description;
     private String defaultValue;
     private ConfigTargets configTarget = ConfigTargets.ASSEMBLY;

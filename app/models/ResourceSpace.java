@@ -72,7 +72,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	private List<Config> configs = new ArrayList<Config>();
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")
@@ -532,6 +532,19 @@ public class ResourceSpace extends AppCivistBaseModel {
 		return this.contributions.stream()
 				.filter(p -> p.getType() == type)
 				.collect(Collectors.toList());
+	}
+	
+	public void setContributionsFilteredByType(List<Contribution> contributions, ContributionTypes type) {
+		// 1. Filter the contributions of "type" from the contribution list
+		List<Contribution> filteredContributions = this.contributions.stream()
+				.filter(p -> p.getType() != type)
+				.collect(Collectors.toList());
+		
+		// 2. Add the new list of contributions of "type"
+		filteredContributions.addAll(contributions);
+
+		// 3. Update the list of contributions
+		setContributions(filteredContributions);
 	}
 
 	public List<Resource> getResourcesFilteredByType(ResourceTypes type) {

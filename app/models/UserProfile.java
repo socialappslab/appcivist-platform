@@ -1,5 +1,6 @@
 package models;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,6 +28,7 @@ public class UserProfile extends AppCivistBaseModel {
 	private String middleName;
 	private String lastName;
 	private Date birthdate;
+	@Column(name="address", columnDefinition="text")
 	private String address;
 	// TODO add contact information
 	@JsonIgnore

@@ -83,7 +83,7 @@ POST      /api/assembly/:aid/group/:id/membership/:type                   contro
 GET       /api/assembly/:aid/group/:id/membership                         controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
 GET       /api/assembly/:aid/group/:id/membership/:status                 controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String)
 GET       /api/assembly/:aid/group/:gid/user/:uid                         controllers.WorkingGroups.isUserMemberOfGroup(aid: Long, gid: Long, uid: Long)
-
+GET       /api/assembly/:aid/group/:gid/proposals                         controllers.WorkingGroups.listWorkingGroupProposals(aid: Long, gid: Long) 
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
@@ -155,6 +155,7 @@ PUT       /api/assembly/:aid/contribution/:cid                            contro
 PUT       /api/assembly/:aid/contribution/:cid/stats/:stid                controllers.Contributions.updateContributionStats(aid: Long, cid: Long, stid: Long)
 PUT       /api/stats/:stid                                                controllers.Contributions.updateContributionStatsByStatsId(stid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
+POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better
@@ -190,12 +191,9 @@ GET       /api/campaign/template                                          contro
 
 ##################################################################################################################################################################
 # Utilities endpoints
-POST      /api/file                                                       controllers.Files.uploadPictureToImgur(title, description, albumId)
-
-
-### 
-# Voting Services
-GET       /api/ballot/:uuid/registration                                  controllers.VotingServices.getVotingRegistrationForm(uuid: java.util.UUID)
+GET       /api/file/upload-form                                           controllers.Files.index()
+GET       /api/files                                                      controllers.Files.list()
+POST      /api/upload                                                     controllers.Files.upload()
 
 ##################################################################################################################################################################
 # Composition Engine endpoints 

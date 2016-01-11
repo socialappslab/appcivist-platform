@@ -37,6 +37,7 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 	@Column(name="component_instance_id")
 	private Long componentInstanceId;
 	private String title;
+	@Column(name="description", columnDefinition="text")
 	private String description;
 	private Date startDate;
 	private Date endDate;
@@ -268,6 +269,11 @@ public class ComponentInstance extends AppCivistBaseModel implements Comparator<
 
 	public Long getResourceSpaceId() {
 		return this.resourceSpace !=null ? this.resourceSpace.getResourceSpaceId() : null;
+	}
+
+	public void setResourceSpaceId(Long id) {
+		if (this.resourceSpace !=null && this.resourceSpace.getResourceSpaceId() == null) 
+			this.resourceSpace.setResourceSpaceId(id);
 	}
 
 	public List<ResourceSpace> getContainingSpaces() {

@@ -53,7 +53,7 @@ public class ContributionsDelegate {
 	public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, UUID resourceSpaceConfigsUUID) throws MalformedURLException {
 		EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
 		// Create pad and set text
-		String padId = UUID.randomUUID().toString();
+		String padId = c.getUuidAsString();
 		String text = c.getText();
 		eth.createPad(padId,text);
 		String readId = eth.getReadOnlyId(padId);

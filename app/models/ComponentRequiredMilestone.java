@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,6 +23,7 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 	private Long componentRequiredMilestoneId;
 
 	private String title; // name of milestone
+	@Column(name="description", columnDefinition="text")
 	private String description;
     private int position;	
     private boolean noDuration = false;
