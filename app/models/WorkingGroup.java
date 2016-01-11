@@ -23,10 +23,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ContributionTypes;
 import enums.ManagementTypes;
+import enums.MembershipStatus;
 import enums.ResourceSpaceTypes;
 import enums.SupportedMembershipRegistration;
 
@@ -41,13 +41,16 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@Column(name="text", columnDefinition="text")
     private String text;
     private Boolean listed = true;
+    private String majorityThreshold;
+    private Boolean blockMajority;
     private User creator;
     
     @OneToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({ "workingGroupProfileId", "workingGroup" })
 	@JsonInclude(Include.NON_EMPTY)
 	private WorkingGroupProfile profile = new WorkingGroupProfile();
-
+    
+    
     /**
  	 * The group resource space contains its configurations, themes, associated campaigns
  	 */
@@ -124,9 +127,38 @@ public class WorkingGroup extends AppCivistBaseModel {
     }
 
     public static WorkingGroup create(WorkingGroup workingGroup) {
-        workingGroup.save();
-        workingGroup.refresh();
-        return workingGroup;
+		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
+		List<Theme> existingThemes = workingGroup.getExistingThemes();
+		
+		// 2. Create the new working group
+		workingGroup.save();
+
+		// 3. Add existing entities in relationships to the manytomany resources then update
+		ResourceSpace groupResources = workingGroup.getResources();
+		if (existingThemes != null && !existingThemes.isEmpty())
+			groupResources.getThemes().addAll(existingThemes);
+		
+		groupResources.update();
+		
+		// 4. Refresh the new campaign to get the newest version
+		workingGroup.refresh();
+
+		// 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
+		MembershipGroup mg = new MembershipGroup();
+		mg.setWorkingGroup(workingGroup);
+		mg.setCreator(workingGroup.getCreator());
+		mg.setUser(workingGroup.getCreator());
+		mg.setStatus(MembershipStatus.ACCEPTED);
+		mg.setLang(workingGroup.getLang());
+	
+		List<SecurityRole> roles = new ArrayList<SecurityRole>();
+		roles.add(SecurityRole.findByName("MEMBER"));
+		roles.add(SecurityRole.findByName("COORDINATOR"));
+		roles.add(SecurityRole.findByName("MODERATOR"));
+		mg.setRoles(roles);
+		
+		MembershipGroup.create(mg);
+		return workingGroup;
     }
 
     public static WorkingGroup createObject(WorkingGroup workingGroup) {
@@ -227,7 +259,23 @@ public class WorkingGroup extends AppCivistBaseModel {
         this.listed = isPublic;
     }
 
-    public ManagementTypes getManagementType() {
+    public String getMajorityThreshold() {
+		return majorityThreshold;
+	}
+
+	public void setMajorityThreshold(String majorityThreshold) {
+		this.majorityThreshold = majorityThreshold;
+	}
+
+	public Boolean getBlockMajority() {
+		return blockMajority;
+	}
+
+	public void setBlockMajority(Boolean blockMajority) {
+		this.blockMajority = blockMajority;
+	}
+
+	public ManagementTypes getManagementType() {
         return this.profile.getManagementType();
     }
 
