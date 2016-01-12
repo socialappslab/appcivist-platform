@@ -43,7 +43,7 @@
 ##############################################################################################################################################################################################      
 # Resources for Attachments and User Profile Pics
   - &upic1 !!models.Resource     
-    urlLargeString: "https://randomuser.me/api/portraits/med/men/77.jpg"
+    urlLargeString: "https://s3-us-west-1.amazonaws.com/appcivist-files/users/Carmen+Profile.jpg"
     resourceType: PICTURE
   - &upic2 !!models.Resource     
     urlLargeString: "https://randomuser.me/api/portraits/med/women/77.jpg"
@@ -60,7 +60,7 @@
     urlLargeString: "https://randomuser.me/api/portraits/med/women/55.jpg"
     resourceType: PICTURE
   - &res1 !!models.Resource
-    url: "http://www.ritholtz.com/blog/wp-content/uploads/2008/11/price-to-rent-ratio.png"
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/chart1.jpg"
     resourceType: PICTURE
   - &res2 !!models.Resource
     url: "https://upload.wikimedia.org/wikipedia/commons/e/e4/A_plaza_and_garden_at_Calle_Mayor%2C_Madrid_01.JPG"
@@ -112,15 +112,36 @@
   - &pad9 !!models.Resource
     url: "http://etherpad.littlemacondo.com/p/r.449269aa69084c6fa70c6a15e9a6a7d8"
     readOnlyPadId: "r.449269aa69084c6fa70c6a15e9a6a7d8"
-    resourceType: PAD
+    resourceType: PAD    
+  - &propimg1 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/belleville.jpg"
+    resourceType: PICTURE
+  - &propimg2 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/forrest.jpg"
+    resourceType: PICTURE
+  - &propimg3 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/lights1.jpg"
+    resourceType: PICTURE
+  - &propimg4 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/lights2.png"
+    resourceType: PICTURE
+  - &propimg5 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/rue-ramponeau.jpg"
+    resourceType: PICTURE
+  - &propimg6 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/street1.png"
+    resourceType: PICTURE
+  - &propimg7 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/chart2.jpg"
+    resourceType: PICTURE
     
 ##############################################################################################################################################################################################
 # Users (Testing Users)
   - &u1 !!models.User
-    email:      bob@example.com
-    name:       Bob
-    username:   bob
-    language:   es 
+    email:      carmen@example.com
+    name:       Carmen
+    username:   carmen
+    language:   en 
     profilePic: *upic1
     roles:
       - *r1 # ADMIN
@@ -813,21 +834,25 @@
     creator: *u1
     name: "Conseil Belleville" 
     text: Commitee in charge of managing contributions in for PB Belleville
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Conseil Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: false
   - &wg2 !!models.WorkingGroup
     creator: *u1
     name: "Passionées du Parc de Belleville" 
     text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Passionées du Parc de Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: true
   - &wg3 !!models.WorkingGroup
     creator: *u1
     name: "Neighborhood 14, Category Parks" 
     text: Group of neighbors from district 13, focused on Parks
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Neighborhood 14, Category Parks' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: true
   - &wg4 !!models.WorkingGroup
     creator: *u1
     name: "AntiEviction Proposals Team" 
     text: Team in charge of turning Ideas into proposals
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'AntiEviction Proposals Team' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: false
 
 ##############################################################################################################################################################################################
@@ -956,7 +981,7 @@
       - *ci1
       - *ci2
     attachments: 
-      - *res2
+      - *propimg2
   - &contrib14 !!models.Contribution
     title: A library for the empty lot
     type: BRAINSTORMING
@@ -1034,8 +1059,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res1
-      - *res2
+      - *propimg3
+      - *propimg4
   - &contrib21 !!models.Contribution
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
@@ -1048,7 +1073,7 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res6
+      - *propimg6
       - *res1
   - &contrib22 !!models.Contribution
     title: Library at Rue Ramponeau
@@ -1062,8 +1087,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res2
-      - *res1
+      - *propimg5
+      - *propimg7
   - &contrib30 !!models.Contribution
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
@@ -1076,8 +1101,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res1
-      - *res2
+      - *propimg3
+      - *propimg4
   - &contrib31 !!models.Contribution
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
@@ -1090,8 +1115,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res6
-      - *res1
+      - *propimg3
+      - *propimg4
   - &contrib32 !!models.Contribution
     title: Library at Rue Ramponeau
     text: Let's create a public library
@@ -1104,8 +1129,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res2
-      - *res1
+      - *propimg5
+      - *propimg6
   - &contrib40 !!models.Contribution
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
@@ -1118,8 +1143,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res1
-      - *res2
+      - *propimg3
+      - *propimg4
   - &contrib41 !!models.Contribution
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
@@ -1146,8 +1171,8 @@
     associatedMilestones:
       - *ci3
     attachments:
-      - *res2
-      - *res1
+      - *propimg3
+      - *propimg4
       
 ####################################################################################################################################################################################
 # Component Instances: 
@@ -1466,6 +1491,7 @@
     shortname: "assemblee-belleville"
     description: Assembly of residents of Belleville. We are using AppCivist to develop proposals to improve the neighborhood and then submit these proposals to the Mairie de Paris. We also use this medium to organize other civic actions.
     uuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Assemblèe Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     profile: &ap1 !!models.AssemblyProfile
       targetAudience: Residents of Belleville 
       supportedMembership: OPEN
@@ -1489,6 +1515,7 @@
     shortname: "pb-paris-mairie-de-paris"
     description: Mayor's Office launches Participatory Budgeting 2016
     uuidAsString: e1998748-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'PB Paris - Mairie de Paris' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     profile: &ap2 !!models.AssemblyProfile
       targetAudience: Residents of Paris 
       supportedMembership: INVITATION_AND_REQUEST
@@ -1511,6 +1538,7 @@
     shortname: "pb-belleville-paris"
     description: Belleville assembly
     uuidAsString: e199890a-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'PB Belleville Paris' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     profile: &ap3 !!models.AssemblyProfile
       targetAudience: Residents of Belleville 
       supportedMembership: OPEN
@@ -1532,6 +1560,7 @@
     shortname: "arrondissement7"
     description: We are a group of activist collaborating to oppose the wrongdoings of article 19 in arrondissement 7
     uuidAsString: e1998d4c-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Arrondissement 07' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     profile: &ap4 !!models.AssemblyProfile
       targetAudience: Residents of Arrondissement 07
       supportedMembership: INVITATION_AND_REQUEST
@@ -1553,6 +1582,7 @@
     shortname: "droit-au-logement"
     description: We work to end evitcions in Paris and bring new housing infrastructures for the people
     uuidAsString: c496bf24-408f-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Assemblé Droit au Logement' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     profile: &ap5 !!models.AssemblyProfile
       targetAudience: Everyone in Paris
       supportedMembership: INVITATION_AND_REQUEST
@@ -1574,6 +1604,7 @@
     shortname: "doctors-without-borders"
     description: Assembly of the Non-Profit Doctors without borders, workin out proposals for our future initiatives
     uuidAsString: c496c1fe-408f-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Doctors without borders' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     profile: &ap6 !!models.AssemblyProfile
       targetAudience: Doctors
       supportedMembership: INVITATION_AND_REQUEST

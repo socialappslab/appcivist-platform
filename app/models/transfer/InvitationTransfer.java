@@ -2,8 +2,8 @@ package models.transfer;
 
 public class InvitationTransfer {
 	private String email; 
-	private String moderator; 
-	private String coordinator; 
+	private Boolean moderator; 
+	private Boolean coordinator; 
 	
 	public InvitationTransfer() {
 		super();
@@ -17,19 +17,19 @@ public class InvitationTransfer {
 		this.email = email;
 	}
 
-	public String getModerator() {
+	public Boolean getModerator() {
 		return moderator;
 	}
 
-	public void setModerator(String moderator) {
+	public void setModerator(Boolean moderator) {
 		this.moderator = moderator;
 	}
 
-	public String getCoordinator() {
+	public Boolean getCoordinator() {
 		return coordinator;
 	}
 
-	public void setCoordinator(String coordinator) {
+	public void setCoordinator(Boolean coordinator) {
 		this.coordinator = coordinator;
 	}
 }

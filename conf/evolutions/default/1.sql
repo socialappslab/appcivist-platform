@@ -16,6 +16,7 @@ create table assembly (
   description               text,
   url                       varchar(255),
   listed                    boolean,
+  invitationEmail           text,
   profile_assembly_profile_id bigint,
   location_location_id      bigint,
   resources_resource_space_id bigint,
@@ -378,6 +379,26 @@ create table membership (
   working_group_group_id    bigint,
   constraint ck_membership_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING')),
   constraint pk_membership primary key (membership_id))
+;
+
+create table membership_invitation (
+  id                        bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  email                     varchar(255),
+  user_id                   bigint,
+  status                    varchar(9),
+  creator_user_id           bigint,
+  token_token_id            bigint,
+  target_id                 bigint,
+  target_type               varchar(8),
+  constraint ck_membership_invitation_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING')),
+  constraint ck_membership_invitation_target_type check (target_type in ('ASSEMBLY','GROUP')),
+  constraint uq_membership_invitation_token_t unique (token_token_id),
+  constraint pk_membership_invitation primary key (id))
 ;
 
 create table properties (
@@ -744,6 +765,7 @@ create table working_group (
   majority_threshold        varchar(255),
   block_majority            boolean,
   profile_working_group_profile_id bigint,
+  invitationEmail           text,
   resources_resource_space_id bigint,
   forum_resource_space_id   bigint,
   constraint uq_working_group_profile_working unique (profile_working_group_profile_id),
@@ -823,6 +845,12 @@ create table MEMBERSHIP_ROLE (
   membership_membership_id       bigint not null,
   role_role_id                   bigint not null,
   constraint pk_MEMBERSHIP_ROLE primary key (membership_membership_id, role_role_id))
+;
+
+create table membership_invitation_security_r (
+  membership_invitation_id       bigint not null,
+  security_role_role_id          bigint not null,
+  constraint pk_membership_invitation_security_r primary key (membership_invitation_id, security_role_role_id))
 ;
 
 create table resource_space_config (
@@ -974,80 +1002,84 @@ alter table membership add constraint fk_membership_assembly_26 foreign key (ass
 create index ix_membership_assembly_26 on membership (assembly_assembly_id);
 alter table membership add constraint fk_membership_workingGroup_27 foreign key (working_group_group_id) references working_group (group_id);
 create index ix_membership_workingGroup_27 on membership (working_group_group_id);
-alter table properties add constraint fk_properties_geo_28 foreign key (geo_location_id) references geo (location_id);
-create index ix_properties_geo_28 on properties (geo_location_id);
-alter table service add constraint fk_service_assembly_29 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
-create index ix_service_assembly_29 on service (assembly_assembly_id);
-alter table service add constraint fk_service_serviceDefinition_30 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_serviceDefinition_30 on service (service_definition_service_definition_id);
-alter table service_authentication add constraint fk_service_authentication_ser_31 foreign key (service_service_id) references service (service_id);
-create index ix_service_authentication_ser_31 on service_authentication (service_service_id);
-alter table service_campaign add constraint fk_service_campaign_previousC_32 foreign key (previous_campaign) references service_campaign (campaign_id);
-create index ix_service_campaign_previousC_32 on service_campaign (previous_campaign);
-alter table service_campaign add constraint fk_service_campaign_nextCampa_33 foreign key (next_campaign) references service_campaign (campaign_id);
-create index ix_service_campaign_nextCampa_33 on service_campaign (next_campaign);
-alter table service_campaign add constraint fk_service_campaign_issue_34 foreign key (issue_issue_id) references service_issue (issue_id);
-create index ix_service_campaign_issue_34 on service_campaign (issue_issue_id);
-alter table service_campaign add constraint fk_service_campaign_startOper_35 foreign key (start_operation_service_operation_id) references service_operation (service_operation_id);
-create index ix_service_campaign_startOper_35 on service_campaign (start_operation_service_operation_id);
-alter table service_issue add constraint fk_service_issue_assembly_36 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
-create index ix_service_issue_assembly_36 on service_issue (assembly_assembly_id);
-alter table service_issue add constraint fk_service_issue_resource_37 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_issue_resource_37 on service_issue (resource_service_resource_id);
-alter table service_operation add constraint fk_service_operation_definiti_38 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_operation_definiti_38 on service_operation (operation_definition_id);
-alter table service_operation add constraint fk_service_operation_service_39 foreign key (service_service_id) references service (service_id);
-create index ix_service_operation_service_39 on service_operation (service_service_id);
-alter table service_operation_definition add constraint fk_service_operation_definiti_40 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
-create index ix_service_operation_definiti_40 on service_operation_definition (service_definition_service_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceP_41 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_serviceP_41 on service_parameter (service_parameter_parameter_definition_id);
-alter table service_parameter add constraint fk_service_parameter_serviceR_42 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_parameter_serviceR_42 on service_parameter (service_resource_service_resource_id);
-alter table service_parameter add constraint fk_service_parameter_serviceO_43 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
-create index ix_service_parameter_serviceO_43 on service_parameter (service_operation_service_operation_id);
-alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_44 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
-create index ix_service_parameter_data_mod_44 on service_parameter_data_model (definition_parameter_definition_id);
-alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_45 foreign key (parent_data_model_data_model_id) references service_parameter_data_model (data_model_id);
-create index ix_service_parameter_data_mod_45 on service_parameter_data_model (parent_data_model_data_model_id);
-alter table service_parameter_definition add constraint fk_service_parameter_definiti_46 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
-create index ix_service_parameter_definiti_46 on service_parameter_definition (service_operation_definition_operation_definition_id);
-alter table service_resource add constraint fk_service_resource_service_47 foreign key (service_service_id) references service (service_id);
-create index ix_service_resource_service_47 on service_resource (service_service_id);
-alter table service_resource add constraint fk_service_resource_parentRes_48 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
-create index ix_service_resource_parentRes_48 on service_resource (parent_resource_service_resource_id);
-alter table Token_Action add constraint fk_Token_Action_targetUser_49 foreign key (user_id) references appcivist_user (user_id);
-create index ix_Token_Action_targetUser_49 on Token_Action (user_id);
-alter table appcivist_user add constraint fk_appcivist_user_profilePic_50 foreign key (profile_pic_resource_id) references resource (resource_id);
-create index ix_appcivist_user_profilePic_50 on appcivist_user (profile_pic_resource_id);
-alter table user_profile add constraint fk_user_profile_user_51 foreign key (user_user_id) references appcivist_user (user_id);
-create index ix_user_profile_user_51 on user_profile (user_user_id);
-alter table voting_ballot add constraint fk_voting_ballot_registration_52 foreign key (registration_form_voting_ballot_registration_form_id) references voting_ballot_registration_form (voting_ballot_registration_form_id);
-create index ix_voting_ballot_registration_52 on voting_ballot (registration_form_voting_ballot_registration_form_id);
-alter table voting_ballot add constraint fk_voting_ballot_resources_53 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
-create index ix_voting_ballot_resources_53 on voting_ballot (resources_resource_space_id);
-alter table voting_ballot_tally add constraint fk_voting_ballot_tally_ballot_54 foreign key (ballot_voting_ballot_id) references voting_ballot (voting_ballot_id);
-create index ix_voting_ballot_tally_ballot_54 on voting_ballot_tally (ballot_voting_ballot_id);
-alter table voting_ballot_vote add constraint fk_voting_ballot_vote_ballot_55 foreign key (ballot_voting_ballot_id) references voting_ballot (voting_ballot_id);
-create index ix_voting_ballot_vote_ballot_55 on voting_ballot_vote (ballot_voting_ballot_id);
-alter table voting_candidate add constraint fk_voting_candidate_ballot_56 foreign key (ballot_voting_ballot_id) references voting_ballot (voting_ballot_id);
-create index ix_voting_candidate_ballot_56 on voting_candidate (ballot_voting_ballot_id);
-alter table voting_candidate_vote add constraint fk_voting_candidate_vote_voti_57 foreign key (voting_ballot_vote_voting_ballot_vote) references voting_ballot_vote (voting_ballot_vote);
-create index ix_voting_candidate_vote_voti_57 on voting_candidate_vote (voting_ballot_vote_voting_ballot_vote);
-alter table voting_candidate_vote add constraint fk_voting_candidate_vote_sele_58 foreign key (selected_candidate_voting_candidate_id) references voting_candidate (voting_candidate_id);
-create index ix_voting_candidate_vote_sele_58 on voting_candidate_vote (selected_candidate_voting_candidate_id);
-alter table voting_candidate_vote_result add constraint fk_voting_candidate_vote_resu_59 foreign key (voting_ballot_tally_voting_ballot_tally_id) references voting_ballot_tally (voting_ballot_tally_id);
-create index ix_voting_candidate_vote_resu_59 on voting_candidate_vote_result (voting_ballot_tally_voting_ballot_tally_id);
-alter table voting_candidate_vote_result add constraint fk_voting_candidate_vote_resu_60 foreign key (selected_candidate_voting_candidate_id) references voting_candidate (voting_candidate_id);
-create index ix_voting_candidate_vote_resu_60 on voting_candidate_vote_result (selected_candidate_voting_candidate_id);
-alter table working_group add constraint fk_working_group_profile_61 foreign key (profile_working_group_profile_id) references working_group_profile (working_group_profile_id);
-create index ix_working_group_profile_61 on working_group (profile_working_group_profile_id);
-alter table working_group add constraint fk_working_group_resources_62 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
-create index ix_working_group_resources_62 on working_group (resources_resource_space_id);
-alter table working_group add constraint fk_working_group_forum_63 foreign key (forum_resource_space_id) references resource_space (resource_space_id);
-create index ix_working_group_forum_63 on working_group (forum_resource_space_id);
-alter table voting_ballot_registration_field add constraint fk_voting_ballot_registration_64 foreign key (voting_ballot_registration_form_voting_ballot_registration_form_id) references voting_ballot_registration_form (voting_ballot_registration_form_id);
-create index ix_voting_ballot_registration_64 on voting_ballot_registration_field (voting_ballot_registration_form_voting_ballot_registration_form_id);
+alter table membership_invitation add constraint fk_membership_invitation_crea_28 foreign key (creator_user_id) references appcivist_user (user_id);
+create index ix_membership_invitation_crea_28 on membership_invitation (creator_user_id);
+alter table membership_invitation add constraint fk_membership_invitation_toke_29 foreign key (token_token_id) references Token_Action (token_id);
+create index ix_membership_invitation_toke_29 on membership_invitation (token_token_id);
+alter table properties add constraint fk_properties_geo_30 foreign key (geo_location_id) references geo (location_id);
+create index ix_properties_geo_30 on properties (geo_location_id);
+alter table service add constraint fk_service_assembly_31 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
+create index ix_service_assembly_31 on service (assembly_assembly_id);
+alter table service add constraint fk_service_serviceDefinition_32 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_serviceDefinition_32 on service (service_definition_service_definition_id);
+alter table service_authentication add constraint fk_service_authentication_ser_33 foreign key (service_service_id) references service (service_id);
+create index ix_service_authentication_ser_33 on service_authentication (service_service_id);
+alter table service_campaign add constraint fk_service_campaign_previousC_34 foreign key (previous_campaign) references service_campaign (campaign_id);
+create index ix_service_campaign_previousC_34 on service_campaign (previous_campaign);
+alter table service_campaign add constraint fk_service_campaign_nextCampa_35 foreign key (next_campaign) references service_campaign (campaign_id);
+create index ix_service_campaign_nextCampa_35 on service_campaign (next_campaign);
+alter table service_campaign add constraint fk_service_campaign_issue_36 foreign key (issue_issue_id) references service_issue (issue_id);
+create index ix_service_campaign_issue_36 on service_campaign (issue_issue_id);
+alter table service_campaign add constraint fk_service_campaign_startOper_37 foreign key (start_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_campaign_startOper_37 on service_campaign (start_operation_service_operation_id);
+alter table service_issue add constraint fk_service_issue_assembly_38 foreign key (assembly_assembly_id) references service_assembly (assembly_id);
+create index ix_service_issue_assembly_38 on service_issue (assembly_assembly_id);
+alter table service_issue add constraint fk_service_issue_resource_39 foreign key (resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_issue_resource_39 on service_issue (resource_service_resource_id);
+alter table service_operation add constraint fk_service_operation_definiti_40 foreign key (operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_operation_definiti_40 on service_operation (operation_definition_id);
+alter table service_operation add constraint fk_service_operation_service_41 foreign key (service_service_id) references service (service_id);
+create index ix_service_operation_service_41 on service_operation (service_service_id);
+alter table service_operation_definition add constraint fk_service_operation_definiti_42 foreign key (service_definition_service_definition_id) references service_definition (service_definition_id);
+create index ix_service_operation_definiti_42 on service_operation_definition (service_definition_service_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceP_43 foreign key (service_parameter_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_serviceP_43 on service_parameter (service_parameter_parameter_definition_id);
+alter table service_parameter add constraint fk_service_parameter_serviceR_44 foreign key (service_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_parameter_serviceR_44 on service_parameter (service_resource_service_resource_id);
+alter table service_parameter add constraint fk_service_parameter_serviceO_45 foreign key (service_operation_service_operation_id) references service_operation (service_operation_id);
+create index ix_service_parameter_serviceO_45 on service_parameter (service_operation_service_operation_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_46 foreign key (definition_parameter_definition_id) references service_parameter_definition (parameter_definition_id);
+create index ix_service_parameter_data_mod_46 on service_parameter_data_model (definition_parameter_definition_id);
+alter table service_parameter_data_model add constraint fk_service_parameter_data_mod_47 foreign key (parent_data_model_data_model_id) references service_parameter_data_model (data_model_id);
+create index ix_service_parameter_data_mod_47 on service_parameter_data_model (parent_data_model_data_model_id);
+alter table service_parameter_definition add constraint fk_service_parameter_definiti_48 foreign key (service_operation_definition_operation_definition_id) references service_operation_definition (operation_definition_id);
+create index ix_service_parameter_definiti_48 on service_parameter_definition (service_operation_definition_operation_definition_id);
+alter table service_resource add constraint fk_service_resource_service_49 foreign key (service_service_id) references service (service_id);
+create index ix_service_resource_service_49 on service_resource (service_service_id);
+alter table service_resource add constraint fk_service_resource_parentRes_50 foreign key (parent_resource_service_resource_id) references service_resource (service_resource_id);
+create index ix_service_resource_parentRes_50 on service_resource (parent_resource_service_resource_id);
+alter table Token_Action add constraint fk_Token_Action_targetUser_51 foreign key (user_id) references appcivist_user (user_id);
+create index ix_Token_Action_targetUser_51 on Token_Action (user_id);
+alter table appcivist_user add constraint fk_appcivist_user_profilePic_52 foreign key (profile_pic_resource_id) references resource (resource_id);
+create index ix_appcivist_user_profilePic_52 on appcivist_user (profile_pic_resource_id);
+alter table user_profile add constraint fk_user_profile_user_53 foreign key (user_user_id) references appcivist_user (user_id);
+create index ix_user_profile_user_53 on user_profile (user_user_id);
+alter table voting_ballot add constraint fk_voting_ballot_registration_54 foreign key (registration_form_voting_ballot_registration_form_id) references voting_ballot_registration_form (voting_ballot_registration_form_id);
+create index ix_voting_ballot_registration_54 on voting_ballot (registration_form_voting_ballot_registration_form_id);
+alter table voting_ballot add constraint fk_voting_ballot_resources_55 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
+create index ix_voting_ballot_resources_55 on voting_ballot (resources_resource_space_id);
+alter table voting_ballot_tally add constraint fk_voting_ballot_tally_ballot_56 foreign key (ballot_voting_ballot_id) references voting_ballot (voting_ballot_id);
+create index ix_voting_ballot_tally_ballot_56 on voting_ballot_tally (ballot_voting_ballot_id);
+alter table voting_ballot_vote add constraint fk_voting_ballot_vote_ballot_57 foreign key (ballot_voting_ballot_id) references voting_ballot (voting_ballot_id);
+create index ix_voting_ballot_vote_ballot_57 on voting_ballot_vote (ballot_voting_ballot_id);
+alter table voting_candidate add constraint fk_voting_candidate_ballot_58 foreign key (ballot_voting_ballot_id) references voting_ballot (voting_ballot_id);
+create index ix_voting_candidate_ballot_58 on voting_candidate (ballot_voting_ballot_id);
+alter table voting_candidate_vote add constraint fk_voting_candidate_vote_voti_59 foreign key (voting_ballot_vote_voting_ballot_vote) references voting_ballot_vote (voting_ballot_vote);
+create index ix_voting_candidate_vote_voti_59 on voting_candidate_vote (voting_ballot_vote_voting_ballot_vote);
+alter table voting_candidate_vote add constraint fk_voting_candidate_vote_sele_60 foreign key (selected_candidate_voting_candidate_id) references voting_candidate (voting_candidate_id);
+create index ix_voting_candidate_vote_sele_60 on voting_candidate_vote (selected_candidate_voting_candidate_id);
+alter table voting_candidate_vote_result add constraint fk_voting_candidate_vote_resu_61 foreign key (voting_ballot_tally_voting_ballot_tally_id) references voting_ballot_tally (voting_ballot_tally_id);
+create index ix_voting_candidate_vote_resu_61 on voting_candidate_vote_result (voting_ballot_tally_voting_ballot_tally_id);
+alter table voting_candidate_vote_result add constraint fk_voting_candidate_vote_resu_62 foreign key (selected_candidate_voting_candidate_id) references voting_candidate (voting_candidate_id);
+create index ix_voting_candidate_vote_resu_62 on voting_candidate_vote_result (selected_candidate_voting_candidate_id);
+alter table working_group add constraint fk_working_group_profile_63 foreign key (profile_working_group_profile_id) references working_group_profile (working_group_profile_id);
+create index ix_working_group_profile_63 on working_group (profile_working_group_profile_id);
+alter table working_group add constraint fk_working_group_resources_64 foreign key (resources_resource_space_id) references resource_space (resource_space_id);
+create index ix_working_group_resources_64 on working_group (resources_resource_space_id);
+alter table working_group add constraint fk_working_group_forum_65 foreign key (forum_resource_space_id) references resource_space (resource_space_id);
+create index ix_working_group_forum_65 on working_group (forum_resource_space_id);
+alter table voting_ballot_registration_field add constraint fk_voting_ballot_registration_66 foreign key (voting_ballot_registration_form_voting_ballot_registration_form_id) references voting_ballot_registration_form (voting_ballot_registration_form_id);
+create index ix_voting_ballot_registration_66 on voting_ballot_registration_field (voting_ballot_registration_form_voting_ballot_registration_form_id);
 
 
 
@@ -1070,6 +1102,10 @@ alter table contribution_working_group add constraint fk_contribution_working_gr
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_membership_01 foreign key (membership_membership_id) references membership (membership_id);
 
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_security_r_02 foreign key (role_role_id) references security_role (role_id);
+
+alter table membership_invitation_security_r add constraint fk_membership_invitation_secu_01 foreign key (membership_invitation_id) references membership_invitation (id);
+
+alter table membership_invitation_security_r add constraint fk_membership_invitation_secu_02 foreign key (security_role_role_id) references security_role (role_id);
 
 alter table resource_space_config add constraint fk_resource_space_config_reso_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
@@ -1134,24 +1170,24 @@ alter table User_Security_Roles add constraint fk_User_Security_Roles_securi_02 
 alter table User_User_Permission add constraint fk_User_User_Permission_appci_01 foreign key (user_id) references appcivist_user (user_id);
 
 alter table User_User_Permission add constraint fk_User_User_Permission_user__02 foreign key (permission_id) references user_permission (permission_id);
-create index ix_assembly_uuid_65 on assembly(uuid);
-create index ix_audit_contribution_contrib_66 on audit_contribution(contribution_id);
-create index ix_audit_contribution_uuid_67 on audit_contribution(uuid);
-create index ix_component_uuid_68 on component(uuid);
-create index ix_component_required_milesto_69 on component_required_milestone(target_component_uuid);
-create index ix_contribution_uuid_70 on contribution(uuid);
-create index ix_contribution_text_index_71 on contribution(text_index);
-create index ix_contribution_template_uuid_72 on contribution_template(uuid);
-create index ix_contribution_template_sect_73 on contribution_template_section(uuid);
-create index ix_location_serialized_locati_74 on location(serialized_location);
-create index ix_resource_uuid_75 on resource(uuid);
-create index ix_resource_space_uuid_76 on resource_space(uuid);
-create index ix_voting_ballot_uuid_77 on voting_ballot(uuid);
-create index ix_voting_ballot_tally_uuid_78 on voting_ballot_tally(uuid);
-create index ix_voting_ballot_vote_uuid_79 on voting_ballot_vote(uuid);
-create index ix_voting_candidate_vote_uuid_80 on voting_candidate_vote(uuid);
-create index ix_voting_candidate_vote_resu_81 on voting_candidate_vote_result(uuid);
-create index ix_voting_ballot_registration_82 on voting_ballot_registration_form(uuid);
+create index ix_assembly_uuid_67 on assembly(uuid);
+create index ix_audit_contribution_contrib_68 on audit_contribution(contribution_id);
+create index ix_audit_contribution_uuid_69 on audit_contribution(uuid);
+create index ix_component_uuid_70 on component(uuid);
+create index ix_component_required_milesto_71 on component_required_milestone(target_component_uuid);
+create index ix_contribution_uuid_72 on contribution(uuid);
+create index ix_contribution_text_index_73 on contribution(text_index);
+create index ix_contribution_template_uuid_74 on contribution_template(uuid);
+create index ix_contribution_template_sect_75 on contribution_template_section(uuid);
+create index ix_location_serialized_locati_76 on location(serialized_location);
+create index ix_resource_uuid_77 on resource(uuid);
+create index ix_resource_space_uuid_78 on resource_space(uuid);
+create index ix_voting_ballot_uuid_79 on voting_ballot(uuid);
+create index ix_voting_ballot_tally_uuid_80 on voting_ballot_tally(uuid);
+create index ix_voting_ballot_vote_uuid_81 on voting_ballot_vote(uuid);
+create index ix_voting_candidate_vote_uuid_82 on voting_candidate_vote(uuid);
+create index ix_voting_candidate_vote_resu_83 on voting_candidate_vote_result(uuid);
+create index ix_voting_ballot_registration_84 on voting_ballot_registration_form(uuid);
 
 # --- !Downs
 
@@ -1220,6 +1256,10 @@ drop table if exists location cascade;
 drop table if exists membership cascade;
 
 drop table if exists MEMBERSHIP_ROLE cascade;
+
+drop table if exists membership_invitation cascade;
+
+drop table if exists membership_invitation_security_r cascade;
 
 drop table if exists properties cascade;
 

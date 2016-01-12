@@ -10,6 +10,7 @@ public class AssemblyTransfer {
 	private String shortname;
 	private String description; 
 	private Boolean listed;
+	private String invitationEmail;
 	private AssemblyProfileTransfer profile;
 	private LocationTransfer location;
 	private List<ThemeTransfer> themes;
@@ -56,6 +57,12 @@ public class AssemblyTransfer {
 	}
 	public void setListed(Boolean listed) {
 		this.listed = listed;
+	}
+	public String getInvitationEmail() {
+		return invitationEmail;
+	}
+	public void setInvitationEmail(String invitationEmail) {
+		this.invitationEmail = invitationEmail;
 	}
 	public AssemblyProfileTransfer getProfile() {
 		return profile;
