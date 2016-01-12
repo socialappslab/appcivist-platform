@@ -59,6 +59,8 @@ public class Assembly extends AppCivistBaseModel {
 	private String url; 
 	// If true, the 'profile' is public
 	private Boolean listed = true;
+	@Column(name="invitationEmail", columnDefinition="text")
+	private String invitationEmail;
 
 	@OneToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
@@ -356,6 +358,22 @@ public class Assembly extends AppCivistBaseModel {
 
 	public void setListed(Boolean listed) {
 		this.listed = listed;
+	}
+
+	public String getInvitationEmail() {
+		return invitationEmail;
+	}
+
+	public void setInvitationEmail(String invitationEmail) {
+		this.invitationEmail = invitationEmail;
+	}
+
+	public List<MembershipAssembly> getMemberships() {
+		return memberships;
+	}
+
+	public void setMemberships(List<MembershipAssembly> memberships) {
+		this.memberships = memberships;
 	}
 
 	public List<Theme> getThemes() {

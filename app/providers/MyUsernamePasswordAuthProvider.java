@@ -14,6 +14,7 @@ import javax.inject.Inject;
 
 import models.LinkedAccount;
 import models.Membership;
+import models.MembershipInvitation;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
@@ -583,6 +584,18 @@ public class MyUsernamePasswordAuthProvider
 		final String subject = getMembershipInvitationEmail(targetCollection);
 		final String token = generateNewInvitation(invitation.getEmail());
 		final Body body = getInvitationEmailBody(token, id, invitation, targetCollection);
+		mailer.sendMail(subject, body, invitation.getEmail());
+	}
+	
+	public void sendInvitationByEmail(final MembershipInvitation invitation, String invitationEmail, String invitationSubject) {
+		final String subject = invitationSubject;
+		final Body body = new Body(invitationEmail,invitationEmail);
+		mailer.sendMail(subject, body, invitation.getEmail());
+	}
+	
+	public void sendInvitationByEmail(final MembershipInvitation invitation, String invitationEmailTxt,String invitationEmailHTML, String invitationSubject) {
+		final String subject = invitationSubject;
+		final Body body = new Body(invitationEmailTxt,invitationEmailHTML);
 		mailer.sendMail(subject, body, invitation.getEmail());
 	}
 
