@@ -658,7 +658,7 @@ public class Users extends Controller {
 	 * @param type
 	 * @return
 	 */
-	protected static TokenAction tokenIsValid(final String token,
+	public static TokenAction tokenIsValid(final String token,
 			final Type type) {
 		TokenAction ret = null;
 		if (token != null && !token.trim().isEmpty()) {

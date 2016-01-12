@@ -16,6 +16,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import models.transfer.InvitationTransfer;
+
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -49,7 +51,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonIgnoreProperties({ "workingGroupProfileId", "workingGroup" })
 	@JsonInclude(Include.NON_EMPTY)
 	private WorkingGroupProfile profile = new WorkingGroupProfile();
-    
+
+	@Column(name="invitationEmail", columnDefinition="text")
+	private String invitationEmail;
+	@Transient private List<InvitationTransfer> invitations;
     
     /**
  	 * The group resource space contains its configurations, themes, associated campaigns
@@ -189,6 +194,22 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	public void setProfile(WorkingGroupProfile profile) {
 		this.profile = profile;
+	}
+
+	public String getInvitationEmail() {
+		return invitationEmail;
+	}
+
+	public void setInvitationEmail(String invitationEmail) {
+		this.invitationEmail = invitationEmail;
+	}
+
+	public List<InvitationTransfer> getInvitations() {
+		return invitations;
+	}
+
+	public void setInvitations(List<InvitationTransfer> invitations) {
+		this.invitations = invitations;
 	}
 
 	public Long getGroupId() {
