@@ -224,65 +224,86 @@ public class Memberships extends Controller {
 					
 		if(response.equals("ACCEPT")){
 			mi.setStatus(MembershipStatus.ACCEPTED);
-			
-			// 3. Create the User
-			com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-			final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM.bindFromRequest();
-			if (filledForm.hasErrors()) {
-				Ebean.rollbackTransaction();
-				return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-						Messages.get("play.authenticate.filledFromHasErrors"),
-						filledForm.errorsAsJson().toString())));
-			} else {
-				Result result;
-				try {
-					MySignup signup = filledForm.get();
-					String email = signup.getEmail();
-					result = MyUsernamePasswordAuthProvider.handleSignup(ctx());
-					if (result!=null) {
-						User newUser = User.findByEmail(email);
-						mi.setUserId(newUser.getUserId());
-						
-						// 4. Create Membership
-						if(mi.getTargetType().equals(MembershipTypes.ASSEMBLY)) {
-							MembershipAssembly ma = new MembershipAssembly();
-							Assembly a = Assembly.read(mi.getTargetId());
-							ma.setAssembly(a);
-							ma.setCreator(mi.getCreator());
-							ma.setStatus(MembershipStatus.ACCEPTED);
-							ma.setRoles(mi.getRoles());
-							ma.setTargetUuid(a.getUuid());
-							ma.setUser(newUser);
-							ma.save();
-							ma.refresh();
-						} else {
-							MembershipGroup mg = new MembershipGroup();
-							WorkingGroup g = WorkingGroup.read(mi.getTargetId());
-							mg.setWorkingGroup(g);
-							mg.setCreator(mi.getCreator());
-							mg.setStatus(MembershipStatus.ACCEPTED);
-							mg.setRoles(mi.getRoles());
-							mg.setTargetUuid(g.getUuid());
-							mg.setUser(newUser);
-							mg.save();
-							mg.refresh();
-						}
-
-						// 5. Update Invitation record
-						mi.update();
-					} else {
-						throw new Exception("User was not created");
-					}
-				} catch (Exception e) {
+			User newUser = null;
+			if(mi.getUserId()!=null) {
+				newUser = User.read(mi.getUserId());
+			}
+			// 3. Create the User if does not exist
+			Result result = null;
+			String signupEmail = "";
+			if (newUser==null) {
+				com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+				final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM.bindFromRequest();
+				if (filledForm.hasErrors()) {
 					Ebean.rollbackTransaction();
-					return badRequest(Json
-							.toJson(TransferResponseStatus.badMessage(
-									Messages.get("Error has occurred when accepting invitation"),
-									e.getMessage())));
+					return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+							Messages.get("play.authenticate.filledFromHasErrors"),
+							filledForm.errorsAsJson().toString())));
+				} else {
+					try {
+						MySignup signup = filledForm.get();
+						signupEmail = signup.getEmail();
+						result = MyUsernamePasswordAuthProvider.handleSignup(ctx());
+					} catch (Exception e) {
+						Ebean.rollbackTransaction();
+						return badRequest(Json
+								.toJson(TransferResponseStatus.badMessage(
+										Messages.get("Error has occurred when creating user"),
+										e.getMessage())));
+					}
+				} 
+			}
+			
+		
+			// 4. Create Membership
+			try {
+				if (result!=null) {
+					newUser = User.findByEmail(signupEmail);
+					mi.setUserId(newUser.getUserId());
+				} else if (result==null && newUser == null) {
+					throw new Exception("The user was not created");
 				}
-				Ebean.commitTransaction();	
+
+				if (mi.getTargetType().equals(MembershipTypes.ASSEMBLY)) {
+					MembershipAssembly ma = new MembershipAssembly();
+					Assembly a = Assembly.read(mi.getTargetId());
+					ma.setAssembly(a);
+					ma.setCreator(mi.getCreator());
+					ma.setStatus(MembershipStatus.ACCEPTED);
+					ma.setRoles(mi.getRoles());
+					ma.setTargetUuid(a.getUuid());
+					ma.setUser(newUser);
+					ma.save();
+					ma.refresh();
+				} else {
+					MembershipGroup mg = new MembershipGroup();
+					WorkingGroup g = WorkingGroup.read(mi.getTargetId());
+					mg.setWorkingGroup(g);
+					mg.setCreator(mi.getCreator());
+					mg.setStatus(MembershipStatus.ACCEPTED);
+					mg.setRoles(mi.getRoles());
+					mg.setTargetUuid(g.getUuid());
+					mg.setUser(newUser);
+					mg.save();
+					mg.refresh();
+				}
+
+				// 5. Update Invitation record
+				mi.update();
+			} catch (Exception e) {
+				return internalServerError(Json
+						.toJson(TransferResponseStatus.badMessage(
+								Messages.get("Error has occurred: "),
+								e.getMessage())));
+			}
+			
+			if (result!=null) {
+				Ebean.commitTransaction();
 				return result;
-			}			
+			} else {
+				Ebean.commitTransaction();
+				return ok(Json.toJson(newUser));
+			}
 		} else {
 			// 5. Update Invitation record
 			mi.setStatus(MembershipStatus.REJECTED);
@@ -296,6 +317,13 @@ public class Memberships extends Controller {
 		MembershipInvitation membershipInvitation = new MembershipInvitation();
 		membershipInvitation.setCreator(creator);
 		membershipInvitation.setEmail(invitation.getEmail());
+
+		// if email is in system, attach user
+		User u = User.findByEmail(invitation.getEmail());
+		if (u!=null) {
+			membershipInvitation.setUserId(u.getUserId());
+		}
+		
 		membershipInvitation.setLang(creator.getLanguage());
 		membershipInvitation.setStatus(MembershipStatus.INVITED);
 		MembershipTypes invitationType = invitation.getTargetType().equals("ASSEMBLY") ? MembershipTypes.ASSEMBLY : MembershipTypes.GROUP;
