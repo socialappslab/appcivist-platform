@@ -592,6 +592,12 @@ public class MyUsernamePasswordAuthProvider
 		final Body body = new Body(invitationEmail,invitationEmail);
 		mailer.sendMail(subject, body, invitation.getEmail());
 	}
+	
+	public void sendInvitationByEmail(final MembershipInvitation invitation, String invitationEmailTxt,String invitationEmailHTML, String invitationSubject) {
+		final String subject = invitationSubject;
+		final Body body = new Body(invitationEmailTxt,invitationEmailHTML);
+		mailer.sendMail(subject, body, invitation.getEmail());
+	}
 
 	private String getEmailName(final User user) {
 		return getEmailName(user.getEmail(), user.getName());

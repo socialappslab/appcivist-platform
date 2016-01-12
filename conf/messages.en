@@ -169,6 +169,7 @@ membership.invitation.creation.error = The invitation to membership was not crea
 membership.invitation.creation.unauthorized = The membership could not be created because user is not authorized
 membership.invitation.email.message = Membership invitation
 membership.invitation.email.subject=Invitation to join an AppCivist {0}
+membership.invitation.email.link = To accept the invitation, follow this link
 membership.request.email.subject=Request to join an AppCivist {0}
 membership.confirmation.email.subject=Welcome to this AppCivist {0}
 

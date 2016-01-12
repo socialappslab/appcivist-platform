@@ -377,7 +377,7 @@ create table membership (
   target_uuid               varchar(40),
   assembly_assembly_id      bigint,
   working_group_group_id    bigint,
-  constraint ck_membership_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING')),
+  constraint ck_membership_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING','REJECTED')),
   constraint pk_membership primary key (membership_id))
 ;
 
@@ -395,7 +395,7 @@ create table membership_invitation (
   token_token_id            bigint,
   target_id                 bigint,
   target_type               varchar(8),
-  constraint ck_membership_invitation_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING')),
+  constraint ck_membership_invitation_status check (status in ('ACCEPTED','REQUESTED','INVITED','FOLLOWING','REJECTED')),
   constraint ck_membership_invitation_target_type check (target_type in ('ASSEMBLY','GROUP')),
   constraint uq_membership_invitation_token_t unique (token_token_id),
   constraint pk_membership_invitation primary key (id))
