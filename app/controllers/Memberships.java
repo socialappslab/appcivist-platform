@@ -136,6 +136,7 @@ public class Memberships extends Controller {
 						e.getMessage()));
 				return internalServerError(Json.toJson(responseBody));
 			}
+			Ebean.commitTransaction();
 			return ok(Json.toJson(mi));
 		}
 	}
