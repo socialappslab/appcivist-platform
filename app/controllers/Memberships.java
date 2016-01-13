@@ -37,7 +37,6 @@ import utils.Pair;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
-import ch.qos.logback.core.subst.Token;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
