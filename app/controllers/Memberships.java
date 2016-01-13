@@ -59,6 +59,7 @@ public class Memberships extends Controller {
 
 	public static final Form<MembershipTransfer> TRANSFER_MEMBERSHIP_FORM = form(MembershipTransfer.class);
 	public static final Form<InvitationTransfer> TRANSFER_INVITATION_FORM = form(InvitationTransfer.class);
+	public static final Form<MembershipInvitation> MEMBERSHIP_INVITATION_FORM = form(MembershipInvitation.class);
 	public static final Form<Membership> MEMBERSHIP_FORM = form(Membership.class);
 	public static final Form<SecurityRole> ROLE_FORM = form(SecurityRole.class);
 
@@ -203,12 +204,16 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = User.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "token", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path") , 
 		@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues="ACCEPT, REJECT", dataType = "String", paramType = "path") })
-	public static Result answerInvitation(UUID token, String response) {
+	public static Result answerInvitation(UUID token) {
 		Ebean.beginTransaction();
+		final Form<MembershipInvitation> updatedInForm = MEMBERSHIP_INVITATION_FORM.bindFromRequest();
+		MembershipInvitation updateMi = updatedInForm.get();
+		MembershipStatus response = updateMi.getStatus();
+		
 		// 1. Verifty the token
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = Users.tokenIsValid(token.toString(),
@@ -222,7 +227,7 @@ public class Memberships extends Controller {
 		// 2. Read Invitation 
 		MembershipInvitation mi = MembershipInvitation.findByToken(token);
 					
-		if(response.equals("ACCEPT")){
+		if(response.equals(MembershipStatus.ACCEPTED)){
 			mi.setStatus(MembershipStatus.ACCEPTED);
 			User newUser = null;
 			if(mi.getUserId()!=null) {
