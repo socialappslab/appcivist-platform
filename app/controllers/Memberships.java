@@ -345,7 +345,7 @@ public class Memberships extends Controller {
 		membershipInvitation.setToken(ta);
 		
 		String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-		String invitationUrl = baseInvitationUrl + "invitation/"+token;
+		String invitationUrl = baseInvitationUrl + "/invitation/"+token;
 		String invitationEmailText = invitation.getInvitationEmail()+"\n\n\n"+Messages.get("membership.invitation.email.link")+": "+invitationUrl;
 		String invitationEmailHTML = invitation.getInvitationEmail()+"<br><br>"+"<a href='"+invitationUrl+"'>"+Messages.get("membership.invitation.email.link")+"</a>";
 		membershipInvitation = MembershipInvitation.create(membershipInvitation);
