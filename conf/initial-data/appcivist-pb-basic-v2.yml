@@ -78,8 +78,9 @@
     url: "https://farm1.staticflickr.com/191/506378526_1ee84e7114_z_d.jpg"
     resourceType: PICTURE
   - &pad1 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.38d89f1309dafc0a27e07b20136efe25"
-    readOnlyPadId: "r.38d89f1309dafc0a27e07b20136efe25"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad2 !!models.Resource
     url: "http://etherpad.littlemacondo.com/p/r.72d2b38a21f06b3247207aee5802f8a7"
@@ -1065,7 +1066,7 @@
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
-    extendedTextPad: *pad2
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg3
     themes: 
@@ -1079,7 +1080,7 @@
     title: Library at Rue Ramponeau
     text: Let's create a public library
     type: PROPOSAL
-    extendedTextPad: *pad3
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg2
     themes: 
@@ -1093,7 +1094,7 @@
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
-    extendedTextPad: *pad4
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg1
     themes: 
@@ -1107,7 +1108,7 @@
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
-    extendedTextPad: *pad5
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg3
     themes: 
@@ -1121,7 +1122,7 @@
     title: Library at Rue Ramponeau
     text: Let's create a public library
     type: PROPOSAL
-    extendedTextPad: *pad6
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg2
     themes: 
@@ -1135,7 +1136,7 @@
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
-    extendedTextPad: *pad7
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg1
     themes: 
@@ -1149,7 +1150,7 @@
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
-    extendedTextPad: *pad8
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg3
     themes: 
@@ -1163,7 +1164,7 @@
     title: Library at Rue Ramponeau
     text: Let's create a public library
     type: PROPOSAL
-    extendedTextPad: *pad9
+    extendedTextPad: *pad1
     workingGroupAuthors: 
       - *wg2
     themes: 
