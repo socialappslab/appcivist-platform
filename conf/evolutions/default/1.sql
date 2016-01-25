@@ -835,12 +835,6 @@ create table contribution_appcivist_user (
   constraint pk_contribution_appcivist_user primary key (contribution_contribution_id, appcivist_user_user_id))
 ;
 
-create table contribution_working_group (
-  contribution_contribution_id   bigint not null,
-  working_group_group_id         bigint not null,
-  constraint pk_contribution_working_group primary key (contribution_contribution_id, working_group_group_id))
-;
-
 create table MEMBERSHIP_ROLE (
   membership_membership_id       bigint not null,
   role_role_id                   bigint not null,
@@ -1095,10 +1089,6 @@ alter table contribution_appcivist_user add constraint fk_contribution_appcivist
 
 alter table contribution_appcivist_user add constraint fk_contribution_appcivist_use_02 foreign key (appcivist_user_user_id) references appcivist_user (user_id);
 
-alter table contribution_working_group add constraint fk_contribution_working_group_01 foreign key (contribution_contribution_id) references contribution (contribution_id);
-
-alter table contribution_working_group add constraint fk_contribution_working_group_02 foreign key (working_group_group_id) references working_group (group_id);
-
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_membership_01 foreign key (membership_membership_id) references membership (membership_id);
 
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_security_r_02 foreign key (role_role_id) references security_role (role_id);
@@ -1230,8 +1220,6 @@ drop table if exists config_definition cascade;
 drop table if exists contribution cascade;
 
 drop table if exists contribution_appcivist_user cascade;
-
-drop table if exists contribution_working_group cascade;
 
 drop table if exists resource_space_contributions cascade;
 
