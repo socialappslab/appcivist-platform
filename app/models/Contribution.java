@@ -28,7 +28,6 @@ import play.data.validation.Constraints.Required;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -40,30 +39,39 @@ import enums.AuditEventTypes;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 
-@Entity @JsonInclude(Include.NON_EMPTY)
-@Where(clause="removed=false")
+@Entity
+@JsonInclude(Include.NON_EMPTY)
+@Where(clause = "removed=false")
 public class Contribution extends AppCivistBaseModel {
 
-	@Id @GeneratedValue
+	@Id
+	@GeneratedValue
 	private Long contributionId;
-	@Index @JsonIgnore
+	@Index
+	@JsonIgnore
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@Required
 	private String title;
-	@Required @Column(name="text", columnDefinition="text")
+	@Required
+	@Column(name = "text", columnDefinition = "text")
 	private String text;
-	@Enumerated(EnumType.STRING) @Required
+	@Enumerated(EnumType.STRING)
+	@Required
 	private ContributionTypes type;
-	@JsonIgnore @Index 	@Column(name="text_index", columnDefinition="text")
+	@JsonIgnore
+	@Index
+	@Column(name = "text_index", columnDefinition = "text")
 	private String textIndex;
-	@OneToOne(cascade=CascadeType.ALL) @Index
+	@OneToOne(cascade = CascadeType.ALL)
+	@Index
 	private Location location;
 	private String budget;
 	@ManyToMany(cascade = CascadeType.ALL)
-	@Where(clause="${ta}.active=true")
-	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
+	@Where(clause = "${ta}.active=true")
+	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey",
+			"identifier" })
 	private List<User> authors = new ArrayList<User>();
 	@Transient
 	private User firstAuthor;
@@ -71,26 +79,29 @@ public class Contribution extends AppCivistBaseModel {
 	private String firstAuthorName;
 	@Transient
 	private Long assemblyId;
-	
-	@ManyToMany(cascade = CascadeType.ALL)
-	@Where(clause="${ta}.removed=false")
-	@JsonIgnoreProperties({ "supportedMembership", "managementType",
-			"resources", "forum", "containingSpaces", "themes", "configs",
-			"forumPosts", "brainstormingContributions", "proposals" })
-	@JsonManagedReference	
+
+	// @ManyToMany(cascade = CascadeType.ALL)
+	// @Where(clause="${ta}.removed=false")
+	// @JsonIgnoreProperties({ "supportedMembership", "managementType",
+	// "resources", "forum", "containingSpaces", "themes", "configs",
+	// "forumPosts", "brainstormingContributions", "proposals" })
+	@JsonManagedReference
+	@Transient
 	private List<WorkingGroup> workingGroupAuthors = new ArrayList<WorkingGroup>();
-	@JsonIgnore 
-	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions", cascade=CascadeType.ALL)
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions", cascade = CascadeType.ALL)
 	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}) 
-	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
-	@OneToOne(cascade = CascadeType.ALL) 
+	@OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
+	private ResourceSpace resourceSpace = new ResourceSpace(
+			ResourceSpaceTypes.CONTRIBUTION);
+	@OneToOne(cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private ContributionStatistics stats = new ContributionStatistics();
 
-	/* 
-	 * Transient properties that take their values from the associated resource space
+	/*
+	 * Transient properties that take their values from the associated resource
+	 * space
 	 */
 	@Transient
 	private List<Theme> themes;
@@ -102,35 +113,31 @@ public class Contribution extends AppCivistBaseModel {
 	private List<Contribution> comments = new ArrayList<Contribution>();
 	@Transient
 	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
-	
-	
-	/* 
+
+	/*
 	 * The following fields are specific to each type of contribution
 	 */
-	
-	/* 
+
+	/*
 	 * Fields specific to the type ACTION_ITEM
 	 */
-	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date actionDueDate; 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+	private Date actionDueDate;
 	private Boolean actionDone = false;
-	private String action; 
-	
+	private String action;
+
 	// Fields Fields specific to the type ASSESSMENT
 	private String assessmentSummary;
-	
-	// Fields specific to the type PROPOSAL and ASSESSMENT 
-	@OneToOne(cascade=CascadeType.ALL)
+
+	// Fields specific to the type PROPOSAL and ASSESSMENT
+	@OneToOne(cascade = CascadeType.ALL)
 	private Resource extendedTextPad;
 
 	// Fields specific to the type PROPOSAL
 	@Transient
 	private List<Contribution> assessments;
 
-	@Transient
-	private List<WorkingGroup> responsibleWorkingGroups;
-	
-	/* 
+	/*
 	 * @Transient existing entities in resource space
 	 */
 	@Transient
@@ -140,16 +147,20 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<Contribution> existingContributions;
 	@Transient
-	private List<Resource> existingResources;	
+	private List<Resource> existingResources;
 	@Transient
-	private List<Theme> existingThemes;	
-	
+	private List<Theme> existingThemes;
+
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
 	public static Finder<Long, Contribution> find = new Finder<>(
 			Contribution.class);
+	public static Finder<Long, ResourceSpace> containingSpacesFinder = new Finder<>(
+			ResourceSpace.class);
+	public static Finder<Long, WorkingGroup> workingGroupFinder = new Finder<>(
+			WorkingGroup.class);
 
 	public Contribution(User creator, String title, String text,
 			ContributionTypes type) {
@@ -159,7 +170,7 @@ public class Contribution extends AppCivistBaseModel {
 		this.text = text;
 		this.type = type;
 	}
-	
+
 	public Contribution() {
 		super();
 	}
@@ -219,7 +230,7 @@ public class Contribution extends AppCivistBaseModel {
 	public List<User> getAuthors() {
 		return authors;
 	}
-	
+
 	@Transient
 	public User getFirstAuthor() {
 		return authors != null && authors.size() > 0 ? authors.get(0) : null;
@@ -229,13 +240,13 @@ public class Contribution extends AppCivistBaseModel {
 	public void setFirstAuthor(User u) {
 		this.firstAuthor = u;
 	}
-	
+
 	@Transient
 	public String getFirstAuthorName() {
 		User fa = getFirstAuthor();
 		return fa != null ? fa.getName() : null;
 	}
-	
+
 	@Transient
 	public void setFirstAuthorName(String name) {
 		this.firstAuthorName = name;
@@ -245,12 +256,12 @@ public class Contribution extends AppCivistBaseModel {
 	public Long getAssemblyId() {
 		return assemblyId;
 	}
-	
+
 	@Transient
 	public void setAssemblyId(Long aid) {
 		this.assemblyId = aid;
 	}
-	
+
 	public void setAuthors(List<User> authors) {
 		this.authors = authors;
 	}
@@ -259,18 +270,29 @@ public class Contribution extends AppCivistBaseModel {
 		this.authors.add(author);
 	}
 
+	/**
+	 * When we create a contribution, the "workingGroupAuthors" list contains
+	 * "existing working groups" that will take on the development of the
+	 * contribution When we read an existing contribution, the
+	 * "workingGroupAuthors" is queried from WorkingGroups finder that can match
+	 * the contribution id with the existing resources for that WorkingGroup
+	 */
 	public List<WorkingGroup> getWorkingGroupAuthors() {
-		return resourceSpace.getWorkingGroups();
+		if (this.workingGroupAuthors == null
+				|| this.workingGroupAuthors.size() == 0)
+			this.workingGroupAuthors = listWorkingGroupAuthors(this.contributionId);
+		return this.workingGroupAuthors;
 	}
 
 	public void setWorkingGroupAuthors(List<WorkingGroup> workingGroupAuthors) {
 		this.workingGroupAuthors = workingGroupAuthors;
-		this.resourceSpace.setWorkingGroups(workingGroupAuthors);
 	}
 
 	public void addWorkingGroupAuthor(WorkingGroup workingGroupAuthor) {
 		this.workingGroupAuthors.add(workingGroupAuthor);
-		this.resourceSpace.addWorkingGroup(workingGroupAuthor);
+		workingGroupAuthor.addContribution(this);
+		workingGroupAuthor.update();
+		workingGroupAuthor.refresh();
 	}
 
 	public List<Theme> getThemes() {
@@ -330,40 +352,47 @@ public class Contribution extends AppCivistBaseModel {
 	public void addHashtag(Hashtag h) {
 		this.resourceSpace.addHashtag(h);
 	}
-	
+
 	public Long getResourceSpaceId() {
-		return this.resourceSpace != null ? this.resourceSpace.getResourceSpaceId() : null;
+		return this.resourceSpace != null ? this.resourceSpace
+				.getResourceSpaceId() : null;
 	}
 
 	public void setResourceSpaceId(Long id) {
-		if (this.resourceSpace !=null && this.resourceSpace.getResourceSpaceId() == null) 
+		if (this.resourceSpace != null
+				&& this.resourceSpace.getResourceSpaceId() == null)
 			this.resourceSpace.setResourceSpaceId(id);
 	}
-	
+
 	public List<Contribution> getComments() {
-		this.comments = resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
+		this.comments = resourceSpace
+				.getContributionsFilteredByType(ContributionTypes.COMMENT);
 		return this.comments;
 	}
 
 	public void addComment(Contribution c) {
-		if (c.getType() == ContributionTypes.COMMENT) 
+		if (c.getType() == ContributionTypes.COMMENT)
 			this.resourceSpace.addContribution(c);
 	}
-	
+
 	public String getReadOnlyPadUrl() {
-		return extendedTextPad !=null ? extendedTextPad.getUrlAsString() : null;
-	}	
-		
-	// TODO see if setting contributions on resource space is better through updating the space directly
+		return extendedTextPad != null ? extendedTextPad.getUrlAsString()
+				: null;
+	}
+
+	// TODO see if setting contributions on resource space is better through
+	// updating the space directly
 	@JsonIgnore
 	public void setComments(List<Contribution> comments) {
 		this.comments = comments;
-		this.resourceSpace.setContributionsFilteredByType(comments, ContributionTypes.COMMENT);
+		this.resourceSpace.setContributionsFilteredByType(comments,
+				ContributionTypes.COMMENT);
 	}
 
 	public void setAssessments(List<Contribution> assessments) {
 		this.assessments = assessments;
-		this.resourceSpace.setContributionsFilteredByType(assessments, ContributionTypes.ASSESSMENT);
+		this.resourceSpace.setContributionsFilteredByType(assessments,
+				ContributionTypes.ASSESSMENT);
 	}
 
 	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
@@ -371,7 +400,8 @@ public class Contribution extends AppCivistBaseModel {
 		return this.associatedMilestones;
 	}
 
-	public void setAssociatedMilestones(List<ComponentInstanceMilestone> associatedMilestones) {
+	public void setAssociatedMilestones(
+			List<ComponentInstanceMilestone> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
 		this.resourceSpace.setMilestones(associatedMilestones);
 	}
@@ -432,31 +462,17 @@ public class Contribution extends AppCivistBaseModel {
 	public void setExtendedTextPad(Resource extendedTextPad) {
 		this.extendedTextPad = extendedTextPad;
 	}
-	
+
 	public List<Contribution> getAssessments() {
-		this.assessments = this.resourceSpace.getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
+		this.assessments = this.resourceSpace
+				.getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
 		return this.assessments;
 	}
 
 	public void addAssessment(Contribution assessment) {
-//		if(assessment.getType()==ContributionTypes.ASSESSMENT)
-//			this.resourceSpace.addContribution(assessment);
+		// if(assessment.getType()==ContributionTypes.ASSESSMENT)
+		// this.resourceSpace.addContribution(assessment);
 	}
-
-	public List<WorkingGroup> getResponsibleWorkingGroups() {
-		this.responsibleWorkingGroups = this.resourceSpace.getWorkingGroups();
-		return this.responsibleWorkingGroups;
-	}
-
-	public void setResponsibleWorkingGroups(
-			List<WorkingGroup> responsibleWorkingGroups) {
-		this.responsibleWorkingGroups = responsibleWorkingGroups;
-		this.resourceSpace.setWorkingGroups(responsibleWorkingGroups);
-	}
-
-	/* 
-	 * @Transient getting/setting methods existing entities in resource space
-	 */
 
 	@JsonIgnore
 	public List<Hashtag> getExistingHashtags() {
@@ -482,7 +498,8 @@ public class Contribution extends AppCivistBaseModel {
 		return existingContributions;
 	}
 
-	public void setExistingContributions(List<Contribution> existingContributions) {
+	public void setExistingContributions(
+			List<Contribution> existingContributions) {
 		this.existingContributions = existingContributions;
 	}
 
@@ -494,7 +511,7 @@ public class Contribution extends AppCivistBaseModel {
 	public void setExistingResources(List<Resource> existingResources) {
 		this.existingResources = existingResources;
 	}
-	
+
 	@JsonIgnore
 	public List<Theme> getExistingThemes() {
 		return existingThemes;
@@ -521,30 +538,38 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static void create(Contribution c) {
-		
+
 		// 1. Check first for existing entities in ManyToMany relationships.
 		// Save them for later update
-		//List<User> authors = c.getAuthors();
-		List<Theme> themes = c.getThemes(); // new themes are never created from contributions
+		// List<User> authors = c.getAuthors();
+		List<Theme> themes = c.getThemes(); // new themes are never created from
+											// contributions
 		c.setThemes(new ArrayList<>());
-		List<ComponentInstanceMilestone> associatedMilestones = c.getAssociatedMilestones(); // new milestones are never created from contributions
+		List<ComponentInstanceMilestone> associatedMilestones = c
+				.getAssociatedMilestones(); // new milestones are never created
+											// from contributions
 		c.setAssociatedMilestones(new ArrayList<>());
-		
+
 		List<Hashtag> existingHashtags = c.getExistingHashtags();
-		List<WorkingGroup> existingWorkingGroups = c.getExistingResponsibleWorkingGroups();
+		List<WorkingGroup> existingWorkingGroups = c
+				.getExistingResponsibleWorkingGroups();
 		List<Contribution> existingContributions = c.getExistingContributions();
 		List<Resource> existingResources = c.getExistingResources();
 		List<Theme> existingThemes = c.getExistingThemes();
-		
-		// 2. Check if there are working group associated and create them only if they don't have ids yet
-		List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors(); // new working groups are never created from contributions
-		if (workingGroupAuthors != null && workingGroupAuthors.size()>0 && workingGroupAuthors.get(0).getGroupId() != null){
-			// Group exists, remove it from the contribution entity and update it after creation
-			c.setWorkingGroupAuthors(new ArrayList<>());
-		} // else, group is new, allow it to be created
-		
+
+		// 2. Check if there are working group associated and save the groups in
+		// a list to add the contribution to them later
+		List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors(); // new
+																				// working
+																				// groups
+																				// are
+																				// never
+																				// created
+																				// from
+																				// contributions
+
 		c.save();
-		
+
 		// 3. Add existing entities in relationships to the manytomany resources
 		// then update
 		ResourceSpace cResSpace = c.getResourceSpace();
@@ -554,25 +579,24 @@ public class Contribution extends AppCivistBaseModel {
 			cResSpace.getMilestones().addAll(associatedMilestones);
 		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
 			cResSpace.getWorkingGroups().addAll(existingWorkingGroups);
-		if (existingHashtags!= null && !existingHashtags.isEmpty())
+		if (existingHashtags != null && !existingHashtags.isEmpty())
 			cResSpace.getHashtags().addAll(existingHashtags);
-		if (existingContributions!= null && !existingContributions.isEmpty())
+		if (existingContributions != null && !existingContributions.isEmpty())
 			cResSpace.getContributions().addAll(existingContributions);
-		if (existingResources!= null && !existingResources.isEmpty())
+		if (existingResources != null && !existingResources.isEmpty())
 			cResSpace.getResources().addAll(existingResources);
-		if (existingThemes!= null && !existingThemes.isEmpty())
+		if (existingThemes != null && !existingThemes.isEmpty())
 			cResSpace.getThemes().addAll(existingThemes);
-		
-		cResSpace.update();
-		
-		// Update the working group author
-		if (workingGroupAuthors != null && workingGroupAuthors.size()>0 && workingGroupAuthors.get(0).getGroupId() != null){
-			// Group exists, remove it from the contribution entity and update it after creation
-			c.setWorkingGroupAuthors(workingGroupAuthors);
-			c.update();
-		} // else, group is new, allow it to be created
 
-		
+		cResSpace.update();
+
+		// 4. Add contribution to working group authors
+		for (WorkingGroup workingGroup : workingGroupAuthors) {
+			workingGroup.addContribution(c);
+			workingGroup.update();
+			workingGroup.refresh();
+		}
+
 		c.refresh();
 	}
 
@@ -599,7 +623,7 @@ public class Contribution extends AppCivistBaseModel {
 		c.setRemoval(new Date());
 		c.update();
 	}
-	
+
 	public static void softDelete(Contribution c) {
 		c.setRemoved(true);
 		c.setRemoval(new Date());
@@ -612,7 +636,7 @@ public class Contribution extends AppCivistBaseModel {
 		c.setRemoval(null);
 		c.update();
 	}
-	
+
 	public static void softRecovery(Contribution c) {
 		c.setRemoved(false);
 		c.setRemoval(null);
@@ -661,20 +685,23 @@ public class Contribution extends AppCivistBaseModel {
 
 	public static List<Contribution> readContributionsOfSpace(
 			Long resourceSpaceId) {
-		return find.where().eq("containingSpaces.resourceSpaceId", resourceSpaceId)
+		return find.where()
+				.eq("containingSpaces.resourceSpaceId", resourceSpaceId)
 				.findList();
 	}
 
 	public static Contribution readByIdAndType(Long resourceSpaceId,
 			Long contributionId, ContributionTypes type) {
-		return find.where().eq("containingSpaces.resourceSpaceId", resourceSpaceId)
+		return find.where()
+				.eq("containingSpaces.resourceSpaceId", resourceSpaceId)
 				.eq("contributionId", contributionId).eq("type", type)
 				.findUnique();
 	}
 
 	public static List<Contribution> readListByContainingSpaceAndType(
 			Long resourceSpaceId, ContributionTypes type) {
-		return find.where().eq("containingSpaces.resourceSpaceId", resourceSpaceId)
+		return find.where()
+				.eq("containingSpaces.resourceSpaceId", resourceSpaceId)
 				.eq("type", type).findList();
 	}
 
@@ -690,18 +717,19 @@ public class Contribution extends AppCivistBaseModel {
 
 	public static List<Contribution> findAllByContainingSpaceAndType(
 			ResourceSpace rs, String t) {
-		return find.where().eq("containingSpaces", rs).eq("type", t.toUpperCase())
-				.findList();
+		return find.where().eq("containingSpaces", rs)
+				.eq("type", t.toUpperCase()).findList();
 	}
 
 	public static List<Contribution> findAllByContainingSpaceAndTypeAndQuery(
 			ResourceSpace rs, String t, String query) {
-		return find.where().eq("containingSpaces", rs).eq("type", t.toUpperCase())
+		return find.where().eq("containingSpaces", rs)
+				.eq("type", t.toUpperCase())
 				.ilike("textIndex", "%" + query + "%").findList();
 	}
 
 	/* Single Contribution queries */
-	
+
 	public static Contribution readIssueOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
@@ -725,10 +753,9 @@ public class Contribution extends AppCivistBaseModel {
 		return readByIdAndType(resourceSpaceId, contributionId,
 				ContributionTypes.COMMENT);
 	}
-	
-	
+
 	/* List Contribution queries */
-	
+
 	public static Contribution readForumPostOfSpace(Long resourceSpaceId,
 			Long contributionId) {
 		return readByIdAndType(resourceSpaceId, contributionId,
@@ -760,7 +787,6 @@ public class Contribution extends AppCivistBaseModel {
 		return readListByContainingSpaceAndType(resourceSpaceId,
 				ContributionTypes.COMMENT);
 	}
-	
 
 	@PrePersist
 	private void onCreate() {
@@ -772,7 +798,7 @@ public class Contribution extends AppCivistBaseModel {
 		ac.setAuditUserId(this.getContextUserId());
 		ac.save();
 	}
-	
+
 	@PreRemove
 	private void onDelete() {
 		AuditContribution ac = new AuditContribution(this);
@@ -781,7 +807,6 @@ public class Contribution extends AppCivistBaseModel {
 		ac.save();
 	}
 
-	
 	@PreUpdate
 	private void onUpdateContribution() {
 		// 1. Update text index if needed
@@ -792,26 +817,35 @@ public class Contribution extends AppCivistBaseModel {
 		// 4. Add auditing
 		AuditContribution ac = new AuditContribution(this);
 		ac.setAuditEvent(AuditEventTypes.UPDATE);
-		// get user from context? 
-		ac.setAuditUserId(this.getContextUserId());		
+		// get user from context?
+		ac.setAuditUserId(this.getContextUserId());
 		ac.save();
 	}
 
 	@PostUpdate
 	private void afterUpdate() {
 		// 2. Update replies stats
-		int numberComments = this.resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT).size();
+		int numberComments = this.resourceSpace.getContributionsFilteredByType(
+				ContributionTypes.COMMENT).size();
 		if (numberComments != this.stats.getReplies())
 			this.stats.setReplies(new Long(numberComments));
 		this.stats.update();
 	}
 
 	public static boolean isUserAuthor(User u, Long contributionId) {
-		return find.where()
-				.eq("contributionId",contributionId)
-				.eq("authors.userId",u.getUserId()).findUnique() != null 
+		return find.where().eq("contributionId", contributionId)
+				.eq("authors.userId", u.getUserId()).findUnique() != null
 				|| find.where()
-					.eq("contributionId", contributionId)
-					.eq("workingGroupAuthors.members.user.userId",u.getUserId()).findUnique() != null;
+						.eq("contributionId", contributionId)
+						.eq("workingGroupAuthors.members.user.userId",
+								u.getUserId()).findUnique() != null;
 	}
+
+	public static List<WorkingGroup> listWorkingGroupAuthors(Long contributionId) {
+		List<WorkingGroup> wgs = workingGroupFinder.where()
+				.eq("resources.contributions.contributionId", contributionId)
+				.findList();
+		return wgs;
+	}
+
 }

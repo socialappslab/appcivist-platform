@@ -68,9 +68,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
  
-	@ManyToMany(cascade = CascadeType.ALL, mappedBy="workingGroupAuthors")
+//	@ManyToMany(cascade = CascadeType.ALL, mappedBy="workingGroupAuthors")
 	@JsonBackReference
-	@Where(clause="${ta}.removed=false")
+//	@Where(clause="${ta}.removed=false")
+ 	@Transient
 	private List<Contribution> proposals = new ArrayList<Contribution>();
  	
 	@Transient
@@ -365,17 +366,29 @@ public class WorkingGroup extends AppCivistBaseModel {
 			List<Contribution> brainstormingContributions) {
 		this.resources.getContributions().addAll(brainstormingContributions);
 	}
+	
+	public void addBrainstormingContribution(Contribution contrib) {
+		this.addContribution(contrib);
+	}
 
 	public List<Contribution> getProposals() {
-//		return resources.getContributionsFilteredByType(ContributionTypes.PROPOSAL);
+		this.proposals = resources.getContributionsFilteredByType(ContributionTypes.PROPOSAL);
 		return this.proposals;
 	}
 
 	public void setProposals(List<Contribution> proposals) {
-//		this.resources.getContributions().addAll(proposals);
 		this.proposals = proposals;
+		this.resources.getContributions().addAll(proposals);
 	}
 
+	public void addProposal(Contribution proposal) {
+		this.addContribution(proposal);
+	}
+
+	public void addContribution(Contribution contrib) {
+		this.resources.getContributions().add(contrib);
+	}
+	
 	public List<MembershipGroup> getMembers() {
 		return this.members;
 	}

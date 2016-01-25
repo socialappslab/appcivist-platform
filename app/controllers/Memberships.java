@@ -37,7 +37,6 @@ import utils.Pair;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
-import ch.qos.logback.core.subst.Token;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -60,6 +59,7 @@ public class Memberships extends Controller {
 
 	public static final Form<MembershipTransfer> TRANSFER_MEMBERSHIP_FORM = form(MembershipTransfer.class);
 	public static final Form<InvitationTransfer> TRANSFER_INVITATION_FORM = form(InvitationTransfer.class);
+	public static final Form<MembershipInvitation> MEMBERSHIP_INVITATION_FORM = form(MembershipInvitation.class);
 	public static final Form<Membership> MEMBERSHIP_FORM = form(Membership.class);
 	public static final Form<SecurityRole> ROLE_FORM = form(SecurityRole.class);
 
@@ -204,12 +204,16 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = User.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "token", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path") , 
 		@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues="ACCEPT, REJECT", dataType = "String", paramType = "path") })
-	public static Result answerInvitation(UUID token, String response) {
+	public static Result answerInvitation(UUID token) {
 		Ebean.beginTransaction();
+		final Form<MembershipInvitation> updatedInForm = MEMBERSHIP_INVITATION_FORM.bindFromRequest();
+		MembershipInvitation updateMi = updatedInForm.get();
+		MembershipStatus response = updateMi.getStatus();
+		
 		// 1. Verifty the token
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = Users.tokenIsValid(token.toString(),
@@ -223,7 +227,7 @@ public class Memberships extends Controller {
 		// 2. Read Invitation 
 		MembershipInvitation mi = MembershipInvitation.findByToken(token);
 					
-		if(response.equals("ACCEPT")){
+		if(response.equals(MembershipStatus.ACCEPTED)){
 			mi.setStatus(MembershipStatus.ACCEPTED);
 			User newUser = null;
 			if(mi.getUserId()!=null) {
@@ -345,7 +349,7 @@ public class Memberships extends Controller {
 		membershipInvitation.setToken(ta);
 		
 		String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-		String invitationUrl = baseInvitationUrl + "invitation/"+token;
+		String invitationUrl = baseInvitationUrl + "/invitation/"+token;
 		String invitationEmailText = invitation.getInvitationEmail()+"\n\n\n"+Messages.get("membership.invitation.email.link")+": "+invitationUrl;
 		String invitationEmailHTML = invitation.getInvitationEmail()+"<br><br>"+"<a href='"+invitationUrl+"'>"+Messages.get("membership.invitation.email.link")+"</a>";
 		membershipInvitation = MembershipInvitation.create(membershipInvitation);

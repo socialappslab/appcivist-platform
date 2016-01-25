@@ -78,40 +78,49 @@
     url: "https://farm1.staticflickr.com/191/506378526_1ee84e7114_z_d.jpg"
     resourceType: PICTURE
   - &pad1 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.38d89f1309dafc0a27e07b20136efe25"
-    readOnlyPadId: "r.38d89f1309dafc0a27e07b20136efe25"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad2 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.72d2b38a21f06b3247207aee5802f8a7"
-    readOnlyPadId: "r.72d2b38a21f06b3247207aee5802f8a7"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad3 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.449269aa69084c6fa70c6a15e9a6a7d8"
-    readOnlyPadId: "r.449269aa69084c6fa70c6a15e9a6a7d8"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad4 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.38d89f1309dafc0a27e07b20136efe25"
-    readOnlyPadId: "r.38d89f1309dafc0a27e07b20136efe25"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad5 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.72d2b38a21f06b3247207aee5802f8a7"
-    readOnlyPadId: "r.72d2b38a21f06b3247207aee5802f8a7"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad6 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.449269aa69084c6fa70c6a15e9a6a7d8"
-    readOnlyPadId: "r.449269aa69084c6fa70c6a15e9a6a7d8"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad7 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.38d89f1309dafc0a27e07b20136efe25"
-    readOnlyPadId: "r.38d89f1309dafc0a27e07b20136efe25"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad8 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.72d2b38a21f06b3247207aee5802f8a7"
-    readOnlyPadId: "r.72d2b38a21f06b3247207aee5802f8a7"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD
   - &pad9 !!models.Resource
-    url: "http://etherpad.littlemacondo.com/p/r.449269aa69084c6fa70c6a15e9a6a7d8"
-    readOnlyPadId: "r.449269aa69084c6fa70c6a15e9a6a7d8"
+    url: "http://etherpad.littlemacondo.com/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
     resourceType: PAD    
   - &propimg1 !!models.Resource
     url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/belleville.jpg"
@@ -827,33 +836,7 @@
     start: "2016-01-17"
     days: 15
     mainContributionType: PROPOSAL
-
-##############################################################################################################################################################################################
-# Working Groups
-  - &wg1 !!models.WorkingGroup
-    creator: *u1
-    name: "Conseil Belleville" 
-    text: Commitee in charge of managing contributions in for PB Belleville
-    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Conseil Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
-    listed: false
-  - &wg2 !!models.WorkingGroup
-    creator: *u1
-    name: "Passionées du Parc de Belleville" 
-    text: Group developing Urban Infrastructure proposals for Parc de Belleville
-    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Passionées du Parc de Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
-    listed: true
-  - &wg3 !!models.WorkingGroup
-    creator: *u1
-    name: "Neighborhood 14, Category Parks" 
-    text: Group of neighbors from district 13, focused on Parks
-    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Neighborhood 14, Category Parks' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
-    listed: true
-  - &wg4 !!models.WorkingGroup
-    creator: *u1
-    name: "AntiEviction Proposals Team" 
-    text: Team in charge of turning Ideas into proposals
-    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'AntiEviction Proposals Team' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
-    listed: false
+   
 
 ##############################################################################################################################################################################################
 # Contributions for Contributions ==> COMMENTS
@@ -895,7 +878,7 @@
       - *u2
       
 ##############################################################################################################################################################################################
-# Contribution Resource Space
+# Contribution Resource Spaces
   - &rs7 !!models.ResourceSpace
     type: CONTRIBUTION
     contributions:
@@ -910,7 +893,7 @@
     contributions: 
       - *contrib10 
       - *contrib21
-      
+
 ##############################################################################################################################################################################################
 # More Contributions for Assembly Forum and Campaign Copmonent Instances
   - &contrib1 !!models.Contribution
@@ -1052,8 +1035,8 @@
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
     extendedTextPad: *pad1
-    workingGroupAuthors: 
-      - *wg1
+#    workingGroupAuthors: 
+#      - *wg1
     themes: 
       - *cat6
     associatedMilestones:
@@ -1066,8 +1049,8 @@
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
     extendedTextPad: *pad2
-    workingGroupAuthors: 
-      - *wg3
+#    workingGroupAuthors: 
+#      - *wg3
     themes: 
       - *cat6
     associatedMilestones:
@@ -1080,8 +1063,8 @@
     text: Let's create a public library
     type: PROPOSAL
     extendedTextPad: *pad3
-    workingGroupAuthors: 
-      - *wg2
+#    workingGroupAuthors: 
+#      - *wg2
     themes: 
       - *cat6
     associatedMilestones:
@@ -1094,8 +1077,8 @@
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
     extendedTextPad: *pad4
-    workingGroupAuthors: 
-      - *wg1
+#    workingGroupAuthors: 
+#      - *wg1
     themes: 
       - *cat6
     associatedMilestones:
@@ -1108,10 +1091,10 @@
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
     extendedTextPad: *pad5
-    workingGroupAuthors: 
-      - *wg3
+#    workingGroupAuthors: 
+#      - *wg3
     themes: 
-      - *cat6
+      - *cat6 
     associatedMilestones:
       - *ci3
     attachments:
@@ -1122,8 +1105,8 @@
     text: Let's create a public library
     type: PROPOSAL
     extendedTextPad: *pad6
-    workingGroupAuthors: 
-      - *wg2
+#    workingGroupAuthors: 
+#      - *wg2
     themes: 
       - *cat6
     associatedMilestones:
@@ -1136,8 +1119,8 @@
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
     extendedTextPad: *pad7
-    workingGroupAuthors: 
-      - *wg1
+#    workingGroupAuthors: 
+#      - *wg1
     themes: 
       - *cat6
     associatedMilestones:
@@ -1150,8 +1133,8 @@
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
     extendedTextPad: *pad8
-    workingGroupAuthors: 
-      - *wg3
+#    workingGroupAuthors: 
+#      - *wg3
     themes: 
       - *cat6
     associatedMilestones:
@@ -1164,8 +1147,8 @@
     text: Let's create a public library
     type: PROPOSAL
     extendedTextPad: *pad9
-    workingGroupAuthors: 
-      - *wg2
+#    workingGroupAuthors: 
+#      - *wg2
     themes: 
       - *cat6
     associatedMilestones:
@@ -1173,6 +1156,80 @@
     attachments:
       - *propimg3
       - *propimg4
+      
+##############################################################################################################################################################################################
+# Working Group Resource Spaces
+  - &rs4 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+  - &rs11 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+  - &rs12 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat4
+      - *cat5
+      - *cat6
+  - &rs13 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat1
+      - *cat3
+      - *cat5
+      
+##############################################################################################################################################################################################
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Conseil Belleville" 
+    text: Commitee in charge of managing contributions in for PB Belleville
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Conseil Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: false
+    resources: *rs4
+    proposals: 
+      - *contrib20
+      - *contrib30
+      - *contrib40
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Passionées du Parc de Belleville" 
+    text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Passionées du Parc de Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: true
+    resources: *rs11
+    proposals: 
+      - *contrib22
+      - *contrib32
+      - *contrib42
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Neighborhood 14, Category Parks' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: true
+    resources: *rs12
+    proposals: 
+      - *contrib21
+      - *contrib31
+      - *contrib41
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'AntiEviction Proposals Team' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: false
+    resources: *rs13
+      
       
 ####################################################################################################################################################################################
 # Component Instances: 
@@ -1468,8 +1525,6 @@
       - *contrib4
     workingGroups: 
       - *wg4
-  - &rs4 !!models.ResourceSpace
-    type: WORKING_GROUP
   - &rs10 !!models.ResourceSpace
     type: COMPONENT
     contributions:
@@ -1482,7 +1537,7 @@
       - *contrib17
       - *contrib18
       - *contrib19
-
+  
 ##############################################################################################################################################################################################
 # Assemblies
   - &a1 !!models.Assembly
