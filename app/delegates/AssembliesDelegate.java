@@ -133,7 +133,7 @@ public class AssembliesDelegate {
 				membershipInvitation.setToken(ta);
 				
 				String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-				String invitationUrl = baseInvitationUrl + "invitation/"+token;
+				String invitationUrl = baseInvitationUrl + "/invitation/"+token;
 				String invitationEmail = newAssembly.getInvitationEmail()+"\n\n\n"+"Invitation Link: "+invitationUrl;
 				membershipInvitation = MembershipInvitation.create(membershipInvitation);
 				

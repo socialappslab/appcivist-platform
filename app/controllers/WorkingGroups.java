@@ -180,7 +180,7 @@ public class WorkingGroups extends Controller {
 							membershipInvitation.setToken(ta);
 							
 							String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-							String invitationUrl = baseInvitationUrl + "invitation/"+token;
+							String invitationUrl = baseInvitationUrl + "/invitation/"+token;
 							String invitationEmail = newWorkingGroup.getInvitationEmail()+"\n\n\n"+"Invitation Link: "+invitationUrl;
 							membershipInvitation = MembershipInvitation.create(membershipInvitation);
 							
