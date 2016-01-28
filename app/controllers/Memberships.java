@@ -184,7 +184,7 @@ public class Memberships extends Controller {
 		@ApiImplicitParam(name = "token", value = "Invitation Token", dataType = "java.util.UUID", paramType = "path")})
 	public static Result readInvitation(UUID token) {
 		TokenAction ta = TokenAction.findByToken(token.toString(), TokenAction.Type.MEMBERSHIP_INVITATION); 
-		if(ta.isValid()) {
+		if(ta!=null && ta.isValid()) {
 			MembershipInvitation mi = MembershipInvitation.findByToken(token);
 			return ok(Json.toJson(mi));
 		} else {
