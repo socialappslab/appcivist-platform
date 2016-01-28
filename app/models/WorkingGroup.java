@@ -19,7 +19,6 @@ import javax.persistence.Transient;
 import models.transfer.InvitationTransfer;
 
 import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -68,9 +67,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
  
-//	@ManyToMany(cascade = CascadeType.ALL, mappedBy="workingGroupAuthors")
 	@JsonBackReference
-//	@Where(clause="${ta}.removed=false")
  	@Transient
 	private List<Contribution> proposals = new ArrayList<Contribution>();
  	
@@ -81,7 +78,6 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourcesResourceSpaceId;
  	
- // TODO: check if it works
  	@JsonIgnore
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
  	private List<ResourceSpace> containingSpaces;
@@ -330,9 +326,9 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public void setConfigs(List<Config> configs) {
 		this.resources.setConfigs(configs);
 	}
-
+	
+	// TODO: use only resources return resources.getContributionsFilteredByType(ContributionTypes.FORUM_POST);
 	public List<Contribution> getForumPosts() {
-		// TODO: use only resources return resources.getContributionsFilteredByType(ContributionTypes.FORUM_POST);
 		return forum.getContributions();
 	}
 

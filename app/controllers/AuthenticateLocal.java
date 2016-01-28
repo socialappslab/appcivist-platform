@@ -15,7 +15,6 @@ public class AuthenticateLocal extends Authenticate {
 		noCache(response());
 
 		final String payload = request().getQueryString(PAYLOAD_KEY);
-		return PlayAuthenticateLocal.handleAuthentication(provider, ctx(),
-				payload);
+		return PlayAuthenticateLocal.handleAuthentication(provider, ctx(), payload);
 	}
 }
