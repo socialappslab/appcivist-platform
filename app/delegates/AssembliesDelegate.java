@@ -2,13 +2,10 @@ package delegates;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import models.Assembly;
 import models.MembershipInvitation;
 import models.ResourceSpace;
-import models.SecurityRole;
-import models.TokenAction;
 import models.User;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
@@ -19,10 +16,6 @@ import org.dozer.DozerBeanMapper;
 
 import play.Logger;
 import play.Play;
-import providers.MyUsernamePasswordAuthProvider;
-import enums.MembershipStatus;
-import enums.MembershipTypes;
-import enums.MyRoles;
 
 public class AssembliesDelegate {
 
@@ -109,38 +102,7 @@ public class AssembliesDelegate {
 				.getInvitations();
 		if (invitations != null) {
 			for (InvitationTransfer invitation : invitations) {
-				MembershipInvitation membershipInvitation = new MembershipInvitation();
-				membershipInvitation.setCreator(creator);
-				membershipInvitation.setEmail(invitation.getEmail());
-				membershipInvitation.setLang(creator.getLanguage());
-				membershipInvitation.setStatus(MembershipStatus.INVITED);
-				membershipInvitation.setTargetType(MembershipTypes.ASSEMBLY);
-				membershipInvitation.setTargetId(newAssembly.getAssemblyId());
-
-				List<SecurityRole> roles = new ArrayList<>();
-				roles.add(SecurityRole.findByName(MyRoles.MEMBER.getName()));
-
-				if (invitation.getCoordinator())
-					roles.add(SecurityRole.findByName(MyRoles.COORDINATOR
-							.getName()));
-				if (invitation.getModerator())
-					roles.add(SecurityRole.findByName(MyRoles.MODERATOR
-							.getName()));
-
-				membershipInvitation.setRoles(roles);
-				final String token = UUID.randomUUID().toString();
-				TokenAction ta = TokenAction.create(TokenAction.Type.MEMBERSHIP_INVITATION, token, null);
-				membershipInvitation.setToken(ta);
-				
-				String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-				String invitationUrl = baseInvitationUrl + "/invitation/"+token;
-				String invitationEmail = newAssembly.getInvitationEmail()+"\n\n\n"+"Invitation Link: "+invitationUrl;
-				membershipInvitation = MembershipInvitation.create(membershipInvitation);
-				
-				Logger.info("Sending assembly invitation to: "+membershipInvitation.getEmail());
-				Logger.info("Invitation email: "+invitationEmail);
-				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-				provider.sendInvitationByEmail(membershipInvitation, invitationEmail, "AppCivist Invitation");
+				MembershipInvitation.create(invitation, creator, newAssembly);
 			}
 		}
 		AssemblyTransfer created = mapper.map(newAssembly, AssemblyTransfer.class);

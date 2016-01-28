@@ -16,8 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -25,11 +25,11 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import models.TokenAction.Type;
+import models.transfer.AssemblyTransfer;
 import play.Play;
-
-import com.avaje.ebean.Model;
-
 import play.db.ebean.Transactional;
+import providers.GroupSignupIdentity;
+import providers.InvitationSignupIdentity;
 import utils.GlobalData;
 import utils.security.HashGenerationException;
 import utils.security.HashGeneratorUtils;
@@ -38,6 +38,7 @@ import be.objectify.deadbolt.core.models.Subject;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -49,7 +50,10 @@ import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
 
+import controllers.Users;
+import delegates.AssembliesDelegate;
 import enums.MyRoles;
+import exceptions.TokenNotValidException;
 
 @Entity
 @Table(name="appcivist_user")
@@ -423,7 +427,7 @@ public class User extends Model implements Subject {
 		Ebean.save(Arrays.asList(new User[] { otherUser, this }));
 	}
 
-	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException {
+	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException, TokenNotValidException {
 		/*
 		 * 0. Zero step, create a new User instance
 		 */
@@ -433,10 +437,8 @@ public class User extends Model implements Subject {
 		 * 1. We start by already adding the role USER and a LINKEDACCOUNT to
 		 * the user instance to be created
 		 */
-		user.roles = Collections.singletonList(SecurityRole
-				.findByName(MyRoles.USER.toString()));
-		user.linkedAccounts = Collections.singletonList(LinkedAccount
-				.create(authUser));
+		user.roles = Collections.singletonList(SecurityRole.findByName(MyRoles.USER.toString()));
+		user.linkedAccounts = Collections.singletonList(LinkedAccount.create(authUser));
 		user.active = true;
 		Long userId = null;
 
@@ -446,6 +448,7 @@ public class User extends Model implements Subject {
 		 */
 		if (authUser instanceof EmailIdentity) {
 			final EmailIdentity identity = (EmailIdentity) authUser;
+		
 			/*
 			 * Remember, even when getting them from FB & Co., emails should be
 			 * verified within the application as a security breach there might
@@ -455,10 +458,7 @@ public class User extends Model implements Subject {
 			user.emailVerified = false;
 			userId = User.findByEmail(identity.getEmail()) != null ? User
 					.findByEmail(identity.getEmail()).getUserId() : null;
-
 		}
-
-	
 
 		/*
 		 * 4. If part of the signup form there is also a name, and the person
@@ -518,10 +518,44 @@ public class User extends Model implements Subject {
 		if (userId != null)
 			User.update(userId); //TODO CHECK THIS PART AGAIN
 		else {
-//			user.setCreationDate(DateTime.now());
 			user.save();
 			user.refresh();
 		}
+		
+		
+		/*
+		 * 10. If the new user is also creating an assembly, create the assembly
+		 */
+		if (authUser instanceof GroupSignupIdentity) {
+			GroupSignupIdentity groupSignupUser = (GroupSignupIdentity) authUser;
+			AssemblyTransfer newAssemblyTransfer = groupSignupUser.getNewAssembly();
+			if (newAssemblyTransfer!=null) {
+				// create the assembly with user as creator
+				AssembliesDelegate.create(newAssemblyTransfer, user);
+			}
+		}
+		
+		if (authUser instanceof InvitationSignupIdentity) {
+			InvitationSignupIdentity invitationUser = (InvitationSignupIdentity) authUser;
+			UUID token = invitationUser.getInvitationToken();
+			
+			if (token != null) {
+				// accept invitation
+				
+				// 1. Verify the token
+				MembershipInvitation mi = MembershipInvitation.findByToken(token);
+				final TokenAction ta = Users.tokenIsValid(token.toString(),Type.MEMBERSHIP_INVITATION); 
+				if (ta == null) {
+					throw new TokenNotValidException();
+				}
+				ta.delete();
+				
+				// 2. Accept the invitation 
+				//    and create the membership to the target assembly/group
+				MembershipInvitation.acceptAndCreateMembershipByToken(mi, user);				
+			}
+		}
+				
 		
 		return user;
 	}

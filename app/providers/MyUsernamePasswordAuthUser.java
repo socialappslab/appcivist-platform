@@ -1,5 +1,8 @@
 package providers;
 
+import java.util.UUID;
+
+import models.transfer.AssemblyTransfer;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
@@ -8,7 +11,7 @@ import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
 
 public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
-		implements NameIdentity, PicturedIdentity {
+		implements NameIdentity, PicturedIdentity, GroupSignupIdentity, InvitationSignupIdentity {
 
 	/**
 	 * 
@@ -22,22 +25,20 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	 */
 	private Long userId;
 	private String lang;
+	/*
+	 * Added to support GroupSignup
+	 */
+	private AssemblyTransfer newAssembly;
+	/*
+	 * Added to support Signup with Invitation
+	 */
+	private UUID invitationToken;
 
 	public MyUsernamePasswordAuthUser(final MySignup signup) {
 		super(signup.password, signup.email);
 		this.name = signup.name;
-	}
-	
-	/**
-	 * just for testing purpose, should not be used for the app itself
-	 * @param name
-	 * @param email
-	 * @param password
-	 */
-	@Deprecated
-	public MyUsernamePasswordAuthUser(final String name, final Long userId, final String email, final String password) {
-		super(password, email);
-		this.name = name;
+		this.newAssembly = signup.getNewAssembly();
+		this.invitationToken = signup.getInvitationToken();
 	}
 
 	/**
@@ -84,6 +85,21 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	public void setLang(String lang) {
 		this.lang = lang;
 	}
-	
+
+	public AssemblyTransfer getNewAssembly() {
+		return newAssembly;
+	}
+
+	public void setNewAssembly(AssemblyTransfer newAssembly) {
+		this.newAssembly = newAssembly;
+	}
+
+	public UUID getInvitationToken() {
+		return invitationToken;
+	}
+
+	public void setInvitationToken(UUID invitationToken) {
+		this.invitationToken = invitationToken;
+	}
 	
 }

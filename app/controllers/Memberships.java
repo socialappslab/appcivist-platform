@@ -3,25 +3,19 @@ package controllers;
 import static play.data.Form.form;
 import http.Headers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import models.Assembly;
 import models.Membership;
-import models.MembershipAssembly;
-import models.MembershipGroup;
 import models.MembershipInvitation;
 import models.SecurityRole;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
-import models.WorkingGroup;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -29,8 +23,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.With;
-import providers.MyUsernamePasswordAuthProvider;
-import providers.MyUsernamePasswordAuthProvider.MySignup;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.Pair;
@@ -49,7 +41,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.MembershipsDelegate;
 import enums.MembershipStatus;
-import enums.MembershipTypes;
 import enums.MyRoles;
 import enums.ResponseStatus;
 
@@ -67,8 +58,7 @@ public class Memberships extends Controller {
 	 * The membership invitation/request timeout in seconds Defaults to 4 weeks
 	 * (24 hours * 30 days * 60 minutes * 60 seconds)
 	 */
-	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(
-			30 * 14 * 3600);
+	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(30 * 14 * 3600);
 
 	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership within an Assembly or a Group")
 	@ApiImplicitParams({
@@ -76,13 +66,11 @@ public class Memberships extends Controller {
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result createMembership() {
 		// 1. obtaining the user of the requestor
-		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
 		// 2. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM
-				.bindFromRequest();
+		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM.bindFromRequest();
 
 		if (newMembershipForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -175,6 +163,7 @@ public class Memberships extends Controller {
 						e.getMessage()));
 				return internalServerError(Json.toJson(responseBody));
 			}
+			Ebean.commitTransaction();
 			return ok(Json.toJson(mi));
 		}
 	}
@@ -204,20 +193,19 @@ public class Memberships extends Controller {
 		}
 	}
 
+	// TODO: replace with an special signup if the user does not exist
 	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "token", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path") , 
 		@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues="ACCEPT, REJECT", dataType = "String", paramType = "path") })
 	public static Result answerInvitation(UUID token) {
-		Ebean.beginTransaction();
 		final Form<MembershipInvitation> updatedInForm = MEMBERSHIP_INVITATION_FORM.bindFromRequest();
 		MembershipInvitation updateMi = updatedInForm.get();
 		MembershipStatus response = updateMi.getStatus();
 		
-		// 1. Verifty the token
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final TokenAction ta = Users.tokenIsValid(token.toString(),
-				Type.MEMBERSHIP_INVITATION);
+		// 1. Verify the token
+		MembershipInvitation mi = MembershipInvitation.findByToken(token);
+		final TokenAction ta = Users.tokenIsValid(token.toString(),Type.MEMBERSHIP_INVITATION);
 		if (ta == null) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
 					Messages.get("playauthenticate.token.error.message"),
@@ -225,140 +213,36 @@ public class Memberships extends Controller {
 		}
 		ta.delete();
 		// 2. Read Invitation 
-		MembershipInvitation mi = MembershipInvitation.findByToken(token);
-					
-		if(response.equals(MembershipStatus.ACCEPTED)){
-			mi.setStatus(MembershipStatus.ACCEPTED);
-			User newUser = null;
-			if(mi.getUserId()!=null) {
-				newUser = User.read(mi.getUserId());
-			}
-			// 3. Create the User if does not exist
-			Result result = null;
-			String signupEmail = "";
-			if (newUser==null) {
-				com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-				final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM.bindFromRequest();
-				if (filledForm.hasErrors()) {
-					Ebean.rollbackTransaction();
-					return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-							Messages.get("play.authenticate.filledFromHasErrors"),
-							filledForm.errorsAsJson().toString())));
-				} else {
-					try {
-						MySignup signup = filledForm.get();
-						signupEmail = signup.getEmail();
-						result = MyUsernamePasswordAuthProvider.handleSignup(ctx());
-					} catch (Exception e) {
-						Ebean.rollbackTransaction();
-						return badRequest(Json
-								.toJson(TransferResponseStatus.badMessage(
-										Messages.get("Error has occurred when creating user"),
-										e.getMessage())));
-					}
-				} 
-			}
-			
+		User invitedUser = null;
+		if(mi.getUserId()!=null) {
+			invitedUser = User.read(mi.getUserId());
+		} else {
+			return internalServerError(Json
+					.toJson(TransferResponseStatus.badMessage("User has not signuped yet","")));
+		}
 		
+		if(response.equals(MembershipStatus.ACCEPTED)){
 			// 4. Create Membership
 			try {
-				if (result!=null) {
-					newUser = User.findByEmail(signupEmail);
-					mi.setUserId(newUser.getUserId());
-				} else if (result==null && newUser == null) {
-					throw new Exception("The user was not created");
-				}
-
-				if (mi.getTargetType().equals(MembershipTypes.ASSEMBLY)) {
-					MembershipAssembly ma = new MembershipAssembly();
-					Assembly a = Assembly.read(mi.getTargetId());
-					ma.setAssembly(a);
-					ma.setCreator(mi.getCreator());
-					ma.setStatus(MembershipStatus.ACCEPTED);
-					ma.setRoles(mi.getRoles());
-					ma.setTargetUuid(a.getUuid());
-					ma.setUser(newUser);
-					ma.save();
-					ma.refresh();
-				} else {
-					MembershipGroup mg = new MembershipGroup();
-					WorkingGroup g = WorkingGroup.read(mi.getTargetId());
-					mg.setWorkingGroup(g);
-					mg.setCreator(mi.getCreator());
-					mg.setStatus(MembershipStatus.ACCEPTED);
-					mg.setRoles(mi.getRoles());
-					mg.setTargetUuid(g.getUuid());
-					mg.setUser(newUser);
-					mg.save();
-					mg.refresh();
-				}
-
-				// 5. Update Invitation record
-				mi.update();
+				MembershipInvitation.acceptAndCreateMembershipByToken(mi, invitedUser);
 			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(TransferResponseStatus.badMessage(
 								Messages.get("Error has occurred: "),
 								e.getMessage())));
 			}
-			
-			if (result!=null) {
-				Ebean.commitTransaction();
-				return result;
-			} else {
-				Ebean.commitTransaction();
-				return ok(Json.toJson(newUser));
-			}
+			return ok(Json.toJson("DONE"));
 		} else {
 			// 5. Update Invitation record
-			mi.setStatus(MembershipStatus.REJECTED);
-			mi.update();	
-			Ebean.commitTransaction();
+			MembershipInvitation.rejectAndUpdateInvitationByToken(mi, invitedUser);
 			return ok(Json.toJson("DONE"));
 		}
 	}
 	
+
+
 	private static MembershipInvitation createAndSendInvitation(User creator, InvitationTransfer invitation) {
-		MembershipInvitation membershipInvitation = new MembershipInvitation();
-		membershipInvitation.setCreator(creator);
-		membershipInvitation.setEmail(invitation.getEmail());
-
-		// if email is in system, attach user
-		User u = User.findByEmail(invitation.getEmail());
-		if (u!=null) {
-			membershipInvitation.setUserId(u.getUserId());
-		}
-		
-		membershipInvitation.setLang(creator.getLanguage());
-		membershipInvitation.setStatus(MembershipStatus.INVITED);
-		MembershipTypes invitationType = invitation.getTargetType().equals("ASSEMBLY") ? MembershipTypes.ASSEMBLY : MembershipTypes.GROUP;
-		membershipInvitation.setTargetType(invitationType );
-		membershipInvitation.setTargetId(invitation.getTargetId());
-
-		List<SecurityRole> roles = new ArrayList<>();
-		roles.add(SecurityRole.findByName(MyRoles.MEMBER.getName()));
-
-		if (invitation.getCoordinator())
-			roles.add(SecurityRole.findByName(MyRoles.COORDINATOR.getName()));
-		if (invitation.getModerator())
-			roles.add(SecurityRole.findByName(MyRoles.MODERATOR.getName()));
-
-		membershipInvitation.setRoles(roles);
-		final String token = UUID.randomUUID().toString();
-		TokenAction ta = TokenAction.create(TokenAction.Type.MEMBERSHIP_INVITATION, token, null);
-		membershipInvitation.setToken(ta);
-		
-		String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-		String invitationUrl = baseInvitationUrl + "/invitation/"+token;
-		String invitationEmailText = invitation.getInvitationEmail()+"\n\n\n"+Messages.get("membership.invitation.email.link")+": "+invitationUrl;
-		String invitationEmailHTML = invitation.getInvitationEmail()+"<br><br>"+"<a href='"+invitationUrl+"'>"+Messages.get("membership.invitation.email.link")+"</a>";
-		membershipInvitation = MembershipInvitation.create(membershipInvitation);
-		
-		Logger.info("Sending group invitation to: "+membershipInvitation.getEmail());
-		Logger.info("Invitation email: "+invitationEmailText);
-		MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-		String emailSubject = Messages.get("membership.invitation.email.subject", invitation.getTargetType());
-		provider.sendInvitationByEmail(membershipInvitation, invitationEmailText, invitationEmailHTML, emailSubject);		
+		MembershipInvitation membershipInvitation = MembershipInvitation.create(invitation, creator);
 		return membershipInvitation;
 	}
 
