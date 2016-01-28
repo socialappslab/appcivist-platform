@@ -12,6 +12,8 @@ import com.feth.play.module.pa.user.AuthUser;
 import com.feth.play.module.pa.user.AuthUserIdentity;
 import com.feth.play.module.pa.service.UserServicePlugin;
 
+import exceptions.TokenNotValidException;
+
 public class MyUserServicePlugin extends UserServicePlugin {
 
 //	public MyUserServicePlugin() {
@@ -35,6 +37,9 @@ public class MyUserServicePlugin extends UserServicePlugin {
 				return null;
 			} catch (HashGenerationException e) {
 				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			} catch (TokenNotValidException e) {
 				e.printStackTrace();
 				return null;
 			}

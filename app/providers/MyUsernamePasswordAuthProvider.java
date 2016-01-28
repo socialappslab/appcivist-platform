@@ -18,6 +18,7 @@ import models.MembershipInvitation;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
+import models.transfer.AssemblyTransfer;
 import models.transfer.InvitationTransfer;
 import play.Application;
 import play.Logger;
@@ -34,12 +35,15 @@ import play.mvc.Result;
 import service.PlayAuthenticateLocal;
 import utils.security.HashGenerationException;
 
+import com.avaje.ebean.Ebean;
 import com.feth.play.module.mail.Mailer.Mail.Body;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 
+import controllers.Users;
 import controllers.routes;
+import exceptions.TokenNotValidException;
 
 public class MyUsernamePasswordAuthProvider
 		extends
@@ -88,6 +92,13 @@ public class MyUsernamePasswordAuthProvider
 
 	}
 
+
+	/**
+	 * To add new fields for signup or login, modify the forms and the class MyUserNameAuthUser
+	 * @author cdparra
+	 *
+	 */
+	
 	public static class MyLogin extends MyIdentity
 			implements
 			com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider.UsernamePassword {
@@ -114,7 +125,9 @@ public class MyUsernamePasswordAuthProvider
 		private String repeatPassword;
 		public String name;		
 		private String lang; 
-
+		private AssemblyTransfer newAssembly;
+		private UUID invitationToken;
+		
 		public String validate() {
 			if (password == null || !password.equals(getRepeatPassword())) {
 				// ResponseStatusBean response = ResponseStatusBean();
@@ -126,6 +139,11 @@ public class MyUsernamePasswordAuthProvider
 			} else if (lang == null) {
 				return Messages
 						.get("playauthenticate.password.signup.error.missing_lang");
+			} else if (invitationToken != null) {
+				TokenAction ta = Users.tokenIsValid(invitationToken.toString(), Type.MEMBERSHIP_INVITATION);
+				if (ta == null) {
+					return Messages.get("playauthenticate.token.error.message","Invitation token is not valid");
+				}
 			}
 			return null;
 		}
@@ -144,6 +162,22 @@ public class MyUsernamePasswordAuthProvider
 		
 		public String getLang() {
 			return this.lang;
+		}
+		
+		public AssemblyTransfer getNewAssembly() {
+			return this.newAssembly;
+		}
+		
+		public void setNewAssembly(AssemblyTransfer a) {
+			this.newAssembly = a;
+		}
+		
+		public UUID getInvitationToken() {
+			return this.invitationToken;
+		}
+		
+		public void setInvitationToken(UUID t) {
+			this.invitationToken = t;
 		}
 	}
 
@@ -184,9 +218,21 @@ public class MyUsernamePasswordAuthProvider
 			user.setUserId(newUser.getUserId());
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
+			if(Ebean.currentTransaction() != null) {
+				Ebean.currentTransaction().rollback();
+			}
 			e.printStackTrace();
 		} catch (HashGenerationException e) {
 			// TODO Auto-generated catch block
+			if(Ebean.currentTransaction() != null) {
+				Ebean.currentTransaction().rollback();
+			}
+			e.printStackTrace();
+		} catch (TokenNotValidException e) {
+			// TODO Auto-generated catch block
+			if(Ebean.currentTransaction() != null) {
+				Ebean.currentTransaction().rollback();
+			}
 			e.printStackTrace();
 		}
 		
@@ -337,7 +383,8 @@ public class MyUsernamePasswordAuthProvider
 
 	protected String generateNewInvitation(final String email) {
 		final String token = generateToken();
-		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, null);
+		final User u = null;
+		TokenAction.create(Type.MEMBERSHIP_INVITATION, token, u);
 		return token;
 	}
 
@@ -604,13 +651,11 @@ public class MyUsernamePasswordAuthProvider
 	}
 
 	public static Result handleLogin(final Context ctx) {
-		return PlayAuthenticateLocal.handleAuthentication(PROVIDER_KEY, ctx,
-				getEnum("LOGIN"));
+		return PlayAuthenticateLocal.handleAuthentication(PROVIDER_KEY, ctx, getEnum("LOGIN"));
 	}
 
 	public static Result handleSignup(final Context ctx) {
-		return PlayAuthenticateLocal.handleAuthentication(PROVIDER_KEY, ctx,
-				getEnum("SIGNUP"));
+		return PlayAuthenticateLocal.handleAuthentication(PROVIDER_KEY, ctx, getEnum("SIGNUP"));
 	}
 
 	private static Object getEnum(String enumName) {

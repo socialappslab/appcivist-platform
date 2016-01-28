@@ -15,6 +15,7 @@ import play.mvc.Http.Session;
 import play.mvc.Result;
 import providers.MyUsernamePasswordAuthProvider;
 
+import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.exceptions.AuthException;
 import com.feth.play.module.pa.providers.AuthProvider;
@@ -117,8 +118,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		return Controller.ok(toJson(user));
 	}
 
-	public static Result handleAuthentication(final String provider,
-			final Context context, final Object payload) {
+	public static Result handleAuthentication(final String provider, final Context context, final Object payload) {
 		final AuthProvider ap = getProvider(provider);
 		if (ap == null) {
 			// Provider wasn't found and/or user was fooling with our stuff -
@@ -129,6 +129,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			return Controller.notFound(toJson(response));
 		}
 		try {
+			// Authenticate the Session Key of the request
 			final Object o = ap.authenticate(context, payload);
 			if (o instanceof String) {
 				if ("NOT_FOUND".equals(o)) {
@@ -253,8 +254,9 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 				} else if (!isLinked && !isLoggedIn) {
 					// 3. -> Signup
-					loginUser = signupUser(newUser);
-
+						Ebean.beginTransaction();
+						loginUser = signupUser(newUser);
+						Ebean.commitTransaction();
 				} else {
 					// !isLinked && isLoggedIn:
 
@@ -334,28 +336,5 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		loginUser = u;
 		return loginUser;
 	}
-	
-//	private static String getUrl(final Call c, final String settingFallback) {
-//		// this can be null if the user did not correctly define the
-//		// resolver
-//		if (c != null) {
-//			return c.url();
-//		} else {
-//			// go to root instead, but log this
-//			Logger.warn("Resolver did not contain information about where to go - redirecting to /");
-//			final String afterAuthFallback = getConfiguration().getString(
-//					settingFallback);
-//			if (afterAuthFallback != null && !afterAuthFallback.equals("")) {
-//				return afterAuthFallback;
-//			}
-//			// Not even the config setting was there or valid...meh
-//			Logger.error("Config setting '" + settingFallback
-//					+ "' was not present!");
-//			return "/";
-//		}
-//	}
-	
-	
-	
 	
 }

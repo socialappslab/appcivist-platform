@@ -1,6 +1,7 @@
 package models;
 
 import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,9 +10,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import models.TokenAction.Type;
 import play.data.format.Formats;
-import com.avaje.ebean.Model;
 
+import com.avaje.ebean.Model;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.annotation.EnumValue;
 
@@ -52,6 +54,11 @@ public class TokenAction extends Model {
 	@JoinColumn(name="user_id")
 	public User targetUser;
 
+	@ManyToOne
+	//@MapsId
+	@JoinColumn(name="membership_invitation_id")
+	public MembershipInvitation targetInvitation;
+	
 	public Type type;
 
 	@Formats.DateTime(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -79,6 +86,19 @@ public class TokenAction extends Model {
 			final User targetUser) {
 		final TokenAction ua = new TokenAction();
 		ua.targetUser = targetUser;
+		ua.token = token;
+		ua.type = type;
+		final Date created = new Date();
+		ua.created = created;
+		ua.expires = new Date(created.getTime() + VERIFICATION_TIME * 1000);
+		ua.save();
+		return ua;
+	}
+
+	public static TokenAction create(final Type type, final String token,
+			final MembershipInvitation targetInvitation) {
+		final TokenAction ua = new TokenAction();
+		ua.targetInvitation = targetInvitation;
 		ua.token = token;
 		ua.type = type;
 		final Date created = new Date();

@@ -3,9 +3,7 @@ package controllers;
 import static play.data.Form.form;
 import http.Headers;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
@@ -14,22 +12,18 @@ import models.Membership;
 import models.MembershipGroup;
 import models.MembershipInvitation;
 import models.ResourceSpace;
-import models.SecurityRole;
-import models.TokenAction;
 import models.User;
 import models.WorkingGroup;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
-import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -44,9 +38,6 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-import enums.MembershipStatus;
-import enums.MembershipTypes;
-import enums.MyRoles;
 import enums.ResponseStatus;
 
 @Api(value = "/group", description = "Group Management endpoints in the Assembly Making service")
@@ -156,38 +147,7 @@ public class WorkingGroups extends Controller {
 					
 					if (invitations != null) {
 						for (InvitationTransfer invitation : invitations) {
-							MembershipInvitation membershipInvitation = new MembershipInvitation();
-							membershipInvitation.setCreator(groupCreator);
-							membershipInvitation.setEmail(invitation.getEmail());
-							membershipInvitation.setLang(groupCreator.getLanguage());
-							membershipInvitation.setStatus(MembershipStatus.INVITED);
-							membershipInvitation.setTargetType(MembershipTypes.GROUP);
-							membershipInvitation.setTargetId(newWorkingGroup.getGroupId());
-
-							List<SecurityRole> roles = new ArrayList<>();
-							roles.add(SecurityRole.findByName(MyRoles.MEMBER.getName()));
-
-							if (invitation.getCoordinator())
-								roles.add(SecurityRole.findByName(MyRoles.COORDINATOR
-										.getName()));
-							if (invitation.getModerator())
-								roles.add(SecurityRole.findByName(MyRoles.MODERATOR
-										.getName()));
-
-							membershipInvitation.setRoles(roles);
-							final String token = UUID.randomUUID().toString();
-							TokenAction ta = TokenAction.create(TokenAction.Type.MEMBERSHIP_INVITATION, token, null);
-							membershipInvitation.setToken(ta);
-							
-							String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
-							String invitationUrl = baseInvitationUrl + "invitation/"+token;
-							String invitationEmail = newWorkingGroup.getInvitationEmail()+"\n\n\n"+"Invitation Link: "+invitationUrl;
-							membershipInvitation = MembershipInvitation.create(membershipInvitation);
-							
-							Logger.info("Sending group invitation to: "+membershipInvitation.getEmail());
-							Logger.info("Invitation email: "+invitationEmail);
-							MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-							provider.sendInvitationByEmail(membershipInvitation, invitationEmail, "AppCivist Invitation");
+							MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
 						}
 					}
 					
