@@ -10,11 +10,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import models.TokenAction.Type;
 import play.data.format.Formats;
 
-import com.avaje.ebean.Model;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.EnumValue;
 
 @Entity

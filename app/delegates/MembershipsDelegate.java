@@ -199,7 +199,6 @@ public class MembershipsDelegate {
 
 	}
 
-
 	/**
 	 * Check if the requestor is COORDINATOR of the group or assembly associated to the membership whose 
 	 * ID is given on the request
