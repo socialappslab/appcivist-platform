@@ -3,12 +3,17 @@ package models.transfer;
 import java.util.List;
 import java.util.UUID;
 
+import play.data.validation.Constraints.Required;
+
 public class AssemblyTransfer {
 	private Long assemblyId;
 	private UUID uuid;
+	@Required
 	private String name;
 	private String shortname;
+	@Required
 	private String description; 
+	@Required
 	private Boolean listed;
 	private String invitationEmail;
 	private AssemblyProfileTransfer profile;
