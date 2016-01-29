@@ -34,6 +34,7 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiImplicitParam;
@@ -132,7 +133,6 @@ public class Assemblies extends Controller {
 	}
 
 	/**
-	 * Return the full list of assemblies
 	 * 
 	 * @return models.AssemblyCollection
 	 */
@@ -153,6 +153,26 @@ public class Assemblies extends Controller {
 			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' does not exists", "")));
 		}
 	}
+	
+	/**
+	 * 
+	 * @return models.AssemblyCollection
+	 */
+	@ApiOperation(httpMethod = "GET", response = AssemblySummaryTransfer.class, produces = "application/json", value = "Get assembly profile if it is listed or if it is in the list of linked assemblies")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result getListedLinkedAssemblyProfile(Long aid) {
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		AssemblySummaryTransfer assembly = AssembliesDelegate.readListedLinkedAssembly(aid, requestor);
+		if (assembly != null) {
+			return ok(Json.toJson(assembly));		
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' is not available for this user", "")));
+		}
+	}
+	
 	
 	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
