@@ -40,6 +40,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.MembershipsDelegate;
+import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
 import enums.MyRoles;
 import enums.ResponseStatus;
@@ -90,7 +91,7 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send and to an Assembly or a Group")
+	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send and to an Assembly")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
 		@ApiImplicitParam(name = "aid", value = "Assembly Id", dataType = "Long", paramType = "path") })
@@ -129,7 +130,7 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
 		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
 		@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path") })
@@ -239,6 +240,43 @@ public class Memberships extends Controller {
 		}
 	}
 	
+	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership request for an Assembly or a Group")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result createMembershipRequest(Long targetId) {
+		// 1. obtaining the user of the requestor
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+
+		// 2. read the new group data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM.bindFromRequest();
+
+		if (newMembershipForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+					newMembershipForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			MembershipTransfer newMembership = newMembershipForm.get();
+			String targetCollection = newMembership.getTargetCollection();
+			Long targetCollectionId = targetId;
+			// Allow only requests and subscriptions to non-members
+			if(!newMembership.getType().equals(MembershipCreationTypes.INVITATION.toString())) {
+				return createMembership(requestor,
+					targetCollection, targetCollectionId,
+					newMembership.getType(), newMembership.getUserId(),
+					newMembership.getEmail(), newMembership.getDefaultRoleId(), newMembership.getDefaultRoleName());
+			} else {
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+						"A non member cannot create an invitation membership"));
+				return internalServerError(Json.toJson(responseBody));
+			}
+		}
+	}
 
 
 	private static MembershipInvitation createAndSendInvitation(User creator, InvitationTransfer invitation) {

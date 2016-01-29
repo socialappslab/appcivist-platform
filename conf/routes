@@ -70,6 +70,7 @@ GET       /api/assembly/:id/membership/:status                            contro
 GET       /api/assembly/:aid/user/:uid                                    controllers.Assemblies.isUserMemberOfAssembly(aid: Long, uid: Long)
 POST      /api/assembly/:id/invitations                                   controllers.Assemblies.inviteNewMembers(id: Long)
 GET       /api/assembly/:aid/linked                                       controllers.Assemblies.findAssembliesLinked(aid: Long)
+GET       /api/assembly/:aid/public                                       controllers.Assemblies.getListedLinkedAssemblyProfile(aid: Long) 
 
 ##################################################################################################################################################################
 # WorkingGroup API
@@ -93,9 +94,11 @@ GET       /api/membership/user/:uuid                                      contro
 GET       /api/membership/user/:uuid/:targetUuid                          controllers.Memberships.findMembershipByTargetUUID(uuid: java.util.UUID, targetUuid: java.util.UUID) 
 GET       /api/membership/invitation/:targetId/:status                    controllers.Memberships.listInvitations(targetId: Long, status: String)
 GET       /api/membership/invitation/:token                               controllers.Memberships.readInvitation(token: java.util.UUID) 
-PUT       /api/membership/invitation/:token                                controllers.Memberships.answerInvitation(token: java.util.UUID) 
+PUT       /api/membership/invitation/:token                               controllers.Memberships.answerInvitation(token: java.util.UUID) 
 POST      /api/membership/assembly/:aid                                   controllers.Memberships.createSendInvitationToAssembly(aid: Long) 
 POST      /api/membership/group/:gid                                      controllers.Memberships.createSendInvitationToGroup(gid: Long)
+POST      /api/membership/assembly/:aid/request                           controllers.Memberships.createMembershipRequest(aid: Long)
+POST      /api/membership/group/:gid/request                              controllers.Memberships.createMembershipRequest(gid: Long)
 GET       /api/membership/:id                                             controllers.Memberships.readMembership(id: Long)
 GET       /api/membership/:id/role                                        controllers.Memberships.readMembershipRoles(id: Long)
 POST      /api/membership/:id/role                                        controllers.Memberships.addMembershipRole(id: Long)
