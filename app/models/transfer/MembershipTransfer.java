@@ -1,9 +1,5 @@
 package models.transfer;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-
-import enums.MembershipStatus;
 
 /**
  * Transfer model to receive membership creation objects

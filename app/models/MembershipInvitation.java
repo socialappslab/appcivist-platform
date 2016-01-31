@@ -13,7 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import models.transfer.InvitationTransfer;
@@ -25,6 +25,7 @@ import providers.MyUsernamePasswordAuthProvider;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ManagementTypes;
@@ -32,6 +33,7 @@ import enums.MembershipStatus;
 import enums.MembershipTypes;
 import enums.MyRoles;
 
+// TODO: replace membership invitations by direcltly using the model of membership, allowing the user in membership to be NULL
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause="removed=false")
@@ -39,16 +41,22 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	@Id @GeneratedValue private Long id;
 	private String email;
 	private Long userId;
-	@Enumerated(EnumType.STRING) private MembershipStatus status;
-	@ManyToOne @JsonIgnore private User creator;
-	@OneToMany(mappedBy = "targetInvitation", cascade = CascadeType.ALL)
-	private List<TokenAction> tokenActions = new ArrayList<TokenAction>();
+	@Enumerated(EnumType.STRING) 
+	private MembershipStatus status;
+	@ManyToOne @JsonIgnore 
+	private User creator;
+	@OneToOne(mappedBy = "targetInvitation", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private TokenAction token;
 	private Long targetId; // Id of Assembly or Working Group related to the invitation
-	@Enumerated(EnumType.STRING) private MembershipTypes targetType;
+	@Enumerated(EnumType.STRING) 
+	private MembershipTypes targetType;
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
-	@Transient private Assembly targetAssembly;
-	@Transient private WorkingGroup targetGroup;
+	@Transient 
+	private Assembly targetAssembly;
+	@Transient 
+	private WorkingGroup targetGroup;
 	
 	public static Finder<Long, MembershipInvitation> find = new Finder<>(MembershipInvitation.class);
 
@@ -92,6 +100,14 @@ public class MembershipInvitation extends AppCivistBaseModel {
 		this.creator = creator;
 	}
 
+	public TokenAction getToken() {
+		return token;
+	}
+
+	public void setToken(TokenAction token) {
+		this.token = token;
+	}
+
 	public Long getTargetId() {
 		return targetId;
 	}
@@ -117,7 +133,7 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	}
 
 	public Assembly getTargetAssembly() {
-		return this.targetType.equals(MembershipTypes.ASSEMBLY) ? Assembly.read(targetId) : null;
+		return targetId !=null ? Assembly.read(targetId) : new Assembly();
 	}
 
 	public void setTargetAssembly(Assembly targetAssembly) {
@@ -125,7 +141,7 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	}
 
 	public WorkingGroup getTargetGroup() {
-		return this.targetType.equals(MembershipTypes.GROUP) ? WorkingGroup.read(targetId) : null;
+		return targetId !=null ? WorkingGroup.read(targetId) : new WorkingGroup();
 	}
 
 	public void setTargetGroup(WorkingGroup targetGroup) {
@@ -263,7 +279,7 @@ public class MembershipInvitation extends AppCivistBaseModel {
 
 	public static MembershipInvitation findByToken(UUID token) {
 		return find.where()
-				.eq("tokenActions.token", token.toString())
+				.eq("token.token", token.toString())
 				.findUnique();
 	}
 
@@ -339,5 +355,14 @@ public class MembershipInvitation extends AppCivistBaseModel {
 		mi.setUserId(user.getUserId());
 		mi.update();		
 		mi.refresh();		
+	}
+
+	public static MembershipInvitation findByUserIdTargetIdAndType(Long uid,
+			Long aid, MembershipTypes type) {
+		return find.where()
+				.eq("userId", uid)
+				.eq("targetId", aid)
+				.eq("targetType", type)
+				.findUnique();
 	}
 }

@@ -20,6 +20,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import models.TokenAction.Type;
 
@@ -66,6 +67,9 @@ public class Membership extends AppCivistBaseModel {
 	private WorkingGroup targetGroup;
 
 	private UUID targetUuid;
+	
+	@Transient 
+	private String invitationToken; 
 	
 	public static Finder<Long, Membership> find = new Finder<>(Membership.class);
 
@@ -170,6 +174,14 @@ public class Membership extends AppCivistBaseModel {
 
 	public void setTargetUuid(UUID targetUuid) {
 		this.targetUuid = targetUuid;
+	}
+
+	public String getInvitationToken() {
+		return invitationToken;
+	}
+
+	public void setInvitationToken(String invitationToken) {
+		this.invitationToken = invitationToken;
 	}
 
 	public static Membership read(Long membershipId) {

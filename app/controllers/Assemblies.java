@@ -34,7 +34,6 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiImplicitParam;
@@ -47,7 +46,7 @@ import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
 import enums.ResponseStatus;
 
-@Api(value = "/assembly", description = "Assembly Making basic services: creating assemblies, listing assemblies, creating groups and invite people to join")
+@Api(value = "/assembly", description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
 @With(Headers.class)
 public class Assemblies extends Controller {
 

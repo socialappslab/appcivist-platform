@@ -1660,6 +1660,7 @@
     description: Assembly of the Non-Profit Doctors without borders, workin out proposals for our future initiatives
     uuidAsString: c496c1fe-408f-11e5-a151-feff819cdc9f
     invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Doctors without borders' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: false
     profile: &ap6 !!models.AssemblyProfile
       targetAudience: Doctors
       supportedMembership: INVITATION_AND_REQUEST
@@ -1801,3 +1802,67 @@
     roles: 
       - *r3
       - *r4
+##############################################################################################################################################################################################
+# Assembly and Group Membership Invitations
+  - &mi1 !!models.MembershipInvitation
+    email: "ezra.bridger@example.com"
+    targetId: 1
+    creator: *u1
+    status: INVITED
+    targetType: ASSEMBLY
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f4350-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi2 !!models.MembershipInvitation
+    email: "sabine.wren@example.com"
+    targetId: 1
+    creator: *u1
+    status: INVITED
+    targetType: ASSEMBLY
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f483c-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi3 !!models.MembershipInvitation
+    email: "sara@example.com"
+    targetId: 1
+    userId: 5
+    creator: *u1
+    status: INVITED
+    targetType: ASSEMBLY
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f4ada-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi4 !!models.MembershipInvitation
+    email: "ezra.bridger@example.com"
+    targetId: 3
+    creator: *u1
+    status: INVITED
+    targetType: GROUP
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f5020-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+      
