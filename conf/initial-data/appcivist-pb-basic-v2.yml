@@ -264,9 +264,9 @@
       providerKey: password
       user: *u9
   - &u10 !!models.User
-    email:      jeff@example.com
-    name:       Jeff
-    username:   jeff
+    email:      bob@example.com
+    name:       Bob
+    username:   bob
     language:     it
     roles:
       - *r2 # USER
@@ -1224,6 +1224,7 @@
       - *contrib41
   - &wg4 !!models.WorkingGroup
     creator: *u1
+    listed: true
     name: "AntiEviction Proposals Team" 
     text: Team in charge of turning Ideas into proposals
     invitationEmail: "Hello! You have been invited to be a member of the Working Group 'AntiEviction Proposals Team' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
@@ -1738,7 +1739,7 @@
     user: *u3
     workingGroup: *wg1
     creator: *u1
-    status: ACCEPTED
+    status: REQUESTED
     roles: 
       - *r3
       - *r4
@@ -1787,7 +1788,7 @@
       - *r3
       - *r4
   - &gm1 !!models.MembershipGroup
-    workingGroup: *wg1    
+    workingGroup: *wg4    
     user: *u3
     creator: *u1
     status: REQUESTED
@@ -1862,6 +1863,22 @@
       - *r7
     token: &ta1 !!models.TokenAction 
       token: "438f5020-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi4 !!models.MembershipInvitation
+    email: "bob@example.com"
+    targetId: 3
+    creator: *u1
+    userId: 10
+    status: INVITED
+    targetType: GROUP
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "7618c668-c83d-11e5-9956-625662870761"
       type: "MEMBERSHIP_INVITATION"
       created: "2016-02-06 16:39:13.299"
       expires: "2017-02-06 16:39:13.299"

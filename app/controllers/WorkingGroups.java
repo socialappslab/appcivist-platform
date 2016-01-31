@@ -14,9 +14,12 @@ import models.MembershipInvitation;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
+import models.transfer.AssemblySummaryTransfer;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
+import models.transfer.WorkingGroupSummaryTransfer;
+import models.transfer.WorkingGroupTransfer;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -27,6 +30,8 @@ import play.mvc.With;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
@@ -38,6 +43,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
+import delegates.AssembliesDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.ResponseStatus;
 
 @Api(value = "/group", description = "Group Management endpoints in the Assembly Making service")
@@ -365,4 +372,27 @@ public class WorkingGroups extends Controller {
 		List<Contribution> proposals = wg.getProposals();
 		return ok(Json.toJson(proposals));
 	}
+	
+
+	/**
+	 * 
+	 * @return models.AssemblyCollection
+	 */
+	@ApiOperation(httpMethod = "GET", response = AssemblySummaryTransfer.class, produces = "application/json", value = "Get working group profile if it is listed")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
+			@ApiImplicitParam(name = "gid", value = "Groups ID", dataType="Long", paramType="path")
+	})
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result getListedWorkingGroupProfile(Long aid, Long gid) {
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		WorkingGroupSummaryTransfer group = WorkingGroupsDelegate.readListedWorkingGroup(gid, requestor);
+		if (group != null) {
+			return ok(Json.toJson(group));		
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Group with id = '"+gid+"' is not available for this user", "")));
+		}
+	}
+	
 }

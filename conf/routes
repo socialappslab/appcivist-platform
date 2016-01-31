@@ -85,6 +85,7 @@ GET       /api/assembly/:aid/group/:id/membership                         contro
 GET       /api/assembly/:aid/group/:id/membership/:status                 controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String)
 GET       /api/assembly/:aid/group/:gid/user/:uid                         controllers.WorkingGroups.isUserMemberOfGroup(aid: Long, gid: Long, uid: Long)
 GET       /api/assembly/:aid/group/:gid/proposals                         controllers.WorkingGroups.listWorkingGroupProposals(aid: Long, gid: Long) 
+GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
