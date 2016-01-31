@@ -91,3 +91,5 @@ test/outputs/demo-1-console-output-example.txt
 test/outputs/demo-2-console-output-example.txt
 conf/initial-data/json-examples/mapbox-api-calls.txt
 conf/initial-data/json-examples/shareabouts.json
+.cache-main
+.cache-tests

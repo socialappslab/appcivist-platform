@@ -2,9 +2,11 @@ package security;
 
 import java.util.List;
 
+import enums.MembershipTypes;
 import enums.MyRoles;
 import models.MembershipGroup;
 import models.Membership;
+import models.MembershipInvitation;
 import models.SecurityRole;
 import models.User;
 import play.Logger;
@@ -23,7 +25,7 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
 	}
 
 	@Override
-	public Promise<Boolean> isAllowed(String name, String meta,
+	public Promise<Boolean> isAllowed(String rule, String resource,
 			DeadboltHandler deadboltHandler, Context context) {
 
 		 return deadboltHandler.getSubject(context)
@@ -34,40 +36,30 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
                             	   } else {
                             		   subjectOption.ifPresent(subject -> {
                             			   User u = User.findByUserName(subject.getIdentifier());
-                            			   Logger.debug("Checking membership of User in "+meta+"...");
-                            			   Logger.debug("--> userName = " + u.getUsername());
-                            			   String path = context.request().path();
-                            			   Long groupId = MyDynamicResourceHandler.getIdFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
-                            			   Logger.debug("--> groupId= " + groupId);
-                            			   // TODO: add visibility to group
-                            			   // WorkingGroup g = WorkingGroup.read(groupId);
+                                           String path = context.request().path();
+                                           Long groupId = MyDynamicResourceHandler.getIdFromPath(path, resource);
+                                           Logger.debug("Checking membership of User in "+resource+"...");
+                                           Logger.debug("--> userName = " + u.getUsername());
+                                           Logger.debug("--> assemblyId= " + groupId);
                             			   Membership m = MembershipGroup.findByUserAndGroupId(u.getUserId(), groupId);
                             			   
-                            			   if (m!=null && name.equals("CoordinatorOfGroup")) {
-                        					   List<SecurityRole> membershipRoles = m.getRoles();
-                        					   for (SecurityRole r : membershipRoles) {
-                        						   if(r.getName().equals(MyRoles.COORDINATOR.getName())) {
-                        							   allowed[0] = true;
-                        						   }
-                        					   }
-                            			   } else if (m!=null && name.equals("GroupMemberIsExpert")) {
-                        					   List<SecurityRole> membershipRoles = m.getRoles();
-                        					   for (SecurityRole r : membershipRoles) {
-                        						   if(r.getName().equals(MyRoles.EXPERT.getName())) {
-                        							   allowed[0] = true;
-                        						   }
-                        					   }
-                        				   } else if (m!=null && name.equals("ModeratorOfGroup")) {
-                        					   List<SecurityRole> membershipRoles = m.getRoles();
-                        					   for (SecurityRole r : membershipRoles) {
-                        						   if(r.getName().equals(MyRoles.MODERATOR.getName())) {
-                        							   allowed[0] = true;
-                        						   }
-                        					   }
-                        				   } else 
-                        					   allowed[0] = m!=null;
-                            			   
-                            			   allowed[0] = m!=null;						    
+                            			   if (m!=null && rule.equals("CoordinatorOfGroup")) {
+                                               List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+                                               allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                           } else if (m!=null && rule.equals("GroupMemberIsExpert")) {
+                                               List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.EXPERT.getName());
+                                               allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                           } else if (m!=null && rule.equals("ModeratorOfGroup")) {
+                                               List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MODERATOR.getName());
+                                               allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();                                           
+                                           } else {
+                                             allowed[0] = m!=null; 
+                                             if(!allowed[0]) {
+                                            	 // Check if the user has been invited. In which case, it will be considered a member
+                                            	 MembershipInvitation mi = MembershipInvitation.findByUserIdTargetIdAndType(u.getUserId(), groupId, MembershipTypes.GROUP);
+                                            	 allowed[0] =  mi!=null;
+                                             }
+                                           }
                             		   });
                             	   }
                             	   return allowed[0];

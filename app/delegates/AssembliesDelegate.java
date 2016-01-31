@@ -109,4 +109,17 @@ public class AssembliesDelegate {
 		return created;
 	}
 
+	public static AssemblySummaryTransfer readListedLinkedAssembly(Long aid, User requestor) {
+		// 1. Read the assembly and check if it is listed
+		Assembly a = Assembly.read(aid);
+		if (a!=null && a.getListed()) {
+			return mapper.map(a, AssemblySummaryTransfer.class);
+		} else {
+			// 2. if it is not listed, check if it is between the list of linked assemblies 
+			//    linked to the user's assemblies
+			//TODO: a = Assembly.readIfLinkedToUser(a,requestor);
+			return null;
+		}
+	}
+
 }

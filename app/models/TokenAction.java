@@ -8,14 +8,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import models.TokenAction.Type;
 import play.data.format.Formats;
 
-import com.avaje.ebean.Model;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name="Token_Action")
@@ -50,13 +51,12 @@ public class TokenAction extends Model {
 	public String token;
 
 	@ManyToOne
-	//@MapsId
 	@JoinColumn(name="user_id")
 	public User targetUser;
 
-	@ManyToOne
-	//@MapsId
+	@OneToOne
 	@JoinColumn(name="membership_invitation_id")
+	@JsonBackReference
 	public MembershipInvitation targetInvitation;
 	
 	public Type type;

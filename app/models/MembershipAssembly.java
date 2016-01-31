@@ -96,6 +96,15 @@ public class MembershipAssembly extends Membership {
 		return m != null;		
 	}
 	
+	public static Boolean hasUserRequestedMembershipToAssembly(Long userId, Long assemblyId) {
+		Membership m = find.where().eq("user.userId", userId)
+				.eq("assembly.assemblyId", assemblyId)
+				.eq("status",MembershipStatus.REQUESTED)
+				.findUnique();
+				
+		return m != null;		
+	}
+	
 	public static List<Membership> findByAssemblyIdAndStatus(Long id,
 			String status) {
 		Query<Membership> q = find.where().eq("assembly.assemblyId", id)

@@ -1,13 +1,14 @@
 package models.transfer;
 
+import play.data.validation.Constraints.Required;
 import utils.GlobalData;
 import enums.ManagementTypes;
 import enums.SupportedMembershipRegistration;
 
 public class AssemblyProfileTransfer {
 	private String targetAudience;
-	private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST; //   OPEN, INVITATION, REQUEST, INVITATION_AND_REQUEST
-	private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are OPEN by default
+	@Required private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST; //   OPEN, INVITATION, REQUEST, INVITATION_AND_REQUEST
+	@Required private ManagementTypes managementType = ManagementTypes.OPEN; // assemblies are OPEN by default
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
 	

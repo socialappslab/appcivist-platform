@@ -609,6 +609,7 @@ create table Token_Action (
   expires                   timestamp,
   constraint ck_Token_Action_type check (type in ('PR','MR','MI','EV')),
   constraint uq_Token_Action_token unique (token),
+  constraint uq_Token_Action_membership_invit unique (membership_invitation_id),
   constraint pk_Token_Action primary key (token_id))
 ;
 

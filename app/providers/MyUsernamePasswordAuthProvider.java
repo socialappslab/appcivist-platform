@@ -202,7 +202,7 @@ public class MyUsernamePasswordAuthProvider
 			final MyUsernamePasswordAuthUser user) {
 		final User u = User.findByUsernamePasswordIdentity(user);
 		if (u != null) {
-			if (u.getEmailVerified()) {
+			if (u.getEmailVerified() != null && u.getEmailVerified()) {
 			   // This user exists, has its email validated and is active
 			   return SignupResult.USER_EXISTS;
 			} else {

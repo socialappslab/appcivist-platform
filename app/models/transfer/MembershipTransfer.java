@@ -1,5 +1,6 @@
 package models.transfer;
 
+
 /**
  * Transfer model to receive membership creation objects
  * 
@@ -19,6 +20,7 @@ public class MembershipTransfer {
     private String targetCollection;
     private Long defaultRoleId; 
     private String defaultRoleName;
+	private String status;
 
     public Long getUserId() {
         return userId;
@@ -82,5 +84,13 @@ public class MembershipTransfer {
 
 	public void setDefaultRoleName(String defaultRoleName) {
 		this.defaultRoleName = defaultRoleName;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Membership;
+import models.MembershipAssembly;
+import models.MembershipGroup;
 import models.MembershipInvitation;
 import models.SecurityRole;
 import models.TokenAction;
@@ -40,7 +42,9 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.MembershipsDelegate;
+import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
+import enums.MembershipTypes;
 import enums.MyRoles;
 import enums.ResponseStatus;
 
@@ -58,19 +62,28 @@ public class Memberships extends Controller {
 	 * The membership invitation/request timeout in seconds Defaults to 4 weeks
 	 * (24 hours * 30 days * 60 minutes * 60 seconds)
 	 */
-	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(30 * 14 * 3600);
+	public static final Long MEMBERSHIP_EXPIRATION_TIMEOUT = new Long(
+			30 * 14 * 3600);
 
-	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership within an Assembly or a Group")
-	@ApiImplicitParams({
-		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	/**
+	 * TODO: marked for review and removal if not needed
+	 * 
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership with any desired status within an Assembly or a Group. Endpoint available only to ADMINS.")
+	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@ApiResponses({
+			@ApiResponse(code = ACCEPTED, message = "Membership was created", response = MembershipTransfer.class),
+			@ApiResponse(code = BAD_REQUEST, message = "Membership body has errors", response = TransferResponseStatus.class) })
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result createMembership() {
-		// 1. obtaining the user of the requestor
-		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		// 1. Read User data related to the Requestor
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 
-		// 2. read the new group data from the body
-		// another way of getting the body content => request().body().asJson()
-		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM.bindFromRequest();
+		// 2. Read the body of the request
+		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM
+				.bindFromRequest();
 
 		if (newMembershipForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -81,25 +94,233 @@ public class Memberships extends Controller {
 		} else {
 			MembershipTransfer newMembership = newMembershipForm.get();
 			String targetCollection = newMembership.getTargetCollection();
-			Long targetCollectionId = targetCollection.toUpperCase().equals("GROUP") ? newMembership.getGroupId() : newMembership.getAssemblyId();
-			
-			return createMembership(requestor,
-					targetCollection, targetCollectionId,
-					newMembership.getType(), newMembership.getUserId(),
-					newMembership.getEmail(), newMembership.getDefaultRoleId(), newMembership.getDefaultRoleName());
+			Long targetCollectionId = targetCollection.toUpperCase().equals(
+					"GROUP") ? newMembership.getGroupId() : newMembership
+					.getAssemblyId();
+
+			return createMembership(requestor, targetCollection,
+					targetCollectionId, newMembership.getType(),
+					newMembership.getUserId(), newMembership.getEmail(),
+					newMembership.getDefaultRoleId(),
+					newMembership.getDefaultRoleName());
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send and to an Assembly or a Group")
+	/**
+	 * Find membership record for user identified by its ID
+	 * 
+	 * @param uid
+	 *            User's ID
+	 * @param type
+	 *            Type of membership filter (assembly, group)
+	 * @return User's Membership record
+	 */
+	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
-		@ApiImplicitParam(name = "aid", value = "Assembly Id", dataType = "Long", paramType = "path") })
+			@ApiImplicitParam(name = "uuid", value = "User's UUID", dataType = "java.util.UUID", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "type", value = "type of membership requeste", dataType = "String", paramType = "query", allowableValues = "assembly,group") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result findMembershipByUser(Long uid, String type) {
+		User u = User.findByUserId(uid);
+		if (u == null)
+			return notFound(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.NODATA, "User with ID = " + uid
+							+ " not found")));
+
+		// TODO: include UUID already in the Membership model
+		String membershipType = "";
+		if (type != null && !type.isEmpty()) {
+			switch (type.toLowerCase()) {
+			case "assembly":
+				membershipType = "ASSEMBLY";
+				break;
+			case "group":
+				membershipType = "GROUP";
+				break;
+			}
+		}
+
+		List<Membership> memberships = Membership.findByUser(u, membershipType);
+		if (memberships == null || memberships.isEmpty())
+			return notFound(Json.toJson(new TransferResponseStatus(
+					ResponseStatus.NODATA, "No memberships for user with ID = "
+							+ uid)));
+		else
+			return ok(Json.toJson(memberships));
+	}
+
+	/**
+	 * Get the list of invitations to the target Group or Assembly
+	 * 
+	 * @param targetId
+	 *            id of the target group or assembly
+	 * @param status
+	 *            the status of the invitation (INVITED, ACCEPTED, REJECTED)
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = MembershipInvitation.class, responseContainer = "List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "targetId", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "status", value = "Invitation Status", allowableValues = "INVITED, ACCEPTED, REJECTED", dataType = "String", paramType = "path") })
+	@ApiResponses({
+		@ApiResponse(code=ACCEPTED, message="Invitations found", response=MembershipInvitation.class),
+		@ApiResponse(code=NOT_FOUND, message="Invitations not found", response=TransferResponseStatus.class)
+	})
+	public static Result listInvitations(Long targetId, String status) {
+		List<MembershipInvitation> invitations = MembershipInvitation
+				.findByTargetIdAndStatus(targetId, status);
+		if (invitations != null && invitations.isEmpty()) {
+			TransferResponseStatus response = new TransferResponseStatus(
+					ResponseStatus.NODATA, "No invitations with status '"
+							+ status
+							+ "' found for the target collection with id: "
+							+ targetId);
+			return notFound(Json.toJson(response));
+		} else {
+			return ok(Json.toJson(invitations));
+		}
+	}
+
+	/**
+	 * Read and invitation by the Token
+	 * @param token invitation token 
+	 * @return the invitation record
+	 */
+	@ApiOperation(httpMethod = "GET", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "token", value = "Invitation Token", dataType = "java.util.UUID", paramType = "path") })
+	public static Result readInvitation(UUID token) {
+		TokenAction ta = TokenAction.findByToken(token.toString(),
+				TokenAction.Type.MEMBERSHIP_INVITATION);
+		if (ta != null && ta.isValid()) {
+			MembershipInvitation mi = MembershipInvitation.findByToken(token);
+			return ok(Json.toJson(mi));
+		} else {
+			TransferResponseStatus response = new TransferResponseStatus(
+					ResponseStatus.NOTAVAILABLE, "Token is no longer valid");
+			return notFound(Json.toJson(response));
+		}
+	}
+
+	/**
+	 * Searches for an user membership in an assembly. If no membership exists,
+	 * searches for a pending invitation.
+	 * 
+	 * @param aid
+	 *            The assembly id
+	 * @param uid
+	 *            The user id
+	 * @return the user's assembly or a notFound response
+	 */
+	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership of an user in an assembly")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "aid", value = "Assembly Id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "uid", value = "User's id", dataType = "Long", paramType = "path") })
+	@ApiResponses({
+			@ApiResponse(code = OK, message = "Membership found", response = Membership.class),
+			@ApiResponse(code = NOT_FOUND, message = "Membership not found", response = TransferResponseStatus.class) })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result readUserMembershipInAssembly(Long aid, Long uid) {
+		Membership ma = MembershipAssembly.findByUserAndAssemblyIds(uid, aid);
+		if (ma == null) {
+			// If there is no Membership record created (either REQUESTED or
+			// ACCEPTED), check if there is a pending invitation
+			MembershipInvitation mi = MembershipInvitation
+					.findByUserIdTargetIdAndType(uid, aid, MembershipTypes.ASSEMBLY);
+
+			if (mi == null) {
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage("Membership of user " + uid
+						+ " in assembly " + aid + " does not exist");
+				return notFound(Json.toJson(responseBody));
+			} else {
+				// Create a temporary "membership" object to send as response
+				ma = new Membership();
+				ma.setStatus(MembershipStatus.INVITED);
+				ma.setMembershipType("INVITATION");
+				ma.setRoles(mi.getRoles());
+				ma.setTargetAssembly(mi.getTargetAssembly());
+				ma.setInvitationToken(mi.getToken().token);
+				return ok(Json.toJson(ma));
+			}
+		} else {
+			return ok(Json.toJson(ma));
+		}
+	}
+
+	/**
+	 * Searches for an user membership in a group. If no membership exists,
+	 * searches for a pending invitation.
+	 * 
+	 * @param aid
+	 *            The assembly id
+	 * @param uid
+	 *            The user id
+	 * @return the user's assembly or a notFound response
+	 */
+	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership of an user in a group")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "uid", value = "User's id", dataType = "Long", paramType = "path") })
+	@ApiResponses({
+			@ApiResponse(code = OK, message = "Membership found", response = Membership.class),
+			@ApiResponse(code = NOT_FOUND, message = "Membership not found", response = TransferResponseStatus.class) })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result readUserMembershipInGroup(Long gid, Long uid) {
+		Membership ma = MembershipGroup.findByUserAndGroupId(uid, gid);
+
+		if (ma == null) {
+			// If there is no Membership record created (either REQUESTED or
+			// ACCEPTED), check if there is a pending invitation
+			MembershipInvitation mi = MembershipInvitation
+					.findByUserIdTargetIdAndType(uid, gid, MembershipTypes.GROUP);
+
+			if (mi == null) {
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage("Membership of user " + uid
+						+ " in group " + gid + " does not exist");
+				return notFound(Json.toJson(responseBody));
+			} else {
+				// Create a temporary "membership" object to send as response
+				ma = new Membership();
+				ma.setStatus(MembershipStatus.INVITED);
+				ma.setMembershipType("INVITATION");
+				ma.setRoles(mi.getRoles());
+				ma.setTargetAssembly(mi.getTargetAssembly());
+				ma.setInvitationToken(mi.getToken().token);
+				return ok(Json.toJson(ma));
+			}
+		} else {
+			return ok(Json.toJson(ma));
+		}
+	}
+
+	/**
+	 * Creates an invitation to join an assembly and sends email to the invited
+	 * user
+	 * 
+	 * @param aid
+	 *            id of the assembly
+	 * @return the invitation record
+	 */
+	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send and to an Assembly")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "aid", value = "Assembly Id", dataType = "Long", paramType = "path") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createSendInvitationToAssembly(Long aid) {
+	public static Result createSendInvitationToJoinAssembly(Long aid) {
 		// 1. Obtaining the user of the requestor
-		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 		// 2. Read the invitation data from the body
-		final Form<InvitationTransfer> newInvitationForm = TRANSFER_INVITATION_FORM.bindFromRequest();
+		final Form<InvitationTransfer> newInvitationForm = TRANSFER_INVITATION_FORM
+				.bindFromRequest();
 
 		if (newInvitationForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -115,7 +336,7 @@ public class Memberships extends Controller {
 				newInvitation = newInvitationForm.get();
 				newInvitation.setTargetId(aid);
 				newInvitation.setTargetType("ASSEMBLY");
-				mi = createAndSendInvitation(requestor,newInvitation);
+				mi = createAndSendInvitation(requestor, newInvitation);
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
 				TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -129,16 +350,25 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	/**
+	 * Creates an invitation to join a group and sends email to the invited user
+	 * 
+	 * @param gid
+	 *            id of the group
+	 * @return the invitation record
+	 */
+	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
-		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
-		@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createSendInvitationToGroup(Long gid) {
+	public static Result createSendInvitationToJoinGroup(Long gid) {
 		// 1. Obtaining the user of the requestor
-		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 		// 2. Read the invitation data from the body
-		final Form<InvitationTransfer> newInvitationForm = TRANSFER_INVITATION_FORM.bindFromRequest();
+		final Form<InvitationTransfer> newInvitationForm = TRANSFER_INVITATION_FORM
+				.bindFromRequest();
 
 		if (newInvitationForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -154,7 +384,7 @@ public class Memberships extends Controller {
 				newInvitation = newInvitationForm.get();
 				newInvitation.setTargetId(gid);
 				newInvitation.setTargetType("GROUP");
-				mi = createAndSendInvitation(requestor,newInvitation);
+				mi = createAndSendInvitation(requestor, newInvitation);
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
 				TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -167,83 +397,99 @@ public class Memberships extends Controller {
 			return ok(Json.toJson(mi));
 		}
 	}
-	
-	@ApiOperation(httpMethod = "GET", response = MembershipInvitation.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
-	@ApiImplicitParams({
-		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
-		@ApiImplicitParam(name = "targetId", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path") , 
-		@ApiImplicitParam(name = "status", value = "Invitation Status", allowableValues="INVITED, ACCEPTED", dataType = "String", paramType = "path") })
-	public static Result listInvitations(Long targetId, String status) {
-		List<MembershipInvitation> invitations = MembershipInvitation.findByTargetIdAndStatus(targetId, status);
-		return ok(Json.toJson(invitations));
-	}
 
-	@ApiOperation(httpMethod = "GET", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer = "List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
-		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
-		@ApiImplicitParam(name = "token", value = "Invitation Token", dataType = "java.util.UUID", paramType = "path")})
-	public static Result readInvitation(UUID token) {
-		TokenAction ta = TokenAction.findByToken(token.toString(), TokenAction.Type.MEMBERSHIP_INVITATION); 
-		if(ta.isValid()) {
-			MembershipInvitation mi = MembershipInvitation.findByToken(token);
-			return ok(Json.toJson(mi));
-		} else {
-			TransferResponseStatus response = new TransferResponseStatus(ResponseStatus.NOTAVAILABLE, "Token is no longer valid");
-			return notFound(Json.toJson(response));
-		}
-	}
+			@ApiImplicitParam(name = "token", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues = "ACCEPT, REJECT", dataType = "String", paramType = "path") })
+	public static Result answerInvitation(UUID token, String answer) {
+		Ebean.beginTransaction();
+		MembershipStatus response = answer.equals("ACCEPT") ? MembershipStatus.ACCEPTED : MembershipStatus.REJECTED;
 
-	// TODO: replace with an special signup if the user does not exist
-	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer="List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
-	@ApiImplicitParams({
-		@ApiImplicitParam(name = "token", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path") , 
-		@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues="ACCEPT, REJECT", dataType = "String", paramType = "path") })
-	public static Result answerInvitation(UUID token) {
-		final Form<MembershipInvitation> updatedInForm = MEMBERSHIP_INVITATION_FORM.bindFromRequest();
-		MembershipInvitation updateMi = updatedInForm.get();
-		MembershipStatus response = updateMi.getStatus();
-		
 		// 1. Verify the token
 		MembershipInvitation mi = MembershipInvitation.findByToken(token);
-		final TokenAction ta = Users.tokenIsValid(token.toString(),Type.MEMBERSHIP_INVITATION);
+		final TokenAction ta = Users.tokenIsValid(token.toString(),
+				Type.MEMBERSHIP_INVITATION);
 		if (ta == null) {
+			Ebean.rollbackTransaction();
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
 					Messages.get("playauthenticate.token.error.message"),
 					"Token is null")));
 		}
 		ta.delete();
-		// 2. Read Invitation 
+		// 2. Read Invitation
 		User invitedUser = null;
-		if(mi.getUserId()!=null) {
+		if (mi.getUserId() != null) {
 			invitedUser = User.read(mi.getUserId());
 		} else {
-			return internalServerError(Json
-					.toJson(TransferResponseStatus.badMessage("User has not signuped yet","")));
+			Ebean.rollbackTransaction();
+			return internalServerError(Json.toJson(TransferResponseStatus
+					.badMessage("User has not signuped yet", "")));
 		}
-		
-		if(response.equals(MembershipStatus.ACCEPTED)){
+
+		if (response.equals(MembershipStatus.ACCEPTED)) {
 			// 4. Create Membership
 			try {
-				MembershipInvitation.acceptAndCreateMembershipByToken(mi, invitedUser);
+				MembershipInvitation.acceptAndCreateMembershipByToken(mi,
+						invitedUser);
 			} catch (Exception e) {
-				return internalServerError(Json
-						.toJson(TransferResponseStatus.badMessage(
-								Messages.get("Error has occurred: "),
+				Ebean.rollbackTransaction();
+				return internalServerError(Json.toJson(TransferResponseStatus
+						.badMessage(Messages.get("Error has occurred: "),
 								e.getMessage())));
 			}
+			Ebean.commitTransaction();
 			return ok(Json.toJson("DONE"));
 		} else {
+			Ebean.commitTransaction();
 			// 5. Update Invitation record
-			MembershipInvitation.rejectAndUpdateInvitationByToken(mi, invitedUser);
+			MembershipInvitation.rejectAndUpdateInvitationByToken(mi,
+					invitedUser);
 			return ok(Json.toJson("DONE"));
 		}
 	}
-	
 
+	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership request for an Assembly or a Group")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "targetId", dataType = "Long", required = true, paramType = "path") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result createMembershipRequest(Long targetId) {
+		// 1. obtaining the user of the requestor
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
 
-	private static MembershipInvitation createAndSendInvitation(User creator, InvitationTransfer invitation) {
-		MembershipInvitation membershipInvitation = MembershipInvitation.create(invitation, creator);
-		return membershipInvitation;
+		// 2. read the new group data from the body
+		// another way of getting the body content => request().body().asJson()
+		final Form<MembershipTransfer> newMembershipForm = TRANSFER_MEMBERSHIP_FORM
+				.bindFromRequest();
+
+		if (newMembershipForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+					newMembershipForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			MembershipTransfer newMembership = newMembershipForm.get();
+			String targetCollection = newMembership.getTargetCollection();
+			Long targetCollectionId = targetId;
+			// Allow only requests and subscriptions to non-members
+			if (!newMembership.getType().equals(
+					MembershipCreationTypes.INVITATION.toString())) {
+				return createMembership(requestor, targetCollection,
+						targetCollectionId, newMembership.getType(),
+						newMembership.getUserId(), newMembership.getEmail(),
+						newMembership.getDefaultRoleId(),
+						newMembership.getDefaultRoleName());
+			} else {
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+						"A non member cannot create an invitation membership"));
+				return internalServerError(Json.toJson(responseBody));
+			}
+		}
 	}
 
 	/**
@@ -257,7 +503,8 @@ public class Memberships extends Controller {
 		Membership m = Membership.read(id);
 		if (m != null) {
 			List<SecurityRole> roles = m.getRoles();
-			Logger.debug("Membership roles: #" +roles.size() +" = "+ roles.toString());
+			Logger.debug("Membership roles: #" + roles.size() + " = "
+					+ roles.toString());
 			return ok(Json.toJson(m));
 		} else {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -308,11 +555,12 @@ public class Memberships extends Controller {
 			Boolean authorization = false;
 			// what's the requestor membership in the group/assembly related to
 			// this membership
-			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
+			Membership requestorMembership = MembershipsDelegate
+					.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
-				authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
-						requestorMembership);
+				authorization = MembershipsDelegate.requestorIsCoordinator(
+						requestor, requestorMembership);
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED,
@@ -321,7 +569,8 @@ public class Memberships extends Controller {
 			}
 
 			if (authorization) {
-				final Form<SecurityRole> newRoleForm = ROLE_FORM.bindFromRequest();
+				final Form<SecurityRole> newRoleForm = ROLE_FORM
+						.bindFromRequest();
 				if (newRoleForm.hasErrors()) {
 					TransferResponseStatus responseBody = new TransferResponseStatus();
 					responseBody
@@ -386,11 +635,12 @@ public class Memberships extends Controller {
 			Boolean authorization = false;
 			// what's the requestor membership in the group/assembly related to
 			// this membership
-			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
+			Membership requestorMembership = MembershipsDelegate
+					.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
-				authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
-						requestorMembership);
+				authorization = MembershipsDelegate.requestorIsCoordinator(
+						requestor, requestorMembership);
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED,
@@ -399,17 +649,18 @@ public class Memberships extends Controller {
 			}
 
 			if (authorization) {
-				
-				if(m.getRoles().size()>1) {
+
+				if (m.getRoles().size() > 1) {
 					SecurityRole membershipRole = SecurityRole.read(rid);
 					m.getRoles().remove(membershipRole);
 					m.update();
 					m.refresh();
 					return ok(Json.toJson(m));
 				} else {
-					// leave always at least one Role				
+					// leave always at least one Role
 					return badRequest(Json.toJson(new TransferResponseStatus(
-					ResponseStatus.BADREQUEST, "Memberships must have at least one role")));
+							ResponseStatus.BADREQUEST,
+							"Memberships must have at least one role")));
 				}
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
@@ -435,11 +686,12 @@ public class Memberships extends Controller {
 		Boolean authorization = false;
 		// what's the requestor membership in the group/assembly related to
 		// this membership
-		Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
+		Membership requestorMembership = MembershipsDelegate
+				.requestorMembership(requestor, m);
 
 		if (requestorMembership != null) {
-			authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
-					requestorMembership);
+			authorization = MembershipsDelegate.requestorIsCoordinator(
+					requestor, requestorMembership);
 		} else {
 			return unauthorized(Json
 					.toJson(new TransferResponseStatus(
@@ -479,11 +731,12 @@ public class Memberships extends Controller {
 
 			// what's the requestor membership in the group/assembly related to
 			// this membership
-			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
+			Membership requestorMembership = MembershipsDelegate
+					.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
-				authorization = MembershipsDelegate.requestorIsCoordinator(requestor,
-						requestorMembership);
+				authorization = MembershipsDelegate.requestorIsCoordinator(
+						requestor, requestorMembership);
 			} else {
 				return unauthorized(Json.toJson(new TransferResponseStatus(
 						ResponseStatus.UNAUTHORIZED,
@@ -509,79 +762,22 @@ public class Memberships extends Controller {
 	// controllers.Memberships.verifyMembership(token: String)
 	public static Result verifyMembership(Long id, String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final TokenAction ta = Users.tokenIsValid(token, Type.MEMBERSHIP_INVITATION);
+		final TokenAction ta = Users.tokenIsValid(token,
+				Type.MEMBERSHIP_INVITATION);
 		if (ta == null) {
-			return badRequest(Json.toJson(Messages.get("playauthenticate.token.error.message")));
-			// TODO content negotiation: if content-type is HTML, render the response in HTML
+			return badRequest(Json.toJson(Messages
+					.get("playauthenticate.token.error.message")));
+			// TODO content negotiation: if content-type is HTML, render the
+			// response in HTML
 			// return badRequest(no_token_or_invalid.render());
 		}
-		
+
 		final String email = ta.targetUser.getEmail();
 		Membership.verify(id, ta.targetUser);
-		return ok(Json.toJson(Messages.get("playauthenticate.verify_email.success", email)));		
+		return ok(Json.toJson(Messages.get(
+				"playauthenticate.verify_email.success", email)));
 	}
-	
-	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response=TransferResponseStatus.class) })
-	@ApiImplicitParams({
-		@ApiImplicitParam(name="uuid", value="User's UUID", dataType="java.util.UUID", paramType="path"),
-		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header"),
-		@ApiImplicitParam(name="type", value="type of membership requeste", dataType="String", paramType = "query", allowableValues ="assembly,group")
-	})
-	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result findMembershipByUser(UUID uuid, String type) {
-		List<Membership> memberships = null;
-		User u = User.findByUUID(uuid);
-		if (u == null)
-			return notFound(Json.toJson(new TransferResponseStatus(
-					ResponseStatus.NOTAVAILABLE, "User with UUID = " + uuid
-							+ " not found")));
-		
-		// TODO: include UUID already in the Membership model
-		String membershipType = "";
-		if(type!=null && !type.isEmpty()) {
-			switch (type.toLowerCase()) {
-			case "assembly":
-				membershipType = "ASSEMBLY";
-				break;
-			case "group":
-				membershipType = "GROUP";
-				break;
-			}
-		} 
-		memberships = Membership.findByUser(u,membershipType); 
-		if (memberships == null || memberships.isEmpty())
-			return notFound(Json.toJson(new TransferResponseStatus(
-					ResponseStatus.NOTAVAILABLE, "No memberships for user with UUID = " + uuid)));
-		else 
-			return ok(Json.toJson(memberships));
-	}
-	
-	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response=TransferResponseStatus.class) })
-	@ApiImplicitParams({
-		@ApiImplicitParam(name="targetUuid", value="Assembly/Group's target UUID", dataType="java.util.UUID", paramType="path"),
-		@ApiImplicitParam(name="type", value="type of membership requeste", dataType="String", paramType = "query", allowableValues ="assembly,group"),
-		@ApiImplicitParam(name="SESSION_KEY", value="User's session authentication key", dataType="String", paramType="header")
-	})
-	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result findMembershipByTargetUUID(UUID uuid, UUID targetUuid) {
-		List<Membership> memberships = null;
-		User u = User.findByUUID(uuid);
-		if (u == null)
-			return notFound(Json.toJson(new TransferResponseStatus(
-					ResponseStatus.NOTAVAILABLE, "No user in session")));
-				
-		memberships = Membership.findByUserAndTargetUuid(u,targetUuid);
-		if (memberships == null || memberships.isEmpty())
-			return notFound(Json.toJson(new TransferResponseStatus(
-					ResponseStatus.NOTAVAILABLE, "No memberships for requesting user in target assembly/group:" + targetUuid)));
-		else 
-			return ok(Json.toJson(new TransferResponseStatus(
-					ResponseStatus.OK, "User is Member")));
-		
-	}
-	
+
 	/****************************************************************************************************************
 	 * Not exposed methods
 	 ****************************************************************************************************************/
@@ -592,8 +788,9 @@ public class Memberships extends Controller {
 	 * @return
 	 */
 	protected static Result createMembership(User requestor,
-			String targetCollection, Long targetCollectionId, String membershipType,
-			Long userId, String userEmail, Long defaultRoleId, String defaultRoleName) {
+			String targetCollection, Long targetCollectionId,
+			String membershipType, Long userId, String userEmail,
+			Long defaultRoleId, String defaultRoleName) {
 
 		Pair<Membership, TransferResponseStatus> result = MembershipsDelegate
 				.createMembership(requestor, targetCollection,
@@ -601,14 +798,32 @@ public class Memberships extends Controller {
 						defaultRoleId, defaultRoleName);
 		Membership m = result.getFirst();
 		TransferResponseStatus r = result.getSecond();
-		if(r==null) {
+		if (r == null) {
 			return ok(Json.toJson(m));
 		} else {
-			if(r.getResponseStatus().equals(ResponseStatus.BADREQUEST)) return badRequest(Json.toJson(r));
-			else if (r.getResponseStatus().equals(ResponseStatus.NODATA)) return notFound(Json.toJson(r));
-			else if (r.getResponseStatus().equals(ResponseStatus.NOTAVAILABLE)) return notFound(Json.toJson(r));
-			else if (r.getResponseStatus().equals(ResponseStatus.SERVERERROR)) return internalServerError(Json.toJson(r));
-			else return unauthorized(Json.toJson(r));
+			if (r.getResponseStatus().equals(ResponseStatus.BADREQUEST))
+				return badRequest(Json.toJson(r));
+			else if (r.getResponseStatus().equals(ResponseStatus.NODATA))
+				return notFound(Json.toJson(r));
+			else if (r.getResponseStatus().equals(ResponseStatus.NOTAVAILABLE))
+				return notFound(Json.toJson(r));
+			else if (r.getResponseStatus().equals(ResponseStatus.SERVERERROR))
+				return internalServerError(Json.toJson(r));
+			else
+				return unauthorized(Json.toJson(r));
 		}
+	}
+
+	/**
+	 * General create invitation method (not exposed in the API) 
+	 * @param creator
+	 * @param invitation
+	 * @return
+	 */
+	private static MembershipInvitation createAndSendInvitation(User creator,
+			InvitationTransfer invitation) {
+		MembershipInvitation membershipInvitation = MembershipInvitation
+				.create(invitation, creator);
+		return membershipInvitation;
 	}
 }
