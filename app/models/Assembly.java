@@ -75,7 +75,7 @@ public class Assembly extends AppCivistBaseModel {
 	 * themes and general contributions are stored. Other resource spaces will
 	 * be added if needed under proper names
 	 */
-	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@OneToOne(cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
 	@Where(clause="${ta}.removed=false")
 	@JsonIgnore

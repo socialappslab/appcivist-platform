@@ -150,7 +150,7 @@
     email:      carmen@example.com
     name:       Carmen
     username:   carmen
-    language:   en 
+    language:   "en-US" 
     profilePic: *upic1
     roles:
       - *r1 # ADMIN
@@ -164,7 +164,7 @@
     email:      jane@example.com
     name:       Jane
     username:   jane
-    language:   en
+    language:   "en-US"
     profilePic: *upic2
     roles:
       - *r1 # ADMIN
@@ -178,7 +178,7 @@
     email:      jeff@example.com
     name:       Jeff
     username:   jeff
-    language:     it
+    language:   "it-IT"
     profilePic: *upic3
     roles:
       - *r1 # ADMIN
@@ -192,7 +192,7 @@
     email:      sara@example.com
     name:       Sara
     username:   sara
-    language:     fr
+    language:   "fr-FR"
     profilePic: *upic4
     roles: 
       - *r2 # USER
@@ -205,7 +205,7 @@
     email:      alicia@example.com
     name:       Alicia
     username:   alicia
-    language:     es
+    language:   "es-ES"
     profilePic: *upic5
     roles:
       - *r2 # USER
@@ -231,7 +231,7 @@
     email:      leia@example.com
     name:       Leia
     username:   leia
-    language:     it
+    language:   "it-IT"
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -243,7 +243,7 @@
     email:      luke@example.com
     name:       Luke
     username:   luke
-    language:     es
+    language:   "es-ES"
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -267,7 +267,7 @@
     email:      bob@example.com
     name:       Bob
     username:   bob
-    language:     it
+    language:   "it-IT"
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -763,77 +763,77 @@
     title: Brainstorming
     description: "Identify problems and make suggestions for proposals."
     position: 0
-    start: "2015-09-01"
+    start: "2016-01-01"
     days: 60
     mainContributionType: BRAINSTORMING
   - &ci2 !!models.ComponentInstanceMilestone
     title: Working groups formation
     description: "Join or create a group to develop proposals."
     position: 1
-    start: "2015-11-11"
+    start: "2016-03-11"
     days: 5
     mainContributionType: BRAINSTORMING
   - &ci3 !!models.ComponentInstanceMilestone
     title: Proposal drafting
     description: "Explore existing proposals or start one with your working group."
     position: 2
-    start: "2015-11-16"
+    start: "2016-03-16"
     days: 10
     mainContributionType: PROPOSAL
   - &ci5 !!models.ComponentInstanceMilestone
     title: Proposal editing
     description: "Versioning of existing proposals."
     position: 4
-    start: "2015-11-27"
+    start: "2016-03-27"
     days: 15
     mainContributionType: PROPOSAL
   - &ci7 !!models.ComponentInstanceMilestone
     title: Proposal selection
     description: "Versioning period over. Working Groups must now select the proposals they want to put forward to the Assembly for deliberation and voting. While this process is ongoing, proposals will be available in read only mode, open to comments from the Assembly."
     position: 6
-    start: "2015-12-12"
+    start: "2016-04-12"
     days: 5
     mainContributionType: PROPOSAL
   - &ci8 !!models.ComponentInstanceMilestone
     title: Public deliberation
     description: "Explore and discuss published proposals for deliberation."
     position: 7
-    start: "2015-12-17"
+    start: "2016-04-17"
     days: 10
     mainContributionType: PROPOSAL
   - &ci9 !!models.ComponentInstanceMilestone
     title: Technical assessment
     description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
     position: 8
-    start: "2016-01-06"
+    start: "2016-05-06"
     days: 10
     mainContributionType: PROPOSAL
   - &ci11 !!models.ComponentInstanceMilestone
     title: Voting period
     description: "Explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
     position: 10
-    start: "2016-01-17"
+    start: "2016-05-17"
     days: 15
     mainContributionType: PROPOSAL
   - &ci13 !!models.ComponentInstanceMilestone
     title: Public deliberation
     description: "Explore and discuss published proposals for deliberation."
     position: 7
-    start: "2015-12-17"
+    start: "2016-04-17"
     days: 10
     mainContributionType: PROPOSAL
   - &ci14 !!models.ComponentInstanceMilestone
     title: Technical assessment
     description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
     position: 8
-    start: "2016-01-06"
+    start: "2016-05-06"
     days: 10
     mainContributionType: PROPOSAL
   - &ci16 !!models.ComponentInstanceMilestone
     title: Voting period
     description: "Explore and discuss published proposals for deliberation."
     position: 10
-    start: "2016-01-17"
+    start: "2016-05-17"
     days: 15
     mainContributionType: PROPOSAL
    
@@ -1267,8 +1267,8 @@
     notes: "These are notes"
     password: secret
     systemType: RANGE
-    starts: "2015-12-01"
-    ends: "2015-12-31"
+    starts: "2016-04-01"
+    ends: "2016-04-31"
     registrationForm: !!models.VotingBallotRegistrationForm
       fields:
         - &vbf1 !!models.VotingBallotRegistrationField

@@ -121,7 +121,7 @@ public class Memberships extends Controller {
 			@ApiImplicitParam(name = "uuid", value = "User's UUID", dataType = "java.util.UUID", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "type", value = "type of membership requeste", dataType = "String", paramType = "query", allowableValues = "assembly,group") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	// TODO: implement the right access rule for this @Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result findMembershipByUser(Long uid, String type) {
 		User u = User.findByUserId(uid);
 		if (u == null)

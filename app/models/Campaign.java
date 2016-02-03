@@ -48,7 +48,7 @@ public class Campaign extends AppCivistBaseModel {
 	private Boolean listed = true;
 
 	// Relationships	
-	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@OneToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnore
@@ -57,7 +57,6 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
-	
 	
 	@Transient
 	private List<ComponentInstance> components = new ArrayList<>();
@@ -186,16 +185,31 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	public Boolean getActive() {
-		return this.getStartDate()!=null && (this.getStartDate().before(Calendar.getInstance().getTime())
-				|| this.getStartDate().equals(Calendar.getInstance().getTime()));
+		Date start = this.getStartDate();
+		if (start!=null) {
+			Boolean campaignStarted = start.before(Calendar.getInstance().getTime());
+			Boolean campaignStartsToday = start.equals(Calendar.getInstance().getTime());
+			return campaignStarted || campaignStartsToday;
+		}
+		return false;
 	}
 	
 	public Boolean getPast() {
-		return this.getEndDate()!=null && (this.getEndDate().before(Calendar.getInstance().getTime()));
+		Date end = this.getEndDate();
+		if (end!=null) {
+			Boolean campaignFinished = end.before(Calendar.getInstance().getTime());
+			return campaignFinished;
+		}
+		return false;
 	}
 
 	public Boolean getUpcoming() {
-		return this.getStartDate()!=null && (this.getStartDate().after(Calendar.getInstance().getTime()));
+		Date start = this.getStartDate();
+		if (start!=null) {
+			Boolean campaignUpcoming = start.after(Calendar.getInstance().getTime());
+			return campaignUpcoming ;
+		}
+		return false;
 	}
 
 	public String getUrl() {
@@ -246,7 +260,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	public void setComponents(List<ComponentInstance> components) {
-		this.components = components;
+		//this.components = components;
 		this.resources.setComponents(components);
 	}
 
@@ -449,16 +463,25 @@ String uuidAsString, List<ComponentInstance> phases) {
 		ResourceSpace resources = a.getResources();
 		List<Campaign> campaigns = null;
 		if (resources != null)
-			campaigns = resources.getCampaigns();
+			campaigns = resources.getCampaignsFilteredByStatus("ongoing");
 		if (campaigns != null && !campaigns.isEmpty()) {
-			for (Campaign c : campaigns) {
-				Calendar today = Calendar.getInstance();
-				if (c.getStartDate()!=null && c.getEndDate()!=null && c.getStartDate().before(today.getTime())
-						&& c.getEndDate().after(today.getTime())) {
-					ongoingCampaigns.add(c);
-				}
-			}
+//			for (Campaign c : campaigns) {
+//				Calendar today = Calendar.getInstance();
+//				if (c.getStartDate()!=null && c.getEndDate()!=null && c.getStartDate().before(today.getTime())
+//						&& c.getEndDate().after(today.getTime())) {
+//					ongoingCampaigns.add(c);
+//				}
+//			}
+			ongoingCampaigns.addAll(campaigns);
 		}
 		return ongoingCampaigns;
+	}	
+	
+	public static List<Campaign> getOngoingCampaignsFromAssembly(Long assemblyId) {
+		List<Campaign> campaigns = find.where().eq("containingSpaces.assemblyResources.assemblyId", assemblyId).findList();
+		if (campaigns!=null && !campaigns.isEmpty())
+			return campaigns.stream().filter(p -> p.getActive()).collect(Collectors.toList());
+		else 
+			return null;
 	}	
 }
