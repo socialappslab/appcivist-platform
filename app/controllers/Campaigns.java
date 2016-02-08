@@ -264,8 +264,10 @@ public class Campaigns extends Controller {
 		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
 		
 		for (Membership membership : assemblyMemberships) {
-			Assembly a = ((MembershipAssembly) membership).getAssembly();
-			ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+			Long aid = ((MembershipAssembly) membership).getAssembly().getAssemblyId();
+			List<Campaign> ongoing = Campaign.getOngoingCampaignsFromAssembly(aid);
+			if (ongoing!=null) 
+				ongoingCampaigns.addAll(ongoing);
 		}
 		
 		if (!ongoingCampaigns.isEmpty()) return ok(Json.toJson(ongoingCampaigns));

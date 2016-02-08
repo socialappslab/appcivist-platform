@@ -72,19 +72,19 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	private List<Config> configs = new ArrayList<Config>();
 
-	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")
 	private List<Theme> themes = new ArrayList<Theme>();
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign")
 	@JsonManagedReference
 	@Where(clause="${ta}.removed=false")
 	private List<Campaign> campaigns = new ArrayList<Campaign>();
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign_components")
 	@Where(clause="${ta}.removed=false")
 	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
