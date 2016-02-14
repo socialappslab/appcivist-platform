@@ -2,9 +2,16 @@
 <mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://dozer.sourceforge.net http://dozer.sourceforge.net/schema/beanmapping.xsd">
     <configuration>
+        <custom-converters>
+            <converter type="utils.URLConverter">
+                <class-a>java.net.URL</class-a>
+                <class-b>java.net.URL</class-b>
+            </converter>
+        </custom-converters>
         <copy-by-references>
             <copy-by-reference>java.util.UUID</copy-by-reference>
         </copy-by-references>
+        
     </configuration>
     <mapping>
         <class-a>models.AssemblyProfile</class-a>
@@ -41,5 +48,13 @@
             <a>componentMilestoneId</a>
             <b>milestoneId</b>
         </field>
+    </mapping>  
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.CampaignTimelineEdge</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.CampaignTimelineEdgeTransfer</class-b>
+    </mapping>    
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.Resource</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.ResourceTransfer</class-b>
     </mapping>    
 </mappings>

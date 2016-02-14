@@ -2,11 +2,15 @@ package delegates;
 
 import java.util.List;
 
+import models.Assembly;
+import models.Campaign;
+import models.ResourceSpace;
 import models.User;
 import models.transfer.CampaignTransfer;
 
 import org.dozer.DozerBeanMapper;
 
+import play.Logger;
 import play.Play;
 
 public class CampaignDelegate {
@@ -19,41 +23,24 @@ public class CampaignDelegate {
 		mapper = new DozerBeanMapper(mappingFiles);
 	}
 	
-	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User creator) {
-//		
-//		Assembly newAssembly =  mapper.map(newAssemblyTransfer, Assembly.class);
-//		
-//		newAssembly.setCreator(creator);
-//		if (newAssembly.getLang() == null)
-//			newAssembly.setLang(creator.getLanguage());
-//		
-//		newAssembly.setDefaultValues();
-//
-//		Logger.info("Creating assembly");
-//		Logger.debug("=> " + newAssembly.toString());
-//		Assembly.create(newAssembly);
-//
-//		// Add List of Followed Assemblies
-//		ResourceSpace rs = newAssembly.getResources();
-//		List<LinkedAssemblyTransfer> linked = newAssemblyTransfer.getLinkedAssemblies();
-//		for (LinkedAssemblyTransfer linkedAssemblyTransfer : linked) {
-//			Assembly a = Assembly.read(linkedAssemblyTransfer.getAssemblyId());
-//			rs.addAssembly(a);
-//		}
-//		
-//		rs.update();
-//		
-//		// Send invitations
-//		List<InvitationTransfer> invitations = newAssemblyTransfer.getInvitations();
-//		for (InvitationTransfer invitation : invitations) {
-//			MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-//			provider.sendInvitationByEmail(invitation, "ASSEMBLY", newAssembly.getAssemblyId());
-//		}
-//		
-//		Logger.info("Assembly created!");
-//		newAssembly.refresh();
-//		AssemblyTransfer created = mapper.map(newAssembly, AssemblyTransfer.class);
-		return null;
+	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User campaignCreator, Long aid) {
+		
+		Campaign newCampaign =  mapper.map(newCampaignTransfer, Campaign.class);
+		
+		if (newCampaign.getLang() == null) 
+			newCampaign.setLang(campaignCreator.getLanguage());
+		Logger.info("Creating new campaign");
+
+		
+		// Adding the new campaign to the Assembly Resource Space
+		Campaign.create(newCampaign);
+		ResourceSpace assemblyResources = Assembly.read(aid).getResources();
+		assemblyResources.addCampaign(newCampaign);
+		assemblyResources.update();
+		newCampaign.refresh();
+		
+		newCampaignTransfer = mapper.map(newCampaign, CampaignTransfer.class);
+		return newCampaignTransfer;
 	}
 
 }

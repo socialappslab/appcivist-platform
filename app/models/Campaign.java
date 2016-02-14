@@ -242,7 +242,7 @@ String uuidAsString, List<Component> phases) {
 	}
 
 	public String getUuidAsString() {
-		return uuid.toString();
+		return uuid!=null ? uuid.toString() : null;
 	}
 
 	public void setUuidAsString(String uuidAsString) {
@@ -279,27 +279,29 @@ String uuidAsString, List<Component> phases) {
 	public List<Component> getComponents() {
 		List<Component> components = new ArrayList<>();
 		Map<Long, Component> edges = new HashMap<>();
-		
+
 		for (CampaignTimelineEdge edge : this.timelineEdges) {
 			edges.put(edge.getFromComponentId(), edge.getToComponent());
 		}
-		
-		if(this.timelineEdges!=null && !this.timelineEdges.isEmpty()) {
+
+		if (this.timelineEdges != null && !this.timelineEdges.isEmpty()) {
 			CampaignTimelineEdge firstEdge = this.timelineEdges.get(0);
-			if (firstEdge!=null) {
+			if (firstEdge != null) {
 				components.add(firstEdge.getFromComponent());
-				Component nextComponent = edges.get(firstEdge.getFromComponent().getComponentId());
-				while (nextComponent!=null) {
+				Component nextComponent = edges.get(firstEdge
+						.getFromComponent().getComponentId());
+				while (nextComponent != null) {
 					components.add(nextComponent);
 					nextComponent = edges.get(nextComponent.getComponentId());
 				}
 			}
 		}
 		return components;
+
 	}
 
 	public void setComponents(List<Component> components) {
-		//this.components = components;
+		this.components = components;
 		this.resources.setComponents(components);
 	}
 
@@ -308,6 +310,9 @@ String uuidAsString, List<Component> phases) {
 		this.resources.getComponents().add(componentIsntance);
 	}
 
+	private List<Component> getTransientComponents() {
+		return this.components;
+	}
 
 	public List<Config> getConfigs() {
 		return this.resources.getConfigs();
@@ -445,7 +450,7 @@ String uuidAsString, List<Component> phases) {
 		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
 
 		// Save components to create them independently 
-		List<Component> componentList = campaign.getComponents();
+		List<Component> componentList = campaign.getTransientComponents();
 		campaign.setComponents(new ArrayList<>());
 
 		// 2. Create the new campaign

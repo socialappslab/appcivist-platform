@@ -14,6 +14,7 @@ import models.Membership;
 import models.MembershipAssembly;
 import models.ResourceSpace;
 import models.User;
+import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.UpdateTransfer;
 import play.Logger;
@@ -36,11 +37,14 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
+import delegates.CampaignDelegate;
+
 @Api(value="/campaign",description="Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
 public class Campaigns extends Controller {
 
 	public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
+	public static final Form<CampaignTransfer> CAMPAIGN_TRANSFER_FORM = form(CampaignTransfer.class);
 
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", value = "List campaigns of an Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
@@ -125,7 +129,7 @@ public class Campaigns extends Controller {
 				.getUser(session()));
 		// 2. read the new campaign data from the body
 		// another way of getting the body content => request().body().asJson()
-		final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
+		final Form<CampaignTransfer> newCampaignForm = CAMPAIGN_TRANSFER_FORM.bindFromRequest();
 
 		if (newCampaignForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -134,20 +138,8 @@ public class Campaigns extends Controller {
 					newCampaignForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-			Campaign newCampaign = newCampaignForm.get();
-			if (newCampaign.getLang() == null) 
-				newCampaign.setLang(campaignCreator.getLanguage());
-			
-			Logger.info("Creating new campaign");
-			Logger.debug("=> " + newCampaignForm.toString());
-
-			
-			// Adding the new campaign to the Assembly Resource Space
-			Campaign.create(newCampaign);
-			ResourceSpace assemblyResources = Assembly.read(aid).getResources();
-			assemblyResources.addCampaign(newCampaign);
-			assemblyResources.update();
-			newCampaign.refresh();
+			CampaignTransfer campaignTransfer = newCampaignForm.get();
+			CampaignTransfer newCampaign = CampaignDelegate.create(campaignTransfer, campaignCreator, aid);
 			return ok(Json.toJson(newCampaign));
 		}
 	}

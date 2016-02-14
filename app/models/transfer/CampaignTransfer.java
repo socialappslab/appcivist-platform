@@ -22,6 +22,7 @@ public class CampaignTransfer {
 	private List<ThemeTransfer> existingThemes = new ArrayList<>();
 	private List<WorkingGroupTransfer> existingWorkingGroups = new ArrayList<>();
 	private CampaignTemplateTransfer template;
+	private CampaignTimelineEdgeTransfer timelineEdges;
 	public CampaignTransfer() {
 		super();
 	}
@@ -127,5 +128,11 @@ public class CampaignTransfer {
 	}
 	public void setTemplate(CampaignTemplateTransfer template) {
 		this.template = template;
+	}
+	public CampaignTimelineEdgeTransfer getTimelineEdges() {
+		return timelineEdges;
+	}
+	public void setTimelineEdges(CampaignTimelineEdgeTransfer timelineEdges) {
+		this.timelineEdges = timelineEdges;
 	}
 }

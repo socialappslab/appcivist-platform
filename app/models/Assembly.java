@@ -344,7 +344,7 @@ public class Assembly extends AppCivistBaseModel {
 	}
 
 	public String getUuidAsString() {
-		return uuid.toString();
+		return uuid!=null ? uuid.toString() : null;
 	}
 
 	public void setUuidAsString(String uuidAsString) {
