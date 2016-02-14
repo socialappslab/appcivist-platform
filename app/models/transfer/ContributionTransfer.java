@@ -9,7 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-import models.ComponentInstanceMilestone;
+import models.ComponentMilestone;
 import models.Contribution;
 import models.Hashtag;
 import models.Resource;
@@ -46,7 +46,7 @@ public class ContributionTransfer {
 	private List<Resource> attachments;
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
 	private List<Contribution> comments = new ArrayList<Contribution>();
-	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
+	private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
 
 	/* 
 	 * Fields specific to the type ACTION_ITEM
@@ -201,12 +201,12 @@ public class ContributionTransfer {
 		this.comments = comments;
 	}
 
-	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
+	public List<ComponentMilestone> getAssociatedMilestones() {
 		return associatedMilestones;
 	}
 
 	public void setAssociatedMilestones(
-			List<ComponentInstanceMilestone> associatedMilestones) {
+			List<ComponentMilestone> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
 	}
 

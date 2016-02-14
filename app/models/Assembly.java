@@ -105,7 +105,7 @@ public class Assembly extends AppCivistBaseModel {
 	// Shortcuts to resources in the Assembly Resource Space ('resources')
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private List<ComponentInstance> components = new ArrayList<>();
+	private List<Component> components = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Config> configs = new ArrayList<>();
@@ -139,7 +139,7 @@ public class Assembly extends AppCivistBaseModel {
 	private List<Assembly> followingAssemblies = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private List<ComponentInstance> existingComponents = new ArrayList<>();
+	private List<Component> existingComponents = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Config> existingConfigs = new ArrayList<>();
@@ -385,11 +385,11 @@ public class Assembly extends AppCivistBaseModel {
 		this.resources.setThemes(themes);
 	}
 
-	public List<ComponentInstance> getComponents() {
+	public List<Component> getComponents() {
 		return resources != null ? resources.getComponents() : null;
 	}
 
-	public void setComponents(List<ComponentInstance> components) {
+	public void setComponents(List<Component> components) {
 		this.components = components;
 		this.resources.setComponents(components);
 	}
@@ -465,11 +465,11 @@ public class Assembly extends AppCivistBaseModel {
 		this.followingAssemblies = followingAssemblies;
 	}
 
-	public List<ComponentInstance> getExistingComponents() {
+	public List<Component> getExistingComponents() {
 		return existingComponents;
 	}
 
-	public void setExistingComponents(List<ComponentInstance> existingComponents) {
+	public void setExistingComponents(List<Component> existingComponents) {
 		this.existingComponents = existingComponents;
 	}
 
@@ -522,7 +522,7 @@ public class Assembly extends AppCivistBaseModel {
 
 		// 1. Check first for existing entities in ManyToMany relationships.
 		// Save them for later update
-		List<ComponentInstance> existingComponents = a.getExistingComponents();
+		List<Component> existingComponents = a.getExistingComponents();
 		List<Theme> existingThemes = a.getExistingThemes();
 		List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
 		List<Campaign> existingCampaigns = a.getExistingCampaigns();

@@ -35,20 +35,20 @@ public class CampaignTemplate extends AppCivistBaseModel {
 	private String name;
 	
 	@ManyToMany(cascade=CascadeType.ALL)
-	@JoinTable(name="campaign_template_default_components")
-	private List<Component> defaultComponents = new LinkedList<Component>();
+	@JoinTable(name="campaign_template_def_components")
+	private List<ComponentDefinition> defComponents = new LinkedList<ComponentDefinition>();
 	
 	@ManyToMany(cascade=CascadeType.ALL)
-	@JoinTable(name="campaign_template_required_configs")
+	@JoinTable(name="campaign_template_req_configs")
 	@JsonManagedReference
 	@JsonInclude(content=Include.NON_EMPTY)
-	private List<CampaignRequiredConfiguration> requiredConfigurations = new ArrayList<CampaignRequiredConfiguration>();
+	private List<CampaignRequiredConfiguration> reqConfigs = new ArrayList<CampaignRequiredConfiguration>();
 		
 	@OneToMany(cascade=CascadeType.ALL)
 	@JsonManagedReference
 	@JsonInclude(content=Include.NON_EMPTY)
 	@JsonIgnore
-	private List<ComponentRequiredMilestone> requiredMilestones = new ArrayList<ComponentRequiredMilestone>();
+	private List<ComponentRequiredMilestone> reqMilestones = new ArrayList<ComponentRequiredMilestone>();
 		
 	/**
 	 * The find property is an static property that facilitates database query creation
@@ -59,10 +59,10 @@ public class CampaignTemplate extends AppCivistBaseModel {
 		super();
 	}
 
-	public CampaignTemplate(CampaignTemplatesEnum name, List<Component> defaultPhases) {
+	public CampaignTemplate(CampaignTemplatesEnum name, List<ComponentDefinition> defaultPhases) {
 		super();
 		this.nameKey = name;
-		this.defaultComponents = defaultPhases;
+		this.defComponents = defaultPhases;
 	}
 
 	public Long getCampaignTemplateId() {
@@ -89,44 +89,44 @@ public class CampaignTemplate extends AppCivistBaseModel {
 		this.name = niceName;
 	}
 
-	public List<Component> getDefaultComponents() {
-		HashMap<UUID, Component> componentsTable = new HashMap<>();
-		for (Component c : defaultComponents) {
+	public List<ComponentDefinition> getDefComponents() {
+		HashMap<UUID, ComponentDefinition> componentsTable = new HashMap<>();
+		for (ComponentDefinition c : defComponents) {
 			componentsTable.put(c.getUuid(), c);
 		}
 
-		for (ComponentRequiredMilestone milestone : requiredMilestones) {
+		for (ComponentRequiredMilestone milestone : reqMilestones) {
 			UUID targetUUID = milestone.getTargetComponentUuid();
-			Component c = componentsTable.get(targetUUID);
+			ComponentDefinition c = componentsTable.get(targetUUID);
 			c.getRequiredMilestones().add(milestone);
 		}
-		return defaultComponents;
+		return defComponents;
 	}
 
-	public void setDefaultComponents(List<Component> defaultComponents) {
-		this.defaultComponents = defaultComponents;
+	public void setDefComponents(List<ComponentDefinition> defaultComponents) {
+		this.defComponents = defaultComponents;
 	}
 	
 	/*
 	 * Basic Data operations
 	 */
 	
-	public List<CampaignRequiredConfiguration> getRequiredConfigurations() {
-		return requiredConfigurations;
+	public List<CampaignRequiredConfiguration> getReqConfigs() {
+		return reqConfigs;
 	}
 
-	public void setRequiredConfigurations(
+	public void setReqConfigs(
 			List<CampaignRequiredConfiguration> requiredConfigurations) {
-		this.requiredConfigurations = requiredConfigurations;
+		this.reqConfigs = requiredConfigurations;
 	}
 	
-	public List<ComponentRequiredMilestone> getRequiredMilestones() {
-		return requiredMilestones;
+	public List<ComponentRequiredMilestone> getReqMilestones() {
+		return reqMilestones;
 	}
 
-	public void setRequiredMilestones(
+	public void setReqMilestones(
 			List<ComponentRequiredMilestone> requiredMilestones) {
-		this.requiredMilestones = requiredMilestones;
+		this.reqMilestones = requiredMilestones;
 	}
 
 	public static CampaignTemplate read(Long id) {

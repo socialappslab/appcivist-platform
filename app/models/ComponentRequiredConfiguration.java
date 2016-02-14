@@ -22,10 +22,10 @@ public class ComponentRequiredConfiguration extends AppCivistBaseModel {
 	
 	@ManyToOne
 	@JsonBackReference
-	private Component component;
+	private ComponentDefinition componentDef;
 	
 	@ManyToOne(cascade=CascadeType.ALL)
-	private ConfigDefinition configDefinition;
+	private ConfigDefinition configDef;
 
 	/**
 	 * The find property is an static property that facilitates database query creation
@@ -34,11 +34,11 @@ public class ComponentRequiredConfiguration extends AppCivistBaseModel {
 
 	
 	public ComponentRequiredConfiguration(Long componentRequiredConfigurationId,
-			Component component, ConfigDefinition configuration) {
+			ComponentDefinition definition, ConfigDefinition configuration) {
 		super();
 		this.componentRequiredConfigurationId = componentRequiredConfigurationId;
-		this.component = component;
-		this.configDefinition= configuration;
+		this.componentDef = definition;
+		this.configDef= configuration;
 	}
 
 	public Long getComponentRequiredConfigurationId() {
@@ -49,20 +49,20 @@ public class ComponentRequiredConfiguration extends AppCivistBaseModel {
 		this.componentRequiredConfigurationId = componentRequiredConfigurationId;
 	}
 
-	public Component getComponent() {
-		return component;
+	public ComponentDefinition getComponentDef() {
+		return componentDef;
 	}
 
-	public void setComponent(Component phaseDefinition) {
-		this.component = phaseDefinition;
+	public void setComponentDef(ComponentDefinition phaseDefinition) {
+		this.componentDef = phaseDefinition;
 	}
 
-	public ConfigDefinition getConfigDefinition() {
-		return configDefinition;
+	public ConfigDefinition getConfigDef() {
+		return configDef;
 	}
 
-	public void setConfigDefinition(ConfigDefinition configuration) {
-		this.configDefinition = configuration;
+	public void setConfigDef(ConfigDefinition configuration) {
+		this.configDef = configuration;
 	}	
 	
 	/*

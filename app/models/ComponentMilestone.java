@@ -12,10 +12,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -25,11 +23,11 @@ import enums.ContributionTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
-public class ComponentInstanceMilestone extends AppCivistBaseModel implements Comparator<ComponentInstanceMilestone> {
+public class ComponentMilestone extends AppCivistBaseModel implements Comparator<ComponentMilestone> {
 
 	@Id
 	@GeneratedValue
-	private Long componentInstanceMilestoneId;
+	private Long componentMilestoneId;
 
 	private String title; // name of milestone
 	private int position;
@@ -42,15 +40,8 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 	@Transient
 	private String uuidAsString;
 	
-	
-	@ManyToOne
-	@JsonBackReference
-	private ComponentInstance componentInstance;
-	
 	private ContributionTypes mainContributionType = ContributionTypes.BRAINSTORMING;
 
-	
-	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "milestones")
 	private List<ResourceSpace> containingSpaces;
@@ -58,25 +49,25 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 	/**
 	 * The find property is a static property that facilitates database query creation
 	 */
-	public static Finder<Long, ComponentInstanceMilestone> find = new Finder<>(ComponentInstanceMilestone.class);
+	public static Finder<Long, ComponentMilestone> find = new Finder<>(ComponentMilestone.class);
 	
-	public ComponentInstanceMilestone(Long milestoneId, String title,
+	public ComponentMilestone(Long milestoneId, String title,
 			Date start, Integer days) {
 		super();
-		this.componentInstanceMilestoneId = milestoneId;
+		this.componentMilestoneId = milestoneId;
 		this.title = title;
 		this.start = start;
 		this.days = days;
 	}
 	
-	public ComponentInstanceMilestone() {
+	public ComponentMilestone() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public ComponentInstanceMilestone(
+	public ComponentMilestone(
 			ComponentRequiredMilestone requiredComponentMilestone,
-			ComponentInstanceMilestone previousInstance) {
+			ComponentMilestone previousInstance) {
 		super(requiredComponentMilestone.getLang());
 
 		this.title = requiredComponentMilestone.getTitle();
@@ -92,12 +83,12 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 		}
 	}
 
-	public Long getComponentInstanceMilestoneId() {
-		return componentInstanceMilestoneId;
+	public Long getComponentMilestoneId() {
+		return componentMilestoneId;
 	}
 
-	public void setComponentInstanceMilestoneId(Long milestoneId) {
-		this.componentInstanceMilestoneId = milestoneId;
+	public void setComponentMilestoneId(Long milestoneId) {
+		this.componentMilestoneId = milestoneId;
 	}
 
 	public String getTitle() {
@@ -158,14 +149,6 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 		this.uuid = UUID.fromString(uuidAsString);
 	}
 
-	public ComponentInstance getComponentInstance() {
-		return componentInstance;
-	}
-
-	public void setComponentInstance(ComponentInstance componentInstance) {
-		this.componentInstance = componentInstance;
-	}
-
 	public ContributionTypes getMainContributionType() {
 		return mainContributionType;
 	}
@@ -174,21 +157,21 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
 		this.mainContributionType = mainContributionType;
 	}
 
-	public static ComponentInstanceMilestone read(Long id) {
+	public static ComponentMilestone read(Long id) {
         return find.ref(id);
     }
 
-    public static List<ComponentInstanceMilestone> findAll() {
+    public static List<ComponentMilestone> findAll() {
         return find.all();
     }
 
-    public static ComponentInstanceMilestone create(ComponentInstanceMilestone object) {
+    public static ComponentMilestone create(ComponentMilestone object) {
         object.save();
         object.refresh();
         return object;
     }
 
-    public static ComponentInstanceMilestone createObject(ComponentInstanceMilestone object) {
+    public static ComponentMilestone createObject(ComponentMilestone object) {
         object.save();
         return object;
     }
@@ -202,8 +185,8 @@ public class ComponentInstanceMilestone extends AppCivistBaseModel implements Co
     }
 
 	@Override
-	public int compare(ComponentInstanceMilestone o1,
-			ComponentInstanceMilestone o2) {
+	public int compare(ComponentMilestone o1,
+			ComponentMilestone o2) {
 //		return o1.getStart().after(o2.getStart()) ? 1 : o1.getStart().equals(o2.getStart()) ? 0 : -1;
 		return o1.getPosition() - o2.getPosition();
 	}

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Assembly;
-import models.ComponentInstance;
+import models.Component;
 import models.Contribution;
 import models.ContributionStatistics;
 import models.ContributionTemplate;
@@ -89,7 +89,7 @@ public class Contributions extends Controller {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findCampaignComponentContributions(Long aid, Long cid,
 			Long ciid, String space, String type) {
-		ComponentInstance c = ComponentInstance.read(cid, ciid);
+		Component c = Component.read(cid, ciid);
 		ResourceSpace rs = null;
 		if (c != null) {
 			// TODO: add multiple spaces to components
@@ -283,7 +283,7 @@ public class Contributions extends Controller {
 				type = ContributionTypes.COMMENT;
 			}
 
-			ComponentInstance ci = ComponentInstance.read(cid,ciid);
+			Component ci = Component.read(cid,ciid);
 			ResourceSpace rs = ci.getResourceSpace();
 			ContributionTemplate template = null;
 			if(newContribution.getType().equals(ContributionTypes.PROPOSAL)) {

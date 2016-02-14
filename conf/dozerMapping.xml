@@ -27,18 +27,18 @@
         <class-b map-null="false" map-empty-string="false">models.transfer.AssemblyTransfer</class-b>
     </mapping>
     <mapping map-null="false" map-empty-string="false">
-        <class-a map-null="false" map-empty-string="false">models.ComponentInstance</class-a>
+        <class-a map-null="false" map-empty-string="false">models.Component</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.ComponentTransfer</class-b>
         <field>
-            <a>componentInstanceId</a>
+            <a>componentId</a>
             <b>componentId</b>
         </field>
     </mapping> 
     <mapping map-null="false" map-empty-string="false">
-        <class-a map-null="false" map-empty-string="false">models.ComponentInstanceMilestone</class-a>
+        <class-a map-null="false" map-empty-string="false">models.ComponentMilestone</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.ComponentMilestoneTransfer</class-b>
         <field>
-            <a>componentInstanceMilestoneId</a>
+            <a>componentMilestoneId</a>
             <b>milestoneId</b>
         </field>
     </mapping>    

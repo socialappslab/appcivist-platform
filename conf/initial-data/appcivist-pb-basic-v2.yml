@@ -539,126 +539,126 @@
     configTarget: COMPONENT
 ##############################################################################################################################################################################################    
 # Components: definition of components avaialble to use in appcivist
-  - &pd1 !!models.Component
+  - &pd1 !!models.ComponentDefinition
     name: "Proposal Making"
     description: "Proposal Making includes brainstorming ideas, forming working groups, and starting proposals."
     uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig1 !!models.ComponentRequiredConfiguration
-      component: *pd1
-      configDefinition: *config1
-  - &pd2 !!models.Component
+      componentDef: *pd1
+      configDef: *config1
+  - &pd2 !!models.ComponentDefinition
     name: "Versioning"
     description: "Versioning is the process by which Working Groups develop proposals to their final form."
     uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig21 !!models.ComponentRequiredConfiguration
-      component: *pd2
-      configDefinition: *config11 
+      componentDef: *pd2
+      configDef: *config11 
     - &componentConfig22 !!models.ComponentRequiredConfiguration
-      component: *pd2
-      configDefinition: *config12 
+      componentDef: *pd2
+      configDef: *config12 
     - &componentConfig23 !!models.ComponentRequiredConfiguration
-      component: *pd2
-      configDefinition: *config13
-  - &pd3 !!models.Component
+      componentDef: *pd2
+      configDef: *config13
+  - &pd3 !!models.ComponentDefinition
     name: "Deliberation"
     description: "Deliberation is the careful consideration of proposals through comments and evidence. In this stage, proposals can only be discussed, praised or criticized, but not edited."
     uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig31 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config14
+      componentDef: *pd3
+      configDef: *config14
     - &componentConfig32 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config15 
+      componentDef: *pd3
+      configDef: *config15 
     - &componentConfig34 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config16
+      componentDef: *pd3
+      configDef: *config16
     - &componentConfig35 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config17
+      componentDef: *pd3
+      configDef: *config17
     - &componentConfig36 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config18
+      componentDef: *pd3
+      configDef: *config18
     - &componentConfig37 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config19 
+      componentDef: *pd3
+      configDef: *config19 
     - &componentConfig38 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config20
+      componentDef: *pd3
+      configDef: *config20
     - &componentConfig39 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config21
+      componentDef: *pd3
+      configDef: *config21
     - &componentConfig41 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config22
+      componentDef: *pd3
+      configDef: *config22
     - &componentConfig42 !!models.ComponentRequiredConfiguration
-      component: *pd3
-      configDefinition: *config23
-  - &pd4 !!models.Component
+      componentDef: *pd3
+      configDef: *config23
+  - &pd4 !!models.ComponentDefinition
     name: "Voting"
     description: "Voting determines the winning proposal/s, based on the voting system selected and the number of winners allowed"
     uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig51 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config24
+      componentDef: *pd4
+      configDef: *config24
     - &componentConfig52 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config25 
+      componentDef: *pd4
+      configDef: *config25 
     - &componentConfig54 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config26
+      componentDef: *pd4
+      configDef: *config26
     - &componentConfig55 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config27
+      componentDef: *pd4
+      configDef: *config27
     - &componentConfig56 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config28
+      componentDef: *pd4
+      configDef: *config28
     - &componentConfig57 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config29 
+      componentDef: *pd4
+      configDef: *config29 
     - &componentConfig58 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config30
+      componentDef: *pd4
+      configDef: *config30
     - &componentConfig59 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config31
+      componentDef: *pd4
+      configDef: *config31
     - &componentConfig61 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config32
+      componentDef: *pd4
+      configDef: *config32
     - &componentConfig62 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config33
+      componentDef: *pd4
+      configDef: *config33
     - &componentConfig63 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config34
+      componentDef: *pd4
+      configDef: *config34
     - &componentConfig64 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config35
+      componentDef: *pd4
+      configDef: *config35
     - &componentConfig65 !!models.ComponentRequiredConfiguration
-      component: *pd4
-      configDefinition: *config36
-  - &pd5 !!models.Component
+      componentDef: *pd4
+      configDef: *config36
+  - &pd5 !!models.ComponentDefinition
     name: "Scheduling"
     uuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"
-  - &pd6 !!models.Component
+  - &pd6 !!models.ComponentDefinition
     name: "Broadcasting"
     uuidAsString: "12fa0538-407a-11e5-a151-feff819cdc9f"
-  - &pd7 !!models.Component
-    name: "Impact"
+  - &pd7 !!models.ComponentDefinition
+    name: "Implementation"
     uuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9f"
-  - &pd8 !!models.Component
+  - &pd8 !!models.ComponentDefinition
     name: "Mobilization"
     uuidAsString: "12fa3984-407a-11e5-a151-feff819cdc9f"
-  - &pd9 !!models.Component
+  - &pd9 !!models.ComponentDefinition
     name: "Visualization"
     uuidAsString: "12fa0348-407a-11e5-a151-feff819cdc9f"
-  - &pd10 !!models.Component
+  - &pd10 !!models.ComponentDefinition
     name: "Reporting"
     uuidAsString: "12fa0934-407a-11e5-a151-feff819cdc9f"
-  - &pd11 !!models.Component
+  - &pd11 !!models.ComponentDefinition
     name: "Mapping"
     uuidAsString: "12fa8923-407a-11e5-a151-feff819cdc9f"
 
@@ -667,7 +667,7 @@
   - &ct1 !!models.CampaignTemplate
     nameKey: "PARTICIPATORY_BUDGETING"
     name: "Participatory Budgeting" 
-    defaultComponents: 
+    defComponents: 
       - *pd1
       - *pd2
       - *pd3
@@ -675,7 +675,7 @@
       - *pd7
       - *pd11
       - *pd10
-    requiredConfigurations: 
+    reqConfigs: 
     - &campaignConfig1 !!models.CampaignRequiredConfiguration
       campaignTemplate: *ct1
       configDefinition: *config6 
@@ -685,7 +685,7 @@
     - &campaignConfig3 !!models.CampaignRequiredConfiguration
       campaignTemplate: *ct1
       configDefinition: *config10
-    requiredMilestones:
+    reqMilestones:
     - &m1 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Brainstorming
@@ -759,77 +759,77 @@
 
 ########################################################################################################################################
 # Milestones: milestones that define steps and deadlines in the process followed by each component
-  - &ci1 !!models.ComponentInstanceMilestone
+  - &ci1 !!models.ComponentMilestone
     title: Brainstorming
     description: "Identify problems and make suggestions for proposals."
     position: 0
     start: "2016-01-01"
     days: 60
     mainContributionType: BRAINSTORMING
-  - &ci2 !!models.ComponentInstanceMilestone
+  - &ci2 !!models.ComponentMilestone
     title: Working groups formation
     description: "Join or create a group to develop proposals."
     position: 1
     start: "2016-03-11"
     days: 5
     mainContributionType: BRAINSTORMING
-  - &ci3 !!models.ComponentInstanceMilestone
+  - &ci3 !!models.ComponentMilestone
     title: Proposal drafting
     description: "Explore existing proposals or start one with your working group."
     position: 2
     start: "2016-03-16"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci5 !!models.ComponentInstanceMilestone
+  - &ci5 !!models.ComponentMilestone
     title: Proposal editing
     description: "Versioning of existing proposals."
     position: 4
     start: "2016-03-27"
     days: 15
     mainContributionType: PROPOSAL
-  - &ci7 !!models.ComponentInstanceMilestone
+  - &ci7 !!models.ComponentMilestone
     title: Proposal selection
     description: "Versioning period over. Working Groups must now select the proposals they want to put forward to the Assembly for deliberation and voting. While this process is ongoing, proposals will be available in read only mode, open to comments from the Assembly."
     position: 6
     start: "2016-04-12"
     days: 5
     mainContributionType: PROPOSAL
-  - &ci8 !!models.ComponentInstanceMilestone
+  - &ci8 !!models.ComponentMilestone
     title: Public deliberation
     description: "Explore and discuss published proposals for deliberation."
     position: 7
     start: "2016-04-17"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci9 !!models.ComponentInstanceMilestone
+  - &ci9 !!models.ComponentMilestone
     title: Technical assessment
     description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
     position: 8
     start: "2016-05-06"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci11 !!models.ComponentInstanceMilestone
+  - &ci11 !!models.ComponentMilestone
     title: Voting period
     description: "Explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
     position: 10
     start: "2016-05-17"
     days: 15
     mainContributionType: PROPOSAL
-  - &ci13 !!models.ComponentInstanceMilestone
+  - &ci13 !!models.ComponentMilestone
     title: Public deliberation
     description: "Explore and discuss published proposals for deliberation."
     position: 7
     start: "2016-04-17"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci14 !!models.ComponentInstanceMilestone
+  - &ci14 !!models.ComponentMilestone
     title: Technical assessment
     description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
     position: 8
     start: "2016-05-06"
     days: 10
     mainContributionType: PROPOSAL
-  - &ci16 !!models.ComponentInstanceMilestone
+  - &ci16 !!models.ComponentMilestone
     title: Voting period
     description: "Explore and discuss published proposals for deliberation."
     position: 10
@@ -895,7 +895,7 @@
       - *contrib21
 
 ##############################################################################################################################################################################################
-# More Contributions for Assembly Forum and Campaign Copmonent Instances
+# More Contributions for Assembly Forum and Campaign Copmonents
   - &contrib1 !!models.Contribution
     title: Proposals for Urban infrastructure
     text: Hey guys, I think we should start a campaign to develop proposals for Urban Infrastructure. What do you think?
@@ -1281,11 +1281,12 @@
       
 ####################################################################################################################################################################################
 # Component Instances: 
-  - &ph1 !!models.ComponentInstance
+  - &ph1 !!models.Component
     title: Proposal Making
     position: 0
     timeline: 1
-    component: *pd1
+    componentId: 1
+    definition: *pd1
     #configs
     milestones: 
       - *ci1
@@ -1303,11 +1304,12 @@
       - *contrib19
     templates: 
       - *temp1
-  - &ph2 !!models.ComponentInstance
+  - &ph2 !!models.Component
     title: Versioning
     position: 1
     timeline: 1
-    component: *pd2
+    componentId: 2
+    definition: *pd2
     #configs
     milestones: 
       - *ci5
@@ -1322,11 +1324,12 @@
       - *contrib40
       - *contrib41 
       - *contrib42 
-  - &ph3 !!models.ComponentInstance
+  - &ph3 !!models.Component
     title: Deliberation
     position: 2
     timeline: 1
-    component: *pd3
+    componentId: 3
+    definition: *pd3
     #configs
     milestones:
       - *ci8 
@@ -1341,11 +1344,12 @@
       - *contrib40
       - *contrib41 
       - *contrib42 
-  - &ph4 !!models.ComponentInstance
+  - &ph4 !!models.Component
     title: Voting
     position: 3
     timeline: 1
-    component: *pd4
+    componentId: 4
+    definition: *pd4
     #configs
     milestones:
       - *ci11
@@ -1361,24 +1365,27 @@
       - *contrib42 
     ballots:
       - *vb1 
-  - &ph5 !!models.ComponentInstance
+  - &ph5 !!models.Component
     title: Mapping
     position: 0
     #configs
     timeline: 0
-    component: *pd11
-  - &ph6 !!models.ComponentInstance
+    componentId: 5
+    definition: *pd11
+  - &ph6 !!models.Component
     title: Visualization
     position: 0
     #configs
     timeline: 0
-    component: *pd9
-  - &ph7 !!models.ComponentInstance
+    componentId: 6
+    definition: *pd9
+  - &ph7 !!models.Component
     title: Deliberation
-    position: 3
+    position: 1
     #configs
     timeline: 1
-    component: *pd3
+    componentId: 7
+    definition: *pd3
     milestones: 
       - *ci8
       - *ci9
@@ -1386,12 +1393,13 @@
       - *contrib20
       - *contrib21 
       - *contrib22
-  - &ph8 !!models.ComponentInstance
+  - &ph8 !!models.Component
     title: Voting
     position: 4
     #configs
     timeline: 1
-    component: *pd4
+    componentId: 8
+    definition: *pd4
     milestones: 
       - *ci11
     contributions: 
@@ -1404,6 +1412,7 @@
       - *contrib40
       - *contrib41 
       - *contrib42 
+
 
 ##############################################################################################################################################################################################
 # Campaign Resource Spaces: 
@@ -1462,6 +1471,27 @@
     template: *ct1
     uuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
     resources: *rs6
+
+##############################################################################################################################################################################################
+# Campaign Timeline Edges
+  - &ctl1 !!models.CampaignTimelineEdge
+    campaign: *c1
+    fromComponent: *ph1
+    toComponent: *ph2
+    start: true
+  - &ctl2 !!models.CampaignTimelineEdge
+    campaign: *c1
+    fromComponent: *ph2
+    toComponent: *ph3
+  - &ctl3 !!models.CampaignTimelineEdge
+    campaign: *c1
+    fromComponent: *ph3
+    toComponent: *ph4
+  - &ctl4 !!models.CampaignTimelineEdge
+    campaign: *c4
+    fromComponent: *ph7
+    toComponent: *ph8
+    start: true
 
 ##############################################################################################################################################################################################
 # Assembly Resource spaces
