@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -275,7 +277,25 @@ String uuidAsString, List<Component> phases) {
 
 
 	public List<Component> getComponents() {
-		return this.resources.getComponents();
+		List<Component> components = new ArrayList<>();
+		Map<Long, Component> edges = new HashMap<>();
+		
+		for (CampaignTimelineEdge edge : this.timelineEdges) {
+			edges.put(edge.getFromComponentId(), edge.getToComponent());
+		}
+		
+		if(this.timelineEdges!=null && !this.timelineEdges.isEmpty()) {
+			CampaignTimelineEdge firstEdge = this.timelineEdges.get(0);
+			if (firstEdge!=null) {
+				components.add(firstEdge.getFromComponent());
+				Component nextComponent = edges.get(firstEdge.getFromComponent().getComponentId());
+				while (nextComponent!=null) {
+					components.add(nextComponent);
+					nextComponent = edges.get(nextComponent.getComponentId());
+				}
+			}
+		}
+		return components;
 	}
 
 	public void setComponents(List<Component> components) {
