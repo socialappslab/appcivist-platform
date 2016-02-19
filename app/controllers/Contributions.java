@@ -725,15 +725,20 @@ public class Contributions extends Controller {
 			newContrib.setLang(author.getLanguage());
 		newContrib.setContextUserId(author.getUserId());
 		
-		if (etherpadServerUrl == null) {
+		if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
 			// read etherpad server url from config file
+			Logger.info("Etherpad URL was not configured");
 			etherpadServerUrl = Play.application().configuration().getString("appcivist.servides.etherpad.default.serverBaseUrl");
 		}
 
-		if (etherpadApiKey == null) {
+		if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
 			// read etherpad server url from config file
+			Logger.info("Etherpad API Key was not configured");
 			etherpadApiKey = Play.application().configuration().getString("appcivist.servides.etherpad.default.apiKey");
 		}
+		
+		Logger.info("Using Etherpad server at: "+etherpadServerUrl);
+		Logger.debug("Using Etherpad API Key: "+etherpadApiKey);
 		
 		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
 			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, resourceSpaceConfigsUUID);				
