@@ -19,6 +19,7 @@ import models.WorkingGroup;
 import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -723,6 +724,16 @@ public class Contributions extends Controller {
 		if (newContrib.getLang() == null)
 			newContrib.setLang(author.getLanguage());
 		newContrib.setContextUserId(author.getUserId());
+		
+		if (etherpadServerUrl == null) {
+			// read etherpad server url from config file
+			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.serverBaseUrl");
+		}
+
+		if (etherpadApiKey== null) {
+			// read etherpad server url from config file
+			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.apiKey");
+		}
 		
 		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
 			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadServerUrl, newContrib, resourceSpaceConfigsUUID);				

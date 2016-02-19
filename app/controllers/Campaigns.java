@@ -12,7 +12,6 @@ import models.Campaign;
 import models.CampaignTemplate;
 import models.Membership;
 import models.MembershipAssembly;
-import models.ResourceSpace;
 import models.User;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
