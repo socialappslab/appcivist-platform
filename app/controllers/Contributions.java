@@ -727,16 +727,16 @@ public class Contributions extends Controller {
 		
 		if (etherpadServerUrl == null) {
 			// read etherpad server url from config file
-			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.serverBaseUrl");
+			etherpadServerUrl = Play.application().configuration().getString("appcivist.servides.etherpad.default.serverBaseUrl");
 		}
 
-		if (etherpadApiKey== null) {
+		if (etherpadApiKey == null) {
 			// read etherpad server url from config file
-			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.apiKey");
+			etherpadApiKey = Play.application().configuration().getString("appcivist.servides.etherpad.default.apiKey");
 		}
 		
 		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
-			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadServerUrl, newContrib, resourceSpaceConfigsUUID);				
+			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, resourceSpaceConfigsUUID);				
 		}
 		
 		Logger.info("Creating new contribution");
