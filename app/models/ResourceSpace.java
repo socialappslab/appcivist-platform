@@ -72,7 +72,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	private List<Config> configs = new ArrayList<Config>();
 
-	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, fetch=FetchType.EAGER)
+	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")
@@ -87,12 +87,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign_components")
 	@Where(clause="${ta}.removed=false")
-	private List<ComponentInstance> components = new ArrayList<ComponentInstance>();
+	private List<Component> components = new ArrayList<Component>();
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_campaign_milestones")
 	@Where(clause="${ta}.removed=false")
-	private List<ComponentInstanceMilestone> milestones = new ArrayList<ComponentInstanceMilestone>();
+	private List<ComponentMilestone> milestones = new ArrayList<ComponentMilestone>();
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_working_groups")
@@ -136,7 +136,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	 * - Working Groups {resources, forum}
 	 * - Campaigns {resources}
 	 * - Contributions {resourceSpace}
-	 * - ComponentInstance {resourceSpace}
+	 * - Component {resourceSpace}
 	 */
 		
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
@@ -165,7 +165,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
 	@JsonIgnore
-	private ComponentInstance component;
+	private Component component;
 	
 	
 	/**
@@ -298,24 +298,24 @@ public class ResourceSpace extends AppCivistBaseModel {
 			this.configs.add(c);
 	}
 
-	public List<ComponentInstance> getComponents() {
+	public List<Component> getComponents() {
 		return components;
 	}
 
-	public void setComponents(List<ComponentInstance> components) {
+	public void setComponents(List<Component> components) {
 		this.components = components;
 	}
 
-	public void addComponent(ComponentInstance c) {
+	public void addComponent(Component c) {
 		if(!this.components.contains(c))
 			this.components.add(c);
 	}
 
-	public List<ComponentInstanceMilestone> getMilestones() {
+	public List<ComponentMilestone> getMilestones() {
 		return milestones;
 	}
 
-	public void setMilestones(List<ComponentInstanceMilestone> milestones) {
+	public void setMilestones(List<ComponentMilestone> milestones) {
 		this.milestones = milestones;
 	}
 
@@ -462,11 +462,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.campaign = campaign;
 	}
 
-	public ComponentInstance getComponent() {
+	public Component getComponent() {
 		return component;
 	}
 
-	public void setComponent(ComponentInstance component) {
+	public void setComponent(Component component) {
 		this.component = component;
 	}
 
@@ -508,17 +508,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public void setDefaultValues() {
 		Campaign defaultCampaign = new Campaign();
 		defaultCampaign.setTitle("Default Campaign");
-		CampaignTemplate ct = CampaignTemplate
-				.findByName(CampaignTemplatesEnum.PARTICIPATORY_BUDGETING);
+		CampaignTemplate ct = CampaignTemplate.findByName(CampaignTemplatesEnum.PARTICIPATORY_BUDGETING);
 		defaultCampaign.setTemplate(ct);
 
-		List<Component> components = ct.getDefaultComponents();
+		List<ComponentDefinition> components = ct.getDefComponents();
 
-		for (Component component : components) {
-			ComponentInstance componentInstance = new ComponentInstance(
-					defaultCampaign, component);
-			defaultCampaign.getResources().getComponents()
-					.add(componentInstance);
+		for (ComponentDefinition definition : components) {
+			Component component = new Component(defaultCampaign, definition);
+			defaultCampaign.getResources().getComponents().add(component);
 		}
 		this.getCampaigns().add(defaultCampaign);
 	}

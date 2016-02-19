@@ -112,7 +112,7 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<Contribution> comments = new ArrayList<Contribution>();
 	@Transient
-	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
+	private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
 
 	/*
 	 * The following fields are specific to each type of contribution
@@ -395,13 +395,13 @@ public class Contribution extends AppCivistBaseModel {
 				ContributionTypes.ASSESSMENT);
 	}
 
-	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
+	public List<ComponentMilestone> getAssociatedMilestones() {
 		this.associatedMilestones = this.resourceSpace.getMilestones();
 		return this.associatedMilestones;
 	}
 
 	public void setAssociatedMilestones(
-			List<ComponentInstanceMilestone> associatedMilestones) {
+			List<ComponentMilestone> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
 		this.resourceSpace.setMilestones(associatedMilestones);
 	}
@@ -545,7 +545,7 @@ public class Contribution extends AppCivistBaseModel {
 		List<Theme> themes = c.getThemes(); // new themes are never created from
 											// contributions
 		c.setThemes(new ArrayList<>());
-		List<ComponentInstanceMilestone> associatedMilestones = c
+		List<ComponentMilestone> associatedMilestones = c
 				.getAssociatedMilestones(); // new milestones are never created
 											// from contributions
 		c.setAssociatedMilestones(new ArrayList<>());

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,7 +18,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
@@ -25,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ResourceSpaceTypes;
 
@@ -54,12 +59,20 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnore
 	private ResourceSpace resources;
 	
+	// Relationships	
+	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="campaign")
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonManagedReference
+	@JsonIgnoreProperties({ "fromComponent", "toComponent" })
+	@OrderBy("start DESC")
+	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
+	
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
 	
 	@Transient
-	private List<ComponentInstance> components = new ArrayList<>();
+	private List<Component> components = new ArrayList<>();
 	@Transient
 	private List<Config> configs = new ArrayList<>();
 	@Transient
@@ -70,7 +83,7 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Long> assemblies = new ArrayList<>();
 
 	@Transient
-	private List<ComponentInstance> existingComponents = new ArrayList<>();
+	private List<Component> existingComponents = new ArrayList<>();
 	@Transient
 	private List<Config> existingConfigs = new ArrayList<>();
 	@Transient
@@ -108,11 +121,11 @@ public class Campaign extends AppCivistBaseModel {
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign template
-		if (template != null && template.getDefaultComponents() != null) {
-			List<Component> defaultPhases = template.getDefaultComponents();
+		if (template != null && template.getDefComponents() != null) {
+			List<ComponentDefinition> defaultPhases = template.getDefComponents();
 
-			for (Component phaseDefinition : defaultPhases) {
-				ComponentInstance phase = new ComponentInstance(this, phaseDefinition);
+			for (ComponentDefinition phaseDefinition : defaultPhases) {
+				Component phase = new Component(this, phaseDefinition);
 				this.addComponent(phase);
 			}
 		}
@@ -130,11 +143,11 @@ public class Campaign extends AppCivistBaseModel {
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign template
-		if (template != null && template.getDefaultComponents() != null) this.populateDefaultComponents(template.getDefaultComponents());
+		if (template != null && template.getDefComponents() != null) this.populateDefaultComponents(template.getDefComponents());
 	}
 
 	public Campaign(String title, String shortname, Boolean listed, CampaignTemplate template,
-String uuidAsString, List<ComponentInstance> phases) {
+String uuidAsString, List<Component> phases) {
 		super();
 		this.title = title;
 		this.shortname = shortname;
@@ -145,7 +158,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 		// automatically populate the phases based on the campaign template
-		if (template != null && template.getDefaultComponents() != null) this.populateDefaultComponents(template.getDefaultComponents());
+		if (template != null && template.getDefComponents() != null) this.populateDefaultComponents(template.getDefComponents());
 	}
 	
 
@@ -229,7 +242,7 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 	public String getUuidAsString() {
-		return uuid.toString();
+		return uuid!=null ? uuid.toString() : null;
 	}
 
 	public void setUuidAsString(String uuidAsString) {
@@ -245,6 +258,14 @@ String uuidAsString, List<ComponentInstance> phases) {
 		this.resources = resources;
 	}
 
+	public List<CampaignTimelineEdge> getTimelineEdges() {
+		return timelineEdges;
+	}
+
+	public void setTimelineEdges(List<CampaignTimelineEdge> timelineEdges) {
+		this.timelineEdges = timelineEdges;
+	}
+
 	public Long getResourceSpaceId() {
 		return resources != null ? resources.getResourceSpaceId() : null;
 	}
@@ -255,20 +276,43 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 
 
-	public List<ComponentInstance> getComponents() {
-		return this.resources.getComponents();
+	public List<Component> getComponents() {
+		List<Component> components = new ArrayList<>();
+		Map<Long, Component> edges = new HashMap<>();
+
+		for (CampaignTimelineEdge edge : this.timelineEdges) {
+			edges.put(edge.getFromComponentId(), edge.getToComponent());
+		}
+
+		if (this.timelineEdges != null && !this.timelineEdges.isEmpty()) {
+			CampaignTimelineEdge firstEdge = this.timelineEdges.get(0);
+			if (firstEdge != null) {
+				components.add(firstEdge.getFromComponent());
+				Component nextComponent = edges.get(firstEdge
+						.getFromComponent().getComponentId());
+				while (nextComponent != null) {
+					components.add(nextComponent);
+					nextComponent = edges.get(nextComponent.getComponentId());
+				}
+			}
+		}
+		return components;
+
 	}
 
-	public void setComponents(List<ComponentInstance> components) {
-		//this.components = components;
+	public void setComponents(List<Component> components) {
+		this.components = components;
 		this.resources.setComponents(components);
 	}
 
-	public void addComponent(ComponentInstance componentIsntance) {
+	public void addComponent(Component componentIsntance) {
 		this.components.add(componentIsntance);
 		this.resources.getComponents().add(componentIsntance);
 	}
 
+	private List<Component> getTransientComponents() {
+		return this.components;
+	}
 
 	public List<Config> getConfigs() {
 		return this.resources.getConfigs();
@@ -321,11 +365,11 @@ String uuidAsString, List<ComponentInstance> phases) {
 		return assemblyIds;
 	}
 
-	public List<ComponentInstance> getExistingComponents() {
+	public List<Component> getExistingComponents() {
 		return existingComponents;
 	}
 
-	public void setExistingComponents(List<ComponentInstance> newComponents) {
+	public void setExistingComponents(List<Component> newComponents) {
 		this.existingComponents = newComponents;
 	}
 
@@ -368,10 +412,10 @@ String uuidAsString, List<ComponentInstance> phases) {
 	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getStartDate() {
-		List<ComponentInstance> components = this.resources.getComponents(); 
+		List<Component> components = this.resources.getComponents(); 
 		if (components != null && !components.isEmpty()) {
-			Collections.sort(components,new ComponentInstance());
-			ComponentInstance firstPhase = components.get(0);
+			Collections.sort(components,new Component());
+			Component firstPhase = components.get(0);
 			return firstPhase.getStartDate();
 		}
 		return null;
@@ -379,10 +423,10 @@ String uuidAsString, List<ComponentInstance> phases) {
 
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getEndDate() {
-		List<ComponentInstance> components = this.resources.getComponents(); 
+		List<Component> components = this.resources.getComponents(); 
 		if (components != null && !components.isEmpty()) {
-			Collections.sort(components,new ComponentInstance());
-			ComponentInstance lastPhase = components.get(components.size()-1);
+			Collections.sort(components,new Component());
+			Component lastPhase = components.get(components.size()-1);
 			return lastPhase.getEndDate();
 		}
 		return null;
@@ -402,24 +446,61 @@ String uuidAsString, List<ComponentInstance> phases) {
 	public static void create(Campaign campaign) {
 		// 1. Check first for existing entities in ManyToMany relationships. 
 		//    Save them for later update
-		List<ComponentInstance> existingComponents = campaign.getExistingComponents();
 		List<Theme> existingThemes = campaign.getExistingThemes();
 		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
-		
+
+		// Save components to create them independently 
+		List<Component> componentList = campaign.getTransientComponents();
+		campaign.setComponents(new ArrayList<>());
+
 		// 2. Create the new campaign
 		campaign.save();
 		
-		// 3. Add existing entities in relationships to the manytomany resources
-		//    then update
+		// 3. Add existing entities in relationships to the ManyToMany resource space then update
 		ResourceSpace campaignResources = campaign.getResources();
 		
-		if (existingComponents!=null && !existingComponents.isEmpty())
-			campaignResources.getComponents().addAll(existingComponents);
-		if (existingThemes!=null && !existingThemes.isEmpty())
+		// 4. Save components and create the edges
+		int edges = 0;
+		List<CampaignTimelineEdge> edgeList = new ArrayList<>();
+		for (Component component : componentList) {
+			if (!component.getLinked()) {
+				component = Component.createObject(component);
+				component.refresh();
+			} else {
+				component = Component.read(component.getComponentId());
+			}
+			
+			campaignResources.addComponent(component);
+
+			// Add connection to the Timeline
+			CampaignTimelineEdge edge = new CampaignTimelineEdge();
+			edge.setCampaign(campaign);
+			if (edges == 0) {
+				edge.setFromComponent(component);
+				edge.setStart(true);
+				edgeList.add(edge);
+				edges++;
+			} else {
+				if (edges < componentList.size() - 1) {
+					edge.setFromComponent(component);
+					edgeList.add(edge);
+				}
+				CampaignTimelineEdge prevEdge = edgeList.get(edges - 1);
+				prevEdge.setToComponent(component);
+				edges++;
+			}
+		}
+
+		campaign.setTimelineEdges(edgeList);
+		campaign.update();
+		
+		if (existingThemes != null && !existingThemes.isEmpty())
 			campaignResources.getThemes().addAll(existingThemes);
-		if (existingWorkingGroups!=null && !existingWorkingGroups.isEmpty())
+		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
 			campaignResources.getWorkingGroups().addAll(existingWorkingGroups);
+
 		campaignResources.update();
+
 		
 		// 4. Refresh the new campaign to get the newest version
 		campaign.refresh();
@@ -450,10 +531,10 @@ String uuidAsString, List<ComponentInstance> phases) {
 	}
 	
 	
-	private void populateDefaultComponents(List<Component> defaultPhaseDefinitions) {
-		List<Component> defaultPhases = this.template.getDefaultComponents();
-		for (Component phaseDefinition : defaultPhases) {
-			ComponentInstance phase = new ComponentInstance(this, phaseDefinition);
+	private void populateDefaultComponents(List<ComponentDefinition> defaultPhaseDefinitions) {
+		List<ComponentDefinition> defaultPhases = this.template.getDefComponents();
+		for (ComponentDefinition phaseDefinition : defaultPhases) {
+			Component phase = new Component(this, phaseDefinition);
 			this.addComponent(phase);
 		}
 	}

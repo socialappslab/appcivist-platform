@@ -18,6 +18,7 @@ public class ComponentTransfer {
 	private UUID uuid = UUID.randomUUID();
 	private int position; 
 	private int timeline;
+	private Boolean linked;
 	private List<ComponentMilestoneTransfer> milestones = new ArrayList<>();
 	private List<ContributionTransfer> contributions = new ArrayList<>();
 	private List<VotingBallotTransfer> ballots = new ArrayList<>();
@@ -89,6 +90,14 @@ public class ComponentTransfer {
 
 	public void setTimeline(int timeline) {
 		this.timeline = timeline;
+	}
+
+	public Boolean getLinked() {
+		return linked;
+	}
+
+	public void setLinked(Boolean linked) {
+		this.linked = linked;
 	}
 
 	public List<ComponentMilestoneTransfer> getMilestones() {

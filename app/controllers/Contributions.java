@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Assembly;
-import models.ComponentInstance;
+import models.Component;
 import models.Contribution;
 import models.ContributionStatistics;
 import models.ContributionTemplate;
@@ -19,6 +19,7 @@ import models.WorkingGroup;
 import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -89,7 +90,7 @@ public class Contributions extends Controller {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findCampaignComponentContributions(Long aid, Long cid,
 			Long ciid, String space, String type) {
-		ComponentInstance c = ComponentInstance.read(cid, ciid);
+		Component c = Component.read(cid, ciid);
 		ResourceSpace rs = null;
 		if (c != null) {
 			// TODO: add multiple spaces to components
@@ -283,7 +284,7 @@ public class Contributions extends Controller {
 				type = ContributionTypes.COMMENT;
 			}
 
-			ComponentInstance ci = ComponentInstance.read(cid,ciid);
+			Component ci = Component.read(cid,ciid);
 			ResourceSpace rs = ci.getResourceSpace();
 			ContributionTemplate template = null;
 			if(newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -723,6 +724,16 @@ public class Contributions extends Controller {
 		if (newContrib.getLang() == null)
 			newContrib.setLang(author.getLanguage());
 		newContrib.setContextUserId(author.getUserId());
+		
+		if (etherpadServerUrl == null) {
+			// read etherpad server url from config file
+			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.serverBaseUrl");
+		}
+
+		if (etherpadApiKey== null) {
+			// read etherpad server url from config file
+			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.apiKey");
+		}
 		
 		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
 			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadServerUrl, newContrib, resourceSpaceConfigsUUID);				

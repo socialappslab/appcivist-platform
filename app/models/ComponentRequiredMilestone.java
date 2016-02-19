@@ -121,8 +121,8 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 		this.campaignTemplate = campaignTemplate;
 	}
 	
-	public Component getComponent() {
-		return Component.findByUUID(this.targetComponentUuid);
+	public ComponentDefinition getComponentDefinition() {
+		return ComponentDefinition.findByUUID(this.targetComponentUuid);
 	}
 
 	public static ComponentRequiredMilestone read(Long id) {

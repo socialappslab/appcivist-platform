@@ -9,8 +9,8 @@ import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
-import models.ComponentInstance;
-import models.ComponentInstanceMilestone;
+import models.Component;
+import models.ComponentMilestone;
 import models.Contribution;
 import models.Membership;
 import models.MembershipAssembly;
@@ -158,15 +158,15 @@ public class Notifications extends Controller {
 			if (resources !=null) campaigns = resources.getCampaigns();
 			if (campaigns != null && !campaigns.isEmpty()) {
 				for (Campaign c : campaigns) {
-					List<ComponentInstance> components = c.getResources().getComponents();
+					List<Component> components = c.getResources().getComponents();
 					if (components != null && !components.isEmpty()) {
-						for (ComponentInstance p : components) {
+						for (Component p : components) {
 							Calendar today = Calendar.getInstance();
 							if (p.getEndDate() !=null && p.getEndDate().after(today.getTime())) {
 								// 4.2. Current Ongoing Campaigns Upcoming Milestones
-								List<ComponentInstanceMilestone> milestones = p.getMilestones();
+								List<ComponentMilestone> milestones = p.getMilestones();
 								if (milestones!=null && !milestones.isEmpty()) {
-									for (ComponentInstanceMilestone m : milestones) {
+									for (ComponentMilestone m : milestones) {
 										Date mStart = m.getStart();
 										Calendar cal = Calendar.getInstance();
 										cal.setTime(mStart); // Now use today date.
@@ -184,7 +184,7 @@ public class Notifications extends Controller {
 													c.getCampaignId(),
 													c.getUuid(),
 													c.getTitle(),
-													m.getComponentInstanceMilestoneId(),
+													m.getComponentMilestoneId(),
 													m.getUuid(), m.getTitle(),
 													sdf.format(cal.getTime()),
 													a.getName(), 
@@ -192,8 +192,8 @@ public class Notifications extends Controller {
 											up.setRelativeUrl(
 													"/assembly/"+a.getAssemblyId()
 													+"/campaign/"+c.getCampaignId()
-													+"/"+p.getComponentInstanceId()
-													+"/"+m.getComponentInstanceMilestoneId());
+													+"/"+p.getComponentId()
+													+"/"+m.getComponentMilestoneId());
 											up.setContainerProperty("title",c.getTitle());
 											updates.add(up);
 										}

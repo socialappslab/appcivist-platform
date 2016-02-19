@@ -5,17 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-
-import models.ComponentInstanceMilestone;
-import models.Contribution;
-import models.Hashtag;
-import models.Resource;
-import models.Theme;
-import models.WorkingGroup;
-import models.location.Location;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -27,13 +18,11 @@ public class ContributionTransfer {
 	private UUID uuid = UUID.randomUUID();
 	private String uuidAsString;
 	private String title;
-	@Column(name="text", columnDefinition="text")
 	private String text;
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes type;
-	@Column(name="text_index", columnDefinition="text")
 	private String textIndex;
-	private Location location;
+	private LocationTransfer location;
 	private String budget;
 	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier"})
 	private List<UserTransfer> authors = new ArrayList<>();
@@ -42,11 +31,10 @@ public class ContributionTransfer {
 			"forumPosts", "brainstormingContributions", "proposals" })
 	private List<WorkingGroupTransfer> workingGroupAuthors = new ArrayList<>();
 	private ContributionStatisticsTransfer stats;
-	private List<Theme> themes;
-	private List<Resource> attachments;
-	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
-	private List<Contribution> comments = new ArrayList<Contribution>();
-	private List<ComponentInstanceMilestone> associatedMilestones = new ArrayList<ComponentInstanceMilestone>();
+	private List<ThemeTransfer> themes;
+	private List<ResourceTransfer> attachments;
+	private List<ContributionTransfer> comments = new ArrayList<ContributionTransfer>();
+	private List<ComponentMilestoneTransfer> associatedMilestones = new ArrayList<ComponentMilestoneTransfer>();
 
 	/* 
 	 * Fields specific to the type ACTION_ITEM
@@ -58,13 +46,10 @@ public class ContributionTransfer {
 	private String assessmentSummary;
 	
 	// Fields specific to the type PROPOSAL and ASSESSMENT 
-	private Resource extendedTextPad;
+	private ResourceTransfer extendedTextPad;
 
 	// Fields specific to the type PROPOSAL
-	private List<Contribution> assessments;
-	
-	private List<WorkingGroup> responsibleWorkingGroups;
-	private List<Hashtag> existingHashtags;
+	private List<ContributionTransfer> assessments;
 	private List<WorkingGroupTransfer> existingResponsibleWorkingGroups;
 	private List<ContributionTransfer> existingContributions;
 	
@@ -128,11 +113,11 @@ public class ContributionTransfer {
 		this.textIndex = textIndex;
 	}
 
-	public Location getLocation() {
+	public LocationTransfer getLocation() {
 		return location;
 	}
 
-	public void setLocation(Location location) {
+	public void setLocation(LocationTransfer location) {
 		this.location = location;
 	}
 
@@ -169,44 +154,36 @@ public class ContributionTransfer {
 		this.stats = stats;
 	}
 
-	public List<Theme> getThemes() {
+	public List<ThemeTransfer> getThemes() {
 		return themes;
 	}
 
-	public void setThemes(List<Theme> themes) {
+	public void setThemes(List<ThemeTransfer> themes) {
 		this.themes = themes;
 	}
 
-	public List<Resource> getAttachments() {
+	public List<ResourceTransfer> getAttachments() {
 		return attachments;
 	}
 
-	public void setAttachments(List<Resource> attachments) {
+	public void setAttachments(List<ResourceTransfer> attachments) {
 		this.attachments = attachments;
 	}
 
-	public List<Hashtag> getHashtags() {
-		return hashtags;
-	}
-
-	public void setHashtags(List<Hashtag> hashtags) {
-		this.hashtags = hashtags;
-	}
-
-	public List<Contribution> getComments() {
+	public List<ContributionTransfer> getComments() {
 		return comments;
 	}
 
-	public void setComments(List<Contribution> comments) {
+	public void setComments(List<ContributionTransfer> comments) {
 		this.comments = comments;
 	}
 
-	public List<ComponentInstanceMilestone> getAssociatedMilestones() {
+	public List<ComponentMilestoneTransfer> getAssociatedMilestones() {
 		return associatedMilestones;
 	}
 
 	public void setAssociatedMilestones(
-			List<ComponentInstanceMilestone> associatedMilestones) {
+			List<ComponentMilestoneTransfer> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
 	}
 
@@ -242,37 +219,20 @@ public class ContributionTransfer {
 		this.assessmentSummary = assessmentSummary;
 	}
 
-	public Resource getExtendedTextPad() {
+	public ResourceTransfer getExtendedTextPad() {
 		return extendedTextPad;
 	}
 
-	public void setExtendedTextPad(Resource extendedTextPad) {
+	public void setExtendedTextPad(ResourceTransfer extendedTextPad) {
 		this.extendedTextPad = extendedTextPad;
 	}
 
-	public List<Contribution> getAssessments() {
+	public List<ContributionTransfer> getAssessments() {
 		return assessments;
 	}
 
-	public void setAssessments(List<Contribution> assessments) {
+	public void setAssessments(List<ContributionTransfer> assessments) {
 		this.assessments = assessments;
-	}
-
-	public List<WorkingGroup> getResponsibleWorkingGroups() {
-		return responsibleWorkingGroups;
-	}
-
-	public void setResponsibleWorkingGroups(
-			List<WorkingGroup> responsibleWorkingGroups) {
-		this.responsibleWorkingGroups = responsibleWorkingGroups;
-	}
-
-	public List<Hashtag> getExistingHashtags() {
-		return existingHashtags;
-	}
-
-	public void setExistingHashtags(List<Hashtag> existingHashtags) {
-		this.existingHashtags = existingHashtags;
 	}
 
 	public List<WorkingGroupTransfer> getExistingResponsibleWorkingGroups() {

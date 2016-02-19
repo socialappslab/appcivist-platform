@@ -133,7 +133,11 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	}
 
 	public Assembly getTargetAssembly() {
-		return targetId !=null ? Assembly.read(targetId) : new Assembly();
+		if(targetId!=null && this.getTargetType().equals(MembershipTypes.ASSEMBLY)) {
+			Assembly a = Assembly.read(targetId);
+			return a;
+		}
+		return null;
 	}
 
 	public void setTargetAssembly(Assembly targetAssembly) {
@@ -141,7 +145,11 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	}
 
 	public WorkingGroup getTargetGroup() {
-		return targetId !=null ? WorkingGroup.read(targetId) : new WorkingGroup();
+		if(targetId!=null && this.getTargetType().equals(MembershipTypes.GROUP)) {
+			WorkingGroup g = WorkingGroup.read(targetId);
+			return g;
+		}
+		return null;
 	}
 
 	public void setTargetGroup(WorkingGroup targetGroup) {
