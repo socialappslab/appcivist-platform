@@ -728,13 +728,13 @@ public class Contributions extends Controller {
 		if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
 			// read etherpad server url from config file
 			Logger.info("Etherpad URL was not configured");
-			etherpadServerUrl = Play.application().configuration().getString("appcivist.servides.etherpad.default.serverBaseUrl");
+			etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl");
 		}
 
 		if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
 			// read etherpad server url from config file
 			Logger.info("Etherpad API Key was not configured");
-			etherpadApiKey = Play.application().configuration().getString("appcivist.servides.etherpad.default.apiKey");
+			etherpadApiKey = Play.application().configuration().getString("appcivist.services.etherpad.default.apiKey");
 		}
 		
 		Logger.info("Using Etherpad server at: "+etherpadServerUrl);
