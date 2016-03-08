@@ -59,6 +59,9 @@
   - &upic6 !!models.Resource     
     urlLargeString: "https://randomuser.me/api/portraits/med/women/55.jpg"
     resourceType: PICTURE
+  - &upic7 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/38.jpg"
+    resourceType: PICTURE
   - &res1 !!models.Resource
     url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/chart1.jpg"
     resourceType: PICTURE
@@ -206,7 +209,7 @@
     name:       Alicia
     username:   alicia
     language:   "es-ES"
-    profilePic: *upic5
+    profilePic: *upic6
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -219,7 +222,7 @@
     name:       Ted
     username:   ted
     language:     en
-    profilePic: *upic6
+    profilePic: *upic7
     roles:
       - *r2 # USER
     linkedAccounts:
@@ -306,122 +309,28 @@
 ##############################################################################################################################################################################################
 # Configuration Definitions
   - &config1 !!models.ConfigDefinition
-    key: "component.maximum.contributions"
-    valueType: Integer
-    description: "Maximun number of Contributions to accept" 
-    defaultValue: "100"
+    key: "component.proposalmaking.enable.proposal.merge-split"
+    valueType: Boolean
+    description: "Enable proposal merge/split (if enabled, multiple proposals can be combined or a single proposal can be split into several)" 
+    defaultValue: "false"
     configTarget: COMPONENT
   - &config2 !!models.ConfigDefinition
-    key: "component.enable.agreement.scores"
+    key: "component.proposalmaking.enable.working-groups.comments.external"
     valueType: Boolean
-    description: "Enable the system of automatic computation of agreement on contributions" 
-    defaultValue: "false"
+    description: "Enable comments in proposals by members of non-authoring Working Groups" 
+    defaultValue: "true"
     configTarget: COMPONENT
   - &config3 !!models.ConfigDefinition
-    key: "component.enable.comments.threads"
-    valueType: Boolean
-    description: "Enable comments on comments" 
-    defaultValue: "false" 
-    configTarget: COMPONENT
-  - &config4 !!models.ConfigDefinition
-    key: "component.maximum.level.thread"
-    valueType: Integer
-    description: "Maximum depth of threading in comments" 
-    defaultValue: "false"
-    configTarget: COMPONENT
-#  - &config5 !!models.ConfigDefinition
-#    key: "component.voting.system"
-#    valueType: String
-#    description: "Unranked, Ranked, Range, Distributed" 
-#    defaultValue: "Range" 
-#    configTarget: COMPONENT
-  - &config6 !!models.ConfigDefinition
-    key: "campaign.pb.budget"
-    valueType: Double
-    description: "Amount to spend in winning projects" 
-    configTarget: CAMPAIGN
-  - &config7 !!models.ConfigDefinition
-    key: "campaign.pb.budget.currency"
-    valueType: String
-    description: "Currency of the amount to spend in winning projects" 
-    defaultValue: "USD"
-    configTarget: CAMPAIGN
-  - &config8 !!models.ConfigDefinition
-    key: "assembly.face-to-face.scheduling"
-    valueType: Boolean
-    description: "Enable face-to-face scheduling" 
-    defaultValue: "true"
-    configTarget: ASSEMBLY
-  - &config9 !!models.ConfigDefinition
-    key: "assembly.enable.messaging"
-    valueType: Boolean
-    description: "Enable messaging for the assembly" 
-    defaultValue: "true"
-    configTarget: ASSEMBLY
-  - &config10 !!models.ConfigDefinition
-    key: "campaign.pb.use-linked-campaign-deliberation"
-    valueType: Boolean
-    description: "Use the linked campaign's Deliberation and Voting components." 
-    configTarget: CAMPAIGN
-  - &config11 !!models.ConfigDefinition
-    key: "component.versioning.enable.working-groups.comments"
-    valueType: Boolean
-    description: "Enable comments within Working Groups" 
-    defaultValue: "true" 
-    configTarget: COMPONENT
-  - &config12 !!models.ConfigDefinition
-    key: "component.versioning.enable.working-groups.comments.external"
-    valueType: Boolean
-    description: "Enable comments by other Working Groups" 
-    defaultValue: "false" 
-    configTarget: COMPONENT
-  - &config13 !!models.ConfigDefinition
-    key: "component.versioning.enable.proposal.merge-split"
-    valueType: Boolean
-    description: "Enable proposal merge/split" 
-    defaultValue: "false" 
-    configTarget: COMPONENT
-  - &config14 !!models.ConfigDefinition
-    key: "component.deliberation.enable.comment-threads"
-    valueType: Boolean
-    description: "Enable reply to comments" 
-    defaultValue: "true" 
-    configTarget: COMPONENT
-  - &config15 !!models.ConfigDefinition
-    key: "component.deliberation.enable.comment-threads.depth"
-    valueType: Integer
-    description: "Depth of discussion" 
-    defaultValue: "1" 
-    configTarget: COMPONENT
-  - &config16 !!models.ConfigDefinition
     key: "component.deliberation.enable.technical-assesment"
     valueType: Boolean
     description: "Enable technical assessment of proposals" 
     defaultValue: "true" 
     configTarget: COMPONENT
-  - &config17 !!models.ConfigDefinition
-    key: "component.deliberation.enable.comment-categories"
-    valueType: Boolean
-    description: "Enable comment categorization" 
-    defaultValue: "false" 
-    configTarget: COMPONENT
-  - &config18 !!models.ConfigDefinition
+  - &config4 !!models.ConfigDefinition
     key: "component.deliberation.disable.additional.versioning-deliberation"
     valueType: Boolean
     description: "Disable additional rounds of versioning and deliberation" 
-    defaultValue: "false" 
-    configTarget: COMPONENT
-  - &config19 !!models.ConfigDefinition
-    key: "component.deliberation.enable.additional.versioning-deliberation.rounds"
-    valueType: Integer
-    description: "Number of rounds" 
-    defaultValue: "1" 
-    configTarget: COMPONENT
-  - &config20 !!models.ConfigDefinition
-    key: "component.deliberation.enable.ups-downs"
-    valueType: Boolean
-    description: "Enable up-votes and down-votes" 
-    defaultValue: "true" 
+    defaultValue: "false"
     configTarget: COMPONENT
   - &config21 !!models.ConfigDefinition
     key: "component.deliberation.who-deliberates"
@@ -536,115 +445,126 @@
     valueType: json
     description: "Proposal Template" 
     defaultValue: "[]" 
-    configTarget: COMPONENT
+    configTarget: COMPONENT    
+  - &config6 !!models.ConfigDefinition
+    key: "campaign.pb.budget"
+    valueType: Double
+    description: "Amount to spend in winning projects" 
+    configTarget: CAMPAIGN
+  - &config7 !!models.ConfigDefinition
+    key: "campaign.pb.budget.currency"
+    valueType: String
+    description: "Currency of the amount to spend in winning projects" 
+    defaultValue: "USD"
+    configTarget: CAMPAIGN
+  - &config8 !!models.ConfigDefinition
+    key: "assembly.face-to-face.scheduling"
+    valueType: Boolean
+    description: "Enable face-to-face scheduling" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+  - &config9 !!models.ConfigDefinition
+    key: "assembly.enable.messaging"
+    valueType: Boolean
+    description: "Enable messaging for the assembly" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+  - &config10 !!models.ConfigDefinition
+    key: "campaign.pb.use-linked-campaign-deliberation"
+    valueType: Boolean
+    description: "Use the linked campaign's Deliberation and Voting components." 
+    configTarget: CAMPAIGN
+
 ##############################################################################################################################################################################################    
 # Components: definition of components avaialble to use in appcivist
   - &pd1 !!models.ComponentDefinition
+    componentDefId: 1
     name: "Proposal Making"
-    description: "Proposal Making includes brainstorming ideas, forming working groups, and starting proposals."
+    description: "Proposal Making is about raising issues, brainstorming ideas, forming working groups, and starting proposals."
     uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig1 !!models.ComponentRequiredConfiguration
       componentDef: *pd1
       configDef: *config1
-  - &pd2 !!models.ComponentDefinition
-    name: "Versioning"
-    description: "Versioning is the process by which Working Groups develop proposals to their final form."
-    uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
-    requiredConfigurations: 
     - &componentConfig21 !!models.ComponentRequiredConfiguration
-      componentDef: *pd2
-      configDef: *config11 
-    - &componentConfig22 !!models.ComponentRequiredConfiguration
-      componentDef: *pd2
-      configDef: *config12 
-    - &componentConfig23 !!models.ComponentRequiredConfiguration
-      componentDef: *pd2
-      configDef: *config13
-  - &pd3 !!models.ComponentDefinition
-    name: "Deliberation"
-    description: "Deliberation is the careful consideration of proposals through comments and evidence. In this stage, proposals can only be discussed, praised or criticized, but not edited."
+      componentDef: *pd1
+      configDef: *config2 
+  - &pd2 !!models.ComponentDefinition
+    componentDefId: 2
+    name: "Deliberation"    
+    description: "is the careful consideration of proposals through comments and evidence. In this stage, proposals can only be discussed, praised or criticized, but not edited."
     uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig31 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config14
+      componentDef: *pd2
+      configDef: *config3
     - &componentConfig32 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config15 
-    - &componentConfig34 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config16
-    - &componentConfig35 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config17
-    - &componentConfig36 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config18
-    - &componentConfig37 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config19 
-    - &componentConfig38 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
-      configDef: *config20
+      componentDef: *pd2
+      configDef: *config4 
     - &componentConfig39 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
+      componentDef: *pd2
       configDef: *config21
     - &componentConfig41 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
+      componentDef: *pd2
       configDef: *config22
     - &componentConfig42 !!models.ComponentRequiredConfiguration
-      componentDef: *pd3
+      componentDef: *pd2
       configDef: *config23
-  - &pd4 !!models.ComponentDefinition
+  - &pd3 !!models.ComponentDefinition
+    componentDefId: 3
     name: "Voting"
     description: "Voting determines the winning proposal/s, based on the voting system selected and the number of winners allowed"
     uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
     requiredConfigurations: 
     - &componentConfig51 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config24
     - &componentConfig52 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config25 
     - &componentConfig54 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config26
     - &componentConfig55 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config27
     - &componentConfig56 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config28
     - &componentConfig57 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config29 
     - &componentConfig58 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config30
     - &componentConfig59 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd2
       configDef: *config31
     - &componentConfig61 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config32
     - &componentConfig62 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config33
     - &componentConfig63 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config34
     - &componentConfig64 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config35
     - &componentConfig65 !!models.ComponentRequiredConfiguration
-      componentDef: *pd4
+      componentDef: *pd3
       configDef: *config36
-  - &pd5 !!models.ComponentDefinition
-    name: "Scheduling"
+    - &componentConfig66 !!models.ComponentRequiredConfiguration
+      componentDef: *pd3
+      configDef: *config37
+  - &pd4 !!models.ComponentDefinition
+    componentDefId: 4
+    name: "Implementation"
+    description: "Implementation allows assembly members to follow the progress of winning proposals or to find new opportunites for proposals that were not selected durin the voting stage."
     uuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"
   - &pd6 !!models.ComponentDefinition
-    name: "Broadcasting"
+    name: "Scheduling"
     uuidAsString: "12fa0538-407a-11e5-a151-feff819cdc9f"
   - &pd7 !!models.ComponentDefinition
     name: "Implementation"
@@ -661,7 +581,7 @@
   - &pd11 !!models.ComponentDefinition
     name: "Mapping"
     uuidAsString: "12fa8923-407a-11e5-a151-feff819cdc9f"
-
+ 
 ##############################################################################################################################################################################################
 # Campaign Templates
   - &ct1 !!models.CampaignTemplate
@@ -672,9 +592,6 @@
       - *pd2
       - *pd3
       - *pd4
-      - *pd7
-      - *pd11
-      - *pd10
     reqConfigs: 
     - &campaignConfig1 !!models.CampaignRequiredConfiguration
       campaignTemplate: *ct1
@@ -686,70 +603,69 @@
       campaignTemplate: *ct1
       configDefinition: *config10
     reqMilestones:
+    - &m0 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Proposal Making start date
+      description: Begin brainstorming, creating workin groups and proposals
+      position: 0
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      type: START
     - &m1 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Brainstorming
-      description: Identify problems and make suggestions for proposals
-      position: 0
-      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      description: "Until this date, assembly members can identify problems and make suggestions for proposals."
+      position: 1
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+      type: END
     - &m2 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
       title: Working Groups
-      description: Join or create a group to develop proposals. Browse the problems and suggestions from brainstorming and form groups around them to turn them into proposals
-      position: 1
+      description: "Until this date, assembly members can join or create a working group to develop proposals."
+      position: 2
       targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+      type: END      
     - &m3 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Proposal Drafts
-      description: Explore existing proposals or start one with your working group
-      position: 2
-      noDuration: true
-      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      title: Proposals
+      description: "Until this date, assembly members can start and develop proposals in working groups."
+      position: 3
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+      type: END
     - &m4 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Final Drafts
-      position: 3
-      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      title: Proposals selection withing Working Groups 
+      description: Until this date, working groups can select what proposals they want to put forward to the Assembly for deliberation and voting.
+      position: 4
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
     - &m5 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Proposal editing
-      position: 4
-      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+      title: Discussions
+      description: Until this date, assembly members can explore and discuss published proposals for deliberation.
+      position: 5
+      noDuration: true
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      type: END
     - &m6 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Final proposal/s
-      position: 5
-      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+      title: Technical Assessment
+      description: "Until this date, published proposals for deliberation will be open for technical evaluation by volunteers, to assess feasibility and provide expert feedback. After this date, evaluations will appear above each proposal."
+      position: 6
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"      
+      type: END
     - &m7 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Proposal selection
-      position: 6
-      targetComponentUuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+      title: Voting period start date
+      description: "Starting on this date, assembly members can explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
+      position: 7
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"      
+      type: START
     - &m8 !!models.ComponentRequiredMilestone
       campaignTemplate: *ct1
-      title: Deliberation starts
-      position: 7
-      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
-    - &m9 !!models.ComponentRequiredMilestone
-      campaignTemplate: *ct1
-      title: Technical Assessment
+      description: "Until this date, assembly members can edit their votes. After it, whatever vote has been casted will be considered final."
+      title: Voting period end date
       position: 8
-      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
-    - &m10 !!models.ComponentRequiredMilestone
-      campaignTemplate: *ct1
-      title: Deliberation finishes
-      position: 9
-      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
-    - &m11 !!models.ComponentRequiredMilestone
-      campaignTemplate: *ct1
-      title: Voting Starts
-      position: 10
-      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"      
-    - &m12 !!models.ComponentRequiredMilestone
-      campaignTemplate: *ct1
-      title: Voting Ends
-      position: 11
-      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
+      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"         
+      type: END   
   - &ct2 !!models.CampaignTemplate
     nameKey: "FUNDRAISING"
     name: "Fundraising" 
@@ -758,86 +674,78 @@
     name: "Mobilization"
 
 ########################################################################################################################################
-# Milestones: milestones that define steps and deadlines in the process followed by each component
+# Milestones: milestones that define steps and deadlines in the process followed by each component, with already associated concrete dates
+  - &ci0 !!models.ComponentMilestone
+    title: Proposal Making start date
+    key: pmstartdate
+    description: Begin brainstorming, creating workin groups and proposals
+    position: 0
+    date: "2016-01-01"
+    type: START
   - &ci1 !!models.ComponentMilestone
     title: Brainstorming
-    description: "Identify problems and make suggestions for proposals."
-    position: 0
-    start: "2016-01-01"
-    days: 60
-    mainContributionType: BRAINSTORMING
-  - &ci2 !!models.ComponentMilestone
-    title: Working groups formation
-    description: "Join or create a group to develop proposals."
+    description: "Until this date, assembly members can identify problems and make suggestions for proposals."
+    key: brainstorming
     position: 1
-    start: "2016-03-11"
-    days: 5
-    mainContributionType: BRAINSTORMING
-  - &ci3 !!models.ComponentMilestone
-    title: Proposal drafting
-    description: "Explore existing proposals or start one with your working group."
+    date: "2016-03-01"
+    type: END
+  - &ci2 !!models.ComponentMilestone
+    title: Working Groups
+    key: wgroups
+    description: "Until this date, assembly members can join or create a working group to develop proposals."
     position: 2
-    start: "2016-03-16"
-    days: 10
-    mainContributionType: PROPOSAL
-  - &ci5 !!models.ComponentMilestone
-    title: Proposal editing
-    description: "Versioning of existing proposals."
+    date: "2016-03-01"
+    type: END
+  - &ci3 !!models.ComponentMilestone
+    title: Proposals
+    key: proposals
+    description: "Until this date, assembly members can start and develop proposals in working groups."
+    position: 3
+    date: "2016-03-31"
+    type: END
+  - &ci4 !!models.ComponentMilestone
+    title: Proposals selection within Working Groups
+    key: selection
+    description: Until this date, working groups can select what proposals they want to put forward to the Assembly for deliberation and voting.
     position: 4
-    start: "2016-03-27"
-    days: 15
-    mainContributionType: PROPOSAL
-  - &ci7 !!models.ComponentMilestone
-    title: Proposal selection
-    description: "Versioning period over. Working Groups must now select the proposals they want to put forward to the Assembly for deliberation and voting. While this process is ongoing, proposals will be available in read only mode, open to comments from the Assembly."
+    date: "2016-04-05"
+    type: END
+  - &ci5 !!models.ComponentMilestone
+    title: Discussions
+    key: discussion
+    description: Until this date, assembly members can explore and discuss published proposals for deliberation.
+    position: 5
+    date: "2016-04-30"
+    type: END
+  - &ci6 !!models.ComponentMilestone
+    title: Technical Assessment
+    key: assessment
+    description: "Until this date, published proposals for deliberation will be open for technical evaluation by volunteers, to assess feasibility and provide expert feedback. After this date, evaluations will appear above each proposal."
     position: 6
-    start: "2016-04-12"
-    days: 5
-    mainContributionType: PROPOSAL
+    date: "2016-04-30"
+    type: END
+  - &ci7 !!models.ComponentMilestone
+    title: Voting period start date
+    key: votingstart
+    description: "Starting on this date, assembly members can explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
+    position: 8
+    date: "2016-05-15"
+    type: START
   - &ci8 !!models.ComponentMilestone
-    title: Public deliberation
-    description: "Explore and discuss published proposals for deliberation."
-    position: 7
-    start: "2016-04-17"
-    days: 10
-    mainContributionType: PROPOSAL
+    title: Voting period end date
+    key: votingend
+    description: "Until this date, assembly members can edit their votes. After it, whatever vote has been casted will be considered final."
+    position: 9
+    date: "2016-06-15"
+    type: END
   - &ci9 !!models.ComponentMilestone
-    title: Technical assessment
-    description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
-    position: 8
-    start: "2016-05-06"
-    days: 10
-    mainContributionType: PROPOSAL
-  - &ci11 !!models.ComponentMilestone
-    title: Voting period
-    description: "Explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
-    position: 10
-    start: "2016-05-17"
-    days: 15
-    mainContributionType: PROPOSAL
-  - &ci13 !!models.ComponentMilestone
-    title: Public deliberation
-    description: "Explore and discuss published proposals for deliberation."
-    position: 7
-    start: "2016-04-17"
-    days: 10
-    mainContributionType: PROPOSAL
-  - &ci14 !!models.ComponentMilestone
-    title: Technical assessment
-    description: "Published proposals for deliberation are now being technically evaluated by volunteers, to assess feasibility and provide expert feedback. You can still freely explore and discuss published proposals. When evaluations are ready, they will appear above of each proposal."
-    position: 8
-    start: "2016-05-06"
-    days: 10
-    mainContributionType: PROPOSAL
-  - &ci16 !!models.ComponentMilestone
-    title: Voting period
-    description: "Explore and discuss published proposals for deliberation."
-    position: 10
-    start: "2016-05-17"
-    days: 15
-    mainContributionType: PROPOSAL
+    title: Implementation start date
+    key: implementationstart
+    description: "Starting this date, winning proposals will be available on the website to follow up upon their implementations"
+    position: 9
+    date: "2017-01-01"
+    type: START
    
-
 ##############################################################################################################################################################################################
 # Contributions for Contributions ==> COMMENTS
   - &contrib5 !!models.Contribution
@@ -935,9 +843,6 @@
       - *u3
     themes: 
       - *cat7
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib12 !!models.Contribution
     title: Little or no awareness about rising housing prices
     text: Housing prices are wy up and poeople's is doing nothing to get them down. I present a graph of the housing prices evolution in the last ten years. We need to stop this!
@@ -947,9 +852,6 @@
       - *u1
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci1
-      - *ci2
     attachments: 
       - *res1
   - &contrib13 !!models.Contribution
@@ -960,9 +862,6 @@
       - *u2
     themes: 
       - *cat7
-    associatedMilestones:
-      - *ci1
-      - *ci2
     attachments: 
       - *propimg2
   - &contrib14 !!models.Contribution
@@ -972,9 +871,6 @@
       - *u3
     themes: 
       - *cat7
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib15 !!models.Contribution
     title: A park for the empty lot
     text: "let's build a children's park! One of those with the safe floor made of rubber or something"
@@ -983,9 +879,6 @@
       - *u1
     themes: 
       - *cat5
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib16 !!models.Contribution
     title: A park for the empty lot
     text: "let's build a children's park! One of those with the safe floor made of rubber or something"
@@ -994,9 +887,6 @@
       - *u1
     themes: 
       - *cat5
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib17 !!models.Contribution
     title: Cycling path
     text: "This is not entirely fleshed out yet, but I would definitely like to see more entirely dedicated cycling path parks"
@@ -1005,9 +895,6 @@
       - *u3
     themes: 
       - *cat1
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib18 !!models.Contribution
     title: Why is this neighborhood so poorly serviced by Public Transportation and how can we get a better service?
     text: 
@@ -1016,9 +903,6 @@
       - *u2
     themes: 
       - *cat1
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib19 !!models.Contribution
     title: We need more empathy towards inmigrants
     text: 
@@ -1027,9 +911,6 @@
       - *u3
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci1
-      - *ci2
   - &contrib20 !!models.Contribution
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
@@ -1039,8 +920,6 @@
 #      - *wg1
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *propimg3
       - *propimg4
@@ -1053,8 +932,6 @@
 #      - *wg3
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *propimg6
       - *res1
@@ -1081,8 +958,6 @@
 #      - *wg1
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *propimg3
       - *propimg4
@@ -1094,9 +969,7 @@
 #    workingGroupAuthors: 
 #      - *wg3
     themes: 
-      - *cat6 
-    associatedMilestones:
-      - *ci3
+      - *cat6
     attachments:
       - *propimg3
       - *propimg4
@@ -1109,8 +982,6 @@
 #      - *wg2
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *propimg5
       - *propimg6
@@ -1123,8 +994,6 @@
 #      - *wg1
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *propimg3
       - *propimg4
@@ -1137,8 +1006,6 @@
 #      - *wg3
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *res6
       - *res1
@@ -1151,8 +1018,6 @@
 #      - *wg2
     themes: 
       - *cat6
-    associatedMilestones:
-      - *ci3
     attachments:
       - *propimg3
       - *propimg4
@@ -1287,25 +1152,16 @@
     timeline: 1
     componentId: 1
     definition: *pd1
-    #configs
     milestones: 
+      - *ci0
       - *ci1
       - *ci2
       - *ci3
-    contributions: 
-      - *contrib11 
-      - *contrib12 
-      - *contrib13 
-      - *contrib14 
-      - *contrib15 
-      - *contrib16 
-      - *contrib17 
-      - *contrib18 
-      - *contrib19
+      - *ci4
     templates: 
       - *temp1
   - &ph2 !!models.Component
-    title: Versioning
+    title: Deliberation
     position: 1
     timeline: 1
     componentId: 2
@@ -1313,58 +1169,26 @@
     #configs
     milestones: 
       - *ci5
-      - *ci7
-    contributions: 
-      - *contrib20
-      - *contrib21 
-      - *contrib22 
-      - *contrib30
-      - *contrib31 
-      - *contrib32 
-      - *contrib40
-      - *contrib41 
-      - *contrib42 
+      - *ci6
   - &ph3 !!models.Component
-    title: Deliberation
+    title: Voting
     position: 2
     timeline: 1
     componentId: 3
     definition: *pd3
     #configs
     milestones:
+      - *ci7 
       - *ci8 
-      - *ci9 
-    contributions: 
-      - *contrib20
-      - *contrib21 
-      - *contrib22 
-      - *contrib30
-      - *contrib31 
-      - *contrib32 
-      - *contrib40
-      - *contrib41 
-      - *contrib42 
   - &ph4 !!models.Component
-    title: Voting
+    title: Implementation
     position: 3
     timeline: 1
     componentId: 4
     definition: *pd4
     #configs
     milestones:
-      - *ci11
-    contributions: 
-      - *contrib20
-      - *contrib21 
-      - *contrib22 
-      - *contrib30
-      - *contrib31 
-      - *contrib32 
-      - *contrib40
-      - *contrib41 
-      - *contrib42 
-    ballots:
-      - *vb1 
+      - *ci9
   - &ph5 !!models.Component
     title: Mapping
     position: 0
@@ -1387,8 +1211,8 @@
     componentId: 7
     definition: *pd3
     milestones: 
-      - *ci8
-      - *ci9
+      - *ci5
+      - *ci6
     contributions: 
       - *contrib20
       - *contrib21 
@@ -1401,17 +1225,37 @@
     componentId: 8
     definition: *pd4
     milestones: 
-      - *ci11
-    contributions: 
-      - *contrib20
-      - *contrib21 
-      - *contrib22 
-      - *contrib30
-      - *contrib31 
-      - *contrib32 
-      - *contrib40
-      - *contrib41 
-      - *contrib42 
+      - *ci7
+      - *ci8 
+#    contributions: 
+#      - *contrib20
+#      - *contrib21 
+#      - *contrib22 
+#      - *contrib30
+#      - *contrib31 
+#      - *contrib32 
+#      - *contrib40
+#      - *contrib41 
+#      - *contrib42
+  - &ph9 !!models.Component
+    title: Implementation
+    position: 5
+    #configs
+    timeline: 1
+    componentId: 9
+    definition: *pd4
+    milestones: 
+      - *ci9
+#    contributions: 
+#      - *contrib20
+#      - *contrib21 
+#      - *contrib22 
+#      - *contrib30
+#      - *contrib31 
+#      - *contrib32 
+#      - *contrib40
+#      - *contrib41 
+#      - *contrib42
 
 
 ##############################################################################################################################################################################################
@@ -1433,15 +1277,47 @@
     themes: 
       - *cat1
       - *cat2
-      - *cat3
+      - *cat3 
+    contributions: 
+      - *contrib11 
+      - *contrib12 
+      - *contrib13 
+      - *contrib14 
+      - *contrib15 
+      - *contrib16 
+      - *contrib17 
+      - *contrib18 
+      - *contrib19
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
   - &rs6 !!models.ResourceSpace
     type: CAMPAIGN
     #configs
     components:
       - *ph7
       - *ph8
+      - *ph9
+    ballots:
+      - *vb1
     workingGroups:
       - *wg3
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
       
 ##############################################################################################################################################################################################
 # Campaigns
@@ -1556,18 +1432,18 @@
       - *contrib4
     workingGroups: 
       - *wg4
-  - &rs10 !!models.ResourceSpace
-    type: COMPONENT
-    contributions:
-      - *contrib11
-      - *contrib12
-      - *contrib13
-      - *contrib14
-      - *contrib15
-      - *contrib16
-      - *contrib17
-      - *contrib18
-      - *contrib19
+#  - &rs10 !!models.ResourceSpace
+#    type: COMPONENT
+#    contributions:
+#      - *contrib11
+#      - *contrib12
+#      - *contrib13
+#      - *contrib14
+#      - *contrib15
+#      - *contrib16
+#      - *contrib17
+#      - *contrib18
+#      - *contrib19
   
 ##############################################################################################################################################################################################
 # Assemblies

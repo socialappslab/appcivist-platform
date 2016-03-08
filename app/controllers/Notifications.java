@@ -167,7 +167,7 @@ public class Notifications extends Controller {
 								List<ComponentMilestone> milestones = p.getMilestones();
 								if (milestones!=null && !milestones.isEmpty()) {
 									for (ComponentMilestone m : milestones) {
-										Date mStart = m.getStart();
+										Date mStart = m.getDate();
 										Calendar cal = Calendar.getInstance();
 										cal.setTime(mStart); // Now use today date.
 										cal.add(Calendar.DATE, m.getDays());

@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.ComponentMilestoneTypes;
 import enums.ContributionTypes;
 
 @Entity
@@ -30,15 +33,18 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 	private Long componentMilestoneId;
 
 	private String title; // name of milestone
+	private String key; // name of milestone
 	private int position;
 	@Column(name="description", columnDefinition="text")
 	private String description;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date start = Calendar.getInstance().getTime();	// starting date of the milestone
+	private Date date = Calendar.getInstance().getTime();	// starting date of the milestone
 	private Integer days = 1; // duration in dates
 	private UUID uuid = UUID.randomUUID(); 
 	@Transient
 	private String uuidAsString;
+	@Enumerated(EnumType.STRING)
+	private ComponentMilestoneTypes type = ComponentMilestoneTypes.END;
 	
 	private ContributionTypes mainContributionType = ContributionTypes.BRAINSTORMING;
 
@@ -56,7 +62,7 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 		super();
 		this.componentMilestoneId = milestoneId;
 		this.title = title;
-		this.start = start;
+		this.date = start;
 		this.days = days;
 	}
 	
@@ -74,12 +80,12 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 		this.description = requiredComponentMilestone.getDescription();
 
 		if (previousInstance == null) {
-			this.start = Calendar.getInstance().getTime();
+			this.date = Calendar.getInstance().getTime();
 		} else {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(previousInstance.getStart());
+			cal.setTime(previousInstance.getDate());
 			cal.add(Calendar.DATE, previousInstance.getDays() + 1);
-			this.start = cal.getTime();
+			this.date = cal.getTime();
 		}
 	}
 
@@ -99,6 +105,14 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 		this.title = title;
 	}
 
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
 	public int getPosition() {
 		return position;
 	}
@@ -115,12 +129,12 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 		this.description = description;
 	}
 
-	public Date getStart() {
-		return start;
+	public Date getDate() {
+		return date;
 	}
 
-	public void setStart(Date start) {
-		this.start = start;
+	public void setDate(Date start) {
+		this.date = start;
 	}
 
 	public Integer getDays() {
@@ -147,6 +161,14 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 	public void setUuidAsString(String uuidAsString) {
 		this.uuidAsString = uuidAsString;
 		this.uuid = UUID.fromString(uuidAsString);
+	}
+
+	public ComponentMilestoneTypes getType() {
+		return type;
+	}
+
+	public void setType(ComponentMilestoneTypes type) {
+		this.type = type;
 	}
 
 	public ContributionTypes getMainContributionType() {
