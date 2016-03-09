@@ -67,7 +67,28 @@ public class WorkingGroups extends Controller {
 		List<WorkingGroup> workingGroups = WorkingGroup.findByAssembly(aid);
 		return ok(Json.toJson(workingGroups));
 	}
+	
+	@ApiOperation(httpMethod = "GET", response = MembershipTransfer.class, produces = "application/json", value = "List of groups created in a campaign")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly numerical id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Campaien numerical id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+	public static Result findWorkingGroupsInCampaign(Long aid, Long cid) {
+		Campaign c = Campaign.read(cid);
+		if (c!=null) {
+			List<WorkingGroup> workingGroups = c.getWorkingGroups();
+			return ok(Json.toJson(workingGroups));
+		} else {
+			TransferResponseStatus response = new TransferResponseStatus();
+			response.setResponseStatus(ResponseStatus.NODATA);
+			response.setStatusMessage("Campaign "+cid+" does not exist");
+			return notFound(Json.toJson(response));
+		}
+	}
 
+	
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get working group by ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
