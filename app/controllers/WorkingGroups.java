@@ -19,7 +19,6 @@ import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.WorkingGroupSummaryTransfer;
-import models.transfer.WorkingGroupTransfer;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -43,7 +42,6 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-import delegates.AssembliesDelegate;
 import delegates.WorkingGroupsDelegate;
 import enums.ResponseStatus;
 
@@ -55,7 +53,7 @@ public class WorkingGroups extends Controller {
 	public static final Form<MembershipTransfer> MEMBERSHIP_FORM = form(MembershipTransfer.class);
 
 	/**
-	 * Return the full list of assemblies
+	 * Return the full list of working groups in an assembly
 	 * 
 	 * @return WorkingGroup list
 	 */
@@ -70,10 +68,10 @@ public class WorkingGroups extends Controller {
 		return ok(Json.toJson(workingGroups));
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get working group by ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "aid", value = "Assembly numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "gid", value = "Working Group numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
@@ -86,10 +84,10 @@ public class WorkingGroups extends Controller {
 										+ wGroupId)));
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Delete group by ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "aid", value = "Assembly numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "gid", value = "Working Group numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
@@ -98,7 +96,7 @@ public class WorkingGroups extends Controller {
 		return ok();
 	}
 
-	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new working group")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
@@ -173,7 +171,8 @@ public class WorkingGroups extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", 
+			value = "Create a Working Group in the Campaign identified by ID. This will also add the Working Gorup to the Assembly organizing this campaign.")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
@@ -207,34 +206,45 @@ public class WorkingGroups extends Controller {
 
 			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
 				Logger.info("Working Group already exists");
+				responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+				responseBody.setStatusMessage("Working Group already exists");
+				return internalServerError(Json.toJson(responseBody));
 			} else {
-				if (newWorkingGroup.getCreator() == null) {
-					newWorkingGroup.setCreator(groupCreator);
+				Ebean.beginTransaction();
+				try {
+					if (newWorkingGroup.getCreator() == null) {
+						newWorkingGroup.setCreator(groupCreator);
+					}
+					List<InvitationTransfer> invitations = newWorkingGroup.getInvitations();
+					newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+
+					// Add the working group to the assembly
+					ResourceSpace rs = Assembly.read(aid).getResources();
+					rs.addWorkingGroup(newWorkingGroup);
+					rs.update();
+					
+					// Add the working group to the campaign
+					ResourceSpace rsC = Campaign.read(cid).getResources();
+					rsC.addWorkingGroup(newWorkingGroup);
+					rsC.update();
+					
+					// Create and send invitations							
+					if (invitations != null) {
+						for (InvitationTransfer invitation : invitations) {
+							MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
+						}
+					}
+				} catch (Exception e) {
+					Ebean.rollbackTransaction();
+					e.printStackTrace();
+					Logger.info("Error creating Working Group: "+e.getMessage());
+					responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+					responseBody.setStatusMessage("Error creating Working Group: "+e.getMessage());
+					return internalServerError(Json.toJson(responseBody));
 				}
-
-				newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-
-				// Add the working group to the assembly
-				ResourceSpace rs = Campaign.read(cid).getResources();
-				rs.addWorkingGroup(newWorkingGroup);
-				rs.update();
-
-				// TODO: return URL of the new group
-				Logger.info("Creating working group");
-				Logger.debug("=> " + newWorkingGroupForm.toString());
-
-				responseBody.setNewResourceId(newWorkingGroup.getGroupId());
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.GROUP_CREATE_MSG_SUCCESS,
-						newWorkingGroup.getName()/*
-												 * ,
-												 * groupCreator.getIdentifier()
-												 */));
-				responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
-						+ newWorkingGroup.getGroupId());
+				Ebean.commitTransaction();
 			}
-
-			return ok(Json.toJson(responseBody));
+			return ok(Json.toJson(newWorkingGroup));
 		}
 	}
 
@@ -300,7 +310,7 @@ public class WorkingGroups extends Controller {
 			@ApiImplicitParam(name = "membership_form", value = "membership's form in body", dataType = "models.transfer.MembershipTransfer", paramType = "body", required = true),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-		public static Result createGroupMembership(Long aid, Long id, String type) {
+	public static Result createGroupMembership(Long aid, Long id, String type) {
 		// 1. obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -373,7 +383,6 @@ public class WorkingGroups extends Controller {
 		return ok(Json.toJson(proposals));
 	}
 	
-
 	/**
 	 * 
 	 * @return models.AssemblyCollection
