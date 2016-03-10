@@ -8,8 +8,10 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
@@ -19,10 +21,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@SequenceGenerator(name="componentDefSeq", initialValue=5, allocationSize=50)
 public class ComponentDefinition extends AppCivistBaseModel {
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="componentDefSeq")
 	private Long componentDefId;
 	@Index
 	private UUID uuid = UUID.randomUUID();

@@ -46,8 +46,7 @@ public class ContributionsDelegate {
 			return query != null && !query.isEmpty() ? 
 					findContributionsInResourceSpace(rs.getResourceSpaceId(), query) : 
 						rs != null ? rs.getContributions() : null;
-		}
-		
+		}	
 	}
 	
 	public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, UUID resourceSpaceConfigsUUID) throws MalformedURLException {

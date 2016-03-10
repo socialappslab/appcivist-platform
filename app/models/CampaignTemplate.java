@@ -98,7 +98,12 @@ public class CampaignTemplate extends AppCivistBaseModel {
 		for (ComponentRequiredMilestone milestone : reqMilestones) {
 			UUID targetUUID = milestone.getTargetComponentUuid();
 			ComponentDefinition c = componentsTable.get(targetUUID);
-			c.getRequiredMilestones().add(milestone);
+			if (c!=null) {
+				List<ComponentRequiredMilestone> rMile = c.getRequiredMilestones();
+				if (rMile != null) {
+					rMile.add(milestone);
+				}
+			}
 		}
 		return defComponents;
 	}

@@ -66,7 +66,7 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnoreProperties({ "fromComponent", "toComponent" })
 	@OrderBy("start DESC")
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
-	
+		
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
@@ -81,6 +81,8 @@ public class Campaign extends AppCivistBaseModel {
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	@Transient
 	private List<Long> assemblies = new ArrayList<>();
+	@Transient
+	private List<Contribution> contributions = new ArrayList<>();
 
 	@Transient
 	private List<Component> existingComponents = new ArrayList<>();
@@ -265,7 +267,7 @@ String uuidAsString, List<Component> phases) {
 	public void setTimelineEdges(List<CampaignTimelineEdge> timelineEdges) {
 		this.timelineEdges = timelineEdges;
 	}
-
+	
 	public Long getResourceSpaceId() {
 		return resources != null ? resources.getResourceSpaceId() : null;
 	}
@@ -363,6 +365,15 @@ String uuidAsString, List<Component> phases) {
 			}
 		}
 		return assemblyIds;
+	}
+
+	public List<Contribution> getContributions() {
+		return this.resources.getContributions();
+	}
+
+	public void setContributions(List<Contribution> contributions) {
+		this.contributions = contributions;
+		this.resources.setContributions(contributions);
 	}
 
 	public List<Component> getExistingComponents() {
