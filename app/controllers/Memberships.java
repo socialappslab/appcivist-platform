@@ -237,6 +237,7 @@ public class Memberships extends Controller {
 				TransferResponseStatus responseBody = new TransferResponseStatus();
 				responseBody.setStatusMessage("Membership of user " + uid
 						+ " in assembly " + aid + " does not exist");
+				responseBody.setResponseStatus(ResponseStatus.NODATA);
 				return notFound(Json.toJson(responseBody));
 			} else {
 				// Create a temporary "membership" object to send as response

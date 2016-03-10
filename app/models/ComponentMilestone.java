@@ -33,7 +33,7 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 	private Long componentMilestoneId;
 
 	private String title; // name of milestone
-	private String key; // name of milestone
+	private String key; // key of milestone
 	private int position;
 	@Column(name="description", columnDefinition="text")
 	private String description;

@@ -66,7 +66,7 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnoreProperties({ "fromComponent", "toComponent" })
 	@OrderBy("start DESC")
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
-	
+		
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
@@ -267,7 +267,7 @@ String uuidAsString, List<Component> phases) {
 	public void setTimelineEdges(List<CampaignTimelineEdge> timelineEdges) {
 		this.timelineEdges = timelineEdges;
 	}
-
+	
 	public Long getResourceSpaceId() {
 		return resources != null ? resources.getResourceSpaceId() : null;
 	}

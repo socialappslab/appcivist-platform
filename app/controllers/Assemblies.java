@@ -105,8 +105,7 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result findAssemblies(String query, String filter) {
-		List<Assembly> a = AssembliesDelegate.findAssemblies(query, filter,
-				false);
+		List<Assembly> a = AssembliesDelegate.findAssemblies(query, filter, true);
 		if (a != null)
 			return ok(Json.toJson(a));
 		else {

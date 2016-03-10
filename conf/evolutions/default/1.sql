@@ -207,6 +207,7 @@ create table component_required_milestone (
   removed                   boolean,
   title                     varchar(255),
   description               text,
+  key                       varchar(255),
   position                  integer,
   no_duration               boolean,
   type                      varchar(8),

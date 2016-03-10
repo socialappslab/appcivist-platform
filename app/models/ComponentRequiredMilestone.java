@@ -29,6 +29,7 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 	private String title; // name of milestone
 	@Column(name="description", columnDefinition="text")
 	private String description;
+	private String key;
     private int position;	
     private boolean noDuration = false;
 	@Enumerated(EnumType.STRING)
@@ -83,6 +84,14 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public int getPosition() {
