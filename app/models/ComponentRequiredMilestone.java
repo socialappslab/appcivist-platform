@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -14,6 +16,8 @@ import javax.persistence.Transient;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import enums.ComponentMilestoneTypes;
 
 @Entity
 public class ComponentRequiredMilestone extends AppCivistBaseModel implements Comparator<ComponentRequiredMilestone> {
@@ -25,9 +29,12 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 	private String title; // name of milestone
 	@Column(name="description", columnDefinition="text")
 	private String description;
+	private String key;
     private int position;	
     private boolean noDuration = false;
-    
+	@Enumerated(EnumType.STRING)
+	private ComponentMilestoneTypes type = ComponentMilestoneTypes.END;
+	
     @Index 
     @JsonIgnore
 	private UUID targetComponentUuid;
@@ -79,6 +86,14 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 		this.description = description;
 	}
 
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
 	public int getPosition() {
 		return position;
 	}
@@ -94,7 +109,15 @@ public class ComponentRequiredMilestone extends AppCivistBaseModel implements Co
 	public void setNoDuration(boolean noDuration) {
 		this.noDuration = noDuration;
 	}
+	
+	public ComponentMilestoneTypes getType() {
+		return type;
+	}
 
+	public void setType(ComponentMilestoneTypes type) {
+		this.type = type;
+	}
+	
 	public UUID getTargetComponentUuid() {
 		return targetComponentUuid;
 	}

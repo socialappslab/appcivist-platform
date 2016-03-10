@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Assembly;
+import models.Campaign;
 import models.Component;
 import models.Contribution;
 import models.ContributionStatistics;
@@ -84,29 +85,44 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "ciid", value = "Component id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
 			@ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result findCampaignComponentContributions(Long aid, Long cid,
-			Long ciid, String space, String type) {
+	public static Result findCampaignComponentContributions(Long aid, Long cid, Long ciid, String type) {
 		Component c = Component.read(cid, ciid);
 		ResourceSpace rs = null;
 		if (c != null) {
-			// TODO: add multiple spaces to components
-			// if (space != null && space.equals("forum"))
-			// rs = c.getForum();
-			// else
-			// rs = c.getResources();
+		
 			rs = c.getResourceSpace();
 		}
 		List<Contribution> contributions = ContributionsDelegate
 				.findContributionsInResourceSpace(rs, type, null);
 		return contributions != null ? ok(Json.toJson(contributions))
 				: notFound(Json.toJson(new TransferResponseStatus(
-						"No contributions for {assembly, campaign, component}: " + aid+", "+cid+", "+ciid + "in space: "+space)));
+						"No contributions for {assembly, campaign, component}: " + aid+", "+cid+", "+ciid)));
 	}
 
+	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Campaign")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findCampaignContributions(Long aid, Long cid, String type) {
+		Campaign c = Campaign.read(cid);
+		ResourceSpace rs = null;
+		if (c != null) {
+			rs = c.getResources();
+		}
+		List<Contribution> contributions = ContributionsDelegate
+				.findContributionsInResourceSpace(rs, type, null);
+		return contributions != null ? ok(Json.toJson(contributions))
+				: notFound(Json.toJson(new TransferResponseStatus(
+						"No contributions for {assembly, campaign}: " + aid+", "+cid)));
+	}
+	
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -145,6 +161,22 @@ public class Contributions extends Controller {
 		return ok(Json.toJson(contribution));
 	}
 
+	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Resource Space")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findResourceSpaceContributions(Long sid, String type) {
+		ResourceSpace rs = ResourceSpace.read(sid);
+		List<Contribution> contributions = ContributionsDelegate
+				.findContributionsInResourceSpace(rs, type, null);
+		return contributions != null ? ok(Json.toJson(contributions))
+				: notFound(Json.toJson(new TransferResponseStatus(
+						"No contributions for {resource space}: " + sid+", type="+type)));
+	}
+	
 	/* CREATE ENDPOINTS */
 	
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
@@ -725,18 +757,23 @@ public class Contributions extends Controller {
 			newContrib.setLang(author.getLanguage());
 		newContrib.setContextUserId(author.getUserId());
 		
-		if (etherpadServerUrl == null) {
+		if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
 			// read etherpad server url from config file
-			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.serverBaseUrl");
+			Logger.info("Etherpad URL was not configured");
+			etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl");
 		}
 
-		if (etherpadApiKey== null) {
+		if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
 			// read etherpad server url from config file
-			 Play.application().configuration().getStringList("appcivist.servides.etherpad.default.apiKey");
+			Logger.info("Etherpad API Key was not configured");
+			etherpadApiKey = Play.application().configuration().getString("appcivist.services.etherpad.default.apiKey");
 		}
 		
+		Logger.info("Using Etherpad server at: "+etherpadServerUrl);
+		Logger.debug("Using Etherpad API Key: "+etherpadApiKey);
+		
 		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
-			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadServerUrl, newContrib, resourceSpaceConfigsUUID);				
+			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, resourceSpaceConfigsUUID);				
 		}
 		
 		Logger.info("Creating new contribution");

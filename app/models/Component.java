@@ -42,6 +42,7 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@Column(name = "component_id")
 	private Long componentId;
 	private String title;
+	private String key;
 	@Column(name = "description", columnDefinition = "text")
 	private String description;
 	private Date startDate;
@@ -141,6 +142,14 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public String getDescription() {
@@ -253,10 +262,10 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 				ComponentMilestone firstMilestone = milestones.get(0);
 				ComponentMilestone lastMilestone = milestones
 						.get(milestones.size() - 1);
-				this.startDate = firstMilestone.getStart();
+				this.startDate = firstMilestone.getDate();
 
 				Calendar cal = Calendar.getInstance();
-				cal.setTime(lastMilestone.getStart());
+				cal.setTime(lastMilestone.getDate());
 				cal.add(Calendar.DATE, lastMilestone.getDays()); // add duration
 																	// of
 																	// milestone

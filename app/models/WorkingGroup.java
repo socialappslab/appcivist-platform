@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import play.Logger;
 import models.transfer.InvitationTransfer;
 
 import com.avaje.ebean.ExpressionList;
@@ -131,7 +132,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     public static WorkingGroup create(WorkingGroup workingGroup) {
 		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
 		List<Theme> existingThemes = workingGroup.getExistingThemes();
-		
+		List<Long> campaigns = workingGroup.getCampaigns();
 		// 2. Create the new working group
 		workingGroup.save();
 
@@ -145,7 +146,17 @@ public class WorkingGroup extends AppCivistBaseModel {
 		// 4. Refresh the new campaign to get the newest version
 		workingGroup.refresh();
 
-		// 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
+		// 5. Add WorkingGroup to campaigns
+		for (Long cID: campaigns) {
+			Campaign c = Campaign.read(cID);
+			Logger.info("Adding Working Group to campaign" + cID);
+			if(c!=null) {
+				c.addWorkingGroup(workingGroup);
+				c.update();
+			}
+		}
+		
+		// 6. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
 		MembershipGroup mg = new MembershipGroup();
 		mg.setWorkingGroup(workingGroup);
 		mg.setCreator(workingGroup.getCreator());
@@ -421,16 +432,26 @@ public class WorkingGroup extends AppCivistBaseModel {
 	}
 	
 	public List<Long> getCampaigns() {
-		List <Long> campaignIds = new ArrayList<>();
-		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.CAMPAIGN).collect(Collectors.toList());
-		
-		for (ResourceSpace resourceSpace : spaces) {
-			Campaign a = resourceSpace.getCampaign();
-			if(a!=null) {
-				campaignIds.add(a.getCampaignId());
+		List<Long> campaignIds = this.campaigns;
+		if (campaignIds == null) {
+			campaignIds = new ArrayList<>();
+
+			List<ResourceSpace> spaces = this.containingSpaces.stream()
+					.filter(p -> p.getType() == ResourceSpaceTypes.CAMPAIGN)
+					.collect(Collectors.toList());
+
+			for (ResourceSpace resourceSpace : spaces) {
+				Campaign a = resourceSpace.getCampaign();
+				if (a != null) {
+					campaignIds.add(a.getCampaignId());
+				}
 			}
 		}
 		return campaignIds;
+	}
+	
+	public void setCampaigns(List<Long> campaignIds) {
+		this.campaigns = campaignIds;
 	}
 	
 	public List<ResourceSpace> getContainingSpacesFilteredByType(ResourceSpaceTypes type) {

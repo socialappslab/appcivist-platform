@@ -78,7 +78,8 @@ GET       /api/assembly/:aid/group                                        contro
 GET       /api/assembly/:aid/group/:gid                                   controllers.WorkingGroups.findWorkingGroup(aid: Long, gid: Long)
 PUT       /api/assembly/:aid/group                                        controllers.WorkingGroups.updateWorkingGroup(aid: Long, gid: Long)
 POST      /api/assembly/:aid/group                                        controllers.WorkingGroups.createWorkingGroup(aid: Long)
-POST      /api/assembly/:aid/campaing/:cid/group                          controllers.WorkingGroups.createWorkingGroupInCampaign(aid: Long, cid: Long) 
+GET       /api/assembly/:aid/campaign/:cid/group                          controllers.WorkingGroups.findWorkingGroupsInCampaign(aid: Long, cid: Long)
+POST      /api/assembly/:aid/campaign/:cid/group                          controllers.WorkingGroups.createWorkingGroupInCampaign(aid: Long, cid: Long) 
 DELETE    /api/assembly/:aid/group/:gid                                   controllers.WorkingGroups.deleteWorkingGroup(aid: Long, gid: Long)
 POST      /api/assembly/:aid/group/:id/membership/:type                   controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)  
 GET       /api/assembly/:aid/group/:id/membership                         controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
@@ -93,6 +94,7 @@ GET       /api/assembly/:aid/group/:gid/public                            contro
 POST      /api/membership                                                 controllers.Memberships.createMembership() 
 # TODO: change and use users numerical id instead of UUID
 GET       /api/membership/user/:uid                                       controllers.Memberships.findMembershipByUser(uid: Long, type ?="")
+POST      /api/membership/invitation/:iid/email                           controllers.Memberships.reSendInvitation(iid: Long)
 GET       /api/membership/invitation/:targetId/:status                    controllers.Memberships.listInvitations(targetId: Long, status: String)
 GET       /api/membership/invitation/:token                               controllers.Memberships.readInvitation(token: java.util.UUID) 
 PUT       /api/membership/invitation/:token/:answer                       controllers.Memberships.answerInvitation(token: java.util.UUID, answer: String) 
@@ -147,9 +149,11 @@ DELETE    /api/assembly/:aid/campaign/:cid/component/:cpid                contro
 ##################################################################################################################################################################
 # Contribution API
 GET       /api/assembly/:aid/contribution                                 controllers.Contributions.findAssemblyContributions(aid: Long, space?="forum", type?="")
-GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.findCampaignComponentContributions(aid: Long, cid: Long, ciid: Long, space?="", type?="")
+GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.findCampaignComponentContributions(aid: Long, cid: Long, ciid: Long, type?="")
+GET       /api/assembly/:aid/campaign/:cid/contribution                   controllers.Contributions.findCampaignContributions(aid: Long, cid: Long, type?="")
 GET       /api/assembly/:aid/group/:gid/contribution                      controllers.Contributions.findAssemblyGroupContributions(aid: Long, gid: Long, space?="forum", type?="")
 GET       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.findContribution(aid: Long, cid: Long)
+GET       /api/space/:sid/contribution                                    controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="")
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
 POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)

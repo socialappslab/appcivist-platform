@@ -139,6 +139,7 @@ create table component (
   removal                   timestamp,
   removed                   boolean,
   title                     varchar(255),
+  key                       varchar(255),
   description               text,
   start_date                timestamp,
   end_date                  timestamp,
@@ -152,7 +153,7 @@ create table component (
 ;
 
 create table component_definition (
-  component_def_id          bigserial not null,
+  component_def_id          bigint not null,
   creation                  timestamp,
   last_update               timestamp,
   lang                      varchar(255),
@@ -172,12 +173,15 @@ create table component_milestone (
   removal                   timestamp,
   removed                   boolean,
   title                     varchar(255),
+  key                       varchar(255),
   position                  integer,
   description               text,
-  start                     timestamp,
+  date                      timestamp,
   days                      integer,
   uuid                      varchar(40),
+  type                      varchar(8),
   main_contribution_type    varchar(23),
+  constraint ck_component_milestone_type check (type in ('START','END','REMINDER')),
   constraint ck_component_milestone_main_contribution_type check (main_contribution_type in ('ISSUE','QUESTION','IDEA','COMMENT','PROPOSAL','ASSESSMENT','FORUM_POST','ACTION_ITEM','DISCUSSION','BRAINSTORMING','DELIBERATIVE_DISCUSSION')),
   constraint pk_component_milestone primary key (component_milestone_id))
 ;
@@ -203,10 +207,13 @@ create table component_required_milestone (
   removed                   boolean,
   title                     varchar(255),
   description               text,
+  key                       varchar(255),
   position                  integer,
   no_duration               boolean,
+  type                      varchar(8),
   target_component_uuid     varchar(40),
   campaign_template_campaign_template_id bigint,
+  constraint ck_component_required_milestone_type check (type in ('START','END','REMINDER')),
   constraint pk_component_required_milestone primary key (component_required_milestone_id))
 ;
 
@@ -957,6 +964,8 @@ create table User_User_Permission (
 ;
 create sequence component_seq start with 9;
 
+create sequence component_definition_seq start with 5;
+
 alter table assembly add constraint fk_assembly_profile_1 foreign key (profile_assembly_profile_id) references assembly_profile (assembly_profile_id);
 create index ix_assembly_profile_1 on assembly (profile_assembly_profile_id);
 alter table assembly add constraint fk_assembly_location_2 foreign key (location_location_id) references location (location_id);
@@ -1359,4 +1368,6 @@ drop table if exists voting_ballot_registration_field cascade;
 drop table if exists voting_ballot_registration_form cascade;
 
 drop sequence if exists component_seq;
+
+drop sequence if exists component_definition_seq;
 

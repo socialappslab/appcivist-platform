@@ -727,6 +727,19 @@ public class Contribution extends AppCivistBaseModel {
 				.eq("type", t.toUpperCase())
 				.ilike("textIndex", "%" + query + "%").findList();
 	}
+	
+	public static List<Contribution> findAllByContainingSpaceIdAndType(
+			ResourceSpace rs, String t) {
+		return find.where().eq("containingSpaces.resourceSpaceId", rs)
+				.eq("type", t.toUpperCase()).findList();
+	}
+
+	public static List<Contribution> findAllByContainingSpaceIdAndTypeAndQuery(
+			ResourceSpace rs, String t, String query) {
+		return find.where().eq("containingSpaces.resourceSpaceId", rs)
+				.eq("type", t.toUpperCase())
+				.ilike("textIndex", "%" + query + "%").findList();
+	}
 
 	/* Single Contribution queries */
 
