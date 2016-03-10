@@ -6,6 +6,7 @@ import http.Headers;
 import java.util.List;
 import java.util.UUID;
 
+import models.Assembly;
 import models.Membership;
 import models.MembershipAssembly;
 import models.MembershipGroup;
@@ -14,10 +15,12 @@ import models.SecurityRole;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
+import models.WorkingGroup;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -351,6 +354,20 @@ public class Memberships extends Controller {
 		}
 	}
 
+	@ApiOperation(httpMethod = "PUT", response = InvitationTransfer.class, produces = "application/json", value = "Resend invitation")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "iid", value = "Invitation id", dataType = "Long", paramType = "path") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result reSendInvitation(Long iid) {
+		MembershipInvitation mi = MembershipInvitation.read(iid);
+		Long targetId = mi.getTargetId();
+		MembershipTypes type = mi.getTargetType();
+		String invitationBody = type == MembershipTypes.ASSEMBLY ? Assembly.read(targetId).getInvitationEmail() : WorkingGroup.read(targetId).getInvitationEmail(); 
+		mi.sendInvitationEmail(invitationBody,mi.getToken().token);
+		return ok(Json.toJson(mi));
+	}
+	
 	/**
 	 * Creates an invitation to join a group and sends email to the invited user
 	 * 

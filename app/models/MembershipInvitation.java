@@ -158,6 +158,10 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	
 	/* DB Queries */
 	
+	public static MembershipInvitation read(Long id) {
+		return find.ref(id);
+	}
+	
 	public static MembershipInvitation create(MembershipInvitation mi) {
 		mi.save();
 		mi.refresh();
@@ -262,18 +266,21 @@ public class MembershipInvitation extends AppCivistBaseModel {
 		ta.refresh();
 		
 		// Preparing and sending the Invitation Email
+		membershipInvitation.sendInvitationEmail(invitationBody, token);		
+		return membershipInvitation;
+	}
+
+	public void sendInvitationEmail(String invitationBody, String token) {
 		String baseInvitationUrl = Play.application().configuration().getString("appcivist.invitations.baseUrl");
 		String invitationUrl = baseInvitationUrl + "/invitation/"+token;
 		String invitationEmailText = invitationBody+"\n\n\n"+Messages.get("membership.invitation.email.link")+": "+invitationUrl;
 		String invitationEmailHTML = invitationBody+"<br><br>"+"<a href='"+invitationUrl+"'>"+Messages.get("membership.invitation.email.link")+"</a>";
-		Logger.info("Sending group invitation to: "+membershipInvitation.getEmail());
+		Logger.info("Sending group invitation to: "+this.getEmail());
 		Logger.info("Invitation email: "+invitationEmailText);
 		MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-		String emailSubject = Messages.get("membership.invitation.email.subject", invitation.getTargetType());
-		provider.sendInvitationByEmail(membershipInvitation, invitationEmailText, invitationEmailHTML, emailSubject);		
-		return membershipInvitation;
+		String emailSubject = Messages.get("membership.invitation.email.subject", this.getTargetType());
+		provider.sendInvitationByEmail(this, invitationEmailText, invitationEmailHTML, emailSubject);		
 	}
-	
 
 	public static List<MembershipInvitation> findByTargetId(Long targetId) {	
 		return find.where().eq("targetId",targetId).findList();
