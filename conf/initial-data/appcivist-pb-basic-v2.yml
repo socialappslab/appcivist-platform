@@ -1149,24 +1149,28 @@
 
 
 ####################################################################################################################################################################################
-# Votin Ballot Examples
-  - &vb1 !!models.VotingBallot
-    uuidAsString: "68643fbf-9a30-4b81-83d1-439947711a46"
+# Votin Ballot Examples 
+  - &vb1 !!models.Ballot
+    id: 0
     instructions: "These are instructions"
     notes: "These are notes"
     password: secret
-    systemType: RANGE
-    starts: "2016-04-01"
-    ends: "2016-04-31"
-    registrationForm: !!models.VotingBallotRegistrationForm
-      fields:
-        - &vbf1 !!models.VotingBallotRegistrationField
-          fieldName: Name
-          fieldDescription: This is the name
-        - &vbf2 !!models.VotingBallotRegistrationField
-          fieldName: Zip
-          fieldDescription: This is the zip
-          expectedValue: 94702
+    votingSystemType: RANGE
+    startsAt: "2016-04-01"
+    endsAt: "2016-04-31"
+#    registrationForm: !!models.VotingBallotRegistrationForm
+
+####################################################################################################################################################################################
+# Votin Ballot Registration Fields Examples
+  - &vbf1 !!models.BallotRegistrationField
+    ballotId: 0
+    name: Name
+    description: This is the name
+  - &vbf2 !!models.BallotRegistrationField
+    ballotId: 0
+    name: Zip
+    description: This is the zip
+    expectedValue: 94702
       
 ####################################################################################################################################################################################
 # Component Instances: 

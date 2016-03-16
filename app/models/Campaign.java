@@ -83,6 +83,8 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Long> assemblies = new ArrayList<>();
 	@Transient
 	private List<Contribution> contributions = new ArrayList<>();
+	@Transient
+	private List<Ballot> ballots = new ArrayList<>();
 
 	@Transient
 	private List<Component> existingComponents = new ArrayList<>();
@@ -376,6 +378,16 @@ String uuidAsString, List<Component> phases) {
 		this.resources.setContributions(contributions);
 	}
 
+	public List<Ballot> getBallots() {
+		this.ballots = this.resources.getBallots();
+		return this.ballots;
+	}
+	
+	public void setBallots(List<Ballot> ballots) {
+		this.ballots = ballots;
+		this.resources.setBallots(ballots);
+	}
+	
 	public List<Component> getExistingComponents() {
 		return existingComponents;
 	}

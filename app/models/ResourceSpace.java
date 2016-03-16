@@ -120,9 +120,9 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
 	
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinTable(name = "resource_space_voting_ballots")
+	@JoinTable(name = "resource_space_ballots")
 	@Where(clause="${ta}.removed=false")
-	private List<VotingBallot> ballots = new ArrayList<VotingBallot>();
+	private List<Ballot> ballots = new ArrayList<Ballot>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_templates")
@@ -390,15 +390,15 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.hashtags.add(h);
 	}
 
-	public List<VotingBallot> getBallots() {
+	public List<Ballot> getBallots() {
 		return ballots;
 	}
 
-	public void setBallots(List<VotingBallot> ballots) {
+	public void setBallots(List<Ballot> ballots) {
 		this.ballots = ballots;
 	}
 
-	public void addBallot(VotingBallot b) {
+	public void addBallot(Ballot b) {
 		this.ballots.add(b);
 	}
 

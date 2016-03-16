@@ -202,6 +202,7 @@ GET       /api/location/:query                                            contro
 
 ##################################################################################################################################################################
 # Campaign Template and Configuration endpoints
+
 GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
 
 ##################################################################################################################################################################
@@ -209,12 +210,3 @@ GET       /api/campaign/template                                          contro
 GET       /api/file/upload-form                                           controllers.Files.index()
 GET       /api/files                                                      controllers.Files.list()
 POST      /api/upload                                                     controllers.Files.upload()
-
-##################################################################################################################################################################
-# Composition Engine endpoints 
-GET       /api/assembly/:aid/issue                                        controllers.ServiceAssemblies.findIssues(aid: Long)
-GET       /api/assembly/:aid/service                                      controllers.ServiceAssemblies.findServices(aid: Long)
-GET       /api/assembly/:aid/service/:sid/operations                      controllers.ServiceAssemblies.findServiceOperations(aid: Long, sid: Long)
-GET       /api/assembly/:aid/service/:sid/operation/:oid                  controllers.ServiceAssemblies.findServiceOperationById(aid: Long, sid: Long, oid: Long)
-GET       /api/assembly/:aid/issue/:iid/campaigns                         controllers.ServiceAssemblies.findIssueCampaigns(aid: Long, iid: Long)
-GET       /api/assembly/:aid/issue/:iid/campaign/:cid                     controllers.ServiceAssemblies.findIssueCampaignById(aid: Long, iid: Long, cid: Long)

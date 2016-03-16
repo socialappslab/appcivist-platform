@@ -12,8 +12,6 @@ import models.Resource;
 import models.ResourceSpace;
 
 import org.dozer.DozerBeanMapper;
-import org.mindrot.jbcrypt.BCrypt;
-
 import play.Play;
 import utils.services.EtherpadWrapper;
 import enums.ResourceTypes;

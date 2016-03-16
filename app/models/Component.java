@@ -88,9 +88,6 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	private List<Contribution> contributions = new ArrayList<>();
 
 	@Transient
-	private List<VotingBallot> ballots = new ArrayList<>();
-
-	@Transient
 	private List<ContributionTemplate> templates = new ArrayList<>();
 
 	/**
@@ -299,14 +296,6 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 
 	public void setContributions(List<Contribution> contributions) {
 		this.resourceSpace.setContributions(contributions);
-	}
-
-	public List<VotingBallot> getBallots() {
-		return resourceSpace.getBallots();
-	}
-
-	public void setBallots(List<VotingBallot> ballots) {
-		this.resourceSpace.setBallots(ballots);
 	}
 
 	public List<ContributionTemplate> getTemplates() {

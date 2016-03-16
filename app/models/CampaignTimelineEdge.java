@@ -86,11 +86,11 @@ public class CampaignTimelineEdge extends AppCivistBaseModel {
 	}
 
 	public Long getFromComponentId() {
-		return fromComponent.getComponentId();
+		return fromComponent!=null ? fromComponent.getComponentId() : null;
 	}
 
 	public Long getToComponentId() {
-		return toComponent.getComponentId();
+		return toComponent!=null ? toComponent.getComponentId() : null;
 	}
 
 	/*
