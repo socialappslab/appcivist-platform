@@ -553,34 +553,6 @@ create table working_group_profile (
   constraint pk_working_group_profile primary key (working_group_profile_id))
 ;
 
-create table ballot_registration_field (
-  id                        bigint not null,
-  ballot_id                 bigint,
-  name                      varchar(255),
-  description               text,
-  expected_value            text,
-  position                  integer,
-  removed                   boolean,
-  removed_at                timestamp,
-  constraint pk_ballot_registration_field primary key (id))
-;
-
-create table ballot (
-  id                        bigint not null,
-  uuid                      varchar(40),
-  password                  varchar(255),
-  instructions              text,
-  notes                     text,
-  voting_system_type        varchar(11),
-  starts_at                 timestamp,
-  ends_at                   timestamp,
-  created_at                timestamp,
-  updated_at                timestamp,
-  removed                   boolean,
-  removed_at                timestamp,
-  constraint ck_ballot_voting_system_type check (voting_system_type in ('RANGE','RANKED','DISTRIBUTED','PLURALITY','CONSENSUS')),
-  constraint pk_ballot primary key (id))
-;
 
 
 create table campaign_template_def_components (
@@ -673,12 +645,6 @@ create table resource_space_hashtag (
   constraint pk_resource_space_hashtag primary key (resource_space_resource_space_id, hashtag_hashtag_id))
 ;
 
-create table resource_space_ballots (
-  resource_space_resource_space_id bigint not null,
-  ballot_id                      bigint not null,
-  constraint pk_resource_space_ballots primary key (resource_space_resource_space_id, ballot_id))
-;
-
 create table resource_space_templates (
   resource_space_resource_space_id bigint not null,
   contribution_template_id       bigint not null,
@@ -699,10 +665,6 @@ create table User_User_Permission (
 create sequence component_seq start with 9;
 
 create sequence component_definition_seq start with 5;
-
-create sequence ballot_registration_fields_id_seq;
-
-create sequence ballots_id_seq;
 
 alter table assembly add constraint fk_assembly_profile_1 foreign key (profile_assembly_profile_id) references assembly_profile (assembly_profile_id);
 create index ix_assembly_profile_1 on assembly (profile_assembly_profile_id);
@@ -843,10 +805,6 @@ alter table resource_space_hashtag add constraint fk_resource_space_hashtag_res_
 
 alter table resource_space_hashtag add constraint fk_resource_space_hashtag_has_02 foreign key (hashtag_hashtag_id) references hashtag (hashtag_id);
 
-alter table resource_space_ballots add constraint fk_resource_space_ballots_res_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
-
-alter table resource_space_ballots add constraint fk_resource_space_ballots_bal_02 foreign key (ballot_id) references ballot (id);
-
 alter table resource_space_templates add constraint fk_resource_space_templates_r_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
 alter table resource_space_templates add constraint fk_resource_space_templates_c_02 foreign key (contribution_template_id) references contribution_template (id);
@@ -868,8 +826,6 @@ create index ix_contribution_template_sect_45 on contribution_template_section(u
 create index ix_location_serialized_locati_46 on location(serialized_location);
 create index ix_resource_uuid_47 on resource(uuid);
 create index ix_resource_space_uuid_48 on resource_space(uuid);
-create index ix_ballot_registration_field__49 on ballot_registration_field(id);
-create index ix_ballot_id_50 on ballot(id);
 
 # --- !Downs
 
@@ -959,8 +915,6 @@ drop table if exists resource_space_resource cascade;
 
 drop table if exists resource_space_hashtag cascade;
 
-drop table if exists resource_space_ballots cascade;
-
 drop table if exists resource_space_templates cascade;
 
 drop table if exists s3file cascade;
@@ -985,15 +939,6 @@ drop table if exists working_group cascade;
 
 drop table if exists working_group_profile cascade;
 
-drop table if exists ballot_registration_field cascade;
-
-drop table if exists ballot cascade;
-
 drop sequence if exists component_seq;
 
 drop sequence if exists component_definition_seq;
-
-drop sequence if exists ballot_registration_fields_id_seq;
-
-drop sequence if exists ballots_id_seq;
-
