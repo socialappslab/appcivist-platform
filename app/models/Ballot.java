@@ -12,6 +12,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.Index;
@@ -27,6 +28,8 @@ public class Ballot extends Model {
 	@Index
     private Long id;
     private UUID uuid;
+    @Transient
+    private String uuidAsString;
 	private String password;
 	@Column(name = "instructions", columnDefinition = "text")
 	private String instructions;
@@ -96,7 +99,12 @@ public class Ballot extends Model {
 	public void setUuid(UUID uuid) {
 		this.uuid = uuid;
 	}
-
+	
+	public void setUuidAsString(String uuid) {
+		this.uuidAsString = uuid;
+		this.uuid = UUID.fromString(uuid);
+	}
+		
 	public String getPassword() {
 		return password;
 	}

@@ -51,7 +51,9 @@ public class Campaign extends AppCivistBaseModel {
 	private String uuidAsString;
 	// If the campaign is listed, its basic profile is reading accessible by all 
 	private Boolean listed = true;
-
+	private UUID upsDownBallot; 
+	@Transient
+	private String upsDownBallotAsString; 
 	// Relationships	
 	@OneToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
@@ -461,6 +463,19 @@ String uuidAsString, List<Component> phases) {
 
 	public void setListed(Boolean listed) {
 		this.listed = listed;
+	}
+
+	public UUID getUpsDownBallot() {
+		return upsDownBallot;
+	}
+
+	public void setUpsDownBallot(UUID upsDownBallot) {
+		this.upsDownBallot = upsDownBallot;
+	}
+
+	public void setUpsDownBallotAsString(String upsDownBallotAsString) {
+		this.upsDownBallotAsString = upsDownBallotAsString;
+		this.upsDownBallot = UUID.fromString(upsDownBallotAsString);
 	}
 
 	/*
