@@ -30,10 +30,7 @@ public class BallotVote extends Model {
      * PREFERENCE (YES, NO, ABSTAIN, BLOCK) -> 2
      */
     private Integer valueType;
-    private Boolean requireRegistration = true;
-    private Boolean userUuidAsSignature = false;
-    private String decisionType = "BINDING";
-	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date createdAt = Calendar.getInstance().getTime();	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date updatedAt = Calendar.getInstance().getTime();	
@@ -114,30 +111,6 @@ public class BallotVote extends Model {
 
 	public void setValueType(Integer valueType) {
 		this.valueType = valueType;
-	}
-
-	public Boolean getRequireRegistration() {
-		return requireRegistration;
-	}
-
-	public void setRequireRegistration(Boolean requireRegistration) {
-		this.requireRegistration = requireRegistration;
-	}
-
-	public Boolean getUserUuidAsSignature() {
-		return userUuidAsSignature;
-	}
-
-	public void setUserUuidAsSignature(Boolean userUuidAsSignature) {
-		this.userUuidAsSignature = userUuidAsSignature;
-	}
-
-	public String getDecisionType() {
-		return decisionType;
-	}
-
-	public void setDecisionType(String decisionType) {
-		this.decisionType = decisionType;
 	}
 
 	public Date getCreatedAt() {

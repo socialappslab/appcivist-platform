@@ -12,22 +12,28 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.VotingSystemTypes;
 
 @Entity(name="ballots")
+@JsonInclude(Include.NON_EMPTY)
 public class Ballot extends Model {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="ballots_id_seq")
 	@Index
     private Long id;
-    private UUID uuid;
+    private UUID uuid = UUID.randomUUID();
     @Transient
     private String uuidAsString;
 	private String password;
@@ -37,6 +43,15 @@ public class Ballot extends Model {
 	private String notes;
 	@Enumerated(EnumType.STRING)
 	private VotingSystemTypes votingSystemType;
+	private Boolean requireRegistration = true;
+    private Boolean userUuidAsSignature = false;
+    private String decisionType = "BINDING";
+    @ManyToOne
+    @JoinColumn(name="component")
+    @JsonIgnore 
+    private Component component;
+    @Transient
+    private Long componenId;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date startsAt = Calendar.getInstance().getTime();	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
@@ -135,6 +150,46 @@ public class Ballot extends Model {
 
 	public void setVotingSystemType(VotingSystemTypes votingSystemType) {
 		this.votingSystemType = votingSystemType;
+	}
+
+	public Boolean getRequireRegistration() {
+		return requireRegistration;
+	}
+
+	public void setRequireRegistration(Boolean requireRegistration) {
+		this.requireRegistration = requireRegistration;
+	}
+
+	public Boolean getUserUuidAsSignature() {
+		return userUuidAsSignature;
+	}
+
+	public void setUserUuidAsSignature(Boolean userUuidAsSignature) {
+		this.userUuidAsSignature = userUuidAsSignature;
+	}
+
+	public String getDecisionType() {
+		return decisionType;
+	}
+
+	public void setDecisionType(String decisionType) {
+		this.decisionType = decisionType;
+	}
+	
+	public Component getComponent() {
+		return component;
+	}
+
+	public void setComponent(Component component) {
+		this.component = component;
+	}
+	
+	public Long getComponentId() {
+		return this.component != null ? component.getComponentId() : null;
+	}
+
+	public void setComponentId(Long componentId) {
+		this.component = Component.read(componenId);
 	}
 
 	public Date getStartsAt() {
