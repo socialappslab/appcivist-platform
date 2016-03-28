@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Assembly;
+import models.Ballot;
+import models.BallotCandidate;
 import models.Campaign;
 import models.Component;
 import models.Contribution;
@@ -44,6 +46,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.ContributionsDelegate;
 import enums.ContributionTypes;
+import enums.ResourceSpaceTypes;
 import enums.ResponseStatus;
 
 @Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
@@ -54,6 +57,13 @@ public class Contributions extends Controller {
 	public static final Form<ContributionStatistics> CONTRIBUTION_STATS_FORM = form(ContributionStatistics.class);
 	public static final Form<Resource> ATTACHMENT_FORM = form(Resource.class);
 
+	/**
+	 * GET       /api/assembly/:aid/contribution
+	 * @param aid
+	 * @param space
+	 * @param type
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -79,6 +89,14 @@ public class Contributions extends Controller {
 						"No resource space for assembly: " + aid)));
 	}
 
+	/**
+	 * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
+	 * @param aid
+	 * @param cid
+	 * @param ciid
+	 * @param type
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -102,6 +120,13 @@ public class Contributions extends Controller {
 						"No contributions for {assembly, campaign, component}: " + aid+", "+cid+", "+ciid)));
 	}
 
+	/**
+	 * GET 	     /api/assembly/:aid/campaign/:cid/contribution
+	 * @param aid
+	 * @param cid
+	 * @param type
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Campaign")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -123,6 +148,14 @@ public class Contributions extends Controller {
 						"No contributions for {assembly, campaign}: " + aid+", "+cid)));
 	}
 	
+	/**
+	 * GET       /api/assembly/:aid/group/:gid/contribution
+	 * @param aid
+	 * @param gid
+	 * @param space
+	 * @param type
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -149,6 +182,12 @@ public class Contributions extends Controller {
 						"No resource space for assembly: " + aid)));
 	}
 
+	/**
+	 * GET       /api/assembly/:aid/contribution/:cid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -161,6 +200,12 @@ public class Contributions extends Controller {
 		return ok(Json.toJson(contribution));
 	}
 
+	/**
+	 * GET       /api/space/:sid/contribution
+	 * @param sid
+	 * @param type
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Resource Space")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -177,8 +222,14 @@ public class Contributions extends Controller {
 						"No contributions for {resource space}: " + sid+", type="+type)));
 	}
 	
-	/* CREATE ENDPOINTS */
-	
+	/* CREATE ENDPOINTS 
+	 * TODO: reduce complexity by removing uncessary create methods
+	 */
+	/**
+	 * POST       /api/space/:sid/contribution
+	 * @param sid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -217,7 +268,7 @@ public class Contributions extends Controller {
 			newContribution.setContextUserId(author.getUserId());
 			Contribution c;
 			try {
-				c = createContribution(newContribution, author, type, template, rs.getUuid());
+				c = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -232,6 +283,12 @@ public class Contributions extends Controller {
 		}
 	}
 
+	/**
+	 * POST      /api/assembly/:aid/contribution
+	 * @param aid
+	 * @param space
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -273,7 +330,7 @@ public class Contributions extends Controller {
 			newContribution.setContextUserId(author.getUserId());		
 			Contribution c;
 			try {
-				c = createContribution(newContribution, author, type, template, rs.getUuid());
+				c = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -288,6 +345,13 @@ public class Contributions extends Controller {
 		}
 	}
 
+	/**
+	 * POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
+	 * @param aid
+	 * @param cid
+	 * @param ciid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -327,7 +391,7 @@ public class Contributions extends Controller {
 			newContribution.setContextUserId(author.getUserId());
 			Contribution c;
 			try {
-				c = createContribution(newContribution, author, type, template, rs.getUuid());
+				c = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -342,6 +406,13 @@ public class Contributions extends Controller {
 		}
 	}
 	
+	/**
+	 * POST      /api/assembly/:aid/group/:gid/contribution
+	 * @param aid
+	 * @param gid
+	 * @param space
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -381,7 +452,7 @@ public class Contributions extends Controller {
 			}
 			Contribution c;
 			try {
-				c = createContribution(newContribution, author, type, template, rs.getUuid());
+				c = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -396,6 +467,12 @@ public class Contributions extends Controller {
 		}
 	}
 	
+	/**
+	 * POST      /api/assembly/:aid/contribution/:cid/comment
+	 * @param aid
+	 * @param cid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -433,7 +510,7 @@ public class Contributions extends Controller {
 			}
 			Contribution cNew;
 			try {
-				cNew = createContribution(newContribution, author, type, template, rs.getUuid());
+				cNew = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -448,6 +525,11 @@ public class Contributions extends Controller {
 		}
 	}
 	
+	/**
+	 * POST      /api/assembly/:aid/forumpost
+	 * @param aid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -484,7 +566,7 @@ public class Contributions extends Controller {
 			}
 			Contribution cNew;
 			try {
-				cNew = createContribution(newContribution, author, type, template, rs.getUuid());
+				cNew = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -499,6 +581,12 @@ public class Contributions extends Controller {
 		}
 	}
 	
+	/**
+	 * POST      /api/assembly/:aid/group/:gid/forumpost
+	 * @param aid
+	 * @param gid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -536,7 +624,7 @@ public class Contributions extends Controller {
 			}
 			Contribution c;
 			try {
-				c = createContribution(newContribution, author, type, template, rs.getUuid());
+				c = createContribution(newContribution, author, type, template, rs);
 			} catch (MalformedURLException e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
@@ -551,6 +639,13 @@ public class Contributions extends Controller {
 		}
 	}
 
+	/**
+	 * PUT       /api/assembly/:aid/contribution/:cid/stats/:stid
+	 * @param aid
+	 * @param cid
+	 * @param stid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -562,9 +657,9 @@ public class Contributions extends Controller {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result updateContributionStats(Long aid, Long cid, Long stid) {
 		// 1. obtaining the user of the requestor
-//		User author = User.findByAuthUserIdentity(PlayAuthenticate
-//				.getUser(session()));
-// TODO: ASSOCIATE likes of users
+		//		User author = User.findByAuthUserIdentity(PlayAuthenticate
+		//				.getUser(session()));
+		// TODO: ASSOCIATE likes of users
 		
 		// 2. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
@@ -581,6 +676,11 @@ public class Contributions extends Controller {
 		}
 	}
 	
+	/**
+	 * PUT       /api/stats/:stid 
+	 * @param stid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -592,9 +692,9 @@ public class Contributions extends Controller {
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result updateContributionStatsByStatsId(Long stid) {
 		// 1. obtaining the user of the requestor
-//		User author = User.findByAuthUserIdentity(PlayAuthenticate
-//				.getUser(session()));
-// TODO: ASSOCIATE likes of users
+		//		User author = User.findByAuthUserIdentity(PlayAuthenticate
+		//				.getUser(session()));
+		// TODO: ASSOCIATE likes of users
 		
 		// 2. read the new role data from the body
 		// another way of getting the body content => request().body().asJson()
@@ -610,7 +710,13 @@ public class Contributions extends Controller {
 			return ok(Json.toJson(newStats));
 		}
 	}
-	
+
+	/**
+	 * PUT       /api/assembly/:aid/contribution/:cid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -640,6 +746,12 @@ public class Contributions extends Controller {
 		}
 	}
 	
+	/**
+	 * POST      /api/assembly/:aid/contribution/:cid/attachment
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -673,23 +785,33 @@ public class Contributions extends Controller {
 				}
 	}
 
-	// TODO: create a dynamic handler to check if the contribution belongs to
-	// the user
-	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	/**
+	 * PUT       /api/assembly/:aid/contribution/:cid/softremoval
+	 * TODO: create a dynamic handler to check if the contribution belongs to the user
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Logical removal of contribution in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result deleteContribution(Long aid, Long contributionId) {
+	public static Result softDeleteContribution(Long aid, Long contributionId) {
 		Contribution.softDelete(contributionId);
 		return ok();
 	}
 
-	// TODO: create a dynamic handler to check if the contribution belongs to
-	// the user
-	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	/**
+	 * PUT       /api/assembly/:aid/contribution/:cid/recover
+	 * TODO: create a dynamic handler to check if the contribution belongs to the user
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Logical recovery of contribution Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
@@ -701,6 +823,12 @@ public class Contributions extends Controller {
 		return ok();
 	}
 	
+	/**
+	 * GET       /api/assembly/:aid/contribution/:cid/padid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -724,6 +852,12 @@ public class Contributions extends Controller {
 		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
 	}
 	
+	/**
+	 * DELETE    /api/assembly/:aid/contribution/:cid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -736,10 +870,14 @@ public class Contributions extends Controller {
 		return ok();
 	}
 	
+	/*
+	 * Non-exposed methods: creation methods
+	 */
+	
 	public static Result createContributionResult(Contribution newContrib,
-			User author, ContributionTypes type, ContributionTemplate t, UUID resourceSpaceUUID) {
+			User author, ContributionTypes type, ContributionTemplate t, ResourceSpace containerResourceSpace) {
 		try {
-			return ok(Json.toJson(createContribution(newContrib, author, type, t, resourceSpaceUUID)));
+			return ok(Json.toJson(createContribution(newContrib, author, type, t, containerResourceSpace)));
 		} catch (MalformedURLException e) {
 			return internalServerError(Json
 					.toJson(new TransferResponseStatus(
@@ -750,7 +888,7 @@ public class Contributions extends Controller {
 
 	public static Contribution createContribution(Contribution newContrib,
 			User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey, 
-			ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException {
+			ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException {
 		newContrib.setType(type);		
 		newContrib.addAuthor(author);
 		if (newContrib.getLang() == null)
@@ -760,32 +898,68 @@ public class Contributions extends Controller {
 		if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
 			// read etherpad server url from config file
 			Logger.info("Etherpad URL was not configured");
-			etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl");
+			etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
 		}
 
 		if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
 			// read etherpad server url from config file
 			Logger.info("Etherpad API Key was not configured");
-			etherpadApiKey = Play.application().configuration().getString("appcivist.services.etherpad.default.apiKey");
+			etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 		}
 		
 		Logger.info("Using Etherpad server at: "+etherpadServerUrl);
 		Logger.debug("Using Etherpad API Key: "+etherpadApiKey);
 		
 		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
-			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, resourceSpaceConfigsUUID);				
+			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, containerResourceSpace.getResourceSpaceUuid());				
 		}
 		
 		Logger.info("Creating new contribution");
 		Logger.debug("=> " + newContrib.toString());
 		Contribution.create(newContrib);
 		newContrib.refresh();
+		
+		// If contribution is a proposal and the resource space where it is added is a Campaign
+		// create automatically a related candidate for the contribution in the bindingBallot 
+		// and consultiveBallot associated to the campaign.
+		if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+			UUID binding = Campaign.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
+							.getResourceSpaceId());
+			UUID consultive = Campaign.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
+							.getResourceSpaceId());
+
+			// Add the candidates automatically only to the binding ballot marked in the campaign as such 
+			// and to the "consultive" ballot marked in the campaign as such
+			for (Ballot ballot : containerResourceSpace.getBallots()) {
+				if ((ballot.getDecisionType().equals("BINDING") && (ballot.getUuid().equals(binding)))
+						|| (ballot.getDecisionType().equals("CONSULTIVE") && ballot.getUuid().equals(consultive))) {
+					BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+					contributionAssociatedCandidate.setBallotId(ballot.getId());
+					contributionAssociatedCandidate.setCandidateType(new Integer(1));
+					contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+					contributionAssociatedCandidate.save();
+				}
+			}
+		}
+
+		// If the contribution is a proposal, create an associated candidate in the ballot 
+		// of the working group authors
+		for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
+			UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
+			Ballot b = Ballot.findByUUID(consensus);
+			BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+			contributionAssociatedCandidate.setBallotId(b.getId());
+			contributionAssociatedCandidate.setCandidateType(new Integer(1));
+			contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+			contributionAssociatedCandidate.save();
+		}
+		
 		return newContrib;
 	}
 		
-	public static Contribution createContribution(Contribution newContrib, User author, ContributionTypes type, ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException {
+	public static Contribution createContribution(Contribution newContrib, User author, ContributionTypes type, ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException {
 		// TODO: dynamically obtain etherpad server URL and Key from component configuration
-		return createContribution(newContrib, author, type, null, null, t, resourceSpaceConfigsUUID);
+		return createContribution(newContrib, author, type, null, null, t, containerResourceSpace);
 	}
 	
 	public static Result createContributionInAssembly(
@@ -802,7 +976,7 @@ public class Contributions extends Controller {
 		
 		Contribution c;
 		try {
-			c = createContribution(newContrib, author, type, template, rs.getUuid());
+			c = createContribution(newContrib, author, type, template, rs);
 		} catch (MalformedURLException e) {
 			return internalServerError(Json
 					.toJson(new TransferResponseStatus(
@@ -828,7 +1002,10 @@ public class Contributions extends Controller {
 		}
 	}
 
-	public static Result contributionCreateError(
+	/*
+	 * Non-exposed methods: error Message Results
+	 */
+	private static Result contributionCreateError(
 			Form<Contribution> newContributionForm) {
 		return contributionOperationError(
 				GlobalData.CONTRIBUTION_CREATE_MSG_ERROR, newContributionForm

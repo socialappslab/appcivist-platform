@@ -939,6 +939,7 @@
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
+    uuidAsString: 40cb0cf6-f0aa-11e5-9ce9-5e5517507c66
     extendedTextPad: *pad1
 #    workingGroupAuthors: 
 #      - *wg1
@@ -951,6 +952,7 @@
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
+    uuidAsString: 40cb1142-f0aa-11e5-9ce9-5e5517507c66
     extendedTextPad: *pad2
 #    workingGroupAuthors: 
 #      - *wg3
@@ -963,6 +965,7 @@
     title: Library at Rue Ramponeau
     text: Let's create a public library
     type: PROPOSAL
+    uuidAsString: 40cb1246-f0aa-11e5-9ce9-5e5517507c66
     extendedTextPad: *pad3
 #    workingGroupAuthors: 
 #      - *wg2
@@ -978,6 +981,7 @@
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
     extendedTextPad: *pad4
+    uuidAsString: 40cb144e-f0aa-11e5-9ce9-5e5517507c66    
 #    workingGroupAuthors: 
 #      - *wg1
     themes: 
@@ -989,6 +993,7 @@
     title: Smart Traffic Lights
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
+    uuidAsString: 40cb152a-f0aa-11e5-9ce9-5e5517507c66
     extendedTextPad: *pad5
 #    workingGroupAuthors: 
 #      - *wg3
@@ -1001,6 +1006,7 @@
     title: Library at Rue Ramponeau
     text: Let's create a public library
     type: PROPOSAL
+    uuidAsString: 40cb1750-f0aa-11e5-9ce9-5e5517507c66    
     extendedTextPad: *pad6
 #    workingGroupAuthors: 
 #      - *wg2
@@ -1013,6 +1019,7 @@
     title: Interactive Lights Project
     text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
     type: PROPOSAL
+    uuidAsString: 40cb1890-f0aa-11e5-9ce9-5e5517507c66    
     extendedTextPad: *pad7
 #    workingGroupAuthors: 
 #      - *wg1
@@ -1026,6 +1033,7 @@
     text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
     type: PROPOSAL
     extendedTextPad: *pad8
+    uuidAsString: 40cb1a8e-f0aa-11e5-9ce9-5e5517507c66
 #    workingGroupAuthors: 
 #      - *wg3
     themes: 
@@ -1037,6 +1045,7 @@
     title: Library at Rue Ramponeau
     text: Let's create a public library
     type: PROPOSAL
+    uuidAsString: ceb1ce38-f0aa-11e5-9ce9-5e5517507c66
     extendedTextPad: *pad9
 #    workingGroupAuthors: 
 #      - *wg2
@@ -1084,6 +1093,7 @@
     text: Commitee in charge of managing contributions in for PB Belleville
     invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Conseil Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: false
+    consensusBallotAsString: 29483080-f169-11e5-9ce9-5e5517507c66
     resources: *rs4
     proposals: 
       - *contrib20
@@ -1095,6 +1105,7 @@
     text: Group developing Urban Infrastructure proposals for Parc de Belleville
     invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Passionées du Parc de Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: true
+    consensusBallotAsString: 294834d6-f169-11e5-9ce9-5e5517507c66
     resources: *rs11
     proposals: 
       - *contrib22
@@ -1106,6 +1117,7 @@
     text: Group of neighbors from district 13, focused on Parks
     invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Neighborhood 14, Category Parks' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: true
+    consensusBallotAsString: 294836b6-f169-11e5-9ce9-5e5517507c66
     resources: *rs12
     proposals: 
       - *contrib21
@@ -1118,6 +1130,7 @@
     text: Team in charge of turning Ideas into proposals
     invitationEmail: "Hello! You have been invited to be a member of the Working Group 'AntiEviction Proposals Team' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
     listed: false
+    consensusBallotAsString: 29483c24-f169-11e5-9ce9-5e5517507c66
     resources: *rs13
       
       
@@ -1146,32 +1159,7 @@
         title: Detailed Budget 
         description: Use this section to detail the costs of your project    
         position: 5
-
-
-####################################################################################################################################################################################
-# Votin Ballot Examples 
-  - &vb1 !!models.Ballot
-    id: 0
-    instructions: "These are instructions"
-    notes: "These are notes"
-    password: secret
-    votingSystemType: RANGE
-    startsAt: "2016-04-01"
-    endsAt: "2016-04-31"
-#    registrationForm: !!models.VotingBallotRegistrationForm
-
-####################################################################################################################################################################################
-# Votin Ballot Registration Fields Examples
-  - &vbf1 !!models.BallotRegistrationField
-    ballotId: 0
-    name: Name
-    description: This is the name
-  - &vbf2 !!models.BallotRegistrationField
-    ballotId: 0
-    name: Zip
-    description: This is the zip
-    expectedValue: 94702
-      
+        
 ####################################################################################################################################################################################
 # Component Instances: 
   - &ph1 !!models.Component
@@ -1285,6 +1273,73 @@
 #      - *contrib41 
 #      - *contrib42
 
+####################################################################################################################################################################################
+# Voting Ballot Examples 
+  - &vb1 !!models.Ballot
+    id: 1
+    uuidAsString: c0301524-f0b2-11e5-9ce9-5e5517507c66
+    instructions: "All Assembly members may vote.\nThe voting system your Assembly selected and configured for this campaign is Plurality Voting:\n\nFor each proposal, assign select YES, NO, ABSTAIN or BLOCK.\nThe 3 proposals with the largest yes/no ratio that meet quorum and have less than X block votes will be declared winners"
+    notes: ""
+    password: secret
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    votingSystemType: PLURALITY
+    startsAt: "2016-04-01"
+    endsAt: "2016-04-31"
+    component: *ph7
+  - &vb2 !!models.Ballot
+    id: 2
+    uuidAsString: 3cb04204-f0b3-11e5-9ce9-5e5517507c66
+    instructions: "Consultive ballot to use for controlling up and down votes during proposal making and deliberation, but not used to select winners"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: CONSULTIVE
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb3 !!models.Ballot
+    id: 3
+    uuidAsString: 29483080-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb4 !!models.Ballot
+    id: 4
+    uuidAsString: 294834d6-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb4 !!models.Ballot
+    id: 5
+    uuidAsString: 294836b6-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb4 !!models.Ballot
+    id: 6
+    uuidAsString: 29483c24-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+### TODO: add consensus ballots for working groups
+### TODO: add binding and consultive ballots for campaigns
 
 ##############################################################################################################################################################################################
 # Campaign Resource Spaces: 
@@ -1355,6 +1410,8 @@
     listed: true
     template: *ct1
     uuidAsString: e1998630-4079-11e5-a151-feff819cdc9f
+    bindingBallotAsString: c0301524-f0b2-11e5-9ce9-5e5517507c66
+    consultiveBallotAsString: 3cb04204-f0b3-11e5-9ce9-5e5517507c66
     resources: *rs5
   - &c2 !!models.Campaign
     title: "Fundraising for art program at neighborhood school"
@@ -1816,4 +1873,3 @@
       type: "MEMBERSHIP_INVITATION"
       created: "2016-02-06 16:39:13.299"
       expires: "2017-02-06 16:39:13.299"
-      

@@ -11,6 +11,7 @@ public class ComponentTransfer {
 	private Long componentId;
 	private String title;
 	private String description;
+	private String key;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date startDate;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
@@ -50,6 +51,14 @@ public class ComponentTransfer {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public Date getStartDate() {

@@ -56,12 +56,10 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="fromComponent", fetch=FetchType.LAZY)
 	@JsonBackReference
 	private List<CampaignTimelineEdge> fromEdges = new ArrayList<>();
-
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="toComponent", fetch=FetchType.LAZY)
 	@JsonBackReference
 	private List<CampaignTimelineEdge> toEdges = new ArrayList<>();
-
 	
 	@ManyToOne
 	private ComponentDefinition definition;
@@ -75,6 +73,10 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Config> configs;
 	
 	// TODO: check if it works
 	@JsonIgnore
@@ -250,15 +252,10 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 
 	public void setMilestones(List<ComponentMilestone> milestones) {
 		if (milestones != null) {
-			this.resourceSpace.setMilestones(milestones);
 			if (!milestones.isEmpty()) {
-				Collections.sort(milestones, new ComponentMilestone()); // Sorts
-																				// the
-																				// array
-																				// list
+				Collections.sort(milestones, new ComponentMilestone()); // Sorts the list of milestones
 				ComponentMilestone firstMilestone = milestones.get(0);
-				ComponentMilestone lastMilestone = milestones
-						.get(milestones.size() - 1);
+				ComponentMilestone lastMilestone = milestones.get(milestones.size() - 1);
 				this.startDate = firstMilestone.getDate();
 
 				Calendar cal = Calendar.getInstance();
@@ -268,6 +265,8 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 																	// milestone
 				this.endDate = cal.getTime();
 			}
+			this.resourceSpace.setMilestones(milestones);
+			this.milestones = milestones;
 		}
 	}
 
@@ -323,6 +322,18 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 		if (this.resourceSpace != null
 				&& this.resourceSpace.getResourceSpaceId() == null)
 			this.resourceSpace.setResourceSpaceId(id);
+	}
+	
+	public List<Config> getConfigs() {
+		return this.resourceSpace.getConfigs();
+	}
+	
+	public void setConfigs(List<Config> configs) {
+		this.resourceSpace.setConfigs(configs);
+	}
+	
+	public void addConfig(Config c) {
+		this.resourceSpace.addConfig(c);
 	}
 
 	public List<ResourceSpace> getContainingSpaces() {

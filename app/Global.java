@@ -1,4 +1,6 @@
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import models.misc.InitialDataConfig;
@@ -18,11 +20,9 @@ import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
 import com.feth.play.module.pa.exceptions.AuthException;
 import com.wordnik.swagger.converter.ModelConverters;
+
 import utils.IgnoreConverter;
-
 import controllers.routes;
-
-
 import play.libs.F.Promise;
 import play.mvc.Action;
 import play.mvc.Http;
@@ -157,29 +157,48 @@ public class Global extends GlobalSettings {
 	}
 
 	private void cleanDBAndRebuild(Application app) {
-		String evolutionContent;
+		List<String> evolutionScripts = new ArrayList<>();
+		String evolution;
+		Logger.info("Cleaning and rebuilding DB");
+		
 		try {
-			evolutionContent = FileUtils.readFileToString(app
+			// TODO: iterate on existing files rather than having them fixed
+			evolution = FileUtils.readFileToString(app
 					.getWrappedApplication().getFile(
 							"conf/evolutions/default/1.sql"));
+			evolutionScripts.add(0, evolution);
 
-			// Splitting the String to get Create & Drop DDL
-			String[] splittedEvolutionContent = evolutionContent
-					.split("# --- !Ups");
-			String[] upsDowns = splittedEvolutionContent[1]
-					.split("# --- !Downs");
-			String createDdl = upsDowns[0];
-			String dropDdl = upsDowns[1];
+			evolution = FileUtils.readFileToString(app
+					.getWrappedApplication().getFile(
+							"conf/evolutions/default/2.sql"));
+			evolutionScripts.add(1, evolution);
 
-			Ebean.beginTransaction();
-			Logger.info("AppCivist: Dropping DB Tables => " + dropDdl);
-			Ebean.execute(Ebean.createCallableSql(dropDdl));
-			Ebean.commitTransaction();
+			evolution = FileUtils.readFileToString(app
+					.getWrappedApplication().getFile(
+							"conf/evolutions/default/3.sql"));
+			evolutionScripts.add(2, evolution);
+			int number = 1;
+			for (String evolutionContent : evolutionScripts) {
+				// Splitting the String to get Create & Drop DDL
+				Logger.info("Deleting database objects from evolution script "+number++);
+				String[] splittedEvolutionContent = evolutionContent
+						.split("# --- !Ups");	
+				String[] upsDowns = splittedEvolutionContent[1]
+						.split("# --- !Downs");
+				String createDdl = upsDowns[0];
+				String dropDdl = upsDowns[1];
 
-			Ebean.beginTransaction();
-			Logger.info("AppCivist: Creating DB Tables => " + createDdl);
-			Ebean.execute(Ebean.createCallableSql(createDdl));
-			Ebean.commitTransaction();
+				Ebean.beginTransaction();
+				Logger.info("AppCivist: Dropping DB Tables => " + dropDdl);
+				Ebean.execute(Ebean.createCallableSql(dropDdl));
+				Ebean.commitTransaction();
+
+				Ebean.beginTransaction();
+				Logger.info("AppCivist: Creating DB Tables => " + createDdl);
+				Ebean.execute(Ebean.createCallableSql(createDdl));
+				Ebean.commitTransaction();
+				
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

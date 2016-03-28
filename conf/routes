@@ -165,8 +165,9 @@ POST      /api/assembly/:aid/forumpost                                    contro
 POST      /api/assembly/:aid/group/:gid/forumpost                         controllers.Contributions.createWorkingGroupForumPost(aid: Long, gid: Long)
 # GET ongoing campaigns of a group
 PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.updateContribution(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.deleteContribution(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.recoverContribution(aid: Long, cid: Long)
+# TODO: the following two are not restful and not really necessary, leaving them here just for back compatibility
+PUT       /api/assembly/:aid/contribution/:cid/softremoval                controllers.Contributions.softDeleteContribution(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/stats/:stid                controllers.Contributions.updateContributionStats(aid: Long, cid: Long, stid: Long)
 PUT       /api/stats/:stid                                                controllers.Contributions.updateContributionStatsByStatsId(stid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)

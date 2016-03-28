@@ -23,7 +23,12 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
+import utils.GlobalData;
+
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -32,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ResourceSpaceTypes;
+import enums.VotingSystemTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -51,26 +57,27 @@ public class Campaign extends AppCivistBaseModel {
 	private String uuidAsString;
 	// If the campaign is listed, its basic profile is reading accessible by all 
 	private Boolean listed = true;
-
+	private UUID consultiveBallot; 
+	@Transient
+	private String consultiveBallotAsString; 
+	private UUID bindingBallot; 
+	@Transient
+	private String bindingBallotAsString; 
 	// Relationships	
 	@OneToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnore
 	private ResourceSpace resources;
-	
-	// Relationships	
 	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="campaign")
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonManagedReference
 	@JsonIgnoreProperties({ "fromComponent", "toComponent" })
 	@OrderBy("start DESC")
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
-		
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
-	
 	@Transient
 	private List<Component> components = new ArrayList<>();
 	@Transient
@@ -85,7 +92,6 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Contribution> contributions = new ArrayList<>();
 	@Transient
 	private List<Ballot> ballots = new ArrayList<>();
-
 	@Transient
 	private List<Component> existingComponents = new ArrayList<>();
 	@Transient
@@ -94,16 +100,13 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Theme> existingThemes = new ArrayList<>();
 	@Transient
 	private List<WorkingGroup> existingWorkingGroups = new ArrayList<>();
-	
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "campaigns")
 	private List<ResourceSpace> containingSpaces;
-
 	@ManyToOne
 	private CampaignTemplate template;
-	
-	/**
+	/** 
 	 * The find property is an static property that facilitates database query
 	 * creation
 	 */
@@ -165,7 +168,6 @@ String uuidAsString, List<Component> phases) {
 		if (template != null && template.getDefComponents() != null) this.populateDefaultComponents(template.getDefComponents());
 	}
 	
-
 	/*
 	 * Getters and Setters
 	 */
@@ -278,7 +280,6 @@ String uuidAsString, List<Component> phases) {
 		if (this.resources !=null && this.resources.getResourceSpaceId() == null) 
 			this.resources .setResourceSpaceId(id);
 	}
-
 
 	public List<Component> getComponents() {
 		List<Component> components = new ArrayList<>();
@@ -463,6 +464,34 @@ String uuidAsString, List<Component> phases) {
 		this.listed = listed;
 	}
 
+	public UUID getConsultiveBallot() {
+		return consultiveBallot;
+	}
+
+	
+	public void setConsultiveBallot(UUID upsDownBallot) {
+		this.consultiveBallot = upsDownBallot;
+	}
+
+	
+	public void setConsultiveBallotAsString(String upsDownBallotAsString) {
+		this.consultiveBallotAsString = upsDownBallotAsString;
+		this.consultiveBallot = UUID.fromString(upsDownBallotAsString);
+	}
+	
+	public UUID getBindingBallot() {
+		return bindingBallot;
+	}
+
+	public void setBindingBallot(UUID bindingBallot) {
+		this.bindingBallot = bindingBallot;
+	}
+
+	public void setBindingBallotAsString(String bindingBallotAsString) {
+		this.bindingBallotAsString = bindingBallotAsString;
+		this.bindingBallot = UUID.fromString(bindingBallotAsString);
+	}
+
 	/*
 	 * Basic Data Operations
 	 */
@@ -476,13 +505,20 @@ String uuidAsString, List<Component> phases) {
 		List<Component> componentList = campaign.getTransientComponents();
 		campaign.setComponents(new ArrayList<>());
 
+		// By default, if no goal is stated, then the goal is the same as the title
+		if (campaign.getGoal()==null) {
+			campaign.setGoal(campaign.getTitle());
+		}
+
 		// 2. Create the new campaign
 		campaign.save();
 		
 		// 3. Add existing entities in relationships to the ManyToMany resource space then update
 		ResourceSpace campaignResources = campaign.getResources();
 		
-		// 4. Save components and create the edges
+		// 4. Save components and create the edges 
+		//    Timeline edges are used to keep trakc of the Component Graph
+		//    and know how components must be connected
 		int edges = 0;
 		List<CampaignTimelineEdge> edgeList = new ArrayList<>();
 		for (Component component : componentList) {
@@ -495,7 +531,55 @@ String uuidAsString, List<Component> phases) {
 			
 			campaignResources.addComponent(component);
 
-			// Add connection to the Timeline
+			// If this is a voting component, create a ballot associated with it 
+			// and add the ballot to the campaign
+			String componentKey = component.getKey();
+			if (!component.getLinked() && componentKey != null && componentKey.toLowerCase().equals("voting") ) {
+				// 6. Create a decision ballot associated with this component and add it to the campaign
+				Ballot ballot = new Ballot();
+				Date startBallot = component.getStartDate();
+				Date endBallot = component.getEndDate();
+				
+				// if component has no start date, use now
+				startBallot = startBallot != null ? startBallot : Calendar.getInstance().getTime();
+				
+				// if component has no end date, use 30 days after startDate
+				Calendar c = Calendar.getInstance();
+				c.setTime(startBallot);
+				c.add(Calendar.DATE, 30);
+				endBallot = endBallot != null ? endBallot : c.getTime();
+
+				ballot.setStartsAt(startBallot);
+				ballot.setEndsAt(endBallot);
+				ballot.setPassword(campaign.getUuidAsString());
+				
+				Config votingSystemConfig = component.getResourceSpace()
+						.getConfigByKey(
+								GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
+				VotingSystemTypes vtype = votingSystemConfig != null ? VotingSystemTypes
+						.valueOf(votingSystemConfig.getValue())
+						: VotingSystemTypes.PLURALITY;
+				ballot.setVotingSystemType(vtype);
+				// TODO: include registration and signature configuration in configs of component
+				ballot.setRequireRegistration(false);
+				ballot.setUserUuidAsSignature(true);
+				ballot.setDecisionType("BINDING");
+				ballot.setComponent(component);
+				ballot.save();
+				ballot.refresh();
+				campaign.setBindingBallotAsString(ballot.getUuid().toString());
+				campaignResources.addBallot(ballot);
+				// Add Ballot configurations
+				for (Config config : component.getConfigs()) {
+					BallotConfiguration ballotConfig = new BallotConfiguration();
+					ballotConfig.setBallotId(ballot.getId());
+					ballotConfig.setKey(config.getKey());
+					ballotConfig.setValue(config.getValue());
+					ballotConfig.save();
+				}
+			}
+			
+			// Add connection to the Timeline of Edges
 			CampaignTimelineEdge edge = new CampaignTimelineEdge();
 			edge.setCampaign(campaign);
 			if (edges == 0) {
@@ -513,17 +597,55 @@ String uuidAsString, List<Component> phases) {
 				edges++;
 			}
 		}
-
 		campaign.setTimelineEdges(edgeList);
-		campaign.update();
 		
+		// 5. Add existing themes to the resource space
 		if (existingThemes != null && !existingThemes.isEmpty())
 			campaignResources.getThemes().addAll(existingThemes);
 		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
 			campaignResources.getWorkingGroups().addAll(existingWorkingGroups);
-
+		
+		// 7. Create the default up/down votes ballot
+		Ballot consultiveBallot = new Ballot();
+		Date startUDBallot = campaign.getStartDate();
+		Date endUDBallot = campaign.getEndDate();
+		startUDBallot = startUDBallot != null ? startUDBallot : Calendar.getInstance().getTime();
+		// if component has no end date, use 30 days after startDate
+		Calendar c = Calendar.getInstance();
+		c.setTime(startUDBallot);
+		c.add(Calendar.DATE, 30);
+		endUDBallot = endUDBallot  != null ? endUDBallot : c.getTime();
+		consultiveBallot.setStartsAt(startUDBallot);
+		consultiveBallot.setEndsAt(endUDBallot);
+		consultiveBallot.setPassword(campaign.getUuidAsString());
+		consultiveBallot.setVotingSystemType(VotingSystemTypes.PLURALITY);
+		consultiveBallot.setRequireRegistration(false);
+		consultiveBallot.setUserUuidAsSignature(true);
+		consultiveBallot.setDecisionType("CONSULTIVE");
+		consultiveBallot.save();
+		consultiveBallot.refresh();
+		
+		campaign.setConsultiveBallotAsString(consultiveBallot.getUuid().toString());
+		campaignResources.addBallot(consultiveBallot);
+		
+		// Add Ballot configurations
+		
+		// VOTING SYSTEM
+		BallotConfiguration ballotConfig = new BallotConfiguration();
+		ballotConfig.setBallotId(consultiveBallot.getId());
+		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
+		ballotConfig.setValue("PLURALITY");
+		ballotConfig.save();
+		
+		// VOTING SYSTEM BLOCK THRESHOLD
+		ballotConfig = new BallotConfiguration();
+		ballotConfig.setBallotId(consultiveBallot.getId());
+		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE);
+		ballotConfig.setValue("YES/NO/ABSTAIN");
+		ballotConfig.save();
+		
+		campaign.update();
 		campaignResources.update();
-
 		
 		// 4. Refresh the new campaign to get the newest version
 		campaign.refresh();
@@ -552,7 +674,6 @@ String uuidAsString, List<Component> phases) {
 		c.refresh();
 		return c;
 	}
-	
 	
 	private void populateDefaultComponents(List<ComponentDefinition> defaultPhaseDefinitions) {
 		List<ComponentDefinition> defaultPhases = this.template.getDefComponents();
@@ -588,4 +709,20 @@ String uuidAsString, List<Component> phases) {
 		else 
 			return null;
 	}	
+
+	public static UUID queryBindingBallotByCampaignResourceSpaceId(Long rsId) {
+		String sql = "select binding_ballot from campaign where resources_resource_space_id = :rsId";
+		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+		sqlQuery.setParameter("rsId", rsId);
+		SqlRow result = sqlQuery.findUnique();
+		return result.getUUID("binding_ballot");
+	}
+	
+	public static UUID queryConsultiveBallotByCampaignResourceSpaceId(Long rsId) {
+		String sql = "select consultive_ballot from campaign where resources_resource_space_id = :rsId";
+		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+		sqlQuery.setParameter("rsId", rsId);
+		SqlRow result = sqlQuery.findUnique();
+		return result.getUUID("consultive_ballot");	
+	}
 }

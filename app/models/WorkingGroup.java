@@ -1,6 +1,8 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -17,9 +19,13 @@ import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 import play.Logger;
+import utils.GlobalData;
 import models.transfer.InvitationTransfer;
 
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -31,6 +37,7 @@ import enums.ManagementTypes;
 import enums.MembershipStatus;
 import enums.ResourceSpaceTypes;
 import enums.SupportedMembershipRegistration;
+import enums.VotingSystemTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -45,6 +52,9 @@ public class WorkingGroup extends AppCivistBaseModel {
     private Boolean listed = true;
     private String majorityThreshold;
     private Boolean blockMajority;
+    private UUID consensusBallot; 
+    @Transient
+    private String consensusBallotAsString; 
     private User creator;
     
     @OneToOne(cascade=CascadeType.ALL)
@@ -68,10 +78,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
  
-	@JsonBackReference
+ 	@JsonBackReference
  	@Transient
 	private List<Contribution> proposals = new ArrayList<Contribution>();
- 	
+	@Transient
+	private List<Ballot> ballots = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long forumResourceSpaceId;
@@ -141,8 +152,63 @@ public class WorkingGroup extends AppCivistBaseModel {
 		if (existingThemes != null && !existingThemes.isEmpty())
 			groupResources.getThemes().addAll(existingThemes);
 		
-		groupResources.update();
 		
+		// 3.1 Create the consensus ballot for the group
+		Ballot consensusBallot = new Ballot();
+		Date startBallot = Calendar.getInstance().getTime();
+		// TODO: add the due date for reaching consensus in the WG creation form
+		//       by default, the groups gets 30 days for reaching consensus
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startBallot);
+		cal.add(Calendar.DATE, 30);
+		Date endBallot = cal.getTime();
+
+		Logger.info("Creating consensus ballot for Working Group: " + workingGroup.getName());
+		consensusBallot.setStartsAt(startBallot);
+		consensusBallot.setEndsAt(endBallot);
+		consensusBallot.setPassword(workingGroup.getUuid().toString());
+		consensusBallot.setVotingSystemType(VotingSystemTypes.PLURALITY);
+		consensusBallot.setRequireRegistration(false);
+		consensusBallot.setUserUuidAsSignature(true);
+		consensusBallot.setDecisionType("BINDING");
+		consensusBallot.save();
+		consensusBallot.refresh();
+		
+		workingGroup.setConsensusBallotAsString(consensusBallot.getUuid().toString());
+		groupResources.addBallot(consensusBallot);
+
+		workingGroup.update();
+		groupResources.update();
+
+		// Add Ballot configurations
+		
+		// VOTING SYSTEM
+		BallotConfiguration ballotConfig = new BallotConfiguration();
+		ballotConfig.setBallotId(consensusBallot.getId());
+		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
+		ballotConfig.setValue("PLURALITY");
+		ballotConfig.save();
+		
+		// VOTING SYSTEM BLOCK THRESHOLD
+		ballotConfig = new BallotConfiguration();
+		ballotConfig.setBallotId(consensusBallot.getId());
+		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE);
+		if (workingGroup.getBlockMajority()) {
+			ballotConfig.setValue("YES/NO/ABSTAIN/BLOCK");
+			ballotConfig.save();
+			ballotConfig = new BallotConfiguration();
+			ballotConfig.setBallotId(consensusBallot.getId());
+			ballotConfig
+					.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_BLOCK_THRESHOLD);
+			ballotConfig
+					.setValue(workingGroup.getMajorityThreshold() != null ? workingGroup
+							.getMajorityThreshold() : "SIMPLE");
+			ballotConfig.save();
+		} else {
+			ballotConfig.setValue("YES/NO/ABSTAIN");
+			ballotConfig.save();
+		}
+				
 		// 4. Refresh the new campaign to get the newest version
 		workingGroup.refresh();
 
@@ -174,7 +240,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return workingGroup;
     }
 
-    public static WorkingGroup createObject(WorkingGroup workingGroup) {
+	public static WorkingGroup createObject(WorkingGroup workingGroup) {
         workingGroup.save();
         return workingGroup;
     }
@@ -304,6 +370,23 @@ public class WorkingGroup extends AppCivistBaseModel {
 		this.blockMajority = blockMajority;
 	}
 
+	public UUID getConsensusBallot() {
+		return consensusBallot;
+	}
+
+	public void setConsensusBallot(UUID consensusBallot) {
+		this.consensusBallot = consensusBallot;
+	}
+
+	public String getConsensusBallotAsString() {
+		return consensusBallot!=null ? consensusBallot.toString() : null;
+	}
+
+	public void setConsensusBallotAsString(String consensusBallotAsString) {
+		this.consensusBallotAsString = consensusBallotAsString;
+		this.consensusBallot = UUID.fromString(consensusBallotAsString);
+	}
+
 	public ManagementTypes getManagementType() {
         return this.profile.getManagementType();
     }
@@ -395,7 +478,17 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public void addContribution(Contribution contrib) {
 		this.resources.getContributions().add(contrib);
 	}
+
+	public List<Ballot> getBallots() {
+		this.ballots = this.resources.getBallots();
+		return this.ballots;
+	}
 	
+	public void setBallots(List<Ballot> ballots) {
+		this.ballots = ballots;
+		this.resources.setBallots(ballots);
+	}
+
 	public List<MembershipGroup> getMembers() {
 		return this.members;
 	}
@@ -468,5 +561,18 @@ public class WorkingGroup extends AppCivistBaseModel {
 		}
 		return campaigns;
 	}
+
+	public static UUID queryConsensusBallotByGroupResourceSpaceId(
+			Long rsId) {
+		String sql = "select consensus_ballot from working_group where resources_resource_space_id = :rsId";
+		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+		sqlQuery.setParameter("rsId", rsId);
+		SqlRow result = sqlQuery.findUnique();
+		return result.getUUID("consensus_ballot");
+	}
 	
+	public static List<Contribution> listWorkingGroupProposals(Long wgid) {
+		WorkingGroup wg = WorkingGroup.read(wgid);
+		return wg.getResources().getContributionsFilteredByType(ContributionTypes.PROPOSAL);
+	}
 }
