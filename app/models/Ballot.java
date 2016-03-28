@@ -239,4 +239,8 @@ public class Ballot extends Model {
 	public void setRemovedAt(Date removedAt) {
 		this.removedAt = removedAt;
 	}
+
+	public static Ballot findByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
+	}
 }

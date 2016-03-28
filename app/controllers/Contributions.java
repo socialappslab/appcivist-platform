@@ -919,42 +919,39 @@ public class Contributions extends Controller {
 		Contribution.create(newContrib);
 		newContrib.refresh();
 		
-		// TODO: If contribution is a proposal and the resource space where it is added is a Campaign or a Working Group, 
+		// If contribution is a proposal and the resource space where it is added is a Campaign
 		// create automatically a related candidate for the contribution in the bindingBallot 
-		// and upDownBallot associated to the campaign.
-		Boolean spaceIsCampaign = containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN);
-		Boolean spaceIsGroup = containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP);
-		if (spaceIsCampaign || spaceIsGroup) {
-			
-			UUID binding = spaceIsCampaign ? Campaign
-					.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
-							.getResourceSpaceId()) : null;
-			UUID consultive = spaceIsCampaign ? Campaign
-					.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
-							.getResourceSpaceId()) : null ;
-
-			UUID consensus = spaceIsGroup ? WorkingGroup
-					.queryConsensusBallotByGroupResourceSpaceId(containerResourceSpace
-							.getResourceSpaceId())
-					: null;
+		// and consultiveBallot associated to the campaign.
+		if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+			UUID binding = Campaign.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
+							.getResourceSpaceId());
+			UUID consultive = Campaign.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
+							.getResourceSpaceId());
 
 			// Add the candidates automatically only to the binding ballot marked in the campaign as such 
 			// and to the "consultive" ballot marked in the campaign as such
 			for (Ballot ballot : containerResourceSpace.getBallots()) {
-				if ((ballot.getDecisionType().equals("BINDING")
-						&& (ballot.getUuid().equals(binding)) || ballot
-						.getUuid().equals(consensus))
-						|| (ballot.getDecisionType().equals("CONSULTIVE") && ballot
-								.getUuid().equals(consultive))) {
+				if ((ballot.getDecisionType().equals("BINDING") && (ballot.getUuid().equals(binding)))
+						|| (ballot.getDecisionType().equals("CONSULTIVE") && ballot.getUuid().equals(consultive))) {
 					BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
 					contributionAssociatedCandidate.setBallotId(ballot.getId());
-					contributionAssociatedCandidate
-							.setCandidateType(new Integer(1));
-					contributionAssociatedCandidate
-							.setContributionUuid(newContrib.getUuid());
+					contributionAssociatedCandidate.setCandidateType(new Integer(1));
+					contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
 					contributionAssociatedCandidate.save();
 				}
 			}
+		}
+
+		// If the contribution is a proposal, create an associated candidate in the ballot 
+		// of the working group authors
+		for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
+			UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
+			Ballot b = Ballot.findByUUID(consensus);
+			BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+			contributionAssociatedCandidate.setBallotId(b.getId());
+			contributionAssociatedCandidate.setCandidateType(new Integer(1));
+			contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+			contributionAssociatedCandidate.save();
 		}
 		
 		return newContrib;
