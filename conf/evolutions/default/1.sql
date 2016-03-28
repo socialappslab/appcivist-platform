@@ -662,9 +662,10 @@ create table User_User_Permission (
   permission_id                  bigint not null,
   constraint pk_User_User_Permission primary key (user_id, permission_id))
 ;
-create sequence component_seq start with 9;
 
-create sequence component_definition_seq start with 5;
+create sequence component_seq start with 9000;
+
+create sequence component_definition_seq start with 9000;
 
 alter table assembly add constraint fk_assembly_profile_1 foreign key (profile_assembly_profile_id) references assembly_profile (assembly_profile_id);
 create index ix_assembly_profile_1 on assembly (profile_assembly_profile_id);

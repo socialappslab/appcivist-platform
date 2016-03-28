@@ -20,7 +20,9 @@ create table ballot (
   constraint pk_ballot primary key (id))
 ;
 
-create sequence ballots_id_seq;
+create sequence ballots_id_seq start with 9000;
+alter sequence ballots_id_seq OWNED BY ballot.id;
+
 
 create table ballot_registration_field (
   id                        bigint not null,
@@ -34,7 +36,8 @@ create table ballot_registration_field (
   constraint pk_ballot_registration_field primary key (id))
 ;
 
-create sequence ballot_registration_fields_id_seq;
+create sequence ballot_registration_fields_id_seq start with 9000;
+alter sequence ballot_registration_fields_id_seq OWNED BY ballot_registration_field.id;
 
 alter table ballot_registration_field add constraint fk_registration_field_ballot foreign key (ballot_id) references ballot (id);
 
@@ -68,7 +71,7 @@ create table ballot_configuration (
 alter table ballot_configuration add constraint fk_ballot_config_ballot foreign key (ballot_id) references ballot (id);
 
 create sequence ballot_configurations_id_seq
-    START WITH 1
+    START WITH 9000
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -92,7 +95,7 @@ create table ballot_paper (
 alter table ballot_paper add constraint fk_ballot_paper_ballot foreign key (ballot_id) references ballot (id);
 
 create sequence ballot_papers_id_seq
-    START WITH 1
+    START WITH 9000
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -117,7 +120,7 @@ alter table candidate add constraint fk_candidate_ballot foreign key (ballot_id)
 
 
 create sequence candidates_id_seq
-    START WITH 1
+    START WITH 9000
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
@@ -143,7 +146,7 @@ alter table vote add constraint fk_vote_ballot_paper foreign key (ballot_paper_i
 
 
 create sequence votes_id_seq
-    START WITH 1
+    START WITH 9000
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE

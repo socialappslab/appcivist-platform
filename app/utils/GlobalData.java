@@ -67,6 +67,20 @@ public class GlobalData {
 	public final static String ETHERPAD_BASE_URL = "http://localhost:9001/";
 	
 	// Config keys
-	public static String CONFIG_ETHERPAD_SERVER = "component.proposal-making.etherpad-server";
-	public static String CONFIG_ETHERPAD_API_KEY = "component.proposal-making.etherpad-api-key";
+	public static final String CONFIG_ETHERPAD_SERVER = "component.proposal-making.etherpad-server";
+	public static final String CONFIG_ETHERPAD_API_KEY = "component.proposal-making.etherpad-api-key";
+	public static final String CONFIG_APPCIVIST_ETHERPAD_SERVER = "appcivist.services.etherpad.default.serverBaseUrl";
+	public static final String CONFIG_APPCIVIST_ETHERPAD_API_KEY = "appcivist.services.etherpad.default.apiKey";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM = "component.voting.system";
+	
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_DISTRIBUTED_POINTS = "component.voting.system.distributed.points";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_BLOCK_THRESHOLD = "component.voting.system.plurality.block.threshold";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE = "component.voting.system.plurality.type";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_QUORUM = "component.voting.system.quorum";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_QUORUM_ENABLE = "component.voting.system.quorum.enable";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_RANGE_MAX_SCORE = "component.voting.system.range.max-score";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_RANGE_MIN_SCORE = "component.voting.system.range.min-score";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_RANKED_NUMBER_PROPOSALS = "component.voting.system.ranked.number-proposals";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_WINNERS = "component.voting.system.winners";
+	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_WINNERS_FIXED_NUMBER = "component.voting.system.winners.fixed.number";
 }
