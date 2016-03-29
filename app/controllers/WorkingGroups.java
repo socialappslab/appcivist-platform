@@ -399,8 +399,7 @@ public class WorkingGroups extends Controller {
 	}
 	
 	public static Result listWorkingGroupProposals(Long aid, Long gid) {
-		WorkingGroup wg = WorkingGroup.read(gid);
-		List<Contribution> proposals = wg.getProposals();
+		List<Contribution> proposals = WorkingGroup.listWorkingGroupProposals(gid);
 		return ok(Json.toJson(proposals));
 	}
 	

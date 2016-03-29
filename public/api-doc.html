@@ -230,7 +230,11 @@ font-style: italic;
   
   <li><a href="#dELETEControllersCampaignComponents$DeleteCampaignComponent"><code><span class="http-method">delete</span> /api/assembly/{aid}/campaign/{cid}/component/{cpid}</code></a></li>
   
-  <li><a href="#pOSTControllersWorkingGroups$CreateWorkingGroupInCampaign"><code><span class="http-method">post</span> /api/assembly/{aid}/campaing/{cid}/group</code></a></li>
+  <li><a href="#gETControllersContributions$FindCampaignContributions"><code><span class="http-method">get</span> /api/assembly/{aid}/campaign/{cid}/contribution</code></a></li>
+  
+  <li><a href="#gETControllersWorkingGroups$FindWorkingGroupsInCampaign"><code><span class="http-method">get</span> /api/assembly/{aid}/campaign/{cid}/group</code></a></li>
+  
+  <li><a href="#pOSTControllersWorkingGroups$CreateWorkingGroupInCampaign"><code><span class="http-method">post</span> /api/assembly/{aid}/campaign/{cid}/group</code></a></li>
   
   <li><a href="#gETControllersContributions$FindAssemblyContributions"><code><span class="http-method">get</span> /api/assembly/{aid}/contribution</code></a></li>
   
@@ -238,9 +242,11 @@ font-style: italic;
   
   <li><a href="#gETControllersContributions$FindContribution"><code><span class="http-method">get</span> /api/assembly/{aid}/contribution/{cid}</code></a></li>
   
-  <li><a href="#pUTControllersContributions$DeleteContribution"><code><span class="http-method">put</span> /api/assembly/{aid}/contribution/{cid}</code></a></li>
+  <li><a href="#pUTControllersContributions$RecoverContribution"><code><span class="http-method">put</span> /api/assembly/{aid}/contribution/{cid}</code></a></li>
   
   <li><a href="#dELETEControllersContributions$ForceDeleteContribution"><code><span class="http-method">delete</span> /api/assembly/{aid}/contribution/{cid}</code></a></li>
+  
+  <li><a href="#pOSTControllersContributions$AddAttachmentContribution"><code><span class="http-method">post</span> /api/assembly/{aid}/contribution/{cid}/attachment</code></a></li>
   
   <li><a href="#pOSTControllersContributions$CreateContributionComment"><code><span class="http-method">post</span> /api/assembly/{aid}/contribution/{cid}/comment</code></a></li>
   
@@ -266,6 +272,8 @@ font-style: italic;
   
   <li><a href="#pOSTControllersContributions$CreateWorkingGroupForumPost"><code><span class="http-method">post</span> /api/assembly/{aid}/group/{gid}/forumpost</code></a></li>
   
+  <li><a href="#gETControllersWorkingGroups$GetListedWorkingGroupProfile"><code><span class="http-method">get</span> /api/assembly/{aid}/group/{gid}/public</code></a></li>
+  
   <li><a href="#gETControllersWorkingGroups$IsUserMemberOfGroup"><code><span class="http-method">get</span> /api/assembly/{aid}/group/{gid}/user/{uid}</code></a></li>
   
   <li><a href="#gETControllersWorkingGroups$ListMembershipsWithStatus"><code><span class="http-method">get</span> /api/assembly/{aid}/group/{id}/membership/{status}</code></a></li>
@@ -273,6 +281,8 @@ font-style: italic;
   <li><a href="#pOSTControllersWorkingGroups$CreateGroupMembership"><code><span class="http-method">post</span> /api/assembly/{aid}/group/{id}/membership/{type}</code></a></li>
   
   <li><a href="#gETControllersAssemblies$FindAssembliesLinked"><code><span class="http-method">get</span> /api/assembly/{aid}/linked</code></a></li>
+  
+  <li><a href="#gETControllersAssemblies$GetListedLinkedAssemblyProfile"><code><span class="http-method">get</span> /api/assembly/{aid}/public</code></a></li>
   
   <li><a href="#gETControllersAssemblies$IsUserMemberOfAssembly"><code><span class="http-method">get</span> /api/assembly/{aid}/user/{uid}</code></a></li>
   
@@ -300,13 +310,33 @@ font-style: italic;
   
   <li><a href="#pOSTControllersMemberships$CreateMembership"><code><span class="http-method">post</span> /api/membership</code></a></li>
   
-  <li><a href="#gETControllersMemberships$FindMembershipByUser"><code><span class="http-method">get</span> /api/membership/user/{uuid}</code></a></li>
+  <li><a href="#pOSTControllersMemberships$CreateSendInvitationToJoinAssembly"><code><span class="http-method">post</span> /api/membership/assembly/{aid}</code></a></li>
   
-  <li><a href="#gETControllersMemberships$FindMembershipByTargetUUID"><code><span class="http-method">get</span> /api/membership/user/{uuid}/{targetUuid}</code></a></li>
+  <li><a href="#gETControllersMemberships$ReadUserMembershipInAssembly"><code><span class="http-method">get</span> /api/membership/assembly/{aid}/user/{uid}</code></a></li>
+  
+  <li><a href="#pOSTControllersMemberships$CreateSendInvitationToJoinGroup"><code><span class="http-method">post</span> /api/membership/group/{gid}</code></a></li>
+  
+  <li><a href="#pOSTControllersMemberships$CreateMembershipRequest"><code><span class="http-method">post</span> /api/membership/group/{gid}/request</code></a></li>
+  
+  <li><a href="#gETControllersMemberships$ReadUserMembershipInGroup"><code><span class="http-method">get</span> /api/membership/group/{gid}/user/{uid}</code></a></li>
+  
+  <li><a href="#pOSTControllersMemberships$ReSendInvitation"><code><span class="http-method">post</span> /api/membership/invitation/{iid}/email</code></a></li>
+  
+  <li><a href="#gETControllersMemberships$ListInvitations"><code><span class="http-method">get</span> /api/membership/invitation/{targetId}/{status}</code></a></li>
+  
+  <li><a href="#gETControllersMemberships$ReadInvitation"><code><span class="http-method">get</span> /api/membership/invitation/{token}</code></a></li>
+  
+  <li><a href="#pUTControllersMemberships$AnswerInvitation"><code><span class="http-method">put</span> /api/membership/invitation/{token}/{answer}</code></a></li>
+  
+  <li><a href="#gETControllersMemberships$FindMembershipByUser"><code><span class="http-method">get</span> /api/membership/user/{uid}</code></a></li>
   
   <li><a href="#gETControllersNotifications$UserInbox"><code><span class="http-method">get</span> /api/notification/user/{uuid}</code></a></li>
   
+  <li><a href="#gETControllersContributions$FindResourceSpaceContributions"><code><span class="http-method">get</span> /api/space/{sid}/contribution</code></a></li>
+  
   <li><a href="#pOSTControllersContributions$CreateContributionInResourceSpaceWithId"><code><span class="http-method">post</span> /api/space/{sid}/contribution</code></a></li>
+  
+  <li><a href="#pUTControllersContributions$UpdateContributionStatsByStatsId"><code><span class="http-method">put</span> /api/stats/{stid}</code></a></li>
   
   <li><a href="#gETControllersUsers$GetUsers"><code><span class="http-method">get</span> /api/user</code></a></li>
   
@@ -934,7 +964,7 @@ font-style: italic;
 
     
     <h3 class="field-label">Return type</h3>
-    <div class="return-type"><a href="#array">array[ComponentInstance]</a></div>
+    <div class="return-type"><a href="#array">array[Component]</a></div>
     
 
     Todo: process Response Object and its headers, schema, examples
@@ -996,9 +1026,7 @@ font-style: italic;
     
     <h3 class="field-label">Query parameters</h3>
     <div class="field-items">
-      <div class="param">space (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Resource space name within assembly </div><div class="param">type (optional)</div>
+      <div class="param">type (optional)</div>
 
       <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Type of contributions </div>
     </div>  <!-- field-items -->
@@ -1157,7 +1185,7 @@ font-style: italic;
 
     
     <h3 class="field-label">Return type</h3>
-    <div class="return-type"><a href="#">ComponentInstance</a></div>
+    <div class="return-type"><a href="#">Component</a></div>
     
 
     Todo: process Response Object and its headers, schema, examples
@@ -1226,7 +1254,7 @@ font-style: italic;
 
     
     <h3 class="field-label">Return type</h3>
-    <div class="return-type"><a href="#">ComponentInstance</a></div>
+    <div class="return-type"><a href="#">Component</a></div>
     
 
     Todo: process Response Object and its headers, schema, examples
@@ -1295,7 +1323,7 @@ font-style: italic;
 
     
     <h3 class="field-label">Return type</h3>
-    <div class="return-type"><a href="#">ComponentInstance</a></div>
+    <div class="return-type"><a href="#">Component</a></div>
     
 
     Todo: process Response Object and its headers, schema, examples
@@ -1327,11 +1355,152 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
+  <div class="method"><a name="gETControllersContributions$FindCampaignContributions"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/assembly/{aid}/campaign/{cid}/contribution</code></pre></div>
+    <div class="method-summary">Get contributions in a Campaign (<span class="nickname">gETControllersContributions$FindCampaignContributions</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">aid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly id </div><div class="param">cid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Campaign id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">type (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Type of contributions </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[Contribution]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No contributions found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="gETControllersWorkingGroups$FindWorkingGroupsInCampaign"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/assembly/{aid}/campaign/{cid}/group</code></pre></div>
+    <div class="method-summary">List of groups created in a campaign (<span class="nickname">gETControllersWorkingGroups$FindWorkingGroupsInCampaign</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">aid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly numerical id </div><div class="param">cid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Campaien numerical id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">MembershipTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No group found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
   <div class="method"><a name="pOSTControllersWorkingGroups$CreateWorkingGroupInCampaign"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/assembly/{aid}/campaing/{cid}/group</code></pre></div>
-    <div class="method-summary">Get campaign by ID (<span class="nickname">pOSTControllersWorkingGroups$CreateWorkingGroupInCampaign</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/assembly/{aid}/campaign/{cid}/group</code></pre></div>
+    <div class="method-summary">Create a Working Group in the Campaign identified by ID. This will also add the Working Gorup to the Assembly organizing this campaign. (<span class="nickname">pOSTControllersWorkingGroups$CreateWorkingGroupInCampaign</span>)</div>
     
     <div class="method-notes"></div>
 
@@ -1621,11 +1790,11 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="pUTControllersContributions$DeleteContribution"/>
+  <div class="method"><a name="pUTControllersContributions$RecoverContribution"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="put"><code class="huge"><span class="http-method">put</span> /api/assembly/{aid}/contribution/{cid}</code></pre></div>
-    <div class="method-summary">Get contributions in Assembly (<span class="nickname">pUTControllersContributions$DeleteContribution</span>)</div>
+    <div class="method-summary">Get contributions in Assembly (<span class="nickname">pUTControllersContributions$RecoverContribution</span>)</div>
     
     <div class="method-notes"></div>
 
@@ -1709,6 +1878,80 @@ font-style: italic;
 
     
 
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[Contribution]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No contributions found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pOSTControllersContributions$AddAttachmentContribution"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/assembly/{aid}/contribution/{cid}/attachment</code></pre></div>
+    <div class="method-summary">Get contributions in Assembly (<span class="nickname">pOSTControllersContributions$AddAttachmentContribution</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">aid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly id </div><div class="param">cid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Contribution id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">attachmentForm (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Body of Contribution in JSON </div>
+    </div>  <!-- field-items -->
     
 
     
@@ -2187,7 +2430,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/assembly/{aid}/group</code></pre></div>
-    <div class="method-summary">Get campaign by ID (<span class="nickname">pOSTControllersWorkingGroups$CreateWorkingGroup</span>)</div>
+    <div class="method-summary">Create a new working group (<span class="nickname">pOSTControllersWorkingGroups$CreateWorkingGroup</span>)</div>
     
     <div class="method-notes"></div>
 
@@ -2259,7 +2502,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /api/assembly/{aid}/group/{gid}</code></pre></div>
-    <div class="method-summary">Get campaign by ID (<span class="nickname">gETControllersWorkingGroups$FindWorkingGroup</span>)</div>
+    <div class="method-summary">Get working group by ID (<span class="nickname">gETControllersWorkingGroups$FindWorkingGroup</span>)</div>
     
     <div class="method-notes"></div>
 
@@ -2268,7 +2511,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">aid (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly owner numerical id </div><div class="param">gid (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly numerical id </div><div class="param">gid (required)</div>
 
       <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Working Group numerical id </div>
     </div>  <!-- field-items -->
@@ -2316,7 +2559,7 @@ font-style: italic;
     
     
     <h4 class="field-label">404</h4>
-    No campaign found
+    No group found
     
     
   </div> <!-- method -->
@@ -2326,7 +2569,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="delete"><code class="huge"><span class="http-method">delete</span> /api/assembly/{aid}/group/{gid}</code></pre></div>
-    <div class="method-summary">Get campaign by ID (<span class="nickname">dELETEControllersWorkingGroups$DeleteWorkingGroup</span>)</div>
+    <div class="method-summary">Delete group by ID (<span class="nickname">dELETEControllersWorkingGroups$DeleteWorkingGroup</span>)</div>
     
     <div class="method-notes"></div>
 
@@ -2335,7 +2578,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">aid (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly owner numerical id </div><div class="param">gid (required)</div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly numerical id </div><div class="param">gid (required)</div>
 
       <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Working Group numerical id </div>
     </div>  <!-- field-items -->
@@ -2620,6 +2863,71 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
+  <div class="method"><a name="gETControllersWorkingGroups$GetListedWorkingGroupProfile"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/assembly/{aid}/group/{gid}/public</code></pre></div>
+    <div class="method-summary">Get working group profile if it is listed (<span class="nickname">gETControllersWorkingGroups$GetListedWorkingGroupProfile</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">gid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Groups ID </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">AssemblySummaryTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No group found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
   <div class="method"><a name="gETControllersWorkingGroups$IsUserMemberOfGroup"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2861,6 +3169,64 @@ font-style: italic;
     
     <h3 class="field-label">Return type</h3>
     <div class="return-type"><a href="#array">array[Assembly]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No assembly found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="gETControllersAssemblies$GetListedLinkedAssemblyProfile"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/assembly/{aid}/public</code></pre></div>
+    <div class="method-summary">Get assembly profile if it is listed or if it is in the list of linked assemblies (<span class="nickname">gETControllersAssemblies$GetListedLinkedAssemblyProfile</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">AssemblySummaryTransfer</a></div>
     
 
     Todo: process Response Object and its headers, schema, examples
@@ -3710,10 +4076,268 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /api/membership</code></pre></div>
-    <div class="method-summary">Create a membership within an Assembly or a Group (<span class="nickname">pOSTControllersMemberships$CreateMembership</span>)</div>
+    <div class="method-summary">Create a membership with any desired status within an Assembly or a Group. Endpoint available only to ADMINS. (<span class="nickname">pOSTControllersMemberships$CreateMembership</span>)</div>
     
     <div class="method-notes"></div>
 
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">MembershipTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">202</h4>
+    Membership was created
+    
+    
+    <h4 class="field-label">400</h4>
+    Membership body has errors
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pOSTControllersMemberships$CreateSendInvitationToJoinAssembly"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/membership/assembly/{aid}</code></pre></div>
+    <div class="method-summary">Create and send and to an Assembly (<span class="nickname">pOSTControllersMemberships$CreateSendInvitationToJoinAssembly</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">aid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly Id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">InvitationTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    success
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="gETControllersMemberships$ReadUserMembershipInAssembly"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/assembly/{aid}/user/{uid}</code></pre></div>
+    <div class="method-summary">Read membership of an user in an assembly (<span class="nickname">gETControllersMemberships$ReadUserMembershipInAssembly</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">aid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly Id </div><div class="param">uid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; User&#39;s id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Membership</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    Membership not found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pOSTControllersMemberships$CreateSendInvitationToJoinGroup"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/membership/group/{gid}</code></pre></div>
+    <div class="method-summary">Create and send an invitation to join a Group to a non-AppCivist user (<span class="nickname">pOSTControllersMemberships$CreateSendInvitationToJoinGroup</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">gid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Working Group Id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">InvitationTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    success
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pOSTControllersMemberships$CreateMembershipRequest"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/membership/group/{gid}/request</code></pre></div>
+    <div class="method-summary">Create a membership request for an Assembly or a Group (<span class="nickname">pOSTControllersMemberships$CreateMembershipRequest</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">targetId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
     
 
     
@@ -3760,10 +4384,333 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
+  <div class="method"><a name="gETControllersMemberships$ReadUserMembershipInGroup"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/group/{gid}/user/{uid}</code></pre></div>
+    <div class="method-summary">Read membership of an user in a group (<span class="nickname">gETControllersMemberships$ReadUserMembershipInGroup</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">gid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Working Group Id </div><div class="param">uid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; User&#39;s id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">Membership</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    Membership not found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pOSTControllersMemberships$ReSendInvitation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /api/membership/invitation/{iid}/email</code></pre></div>
+    <div class="method-summary">Resend invitation (<span class="nickname">pOSTControllersMemberships$ReSendInvitation</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">iid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Invitation id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">InvitationTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    success
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="gETControllersMemberships$ListInvitations"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/invitation/{targetId}/{status}</code></pre></div>
+    <div class="method-summary">Create and send an invitation to join an Assembly or a Group to a non-AppCivist user (<span class="nickname">gETControllersMemberships$ListInvitations</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">targetId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Working Group or Assembly Id </div><div class="param">status (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Invitation Status </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[MembershipInvitation]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">202</h4>
+    Invitations found
+    
+    
+    <h4 class="field-label">404</h4>
+    Invitations not found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="gETControllersMemberships$ReadInvitation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/invitation/{token}</code></pre></div>
+    <div class="method-summary">Create and send an invitation to join an Assembly or a Group to a non-AppCivist user (<span class="nickname">gETControllersMemberships$ReadInvitation</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">token (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Invitation Token </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#">InvitationTransfer</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    success
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pUTControllersMemberships$AnswerInvitation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /api/membership/invitation/{token}/{answer}</code></pre></div>
+    <div class="method-summary">Create and send an invitation to join an Assembly or a Group to a non-AppCivist user (<span class="nickname">pUTControllersMemberships$AnswerInvitation</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">token (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Working Group or Assembly Id </div><div class="param">response (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Invitation Status </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[User]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">0</h4>
+    success
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
   <div class="method"><a name="gETControllersMemberships$FindMembershipByUser"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/user/{uuid}</code></pre></div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/user/{uid}</code></pre></div>
     <div class="method-summary">Update user information (<span class="nickname">gETControllersMemberships$FindMembershipByUser</span>)</div>
     
     <div class="method-notes">Updates user information</div>
@@ -3801,78 +4748,6 @@ font-style: italic;
     
     <h3 class="field-label">Return type</h3>
     <div class="return-type"><a href="#array">array[Membership]</a></div>
-    
-
-    Todo: process Response Object and its headers, schema, examples
-    -->
-
-    
-
-    
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
-    <ul>
-    
-      <li><code>application/json</code></li>
-    
-    </ul>
-    
-
-    <h3 class="field-label">Responses</h3>
-    
-    <h4 class="field-label">200</h4>
-    success
-    
-    
-    <h4 class="field-label">404</h4>
-    User or Memberships not found
-    
-    
-  </div> <!-- method -->
-  <hr/>
-  
-  <div class="method"><a name="gETControllersMemberships$FindMembershipByTargetUUID"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/membership/user/{uuid}/{targetUuid}</code></pre></div>
-    <div class="method-summary">Update user information (<span class="nickname">gETControllersMemberships$FindMembershipByTargetUUID</span>)</div>
-    
-    <div class="method-notes">Updates user information</div>
-
-    
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">targetUuid (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly/Group&#39;s target UUID </div>
-    </div>  <!-- field-items -->
-    
-
-    
-
-    
-
-    
-
-    
-    <h3 class="field-label">Query parameters</h3>
-    <div class="field-items">
-      <div class="param">type (optional)</div>
-
-      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; type of membership requeste </div>
-    </div>  <!-- field-items -->
-    
-
-    
-
-    <!-- Remove Return type... unclear where this comes from;
-         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
-         do we end up with a heading but not content
-
-    
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type"><a href="#array">array[TransferResponseStatus]</a></div>
     
 
     Todo: process Response Object and its headers, schema, examples
@@ -3969,6 +4844,78 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
+  <div class="method"><a name="gETControllersContributions$FindResourceSpaceContributions"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/space/{sid}/contribution</code></pre></div>
+    <div class="method-summary">Get contributions in a Resource Space (<span class="nickname">gETControllersContributions$FindResourceSpaceContributions</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">sid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Resource Space id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">type (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Type of contributions </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[Contribution]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No contributions found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
   <div class="method"><a name="pOSTControllersContributions$CreateContributionInResourceSpaceWithId"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -3994,6 +4941,82 @@ font-style: italic;
       <div class="param">contributionForm (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Body of Contribution in JSON </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    <!-- Remove Return type... unclear where this comes from;
+         for our swagger.json files, it is always empty and there is no boolean guard or hasReturnType
+         do we end up with a heading but not content
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type"><a href="#array">array[Contribution]</a></div>
+    
+
+    Todo: process Response Object and its headers, schema, examples
+    -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    success
+    
+    
+    <h4 class="field-label">404</h4>
+    No contributions found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="pUTControllersContributions$UpdateContributionStatsByStatsId"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /api/stats/{stid}</code></pre></div>
+    <div class="method-summary">Get contributions in Assembly (<span class="nickname">pUTControllersContributions$UpdateContributionStatsByStatsId</span>)</div>
+    
+    <div class="method-notes"></div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">aid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Assembly id </div><div class="param">cid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Contribution id </div><div class="param">stid (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Contribution Stats id </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">contributionStatsForm (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Body of Contribution Statistics in JSON </div>
     </div>  <!-- field-items -->
     
 
@@ -5293,6 +6316,10 @@ font-style: italic;
   
   
   
+    <li><a href="#MembershipInvitation"><code>MembershipInvitation</code></a></li>
+  
+  
+  
     <li><a href="#VotingCandidate"><code>VotingCandidate</code></a></li>
   
   
@@ -5314,10 +6341,6 @@ font-style: italic;
   
   
     <li><a href="#WorkingGroupProfile"><code>WorkingGroupProfile</code></a></li>
-  
-  
-  
-    <li><a href="#ComponentInstance"><code>ComponentInstance</code></a></li>
   
   
   
@@ -5361,7 +6384,7 @@ font-style: italic;
   
   
   
-    <li><a href="#ComponentInstanceMilestone"><code>ComponentInstanceMilestone</code></a></li>
+    <li><a href="#ComponentMilestone"><code>ComponentMilestone</code></a></li>
   
   
   
@@ -5425,6 +6448,14 @@ font-style: italic;
   
   
   
+    <li><a href="#CampaignTimelineEdge"><code>CampaignTimelineEdge</code></a></li>
+  
+  
+  
+    <li><a href="#TokenAction"><code>TokenAction</code></a></li>
+  
+  
+  
     <li><a href="#LocationTransfer"><code>LocationTransfer</code></a></li>
   
   
@@ -5434,6 +6465,10 @@ font-style: italic;
   
   
     <li><a href="#Location"><code>Location</code></a></li>
+  
+  
+  
+    <li><a href="#ComponentDefinition"><code>ComponentDefinition</code></a></li>
   
   
   </ol>
@@ -5462,17 +6497,19 @@ font-style: italic;
       
       <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
       
+      <div class="param">key </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
       <div class="param">position </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
       <div class="param">noDuration </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">type </div><div class="param-desc"><span class="param-type">ComponentMilestoneTypes</span> </div>
       
       <div class="param">targetComponentUuidAsString </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">campaignTemplate </div><div class="param-desc"><span class="param-type">CampaignTemplate</span> </div>
       
-      <div class="param">component </div><div class="param-desc"><span class="param-type">Component</span> </div>
-      
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">componentDefinition </div><div class="param-desc"><span class="param-type">ComponentDefinition</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -5483,6 +6520,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5544,8 +6583,6 @@ font-style: italic;
       
       <div class="param">address </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5555,6 +6592,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5598,8 +6637,6 @@ font-style: italic;
       
       <div class="param">definition </div><div class="param-desc"><span class="param-type">ConfigDefinition</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5609,6 +6646,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5660,6 +6699,10 @@ font-style: italic;
       
       <div class="param">relativeUrl </div><div class="param-desc"><span class="param-type">String</span> </div>
       
+      <div class="param">resource </div><div class="param-desc"><span class="param-type">Map[string,Object]</span> </div>
+      
+      <div class="param">container </div><div class="param-desc"><span class="param-type">Map[string,Object]</span> </div>
+      
       
     </div>  <!-- field-items -->
   </div>
@@ -5677,7 +6720,46 @@ font-style: italic;
       
       <div class="param">templateSections </div><div class="param-desc"><span class="param-type">array[ContributionTemplateSection]</span> </div>
       
+      <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">removal </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
       <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="MembershipInvitation">MembershipInvitation</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">userId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">status </div><div class="param-desc"><span class="param-type">MembershipStatus</span> </div>
+      
+      <div class="param">token </div><div class="param-desc"><span class="param-type">TokenAction</span> </div>
+      
+      <div class="param">targetId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">targetType </div><div class="param-desc"><span class="param-type">MembershipTypes</span> </div>
+      
+      <div class="param">roles </div><div class="param-desc"><span class="param-type">array[SecurityRole]</span> </div>
+      
+      <div class="param">targetAssembly </div><div class="param-desc"><span class="param-type">Assembly</span> </div>
+      
+      <div class="param">targetGroup </div><div class="param-desc"><span class="param-type">WorkingGroup</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -5688,6 +6770,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5708,8 +6792,6 @@ font-style: italic;
       
       <div class="param">candidateType </div><div class="param-desc"><span class="param-type">AppcivistResourceTypes</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5719,6 +6801,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5770,8 +6854,6 @@ font-style: italic;
       
       <div class="param">expectedValue </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5781,6 +6863,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5807,6 +6891,8 @@ font-style: italic;
       
       <div class="param">defaultRoleName </div><div class="param-desc"><span class="param-type">String</span> </div>
       
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
       
     </div>  <!-- field-items -->
   </div>
@@ -5818,11 +6904,9 @@ font-style: italic;
     <div class="field-items">
       <div class="param">componentRequiredConfigurationId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
-      <div class="param">component </div><div class="param-desc"><span class="param-type">Component</span> </div>
+      <div class="param">componentDef </div><div class="param-desc"><span class="param-type">ComponentDefinition</span> </div>
       
-      <div class="param">configDefinition </div><div class="param-desc"><span class="param-type">ConfigDefinition</span> </div>
-      
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">configDef </div><div class="param-desc"><span class="param-type">ConfigDefinition</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -5833,6 +6917,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5855,8 +6941,6 @@ font-style: italic;
       
       <div class="param">cover </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5867,54 +6951,7 @@ font-style: italic;
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
-      
-    </div>  <!-- field-items -->
-  </div>
-  
-  
-  
-  <div class="model">
-    <h3 class="field-label"><a name="ComponentInstance">ComponentInstance</a> <a class="up" href="#__Models">Up</a></h3>
-    <div class="field-items">
-      <div class="param">componentInstanceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
-      
-      <div class="param">title </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">startDate </div><div class="param-desc"><span class="param-type">Date</span> </div>
-      
-      <div class="param">endDate </div><div class="param-desc"><span class="param-type">Date</span> </div>
-      
-      <div class="param">uuid </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">position </div><div class="param-desc"><span class="param-type">Integer</span> </div>
-      
-      <div class="param">timeline </div><div class="param-desc"><span class="param-type">Integer</span> </div>
-      
-      <div class="param">component </div><div class="param-desc"><span class="param-type">Component</span> </div>
-      
-      <div class="param">resourceSpaceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
-      
-      <div class="param">milestones </div><div class="param-desc"><span class="param-type">array[ComponentInstanceMilestone]</span> </div>
-      
-      <div class="param">contributions </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
-      
-      <div class="param">ballots </div><div class="param-desc"><span class="param-type">array[VotingBallot]</span> </div>
-      
-      <div class="param">templates </div><div class="param-desc"><span class="param-type">array[ContributionTemplate]</span> </div>
-      
       <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
-      
-      <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
-      
-      <div class="param">removal </div><div class="param-desc"><span class="param-type">Date</span> </div>
-      
-      <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
-      
-      <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5937,8 +6974,6 @@ font-style: italic;
       
       <div class="param">configTarget </div><div class="param-desc"><span class="param-type">ConfigTargets</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5948,6 +6983,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -5978,8 +7015,6 @@ font-style: italic;
       
       <div class="param">primaryContactEmail </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -5989,6 +7024,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6017,7 +7054,7 @@ font-style: italic;
       
       <div class="param">targetUuid </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">invitationToken </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6028,6 +7065,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6053,19 +7092,39 @@ font-style: italic;
     <div class="field-items">
       <div class="param">componentId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
-      <div class="param">uuid </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">title </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">uuidAsString </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">key </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">requiredConfigurations </div><div class="param-desc"><span class="param-type">array[ComponentRequiredConfiguration]</span> </div>
+      <div class="param">startDate </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
-      <div class="param">requiredMilestones </div><div class="param-desc"><span class="param-type">array[ComponentRequiredMilestone]</span> </div>
+      <div class="param">endDate </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">uuid </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">position </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">timeline </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">linked </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">fromEdges </div><div class="param-desc"><span class="param-type">array[CampaignTimelineEdge]</span> </div>
+      
+      <div class="param">toEdges </div><div class="param-desc"><span class="param-type">array[CampaignTimelineEdge]</span> </div>
+      
+      <div class="param">definition </div><div class="param-desc"><span class="param-type">ComponentDefinition</span> </div>
+      
+      <div class="param">resourceSpaceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">milestones </div><div class="param-desc"><span class="param-type">array[ComponentMilestone]</span> </div>
+      
+      <div class="param">contributions </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
+      
+      <div class="param">ballots </div><div class="param-desc"><span class="param-type">array[VotingBallot]</span> </div>
+      
+      <div class="param">templates </div><div class="param-desc"><span class="param-type">array[ContributionTemplate]</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6076,6 +7135,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6102,13 +7163,15 @@ font-style: italic;
       
       <div class="param">listed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
+      <div class="param">invitationEmail </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
       <div class="param">profile </div><div class="param-desc"><span class="param-type">AssemblyProfile</span> </div>
       
       <div class="param">location </div><div class="param-desc"><span class="param-type">Location</span> </div>
       
       <div class="param">creator </div><div class="param-desc"><span class="param-type">User</span> </div>
       
-      <div class="param">components </div><div class="param-desc"><span class="param-type">array[ComponentInstance]</span> </div>
+      <div class="param">components </div><div class="param-desc"><span class="param-type">array[Component]</span> </div>
       
       <div class="param">configs </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
       
@@ -6128,7 +7191,7 @@ font-style: italic;
       
       <div class="param">followingAssemblies </div><div class="param-desc"><span class="param-type">array[Assembly]</span> </div>
       
-      <div class="param">existingComponents </div><div class="param-desc"><span class="param-type">array[ComponentInstance]</span> </div>
+      <div class="param">existingComponents </div><div class="param-desc"><span class="param-type">array[Component]</span> </div>
       
       <div class="param">existingConfigs </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
       
@@ -6137,8 +7200,6 @@ font-style: italic;
       <div class="param">existingWorkingGroups </div><div class="param-desc"><span class="param-type">array[WorkingGroup]</span> </div>
       
       <div class="param">existingCampaigns </div><div class="param-desc"><span class="param-type">array[Campaign]</span> </div>
-      
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6149,6 +7210,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6163,8 +7226,6 @@ font-style: italic;
       
       <div class="param">hashtag </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6174,6 +7235,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6203,6 +7266,10 @@ font-style: italic;
       
       <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
+      <div class="param">newAssembly </div><div class="param-desc"><span class="param-type">AssemblyTransfer</span> </div>
+      
+      <div class="param">invitationToken </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
       <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
@@ -6230,6 +7297,8 @@ font-style: italic;
       
       <div class="param">resourceType </div><div class="param-desc"><span class="param-type">ResourceTypes</span> </div>
       
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
       <div class="param">readOnlyPadId </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">resourceSpaceWithServerConfigs </div><div class="param-desc"><span class="param-type">String</span> </div>
@@ -6240,8 +7309,6 @@ font-style: italic;
       
       <div class="param">urlThumbnailString </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6251,6 +7318,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6259,17 +7328,19 @@ font-style: italic;
   
   
   <div class="model">
-    <h3 class="field-label"><a name="ComponentInstanceMilestone">ComponentInstanceMilestone</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3 class="field-label"><a name="ComponentMilestone">ComponentMilestone</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">componentInstanceMilestoneId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      <div class="param">componentMilestoneId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
       <div class="param">title </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">key </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">position </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
       <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">start </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      <div class="param">date </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">days </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
@@ -6277,11 +7348,9 @@ font-style: italic;
       
       <div class="param">uuidAsString </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">componentInstance </div><div class="param-desc"><span class="param-type">ComponentInstance</span> </div>
+      <div class="param">type </div><div class="param-desc"><span class="param-type">ComponentMilestoneTypes</span> </div>
       
       <div class="param">mainContributionType </div><div class="param-desc"><span class="param-type">ContributionTypes</span> </div>
-      
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6292,6 +7361,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6337,29 +7408,39 @@ font-style: italic;
       
       <div class="param">listed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
+      <div class="param">majorityThreshold </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">blockMajority </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
       <div class="param">creator </div><div class="param-desc"><span class="param-type">User</span> </div>
       
       <div class="param">profile </div><div class="param-desc"><span class="param-type">WorkingGroupProfile</span> </div>
       
-      <div class="param">themes </div><div class="param-desc"><span class="param-type">array[Theme]</span> </div>
+      <div class="param">invitationEmail </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">configs </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
-      
-      <div class="param">forumPosts </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
-      
-      <div class="param">brainstormingContributions </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
+      <div class="param">invitations </div><div class="param-desc"><span class="param-type">array[InvitationTransfer]</span> </div>
       
       <div class="param">proposals </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
+      
+      <div class="param">forumResourceSpaceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">resourcesResourceSpaceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
       <div class="param">assemblies </div><div class="param-desc"><span class="param-type">array[Long]</span> </div>
       
       <div class="param">campaigns </div><div class="param-desc"><span class="param-type">array[Long]</span> </div>
       
+      <div class="param">configs </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
+      
+      <div class="param">themes </div><div class="param-desc"><span class="param-type">array[Theme]</span> </div>
+      
       <div class="param">supportedMembership </div><div class="param-desc"><span class="param-type">SupportedMembershipRegistration</span> </div>
+      
+      <div class="param">brainstormingContributions </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
       
       <div class="param">managementType </div><div class="param-desc"><span class="param-type">ManagementTypes</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">forumPosts </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6370,6 +7451,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6395,9 +7478,15 @@ font-style: italic;
     <div class="field-items">
       <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">moderator </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">moderator </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
-      <div class="param">coordinator </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">coordinator </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">targetId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">targetType </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">invitationEmail </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6414,11 +7503,9 @@ font-style: italic;
       
       <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">defaultComponents </div><div class="param-desc"><span class="param-type">array[Component]</span> </div>
+      <div class="param">defComponents </div><div class="param-desc"><span class="param-type">array[ComponentDefinition]</span> </div>
       
-      <div class="param">requiredConfigurations </div><div class="param-desc"><span class="param-type">array[CampaignRequiredConfiguration]</span> </div>
-      
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">reqConfigs </div><div class="param-desc"><span class="param-type">array[CampaignRequiredConfiguration]</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6429,6 +7516,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6455,9 +7544,11 @@ font-style: italic;
       
       <div class="param">listed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
+      <div class="param">timelineEdges </div><div class="param-desc"><span class="param-type">array[CampaignTimelineEdge]</span> </div>
+      
       <div class="param">resourceSpaceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
-      <div class="param">components </div><div class="param-desc"><span class="param-type">array[ComponentInstance]</span> </div>
+      <div class="param">components </div><div class="param-desc"><span class="param-type">array[Component]</span> </div>
       
       <div class="param">configs </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
       
@@ -6467,7 +7558,9 @@ font-style: italic;
       
       <div class="param">assemblies </div><div class="param-desc"><span class="param-type">array[Long]</span> </div>
       
-      <div class="param">existingComponents </div><div class="param-desc"><span class="param-type">array[ComponentInstance]</span> </div>
+      <div class="param">contributions </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
+      
+      <div class="param">existingComponents </div><div class="param-desc"><span class="param-type">array[Component]</span> </div>
       
       <div class="param">existingConfigs </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
       
@@ -6487,8 +7580,6 @@ font-style: italic;
       
       <div class="param">upcoming </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6498,6 +7589,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6527,8 +7620,6 @@ font-style: italic;
       
       <div class="param">fields </div><div class="param-desc"><span class="param-type">array[VotingBallotRegistrationField]</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6538,6 +7629,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6559,6 +7652,8 @@ font-style: italic;
       <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">listed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">invitationEmail </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">profile </div><div class="param-desc"><span class="param-type">AssemblyProfileTransfer</span> </div>
       
@@ -6593,8 +7688,6 @@ font-style: italic;
       
       <div class="param">configDefinition </div><div class="param-desc"><span class="param-type">ConfigDefinition</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6604,6 +7697,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6628,8 +7723,6 @@ font-style: italic;
       
       <div class="param">position </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6639,6 +7732,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6673,8 +7768,6 @@ font-style: italic;
       
       <div class="param">registrationForm </div><div class="param-desc"><span class="param-type">VotingBallotRegistrationForm</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6684,6 +7777,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6725,8 +7820,6 @@ font-style: italic;
       
       <div class="param">cover </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
@@ -6736,6 +7829,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6764,7 +7859,7 @@ font-style: italic;
       
       <div class="param">contribution </div><div class="param-desc"><span class="param-type">Contribution</span> </div>
       
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">points </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6775,6 +7870,68 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="CampaignTimelineEdge">CampaignTimelineEdge</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">edgeId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">campaign </div><div class="param-desc"><span class="param-type">Campaign</span> </div>
+      
+      <div class="param">start </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">fromComponent </div><div class="param-desc"><span class="param-type">Component</span> </div>
+      
+      <div class="param">fromComponentId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">toComponent </div><div class="param-desc"><span class="param-type">Component</span> </div>
+      
+      <div class="param">toComponentId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">removal </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="TokenAction">TokenAction</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">type </div><div class="param-desc"><span class="param-type">Type</span> </div>
+      
+      <div class="param">valid </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">token </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">expires </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">targetUser </div><div class="param-desc"><span class="param-type">User</span> </div>
+      
+      <div class="param">targetInvitation </div><div class="param-desc"><span class="param-type">MembershipInvitation</span> </div>
+      
+      <div class="param">created </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6822,6 +7979,12 @@ font-style: italic;
       
       <div class="param">authors </div><div class="param-desc"><span class="param-type">array[User]</span> </div>
       
+      <div class="param">firstAuthor </div><div class="param-desc"><span class="param-type">User</span> </div>
+      
+      <div class="param">firstAuthorName </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">assemblyId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
       <div class="param">workingGroupAuthors </div><div class="param-desc"><span class="param-type">array[WorkingGroup]</span> </div>
       
       <div class="param">stats </div><div class="param-desc"><span class="param-type">ContributionStatistics</span> </div>
@@ -6834,7 +7997,7 @@ font-style: italic;
       
       <div class="param">comments </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
       
-      <div class="param">associatedMilestones </div><div class="param-desc"><span class="param-type">array[ComponentInstanceMilestone]</span> </div>
+      <div class="param">associatedMilestones </div><div class="param-desc"><span class="param-type">array[ComponentMilestone]</span> </div>
       
       <div class="param">actionDueDate </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6848,11 +8011,9 @@ font-style: italic;
       
       <div class="param">assessments </div><div class="param-desc"><span class="param-type">array[Contribution]</span> </div>
       
-      <div class="param">responsibleWorkingGroups </div><div class="param-desc"><span class="param-type">array[WorkingGroup]</span> </div>
+      <div class="param">resourceSpaceId </div><div class="param-desc"><span class="param-type">Long</span> </div>
       
       <div class="param">readOnlyPadUrl </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
       
@@ -6863,6 +8024,8 @@ font-style: italic;
       <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -6888,6 +8051,41 @@ font-style: italic;
       <div class="param">country </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">geoJson </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ComponentDefinition">ComponentDefinition</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">componentDefId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">uuid </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">uuidAsString </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">requiredConfigurations </div><div class="param-desc"><span class="param-type">array[ComponentRequiredConfiguration]</span> </div>
+      
+      <div class="param">requiredMilestones </div><div class="param-desc"><span class="param-type">array[ComponentRequiredMilestone]</span> </div>
+      
+      <div class="param">creation </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">lastUpdate </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">removal </div><div class="param-desc"><span class="param-type">Date</span> </div>
+      
+      <div class="param">removed </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">contextUserId </div><div class="param-desc"><span class="param-type">Long</span> </div>
+      
+      <div class="param">lang </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->

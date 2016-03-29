@@ -21,7 +21,6 @@ import javax.persistence.PreRemove;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
-import models.audit.AuditContribution;
 import models.location.Location;
 import play.data.validation.Constraints.Required;
 
@@ -35,7 +34,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import enums.AuditEventTypes;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 
@@ -801,38 +799,13 @@ public class Contribution extends AppCivistBaseModel {
 				ContributionTypes.COMMENT);
 	}
 
-	@PrePersist
-	private void onCreate() {
-		// 3. Check if there is not a type
-		if (this.type == null)
-			this.type = ContributionTypes.COMMENT;
-		AuditContribution ac = new AuditContribution(this);
-		ac.setAuditEvent(AuditEventTypes.CREATION);
-		ac.setAuditUserId(this.getContextUserId());
-		ac.save();
-	}
-
-	@PreRemove
-	private void onDelete() {
-		AuditContribution ac = new AuditContribution(this);
-		ac.setAuditEvent(AuditEventTypes.DELETE);
-		ac.setAuditUserId(this.getContextUserId());
-		ac.save();
-	}
-
+	
 	@PreUpdate
 	private void onUpdateContribution() {
 		// 1. Update text index if needed
 		String newTextIndex = this.title + "\n" + this.text;
 		if (this.textIndex != null && !this.textIndex.equals(newTextIndex))
 			this.textIndex = newTextIndex;
-
-		// 4. Add auditing
-		AuditContribution ac = new AuditContribution(this);
-		ac.setAuditEvent(AuditEventTypes.UPDATE);
-		// get user from context?
-		ac.setAuditUserId(this.getContextUserId());
-		ac.save();
 	}
 
 	@PostUpdate

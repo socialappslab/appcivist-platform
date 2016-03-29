@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import models.Ballot;
+
 public class CampaignTransfer {
 	private Long campaignId;
 	private String title;
@@ -12,11 +14,14 @@ public class CampaignTransfer {
 	private String url;
 	private UUID uuid;
 	private Boolean listed = true;
+	private UUID bindingBallot;
+	private UUID consultiveBallot; 
 	private List<ComponentTransfer> components = new ArrayList<>();
 	private List<ConfigTransfer> configs = new ArrayList<>();
 	private List<ThemeTransfer> themes = new ArrayList<>();
 	private List<WorkingGroupTransfer> workingGroups = new ArrayList<>();
 	private List<Long> assemblies = new ArrayList<>();
+	private List<Ballot> ballots = new ArrayList<>();
 	private List<ComponentTransfer> existingComponents = new ArrayList<>();
 	private List<ConfigTransfer> existingConfigs = new ArrayList<>();
 	private List<ThemeTransfer> existingThemes = new ArrayList<>();
@@ -68,6 +73,18 @@ public class CampaignTransfer {
 	public void setListed(Boolean listed) {
 		this.listed = listed;
 	}
+	public UUID getBindingBallot() {
+		return bindingBallot;
+	}
+	public void setBindingBallot(UUID bindingBallot) {
+		this.bindingBallot = bindingBallot;
+	}
+	public UUID getConsultiveBallot() {
+		return consultiveBallot;
+	}
+	public void setConsultiveBallot(UUID consultiveBallot) {
+		this.consultiveBallot = consultiveBallot;
+	}
 	public List<ComponentTransfer> getComponents() {
 		return components;
 	}
@@ -97,6 +114,12 @@ public class CampaignTransfer {
 	}
 	public void setAssemblies(List<Long> assemblies) {
 		this.assemblies = assemblies;
+	}
+	public List<Ballot> getBallots() {
+		return ballots;
+	}
+	public void setBallots(List<Ballot> ballots) {
+		this.ballots = ballots;
 	}
 	public List<ComponentTransfer> getExistingComponents() {
 		return existingComponents;

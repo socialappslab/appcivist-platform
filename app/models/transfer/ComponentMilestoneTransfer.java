@@ -16,6 +16,7 @@ public class ComponentMilestoneTransfer {
 	private String title;
 	private int position;
 	private String description;
+	private String key;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime(); 
 	private Integer days = 1; 
@@ -58,6 +59,14 @@ public class ComponentMilestoneTransfer {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public Date getStart() {
