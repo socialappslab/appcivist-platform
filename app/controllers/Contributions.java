@@ -10,6 +10,7 @@ import java.util.UUID;
 import models.Assembly;
 import models.Ballot;
 import models.BallotCandidate;
+import models.BallotVote;
 import models.Campaign;
 import models.Component;
 import models.Contribution;
@@ -673,6 +674,68 @@ public class Contributions extends Controller {
 			newStats.setContributionStatisticsId(stid);
 			newStats.update();
 			return ok(Json.toJson(newStats));
+		}
+	}
+	
+	
+	/**
+	 * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats
+	 * @param aid
+	 * @param cid
+	 * @param stid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer="List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "coid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "type", value = "Type of ballot", dataType = "String", paramType = "query", allowableValues = "binding, consultive", defaultValue = ""),
+			@ApiImplicitParam(name = "contribution_stats_form", value = "Body of Contribution Statistics in JSON", required = true, dataType = "models.ContributionStatistics", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result readContributionStats(Long aid, Long cid, Long coid, String type) {
+		
+		try {
+			Campaign c = Campaign.read(cid);
+			
+			Ballot ballot = type.equals("binding") ? 
+					Ballot.findByUUID(c.getBindingBallot()) : Ballot.findByUUID(c.getConsultiveBallot());
+			
+			Contribution co = Contribution.read(coid);
+			BallotCandidate bc = BallotCandidate.findByContributionUuid(ballot.getId(), co.getUuid());
+			List<BallotVote> votes = BallotVote.findVotesForCandidate(ballot.getId(), bc.getId());
+			
+			ContributionStatistics stats = co.getStats();
+			
+			Long yes = new Long(0);
+			Long no = new Long(0);
+			Long block = new Long(0);
+			Long abstain = new Long(0);
+			
+			for (BallotVote vote : votes) {
+				if(vote.getValue()!=null && vote.getValue().equals("YES")) {
+					yes++;
+				} else if (vote.getValue()!=null && vote.getValue().equals("NO")) {
+					no++;
+				} else if (vote.getValue()!=null && vote.getValue().equals("ABSTAIN")) {
+					abstain++;
+				} else if (vote.getValue()!=null && vote.getValue().equals("BLOCK")) {
+					block++;
+				}
+			}
+
+			stats.setYes(yes);
+			stats.setNo(no);
+			stats.setAbstain(abstain);
+			stats.setBlock(block);
+			return ok(Json.toJson(stats));
+		} catch (Exception e) {
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"Error reading contribution stats: " + e.getMessage())));
 		}
 	}
 	

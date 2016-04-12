@@ -149,6 +149,17 @@ public class User extends Model implements Subject {
 	}
 
 
+	public String getUuidAsString() {
+		return uuid.toString();
+	}
+
+
+	public void setUuidAsString(String uuidAsString) {
+		this.uuidAsString = uuidAsString;
+		this.uuid = UUID.fromString(uuidAsString);
+	}
+
+
 	public String getEmail() {
 		return email;
 	}

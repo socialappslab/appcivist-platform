@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -22,6 +23,21 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	private Long replies;
 	private Long flags;
 	private Long shares;
+
+	@Transient
+	private Long yes;
+	@Transient
+	private Long no;
+	@Transient
+	private Long abstain;
+	@Transient
+	private Long block;
+	@Transient
+	private Long score;
+	@Transient
+	private Long rank;
+	@Transient
+	private Boolean blocked = false;
 
 	@OneToOne(mappedBy = "stats")
 	@JsonBackReference
@@ -111,6 +127,62 @@ public class ContributionStatistics extends AppCivistBaseModel {
 
 	public void setShares(Long shares) {
 		this.shares = shares;
+	}
+
+	public Long getYes() {
+		return yes;
+	}
+
+	public void setYes(Long yes) {
+		this.yes = yes;
+	}
+
+	public Long getNo() {
+		return no;
+	}
+
+	public void setNo(Long no) {
+		this.no = no;
+	}
+
+	public Long getAbstain() {
+		return abstain;
+	}
+
+	public void setAbstain(Long abstain) {
+		this.abstain = abstain;
+	}
+
+	public Long getBlock() {
+		return block;
+	}
+
+	public void setBlock(Long block) {
+		this.block = block;
+	}
+
+	public Long getScore() {
+		return score;
+	}
+
+	public void setScore(Long score) {
+		this.score = score;
+	}
+
+	public Long getRank() {
+		return rank;
+	}
+
+	public void setRank(Long rank) {
+		this.rank = rank;
+	}
+
+	public Boolean getBlocked() {
+		return blocked;
+	}
+
+	public void setBlocked(Boolean blocked) {
+		this.blocked = blocked;
 	}
 
 	public Contribution getContribution() {
