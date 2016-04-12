@@ -215,44 +215,6 @@ public class Users extends Controller {
 			// Everything was filled correctly
 			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
 	}
-//	
-//	@ApiOperation(nickname = "signupGroup", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new unverified user with an email and a password. Sends a verification email.")
-//	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
-//	@ApiImplicitParams({ @ApiImplicitParam(name = "signup_form", value = "User's signup form", dataType = "providers.MySignup", paramType = "body") })
-//	public static Result doSignupGroup() {
-//		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-//		final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
-//				.bindFromRequest();
-//		if (filledForm.hasErrors()) {
-//			// User did not fill everything properly
-//			// TODO: HTML rendered response return
-//			// badRequest(signup.render(filledForm));
-//			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-//					Messages.get("play.authenticate.filledFromHasErrors"),
-//					filledForm.errorsAsJson().toString())));
-//		} else
-//			// Everything was filled correctly
-//			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
-//	}
-//	
-//	@ApiOperation(nickname = "signupInvitation", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new unverified user with an email and a password. Sends a verification email.")
-//	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
-//	@ApiImplicitParams({ @ApiImplicitParam(name = "signup_form", value = "User's signup form", dataType = "providers.MySignup", paramType = "body") })
-//	public static Result doSignupWithInvitation() {
-//		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-//		final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
-//				.bindFromRequest();
-//		if (filledForm.hasErrors()) {
-//			// User did not fill everything properly
-//			// TODO: HTML rendered response return
-//			// badRequest(signup.render(filledForm));
-//			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-//					Messages.get("play.authenticate.filledFromHasErrors"),
-//					filledForm.errorsAsJson().toString())));
-//		} else
-//			// Everything was filled correctly
-//			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
-//	}
 	
 	// TODO return a HTML form
 	public static Result login() {
@@ -279,7 +241,8 @@ public class Users extends Controller {
 					filledForm.errorsAsJson().toString())));
 		} else {
 			// Everything was filled
-			return MyUsernamePasswordAuthProvider.handleLogin(ctx());
+			Result r = MyUsernamePasswordAuthProvider.handleLogin(ctx());
+			return r;
 		}
 
 	}
@@ -288,6 +251,7 @@ public class Users extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "user_body", value = "Logout body must be empty JSON", dataType = "String", paramType = "body") })
+	@SubjectPresent
 	public static Result doLogout() {
 		// TODO: modify to return HTML or JSON instead of redirect
 		return com.feth.play.module.pa.controllers.Authenticate.logout();

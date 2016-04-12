@@ -219,7 +219,6 @@ public class Global extends GlobalSettings {
 				throws java.lang.Throwable {
 			Http.Response response = ctx.response();
 			response.setHeader("Access-Control-Allow-Origin", "*");
-			Logger.debug("--> Setting CORRS HEADERs for path: "+ctx.request().path());
 			Promise<Result> result = this.delegate.call(ctx);
 			return result;
 		}
@@ -230,5 +229,4 @@ public class Global extends GlobalSettings {
 			java.lang.reflect.Method actionMethod) {
 		return new ActionWrapper(super.onRequest(request, actionMethod));
 	}
-	
 }

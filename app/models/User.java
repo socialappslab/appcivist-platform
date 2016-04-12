@@ -64,6 +64,8 @@ public class User extends Model implements Subject {
 	@GeneratedValue
 	private Long userId;
 	private UUID uuid = UUID.randomUUID();
+	@Transient
+	private String uuidAsString;
 	private String email;
 	private String name;
 	private String username;

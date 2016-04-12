@@ -211,3 +211,5 @@ GET       /api/campaign/template                                          contro
 GET       /api/file/upload-form                                           controllers.Files.index()
 GET       /api/files                                                      controllers.Files.list()
 POST      /api/upload                                                     controllers.Files.upload()
+POST      /api/log                                                        controllers.Application.logActivity()
+POST      /api/log/public                                                 controllers.Application.logActivityPublic()

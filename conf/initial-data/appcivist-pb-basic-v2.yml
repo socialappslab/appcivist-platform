@@ -152,6 +152,7 @@
   - &u1 !!models.User
     email:      carmen@example.com
     name:       Carmen
+    uuidAsString: "f8dbbd14-8891-47ff-94d3-42c7172c248b"
     username:   carmen
     language:   "en-US" 
     profilePic: *upic1
@@ -166,6 +167,7 @@
   - &u2 !!models.User
     email:      jane@example.com
     name:       Jane
+    uuidAsString: "600f924c-8857-4619-9575-e3c16ddbf651"
     username:   jane
     language:   "en-US"
     profilePic: *upic2
