@@ -587,8 +587,8 @@
 ##############################################################################################################################################################################################
 # Campaign Templates
   - &ct1 !!models.CampaignTemplate
-    nameKey: "PARTICIPATORY_BUDGETING"
-    name: "Participatory Budgeting" 
+    nameKey: "PROPOSAL_MAKING"
+    name: "Proposal and decision making" 
     defComponents: 
       - *pd1
       - *pd2
