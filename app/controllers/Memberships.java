@@ -275,7 +275,7 @@ public class Memberships extends Controller {
 	@ApiResponses({
 			@ApiResponse(code = OK, message = "Membership found", response = Membership.class),
 			@ApiResponse(code = NOT_FOUND, message = "Membership not found", response = TransferResponseStatus.class) })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	@Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
 	public static Result readUserMembershipInGroup(Long gid, Long uid) {
 		Membership ma = MembershipGroup.findByUserAndGroupId(uid, gid);
 
