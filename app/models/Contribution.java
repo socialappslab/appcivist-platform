@@ -22,6 +22,9 @@ import javax.persistence.Transient;
 
 import models.audit.AuditContribution;
 import models.location.Location;
+//newly added
+import delegates.RedundanciesDelegate;
+import controllers.Redundancies; 
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
@@ -70,6 +73,11 @@ public class Contribution extends AppCivistBaseModel {
 	@JsonIgnoreProperties({ "contributionStatisticsId" })
 	@JsonManagedReference
 	private ContributionStatistics stats = new ContributionStatistics();
+
+	//newly added
+
+	@Transient 
+	private List<Long> similarContri =  new ArrayList<Long>();
 
 	/* 
 	 * Transient properties that take their values from the associated resource space
@@ -137,6 +145,9 @@ public class Contribution extends AppCivistBaseModel {
 		this.title = title;
 		this.text = text;
 		this.type = type;
+		//newly added
+		this.similarContri = RedundanciesDelegate.match_keywords(this.getContributionId());
+
 	}
 
 	public Contribution() {
@@ -386,6 +397,15 @@ public class Contribution extends AppCivistBaseModel {
 
 	public void setExistingResources(List<Resource> existingResources) {
 		this.existingResources = existingResources;
+	}
+
+	// newly added
+	public void setSimilarContributions(List<Long> similarContri) {
+		this.similarContri = similarContri; 
+	}
+
+	public List<Long> getSimilarContributions() {
+		return this.similarContri; 
 	}
 
 	/*

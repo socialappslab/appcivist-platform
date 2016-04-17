@@ -183,7 +183,10 @@ GET       /api/location/:query                                            contro
 # Campaign Template and Configuration endpoints
 GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
 
-
+#####################################################################################
+# Redundancy services
+GET /api/redundancy/keywords/:id                                          controllers.Redundancies.find_keywords(id: Long)
+GET /api/redundancy/matching/:id                                          controllers.Redundancies.match_keywords(id: Long)
 #####################################################################################
 # Composition Engine endpoints 
 GET       /api/assembly/:aid/issue                                        controllers.ServiceAssemblies.findIssues(aid: Long)
