@@ -448,10 +448,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 			this.resources.setResourceSpaceId(id);
 	}
 	
+	@JsonBackReference
 	public List<Contribution> getBrainstormingContributions() {
 		return resources.getContributionsFilteredByType(ContributionTypes.BRAINSTORMING);
 	}
 
+	@JsonBackReference
 	public void setBrainstormingContributions(
 			List<Contribution> brainstormingContributions) {
 		this.resources.getContributions().addAll(brainstormingContributions);

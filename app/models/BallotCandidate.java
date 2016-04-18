@@ -153,4 +153,10 @@ public class BallotCandidate extends Model {
 	public void setRemovedAt(Date removedAt) {
 		this.removedAt = removedAt;
 	}
+
+	public static BallotCandidate findByContributionUuid(Long ballotId, UUID uuid) {
+		return find.where()
+				.eq("ballotId",ballotId)
+				.eq("contributionUuid",uuid).findUnique();
+	}
 }

@@ -42,6 +42,8 @@ import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.AuthUser;
@@ -56,6 +58,7 @@ import enums.MyRoles;
 import exceptions.TokenNotValidException;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 @Table(name="appcivist_user")
 @Where(clause="active=true")
 public class User extends Model implements Subject {
@@ -64,6 +67,8 @@ public class User extends Model implements Subject {
 	@GeneratedValue
 	private Long userId;
 	private UUID uuid = UUID.randomUUID();
+	@Transient
+	private String uuidAsString;
 	private String email;
 	private String name;
 	private String username;
@@ -112,6 +117,8 @@ public class User extends Model implements Subject {
 	)
     private List<UserPermission> permissions = new ArrayList<UserPermission>();
     
+	@Transient
+	private List<String> providers;
 	/**
 	 * Static finder property
 	 */
@@ -144,6 +151,17 @@ public class User extends Model implements Subject {
 
 	public void setUuid(UUID uuid) {
 		this.uuid = uuid;
+	}
+
+
+	public String getUuidAsString() {
+		return uuid.toString();
+	}
+
+
+	public void setUuidAsString(String uuidAsString) {
+		this.uuidAsString = uuidAsString;
+		this.uuid = UUID.fromString(uuidAsString);
 	}
 
 
@@ -599,16 +617,20 @@ public class User extends Model implements Subject {
 				User.findByAuthUserIdentity(newUser));
 	}
 	
-	public Set<String> getProviders() {
+	public List<String> getProviders() {
 		final Set<String> providerKeys = new HashSet<String>(
 				linkedAccounts.size());
 		for (final LinkedAccount acc : linkedAccounts) {
 			providerKeys.add(acc.getProviderKey());
 		}
-		return providerKeys;
+		return new ArrayList<String>(providerKeys);
 	}
 	
-
+	// TODO: Added to fix issue of null bean object
+	public void setProviders(List<String> providers) {
+		this.providers = providers;
+	}
+	
 	public static void addLinkedAccount(final AuthUser oldUser,
 			final AuthUser newUser) {
 		final User u = User.findByAuthUserIdentity(oldUser);

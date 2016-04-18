@@ -13,8 +13,11 @@ import utils.services.MapBoxWrapper;
 import com.avaje.ebean.Model.Finder;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class Location {
 	
 	@Id

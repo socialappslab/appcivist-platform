@@ -1,13 +1,29 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import models.Contribution;
+import models.Log;
+import models.User;
+import models.transfer.TransferResponseStatus;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+
+import com.feth.play.module.pa.PlayAuthenticate;
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 import play.*;
+import play.data.Form;
+import play.libs.Json;
 import play.mvc.*;
+import utils.LogActions;
 import views.html.*;
 import http.Headers;
 
@@ -17,7 +33,7 @@ public class Application extends Controller {
 
 	public static final String FLASH_MESSAGE_KEY = "message";
 	public static final String FLASH_ERROR_KEY = "error";
-
+	public static final Form<Log> LOG_FORM = form(Log.class);
 
 	public static Result index() {
 		return ok(index.render());
@@ -46,4 +62,59 @@ public class Application extends Controller {
 	public static Result swaggerDocs() {
 		return ok(swagger.render());
 	}
+	
+	/** POST       /api/log
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@SubjectPresent
+	public static Result logActivity() {
+		User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		final Form<Log> newLogForm = LOG_FORM.bindFromRequest();
+		if (newLogForm.hasErrors()) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Log is not valid")));
+		} else {
+			Log newLog = newLogForm.get();
+			if (user !=null) {
+				newLog.setUser(user.getEmail());
+				LogActions.logActivity(newLog);
+				return ok(Json.toJson(newLog));	
+			} else {
+				return notFound(Json.toJson(new TransferResponseStatus("User's session was null")));
+			}
+		}
+	}
+	
+	/** POST       /api/log/public
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body") })
+	public static Result logActivityPublic() {
+		final Form<Log> newLogForm = LOG_FORM.bindFromRequest();
+		if (newLogForm.hasErrors()) {
+			return internalServerError(Json.toJson(new TransferResponseStatus("Log is not valid")));
+		} else {
+			Log newLog = newLogForm.get();
+			String userEmail = newLog.getUser();
+			User user = null;
+			if (userEmail !=null ){
+				user = User.findByEmail(userEmail);	
+			}
+			if (user !=null) {
+				newLog.setUser(user.getEmail());
+				LogActions.logActivity(newLog);
+				return ok(Json.toJson(newLog));	
+			} else {
+				return notFound(Json.toJson(new TransferResponseStatus("User's email does not exist in our database")));
+			}
+		}
+	}
+	
 }

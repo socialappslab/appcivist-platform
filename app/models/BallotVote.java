@@ -144,4 +144,8 @@ public class BallotVote extends Model {
 	public void setRemovedAt(Date removedAt) {
 		this.removedAt = removedAt;
 	}
+
+	public static List<BallotVote> findVotesForCandidate(Long ballotId, Long candidateId) {
+		return find.where().eq("ballotId",ballotId).eq("candidateId",candidateId).findList();
+	}
 }

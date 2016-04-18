@@ -86,7 +86,7 @@ create table campaign_template (
   removed                   boolean,
   name_key                  varchar(23),
   name                      varchar(255),
-  constraint ck_campaign_template_name_key check (name_key in ('PARTICIPATORY_BUDGETING','OCCUPY_ACTION','AWARENESS_RAISING','ACTION_PROMOTION','MOBILIZATION','FUNDRAISING')),
+  constraint ck_campaign_template_name_key check (name_key in ('PARTICIPATORY_BUDGETING','OCCUPY_ACTION','AWARENESS_RAISING','ACTION_PROMOTION','MOBILIZATION','FUNDRAISING','PROPOSAL_MAKING')),
   constraint pk_campaign_template primary key (campaign_template_id))
 ;
 

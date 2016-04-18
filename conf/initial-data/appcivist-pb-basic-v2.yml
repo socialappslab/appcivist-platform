@@ -152,6 +152,7 @@
   - &u1 !!models.User
     email:      carmen@example.com
     name:       Carmen
+    uuidAsString: "f8dbbd14-8891-47ff-94d3-42c7172c248b"
     username:   carmen
     language:   "en-US" 
     profilePic: *upic1
@@ -166,6 +167,7 @@
   - &u2 !!models.User
     email:      jane@example.com
     name:       Jane
+    uuidAsString: "600f924c-8857-4619-9575-e3c16ddbf651"
     username:   jane
     language:   "en-US"
     profilePic: *upic2
@@ -585,8 +587,8 @@
 ##############################################################################################################################################################################################
 # Campaign Templates
   - &ct1 !!models.CampaignTemplate
-    nameKey: "PARTICIPATORY_BUDGETING"
-    name: "Participatory Budgeting" 
+    nameKey: "PROPOSAL_MAKING"
+    name: "Proposal and decision making" 
     defComponents: 
       - *pd1
       - *pd2
@@ -1164,6 +1166,7 @@
 # Component Instances: 
   - &ph1 !!models.Component
     title: Proposal Making
+    key: Proposalmaking
     position: 0
     timeline: 1
     componentId: 1
@@ -1178,6 +1181,7 @@
       - *temp1
   - &ph2 !!models.Component
     title: Deliberation
+    key: Deliberation
     position: 1
     timeline: 1
     componentId: 2
@@ -1188,6 +1192,7 @@
       - *ci6
   - &ph3 !!models.Component
     title: Voting
+    key: Voting
     position: 2
     timeline: 1
     componentId: 3
@@ -1198,6 +1203,7 @@
       - *ci8 
   - &ph4 !!models.Component
     title: Implementation
+    key: Implementation
     position: 3
     timeline: 1
     componentId: 4
@@ -1214,6 +1220,7 @@
     definition: *pd11
   - &ph6 !!models.Component
     title: Visualization
+    key: Visualization
     position: 0
     #configs
     timeline: 0
@@ -1221,6 +1228,7 @@
     definition: *pd9
   - &ph7 !!models.Component
     title: Deliberation
+    key: Deliberation
     position: 1
     #configs
     timeline: 1
@@ -1235,6 +1243,7 @@
       - *contrib22
   - &ph8 !!models.Component
     title: Voting
+    key: Voting
     position: 4
     #configs
     timeline: 1
@@ -1255,6 +1264,7 @@
 #      - *contrib42
   - &ph9 !!models.Component
     title: Implementation
+    key: Implementation
     position: 5
     #configs
     timeline: 1

@@ -17,10 +17,13 @@ import models.location.Location;
 
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ResourceTypes;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class Resource extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long resourceId;
@@ -213,7 +216,8 @@ public class Resource extends AppCivistBaseModel {
 
 	@Transient
 	public void setUrlLargeString(String urlLargeString) throws MalformedURLException {
-		setUrlLarge(new URL(urlLargeString));
+		if (urlLargeString!=null)
+			setUrlLarge(new URL(urlLargeString));
 	}
 
 	@Transient
@@ -223,7 +227,8 @@ public class Resource extends AppCivistBaseModel {
 
 	@Transient
 	public void setUrlMediumString(String urlMediumString) throws MalformedURLException {
-		setUrlMedium( new URL(urlMediumString));
+		if (urlMediumString!=null)
+			setUrlMedium( new URL(urlMediumString));
 	}
 
 	@Transient
@@ -233,7 +238,8 @@ public class Resource extends AppCivistBaseModel {
 
 	@Transient
 	public void setUrlThumbnailString(String urlThumbnailString) throws MalformedURLException {
-		setUrlThumbnail(new URL(urlThumbnailString));
+		if (urlThumbnailString!=null)
+			setUrlThumbnail(new URL(urlThumbnailString));
 	}
 	
 	/*

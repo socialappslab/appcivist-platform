@@ -9,10 +9,13 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import java.util.List;
 
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class Theme extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue

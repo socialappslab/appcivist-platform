@@ -16,8 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PostUpdate;
-import javax.persistence.PrePersist;
-import javax.persistence.PreRemove;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
@@ -46,7 +44,6 @@ public class Contribution extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long contributionId;
 	@Index
-	@JsonIgnore
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
@@ -236,7 +233,13 @@ public class Contribution extends AppCivistBaseModel {
 
 	@Transient
 	public void setFirstAuthor(User u) {
-		this.firstAuthor = u;
+		u.setProviders(null);
+		if (authors.size() > 0) 
+			authors.set(0, u);
+		else {
+			authors = new ArrayList<User>();
+			authors.add(u);
+		}
 	}
 
 	@Transient
