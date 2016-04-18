@@ -27,7 +27,7 @@ public class Log extends Model {
     private String path;	
     private String action;
     private String resourceType;
-    private String resourceUUID;
+    private String resourceUuid;
     
     public static Finder<Long,Log> find = new Finder<>(Log.class);
     
@@ -100,11 +100,11 @@ public class Log extends Model {
 		this.resourceType = resourceType;
 	}
 
-	public String getResourceUUID() {
-		return resourceUUID;
+	public String getResourceUuid() {
+		return resourceUuid;
 	}
 
-	public void setResourceUUID(String resourceUUID) {
-		this.resourceUUID = resourceUUID;
+	public void setResourceUuid(String resourceUUID) {
+		this.resourceUuid = resourceUUID;
 	}
 }

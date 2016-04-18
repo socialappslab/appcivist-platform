@@ -35,8 +35,6 @@ public class Application extends Controller {
 	public static final String FLASH_ERROR_KEY = "error";
 	public static final Form<Log> LOG_FORM = form(Log.class);
 
-
-
 	public static Result index() {
 		return ok(index.render());
 	}
