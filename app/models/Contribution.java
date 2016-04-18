@@ -44,7 +44,6 @@ public class Contribution extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long contributionId;
 	@Index
-	@JsonIgnore
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
@@ -234,7 +233,13 @@ public class Contribution extends AppCivistBaseModel {
 
 	@Transient
 	public void setFirstAuthor(User u) {
-		this.firstAuthor = u;
+		u.setProviders(null);
+		if (authors.size() > 0) 
+			authors.set(0, u);
+		else {
+			authors = new ArrayList<User>();
+			authors.add(u);
+		}
 	}
 
 	@Transient
