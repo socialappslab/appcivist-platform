@@ -45,7 +45,7 @@ public class Assembly extends AppCivistBaseModel {
 	@Id @GeneratedValue @Column(name="assembly_id")
 	private Long assemblyId;
 	@Index
-	private UUID uuid;
+	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@MaxLength(value = 200) @Required

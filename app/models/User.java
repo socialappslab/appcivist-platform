@@ -89,15 +89,15 @@ public class User extends Model implements Subject {
 	 * Relationships
 	 */
 	@JsonIgnore
-	@OneToMany(mappedBy="user", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy="user", cascade = CascadeType.PERSIST)
 	private List<LinkedAccount> linkedAccounts;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "targetUser", cascade = CascadeType.PERSIST)
 	private List<TokenAction> tokenActions;
 
     @JsonIgnore
-    @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy="user", cascade = CascadeType.PERSIST)
     private List<Membership> memberships = new ArrayList<Membership>();
 
     //	@ManyToMany(cascade = CascadeType.ALL)

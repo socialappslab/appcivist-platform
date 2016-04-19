@@ -9,11 +9,14 @@ import javax.persistence.ManyToOne;
 
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.MembershipStatus;
 
 @Entity
 @DiscriminatorValue("ASSEMBLY")
+@JsonInclude(Include.NON_EMPTY)
 public class MembershipAssembly extends Membership {
 	
 	@ManyToOne
@@ -59,8 +62,8 @@ public class MembershipAssembly extends Membership {
 	public static boolean checkIfExists(Membership m) {
 		MembershipAssembly gm = (MembershipAssembly) m;
 		return find.where().eq("creator", gm.getCreator())
-				.eq("user", gm.getUser()).eq("assembly", gm.getAssembly())
-				.findUnique() != null;
+				.eq("user", gm.getUser())
+				.eq("assembly", gm.getAssembly()).findUnique() != null;
 	}
 
 	/**

@@ -160,13 +160,17 @@ create index ix_ballot_configuration_key on ballot_configuration(key);
 
 
 # --- !Downs
+drop index if exists ix_ballot_uuid;
+drop index if exists ix_candidate_uuid;
+drop index if exists ix_ballot_paper_signature;
+drop index if exists ix_ballot_configuration_key;
 
 drop table if exists resource_space_ballots cascade;
 drop table if exists ballot_registration_field cascade;
 drop table if exists ballot_configuration cascade;
-drop table if exists vote;
-drop table if exists candidate; 
-drop table if exists ballot_paper;
+drop table if exists vote cascade;
+drop table if exists candidate cascade; 
+drop table if exists ballot_paper cascade;
 drop table if exists ballot cascade;
 
 drop sequence if exists ballot_registration_fields_id_seq;
@@ -175,8 +179,3 @@ drop sequence if exists votes_id_seq;
 drop sequence if exists candidates_id_seq;
 drop sequence if exists ballot_papers_id_seq;
 drop sequence if exists ballots_id_seq;
-
-drop index if exists ix_ballot_uuid;
-drop index if exists ix_candidate_uuid;
-drop index if exists ix_ballot_paper_signature;
-drop index if exists ix_ballot_configuration_key;

@@ -32,7 +32,7 @@ public class ApplicationTest {
 	@Test
 	public void testPasswords() {
 		MyLoginUsernamePasswordAuthUser authUser = 
-				new MyLoginUsernamePasswordAuthUser("secret", " bob@example.com");
+				new MyLoginUsernamePasswordAuthUser("appcivist@sage.2016", "bob@example.com");
 
 		// Hash a password for the first time
 		String hashed = authUser.getHashedPassword();

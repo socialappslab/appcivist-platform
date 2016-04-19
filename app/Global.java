@@ -177,6 +177,19 @@ public class Global extends GlobalSettings {
 					.getWrappedApplication().getFile(
 							"conf/evolutions/default/3.sql"));
 			evolutionScripts.add(2, evolution);
+			
+
+			evolution = FileUtils.readFileToString(app
+					.getWrappedApplication().getFile(
+							"conf/evolutions/default/4.sql"));
+			evolutionScripts.add(3, evolution);
+			
+
+			evolution = FileUtils.readFileToString(app
+					.getWrappedApplication().getFile(
+							"conf/evolutions/default/5.sql"));
+			evolutionScripts.add(4, evolution);
+			
 			int number = 1;
 			for (String evolutionContent : evolutionScripts) {
 				// Splitting the String to get Create & Drop DDL
@@ -186,13 +199,18 @@ public class Global extends GlobalSettings {
 				String[] upsDowns = splittedEvolutionContent[1]
 						.split("# --- !Downs");
 				String createDdl = upsDowns[0];
-				String dropDdl = upsDowns[1];
+				String dropDdl = null;
+				
+				if (upsDowns.length>1) 
+					dropDdl = upsDowns[1];
 
 				Ebean.beginTransaction();
-				Logger.info("AppCivist: Dropping DB Tables => " + dropDdl);
-				Ebean.execute(Ebean.createCallableSql(dropDdl));
-				Ebean.commitTransaction();
-
+				if(dropDdl!=null) {
+					Logger.info("AppCivist: Dropping DB Tables => " + dropDdl);
+					Ebean.execute(Ebean.createCallableSql(dropDdl));
+					Ebean.commitTransaction();
+				}
+				
 				Ebean.beginTransaction();
 				Logger.info("AppCivist: Creating DB Tables => " + createDdl);
 				Ebean.execute(Ebean.createCallableSql(createDdl));
