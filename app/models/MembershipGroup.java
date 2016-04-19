@@ -2,12 +2,12 @@ package models;
 
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 import com.avaje.ebean.Query;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -18,7 +18,8 @@ import enums.MembershipStatus;
 @JsonInclude(Include.NON_EMPTY)
 public class MembershipGroup extends Membership {
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
+	@JsonIgnoreProperties({"creator", "members"})
 	private WorkingGroup workingGroup;
 
 	public MembershipGroup() {
