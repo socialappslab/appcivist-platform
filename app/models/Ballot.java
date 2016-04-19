@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.VotingSystemTypes;
 
-@Entity(name="ballots")
+@Entity(name="ballot")
 @JsonInclude(Include.NON_EMPTY)
 public class Ballot extends Model {
 	
