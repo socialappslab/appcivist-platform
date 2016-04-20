@@ -403,6 +403,11 @@ public class WorkingGroups extends Controller {
 		return ok(Json.toJson(proposals));
 	}
 	
+	public static Result listWorkingGroupContributions(Long aid, Long gid) {
+		List<Contribution> contributions = WorkingGroup.listWorkingGroupContributions(gid);
+		return ok(Json.toJson(contributions));
+	}
+	
 	/**
 	 * 
 	 * @return models.AssemblyCollection

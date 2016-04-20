@@ -144,6 +144,8 @@ public class WorkingGroup extends AppCivistBaseModel {
 		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
 		List<Theme> existingThemes = workingGroup.getExistingThemes();
 		List<Long> campaigns = workingGroup.getCampaigns();
+		List<Contribution> existingContributions = workingGroup.getExistingContributions();
+	
 		// 2. Create the new working group
 		workingGroup.save();
 
@@ -151,7 +153,8 @@ public class WorkingGroup extends AppCivistBaseModel {
 		ResourceSpace groupResources = workingGroup.getResources();
 		if (existingThemes != null && !existingThemes.isEmpty())
 			groupResources.getThemes().addAll(existingThemes);
-		
+		if (existingContributions != null && !existingContributions.isEmpty())
+			groupResources.getContributions().addAll(existingContributions);
 		
 		// 3.1 Create the consensus ballot for the group
 		Ballot consensusBallot = new Ballot();
@@ -448,21 +451,6 @@ public class WorkingGroup extends AppCivistBaseModel {
 			this.resources.setResourceSpaceId(id);
 	}
 	
-	@JsonBackReference
-	public List<Contribution> getBrainstormingContributions() {
-		return resources.getContributionsFilteredByType(ContributionTypes.BRAINSTORMING);
-	}
-
-	@JsonBackReference
-	public void setBrainstormingContributions(
-			List<Contribution> brainstormingContributions) {
-		this.resources.getContributions().addAll(brainstormingContributions);
-	}
-	
-	public void addBrainstormingContribution(Contribution contrib) {
-		this.addContribution(contrib);
-	}
-
 	public List<Contribution> getProposals() {
 		this.proposals = resources.getContributionsFilteredByType(ContributionTypes.PROPOSAL);
 		return this.proposals;
@@ -577,4 +565,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 		WorkingGroup wg = WorkingGroup.read(wgid);
 		return wg.getResources().getContributionsFilteredByType(ContributionTypes.PROPOSAL);
 	}
+	
+	public static List<Contribution> listWorkingGroupContributions(Long wgid) {
+		WorkingGroup wg = WorkingGroup.read(wgid);
+		return wg.getResources().getContributions();
+	}
+
 }
