@@ -99,7 +99,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_contributions")
 	@Where(clause="${ta}.removed=false")
 	private List<Contribution> contributions = new ArrayList<Contribution>();
@@ -526,7 +526,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public List<Contribution> getContributionsFilteredByType(
 			ContributionTypes type) {
-		return this.contributions.stream()
+		return this.getContributions().stream()
 				.filter(p -> p.getType() == type)
 				.collect(Collectors.toList());
 	}

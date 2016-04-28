@@ -169,9 +169,9 @@ PUT       /api/assembly/:aid/contribution/:cid                            contro
 # TODO: the following two are not restful and not really necessary, leaving them here just for back compatibility
 PUT       /api/assembly/:aid/contribution/:cid/softremoval                controllers.Contributions.softDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/contribution/:cid/stats/:stid                controllers.Contributions.updateContributionStats(aid: Long, cid: Long, stid: Long)
-GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long, type?="consultive")
-PUT       /api/stats/:stid                                                controllers.Contributions.updateContributionStatsByStatsId(stid: Long)
+GET       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.readContributionFeedback(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
+GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
 POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
 
