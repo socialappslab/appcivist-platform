@@ -20,7 +20,6 @@ import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
