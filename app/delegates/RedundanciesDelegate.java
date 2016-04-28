@@ -45,11 +45,11 @@ public class RedundanciesDelegate {
 				.getStringList("appcivist.dozer.mappingFiles");
 		mapper = new DozerBeanMapper(mappingFiles);
 	}
-
+	/* for each keyword, this table stores the contribution id's that has this keyword in it*/
 	private static Hashtable<String, ArrayList<Long>> contributionsTable = new Hashtable<String, ArrayList<Long>>();
-
+	/* key = contribution id, value = the list of contrition ids that have are similar to the input id*/
 	private static Hashtable<Long, ArrayList<Long>> similarContriTable = new Hashtable<Long, ArrayList<Long>>();
-
+	/*this table stores the keywords of each contribution. Key = contribution id, value = list of keyword strings */
 	private static Hashtable<Long, ArrayList<String>> keywordsTable = new Hashtable<Long, ArrayList<String>>();
 
 
@@ -163,8 +163,6 @@ public class RedundanciesDelegate {
 					previous = true;
 					if (i != 0) {
 						important_words.add(word);
-						// getKeywordsTable().get(id).add(word); // this is newly added... may contain errors
-						// getKeywordsTable.put(id, word);   //just added this line to add important words with
 						put(word, contriID);
 					}
 				}
@@ -206,7 +204,7 @@ public class RedundanciesDelegate {
 		   } 
 		   times_occurred.put(word, oldCount + 1);
 		}
-		/* Sorts the keywords by te number of repetitions, 
+		/* Sorts the keywords by the number of repetitions, 
 			then return a list of keywords with atleast 2 repetition) */
 		Map<String, Integer> sortedMap = sortByComparator(times_occurred, false);
 		ArrayList<String> keywords = new ArrayList<>();
@@ -226,8 +224,6 @@ public class RedundanciesDelegate {
         } else {
         	getKeywordsTable().put(contriID, all_keywords);
         }
-
-
 
 		return all_keywords;
 	}
@@ -270,6 +266,7 @@ public class RedundanciesDelegate {
 		}
 
 		if (getSimilarContriTable().containsKey(contriID)) {
+			
 			getSimilarContriTable().put(contriID, merge_longs(getSimilarContriTable().get(contriID),similiarContri));
 		} else {
 			getSimilarContriTable().put(contriID, similiarContri);
