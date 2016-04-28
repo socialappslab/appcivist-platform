@@ -24,7 +24,8 @@ import models.audit.AuditContribution;
 import models.location.Location;
 //newly added
 import delegates.RedundanciesDelegate;
-import controllers.Redundancies; 
+import controllers.Redundancies;
+
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
@@ -414,8 +415,11 @@ public class Contribution extends AppCivistBaseModel {
 	public static Contribution create(User creator, String title, String text,
 			ContributionTypes type) {
 		Contribution c = new Contribution(creator, title, text, type);
+		Redundancy r = new Redundancy();
+		r.add(c.getContributionId());
 		c.save();
 		c.update();
+		//newly added
 		return c;
 	}
 
