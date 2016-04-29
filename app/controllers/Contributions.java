@@ -250,7 +250,7 @@ public class Contributions extends Controller {
 							"Error reading contribution stats: " + e.getMessage())));
 		}
 	}
-
+	
 	/**
 	 * GET       /api/assembly/:aid/contribution/:cid/padid
 	 * @param aid
@@ -263,7 +263,7 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "AuthorOfContribution", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
 	public static Result findContributionPadId(Long aid, Long contributionId) {
 		Contribution c = Contribution.read(contributionId);
 		if (c!=null) {
@@ -279,8 +279,38 @@ public class Contributions extends Controller {
 		} 
 		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
 	}
+
+	/**
+	 * GET       /api/assembly/:aid/contribution/:cid/comments
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "AuthorOfContribution", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+	public static Result findContributionComments(Long aid, Long contributionId) {
+		Contribution c = Contribution.read(contributionId);
+		if (c!=null) {
+			List<Contribution> comments = Contribution.readCommentsOfSpace(c.getResourceSpaceId());
+			if(comments!=null) {
+				return ok(Json.toJson(comments));	
+			} else {
+				return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No comments on this contribution")));
+			}
+		} 
+		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
+	}
 	
-	// GET       /api/contribution/:uuid
+	/**
+	 * GET       /api/contribution/:uuid
+	 * @param uuid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({

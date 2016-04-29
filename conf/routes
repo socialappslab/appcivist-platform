@@ -160,6 +160,7 @@ GET       /api/space/:sid/contribution                                    contro
 GET       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.readContributionFeedback(aid: Long, cid: Long)
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long)
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
+GET       /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
