@@ -364,7 +364,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Contribution> getComments() {
-		this.comments = resourceSpace
+		this.comments = this.getResourceSpace()
 				.getContributionsFilteredByType(ContributionTypes.COMMENT);
 		return this.comments;
 	}

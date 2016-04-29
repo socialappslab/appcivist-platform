@@ -10,7 +10,6 @@ import java.util.UUID;
 import models.Assembly;
 import models.Ballot;
 import models.BallotCandidate;
-import models.BallotVote;
 import models.Campaign;
 import models.Component;
 import models.Contribution;
@@ -223,6 +222,73 @@ public class Contributions extends Controller {
 		return contributions != null ? ok(Json.toJson(contributions))
 				: notFound(Json.toJson(new TransferResponseStatus(
 						"No contributions for {resource space}: " + sid+", type="+type)));
+	}
+	
+	/**
+	 * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats
+	 * @param aid
+	 * @param cid
+	 * @param stid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer="List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "coid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result readContributionStats(Long aid, Long cid, Long coid) {
+		try {
+			ContributionStatistics stats = new ContributionStatistics(coid);
+			return ok(Json.toJson(stats));
+		} catch (Exception e) {
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"Error reading contribution stats: " + e.getMessage())));
+		}
+	}
+
+	/**
+	 * GET       /api/assembly/:aid/contribution/:cid/padid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "AuthorOfContribution", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+	public static Result findContributionPadId(Long aid, Long contributionId) {
+		Contribution c = Contribution.read(contributionId);
+		if (c!=null) {
+			Resource pad = c.getExtendedTextPad();
+			String padId = pad.getPadId();
+			PadTransfer p = new PadTransfer();
+			p.setPadId(padId);
+			if(padId!=null) {
+				return ok(Json.toJson(p));	
+			} else {
+				return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad id for this Contribution")));
+			}
+		} 
+		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
+	}
+	
+	// GET       /api/contribution/:uuid
+	@ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uuid", value = "Contribution's Universal Id (UUID)", dataType = "java.util.UUID", paramType = "path") })
+	// TODO: add API token support, some API enpoints must be available only for registered clients
+	public static Result findContributionByUUID(UUID uuid) {
+		Contribution contribution = Contribution.readByUUID(uuid);
+		return ok(Json.toJson(contribution));
 	}
 	
 	/* CREATE ENDPOINTS 
@@ -643,6 +709,46 @@ public class Contributions extends Controller {
 	}
 
 	/**
+	 * POST      /api/assembly/:aid/contribution/:cid/attachment
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "attachment_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result addAttachmentContribution(Long aid, Long contributionId) {
+		// 1. read the new contribution data from the body
+				// another way of getting the body content => request().body().asJson()
+				final Form<Resource> newAttachmentForm = ATTACHMENT_FORM
+						.bindFromRequest();
+				User author = User.findByAuthUserIdentity(PlayAuthenticate
+						.getUser(session()));
+
+				if (newAttachmentForm.hasErrors()) {
+					TransferResponseStatus responseBody = new TransferResponseStatus();
+					responseBody.setStatusMessage(Messages.get(
+							GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+							newAttachmentForm.errorsAsJson()));
+					return badRequest(Json.toJson(responseBody));
+				} else {
+					Contribution c = Contribution.read(contributionId);
+					ResourceSpace contributionRs = c.getResourceSpace();
+					Resource newAttachment = newAttachmentForm.get();
+					newAttachment.setCreator(author);
+					contributionRs.addResource(newAttachment);
+					contributionRs.update();
+					return ok(Json.toJson(newAttachment));
+				}
+	}
+
+	/* Update Endpoints */ 
+	/**
 	 * PUT       /api/assembly/:aid/contribution/:cid/feedback
 	 * @param aid
 	 * @param cid
@@ -714,35 +820,7 @@ public class Contributions extends Controller {
 			return ok(Json.toJson(updatedStats));
 		}
 	}
-	
-	
-	/**
-	 * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats
-	 * @param aid
-	 * @param cid
-	 * @param stid
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer="List", produces = "application/json", value = "Get contributions in Assembly")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "coid", value = "Contribution id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result readContributionStats(Long aid, Long cid, Long coid) {
-		try {
-			ContributionStatistics stats = new ContributionStatistics(coid);
-			return ok(Json.toJson(stats));
-		} catch (Exception e) {
-			return internalServerError(Json
-					.toJson(new TransferResponseStatus(
-							ResponseStatus.SERVERERROR,
-							"Error reading contribution stats: " + e.getMessage())));
-		}
-	}
-	
+		
 	/**
 	 * PUT       /api/assembly/:aid/contribution/:cid
 	 * @param aid
@@ -778,45 +856,6 @@ public class Contributions extends Controller {
 		}
 	}
 	
-	/**
-	 * POST      /api/assembly/:aid/contribution/:cid/attachment
-	 * @param aid
-	 * @param contributionId
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "attachment_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result addAttachmentContribution(Long aid, Long contributionId) {
-		// 1. read the new contribution data from the body
-				// another way of getting the body content => request().body().asJson()
-				final Form<Resource> newAttachmentForm = ATTACHMENT_FORM
-						.bindFromRequest();
-				User author = User.findByAuthUserIdentity(PlayAuthenticate
-						.getUser(session()));
-
-				if (newAttachmentForm.hasErrors()) {
-					TransferResponseStatus responseBody = new TransferResponseStatus();
-					responseBody.setStatusMessage(Messages.get(
-							GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
-							newAttachmentForm.errorsAsJson()));
-					return badRequest(Json.toJson(responseBody));
-				} else {
-					Contribution c = Contribution.read(contributionId);
-					ResourceSpace contributionRs = c.getResourceSpace();
-					Resource newAttachment = newAttachmentForm.get();
-					newAttachment.setCreator(author);
-					contributionRs.addResource(newAttachment);
-					contributionRs.update();
-					return ok(Json.toJson(newAttachment));
-				}
-	}
-
 	/**
 	 * PUT       /api/assembly/:aid/contribution/:cid/softremoval
 	 * TODO: create a dynamic handler to check if the contribution belongs to the user
@@ -854,36 +893,7 @@ public class Contributions extends Controller {
 		Contribution.softRecovery(contributionId);
 		return ok();
 	}
-	
-	/**
-	 * GET       /api/assembly/:aid/contribution/:cid/padid
-	 * @param aid
-	 * @param contributionId
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "AuthorOfContribution", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
-	public static Result findContributionPadId(Long aid, Long contributionId) {
-		Contribution c = Contribution.read(contributionId);
-		if (c!=null) {
-			Resource pad = c.getExtendedTextPad();
-			String padId = pad.getPadId();
-			PadTransfer p = new PadTransfer();
-			p.setPadId(padId);
-			if(padId!=null) {
-				return ok(Json.toJson(p));	
-			} else {
-				return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad id for this Contribution")));
-			}
-		} 
-		return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID "+contributionId+ " not found")));
-	}
-	
+		
 	/**
 	 * DELETE    /api/assembly/:aid/contribution/:cid
 	 * @param aid

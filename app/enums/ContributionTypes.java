@@ -12,5 +12,5 @@ public enum ContributionTypes {
 	DISCUSSION,  // represents a set of comments related to a topic
 	BRAINSTORMING, // represents a contribution to the brainstorming phase
 	DELIBERATIVE_DISCUSSION, // represents a discussion that must have one or more decisions at the end
-	NOTE, 
+	NOTE 
 }
