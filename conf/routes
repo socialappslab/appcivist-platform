@@ -89,6 +89,7 @@ GET       /api/assembly/:aid/group/:gid/proposals                         contro
 GET       /api/assembly/:aid/group/:gid/contributions                     controllers.WorkingGroups.listWorkingGroupContributions(aid: Long, gid: Long) 
 GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 
+
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
 # TODO: mark for review and removal if not needed
@@ -137,6 +138,7 @@ PUT       /api/assembly/:aid/campaign/:cid                                contro
 POST      /api/assembly/:aid/campaign                                     controllers.Campaigns.createCampaignInAssembly(aid: Long)
 DELETE    /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
 GET       /api/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
+GET       /api/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
 
 
 ##################################################################################################################################################################
@@ -155,25 +157,23 @@ GET       /api/assembly/:aid/campaign/:cid/contribution                   contro
 GET       /api/assembly/:aid/group/:gid/contribution                      controllers.Contributions.findAssemblyGroupContributions(aid: Long, gid: Long, space?="forum", type?="")
 GET       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.findContribution(aid: Long, cid: Long)
 GET       /api/space/:sid/contribution                                    controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="")
+GET       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.readContributionFeedback(aid: Long, cid: Long)
+GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long)
+GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
+GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
 POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
 POST      /api/assembly/:aid/group/:gid/contribution                      controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
 POST      /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.createContributionComment(aid: Long, cid: Long)
-# MVP facilitators endpoints
-GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
+POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
 POST      /api/assembly/:aid/forumpost                                    controllers.Contributions.createAssemblyForumPost(aid: Long)
 POST      /api/assembly/:aid/group/:gid/forumpost                         controllers.Contributions.createWorkingGroupForumPost(aid: Long, gid: Long)
-# GET ongoing campaigns of a group
 PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.updateContribution(aid: Long, cid: Long)
-# TODO: the following two are not restful and not really necessary, leaving them here just for back compatibility
 PUT       /api/assembly/:aid/contribution/:cid/softremoval                controllers.Contributions.softDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/contribution/:cid/stats/:stid                controllers.Contributions.updateContributionStats(aid: Long, cid: Long, stid: Long)
-GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long, type?="consultive")
-PUT       /api/stats/:stid                                                controllers.Contributions.updateContributionStatsByStatsId(stid: Long)
+PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
-POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

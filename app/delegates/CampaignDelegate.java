@@ -1,11 +1,13 @@
 package delegates;
 
 import java.util.List;
+import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
 import models.ResourceSpace;
 import models.User;
+import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 
 import org.dozer.DozerBeanMapper;
@@ -43,4 +45,9 @@ public class CampaignDelegate {
 		return newCampaignTransfer;
 	}
 
+	public static CampaignSummaryTransfer getCampaignSummary(UUID campaignUUID) {
+		Campaign campaign = Campaign.readByUUID(campaignUUID);
+		CampaignSummaryTransfer campaignSummary = mapper.map(campaign, CampaignSummaryTransfer.class);	
+		return campaignSummary;
+	}
 }

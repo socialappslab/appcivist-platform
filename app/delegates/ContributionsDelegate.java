@@ -47,6 +47,7 @@ public class ContributionsDelegate {
 		}	
 	}
 	
+	// TODO: Add campaign Template
 	public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, UUID resourceSpaceUUID) throws MalformedURLException {
 		EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
 		// Create pad and set text

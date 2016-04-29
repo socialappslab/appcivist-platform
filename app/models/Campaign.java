@@ -725,4 +725,8 @@ String uuidAsString, List<Component> phases) {
 		SqlRow result = sqlQuery.findUnique();
 		return result.getUUID("consultive_ballot");	
 	}
+
+	public static Campaign readByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
+	}
 }

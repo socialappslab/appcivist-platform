@@ -1,14 +1,21 @@
 package controllers;
 
 import static play.data.Form.form;
+import http.Headers;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import models.Contribution;
 import models.Log;
 import models.User;
 import models.transfer.TransferResponseStatus;
+import play.Logger;
+import play.data.Form;
+import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.With;
+import utils.LogActions;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -18,14 +25,7 @@ import com.wordnik.swagger.annotations.ApiImplicitParams;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-
-import play.*;
-import play.data.Form;
-import play.libs.Json;
-import play.mvc.*;
-import utils.LogActions;
 import views.html.*;
-import http.Headers;
 
 @Api(value="/")
 @With(Headers.class)

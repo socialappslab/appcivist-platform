@@ -15,7 +15,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PostUpdate;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
@@ -90,9 +89,8 @@ public class Contribution extends AppCivistBaseModel {
 	@OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
 	private ResourceSpace resourceSpace = new ResourceSpace(
 			ResourceSpaceTypes.CONTRIBUTION);
-	@OneToOne(cascade = CascadeType.ALL)
-	@JsonManagedReference
-	private ContributionStatistics stats = new ContributionStatistics();
+	@Transient
+	private ContributionStatistics stats = new ContributionStatistics(this.contributionId);
 
 	/*
 	 * Transient properties that take their values from the associated resource
@@ -366,7 +364,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Contribution> getComments() {
-		this.comments = resourceSpace
+		this.comments = this.getResourceSpace()
 				.getContributionsFilteredByType(ContributionTypes.COMMENT);
 		return this.comments;
 	}
@@ -417,6 +415,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public ContributionStatistics getStats() {
+		this.stats = new ContributionStatistics(this.contributionId);
 		return stats;
 	}
 
@@ -809,16 +808,6 @@ public class Contribution extends AppCivistBaseModel {
 		String newTextIndex = this.title + "\n" + this.text;
 		if (this.textIndex != null && !this.textIndex.equals(newTextIndex))
 			this.textIndex = newTextIndex;
-	}
-
-	@PostUpdate
-	private void afterUpdate() {
-		// 2. Update replies stats
-		int numberComments = this.resourceSpace.getContributionsFilteredByType(
-				ContributionTypes.COMMENT).size();
-		if (numberComments != this.stats.getReplies())
-			this.stats.setReplies(new Long(numberComments));
-		this.stats.update();
 	}
 
 	public static boolean isUserAuthor(User u, Long contributionId) {
