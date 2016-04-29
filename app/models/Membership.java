@@ -54,12 +54,9 @@ public class Membership extends AppCivistBaseModel {
 	private User user;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinTable(
-			name = "MEMBERSHIP_ROLE", 
-			joinColumns = { 
-					@JoinColumn(name = "membership_membership_id", referencedColumnName = "membership_id", nullable = false) }, 
-			inverseJoinColumns = {
-					@JoinColumn(name = "role_role_id", referencedColumnName = "role_id", nullable = false)})
+	@JoinTable( name = "membership_role", 
+			joinColumns = { @JoinColumn(name = "membership_membership_id", referencedColumnName = "membership_id", insertable=true, updatable=true) }, 
+			inverseJoinColumns = { @JoinColumn(name = "role_role_id", referencedColumnName = "role_id", insertable=true, updatable=true)})
 	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
 
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)

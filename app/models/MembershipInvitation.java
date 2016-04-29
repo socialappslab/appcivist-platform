@@ -308,23 +308,30 @@ public class MembershipInvitation extends AppCivistBaseModel {
 			ma.setAssembly(a);
 			ma.setCreator(mi.getCreator());
 			ma.setStatus(MembershipStatus.ACCEPTED);
-			ma.setRoles(mi.getRoles());
+			//ma.setRoles(mi.getRoles());
 			ma.setTargetUuid(a.getUuid());
 			ma.setUser(user);
-			ma.save();
-			ma.refresh();
+			ma = (MembershipAssembly) MembershipAssembly.create(ma);
+			for (SecurityRole role : mi.getRoles()) {
+				MembershipRole mr = new MembershipRole(ma.getMembershipId(),role.getRoleId());
+				mr.save();
+			}
 		} else {
 			MembershipGroup mg = new MembershipGroup();
 			WorkingGroup g = WorkingGroup.read(mi.getTargetId());
 			mg.setWorkingGroup(g);
 			mg.setCreator(mi.getCreator());
 			mg.setStatus(MembershipStatus.ACCEPTED);
-			mg.setRoles(mi.getRoles());
+			//TODO fix the cascade of membership to roles
+			//mg.setRoles(mi.getRoles());
 			mg.setTargetUuid(g.getUuid());
 			mg.setUser(user);
-			mg.save();
-			mg.refresh();
+			mg = (MembershipGroup) MembershipGroup.create(mg);
 			
+			for (SecurityRole role : mi.getRoles()) {
+				MembershipRole mr = new MembershipRole(mg.getMembershipId(),role.getRoleId());
+				mr.save();
+			}
 			// Create membership to assemblies in which the working group is listed
 			List<Long> wgAssembliesIds = g.getAssemblies();
 			for (Long assemblyId : wgAssembliesIds) {
@@ -338,7 +345,6 @@ public class MembershipInvitation extends AppCivistBaseModel {
 				List<SecurityRole> roles = new ArrayList<SecurityRole>();
 				// add the MEMBER role always
 				roles.add(SecurityRole.findByName("MEMBER"));
-
 				ManagementTypes assemblyMgtType = a.getProfile().getManagementType();
 				// add COORDINATOR and MODERATOR if assembly is COORDINATED_AND_MODERATED
 				if (assemblyMgtType.equals(ManagementTypes.COORDINATED_AND_MODERATED)) {
@@ -352,11 +358,14 @@ public class MembershipInvitation extends AppCivistBaseModel {
 					roles.add(SecurityRole.findByName("MODERATOR"));
 				}
 				
-				ma.setRoles(roles);
+				//ma.setRoles(roles);
 				ma.setTargetUuid(a.getUuid());
 				ma.setUser(user);
-				ma.save();
-				ma.refresh();
+				ma = (MembershipAssembly) MembershipAssembly.create(ma);
+				for (SecurityRole role : roles) {
+					MembershipRole mr = new MembershipRole(ma.getMembershipId(),role.getRoleId());
+					mr.save();
+				}
 			}
 		}
 
