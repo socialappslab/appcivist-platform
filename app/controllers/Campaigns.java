@@ -13,6 +13,7 @@ import models.CampaignTemplate;
 import models.Membership;
 import models.MembershipAssembly;
 import models.User;
+import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -81,6 +82,16 @@ public class Campaigns extends Controller {
 	public static Result findCampaignByAssemblyId(Long aid, Long campaignId) {
 		Campaign campaign = Campaign.read(campaignId);
 		return campaign != null ? ok(Json.toJson(campaign)) : ok(Json
+				.toJson(new TransferResponseStatus("No campaign found")));
+	}
+	
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by UUID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uuid", value = "Campaign Universal ID (UUID)", dataType = "java.util.UUID", paramType = "path") })
+	public static Result findCampaignByUUID(UUID uuid) {
+		CampaignSummaryTransfer summary = CampaignDelegate.getCampaignSummary(uuid);
+		return summary  != null ? ok(Json.toJson(summary)) : ok(Json
 				.toJson(new TransferResponseStatus("No campaign found")));
 	}
 

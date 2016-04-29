@@ -89,6 +89,7 @@ GET       /api/assembly/:aid/group/:gid/proposals                         contro
 GET       /api/assembly/:aid/group/:gid/contributions                     controllers.WorkingGroups.listWorkingGroupContributions(aid: Long, gid: Long) 
 GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 
+
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
 # TODO: mark for review and removal if not needed
@@ -137,6 +138,7 @@ PUT       /api/assembly/:aid/campaign/:cid                                contro
 POST      /api/assembly/:aid/campaign                                     controllers.Campaigns.createCampaignInAssembly(aid: Long)
 DELETE    /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
 GET       /api/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
+GET       /api/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
 
 
 ##################################################################################################################################################################
