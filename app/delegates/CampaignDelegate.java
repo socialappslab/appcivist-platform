@@ -1,5 +1,6 @@
 package delegates;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,5 +50,15 @@ public class CampaignDelegate {
 		Campaign campaign = Campaign.readByUUID(campaignUUID);
 		CampaignSummaryTransfer campaignSummary = mapper.map(campaign, CampaignSummaryTransfer.class);	
 		return campaignSummary;
+	}
+
+	public static List<CampaignSummaryTransfer> findByBindingBallot(UUID uuid) {
+		List<Campaign> campaigns = Campaign.findByBindingBallotUUID(uuid);
+		List<CampaignSummaryTransfer> campaignSummaries = new ArrayList<CampaignSummaryTransfer>();
+		for (Campaign campaign : campaigns) {
+			CampaignSummaryTransfer campaignSummary = mapper.map(campaign, CampaignSummaryTransfer.class);	
+			campaignSummaries.add(campaignSummary);
+		}
+		return campaignSummaries;
 	}
 }

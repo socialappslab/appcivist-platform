@@ -139,6 +139,7 @@ POST      /api/assembly/:aid/campaign                                     contro
 DELETE    /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
 GET       /api/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
 GET       /api/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
+GET       /api/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
 
 
 ##################################################################################################################################################################

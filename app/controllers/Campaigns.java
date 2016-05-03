@@ -95,6 +95,24 @@ public class Campaigns extends Controller {
 				.toJson(new TransferResponseStatus("No campaign found")));
 	}
 
+
+	/**
+	 * GET /api/ballot/:uuid/campaign
+	 * Read campaign by assembly ID and campaign ID
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = CampaignSummaryTransfer.class, responseContainer="List", produces = "application/json", value = "Get campaign by ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uuid", value = "Ballot UUID", dataType = "Long", paramType = "path") })
+	public static Result findCampaignsByBallot(UUID uuid) {
+		List<CampaignSummaryTransfer> campaignSummaries = CampaignDelegate.findByBindingBallot(uuid);
+		return campaignSummaries != null ? ok(Json.toJson(campaignSummaries)) : ok(Json
+				.toJson(new TransferResponseStatus("No campaign found")));
+	}
+	
 	/**
 	 * DELETE /api/assembly/:aid/campaign/:cid
 	 * Delete campaign by ID
