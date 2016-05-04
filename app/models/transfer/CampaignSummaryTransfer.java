@@ -45,10 +45,10 @@ public class CampaignSummaryTransfer {
 	public void setThemes(List<ThemeTransfer> themes) {
 		this.themes = themes;
 	}
-	public List<WorkingGroupTransfer> getWorkingGroups() {
+	public List<WorkingGroupSummaryTransfer> getWorkingGroups() {
 		return workingGroups;
 	}
-	public void setWorkingGroups(List<WorkingGroupTransfer> workingGroups) {
+	public void setWorkingGroups(List<WorkingGroupSummaryTransfer> workingGroups) {
 		this.workingGroups = workingGroups;
 	}
 	public CampaignTemplateTransfer getTemplate() {
