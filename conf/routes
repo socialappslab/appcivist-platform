@@ -131,6 +131,11 @@ POST      /api/assembly/:aid/config                                       contro
 DELETE    /api/assembly/:aid/config/:cid                                  controllers.Configs.deleteConfig(aid: Long, cid: String)
 
 ##################################################################################################################################################################
+# Campaign Template and Configuration endpoints
+
+GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
+
+##################################################################################################################################################################
 # Campaign API
 GET       /api/assembly/:aid/campaign                                     controllers.Campaigns.findCampaignsByAssemblyId(aid: Long)
 GET       /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.findCampaignByAssemblyId(aid: Long, cid: Long)
@@ -204,11 +209,6 @@ GET       /api/user/logout/redirect                                       contro
 ##################################################################################################################################################################
 # Location endpoints
 GET       /api/location/:query                                            controllers.Locations.findLocations(query: String)
-
-##################################################################################################################################################################
-# Campaign Template and Configuration endpoints
-
-GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
 
 ##################################################################################################################################################################
 # Utilities endpoints
