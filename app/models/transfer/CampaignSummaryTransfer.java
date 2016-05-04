@@ -9,7 +9,7 @@ public class CampaignSummaryTransfer {
 	private String goal;	
 	private List<ConfigTransfer> configs = new ArrayList<>();
 	private List<ThemeTransfer> themes = new ArrayList<>();
-	private List<WorkingGroupTransfer> workingGroups = new ArrayList<>();
+	private List<WorkingGroupSummaryTransfer> workingGroups = new ArrayList<>();
 	private CampaignTemplateTransfer template;
 	private CampaignTimelineEdgeTransfer timelineEdges;
 	public CampaignSummaryTransfer() {
