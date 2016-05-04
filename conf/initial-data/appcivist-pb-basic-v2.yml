@@ -161,7 +161,7 @@
       - *r2 # USER
     linkedAccounts:
     - &ua1 !!models.LinkedAccount
-      providerUserId: "$2a$10$pR.m2M1NZpmIOq.VFaO9.e6JY2aoDn3g9wqftXWKqg6xejTef6mCy"
+      providerUserId: "$2a$10$/sx28o5PkGDFFqzNdIB8YeHdjvrc1UPOP6ZikD4w2Nrtu3ntvhbtC"
       providerKey: password
       user: *u1
   - &u2 !!models.User
@@ -176,7 +176,7 @@
       - *r2 # USER
     linkedAccounts:
     - &ua2 !!models.LinkedAccount
-      providerUserId: "$2a$10$FyboCfWU32JZO31D2kZ/d.ZHgcSLOPDKgk0xbXxfZqG0iEvAGgVDy"
+      providerUserId: "$2a$10$/sx28o5PkGDFFqzNdIB8YeHdjvrc1UPOP6ZikD4w2Nrtu3ntvhbtC"
       providerKey: password
       user: *u2
   - &u3 !!models.User

@@ -25,9 +25,13 @@
         <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.AssemblySummaryTransfer</class-b>
     </mapping>
-     <mapping map-null="false" map-empty-string="false">
+    <mapping map-null="false" map-empty-string="false">
         <class-a map-null="false" map-empty-string="false">models.WorkingGroup</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.WorkingGroupSummaryTransfer</class-b>
+    </mapping>
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.WorkingGroup</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.WorkingGroupTransfer</class-b>
     </mapping>
     <mapping map-null="false" map-empty-string="false">
         <class-a map-null="false" map-empty-string="false">models.Assembly</class-a>
