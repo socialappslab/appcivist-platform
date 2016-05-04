@@ -10,7 +10,6 @@ public class CampaignSummaryTransfer {
 	private List<ConfigTransfer> configs = new ArrayList<>();
 	private List<ThemeTransfer> themes = new ArrayList<>();
 	private List<WorkingGroupSummaryTransfer> workingGroups = new ArrayList<>();
-	private CampaignTemplateTransfer template;
 	private CampaignTimelineEdgeTransfer timelineEdges;
 	public CampaignSummaryTransfer() {
 		super();
@@ -50,12 +49,6 @@ public class CampaignSummaryTransfer {
 	}
 	public void setWorkingGroups(List<WorkingGroupSummaryTransfer> workingGroups) {
 		this.workingGroups = workingGroups;
-	}
-	public CampaignTemplateTransfer getTemplate() {
-		return template;
-	}
-	public void setTemplate(CampaignTemplateTransfer template) {
-		this.template = template;
 	}
 	public CampaignTimelineEdgeTransfer getTimelineEdges() {
 		return timelineEdges;
