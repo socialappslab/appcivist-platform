@@ -266,7 +266,7 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findContributionPadId(Long aid, Long contributionId) {
 		Contribution c = Contribution.read(contributionId);
 		if (c!=null) {
