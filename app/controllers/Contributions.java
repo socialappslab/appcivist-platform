@@ -20,6 +20,7 @@ import models.Resource;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
+import models.WorkingGroupProfile;
 import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -48,8 +49,10 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.ContributionsDelegate;
 import enums.ContributionTypes;
+import enums.ManagementTypes;
 import enums.ResourceSpaceTypes;
 import enums.ResponseStatus;
+import enums.SupportedMembershipRegistration;
 
 @Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -982,12 +985,60 @@ public class Contributions extends Controller {
 		Logger.info("Using Etherpad server at: "+etherpadServerUrl);
 		Logger.debug("Using Etherpad API Key: "+etherpadApiKey);
 		
-		if(type!=null && type.equals(ContributionTypes.PROPOSAL)) {
+		if(type!=null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
 			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, containerResourceSpace.getResourceSpaceUuid());				
 		}
 		
 		Logger.info("Creating new contribution");
 		Logger.debug("=> " + newContrib.toString());
+		
+		
+
+		// If contribution is a proposal and there is no working group associated as author, 
+		// create one automatically with the creator as coordinator
+		List<WorkingGroup> workingGroupAuthors = newContrib
+				.getWorkingGroupAuthors();
+		if (newContrib.getType().equals(ContributionTypes.PROPOSAL)
+				&& (workingGroupAuthors == null || workingGroupAuthors
+						.isEmpty())) {
+			WorkingGroup newWorkingGroup = new WorkingGroup();
+			newWorkingGroup.setCreator(author);
+			newWorkingGroup.setName("WG for '"+newContrib.getTitle()+"'");
+			newWorkingGroup.setLang(author.getLanguage());
+			newWorkingGroup.setExistingThemes(newContrib.getExistingThemes());
+			newWorkingGroup.setListed(false);
+			newWorkingGroup
+					.setInvitationEmail("Hello! You have been invited to be a member of the "
+							+ "Working Group \""+newWorkingGroup.getName()+"\" in AppCivist. "
+									+ "If you are interested, follow the link attached to this "
+									+ "invitation to accept it. If you are not interested, you "
+									+ "can just ignore this message");
+			newWorkingGroup.setMajorityThreshold("simple");
+			newWorkingGroup.setBlockMajority(false);
+			
+			WorkingGroupProfile newWGProfile = new WorkingGroupProfile();
+			newWGProfile.setIcon("https://s3-us-west-1.amazonaws.com/appcivist-files/icons/justicia-140.png");
+			newWGProfile.setManagementType(ManagementTypes.COORDINATED_AND_MODERATED);
+			newWGProfile.setSupportedMembership(SupportedMembershipRegistration.INVITATION_AND_REQUEST);
+
+			newWorkingGroup.setProfile(newWGProfile);
+			newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+			// TODO include invitations in new proposal when it is a brainstorming contribution transformation
+			
+			containerResourceSpace.addWorkingGroup(newWorkingGroup);
+			
+			// Find resource space of the assembly and add it also in there
+			if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+				Campaign c = containerResourceSpace.getCampaign();
+				Assembly a = Assembly.read(c.getAssemblies().get(0));
+				ResourceSpace aRs = a.getResources();
+				aRs.addWorkingGroup(newWorkingGroup);
+				aRs.update();
+			}
+			
+			newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
+		}
+		
 		Contribution.create(newContrib);
 		newContrib.refresh();
 		
@@ -1013,9 +1064,9 @@ public class Contributions extends Controller {
 				}
 			}
 		}
-
+		
 		// If the contribution is a proposal, create an associated candidate in the ballot 
-		// of the working group authors
+		// of the working group authors		
 		for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
 			UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
 			Ballot b = Ballot.findByUUID(consensus);

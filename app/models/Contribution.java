@@ -559,15 +559,7 @@ public class Contribution extends AppCivistBaseModel {
 
 		// 2. Check if there are working group associated and save the groups in
 		// a list to add the contribution to them later
-		List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors(); // new
-																				// working
-																				// groups
-																				// are
-																				// never
-																				// created
-																				// from
-																				// contributions
-
+		List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors(); 
 		c.save();
 
 		// 3. Add existing entities in relationships to the manytomany resources
@@ -590,12 +582,13 @@ public class Contribution extends AppCivistBaseModel {
 
 		cResSpace.update();
 
-		// 4. Add contribution to working group authors
+		// 5. Add contribution to working group authors
 		for (WorkingGroup workingGroup : workingGroupAuthors) {
 			workingGroup.addContribution(c);
 			workingGroup.update();
 			workingGroup.refresh();
 		}
+		
 
 		c.refresh();
 	}

@@ -88,7 +88,6 @@ public class WorkingGroups extends Controller {
 		}
 	}
 
-	
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get working group by ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
