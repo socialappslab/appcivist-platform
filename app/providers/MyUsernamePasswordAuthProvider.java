@@ -124,8 +124,8 @@ public class MyUsernamePasswordAuthProvider
 		@MinLength(5)
 		private String repeatPassword;
 		public String name;		
-		private String lang; 
-		private AssemblyTransfer newAssembly;
+		public String lang; 
+		public AssemblyTransfer newAssembly;
 		private UUID invitationToken;
 		
 		public String validate() {

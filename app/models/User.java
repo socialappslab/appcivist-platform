@@ -30,6 +30,7 @@ import play.Play;
 import play.db.ebean.Transactional;
 import providers.GroupSignupIdentity;
 import providers.InvitationSignupIdentity;
+import providers.LanguageSignupIdentity;
 import utils.GlobalData;
 import utils.security.HashGenerationException;
 import utils.security.HashGeneratorUtils;
@@ -526,9 +527,15 @@ public class User extends Model implements Subject {
 		/*
 		 * 8. Set language of user
 		 */
-		// TODO get the default language from request		
-		String userLanguage = user.getLanguage() == null ? Play.application().configuration().getString("default.language") : user.getLanguage();		
-		user.setLanguage(userLanguage);
+		// TODO get the default language from request	
+		
+		if (authUser instanceof LanguageSignupIdentity) {
+			final LanguageSignupIdentity identity = (LanguageSignupIdentity) authUser;
+			String lang = identity.getLanguage();
+			String userLanguage = lang == null ? Play.application().configuration().getString("default.language") : identity.getLanguage();		
+			user.setLanguage(userLanguage);
+
+		}
 		
 		/*
 		 * 9. Create the new user

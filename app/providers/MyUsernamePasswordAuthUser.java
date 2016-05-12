@@ -11,7 +11,7 @@ import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
 
 public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
-		implements NameIdentity, PicturedIdentity, GroupSignupIdentity, InvitationSignupIdentity {
+		implements NameIdentity, PicturedIdentity, GroupSignupIdentity, InvitationSignupIdentity, LanguageSignupIdentity {
 
 	/**
 	 * 
@@ -37,6 +37,7 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	public MyUsernamePasswordAuthUser(final MySignup signup) {
 		super(signup.password, signup.email);
 		this.name = signup.name;
+		this.lang = signup.lang;
 		this.newAssembly = signup.getNewAssembly();
 		this.invitationToken = signup.getInvitationToken();
 	}
@@ -100,6 +101,15 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 
 	public void setInvitationToken(UUID invitationToken) {
 		this.invitationToken = invitationToken;
+	}
+
+	@Override
+	public String getLanguage() {
+		return this.lang;
+	}
+	
+	public void setLanguage(String l) {
+		this.lang = l;
 	}
 	
 }
