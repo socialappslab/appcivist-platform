@@ -4,6 +4,7 @@ import static play.data.Form.form;
 import http.Headers;
 
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,11 +17,13 @@ import models.Contribution;
 import models.ContributionFeedback;
 import models.ContributionStatistics;
 import models.ContributionTemplate;
+import models.MembershipInvitation;
 import models.Resource;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
 import models.WorkingGroupProfile;
+import models.transfer.InvitationTransfer;
 import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -948,19 +951,19 @@ public class Contributions extends Controller {
 	/*
 	 * Non-exposed methods: creation methods
 	 */
-	
-	public static Result createContributionResult(Contribution newContrib,
-			User author, ContributionTypes type, ContributionTemplate t, ResourceSpace containerResourceSpace) {
-		try {
-			return ok(Json.toJson(createContribution(newContrib, author, type, t, containerResourceSpace)));
-		} catch (MalformedURLException e) {
-			return internalServerError(Json
-					.toJson(new TransferResponseStatus(
-							ResponseStatus.SERVERERROR,
-							"Error in etherpad server URL: " + e.toString())));
-		}
-	}
-
+	/**
+	 * This method is reused by all other contribution creation methods to centralize its logic
+	 * 
+	 * @param newContrib
+	 * @param author
+	 * @param type
+	 * @param etherpadServerUrl
+	 * @param etherpadApiKey
+	 * @param t
+	 * @param containerResourceSpace
+	 * @return
+	 * @throws MalformedURLException
+	 */
 	public static Contribution createContribution(Contribution newContrib,
 			User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey, 
 			ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException {
@@ -992,18 +995,31 @@ public class Contributions extends Controller {
 		Logger.info("Creating new contribution");
 		Logger.debug("=> " + newContrib.toString());
 		
+		// Get list of BRAINSTORMING contributions that inspire the new one
+		List<Contribution> inspirations = newContrib.getTransientInspirations(); 
 		
-
 		// If contribution is a proposal and there is no working group associated as author, 
 		// create one automatically with the creator as coordinator
 		List<WorkingGroup> workingGroupAuthors = newContrib
 				.getWorkingGroupAuthors();
+		String newWorkingGroupName = "WG for '"+newContrib.getTitle()+"'";
+		if (workingGroupAuthors!=null && !workingGroupAuthors.isEmpty()) {
+			WorkingGroup wg = workingGroupAuthors.get(0);
+			if (wg.getGroupId() == null) {
+				newWorkingGroupName = wg.getName();
+				workingGroupAuthors = null;
+				newContrib.setWorkingGroupAuthors(null);
+			}
+		}
+		
+		WorkingGroup newWorkingGroup = new WorkingGroup();
+		Boolean workingGroupIsNew = false;
 		if (newContrib.getType().equals(ContributionTypes.PROPOSAL)
 				&& (workingGroupAuthors == null || workingGroupAuthors
 						.isEmpty())) {
-			WorkingGroup newWorkingGroup = new WorkingGroup();
+			workingGroupIsNew = true;
 			newWorkingGroup.setCreator(author);
-			newWorkingGroup.setName("WG for '"+newContrib.getTitle()+"'");
+			newWorkingGroup.setName(newWorkingGroupName);
 			newWorkingGroup.setLang(author.getLanguage());
 			newWorkingGroup.setExistingThemes(newContrib.getExistingThemes());
 			newWorkingGroup.setListed(false);
@@ -1023,8 +1039,7 @@ public class Contributions extends Controller {
 
 			newWorkingGroup.setProfile(newWGProfile);
 			newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-			// TODO include invitations in new proposal when it is a brainstorming contribution transformation
-			
+
 			containerResourceSpace.addWorkingGroup(newWorkingGroup);
 			
 			// Find resource space of the assembly and add it also in there
@@ -1042,6 +1057,24 @@ public class Contributions extends Controller {
 		Contribution.create(newContrib);
 		newContrib.refresh();
 		
+		if (newContrib.getType().equals(ContributionTypes.PROPOSAL) && inspirations != null) {
+			ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());
+			for (Contribution inspiration : inspirations) {
+				Contribution c = Contribution.read(inspiration.getContributionId());
+				cSpace.addContribution(c);
+			}
+			cSpace.update();
+			cSpace.refresh();			
+
+			// If the proposal is coming from brainstorming, invite the
+			// commenters of the
+			// each brainstorming contributions
+			if (!inspirations.isEmpty() && workingGroupIsNew) {
+				inviteCommentersInInspirationList(inspirations, newContrib,
+						newWorkingGroup);
+			}
+		}
+
 		// If contribution is a proposal and the resource space where it is added is a Campaign
 		// create automatically a related candidate for the contribution in the bindingBallot 
 		// and consultiveBallot associated to the campaign.
@@ -1079,8 +1112,57 @@ public class Contributions extends Controller {
 		
 		return newContrib;
 	}
+
+	/**
+	 * It looks into the list of comments of the brainstorming contributions that serve as inspiration
+	 * for a new proposal
+	 * @param inspirations
+	 * @param newContrib
+	 * @param newWorkingGroup
+	 */
+	private static void inviteCommentersInInspirationList(
+			List<Contribution> inspirations, Contribution newContrib,
+			WorkingGroup newWorkingGroup) {
+		HashMap<String, Boolean> invitedEmails = new HashMap<String, Boolean>();
+		for (Contribution inspirationObject : inspirations) {
+			Contribution inspiration = Contribution.read(inspirationObject.getContributionId());
+			List<Contribution> comments = inspiration.getComments();
+			for (Contribution comment : comments) {
+				User commentAuthor = comment.getAuthors().get(0);
+				String authorEmail = commentAuthor.getEmail();
+				String creatorEmail = newContrib.getAuthors().get(0).getEmail();
+				Boolean invited = invitedEmails.get(authorEmail);
+				if((invited==null || !invited) && !authorEmail.equals(creatorEmail)) {
+					InvitationTransfer invitation = new InvitationTransfer();
+					invitation.setEmail(authorEmail);
+					invitation.setInvitationEmail(newWorkingGroup.getInvitationEmail());
+					invitation.setTargetId(newWorkingGroup.getGroupId());
+					invitation.setTargetType("GROUP");
+					invitation.setCoordinator(false);
+					invitation.setModerator(false);
+					MembershipInvitation.create(invitation, newWorkingGroup.getCreator(), newWorkingGroup);
+					invitedEmails.put(authorEmail,true);
+				}
+			}
+		}
 		
-	public static Contribution createContribution(Contribution newContrib, User author, ContributionTypes type, ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException {
+	}
+
+	public static Result createContributionResult(Contribution newContrib,
+			User author, ContributionTypes type, ContributionTemplate t, ResourceSpace containerResourceSpace) {
+		try {
+			return ok(Json.toJson(createContribution(newContrib, author, type, t, containerResourceSpace)));
+		} catch (MalformedURLException e) {
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"Error in etherpad server URL: " + e.toString())));
+		}
+	}
+		
+	public static Contribution createContribution(Contribution newContrib, 
+			User author, ContributionTypes type, ContributionTemplate t, 
+			ResourceSpace containerResourceSpace) throws MalformedURLException {
 		// TODO: dynamically obtain etherpad server URL and Key from component configuration
 		return createContribution(newContrib, author, type, null, null, t, containerResourceSpace);
 	}

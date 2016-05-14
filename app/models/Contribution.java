@@ -83,12 +83,11 @@ public class Contribution extends AppCivistBaseModel {
 	@Transient
 	private List<WorkingGroup> workingGroupAuthors = new ArrayList<WorkingGroup>();
 	@JsonIgnore
-	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions", cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "contributions", cascade = CascadeType.PERSIST)
 	private List<ResourceSpace> containingSpaces;
 	@JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
-	private ResourceSpace resourceSpace = new ResourceSpace(
-			ResourceSpaceTypes.CONTRIBUTION);
+	@OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST })
+	private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 	@Transient
 	private ContributionStatistics stats = new ContributionStatistics(this.contributionId);
 
@@ -106,7 +105,9 @@ public class Contribution extends AppCivistBaseModel {
 	private List<Contribution> comments = new ArrayList<Contribution>();
 	@Transient
 	private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
-
+	@Transient
+	private List<Contribution> inspirations;
+	
 	/*
 	 * The following fields are specific to each type of contribution
 	 */
@@ -295,8 +296,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Theme> getThemes() {
-		this.themes = resourceSpace.getThemes();
-		return this.themes;
+		return resourceSpace.getThemes();
 	}
 
 	public void setThemes(List<Theme> themes) {
@@ -309,8 +309,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Resource> getAttachments() {
-		this.attachments = resourceSpace.getResources();
-		return this.attachments;
+		return resourceSpace.getResources();
 	}
 
 	public void setAttachments(List<Resource> attachments) {
@@ -339,8 +338,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Hashtag> getHashtags() {
-		this.hashtags = resourceSpace.getHashtags();
-		return this.hashtags;
+		return resourceSpace.getHashtags();
 	}
 
 	public void setHashtags(List<Hashtag> hashtags) {
@@ -364,16 +362,39 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public List<Contribution> getComments() {
-		this.comments = this.getResourceSpace()
+		return this.getResourceSpace()
 				.getContributionsFilteredByType(ContributionTypes.COMMENT);
+	}
+	
+	@JsonIgnore
+	public List<Contribution> getTransientComments() {
 		return this.comments;
 	}
-
+	
 	public void addComment(Contribution c) {
 		if (c.getType() == ContributionTypes.COMMENT)
 			this.resourceSpace.addContribution(c);
 	}
 
+	public List<Contribution> getInspirations() {
+		return this.inspirations;
+	}
+	
+	@JsonIgnore
+	public List<Contribution> getTransientInspirations() {
+		return this.inspirations;
+	}
+
+	public void setInspirations(List<Contribution> inspirations) {
+		this.inspirations = inspirations;
+		this.getResourceSpace().getContributions().addAll(inspirations);
+	}
+	
+	public void addInspiration(Contribution c) {
+		if (c.getType() == ContributionTypes.BRAINSTORMING)
+			this.resourceSpace.addContribution(c);
+	}
+	
 	public String getReadOnlyPadUrl() {
 		return extendedTextPad != null ? extendedTextPad.getUrlAsString()
 				: null;
@@ -381,7 +402,6 @@ public class Contribution extends AppCivistBaseModel {
 
 	// TODO see if setting contributions on resource space is better through
 	// updating the space directly
-	@JsonIgnore
 	public void setComments(List<Contribution> comments) {
 		this.comments = comments;
 		this.resourceSpace.setContributionsFilteredByType(comments,
@@ -637,6 +657,27 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static Contribution update(Contribution c) {
+		List<Theme> themes = new ArrayList<>();
+		for (Theme theme : c.getThemes()) {
+			if (theme.getThemeId() == null) {
+				themes.add(theme);
+			} else {
+				theme.update();
+				theme.refresh();
+			}
+		}
+		
+		List<Resource> attachments = new ArrayList<>();
+		for (Resource resource : c.getAttachments()) {
+			if (resource.getResourceId() == null) {
+				attachments.add(resource);
+			} else {
+				resource.update();
+				resource.refresh();
+			}
+		}
+		
+		c.setAttachments(null);
 		c.update();
 		c.refresh();
 		return c;

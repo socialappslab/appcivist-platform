@@ -70,64 +70,64 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_config")
 	@Where(clause="${ta}.removed=false")
-	private List<Config> configs = new ArrayList<Config>();
+	private List<Config> configs;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")
-	private List<Theme> themes = new ArrayList<Theme>();
+	private List<Theme> themes;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign")
 	@JsonManagedReference
 	@Where(clause="${ta}.removed=false")
-	private List<Campaign> campaigns = new ArrayList<Campaign>();
+	private List<Campaign> campaigns;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign_components")
 	@Where(clause="${ta}.removed=false")
-	private List<Component> components = new ArrayList<Component>();
+	private List<Component> components;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_campaign_milestones")
 	@Where(clause="${ta}.removed=false")
-	private List<ComponentMilestone> milestones = new ArrayList<ComponentMilestone>();
+	private List<ComponentMilestone> milestones;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_working_groups")
 	@Where(clause="${ta}.removed=false")
-	private List<WorkingGroup> workingGroups = new ArrayList<WorkingGroup>();
+	private List<WorkingGroup> workingGroups;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_contributions")
 	@Where(clause="${ta}.removed=false")
-	private List<Contribution> contributions = new ArrayList<Contribution>();
+	private List<Contribution> contributions;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_assemblies")
 	@Where(clause="${ta}.removed=false")
-	private List<Assembly> assemblies = new ArrayList<Assembly>();
+	private List<Assembly> assemblies;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_resource")
 	@Where(clause="${ta}.removed=false")
-	private List<Resource> resources = new ArrayList<Resource>();
+	private List<Resource> resources;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_hashtag")
 	@Where(clause="${ta}.removed=false")
-	private List<Hashtag> hashtags = new ArrayList<Hashtag>();
+	private List<Hashtag> hashtags;
 	
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_ballots")
 	@Where(clause="${ta}.removed=false")
-	private List<Ballot> ballots = new ArrayList<Ballot>();
+	private List<Ballot> ballots;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_templates")
 	@Where(clause="${ta}.removed=false")
-	private List<ContributionTemplate> templates = new ArrayList<ContributionTemplate>();
+	private List<ContributionTemplate> templates;
 
 	
 	/*
@@ -247,7 +247,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public List<Theme> getThemes() {
-		return themes;
+		return themes !=null ? themes : new ArrayList<>();
 	}
 
 	public void setThemes(List<Theme> interests) {
@@ -255,11 +255,15 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public void addTheme(Theme theme) {
+		if(this.themes==null)
+			this.themes = new ArrayList<>();
 		if (!this.themes.contains(theme)) 
 			this.themes.add(theme);
 	}
 
 	public void removeTheme(Theme category) {
+		if(this.themes==null)
+			this.themes = new ArrayList<>();
 		this.themes.remove(category);
 	}
 
@@ -273,7 +277,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public List<Campaign> getCampaigns() {
-		return campaigns;
+		return campaigns != null ? this.campaigns : new ArrayList<>();
 	}
 
 	public void setCampaigns(List<Campaign> campaigns) {
@@ -286,73 +290,105 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public List<Config> getConfigs() {
-		return configs;
+		return configs!=null ? this.configs : new ArrayList<>();
 	}
 
 	public void setConfigs(List<Config> configs) {
+		if(this.configs==null)
+			this.configs = new ArrayList<>();
 		this.configs = configs;
 	}
 
 	public void addConfig(Config c) {
+		if(this.configs==null)
+			this.configs = new ArrayList<>();
 		if(!this.configs.contains(c))
 			this.configs.add(c);
 	}
 
 	public List<Component> getComponents() {
+		if(this.components==null)
+			this.components = new ArrayList<>();
 		return components;
 	}
 
 	public void setComponents(List<Component> components) {
+		if(this.components==null)
+			this.components = new ArrayList<>();
 		this.components = components;
 	}
 
 	public void addComponent(Component c) {
+		if(this.components==null)
+			this.components = new ArrayList<>();
 		if(!this.components.contains(c))
 			this.components.add(c);
 	}
 
 	public List<ComponentMilestone> getMilestones() {
+		if(this.milestones==null)
+			this.milestones = new ArrayList<>();
 		return milestones;
 	}
 
 	public void setMilestones(List<ComponentMilestone> milestones) {
+		if(this.milestones==null)
+			this.milestones = new ArrayList<>();
 		this.milestones = milestones;
 	}
 
 	public List<WorkingGroup> getWorkingGroups() {
+		if(this.workingGroups==null)
+			this.workingGroups = new ArrayList<>();
 		return workingGroups;
 	}
 
 	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
+		if(this.workingGroups==null)
+			this.workingGroups = new ArrayList<>();
 		this.workingGroups = workingGroups;
 	}
 
 	public void addWorkingGroup(WorkingGroup wg) {
+		if(this.workingGroups==null)
+			this.workingGroups = new ArrayList<>();
 		if(!this.workingGroups.contains(wg))
 			this.workingGroups.add(wg);
 	}
 
 	public List<Contribution> getContributions() {
+		if(this.contributions==null)
+			this.contributions = new ArrayList<>();
 		return contributions;
 	}
 
 	public void setContributions(List<Contribution> contributions) {
+		if(this.contributions==null)
+			this.contributions= new ArrayList<>();
 		this.contributions = contributions;
 	}
 
 	public void addContribution(Contribution c) {
+		if(this.contributions==null)
+			this.contributions= new ArrayList<>();
 		this.contributions.add(c);
 	}
 
 	public List<Assembly> getAssemblies() {
+		if(this.assemblies==null)
+			this.assemblies= new ArrayList<>();
 		return assemblies;
 	}
 
 	public void setAssemblies(List<Assembly> assemblies) {
+		if(this.assemblies==null)
+			this.assemblies= new ArrayList<>();
 		this.assemblies = assemblies;
 	}
 
 	public void addAssembly(Assembly a) {
+		if(this.assemblies==null)
+			this.assemblies= new ArrayList<>();
 		if (!this.assemblies.contains(a)) {
 			this.assemblies.add(a);
 		}
@@ -367,50 +403,74 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public List<Resource> getResources() {
+		if(this.resources==null)
+			this.resources= new ArrayList<>();
 		return resources;
 	}
 
 	public void setResources(List<Resource> resources) {
+		if(this.resources==null)
+			this.resources= new ArrayList<>();
 		this.resources = resources;
 	}
 
 	public void addResource(Resource resource) {
+		if(this.resources==null)
+			this.resources= new ArrayList<>();
 		this.resources.add(resource);
 	}
 
 	public List<Hashtag> getHashtags() {
+		if(this.hashtags==null)
+			this.hashtags= new ArrayList<>();
 		return hashtags;
 	}
 
 	public void setHashtags(List<Hashtag> hashtags) {
+		if(this.hashtags==null)
+			this.hashtags= new ArrayList<>();
 		this.hashtags = hashtags;
 	}
 
 	public void addHashtag(Hashtag h) {
+		if(this.hashtags==null)
+			this.hashtags= new ArrayList<>();
 		this.hashtags.add(h);
 	}
 
 	public List<Ballot> getBallots() {
+		if(this.ballots == null)
+			this.ballots = new ArrayList<>();
 		return ballots;
 	}
 
 	public void setBallots(List<Ballot> ballots) {
+		if(this.ballots == null)
+			this.ballots= new ArrayList<>();
 		this.ballots = ballots;
 	}
 
 	public void addBallot(Ballot b) {
+		if(this.ballots==null)
+			this.ballots= new ArrayList<>();
 		this.ballots.add(b);
 	}
 
 	public List<ContributionTemplate> getTemplates() {
+		if(this.templates==null)
+			this.templates= new ArrayList<>();
 		return templates;
 	}
 
 	public void setTemplates(List<ContributionTemplate> templates) {
+		if(this.templates==null)
+			this.templates= new ArrayList<>();
 		this.templates = templates;
 	}
 
 	public void addTemplates(ContributionTemplate ct) {
+		if(this.templates==null)
+			this.templates= new ArrayList<>();
 		this.templates.add(ct);
 	}
 	
@@ -526,9 +586,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public List<Contribution> getContributionsFilteredByType(
 			ContributionTypes type) {
-		return this.getContributions().stream()
-				.filter(p -> p.getType() == type)
-				.collect(Collectors.toList());
+		List<Contribution> comments = new ArrayList<>();
+		for (Contribution c : this.contributions) {
+			if (c.getType().equals(type)) {
+				comments.add(c);
+			}
+		}
+		return comments;
 	}
 	
 	public void setContributionsFilteredByType(List<Contribution> contributions, ContributionTypes type) {

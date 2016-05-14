@@ -100,8 +100,6 @@ public class Assembly extends AppCivistBaseModel {
 	@JsonIgnore
 	private List<MembershipAssembly> memberships;
 	
-	
-	
 	// Shortcuts to resources in the Assembly Resource Space ('resources')
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -587,6 +585,22 @@ public class Assembly extends AppCivistBaseModel {
 	}
 
 	public static Assembly update(Assembly a) {
+		List<Theme> themes = new ArrayList<>();
+		for (Theme theme : a.getThemes()) {
+			if (theme.getThemeId() == null) {
+				themes.add(theme);
+			} else {
+				theme.update();
+				theme.refresh();
+			}
+		}
+		
+		if (!themes.isEmpty()) {
+			a.setThemes(themes);
+		} else {
+			a.setThemes(null);
+		}
+		
 		a.update();
 		a.refresh();
 		return a;

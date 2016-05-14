@@ -35,7 +35,8 @@ public class ContributionTransfer {
 	private List<ResourceTransfer> attachments;
 	private List<ContributionTransfer> comments = new ArrayList<ContributionTransfer>();
 	private List<ComponentMilestoneTransfer> associatedMilestones = new ArrayList<ComponentMilestoneTransfer>();
-
+	private List<ContributionTransfer> inspirations = new ArrayList<ContributionTransfer>();
+	
 	/* 
 	 * Fields specific to the type ACTION_ITEM
 	 */
@@ -185,6 +186,14 @@ public class ContributionTransfer {
 	public void setAssociatedMilestones(
 			List<ComponentMilestoneTransfer> associatedMilestones) {
 		this.associatedMilestones = associatedMilestones;
+	}
+
+	public List<ContributionTransfer> getInspirations() {
+		return inspirations;
+	}
+
+	public void setInspirations(List<ContributionTransfer> inspirations) {
+		this.inspirations = inspirations;
 	}
 
 	public Date getActionDueDate() {
