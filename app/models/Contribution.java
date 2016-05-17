@@ -666,6 +666,7 @@ public class Contribution extends AppCivistBaseModel {
 				theme.refresh();
 			}
 		}
+		c.setThemes(null);
 		
 		List<Resource> attachments = new ArrayList<>();
 		for (Resource resource : c.getAttachments()) {
