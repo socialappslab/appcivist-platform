@@ -240,14 +240,18 @@ public class WorkingGroups extends Controller {
 					newWorkingGroup.refresh();
 					// Add the working group to the assembly
 					Assembly a = Assembly.read(aid);
-					a.getWorkingGroups().add(newWorkingGroup);
-					a.update();
-					a.refresh();
+					ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
+					rs.addWorkingGroup(newWorkingGroup);
+					newWorkingGroup.getContainingSpaces().add(rs);
+					rs.update();
+					
 					// Add the working group to the campaign
 					Campaign c = Campaign.read(cid);
-					c.addWorkingGroup(newWorkingGroup);
-					c.update();
-					c.refresh();
+					ResourceSpace rsC = ResourceSpace.read(c.getResourceSpaceId());
+					rsC.addWorkingGroup(newWorkingGroup);
+					newWorkingGroup.getContainingSpaces().add(rsC);
+					rsC.update();
+					
 					newWorkingGroup.refresh();
 					
 					// Create and send invitations							
