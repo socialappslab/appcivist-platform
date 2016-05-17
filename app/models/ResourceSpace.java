@@ -46,9 +46,6 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private UUID parent;
 
 	/**
-	 * Configuration parameters, e.g., modules and functionalities of modules
-	 * that are enabled, things specific to one assembly, future plugins or
-	 * extended services configurations. 
 	 * 
 	 * When creating entities with an associated resourceSpace, bare in mind 
 	 * the following rules about what can be contained in the lists below
@@ -66,6 +63,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 	 * The ones marked "existing" means that they will have an special array to
 	 * refer to the existing related entities and therefore issue an upudate on 
 	 * the resource space rather than a save
+	 */
+	
+	/**
+	 * Configuration parameters, e.g., modules and functionalities of modules
+	 * that are enabled, things specific to one assembly, future plugins or
+	 * extended services configurations.
+	 * 
 	 */
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_config")
@@ -94,7 +98,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	private List<ComponentMilestone> milestones;
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_working_groups")
 	@Where(clause="${ta}.removed=false")
 	private List<WorkingGroup> workingGroups;

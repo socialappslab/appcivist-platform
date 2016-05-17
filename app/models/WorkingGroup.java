@@ -156,6 +156,8 @@ public class WorkingGroup extends AppCivistBaseModel {
 		if (existingContributions != null && !existingContributions.isEmpty())
 			groupResources.getContributions().addAll(existingContributions);
 		
+		workingGroup.refresh();
+		
 		// 3.1 Create the consensus ballot for the group
 		Ballot consensusBallot = new Ballot();
 		Date startBallot = Calendar.getInstance().getTime();
@@ -180,6 +182,8 @@ public class WorkingGroup extends AppCivistBaseModel {
 		workingGroup.setConsensusBallotAsString(consensusBallot.getUuid().toString());
 		groupResources.addBallot(consensusBallot);
 
+		// TODO: figure out why updates trigger inserts in the resource space
+		// for resources that already exist
 		workingGroup.update();
 		groupResources.update();
 

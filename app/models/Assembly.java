@@ -409,6 +409,7 @@ public class Assembly extends AppCivistBaseModel {
 		this.workingGroups = workingGroups;
 		this.resources.setWorkingGroups(workingGroups);
 	}
+	
 	public List<Campaign> getCampaigns() {
 		return resources != null ? resources.getCampaigns() : null;
 	}

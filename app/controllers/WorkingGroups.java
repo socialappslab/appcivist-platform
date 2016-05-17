@@ -237,16 +237,18 @@ public class WorkingGroups extends Controller {
 					}
 					List<InvitationTransfer> invitations = newWorkingGroup.getInvitations();
 					newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-
+					newWorkingGroup.refresh();
 					// Add the working group to the assembly
-					ResourceSpace rs = Assembly.read(aid).getResources();
-					rs.addWorkingGroup(newWorkingGroup);
-					rs.update();
-					
+					Assembly a = Assembly.read(aid);
+					a.getWorkingGroups().add(newWorkingGroup);
+					a.update();
+					a.refresh();
 					// Add the working group to the campaign
-					ResourceSpace rsC = Campaign.read(cid).getResources();
-					rsC.addWorkingGroup(newWorkingGroup);
-					rsC.update();
+					Campaign c = Campaign.read(cid);
+					c.addWorkingGroup(newWorkingGroup);
+					c.update();
+					c.refresh();
+					newWorkingGroup.refresh();
 					
 					// Create and send invitations							
 					if (invitations != null) {

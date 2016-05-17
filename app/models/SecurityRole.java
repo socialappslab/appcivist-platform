@@ -26,7 +26,12 @@ public class SecurityRole extends Model implements Role {
 	}
 
 	public static SecurityRole findByName(String name) {
-		return find.where().eq("name", name).findUnique();
+		List<SecurityRole> roles = find.where().eq("name", name).findList();
+		if (roles!=null && roles.size()>1) {
+			return roles.get(0);
+		} else {
+			return find.where().eq("name", name).findUnique();
+		}
 	}
 
 	public static List<SecurityRole> findAll() {
