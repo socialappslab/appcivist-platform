@@ -309,12 +309,14 @@ public class MyUsernamePasswordAuthProvider
 	@Override
 	protected MyLoginUsernamePasswordAuthUser transformAuthUser(
 			final MyUsernamePasswordAuthUser authUser, final Context context) {
+		context.changeLang(authUser.getLanguage());
 		return new MyLoginUsernamePasswordAuthUser(authUser.getEmail());
 	}
 
 	@Override
 	protected String getVerifyEmailMailingSubject(
 			final MyUsernamePasswordAuthUser user, final Context ctx) {
+		ctx.changeLang(user.getLanguage());
 		return Messages.get("playauthenticate.password.verify_signup.subject");
 	}
 
@@ -339,9 +341,11 @@ public class MyUsernamePasswordAuthProvider
 		final String url = routes.Users.verify(token).absoluteURL(
 				ctx.request(), isSecure);
 
+		final String userLangCode = user.getLanguage();
 		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
-		final String langCode = lang.code();
-
+		final String langCode = userLangCode !=null ? userLangCode : lang.code();
+		ctx.changeLang(lang);
+		
 		final String html = getEmailTemplate(
 				"views.html.account.signup.email.verify_email", langCode, url,
 				token, user.getName(), user.getEmail());
@@ -409,9 +413,11 @@ public class MyUsernamePasswordAuthProvider
 		final String url = "";
 		// final String url = routes.Signup.resetPassword(token).absoluteURL(
 		// ctx.request(), isSecure);
-
+		
+		final String userLangCode = user.getLanguage();
 		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
-		final String langCode = lang.code();
+		final String langCode = userLangCode !=null ? userLangCode : lang.code();
+		ctx.changeLang(lang);
 
 		final String html = getEmailTemplate(
 				"views.html.account.email.password_reset", langCode, url,
@@ -502,14 +508,11 @@ public class MyUsernamePasswordAuthProvider
 				.getString("application.baseUrl");
 		final String url = baseURL + routes.Users.verify(token).url();
 
+		final String userLangCode = user.getLanguage();
 		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
-		final String langCode = lang.code();
-
+		final String langCode = userLangCode !=null ? userLangCode : lang.code();
+		ctx.changeLang(lang);
 		String locale = langCode;
-
-		if (user.getLanguage() != null) {
-			locale = user.getLanguage();
-		}
 
 		if (locale.equals("it_IT") || locale.equals("it-IT")
 				|| locale.equals("it")) {
@@ -524,6 +527,7 @@ public class MyUsernamePasswordAuthProvider
 
 		String name = user.getName() + " " + user.getName();
 		String email = user.getEmail();
+		
 		final String html = getEmailTemplate(
 				"views.html.account.email.verify_email", locale, url, token,
 				name, email);
@@ -563,7 +567,7 @@ public class MyUsernamePasswordAuthProvider
 
 		User user = m.getUser();
 		String locale = user.getLanguage();
-
+		
 		// Checking if the language is in ISO format e.g., it-IT, it_IT
 		String[] isoLocale = locale.split("-");
 		if(isoLocale!=null && isoLocale.length>0)
@@ -596,7 +600,7 @@ public class MyUsernamePasswordAuthProvider
 				+"&coordinator="+invitation.getCoordinator();
 
 		String locale = "en";
-
+		
 		// Checking if the language is in ISO format e.g., it-IT, it_IT
 		String[] isoLocale = locale.split("-");
 		if(isoLocale!=null && isoLocale.length>0)
@@ -621,14 +625,14 @@ public class MyUsernamePasswordAuthProvider
 	}	
 	
 	public void sendMembershipInvitationEmail(final Membership m, String targetCollection) {
-		final String subject = getMembershipInvitationEmail(targetCollection);
+		final String subject = getMembershipInvitationEmail(targetCollection+"("+m.getTargetAssembly()+")");
 		final String token = generateNewMembershipInvitation(m.getUser());
 		final Body body = getMembershipInvitationEmailBody(token, m);
 		mailer.sendMail(subject, body, getEmailName(m.getUser()));
 	}
 	
 	public void sendInvitationByEmail(final InvitationTransfer invitation, String targetCollection, Long id) {
-		final String subject = getMembershipInvitationEmail(targetCollection);
+		final String subject = getMembershipInvitationEmail(targetCollection+"("+invitation.getTargetId()+")");
 		final String token = generateNewInvitation(invitation.getEmail());
 		final Body body = getInvitationEmailBody(token, id, invitation, targetCollection);
 		mailer.sendMail(subject, body, invitation.getEmail());

@@ -278,7 +278,7 @@ public class MembershipInvitation extends AppCivistBaseModel {
 		Logger.info("Sending group invitation to: "+this.getEmail());
 		Logger.info("Invitation email: "+invitationEmailText);
 		MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-		String emailSubject = Messages.get("membership.invitation.email.subject", this.getTargetType());
+		String emailSubject = Messages.get("membership.invitation.email.subject", this.getTargetType()+"("+this.getTargetId()+")");
 		provider.sendInvitationByEmail(this, invitationEmailText, invitationEmailHTML, emailSubject);		
 	}
 
