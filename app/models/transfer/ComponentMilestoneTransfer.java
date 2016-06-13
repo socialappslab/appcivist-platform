@@ -8,6 +8,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 
 import enums.ContributionTypes;
 
@@ -19,6 +20,8 @@ public class ComponentMilestoneTransfer {
 	private String key;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime(); 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+	private Date date = Calendar.getInstance().getTime();
 	private Integer days = 1; 
 	private UUID uuid = UUID.randomUUID();
 	private String uuidAsString;
@@ -75,6 +78,14 @@ public class ComponentMilestoneTransfer {
 
 	public void setStart(Date start) {
 		this.start = start;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date start) {
+		this.date = start;
 	}
 
 	public Integer getDays() {
