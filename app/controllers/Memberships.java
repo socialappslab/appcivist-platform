@@ -379,7 +379,7 @@ public class Memberships extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path") })
-	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	@Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
 	public static Result createSendInvitationToJoinGroup(Long gid) {
 		// 1. Obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
