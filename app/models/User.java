@@ -23,6 +23,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 
 import models.TokenAction.Type;
 import models.transfer.AssemblyTransfer;
@@ -70,8 +71,10 @@ public class User extends Model implements Subject {
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
+	@Column(unique=true)
 	private String email;
 	private String name;
+	@Column(unique=true)
 	private String username;
 	private String language = GlobalData.DEFAULT_LANGUAGE;	
 	@Column(name = "email_verified")
