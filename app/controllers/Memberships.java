@@ -33,6 +33,7 @@ import utils.Pair;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -357,7 +358,7 @@ public class Memberships extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "iid", value = "Invitation id", dataType = "Long", paramType = "path") })
-	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	@SubjectPresent
 	public static Result reSendInvitation(Long iid) {
 		MembershipInvitation mi = MembershipInvitation.read(iid);
 		Long targetId = mi.getTargetId();
