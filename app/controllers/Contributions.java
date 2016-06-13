@@ -220,7 +220,7 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	@SubjectPresent
 	public static Result findResourceSpaceContributions(Long sid, String type) {
 		ResourceSpace rs = ResourceSpace.read(sid);
 		List<Contribution> contributions = ContributionsDelegate

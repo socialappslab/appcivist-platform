@@ -74,7 +74,7 @@ public class WorkingGroups extends Controller {
 			@ApiImplicitParam(name = "aid", value = "Assembly numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Campaien numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result findWorkingGroupsInCampaign(Long aid, Long cid) {
 		Campaign c = Campaign.read(cid);
 		if (c!=null) {
