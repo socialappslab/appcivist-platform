@@ -51,9 +51,9 @@ playauthenticate.password.login.unknown_user_or_pw=Usuario o password desconocid
 playauthenticate.password.signup.error.missing_lang=Falta elegir un idioma
 
 
-playauthenticate.password.verify_signup.subject=Reminiscens: Completa tu subscripción
-playauthenticate.password.verify_email.subject=Reminiscens: Confirma tu dirección de correo electrónico
-playauthenticate.password.reset_email.subject=Reminiscens: Como recuperar tu password
+playauthenticate.password.verify_signup.subject=AppCivist: Completa tu subscripción
+playauthenticate.password.verify_email.subject=AppCivist: Confirma tu dirección de correo electrónico
+playauthenticate.password.reset_email.subject=AppCivist: Como recuperar tu password
 
 # play-authenticate: Additional translations
 
