@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.ConfigTargets;
 import enums.MembershipStatus;
 import enums.ResourceSpaceTypes;
+import exceptions.MembershipCreationException;
 
 /**
  * An assembly represents the central repository of a group of people interested
@@ -512,7 +513,7 @@ public class Assembly extends AppCivistBaseModel {
 		else return find.all();
 	}
 
-	public static void create(Assembly a) {
+	public static void create(Assembly a) throws MembershipCreationException {
 		if (a.getAssemblyId() != null
 				&& (a.getUrl() == null || a.getUrl() == "")) {
 			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"

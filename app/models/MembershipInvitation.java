@@ -32,6 +32,7 @@ import enums.ManagementTypes;
 import enums.MembershipStatus;
 import enums.MembershipTypes;
 import enums.MyRoles;
+import exceptions.MembershipCreationException;
 
 // TODO: replace membership invitations by direcltly using the model of membership, allowing the user in membership to be NULL
 @Entity
@@ -174,15 +175,16 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	 * @param invitation the details of the invitation
 	 * @param creator the user who is creating the invitation 
 	 * @return the invitation that was just created, or null if something went wrong
+	 * @throws MembershipCreationException 
 	 */
-	public static MembershipInvitation create(InvitationTransfer invitation, User creator) {
+	public static MembershipInvitation create(InvitationTransfer invitation, User creator) throws MembershipCreationException {
 		Long targetId = invitation.getTargetId();
 		MembershipTypes invitationType = invitation.getTargetType().equals("ASSEMBLY") ? MembershipTypes.ASSEMBLY : MembershipTypes.GROUP;
 		String invitationBody = invitation.getInvitationEmail();
 		if (targetId!=null) {
 			return create(invitation, creator, targetId, invitationBody, invitationType);
 		} else {
-			return null;
+			throw new MembershipCreationException("Id of assembly or group is null");
 		}
 	}
 	
@@ -193,14 +195,15 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	 * @param creator the user who is creating the invitation 
 	 * @param targetGroup the target Working Group
 	 * @return the invitation that was just created, or null if something went wrong
+	 * @throws MembershipCreationException 
 	 */
-	public static MembershipInvitation create(InvitationTransfer invitation, User creator, WorkingGroup targetGroup) {
+	public static MembershipInvitation create(InvitationTransfer invitation, User creator, WorkingGroup targetGroup) throws MembershipCreationException {
 		Long targetId = targetGroup != null ? targetGroup.getGroupId() : null;
 		String invitationBody = targetGroup != null ? targetGroup.getInvitationEmail() :  Play.application().configuration().getString("appcivist.invitations.defaultBody");
 		if (targetId!=null) {
 			return create(invitation, creator, targetId, invitationBody, MembershipTypes.GROUP);
 		} else {
-			return null;
+			throw new MembershipCreationException("Id of assembly or group is null");
 		}
 	}
 	
@@ -211,15 +214,16 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	 * @param creator the user who is creating the invitation 
 	 * @param targetGroup the target Working Group
 	 * @return the invitation that was just created, or null if something went wrong
+	 * @throws MembershipCreationException 
 	 */
-	public static MembershipInvitation create(InvitationTransfer invitation, User creator, Assembly targetAssembly) {
+	public static MembershipInvitation create(InvitationTransfer invitation, User creator, Assembly targetAssembly) throws MembershipCreationException {
 		Long targetId = targetAssembly != null ? targetAssembly.getAssemblyId() : null;
 		String invitationBody = targetAssembly != null ? targetAssembly.getInvitationEmail() :  Play.application().configuration().getString("appcivist.invitations.defaultBody");
 		
 		if (targetId!=null) {
 			return create(invitation, creator, targetId, invitationBody, MembershipTypes.ASSEMBLY);
 		} else {
-			return null;
+			throw new MembershipCreationException("Id of assembly or group is null");
 		}
 	}
 	
@@ -231,8 +235,9 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	 * @param targetId
 	 * @param invitationBody
 	 * @return
+	 * @throws MembershipCreationException 
 	 */
-	public static MembershipInvitation create(InvitationTransfer invitation, User creator, Long targetId, String invitationBody, MembershipTypes targetType) {
+	public static MembershipInvitation create(InvitationTransfer invitation, User creator, Long targetId, String invitationBody, MembershipTypes targetType) throws MembershipCreationException {
 		MembershipInvitation membershipInvitation = new MembershipInvitation();
 		membershipInvitation.setCreator(creator);
 		membershipInvitation.setEmail(invitation.getEmail());
@@ -248,26 +253,43 @@ public class MembershipInvitation extends AppCivistBaseModel {
 		membershipInvitation.setTargetType(targetType);
 		membershipInvitation.setTargetId(targetId);
 
-		List<SecurityRole> roles = new ArrayList<>();
-		roles.add(SecurityRole.findByName(MyRoles.MEMBER.getName()));
-
-		if (invitation.getCoordinator())
-			roles.add(SecurityRole.findByName(MyRoles.COORDINATOR
-					.getName()));
-		if (invitation.getModerator())
-			roles.add(SecurityRole.findByName(MyRoles.MODERATOR
-					.getName()));
-
-		membershipInvitation.setRoles(roles);
-		membershipInvitation = MembershipInvitation.create(membershipInvitation);
+		if(!membershipInvitation.existsAlready()) {
+			List<SecurityRole> roles = new ArrayList<>();
+			roles.add(SecurityRole.findByName(MyRoles.MEMBER.getName()));
 	
-		final String token = UUID.randomUUID().toString();
-		TokenAction ta = TokenAction.create(TokenAction.Type.MEMBERSHIP_INVITATION, token, membershipInvitation);
-		ta.refresh();
+			if (invitation.getCoordinator())
+				roles.add(SecurityRole.findByName(MyRoles.COORDINATOR
+						.getName()));
+			if (invitation.getModerator())
+				roles.add(SecurityRole.findByName(MyRoles.MODERATOR
+						.getName()));
+	
+			membershipInvitation.setRoles(roles);
+			membershipInvitation = MembershipInvitation.create(membershipInvitation);
 		
-		// Preparing and sending the Invitation Email
-		membershipInvitation.sendInvitationEmail(invitationBody, token);		
-		return membershipInvitation;
+			final String token = UUID.randomUUID().toString();
+			TokenAction ta = TokenAction.create(TokenAction.Type.MEMBERSHIP_INVITATION, token, membershipInvitation);
+			ta.refresh();
+			
+			// Preparing and sending the Invitation Email
+			membershipInvitation.sendInvitationEmail(invitationBody, token);		
+			return membershipInvitation;
+		} else {
+			throw new MembershipCreationException("Membership already exists");
+		}
+	}
+
+	private boolean existsAlready() {
+		// checking if the user is already a member
+		Boolean isMember = Membership.checkIfExistsByEmailAndId(this.email, this.targetId, this.targetType);
+		// checking if the user has already been invited
+		Boolean invited = find.where()
+			.eq("targetId", this.targetId)
+			.eq("email", this.email)
+			.eq("status",MembershipStatus.INVITED)
+			.findList().size() > 0;
+			
+		return isMember || invited;
 	}
 
 	public void sendInvitationEmail(String invitationBody, String token) {
@@ -298,7 +320,7 @@ public class MembershipInvitation extends AppCivistBaseModel {
 				.findUnique();
 	}
 
-	public static void acceptAndCreateMembershipByToken(MembershipInvitation mi, User user) {
+	public static void acceptAndCreateMembershipByToken(MembershipInvitation mi, User user) throws MembershipCreationException {
 		mi.setStatus(MembershipStatus.ACCEPTED);
 		mi.setUserId(user.getUserId());
 

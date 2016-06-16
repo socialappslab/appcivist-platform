@@ -24,6 +24,7 @@ import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
 import enums.MyRoles;
 import enums.ResponseStatus;
+import exceptions.MembershipCreationException;
 
 public class MembershipsDelegate {
 
@@ -37,7 +38,7 @@ public class MembershipsDelegate {
 	public static Pair<Membership, TransferResponseStatus> createMembership(
 			User requestor, String targetCollection, Long targetCollectionId,
 			String membershipType, Long userId, String userEmail,
-			Long defaultRoleId, String defaultRoleName) {
+			Long defaultRoleId, String defaultRoleName) throws MembershipCreationException {
 
 		WorkingGroup targetWorkingGroup = targetCollection.toUpperCase()
 				.equals("GROUP") ? WorkingGroup.read(targetCollectionId) : null;

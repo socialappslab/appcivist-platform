@@ -44,6 +44,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import delegates.WorkingGroupsDelegate;
 import enums.ResponseStatus;
+import exceptions.MembershipCreationException;
 
 @Api(value = "/group", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
@@ -116,7 +117,7 @@ public class WorkingGroups extends Controller {
 		return ok();
 	}
 
-	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new working group")
+	@ApiOperation(httpMethod = "POST", response = WorkingGroup.class, produces = "application/json", value = "Create a new working group")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
@@ -148,7 +149,7 @@ public class WorkingGroups extends Controller {
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
+			if (WorkingGroup.numberByNameInAssembly(newWorkingGroup.getName(),aid) > 0) {
 				Logger.info("Working Group already exists");
 				responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
 				responseBody.setStatusMessage("Working Group already exists");
@@ -223,11 +224,13 @@ public class WorkingGroups extends Controller {
 				newWorkingGroup.setLang(groupCreator.getLanguage());
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
-
-			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
+			Assembly a = Assembly.read(aid);
+			Long containingSpace = a != null ? a.getResourcesResourceSpaceId() : null;
+			
+			if (WorkingGroup.numberByNameInAssembly(newWorkingGroup.getName(),containingSpace) > 0) {
 				Logger.info("Working Group already exists");
 				responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-				responseBody.setStatusMessage("Working Group already exists");
+				responseBody.setStatusMessage(Messages.get("appcivist.api.error.groups.group_with_same_name_already_exists"));
 				return internalServerError(Json.toJson(responseBody));
 			} else {
 				Ebean.beginTransaction();
@@ -239,7 +242,6 @@ public class WorkingGroups extends Controller {
 					newWorkingGroup = WorkingGroup.create(newWorkingGroup);
 					newWorkingGroup.refresh();
 					// Add the working group to the assembly
-					Assembly a = Assembly.read(aid);
 					ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
 					rs.addWorkingGroup(newWorkingGroup);
 					newWorkingGroup.getContainingSpaces().add(rs);
@@ -299,7 +301,7 @@ public class WorkingGroups extends Controller {
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 
-			if (WorkingGroup.numberByName(newWorkingGroup.getName()) > 0) {
+			if (WorkingGroup.numberByNameInAssembly(newWorkingGroup.getName(),aid) > 0) {
 				String status_message = "Working group already exists with the same name already exists";
 				Logger.info(status_message);
 				responseBody.setResponseStatus(ResponseStatus.UNAUTHORIZED);
@@ -354,10 +356,21 @@ public class WorkingGroups extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			MembershipTransfer newMembership = newMembershipForm.get();
-			return Memberships.createMembership(requestor, "group", id, type,
-					newMembership.getUserId(), newMembership.getEmail(),
-					newMembership.getDefaultRoleId(),
-					newMembership.getDefaultRoleName());
+			try {
+				Ebean.beginTransaction();
+				Result r = Memberships.createMembership(requestor, "group", id, type,
+						newMembership.getUserId(), newMembership.getEmail(),
+						newMembership.getDefaultRoleId(),
+						newMembership.getDefaultRoleName());
+				return r;
+			} catch (MembershipCreationException e) {
+				Ebean.rollbackTransaction();
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+						"Error: "+e.getMessage()));
+				return internalServerError(Json.toJson(responseBody));
+			}
 		}
 	}
 

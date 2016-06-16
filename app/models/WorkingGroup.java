@@ -38,6 +38,7 @@ import enums.MembershipStatus;
 import enums.ResourceSpaceTypes;
 import enums.SupportedMembershipRegistration;
 import enums.VotingSystemTypes;
+import exceptions.MembershipCreationException;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -137,10 +138,19 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     public static Integer numberByName(String name){
         ExpressionList<WorkingGroup> wGroups = find.where().eq("name", name);
-        return wGroups.findList().size();
+        return wGroups.findList() != null ? wGroups.findList().size() : 0;
     }
 
-    public static WorkingGroup create(WorkingGroup workingGroup) {
+    public static Integer numberByNameInAssembly(String name, Long containerId){
+        ExpressionList<WorkingGroup> wGroups = 
+        		find.where()
+        			.eq("name", name)
+        			.eq("containingSpaces.resourceSpaceId",containerId);
+        return wGroups.findList() != null ? wGroups.findList().size() : 0;
+    }
+
+    
+    public static WorkingGroup create(WorkingGroup workingGroup) throws MembershipCreationException {
 		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
 		List<Theme> existingThemes = workingGroup.getExistingThemes();
 		List<Long> campaigns = workingGroup.getCampaigns();

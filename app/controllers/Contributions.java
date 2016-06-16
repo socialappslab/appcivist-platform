@@ -32,6 +32,7 @@ import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.With;
 import security.SecurityModelConstants;
@@ -56,6 +57,7 @@ import enums.ManagementTypes;
 import enums.ResourceSpaceTypes;
 import enums.ResponseStatus;
 import enums.SupportedMembershipRegistration;
+import exceptions.MembershipCreationException;
 
 @Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -92,6 +94,7 @@ public class Contributions extends Controller {
 		}
 		List<Contribution> contributions = ContributionsDelegate
 				.findContributionsInResourceSpace(rs, type, null);
+		
 		return contributions != null ? ok(Json.toJson(contributions))
 				: notFound(Json.toJson(new TransferResponseStatus(
 						"No resource space for assembly: " + aid)));
@@ -374,11 +377,11 @@ public class Contributions extends Controller {
 			Contribution c;
 			try {
 				c = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (c != null) {
 				rs.addContribution(c);
@@ -436,11 +439,11 @@ public class Contributions extends Controller {
 			Contribution c;
 			try {
 				c = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (c != null) {
 				rs.addContribution(c);
@@ -497,11 +500,11 @@ public class Contributions extends Controller {
 			Contribution c;
 			try {
 				c = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (c != null) {
 				rs.addContribution(c);
@@ -558,11 +561,11 @@ public class Contributions extends Controller {
 			Contribution c;
 			try {
 				c = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (c != null) {
 				rs.addContribution(c);
@@ -616,11 +619,11 @@ public class Contributions extends Controller {
 			Contribution cNew;
 			try {
 				cNew = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (cNew != null) {
 				rs.addContribution(cNew);
@@ -672,11 +675,11 @@ public class Contributions extends Controller {
 			Contribution cNew;
 			try {
 				cNew = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (cNew != null) {
 				rs.addContribution(cNew);
@@ -730,11 +733,11 @@ public class Contributions extends Controller {
 			Contribution c;
 			try {
 				c = createContribution(newContribution, author, type, template, rs);
-			} catch (MalformedURLException e) {
+			} catch (Exception e) {
 				return internalServerError(Json
 						.toJson(new TransferResponseStatus(
 								ResponseStatus.SERVERERROR,
-								"Error in etherpad server URL: " + e.toString())));
+								"Error when creating Contribution: " + e.toString())));
 			}
 			if (c != null) {
 				rs.addContribution(c);
@@ -963,10 +966,11 @@ public class Contributions extends Controller {
 	 * @param containerResourceSpace
 	 * @return
 	 * @throws MalformedURLException
+	 * @throws MembershipCreationException 
 	 */
 	public static Contribution createContribution(Contribution newContrib,
 			User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey, 
-			ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException {
+			ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
 		newContrib.setType(type);		
 		newContrib.addAuthor(author);
 		if (newContrib.getLang() == null)
@@ -1119,10 +1123,11 @@ public class Contributions extends Controller {
 	 * @param inspirations
 	 * @param newContrib
 	 * @param newWorkingGroup
+	 * @throws MembershipCreationException 
 	 */
 	private static void inviteCommentersInInspirationList(
 			List<Contribution> inspirations, Contribution newContrib,
-			WorkingGroup newWorkingGroup) {
+			WorkingGroup newWorkingGroup) throws MembershipCreationException {
 		HashMap<String, Boolean> invitedEmails = new HashMap<String, Boolean>();
 		for (Contribution inspirationObject : inspirations) {
 			Contribution inspiration = Contribution.read(inspirationObject.getContributionId());
@@ -1152,17 +1157,17 @@ public class Contributions extends Controller {
 			User author, ContributionTypes type, ContributionTemplate t, ResourceSpace containerResourceSpace) {
 		try {
 			return ok(Json.toJson(createContribution(newContrib, author, type, t, containerResourceSpace)));
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			return internalServerError(Json
 					.toJson(new TransferResponseStatus(
 							ResponseStatus.SERVERERROR,
-							"Error in etherpad server URL: " + e.toString())));
+							"Error when creating Contribution: " + e.toString())));
 		}
 	}
 		
 	public static Contribution createContribution(Contribution newContrib, 
 			User author, ContributionTypes type, ContributionTemplate t, 
-			ResourceSpace containerResourceSpace) throws MalformedURLException {
+			ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
 		// TODO: dynamically obtain etherpad server URL and Key from component configuration
 		return createContribution(newContrib, author, type, null, null, t, containerResourceSpace);
 	}
@@ -1182,11 +1187,11 @@ public class Contributions extends Controller {
 		Contribution c;
 		try {
 			c = createContribution(newContrib, author, type, template, rs);
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			return internalServerError(Json
 					.toJson(new TransferResponseStatus(
 							ResponseStatus.SERVERERROR,
-							"Error in etherpad server URL: " + e.toString())));
+							"Error when creating contribution: " + e.toString())));
 		}
 		rs.addContribution(c);
 		rs.update();

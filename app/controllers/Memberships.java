@@ -50,6 +50,7 @@ import enums.MembershipStatus;
 import enums.MembershipTypes;
 import enums.MyRoles;
 import enums.ResponseStatus;
+import exceptions.MembershipCreationException;
 
 @Api(value = "/membership", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
@@ -101,11 +102,24 @@ public class Memberships extends Controller {
 					"GROUP") ? newMembership.getGroupId() : newMembership
 					.getAssemblyId();
 
-			return createMembership(requestor, targetCollection,
-					targetCollectionId, newMembership.getType(),
-					newMembership.getUserId(), newMembership.getEmail(),
-					newMembership.getDefaultRoleId(),
-					newMembership.getDefaultRoleName());
+			try {
+				Ebean.beginTransaction();
+				Result r = createMembership(requestor, targetCollection,
+						targetCollectionId, newMembership.getType(),
+						newMembership.getUserId(), newMembership.getEmail(),
+						newMembership.getDefaultRoleId(),
+						newMembership.getDefaultRoleName());
+				Ebean.commitTransaction();
+				return r;
+			} catch (MembershipCreationException e) {
+				Ebean.rollbackTransaction();
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+						"Error: "+e.getMessage()));
+				e.printStackTrace();
+				return internalServerError(Json.toJson(responseBody));
+			}
 		}
 	}
 
@@ -124,7 +138,8 @@ public class Memberships extends Controller {
 			@ApiImplicitParam(name = "uuid", value = "User's UUID", dataType = "java.util.UUID", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "type", value = "type of membership requeste", dataType = "String", paramType = "query", allowableValues = "assembly,group") })
-	// TODO: implement the right access rule for this @Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	// TODO: implement the right access rule for this @Dynamic(value =
+	// "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result findMembershipByUser(Long uid, String type) {
 		User u = User.findByUserId(uid);
 		if (u == null)
@@ -169,9 +184,8 @@ public class Memberships extends Controller {
 			@ApiImplicitParam(name = "targetId", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "status", value = "Invitation Status", allowableValues = "INVITED, ACCEPTED, REJECTED", dataType = "String", paramType = "path") })
 	@ApiResponses({
-		@ApiResponse(code=ACCEPTED, message="Invitations found", response=MembershipInvitation.class),
-		@ApiResponse(code=NOT_FOUND, message="Invitations not found", response=TransferResponseStatus.class)
-	})
+			@ApiResponse(code = ACCEPTED, message = "Invitations found", response = MembershipInvitation.class),
+			@ApiResponse(code = NOT_FOUND, message = "Invitations not found", response = TransferResponseStatus.class) })
 	public static Result listInvitations(Long targetId, String status) {
 		List<MembershipInvitation> invitations = MembershipInvitation
 				.findByTargetIdAndStatus(targetId, status);
@@ -189,7 +203,9 @@ public class Memberships extends Controller {
 
 	/**
 	 * Read and invitation by the Token
-	 * @param token invitation token 
+	 * 
+	 * @param token
+	 *            invitation token
 	 * @return the invitation record
 	 */
 	@ApiOperation(httpMethod = "GET", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
@@ -234,7 +250,8 @@ public class Memberships extends Controller {
 			// If there is no Membership record created (either REQUESTED or
 			// ACCEPTED), check if there is a pending invitation
 			MembershipInvitation mi = MembershipInvitation
-					.findByUserIdTargetIdAndType(uid, aid, MembershipTypes.ASSEMBLY);
+					.findByUserIdTargetIdAndType(uid, aid,
+							MembershipTypes.ASSEMBLY);
 
 			if (mi == null) {
 				TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -283,7 +300,8 @@ public class Memberships extends Controller {
 			// If there is no Membership record created (either REQUESTED or
 			// ACCEPTED), check if there is a pending invitation
 			MembershipInvitation mi = MembershipInvitation
-					.findByUserIdTargetIdAndType(uid, gid, MembershipTypes.GROUP);
+					.findByUserIdTargetIdAndType(uid, gid,
+							MembershipTypes.GROUP);
 
 			if (mi == null) {
 				TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -343,6 +361,7 @@ public class Memberships extends Controller {
 				mi = createAndSendInvitation(requestor, newInvitation);
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
+				e.printStackTrace();
 				TransferResponseStatus responseBody = new TransferResponseStatus();
 				responseBody.setStatusMessage(Messages.get(
 						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
@@ -363,11 +382,13 @@ public class Memberships extends Controller {
 		MembershipInvitation mi = MembershipInvitation.read(iid);
 		Long targetId = mi.getTargetId();
 		MembershipTypes type = mi.getTargetType();
-		String invitationBody = type == MembershipTypes.ASSEMBLY ? Assembly.read(targetId).getInvitationEmail() : WorkingGroup.read(targetId).getInvitationEmail(); 
-		mi.sendInvitationEmail(invitationBody,mi.getToken().token);
+		String invitationBody = type == MembershipTypes.ASSEMBLY ? Assembly
+				.read(targetId).getInvitationEmail() : WorkingGroup.read(
+				targetId).getInvitationEmail();
+		mi.sendInvitationEmail(invitationBody, mi.getToken().token);
 		return ok(Json.toJson(mi));
 	}
-	
+
 	/**
 	 * Creates an invitation to join a group and sends email to the invited user
 	 * 
@@ -422,7 +443,8 @@ public class Memberships extends Controller {
 			@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues = "ACCEPT, REJECT", dataType = "String", paramType = "path") })
 	public static Result answerInvitation(UUID token, String answer) {
 		Ebean.beginTransaction();
-		MembershipStatus response = answer.equals("ACCEPT") ? MembershipStatus.ACCEPTED : MembershipStatus.REJECTED;
+		MembershipStatus response = answer.equals("ACCEPT") ? MembershipStatus.ACCEPTED
+				: MembershipStatus.REJECTED;
 
 		// 1. Verify the token
 		MembershipInvitation mi = MembershipInvitation.findByToken(token);
@@ -452,6 +474,7 @@ public class Memberships extends Controller {
 						invitedUser);
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
+				e.printStackTrace();
 				return internalServerError(Json.toJson(TransferResponseStatus
 						.badMessage(Messages.get("Error has occurred: "),
 								e.getMessage())));
@@ -495,11 +518,26 @@ public class Memberships extends Controller {
 			// Allow only requests and subscriptions to non-members
 			if (!newMembership.getType().equals(
 					MembershipCreationTypes.INVITATION.toString())) {
-				return createMembership(requestor, targetCollection,
-						targetCollectionId, newMembership.getType(),
-						newMembership.getUserId(), newMembership.getEmail(),
-						newMembership.getDefaultRoleId(),
-						newMembership.getDefaultRoleName());
+				try {
+					Ebean.beginTransaction();
+					Result r = createMembership(requestor, targetCollection,
+							targetCollectionId, newMembership.getType(),
+							newMembership.getUserId(),
+							newMembership.getEmail(),
+							newMembership.getDefaultRoleId(),
+							newMembership.getDefaultRoleName());
+					Ebean.commitTransaction();
+					return r;
+				} catch (MembershipCreationException e) {
+					Ebean.rollbackTransaction();
+					TransferResponseStatus responseBody = new TransferResponseStatus();
+					responseBody.setStatusMessage(Messages.get(
+							GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+							"Error: " + e.getMessage()));
+					e.printStackTrace();
+					return internalServerError(Json.toJson(responseBody));
+				}
+
 			} else {
 				TransferResponseStatus responseBody = new TransferResponseStatus();
 				responseBody.setStatusMessage(Messages.get(
@@ -804,11 +842,13 @@ public class Memberships extends Controller {
 	 * 
 	 * @param membershipType
 	 * @return
+	 * @throws MembershipCreationException
 	 */
 	protected static Result createMembership(User requestor,
 			String targetCollection, Long targetCollectionId,
 			String membershipType, Long userId, String userEmail,
-			Long defaultRoleId, String defaultRoleName) {
+			Long defaultRoleId, String defaultRoleName)
+			throws MembershipCreationException {
 
 		Pair<Membership, TransferResponseStatus> result = MembershipsDelegate
 				.createMembership(requestor, targetCollection,
@@ -833,13 +873,15 @@ public class Memberships extends Controller {
 	}
 
 	/**
-	 * General create invitation method (not exposed in the API) 
+	 * General create invitation method (not exposed in the API)
+	 * 
 	 * @param creator
 	 * @param invitation
 	 * @return
+	 * @throws MembershipCreationException
 	 */
 	private static MembershipInvitation createAndSendInvitation(User creator,
-			InvitationTransfer invitation) {
+			InvitationTransfer invitation) throws MembershipCreationException {
 		MembershipInvitation membershipInvitation = MembershipInvitation
 				.create(invitation, creator);
 		return membershipInvitation;

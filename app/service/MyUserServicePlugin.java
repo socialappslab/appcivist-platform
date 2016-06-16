@@ -12,6 +12,7 @@ import com.feth.play.module.pa.user.AuthUser;
 import com.feth.play.module.pa.user.AuthUserIdentity;
 import com.feth.play.module.pa.service.UserServicePlugin;
 
+import exceptions.MembershipCreationException;
 import exceptions.TokenNotValidException;
 
 public class MyUserServicePlugin extends UserServicePlugin {
@@ -42,7 +43,10 @@ public class MyUserServicePlugin extends UserServicePlugin {
 			} catch (TokenNotValidException e) {
 				e.printStackTrace();
 				return null;
-			}
+			} catch (MembershipCreationException e) {
+				e.printStackTrace();
+				return null;
+			} 
 		} else {
 			// we have this user already, so return null
 			return null;

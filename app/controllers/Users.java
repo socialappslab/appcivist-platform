@@ -209,7 +209,7 @@ public class Users extends Controller {
 			// TODO: HTML rendered response return
 			// badRequest(signup.render(filledForm));
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-					Messages.get("play.authenticate.filledFromHasErrors"),
+					Messages.get("playauthenticate.signup.form-has-errors"),
 					filledForm.errorsAsJson().toString())));
 		} else
 			// Everything was filled correctly
@@ -237,7 +237,7 @@ public class Users extends Controller {
 			// User did not fill everything properly
 			// TODO: return badRequest(login.render(filledForm));
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-					Messages.get("play.authenticate.filledFromHasErrors"),
+					Messages.get("playauthenticate.login.form-has-errors"),
 					filledForm.errorsAsJson().toString())));
 		} else {
 			// Everything was filled

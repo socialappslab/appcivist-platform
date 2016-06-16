@@ -45,6 +45,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
 import enums.ResponseStatus;
+import exceptions.MembershipCreationException;
 
 @Api(value = "/assembly", description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
 @With(Headers.class)
@@ -200,6 +201,7 @@ public class Assemblies extends Controller {
 					return ok(Json.toJson(created));
 				} catch (Exception e) {
 					Logger.error(e.getStackTrace().toString());
+					e.printStackTrace();
 					Ebean.rollbackTransaction();
 					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
 							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
@@ -311,10 +313,22 @@ public class Assemblies extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			MembershipTransfer newMembership = newMembershipForm.get();
-			return Memberships.createMembership(requestor, "assembly", id,
-					type, newMembership.getUserId(), newMembership.getEmail(),
-					newMembership.getDefaultRoleId(),
-					newMembership.getDefaultRoleName());
+			try {
+				Ebean.beginTransaction();
+				Result r = Memberships.createMembership(requestor, "assembly", id,
+						type, newMembership.getUserId(), newMembership.getEmail(),
+						newMembership.getDefaultRoleId(),
+						newMembership.getDefaultRoleName());
+				Ebean.commitTransaction();
+				return r;
+			} catch (MembershipCreationException e) {
+				Ebean.rollbackTransaction();
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+						"Error: "+e.getMessage()));
+				return internalServerError(Json.toJson(responseBody));
+			}
 		}
 	}
 
@@ -375,12 +389,24 @@ public class Assemblies extends Controller {
 			List<Pair<Membership, TransferResponseStatus>> results = new ArrayList<Pair<Membership, TransferResponseStatus>>();
 			MembershipCollectionTransfer collection = newMembershipForm.get();
 			for (MembershipTransfer membership : collection.getMemberships()) {
-				Pair<Membership, TransferResponseStatus> result = MembershipsDelegate
-						.createMembership(requestor, "assembly", id,
-								"INVITATION", null, membership.getEmail(),
-								membership.getDefaultRoleId(),
-								membership.getDefaultRoleName());
-				results.add(result);
+				Pair<Membership, TransferResponseStatus> result;
+				try {
+					Ebean.beginTransaction();
+					result = MembershipsDelegate
+							.createMembership(requestor, "assembly", id,
+									"INVITATION", null, membership.getEmail(),
+									membership.getDefaultRoleId(),
+									membership.getDefaultRoleName());
+					Ebean.commitTransaction();
+					results.add(result);
+				} catch (MembershipCreationException e) {
+					Ebean.rollbackTransaction();
+					TransferResponseStatus responseBody = new TransferResponseStatus();
+					responseBody.setStatusMessage(Messages.get(
+							GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+							"Error: "+e.getMessage()));
+					return internalServerError(Json.toJson(responseBody));
+				}
 			}
 			return ok(Json.toJson(results));
 		}

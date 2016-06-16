@@ -14,6 +14,7 @@ import models.transfer.LinkedAssemblyTransfer;
 
 import org.dozer.DozerBeanMapper;
 
+import exceptions.MembershipCreationException;
 import play.Logger;
 import play.Play;
 
@@ -68,7 +69,7 @@ public class AssembliesDelegate {
 	}
 
 	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
-			User creator) {
+			User creator) throws MembershipCreationException {
 
 		Assembly newAssembly = mapper.map(newAssemblyTransfer, Assembly.class);
 

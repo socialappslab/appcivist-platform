@@ -32,6 +32,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ManagementTypes;
 import enums.MembershipStatus;
+import enums.MembershipTypes;
+import exceptions.MembershipCreationException;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -194,12 +196,29 @@ public class Membership extends AppCivistBaseModel {
 		return find.all();
 	}
 
-	public static Membership create(Membership membership) {
-		membership.save();
-		membership.refresh();
-		return membership;
+	public static Membership create(Membership membership) throws MembershipCreationException {
+		if (!membership.alreadyExists()) {
+			membership.save();
+			membership.refresh();
+			return membership;
+		} else {
+			throw new MembershipCreationException("Membership already exists");
+		}
 	}
 
+	private boolean alreadyExists() {
+		if (this.targetAssembly!=null) {
+			return find.where().eq("targetAssembly", this.targetAssembly)
+					.eq("user", this.user).findList().size() > 0;	
+		} else if (this.targetGroup!=null){
+			return find.where().eq("targetGroup", this.targetGroup)
+						.eq("user", this.user).findList().size() > 0;
+		} else {
+			return false;
+		}
+	}
+
+	
 	public static Membership createObject(Membership membership) {
 		membership.save();
 		return membership;
@@ -225,14 +244,15 @@ public class Membership extends AppCivistBaseModel {
 	 * @return
 	 */
 	public static boolean checkIfExists(Membership gm) {
-		Membership m1 = find.where().eq("creator", gm.getCreator())
-				.eq("user", gm.getUser())
-				.eq("targetAssembly", gm.getTargetAssembly()).findUnique();
-
-		Membership m2 = find.where().eq("creator", gm.getCreator())
-				.eq("user", gm.getUser())
-				.eq("targetGroup", gm.getTargetGroup()).findUnique();
-
+		Membership m1 = null;
+		if (gm.getTargetAssembly()!=null) {
+			m1 = MembershipAssembly.findByUserAndAssembly(gm.getUser(), gm.getTargetAssembly());
+		}
+		Membership m2 = null;
+		if (gm.getTargetGroup()!=null) {
+			m2 = MembershipGroup.findByUserAndGroup(gm.getUser(), gm.getTargetGroup());;
+		}
+		
 		return m1 != null || m2 != null;
 	}
 
@@ -299,5 +319,34 @@ public class Membership extends AppCivistBaseModel {
 	
 	public List<SecurityRole> filterByRoleName(String name) {
 		return this.roles.stream().filter(p -> p.getName().toString().equals(name)).collect(Collectors.toList());
+	}
+
+	public static Boolean checkIfExistsByEmailAndId(String email, Long targetId, MembershipTypes targetType) {
+		User u = User.findByEmail(email);
+		if (u==null) {
+			return false;
+		} 
+		Assembly a = null;
+		WorkingGroup wg = null;
+		if (targetType!=null && targetType.equals(MembershipTypes.ASSEMBLY)) {
+			a = Assembly.read(targetId);
+			if (a==null) {
+				return false;
+			}
+		} else if (targetType!=null && targetType.equals(MembershipTypes.GROUP)) {
+			wg = WorkingGroup.read(targetId);
+			if (wg==null) {
+				return false;
+			}
+		}
+		Membership tempMem = new Membership();
+		tempMem.setUser(u);
+		if (a!=null) {
+			tempMem.setTargetAssembly(a);
+		} else if (wg!=null) {
+			tempMem.setTargetGroup(wg);
+		}
+		
+		return Membership.checkIfExists(tempMem);
 	}
 }
