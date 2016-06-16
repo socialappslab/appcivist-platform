@@ -43,6 +43,7 @@ import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 
 import controllers.Users;
 import controllers.routes;
+import exceptions.MembershipCreationException;
 import exceptions.TokenNotValidException;
 
 public class MyUsernamePasswordAuthProvider
@@ -60,7 +61,7 @@ public class MyUsernamePasswordAuthProvider
 			+ "." + "passwordResetLink.secure";
 	private static final String SETTING_KEY_LINK_LOGIN_AFTER_PASSWORD_RESET = "loginAfterPasswordReset";
 
-	private static final String EMAIL_TEMPLATE_FALLBACK_LANGUAGE = "it";
+	private static final String EMAIL_TEMPLATE_FALLBACK_LANGUAGE = "en";
 	
 	@Override
 	protected List<String> neededSettingKeys() {
@@ -217,19 +218,21 @@ public class MyUsernamePasswordAuthProvider
 			newUser = User.createFromAuthUser(user);
 			user.setUserId(newUser.getUserId());
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			if(Ebean.currentTransaction() != null) {
 				Ebean.currentTransaction().rollback();
 			}
 			e.printStackTrace();
 		} catch (HashGenerationException e) {
-			// TODO Auto-generated catch block
 			if(Ebean.currentTransaction() != null) {
 				Ebean.currentTransaction().rollback();
 			}
 			e.printStackTrace();
 		} catch (TokenNotValidException e) {
-			// TODO Auto-generated catch block
+			if(Ebean.currentTransaction() != null) {
+				Ebean.currentTransaction().rollback();
+			}
+			e.printStackTrace();
+		} catch (MembershipCreationException e) {
 			if(Ebean.currentTransaction() != null) {
 				Ebean.currentTransaction().rollback();
 			}
@@ -417,7 +420,7 @@ public class MyUsernamePasswordAuthProvider
 		final String userLangCode = user.getLanguage();
 		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
 		final String langCode = userLangCode !=null ? userLangCode : lang.code();
-		ctx.changeLang(lang);
+		ctx.changeLang(langCode);
 
 		final String html = getEmailTemplate(
 				"views.html.account.email.password_reset", langCode, url,
@@ -523,6 +526,12 @@ public class MyUsernamePasswordAuthProvider
 		} else if (locale.equals("en_EN") || locale.equals("en-EN")
 				|| locale.equals("en")) {
 			locale = "en";
+		} else if (locale.equals("de_DE") || locale.equals("de-DE")
+				|| locale.equals("de")) {
+			locale = "de";
+		} else if (locale.equals("fr_FR") || locale.equals("fr-FR")
+				|| locale.equals("fr")) {
+			locale = "fr";
 		}
 
 		String name = user.getName() + " " + user.getName();

@@ -40,6 +40,7 @@ public class OnlyMeAndAdminDynamicResourceHandler extends AbstractDynamicResourc
 										    	requestedResourceUUID = MyDynamicResourceHandler.getUUIDFromPath(path, meta);
 										    }									    
 										    User u = User.findByUserName(subject.getIdentifier());
+										    if (u!=null) u.setSessionLanguage();
 										    Long requestorId = u.getUserId();
 										    UUID requestorUUID = u.getUuid();
 										    

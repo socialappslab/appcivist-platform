@@ -33,6 +33,7 @@ public class AssemblyProfileDynamicResourceHandler extends AbstractDynamicResour
                             	   } else {
                             		   subjectOption.ifPresent(subject -> {
                             			   User u = User.findByUserName(subject.getIdentifier());
+                            			   if (u!=null) u.setSessionLanguage();
                             			   Logger.info("Checking membership of User in "+meta+"...");
                             			   Logger.debug("--> userName = " + u.getUsername());
                             			   String path = context.request().path();

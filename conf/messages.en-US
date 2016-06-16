@@ -55,7 +55,7 @@ playauthenticate.password.verify_email.subject=AppCivist: Confirm your e-mail ad
 playauthenticate.password.reset_email.subject=AppCivist: How to reset your password
 
 # play-authenticate: Additional translations
-
+playauthenticate.login.form-has-errors=Your email is invalid
 playauthenticate.login.email.placeholder=Your e-mail address
 playauthenticate.login.password.placeholder=Choose a password
 playauthenticate.login.password.repeat=Repeat chosen password
@@ -69,6 +69,7 @@ playauthenticate.signup.title=Signup
 playauthenticate.signup.name=Your name
 playauthenticate.signup.now=Sign up now
 playauthenticate.signup.oauth=or sign up using one of the following providers:
+playauthenticate.signup.form-has-errors=Either your email, your username or both are invalid
 
 playauthenticate.verify.account.title=E-mail verification required
 playauthenticate.verify.account.before=Before setting a password, you need to
@@ -190,4 +191,6 @@ notification.description.group.forum.contribution={0} posted a new contribution 
 notification.description.contribution.comment={0} commented your contribution '{1}'
 notification.description.campaign.contribution={0} posted a new contribution in campaign '{1}'
 notification.description.campaign.upcoming.milestone={0} due date approaching ({1}) for campaign {3}
+
+appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly
 

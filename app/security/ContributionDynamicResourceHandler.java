@@ -30,6 +30,7 @@ public class ContributionDynamicResourceHandler extends AbstractDynamicResourceH
 				 	   } else {
 				 		   subjectOption.ifPresent(subject -> {
 				 			   User u = User.findByUserName(subject.getIdentifier());
+				 			  if (u!=null) u.setSessionLanguage();
 				 			   Logger.debug("Checking membership of User in "+meta+"...");
 				 			   Logger.debug("--> userName = " + u.getUsername());
 				 			   String path = context.request().path();

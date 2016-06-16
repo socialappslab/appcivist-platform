@@ -144,7 +144,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				} else if (routes.Users.unverified().url().equals(o)) {
 					TransferResponseStatus response = new TransferResponseStatus();
 					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
-					response.setStatusMessage(Messages
+					response.setStatusMessage(Messages.get("playauthenticate.user.exists.message")+" "+Messages
 							.get("playauthenticate.verify.email.cta"));
 					return Controller.unauthorized(toJson(response));
 				} else if (routes.Users.exists().url().equals(o)) {

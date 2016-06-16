@@ -8,6 +8,7 @@ import models.MembershipInvitation;
 import models.SecurityRole;
 import models.User;
 import play.Logger;
+import play.i18n.Lang;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.DeadboltAnalyzer;
@@ -34,6 +35,7 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                                    } else {
                                        subjectOption.ifPresent(subject -> {
                                            User u = User.findByUserName(subject.getIdentifier());
+                                           if (u!=null) u.setSessionLanguage();
                                            String path = context.request().path();
                                            Long assemblyId = MyDynamicResourceHandler.getIdFromPath(path, resource);
                                            Logger.debug("Checking membership of User in "+resource+"...");

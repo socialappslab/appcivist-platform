@@ -49,9 +49,9 @@ playauthenticate.change_password.success=Password has been changed successfully.
 playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
 playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
 
-playauthenticate.password.verify_signup.subject=AppCivist: Completa la tua registrazione
-playauthenticate.password.verify_email.subject=AppCivist: Conferma il tuo indirizzo email
-playauthenticate.password.reset_email.subject=AppCivist: Come ricuperare la tua password
+playauthenticate.password.verify_signup.subject=AppCivist: Complétez votre inscription
+playauthenticate.password.verify_email.subject=AppCivist: Confirmez votre adresse e-mail
+playauthenticate.password.reset_email.subject=AppCivist: Comment réinitialiser votre mot de passe
 
 # play-authenticate: Additional translations
 
@@ -162,10 +162,12 @@ campaign.creation.success = La campaña {0} ha sido creada con exito por {1}
 campaign.creation.error = La campaña no fue creada. Hubo un problema con la peticion: {0}
 campaign.phase.creation.success = La fase de campaña {0} ha sido creada con exito por {1}
 campaign.phase.creation.error = La fase de campaña no fue creada. Hubo un problema con la peticion: {0}
-membership.invitation.creation.success = La invitacion a la membresia {0} ha sido creada con exito por {1}
-membership.invitation.creation.error = La invitacion a la membresia no fue creada. Hubo un problema con la peticion: {0}
+membership.invitation.creation.success = L\'invitation {0} été réalisé pour {1}
+membership.invitation.creation.error = L\'invitation n\'a pas été réalisé. Il y avait un problème avec les données reçues: {0}
 membership.invitation.email.message = Invitacion para membresia
 membership.invitation.creation.unauthorized = La membresía no pudo ser creada porque el usuario no está autorizado
 membership.invitation.email.subject=Invitación para unirse a AppCivist {0}
 membership.request.email.subject=Petición para unirse a AppCivist {0}
 membership.confirmation.email.subject=Bienvenido a AppCivist {0}
+
+appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly

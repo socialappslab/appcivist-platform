@@ -29,6 +29,8 @@ import models.TokenAction.Type;
 import models.transfer.AssemblyTransfer;
 import play.Play;
 import play.db.ebean.Transactional;
+import play.i18n.Lang;
+import play.mvc.Http.Context;
 import providers.GroupSignupIdentity;
 import providers.InvitationSignupIdentity;
 import providers.LanguageSignupIdentity;
@@ -57,6 +59,7 @@ import com.feth.play.module.pa.user.PicturedIdentity;
 import controllers.Users;
 import delegates.AssembliesDelegate;
 import enums.MyRoles;
+import exceptions.MembershipCreationException;
 import exceptions.TokenNotValidException;
 
 @Entity
@@ -449,7 +452,7 @@ public class User extends Model implements Subject {
 		Ebean.save(Arrays.asList(new User[] { otherUser, this }));
 	}
 
-	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException, TokenNotValidException {
+	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException, TokenNotValidException, MembershipCreationException {
 		/*
 		 * 0. Zero step, create a new User instance
 		 */
@@ -663,5 +666,13 @@ public class User extends Model implements Subject {
 
 	public static User findByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
+	}
+
+
+	public void setSessionLanguage() {
+		final String userLangCode = this.getLanguage();
+   		final Lang lang = Lang.preferred(Context.current().request().acceptLanguages());
+   		final String langCode = userLangCode !=null ? userLangCode : lang.code();   
+   		Context.current().changeLang(langCode);
 	}
 }

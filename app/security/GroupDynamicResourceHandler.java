@@ -36,6 +36,7 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
                             	   } else {
                             		   subjectOption.ifPresent(subject -> {
                             			   User u = User.findByUserName(subject.getIdentifier());
+                            			   if (u!=null) u.setSessionLanguage();
                                            String path = context.request().path();
                                            Long groupId = MyDynamicResourceHandler.getIdFromPath(path, resource);
                                            Logger.debug("Checking membership of User in "+resource+"...");
