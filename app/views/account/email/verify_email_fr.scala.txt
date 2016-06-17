@@ -1,0 +1,8 @@
+@(verificationUrl: String, token: String, name: String, email: String)
+Salut @name,
+
+Pour vérifier votre e-mail, cliquez sur ce lien:
+@verificationUrl
+
+Merci,
+AppCivist
