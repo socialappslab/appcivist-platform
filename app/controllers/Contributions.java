@@ -32,7 +32,6 @@ import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
-import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.With;
 import security.SecurityModelConstants;
@@ -326,7 +325,13 @@ public class Contributions extends Controller {
 			@ApiImplicitParam(name = "uuid", value = "Contribution's Universal Id (UUID)", dataType = "java.util.UUID", paramType = "path") })
 	// TODO: add API token support, some API enpoints must be available only for registered clients
 	public static Result findContributionByUUID(UUID uuid) {
-		Contribution contribution = Contribution.readByUUID(uuid);
+		Contribution contribution;
+		try {
+			contribution = Contribution.readByUUID(uuid);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution withis uuid")));
+		}
 		return ok(Json.toJson(contribution));
 	}
 	

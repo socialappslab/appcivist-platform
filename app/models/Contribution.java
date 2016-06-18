@@ -689,7 +689,7 @@ public class Contribution extends AppCivistBaseModel {
 	 */
 
 	public static Contribution readByUUID(UUID contributionUUID) {
-		return find.where().eq("uuid", contributionUUID).findUnique();
+		return find.where().eq("uuid", contributionUUID).eq("removed",false).findUnique();
 	}
 
 	public static Integer readByTitle(String title) {

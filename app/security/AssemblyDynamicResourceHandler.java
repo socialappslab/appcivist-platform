@@ -8,7 +8,6 @@ import models.MembershipInvitation;
 import models.SecurityRole;
 import models.User;
 import play.Logger;
-import play.i18n.Lang;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
 import be.objectify.deadbolt.core.DeadboltAnalyzer;
