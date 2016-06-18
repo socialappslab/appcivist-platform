@@ -62,7 +62,7 @@ public class Contribution extends AppCivistBaseModel {
 	@Index
 	private Location location;
 	private String budget;
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade = CascadeType.PERSIST)
 	@Where(clause = "${ta}.active=true")
 	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey",
 			"identifier" })
