@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.MembershipStatus;
+import exceptions.MembershipCreationException;
 
 @Entity
 @DiscriminatorValue("ASSEMBLY")
@@ -47,6 +48,16 @@ public class MembershipAssembly extends Membership {
 
 	public void setAssembly(Assembly assembly) {
 		this.assembly = assembly;
+	}
+	
+	public static MembershipAssembly create(MembershipAssembly membership) throws MembershipCreationException {
+		if (!membership.alreadyExists()) {
+			membership.save();
+			membership.refresh();
+			return membership;
+		} else {
+			throw new MembershipCreationException("Membership already exists");
+		}
 	}
 	
 	/*
@@ -86,8 +97,16 @@ public class MembershipAssembly extends Membership {
 	 * @return
 	 */
 	public static Membership findByUserAndAssemblyIds(Long userId, Long assemblyId) {
-		return find.where().eq("user.userId", userId).eq("assembly.assemblyId", assemblyId)
-				.findUnique();		
+		List<Membership> memberships = find.where().eq("user.userId", userId).eq("assembly.assemblyId", assemblyId).findList();
+		if (memberships!=null) {
+			if (memberships.size()>0) {
+				return (memberships.get(0));
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
 	}
 	
 	public static Boolean isUserMemberOfAssembly(Long userId, Long assemblyId) {
@@ -122,5 +141,14 @@ public class MembershipAssembly extends Membership {
 			UUID assemblyUuid) {
 		return find.where().eq("user.userId", userId).eq("assembly.uuid", assemblyUuid)
 				.findUnique();		
+	}
+	
+	public boolean alreadyExists() {
+		if (this.assembly!=null) {
+			return find.where().eq("assembly", this.assembly)
+					.eq("user", this.getUser()).findList().size() > 0;	
+		} else {
+			return false;
+		}
 	}
 }

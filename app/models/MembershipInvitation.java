@@ -383,10 +383,12 @@ public class MembershipInvitation extends AppCivistBaseModel {
 				//ma.setRoles(roles);
 				ma.setTargetUuid(a.getUuid());
 				ma.setUser(user);
-				ma = (MembershipAssembly) MembershipAssembly.create(ma);
-				for (SecurityRole role : roles) {
-					MembershipRole mr = new MembershipRole(ma.getMembershipId(),role.getRoleId());
-					mr.save();
+				if (!ma.alreadyExists()) {
+					ma = (MembershipAssembly) MembershipAssembly.create(ma);
+					for (SecurityRole role : roles) {
+						MembershipRole mr = new MembershipRole(ma.getMembershipId(),role.getRoleId());
+						mr.save();
+					}	
 				}
 			}
 		}

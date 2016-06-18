@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.MembershipStatus;
+import exceptions.MembershipCreationException;
 
 @Entity
 @DiscriminatorValue("GROUP")
@@ -35,6 +36,16 @@ public class MembershipGroup extends Membership {
 			WorkingGroup workingGroup) {
 		super(expiration, status, creator, user, roles, membershipType);
 		this.workingGroup = workingGroup;
+	}
+	
+	public static MembershipGroup create(MembershipGroup membership) throws MembershipCreationException {
+		if (!membership.alreadyExists()) {
+			membership.save();
+			membership.refresh();
+			return membership;
+		} else {
+			throw new MembershipCreationException("Membership already exists");
+		}
 	}
 	
 	/*
@@ -82,8 +93,16 @@ public class MembershipGroup extends Membership {
 	 * @return
 	 */
 	public static Membership findByUserAndGroupId(Long userId, Long groupId) {
-		return find.where().eq("user.userId", userId).eq("workingGroup.groupId", groupId)
-				.findUnique();		
+		List<Membership> memberships = find.where().eq("user.userId", userId).eq("workingGroup.groupId", groupId).findList();		
+		if (memberships!=null) {
+			if (memberships.size()>0) {
+				return (memberships.get(0));
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
 	}
 
 	public static Boolean isUserMemberOfGroup(Long userId, Long groupId) {
@@ -110,5 +129,14 @@ public class MembershipGroup extends Membership {
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();
 		return q.findList();		
+	}
+	
+	public boolean alreadyExists() {
+		if (this.workingGroup!=null) {
+			return find.where().eq("workingGroup", this.workingGroup)
+					.eq("user", this.getUser()).findList().size() > 0;	
+		} else {
+			return false;
+		}
 	}
 }
