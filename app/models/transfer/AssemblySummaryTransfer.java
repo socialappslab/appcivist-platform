@@ -4,12 +4,19 @@ import java.util.List;
 import java.util.UUID;
 
 public class AssemblySummaryTransfer {
+	private Long assemblyId;
 	private UUID uuid;
 	private String shortname;
 	private String name;
 	private AssemblyProfileTransfer profile;
 	private List<ThemeTransfer> themes;
 	
+	public Long getAssemblyId() {
+		return assemblyId;
+	}
+	public void setAssemblyId(Long assemblyId) {
+		this.assemblyId = assemblyId;
+	}
 	public UUID getUuid() {
 		return uuid;
 	}
