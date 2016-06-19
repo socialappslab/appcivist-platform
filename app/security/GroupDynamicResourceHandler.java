@@ -2,6 +2,7 @@ package security;
 
 import java.util.List;
 
+import enums.ManagementTypes;
 import enums.MembershipTypes;
 import enums.MyRoles;
 import models.MembershipGroup;
@@ -9,6 +10,7 @@ import models.Membership;
 import models.MembershipInvitation;
 import models.SecurityRole;
 import models.User;
+import models.WorkingGroup;
 import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.Http.Context;
@@ -43,14 +45,15 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
                                            Logger.debug("--> userName = " + u.getUsername());
                                            Logger.debug("--> assemblyId= " + groupId);
                             			   Membership m = MembershipGroup.findByUserAndGroupId(u.getUserId(), groupId);
-                            			   
-                            			   if (m!=null && rule.equals("CoordinatorOfGroup")) {
+                            			   WorkingGroup wg = WorkingGroup.read(groupId);
+                                           Boolean groupNotOpen = !wg.getProfile().getManagementType().equals(ManagementTypes.OPEN);
+                            			   if (m!=null && rule.equals("CoordinatorOfGroup") && groupNotOpen) {
                                                List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
                                                allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-                                           } else if (m!=null && rule.equals("GroupMemberIsExpert")) {
+                                           } else if (m!=null && rule.equals("GroupMemberIsExpert") && groupNotOpen) {
                                                List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.EXPERT.getName());
                                                allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-                                           } else if (m!=null && rule.equals("ModeratorOfGroup")) {
+                                           } else if (m!=null && rule.equals("ModeratorOfGroup") && groupNotOpen) {
                                                List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MODERATOR.getName());
                                                allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();                                           
                                            } else {
