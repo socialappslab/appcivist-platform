@@ -56,6 +56,7 @@ public class ContributionsDelegate {
 		eth.createPad(padId,text);
 		String readId = eth.getReadOnlyId(padId);
 		String readurl = eth.buildReadOnlyUrl(readId);		
+		
 		if (readurl!=null) {
 			createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c);
 		} 
@@ -66,9 +67,14 @@ public class ContributionsDelegate {
 		EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
 		// Create pad and set text
 		String padId = UUID.randomUUID().toString();
-		String templateText = prepareTemplate(t);
-		eth.createPad(padId);
-		eth.setHTML(padId, templateText);
+		String templateText = t!=null ? prepareTemplate(t) : c.getText();
+		
+		if(t!=null) {
+			eth.createPad(padId);
+			eth.setHTML(padId, templateText);	
+		} else {
+			eth.createPad(padId,templateText);
+		}
 		String readId = eth.getReadOnlyId(padId);
 		String readurl = eth.buildReadOnlyUrl(readId);
 		
@@ -114,11 +120,11 @@ public class ContributionsDelegate {
 	
 	private static String prepareTemplate(ContributionTemplate t) {
 		String header = "<html><header></header><body>";
-		String tText= "";
+		String tBody= "";
 		for (ContributionTemplateSection section : t.getTemplateSections()) {
-			tText = "<strong>"+section.getTitle()+"("+section.getLength()+" words)"+"</strong><br>"+section.getDescription()+"<br><br>";
+			tBody += "<strong>"+section.getTitle()+" ("+section.getLength()+" words)"+"</strong><br>"+section.getDescription()+"<br><br>";
 		}
-		return header+tText+"</body>";
+		return header+tBody+"</body>";
 	}
 	
 }

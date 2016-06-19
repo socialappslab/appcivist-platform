@@ -57,7 +57,7 @@ public class ContributionTemplate extends AppCivistBaseModel {
 	}
 
 	public String getUuidAsString() {
-		return uuid.toString();
+		return uuid != null ? uuid.toString() : "";
 	}
 
 	public void setUuidAsString(String uuidAsString) {

@@ -374,9 +374,21 @@ public class Contributions extends Controller {
 			ContributionTemplate template = null;
 
 			if(rs!=null &&newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
-				List<ContributionTemplate> templates = rs.getTemplates();
-				if (templates!=null && !templates.isEmpty())
-					template = rs.getTemplates().get(0);				
+				// TODO: make the template stored in the campaign rather than the proposal making component
+				List<Component> components = rs.getComponents();
+				if (components!=null && !components.isEmpty()) {
+					for (Component component : components) {
+						String componentKey = component.getKey();
+						if (componentKey!=null && componentKey.toLowerCase().equals("proposalmaking")) {
+							List<ContributionTemplate> templates = component.getTemplates();
+							if (templates!=null && !templates.isEmpty()) {
+								template = templates.get(0);		
+								break;
+							}
+						}
+					}
+				}
+					
 			}
 			newContribution.setContextUserId(author.getUserId());
 			Contribution c;
@@ -998,7 +1010,7 @@ public class Contributions extends Controller {
 		Logger.debug("Using Etherpad API Key: "+etherpadApiKey);
 		
 		if(type!=null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
-			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, containerResourceSpace.getResourceSpaceUuid());				
+			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());				
 		}
 		
 		Logger.info("Creating new contribution");

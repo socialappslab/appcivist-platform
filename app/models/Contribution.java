@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -154,6 +155,9 @@ public class Contribution extends AppCivistBaseModel {
 			ResourceSpace.class);
 	public static Finder<Long, WorkingGroup> workingGroupFinder = new Finder<>(
 			WorkingGroup.class);
+	
+	@Transient
+	private List<Long> campaignIds;
 
 	public Contribution(User creator, String title, String text,
 			ContributionTypes type) {
@@ -860,4 +864,22 @@ public class Contribution extends AppCivistBaseModel {
 		return wgs;
 	}
 
+	public List<Long> getCampaignIds() {
+		campaignIds = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream()
+				.filter(p -> p.getType() == ResourceSpaceTypes.CAMPAIGN)
+				.collect(Collectors.toList());
+
+		for (ResourceSpace resourceSpace : spaces) {
+			Campaign a = resourceSpace.getCampaign();
+			if (a != null) {
+				campaignIds.add(a.getCampaignId());
+			}
+		}
+		return campaignIds;
+	}
+	
+	public void setCampaignIds(List<Long> cids) {
+		this.campaignIds = cids;
+	}
 }

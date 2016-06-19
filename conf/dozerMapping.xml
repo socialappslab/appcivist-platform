@@ -64,5 +64,13 @@
     <mapping map-null="false" map-empty-string="false">
         <class-a map-null="false" map-empty-string="false">models.Campaign</class-a>
         <class-b map-null="false" map-empty-string="false">models.transfer.CampaignSummaryTransfer</class-b>
+    </mapping>        
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.ContributionTemplate</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.ContributionTemplateTransfer</class-b>
+    </mapping>        
+    <mapping map-null="false" map-empty-string="false">
+        <class-a map-null="false" map-empty-string="false">models.ContributionTemplateSection</class-a>
+        <class-b map-null="false" map-empty-string="false">models.transfer.ContributionTemplateSectionTransfer</class-b>
     </mapping>
 </mappings>
