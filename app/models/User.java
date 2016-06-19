@@ -114,7 +114,6 @@ public class User extends Model implements Subject {
 		joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "user_id", updatable = true, insertable = true) }, 
 		inverseJoinColumns = { @JoinColumn(name = "role_id", referencedColumnName = "role_id", updatable = true, insertable = true) }
 	)
-	@JsonIgnoreProperties({"roleId"})
 	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
 	
 	@ManyToMany(cascade = CascadeType.ALL)

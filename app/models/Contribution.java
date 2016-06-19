@@ -64,8 +64,7 @@ public class Contribution extends AppCivistBaseModel {
 	private String budget;
 	@ManyToMany(cascade = CascadeType.PERSIST)
 	@Where(clause = "${ta}.active=true")
-	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey",
-			"identifier" })
+	@JsonIgnoreProperties({ "providers", "roles", "permissions", "sessionKey", "identifier" })
 	private List<User> authors = new ArrayList<User>();
 	@Transient
 	private User firstAuthor;
