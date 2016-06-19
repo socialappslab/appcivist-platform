@@ -24,6 +24,7 @@ public class ComponentTransfer {
 	private List<ContributionTransfer> contributions = new ArrayList<>();
 	private List<VotingBallotTransfer> ballots = new ArrayList<>();
 	private List<ContributionTemplateTransfer> templates = new ArrayList<>();
+	private List<ConfigsTransfer> configs = new ArrayList<>();
 	
 	public ComponentTransfer() {
 		super();
@@ -139,5 +140,13 @@ public class ComponentTransfer {
 
 	public void setTemplates(List<ContributionTemplateTransfer> templates) {
 		this.templates = templates;
+	}
+
+	public List<ConfigsTransfer> getConfigs() {
+		return configs;
+	}
+
+	public void setConfigs(List<ConfigsTransfer> configs) {
+		this.configs = configs;
 	}
 }

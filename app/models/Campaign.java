@@ -576,7 +576,20 @@ String uuidAsString, List<Component> phases) {
 					ballotConfig.setKey(config.getKey());
 					ballotConfig.setValue(config.getValue());
 					ballotConfig.save();
+					if (config.getKey().equals("component.voting.ballot.password")) {
+						BallotRegistrationField brf = new BallotRegistrationField();
+						brf.setBallotId(ballot.getId());
+						brf.setDescription("The password used by non-users to vote on proposals through the voting ballot");
+						brf.setExpectedValue(config.getValue());
+						brf.setName("Ballot Password");
+						brf.setPosition(0);
+						brf.save();
+						ballot.setPassword(config.getValue());
+						ballot.update();
+					}
 				}
+				
+				// TODO: add ballot registration fields
 			}
 			
 			// Add connection to the Timeline of Edges
