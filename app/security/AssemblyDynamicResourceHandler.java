@@ -2,8 +2,8 @@ package security;
 
 import java.util.List;
 
-
 import models.Assembly;
+import models.AssemblyProfile;
 import models.Membership;
 import models.MembershipAssembly;
 import models.MembershipInvitation;
@@ -45,7 +45,12 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                                            Logger.debug("--> userName = " + u.getUsername());
                                            Logger.debug("--> assemblyId= " + assemblyId);
                                            Membership m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
-                                           Boolean assemblyNotOpen = !a.getProfile().getManagementType().equals(ManagementTypes.OPEN);
+                                           AssemblyProfile ap = a.getProfile();
+                                           Boolean assemblyNotOpen = true;
+                                           if (ap!=null) {
+                                        	   assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+                                           }
+                                           
                                            if (m!=null && rule.equals("CoordinatorOfAssembly") && assemblyNotOpen) {
                                                Logger.debug("--> Checking if user is Coordinator");
                                                List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
