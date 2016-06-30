@@ -1,6 +1,6 @@
 # AppCivist Core Platform
 
-Core of AppCivist services. 
+AppCivist enables a broad range of democratic assembly and collective action practices through modular components that can be composed to create different applications.
 
 ## Getting Started
 
