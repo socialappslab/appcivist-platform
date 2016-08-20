@@ -4,6 +4,7 @@ import static play.data.Form.form;
 import http.Headers;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -907,6 +908,12 @@ public class Contributions extends Controller {
 			Contribution newContribution = newContributionForm.get();
 			newContribution.setContributionId(contributionId);
 			newContribution.setContextUserId(author.getUserId());
+			List<User> authors = new ArrayList<User>();
+			for (User a : newContribution.getAuthors()) {
+				User refreshedAuthor = User.read(a.getUserId());
+				authors.add(refreshedAuthor);
+			}
+			newContribution.setAuthors(authors);
 			Contribution.update(newContribution);
 			return ok(Json.toJson(newContribution));
 		}

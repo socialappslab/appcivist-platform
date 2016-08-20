@@ -881,5 +881,9 @@ public class Contribution extends AppCivistBaseModel {
 	
 	public void setCampaignIds(List<Long> cids) {
 		this.campaignIds = cids;
+		for (Long long1 : cids) {
+			ResourceSpace rs = ResourceSpace.read(long1);
+			this.containingSpaces.add(rs);
+		}
 	}
 }
