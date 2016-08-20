@@ -1,6 +1,9 @@
-# Getting Started
+# Getting started with AppCivist Core Platform
 
-The AppCivist Core Platform is implemented using the full-stack [Playframework][1]. Follow these instructions to download the source code and run it. 
+Installing **AppCivist** in your server entails installing each of the following components, as shown in the image below. This guide explains how to download and install the AppCivist Core Platform and the AppCivist database.  
+![AppCivist alpha prototype simplified architecture](docs/images/Prototype Implementation Architecture.png)  
+
+The AppCivist Core Platform provides a RESTful API implemented with the full-stack [Playframework][1]. Follow these instructions to download the source code and run it. 
 
 1. You can either use the **activator** binary in the root folder or download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
 2. Clone this repository
@@ -21,6 +24,11 @@ The server is configured to automatically use an in-memory H2 database. You can 
 ## Package 
 
 This file will be packaged with your application, when using `activator dist`.
+
+## Other getting started guides
+1. [Getting Started with AppCivist-PB web front-end](https://github.com/socialappslab/appcivist-pb-client)
+2. [Getting Started with the AppCivist Voting API](https://github.com/socialappslab/appcivist-voting-api)
+3. [Set Up Etherpad-Lite](https://github.com/ether/etherpad-lite/wiki#set-up)
 
 
 [1]: https://www.playframework.com/

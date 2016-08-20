@@ -1,31 +1,27 @@
-# AppCivist Core Platform
+# The AppCivist Project 
 
-AppCivist enables a broad range of democratic assembly and collective action practices through modular components that can be composed to create different applications.
+**AppCivist** is a software platform for democratic assembly and collective action that lets users design and build their own Assemblies, with modular components, to organize democratic action. The project  is a collaboration between the [Social Apps Lab @ CITRIS](http://citris-uc.org/initiatives/social-apps-lab/) at the University of California, Berkeley and [Inria@Silicon Valley](https://project.inria.fr/siliconvalley/). 
 
-## Getting Started
+## AppCivist Core Platform
 
-1. You can either use the **activator** binary in the root folder or download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
-2. Clone this repository
-3. Copy **conf/local.conf.sample** to **conf/local.conf** and to **conf/local.test.conf**. Make sure test configurations point to a test database. 
-4. Copy **conf/play-authentica/deadbolt.conf.sample** to **conf/play-authentica/local.deadbolt.conf**
-5. Copy **conf/play-authentica/mine.conf.sample** to **conf/play-authentica/mine.local.conf** and replace email address with and email address you own 
-6. Copy **conf/play-authentica/smtp.conf.sample** to **conf/play-authentica/smpt.local.conf** and replace email and passwords with your own. 
-6. Replace the configuration values that start with "${?*" by the required credentials for IMGUR, Amazon AWS and MapBox API. 
-7. Make sure you never commit the files in previous steps into the repository.
-8. On a console, access your local copy of appcivist-core source code: **cd <PATH_TO_YOUR_LOCAL_REPO>/appcivist-platform**
-9. Run the command **activator** to enter the typsafe activator console (or if you want to enable debugging from your IDE, use **activator -jvm-debug 9999 -D**). It will automatically download all the dependencies and setup the [play framework][1].  
-10. **OPTIONAL**. Follow Play Framework's [Get Started][2] guide to learn more about how the project is organized
-11. Run the server using the following command **run -Dconfig.resource=local.conf -Dlogger.file=conf/local.logback.xml**
-12. On your browser, go to **http://localhost:9000/api/doc** to visit the documentation of the API endpoints and have try them out with real examples. 
+This repository contains the source code of the core backend for AppCivist. The core platform provides a RESTful API for managing User authentication, Assembly and Contribution Making. To learn more about these concepts, read the [Project Documentation](#project-documentation) below or go straight to [Getting Started with the AppCivist Core Platform](docs/getting-started.md) to download the source code, install the platform and run it.   
 
-The server is configured to automatically use an in-memory H2 database. You can install postgresql or mysql and use them if you wish. All you need to do is install those servers, create a database and then replace the driver, database name, username and password you use with the database. 
+### Other project source code repositories 
+* [AppCivist-PB prototype UI](https://github.com/socialappslab/appcivist-pb-client): main prototype User Interface of the AppCivist Project for Participatory Budgeting.
+* [AppCivist Voting API](https://github.com/socialappslab/appcivist-voting-api): AppCivist Prototype implementation of a Ballot Based Voting API that allows both registered and non-registered users to cast votes on AppCivist users contributions. 
 
-## Package 
+Altogether, the **AppCivist-PB prototype UI** connected to both the **AppCivist Core Platform** and the **AppCivist Voting API** form the alpha prototype of the AppCivist project.
 
-This file will be packaged with your application, when using `activator dist`.
+![AppCivist alpha prototype simplified architecture](docs/images/Prototype Implementation Architecture.png)  
 
+## Project Documentation
 
-[1]: https://www.playframework.com/
-[2]: https://www.playframework.com/documentation/2.3.x/Home
-[3]: http://typesafe.com/get-started
-[4]: https://www.getpostman.com/
+1. **AppCivist Technical Documentation and Development Guide** [github](docs/architecture.md) explains how to contribute to the project development, starting from the appcivist core platform.
+
+2. **AppCivist Core Definitions** [gdoc](https://docs.google.com/document/d/1mgT9ac9c6bvhGMZ7_IHLYAAgwHxr06gK57RC1BI8gPQ/edit?usp=sharing) offers an overview of the key concepts we use in our platform. 
+
+3. **AppCivist Conceptual Architecture Documentation** [gdoc](https://docs.google.com/document/d/1K0aceRhEYoW04D9CjM9g3LbQYuDKXD08yLLPkuhZJQ8/edit?usp=sharing) is a conceptual description of the architecture, detailing the ideal components we have envisioned. 
+
+4. **AppCivist-PB User’s Guide** [gdoc](https://docs.google.com/document/d/1a2jmVKqtZSM2VRxTMImRFGbjsgRQpFXl7RHHjW1022U/edit?usp=sharing) is a simple, screen-based, user guide of the current user interface prototype that supports proposal and decision making activities for participatory budgeting. 
+
+5. **AppCivist 2-pages Product Pitch** [gdoc](https://docs.google.com/document/d/14n4_EF36vXYfiA6FVPbrbzWyhadA08t6wV1bkEYJw3o/edit?usp=sharing) gives a quick overview of the project and its main ideas as a quick 1-page product pitch.  
