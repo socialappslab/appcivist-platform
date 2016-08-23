@@ -38,8 +38,11 @@ AppCivist controllers encapsulate functionalities and logic related to the resou
 7. **Files:** a proxy controller that allow any appcivist user to upload a file to Amazon S3 and obtain its URL. This can then be added to contributions as an attachment.  
 
 ### API Docs
-* Visit the link to explore the **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/api/doc)**
-* Visit the link to explore the **[API Docs for the AppCivist Voting API](http://appcivist.littlemacondo.com/voting/docs/api/v0.html)**. The Voting API source code is maintained in [a different repository](https://github.com/socialappslab/appcivist-voting-api) and accesses the same database in the current implementation. This will change in the future to have all voting operations also in this core platform. 
+The detail of each API operation is documented within the code through **[Swagger Api Annotations](https://github.com/swagger-api/swagger-core/wiki/Annotations-1.5.X)**. A generated documentation is available in this link: **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/api/doc)**
+
+Similalry, the Voting API is also annotated using [ApiPie for RAILS](https://github.com/Apipie/apipie-rails). The generated web documentation is available at this link: **[API Docs for the AppCivist Voting API](http://appcivist.littlemacondo.com/voting/docs/api/v0.html)**. 
+
+The Voting API source code is maintained in [a different repository](https://github.com/socialappslab/appcivist-voting-api) and accesses the same database in the current implementation. This will change in the future to have all voting operations also in this core platform. 
 
 ### Authentication &  Authorization
 Authentication is implemented by extending the [play-authenticate](http://joscha.github.io/play-authenticate/#showcase) module. Authorization is implemented by extending the [deadbolt](http://deadbolt.ws/) module. Both modules provide **Java annotations** that can be used on top of each controller operation to execute authentication and authorization operations before the execution of the operation. Below are some annotations we use and how they are implemented. 
