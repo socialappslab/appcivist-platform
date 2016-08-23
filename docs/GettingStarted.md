@@ -5,13 +5,14 @@ Installing **AppCivist** in your server entails installing each of the following
 
 The AppCivist Core Platform provides a RESTful API implemented with the full-stack [Playframework][1]. Follow these instructions to download the source code and run it. 
 
-1. You can either use the **activator** binary in the root folder or download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
+1. You can either use the **activator** binary in the root folder of the repository or download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
 2. Clone this repository
-3. Copy **conf/local.conf.sample** to **conf/local.conf** and to **conf/local.test.conf**. Make sure test configurations point to a test database. 
+3. Create the database using the script **sql/database-create-postgres.sql** (for PostgreSQL databases, which is used in the sample configuration file) or **sql/database-create-mysql.sql** (for MySQL databases)
+3. Make a copy of **conf/local.conf.sample** into **conf/local.conf** and into **conf/local.test.conf**. Make sure test configurations point to a test database you own. 
 4. Copy **conf/play-authentica/deadbolt.conf.sample** to **conf/play-authentica/local.deadbolt.conf**
 5. Copy **conf/play-authentica/mine.conf.sample** to **conf/play-authentica/mine.local.conf** and replace email address with and email address you own 
 6. Copy **conf/play-authentica/smtp.conf.sample** to **conf/play-authentica/smpt.local.conf** and replace email and passwords with your own. 
-6. Replace the configuration values that start with "${?*" by the required credentials for IMGUR, Amazon AWS and MapBox API. 
+6. Replace the configuration values that start with "${?*" by the required credentials for IMGUR, Amazon S3 and MapBox API. 
 7. Make sure you never commit the files in previous steps into the repository.
 8. On a console, access your local copy of appcivist-core source code: **cd <PATH_TO_YOUR_LOCAL_REPO>/appcivist-platform**
 9. Run the command **activator** to enter the typsafe activator console (or if you want to enable debugging from your IDE, use **activator -jvm-debug 9999 -D**). It will automatically download all the dependencies and setup the [play framework][1].  
