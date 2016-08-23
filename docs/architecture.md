@@ -28,6 +28,7 @@ The package **models** contain a one-to-one mapping of this database schema to j
 ## API resources and controllers
 
 AppCivist controllers encapsulate functionalities and logic related to the resources: 
+
 1. **Assemblies:** management operations for listing, reading, creating, configuring, updating and deleting assemblies. Writing operations in this controller are only be available to users who have the role **COORDINATOR** in their membership to the assembly.  
 2. **Working Groups:** management operations for listing, reading, creating, configuring, updating and deleting working groups. Writing operations in this controller are only be available to users who have the role **COORDINATOR** in their membership to the working group.  
 3. **Campaigns:** management operations for listing, reading, creating, configuring, updating and deleting campaigns. Writing operations in this controller are only be available to users who have the role **COORDINATOR** in their membership to the assembly that owns the campaign.  
@@ -38,7 +39,7 @@ AppCivist controllers encapsulate functionalities and logic related to the resou
 
 ### API Docs
 * Visit the link to explore the **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/api/doc)**
-* Visit the link to explore the **[API Docs for the AppCivist Voting API](http://appcivist.littlemacondo.com/voting/docs/api/v0.html). The Voting API source code is maintained in [a different repository](https://github.com/socialappslab/appcivist-voting-api) and accesses the same database in the current implementation. This will change in the future to have all voting operations also in this core platform. 
+* Visit the link to explore the **[API Docs for the AppCivist Voting API](http://appcivist.littlemacondo.com/voting/docs/api/v0.html)**. The Voting API source code is maintained in [a different repository](https://github.com/socialappslab/appcivist-voting-api) and accesses the same database in the current implementation. This will change in the future to have all voting operations also in this core platform. 
 
 ### Authentication &  Authorization
 Authentication is implemented by extending the [play-authenticate](http://joscha.github.io/play-authenticate/#showcase) module. Authorization is implemented by extending the [deadbolt](http://deadbolt.ws/) module. Both modules provide **Java annotations** that can be used on top of each controller operation to execute authentication and authorization operations before the execution of the operation. Below are some annotations we use and how they are implemented. 
