@@ -1,7 +1,7 @@
 # Getting started with AppCivist Core Platform
 
 Installing **AppCivist** in your server entails installing each of the following components, as shown in the image below. This guide explains how to download and install the AppCivist Core Platform and the AppCivist database.  
-![AppCivist alpha prototype simplified architecture](docs/images/Prototype Implementation Architecture.png)  
+![AppCivist alpha prototype simplified architecture](images/Prototype Implementation Architecture.png)  
 
 The AppCivist Core Platform provides a RESTful API implemented with the full-stack [Playframework][1]. Follow these instructions to download the source code and run it. 
 
