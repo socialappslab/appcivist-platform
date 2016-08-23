@@ -31,9 +31,9 @@ libraryDependencies ++= Seq(
   "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
   "commons-io" % "commons-io" % "2.4",
   "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),       
-  "com.wordnik" %% "swagger-core" % "1.3.12" withSources() withJavadoc(),        
+  "io.swagger" % "swagger-core" % "1.5.8" withSources() withJavadoc(),        
   "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
-  "pl.matisoft" %% "swagger-play24" % "1.4" withSources() withJavadoc(), 
+  "io.swagger" %% "swagger-play2" % "1.5.2" withSources() withJavadoc(), 
   "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc(), 
   "net.gjerull.etherpad" % "etherpad_lite_client" % "1.2.12" withSources() withJavadoc(), 
   "com.squareup.retrofit" % "retrofit" % "2.0.0-beta2" withSources() withJavadoc(), 
@@ -43,10 +43,6 @@ libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.8" % "test->default", 
   "com.amazonaws" % "aws-java-sdk" % "1.10.42", 
   "com.zaxxer" % "HikariCP" % "2.4.6"
-  // The official old swagger play installation. Uncomment when it works with our current play version (2.4.x)  
-  //"com.wordnik" %% "swagger-play2" % "1.3.11" withSources() withJavadoc()
-  // Another Implementation of swagger-play2
-  //"com.markusjura" %% "swagger-play2" % "1.3.7" withSources() withJavadoc()
 )
 
 libraryDependencies += evolutions

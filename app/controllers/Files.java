@@ -9,7 +9,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import com.wordnik.swagger.annotations.Api;
+import io.swagger.annotations.Api;
 import views.html.*;
 
 @Api(value = "/files")

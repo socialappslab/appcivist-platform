@@ -19,9 +19,8 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
 import com.feth.play.module.pa.exceptions.AuthException;
-import com.wordnik.swagger.converter.ModelConverters;
+import io.swagger.converter.ModelConverters;
 
-import utils.IgnoreConverter;
 import controllers.routes;
 import play.libs.F.Promise;
 import play.mvc.Action;
@@ -32,7 +31,9 @@ public class Global extends GlobalSettings {
 
 	public void beforeStart(Application app) {
 	    Logger.info("Registering custom converter");
-	    ModelConverters.addConverter(new IgnoreConverter(), true);
+        final ModelConverters converters = new ModelConverters();
+        converters.addClassToSkip("com.avaje.ebean.bean.EntityBeanIntercept");
+        converters.addPackageToSkip("com.avaje.ebean.bean");
 	}
 	
 	public void onStart(Application app) {

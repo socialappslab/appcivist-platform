@@ -5,8 +5,8 @@ import java.util.List;
 
 import models.location.Location;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 import play.libs.Json;
 import play.mvc.*;
