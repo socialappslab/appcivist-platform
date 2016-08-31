@@ -38,7 +38,7 @@ AppCivist controllers encapsulate functionalities and logic related to the resou
 7. **Files:** a proxy controller that allow any appcivist user to upload a file to Amazon S3 and obtain its URL. This can then be added to contributions as an attachment.  
 
 ### API Docs
-The detail of each API operation is documented within the code through **[Swagger Api Annotations](https://github.com/swagger-api/swagger-core/wiki/Annotations-1.5.X)**. A generated documentation is available in this link: **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/api/doc)**
+The detail of each API operation is documented within the code through **[Swagger Api Annotations](https://github.com/swagger-api/swagger-core/wiki/Annotations-1.5.X)**. A generated documentation is available in this link: **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/backend/api/doc)**
 
 Similalry, the Voting API is also annotated using [ApiPie for RAILS](https://github.com/Apipie/apipie-rails). The generated web documentation is available at this link: **[API Docs for the AppCivist Voting API](http://appcivist.littlemacondo.com/voting/docs/api/v0.html)**. 
 
