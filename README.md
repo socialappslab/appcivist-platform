@@ -18,7 +18,7 @@ Altogether, the **AppCivist-PB prototype UI** connected to both the **AppCivist 
 
 1. **AppCivist Technical Documentation and Development Guide** ([github](docs/architecture.md)) explains how to contribute to the project development, starting from the appcivist core platform.
 2.  **AppCivist API Docs** include the API documentation for the two main APIs in use by the AppCivist UI: 
-    * **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/api/doc)**
+    * **[API Docs for the AppCivist Core Platform](http://appcivist.littlemacondo.com/backend/api/doc)**
     * **[API Docs for the AppCivist Voting API](http://appcivist.littlemacondo.com/voting/docs/api/v0.html)**
 3. **AppCivist Core Definitions** ([gdoc](https://docs.google.com/document/d/1mgT9ac9c6bvhGMZ7_IHLYAAgwHxr06gK57RC1BI8gPQ/edit?usp=sharing)) offers an overview of the key concepts we use in our platform. 
 4. **AppCivist Conceptual Architecture Documentation** ([gdoc](https://docs.google.com/document/d/1K0aceRhEYoW04D9CjM9g3LbQYuDKXD08yLLPkuhZJQ8/edit?usp=sharing)) is a conceptual description of the architecture, detailing the ideal components we have envisioned. 
