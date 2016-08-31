@@ -7,7 +7,7 @@ The AppCivist Core Platform provides a RESTful API implemented with the full-sta
 
 1. You can either use the **activator** binary in the root folder of the repository or download and install [Typesafe Activator][3] (make sure to add the folder where you uncompress activator to your PATH)
 2. Clone this repository
-3. Create the database using the script **sql/database-create-postgres.sql** (for PostgreSQL databases, which is used in the sample configuration file) or **sql/database-create-mysql.sql** (for MySQL databases)
+3. Create the database using the script **conf/sql/database-create-postgres.sql** (for PostgreSQL databases, which is used in the sample configuration file) or **conf/sql/database-create-mysql.sql** (for MySQL databases)
 3. Make a copy of **conf/local.conf.sample** into **conf/local.conf** and into **conf/local.test.conf**. Make sure test configurations point to a test database you own. 
 4. Copy **conf/play-authentica/deadbolt.conf.sample** to **conf/play-authentica/local.deadbolt.conf**
 5. Copy **conf/play-authentica/mine.conf.sample** to **conf/play-authentica/mine.local.conf** and replace email address with and email address you own 
