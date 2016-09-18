@@ -3,19 +3,19 @@ package controllers;
 import static play.data.Form.form;
 import http.Headers;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.annotations.*;
 import models.*;
 import models.transfer.InvitationTransfer;
 import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
+import org.apache.commons.io.FileUtils;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -34,12 +34,6 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 import delegates.ContributionsDelegate;
 import enums.ContributionTypes;
@@ -48,6 +42,9 @@ import enums.ResourceSpaceTypes;
 import enums.ResponseStatus;
 import enums.SupportedMembershipRegistration;
 import exceptions.MembershipCreationException;
+
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 @Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -1279,6 +1276,7 @@ public class Contributions extends Controller {
 	}
 
 	/** IDEAS **/
+	// TODO authorization
 	/**
 	 * POST /api/assembly/:aid/contribution/ideas/import
 	 * Import ideas file
@@ -1286,13 +1284,18 @@ public class Contributions extends Controller {
 	 * @param cid Campaing Id
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import ideas file")
+	@ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
+			notes = "CSV format: idea title, idea summary, idea author, idea theme <br/>" +
+					"The values must be separated by coma (,). If the theme column has more than one theme, then it must be separated by dash (-).")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			//@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			//@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result importContributions(Long aid, Long cid, String type) {
+	public static Result importContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
+											 @ApiParam(value = "Type of contribution", required = true, defaultValue = "IDEA", example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
 		Http.MultipartFormData body = request().body().asMultipartFormData();
 		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
 		Campaign campaign = Campaign.read(cid);
@@ -1353,13 +1356,15 @@ public class Contributions extends Controller {
 	 * @param cid Campaing Id
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export ideas file")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export campaign ideas to a CSV file")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			//@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			//@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result exportContributions(Long aid, Long cid, String type) {
+	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
+											 @ApiParam(value = "Type of contribution", required = true, example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
 		String csv = "idea title,idea summary,idea author,idea theme\n";
 		Campaign campaign = Campaign.read(cid);
 		ResourceSpace rs = null;
@@ -1385,15 +1390,24 @@ public class Contributions extends Controller {
 				csv = csv + ",";
 				int themeSize = c.getThemes().size();
 				for(int i=0; i < themeSize; i++) {
-					csv = csv + c.getThemes().get(i).getTitle();
-					if (i < themeSize + 1) {
+					if (i > 0 && i < themeSize + 1) {
 						csv = csv + "-";
 					}
+					csv = csv + c.getThemes().get(i).getTitle();
 				}
 				csv = csv + "\n";
 			}
 		}
-		return ok(csv);
+		response().setContentType("application/csv");
+		response().setHeader("Content-disposition","attachment; filename=contributions.csv");
+		File tempFile;
+		try {
+			tempFile = File.createTempFile("contributions.csv", ".tmp");
+			FileUtils.writeStringToFile(tempFile, csv);
+			return ok(tempFile);
+		} catch (IOException e) {
+			return internalServerError();
+		}
 	}
 
 }
