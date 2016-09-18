@@ -1,15 +1,17 @@
 package delegates;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import models.Contribution;
-import models.ContributionTemplate;
-import models.ContributionTemplateSection;
-import models.Resource;
-import models.ResourceSpace;
+import com.avaje.ebean.Ebean;
+import enums.ContributionTypes;
+import models.*;
 
 import org.dozer.DozerBeanMapper;
 import play.Play;
@@ -37,14 +39,19 @@ public class ContributionsDelegate {
 	public static List<Contribution> findContributionsInResourceSpace(
 			ResourceSpace rs, String type, String query) {
 		if (type != null && !type.isEmpty())	 {
-			return query != null && !query.isEmpty() ? 
-					Contribution.findAllByContainingSpaceAndType(rs, type) : 
-						Contribution.findAllByContainingSpaceAndTypeAndQuery(rs, type, query);
+			return query != null && !query.isEmpty() ?
+					Contribution.findAllByContainingSpaceAndTypeAndQuery(rs, type, query):
+						Contribution.findAllByContainingSpaceAndType(rs, type);
 		} else {
 			return query != null && !query.isEmpty() ? 
 					findContributionsInResourceSpace(rs.getResourceSpaceId(), query) : 
 						rs != null ? rs.getContributions() : null;
 		}	
+	}
+
+	public static List<Contribution> findContributionsInResourceSpace(
+			ResourceSpace rs, Integer type) {
+			return Contribution.findAllByContainingSpaceAndType(rs, type);
 	}
 	
 	// TODO: Add campaign Template
@@ -117,7 +124,7 @@ public class ContributionsDelegate {
 		String readOnlyId = eth.getReadOnlyId(padId);
 		return readOnlyId;
 	}
-	
+
 	private static String prepareTemplate(ContributionTemplate t) {
 		String header = "<html><header></header><body>";
 		String tBody= "";
