@@ -18,5 +18,6 @@ public enum ResourceTypes {
 	TEXT, 
 	WEBPAGE, 
 	FILE, 
-	AUDIO
+	AUDIO,
+	CONTRIBUTION_TEMPLATE
 }

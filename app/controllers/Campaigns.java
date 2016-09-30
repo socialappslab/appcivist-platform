@@ -1,20 +1,20 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.ResourceTypes;
 import http.Headers;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.Campaign;
-import models.CampaignTemplate;
-import models.Membership;
-import models.MembershipAssembly;
-import models.User;
+import models.*;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
+import models.transfer.ResourceTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -345,18 +345,21 @@ public class Campaigns extends Controller {
 	 * 
 	 * @return JSON array with the list of campaign templates
 	 */
-	@ApiOperation(httpMethod = "GET", response = CampaignTemplate.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
+	@ApiOperation(httpMethod = "GET", response = URL.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Template Found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
 	@SubjectPresent
 	public static Result findCampaignTemplates() {
-		List<CampaignTemplate> cts = CampaignTemplate.findAll();
-		if (cts != null && !cts.isEmpty())
-			return ok(Json.toJson(cts));
-		else
+		// Must return resource, padTransfer, writable url or read only url??
+		List<Resource> cts = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
+		if (cts != null && !cts.isEmpty()) {
+			List<URL> urls = cts.stream().map(sc -> sc.getUrl()).collect(Collectors.toList());
+			//return ok(Json.toJson(cts));
+			return ok(Json.toJson(urls));
+		} else {
 			return notFound(Json.toJson(new TransferResponseStatus(
 					"No campaign templates")));
-
+		}
 	}
 
 	// Private not exposed Methods

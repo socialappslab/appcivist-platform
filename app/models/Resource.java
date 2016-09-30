@@ -288,4 +288,9 @@ public class Resource extends AppCivistBaseModel {
 		eth.setHTML(this.padId, text);
 		this.setUrl(new URL(eth.getReadOnlyUrl(this.padId)));
 	}
+
+    public static List<Resource> findByResourceType(ResourceTypes contributionTemplate) {
+    	System.out.println("----------------- resourceType " + contributionTemplate.toString());
+		return find.where().eq("resourceType",contributionTemplate.toString()).findList();
+    }
 }
