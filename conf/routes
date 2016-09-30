@@ -33,19 +33,19 @@ GET       /api/doc.json/component                                         @contr
 ##################################################################################################################################################################
 # User and Authentication Management based on play-authenticate
 # TODO: cleanup, remove what is not used and keep what's important
-GET       /api/user                                                       controllers.Users.getUsers() 
-GET       /api/user/:uid                                                  controllers.Users.getUser(uid: Long) 
-GET       /api/user/:uid/loggedin                                         controllers.Users.getCurrentUser(uid: Long) 
+GET       /api/user                                                       controllers.Users.getUsers()
+GET       /api/user/:uid                                                  controllers.Users.getUser(uid: Long)
+GET       /api/user/:uid/loggedin                                         controllers.Users.getCurrentUser(uid: Long)
 GET       /api/user/:uid/profile                                          controllers.Users.profile(uid: Long)
-POST      /api/user/:uid/profile                                          controllers.Users.createUserProfile(uid: Long) 
-PUT       /api/user/:uid                                                  controllers.Users.updateUser(uid: Long) 
-PUT       /api/user/:uid/profile                                          controllers.Users.updateUserProfile(uid: Long) 
-DELETE    /api/user/:uid                                                  controllers.Users.deleteUser(uid: Long) 
-DELETE    /api/user/:uid/force                                            controllers.Users.deleteUserForce(uid: Long) 
-POST      /api/user/signup                                                controllers.Users.doSignup() 
-POST      /api/user/login                                                 controllers.Users.doLogin() 
-POST      /api/user/logout                                                controllers.Users.doLogout() 
-GET       /api/user/verify/:token                                         controllers.Users.verify(token: String) 
+POST      /api/user/:uid/profile                                          controllers.Users.createUserProfile(uid: Long)
+PUT       /api/user/:uid                                                  controllers.Users.updateUser(uid: Long)
+PUT       /api/user/:uid/profile                                          controllers.Users.updateUserProfile(uid: Long)
+DELETE    /api/user/:uid                                                  controllers.Users.deleteUser(uid: Long)
+DELETE    /api/user/:uid/force                                            controllers.Users.deleteUserForce(uid: Long)
+POST      /api/user/signup                                                controllers.Users.doSignup()
+POST      /api/user/login                                                 controllers.Users.doLogin()
+POST      /api/user/logout                                                controllers.Users.doLogout()
+GET       /api/user/verify/:token                                         controllers.Users.verify(token: String)
 GET       /api/user/:uuid/campaign                                        controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
 GET       /api/user/:uid/campaign                                         controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
 
@@ -70,7 +70,7 @@ GET       /api/assembly/:id/membership/:status                            contro
 GET       /api/assembly/:aid/user/:uid                                    controllers.Assemblies.isUserMemberOfAssembly(aid: Long, uid: Long)
 POST      /api/assembly/:id/invitations                                   controllers.Assemblies.inviteNewMembers(id: Long)
 GET       /api/assembly/:aid/linked                                       controllers.Assemblies.findAssembliesLinked(aid: Long)
-GET       /api/assembly/:aid/public                                       controllers.Assemblies.getListedLinkedAssemblyProfile(aid: Long) 
+GET       /api/assembly/:aid/public                                       controllers.Assemblies.getListedLinkedAssemblyProfile(aid: Long)
 
 ##################################################################################################################################################################
 # WorkingGroup API
@@ -79,30 +79,30 @@ GET       /api/assembly/:aid/group/:gid                                   contro
 PUT       /api/assembly/:aid/group                                        controllers.WorkingGroups.updateWorkingGroup(aid: Long, gid: Long)
 POST      /api/assembly/:aid/group                                        controllers.WorkingGroups.createWorkingGroup(aid: Long)
 GET       /api/assembly/:aid/campaign/:cid/group                          controllers.WorkingGroups.findWorkingGroupsInCampaign(aid: Long, cid: Long)
-POST      /api/assembly/:aid/campaign/:cid/group                          controllers.WorkingGroups.createWorkingGroupInCampaign(aid: Long, cid: Long) 
+POST      /api/assembly/:aid/campaign/:cid/group                          controllers.WorkingGroups.createWorkingGroupInCampaign(aid: Long, cid: Long)
 DELETE    /api/assembly/:aid/group/:gid                                   controllers.WorkingGroups.deleteWorkingGroup(aid: Long, gid: Long)
-POST      /api/assembly/:aid/group/:id/membership/:type                   controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)  
+POST      /api/assembly/:aid/group/:id/membership/:type                   controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)
 GET       /api/assembly/:aid/group/:id/membership                         controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
 GET       /api/assembly/:aid/group/:id/membership/:status                 controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String)
 GET       /api/assembly/:aid/group/:gid/user/:uid                         controllers.WorkingGroups.isUserMemberOfGroup(aid: Long, gid: Long, uid: Long)
-GET       /api/assembly/:aid/group/:gid/proposals                         controllers.WorkingGroups.listWorkingGroupProposals(aid: Long, gid: Long) 
-GET       /api/assembly/:aid/group/:gid/contributions                     controllers.WorkingGroups.listWorkingGroupContributions(aid: Long, gid: Long) 
-GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
+GET       /api/assembly/:aid/group/:gid/proposals                         controllers.WorkingGroups.listWorkingGroupProposals(aid: Long, gid: Long)
+GET       /api/assembly/:aid/group/:gid/contributions                     controllers.WorkingGroups.listWorkingGroupContributions(aid: Long, gid: Long)
+GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long)
 
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
 # TODO: mark for review and removal if not needed
-POST      /api/membership                                                 controllers.Memberships.createMembership() 
+POST      /api/membership                                                 controllers.Memberships.createMembership()
 # TODO: change and use users numerical id instead of UUID
 GET       /api/membership/user/:uid                                       controllers.Memberships.findMembershipByUser(uid: Long, type ?="")
 POST      /api/membership/invitation/:iid/email                           controllers.Memberships.reSendInvitation(iid: Long)
 GET       /api/membership/invitation/:targetId/:status                    controllers.Memberships.listInvitations(targetId: Long, status: String)
-GET       /api/membership/invitation/:token                               controllers.Memberships.readInvitation(token: java.util.UUID) 
-PUT       /api/membership/invitation/:token/:answer                       controllers.Memberships.answerInvitation(token: java.util.UUID, answer: String) 
-GET       /api/membership/assembly/:aid/user/:uid                         controllers.Memberships.readUserMembershipInAssembly(aid: Long, uid: Long) 
+GET       /api/membership/invitation/:token                               controllers.Memberships.readInvitation(token: java.util.UUID)
+PUT       /api/membership/invitation/:token/:answer                       controllers.Memberships.answerInvitation(token: java.util.UUID, answer: String)
+GET       /api/membership/assembly/:aid/user/:uid                         controllers.Memberships.readUserMembershipInAssembly(aid: Long, uid: Long)
 GET       /api/membership/group/:gid/user/:uid                            controllers.Memberships.readUserMembershipInGroup(gid: Long, uid: Long)
-POST      /api/membership/assembly/:aid                                   controllers.Memberships.createSendInvitationToJoinAssembly(aid: Long) 
+POST      /api/membership/assembly/:aid                                   controllers.Memberships.createSendInvitationToJoinAssembly(aid: Long)
 POST      /api/membership/group/:gid                                      controllers.Memberships.createSendInvitationToJoinGroup(gid: Long)
 POST      /api/membership/assembly/:aid/request                           controllers.Memberships.createMembershipRequest(aid: Long)
 POST      /api/membership/group/:gid/request                              controllers.Memberships.createMembershipRequest(gid: Long)
@@ -111,11 +111,11 @@ GET       /api/membership/:id/role                                        contro
 POST      /api/membership/:id/role                                        controllers.Memberships.addMembershipRole(id: Long)
 DELETE    /api/membership/:id/role/:rid                                   controllers.Memberships.deleteMembershipRole(id: Long, rid: Long)
 PUT       /api/membership/:id/:status                                     controllers.Memberships.updateMembershipStatus(id: Long, status: String)
-DELETE    /api/membership/:id                                             controllers.Memberships.deleteMembership(id: Long) 
-GET       /api/membership/:id/verify/:token                               controllers.Memberships.verifyMembership(id: Long, token: String) 
+DELETE    /api/membership/:id                                             controllers.Memberships.deleteMembership(id: Long)
+GET       /api/membership/:id/verify/:token                               controllers.Memberships.verifyMembership(id: Long, token: String)
 
 ##################################################################################################################################################################
-# Role API (might be we don't need this) 
+# Role API (might be we don't need this)
 GET       /api/role                                                       controllers.Roles.findRoles()
 GET       /api/role/:rid                                                  controllers.Roles.findRole(rid: Long)
 PUT       /api/role/:rid                                                  controllers.Roles.updateRole(rid: Long)
@@ -168,6 +168,10 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       contro
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
+
+POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
+GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
+
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
 POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
