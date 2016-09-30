@@ -10,10 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.io.*;
 
 import io.swagger.annotations.*;
 import models.*;
 import models.transfer.*;
+import org.apache.commons.io.FileUtils;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -22,12 +24,14 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
+import play.mvc.Http;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
+
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -39,6 +43,9 @@ import enums.ResourceSpaceTypes;
 import enums.ResponseStatus;
 import enums.SupportedMembershipRegistration;
 import exceptions.MembershipCreationException;
+
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 @Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -1365,4 +1372,139 @@ public class Contributions extends Controller {
         responseBody.setStatusMessage(Messages.get(msgi18nCode) + ": " + msg);
         return badRequest(Json.toJson(responseBody));
     }
+
+	/** IDEAS **/
+	// TODO authorization
+	/**
+	 * POST /api/assembly/:aid/contribution/ideas/import
+	 * Import ideas file
+	 * @param aid Assembly Id
+	 * @param cid Campaing Id
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
+			notes = "CSV format: idea title, idea summary, idea author, idea theme <br/>" +
+					"The values must be separated by coma (,). If the theme column has more than one theme, then it must be separated by dash (-).")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			//@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			//@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	public static Result importContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
+											 @ApiParam(value = "Type of contribution", required = true, defaultValue = "IDEA", example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
+		Http.MultipartFormData body = request().body().asMultipartFormData();
+		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+		Campaign campaign = Campaign.read(cid);
+		ResourceSpace rs = null;
+		if (campaign != null) {
+			rs = campaign.getResources();
+		}
+		if (uploadFilePart != null) {
+			try {
+				//Ebean.beginTransaction();
+				// read csv file
+				BufferedReader br = null;
+				br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+				String cvsSplitBy = ",";
+				String line = br.readLine();
+				while ((line = br.readLine()) != null) {
+					String[] cell = line.split(cvsSplitBy);
+					switch (type) {
+						case "IDEA":
+							Contribution c = new Contribution();
+							c.setType(ContributionTypes.IDEA);
+							c.setTitle(cell[0]);
+							c.setAssessmentSummary(cell[1]);
+							// TODO existing author
+							c.setFirstAuthorName(cell[2]);
+							// TODO existing theme
+							List<Theme> themesList = new ArrayList<Theme>();
+							String themeSplitBy = "-";
+							String[] themes = cell[3].split(themeSplitBy);
+							for(String theme: themes) {
+								Theme t = new Theme();
+								t.setTitle(theme);
+								themesList.add(t);
+							}
+							c.setThemes(themesList);
+							Contribution.create(c);
+							rs.addContribution(c);
+							ResourceSpace.update(rs);
+							break;
+						default:
+							break;
+					}
+
+				}
+				//Ebean.commitTransaction();
+			} catch (Exception e) {
+				//Ebean.rollbackTransaction();
+				return contributionFeedbackError(null, e.getLocalizedMessage());
+			}
+		}
+		return ok();
+	}
+
+	/**
+	 * GET /api/assembly/:aid/contribution/ideas/export
+	 * Export ideas file
+	 * @param aid Assembly Id
+	 * @param cid Campaing Id
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export campaign ideas to a CSV file")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			//@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			//@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
+											 @ApiParam(value = "Type of contribution", required = true, example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
+		String csv = "idea title,idea summary,idea author,idea theme\n";
+		Campaign campaign = Campaign.read(cid);
+		ResourceSpace rs = null;
+		if (campaign != null) {
+			rs = campaign.getResources();
+		}
+		Integer t = null;
+		switch (type) {
+			case "IDEA":
+				t = ContributionTypes.IDEA.ordinal();
+				break;
+			default:
+				break;
+		}
+		if (t != null && rs != null) {
+			List<Contribution> contributions = ContributionsDelegate
+					.findContributionsInResourceSpace(rs, t);
+			for (Contribution c: contributions) {
+				csv = csv + c.getTitle()  + ",";
+				csv = csv + c.getAssessmentSummary() + ",";
+				// TODO existing author
+				csv = csv + c.getFirstAuthorName();
+				csv = csv + ",";
+				int themeSize = c.getThemes().size();
+				for(int i=0; i < themeSize; i++) {
+					if (i > 0 && i < themeSize + 1) {
+						csv = csv + "-";
+					}
+					csv = csv + c.getThemes().get(i).getTitle();
+				}
+				csv = csv + "\n";
+			}
+		}
+		response().setContentType("application/csv");
+		response().setHeader("Content-disposition","attachment; filename=contributions.csv");
+		File tempFile;
+		try {
+			tempFile = File.createTempFile("contributions.csv", ".tmp");
+			FileUtils.writeStringToFile(tempFile, csv);
+			return ok(tempFile);
+		} catch (IOException e) {
+			return internalServerError();
+		}
+	}
 }

@@ -1,18 +1,19 @@
 package delegates;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.avaje.ebean.Ebean;
+import enums.ContributionTypes;
+import models.*;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
-import models.Contribution;
-import models.ContributionTemplate;
-import models.ContributionTemplateSection;
-import models.Resource;
-import models.ResourceSpace;
 
 import org.dozer.DozerBeanMapper;
 import play.Play;
@@ -92,14 +93,19 @@ public class ContributionsDelegate {
             ResourceSpace rs, String type, String query) {
         if (type != null && !type.isEmpty()) {
             return query != null && !query.isEmpty() ?
-                    Contribution.findAllByContainingSpaceAndType(rs, type) :
-                    Contribution.findAllByContainingSpaceAndTypeAndQuery(rs, type, query);
+                    Contribution.findAllByContainingSpaceAndTypeAndQuery(rs, type, query) :
+                    	Contribution.findAllByContainingSpaceAndType(rs, type);
         } else {
             return query != null && !query.isEmpty() ?
                     findContributionsInResourceSpace(rs.getResourceSpaceId(), query) :
                     rs != null ? rs.getContributions() : null;
         }
     }
+    
+	public static List<Contribution> findContributionsInResourceSpace(
+			ResourceSpace rs, Integer type) {
+		return Contribution.findAllByContainingSpaceAndType(rs, type);
+	}
 
     // TODO: Add campaign Template
     public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, UUID resourceSpaceUUID) throws MalformedURLException {

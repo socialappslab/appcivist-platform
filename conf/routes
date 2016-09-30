@@ -186,6 +186,11 @@ PUT       /api/assembly/:aid/contribution/:cid/recover                    contro
 PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
 
+#import/export contributions, type=IDEA
+POST      /api/assembly/:aid/campaign/:cid/contribution/import                    controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
+GET       /api/assembly/:aid/campaign/:cid/contribution/export                    controllers.Contributions.exportContributions(aid: Long, cid: Long, type?="")
+
+
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better
 GET       /api/user/link                                                  controllers.Users.link
