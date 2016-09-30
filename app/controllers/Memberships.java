@@ -732,6 +732,7 @@ public class Memberships extends Controller {
 	}
 
 	// PUT /api/membership/:id controllers.Memberships.update(id: Long)
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
 	public static Result updateMembershipStatus(Long id, String status) {
 		String upStatus = status.toUpperCase();
 		Membership m = Membership.read(id);
