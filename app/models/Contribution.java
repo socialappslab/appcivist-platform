@@ -660,6 +660,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static Contribution update(Contribution c) {
+		ContributionHistoric.createHistoricFromContribution(c);
 		List<Theme> themes = new ArrayList<>();
 		for (Theme theme : c.getThemes()) {
 			if (theme.getThemeId() == null) {

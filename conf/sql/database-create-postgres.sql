@@ -294,6 +294,27 @@ create table contribution_template_section (
   constraint pk_contribution_template_section primary key (id))
 ;
 
+create table contribution_historic (
+  rev           bigserial not null,
+  contribution_id           bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  title                     varchar(255),
+  text                      text,
+  type                      integer,
+  text_index                text,
+  budget                    varchar(255),
+  action_due_date           timestamp,
+  action_done               boolean,
+  action                    varchar(255),
+  assessment_summary        varchar(255),
+  constraint pk_contribution_historic primary key (rev))
+;
+
 create table geo (
   location_id               bigserial not null,
   creation                  timestamp,

@@ -9,21 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import models.Assembly;
-import models.Ballot;
-import models.BallotCandidate;
-import models.Campaign;
-import models.Component;
-import models.Contribution;
-import models.ContributionFeedback;
-import models.ContributionStatistics;
-import models.ContributionTemplate;
-import models.MembershipInvitation;
-import models.Resource;
-import models.ResourceSpace;
-import models.User;
-import models.WorkingGroup;
-import models.WorkingGroupProfile;
+import models.*;
 import models.transfer.InvitationTransfer;
 import models.transfer.PadTransfer;
 import models.transfer.TransferResponseStatus;
@@ -209,6 +195,24 @@ public class Contributions extends Controller {
 	public static Result findContribution(Long aid, Long contributionId) {
 		Contribution contribution = Contribution.read(contributionId);
 		return ok(Json.toJson(contribution));
+	}
+
+	/**
+	 * GET       /api/assembly/:aid/contribution/:cid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = ContributionHistoric.class, responseContainer = "List", produces = "application/json", value = "Get contributions change history")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result getContributionsChangeHistory(Long aid, Long contributionId) {
+		List<ContributionHistoric> contributionHistorics = ContributionHistoric.getContributionsHistory(contributionId);
+		return ok(Json.toJson(contributionHistorics));
 	}
 
 	/**
