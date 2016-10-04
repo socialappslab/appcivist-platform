@@ -2,6 +2,7 @@ package models;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,7 +60,9 @@ public class Resource extends AppCivistBaseModel {
 	private URL urlMedium;
 	@JsonIgnore
 	private URL urlThumbnail;
-	
+
+	private boolean confirmed;
+	private Date creation;
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -169,7 +172,25 @@ public class Resource extends AppCivistBaseModel {
 	public void setReadOnlyPadId(String padId) {
 		this.readOnlyPadId = padId;
 	}
-	
+
+	public boolean isConfirmed() {
+		return confirmed;
+	}
+
+	public void setConfirmed(boolean confirmed) {
+		this.confirmed = confirmed;
+	}
+
+	@Override
+	public Date getCreation() {
+		return creation;
+	}
+
+	@Override
+	public void setCreation(Date creation) {
+		this.creation = creation;
+	}
+
 	// TODO @Transient getPadContent => GET using Etherpad Client
 	
 	public UUID getResourceSpaceWithServerConfigs() {
@@ -290,7 +311,13 @@ public class Resource extends AppCivistBaseModel {
 	}
 
     public static List<Resource> findByResourceType(ResourceTypes contributionTemplate) {
-    	System.out.println("----------------- resourceType " + contributionTemplate.toString());
-		return find.where().eq("resourceType",contributionTemplate.toString()).findList();
+		return find.where().eq("resourceType",contributionTemplate.toString()).eq("confirmed", true).findList();
     }
+
+	public static void deleteUnconfirmedContributionTemplates(ResourceTypes contributionTemplate) {
+		List<Resource> resources = find.where().eq("resourceType",contributionTemplate.toString()).eq("confirmed", false).findList();
+		for (Resource r: resources) {
+			find.ref(r.getResourceId()).delete();
+		}
+	}
 }

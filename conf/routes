@@ -134,6 +134,8 @@ DELETE    /api/assembly/:aid/config/:cid                                  contro
 # Campaign Template and Configuration endpoints
 
 GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
+POST      /api/campaign/template                                          controllers.Campaigns.createCampaignTemplatePad(text: String)
+PUT       /api/campaign/template                                          controllers.Campaigns.confirmCampaignTemplatePad(rid: Long)
 
 ##################################################################################################################################################################
 # Campaign API
@@ -181,6 +183,9 @@ PUT       /api/assembly/:aid/contribution/:cid/softremoval                contro
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
+
+POST      /api/contribution/pad                                           controllers.Contributions.createContributionPad()
+PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

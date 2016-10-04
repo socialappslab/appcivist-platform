@@ -2,11 +2,14 @@ package controllers;
 
 import static play.data.Form.form;
 
+import delegates.ResourcesDelegate;
 import enums.ResourceTypes;
 import http.Headers;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -17,6 +20,7 @@ import models.transfer.CampaignTransfer;
 import models.transfer.ResourceTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -38,6 +42,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 import delegates.CampaignDelegate;
+import utils.services.EtherpadWrapper;
 
 @Api(value = "/campaign", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -424,4 +429,42 @@ public class Campaigns extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus(
 					"No ongoing campaigns")));
 	}
+
+	/** TODO For templates and contribution, the resources (and related pad) not confirmed after x time must be eliminated **/
+
+	/**
+	 * POST /api/campaign/template
+	 * Create a new Resource CONTRIBUTION_TEMPLATE
+	 * @param text
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignTemplatePad(String text) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		Resource res = ResourcesDelegate.createResource(campaignCreator, text, ResourceTypes.CONTRIBUTION_TEMPLATE);
+		return ok(Json.toJson(res));
+	}
+
+	/**
+	 * PUT /api/campaign/template
+	 * Confirm a Resource CONTRIBUTION_TEMPLATE
+	 * @param rid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", value = "Confirm Contribution Template")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource id", value = "Contribution Template", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result confirmCampaignTemplatePad(Long rid) {
+		Resource res = ResourcesDelegate.confirmResource(rid);
+		return ok(Json.toJson(res));
+	}
+
 }

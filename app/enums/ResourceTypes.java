@@ -5,7 +5,7 @@ public enum ResourceTypes {
 //	CONTRIBUTION_QUESTION,  
 //	CONTRIBUTION_COMMENT, 
 //	CONTRIBUTION_ISSUE, 
-//	PROPOSAL, 				// Proposals are created and edited by Working Groups
+	PROPOSAL, 				// Proposals are created and edited by Working Groups
 //	DISCUSSION, 			// Discussions are created and edited by Assemblies or Working Groups
 //	ELECTION, 				// Discussions are created and edited by Assemblies 
 //	BALLOT, 				// Ballots are created by Assemblies 

@@ -1051,4 +1051,6 @@ ALTER TABLE resource DROP CONSTRAINT ck_resource_resource_type;
 ALTER TABLE resource
   ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying, 'VIDEO'::character varying,
   'PAD'::character varying, 'TEXT'::character varying, 'WEBPAGE'::character varying, 'FILE'::character varying, 'AUDIO'::character varying,
-  'CONTRIBUTION_TEMPLATE'::character varying]::text[]));
+  'CONTRIBUTION_TEMPLATE'::character varying, 'PROPOSAL'::character varying]::text[]));
+
+ALTER TABLE resource ADD COLUMN confirmed boolean not null default false;
