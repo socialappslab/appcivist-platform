@@ -57,7 +57,7 @@ GET       /api/notification/user/:uuid                                    contro
 ##################################################################################################################################################################
 # Assemblies API
 GET       /api/assembly                                                   controllers.Assemblies.findAssemblies(query ?="", filter ?= "")
-POST      /api/assembly                                                   controllers.Assemblies.createAssembly()
+POST      /api/assembly                                                   controllers.Assemblies.createAssembly(templates ?= "")
 GET       /api/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
 GET       /api/assembly/:uuid/profile                                     controllers.Assemblies.getAssemblyProfile(uuid: java.util.UUID)
 PUT       /api/assembly/:uuid/profile                                     controllers.Assemblies.updateProfile(uuid: java.util.UUID)
@@ -134,13 +134,15 @@ DELETE    /api/assembly/:aid/config/:cid                                  contro
 # Campaign Template and Configuration endpoints
 
 GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
+POST      /api/campaign/template                                          controllers.Campaigns.createCampaignTemplatePad(text: String)
+PUT       /api/campaign/template                                          controllers.Campaigns.confirmCampaignTemplatePad(rid: Long)
 
 ##################################################################################################################################################################
 # Campaign API
 GET       /api/assembly/:aid/campaign                                     controllers.Campaigns.findCampaignsByAssemblyId(aid: Long)
 GET       /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.findCampaignByAssemblyId(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.updateCampaign(aid: Long, cid: Long)
-POST      /api/assembly/:aid/campaign                                     controllers.Campaigns.createCampaignInAssembly(aid: Long)
+POST      /api/assembly/:aid/campaign                                     controllers.Campaigns.createCampaignInAssembly(aid: Long, templates?="")
 DELETE    /api/assembly/:aid/campaign/:cid                                controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
 GET       /api/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
 GET       /api/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
@@ -181,6 +183,9 @@ PUT       /api/assembly/:aid/contribution/:cid/softremoval                contro
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
+
+POST      /api/contribution/pad                                           controllers.Contributions.createContributionPad(aid?="", cid?="")
+PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

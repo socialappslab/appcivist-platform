@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import models.Assembly;
-import models.Campaign;
-import models.ResourceSpace;
-import models.User;
+import models.*;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 
@@ -26,7 +23,7 @@ public class CampaignDelegate {
 		mapper = new DozerBeanMapper(mappingFiles);
 	}
 	
-	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User campaignCreator, Long aid) {
+	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User campaignCreator, Long aid, String templates) {
 		
 		Campaign newCampaign =  mapper.map(newCampaignTransfer, Campaign.class);
 		
@@ -34,6 +31,20 @@ public class CampaignDelegate {
 			newCampaign.setLang(campaignCreator.getLanguage());
 		Logger.info("Creating new campaign");
 
+		// If templates !=  null the assembly must be related with the templates
+		if (templates != null && templates.compareTo("") != 0) {
+			String[] templatesIDs = templates.split(",");
+			for (String id: templatesIDs) {
+				Resource template = Resource.read(Long.parseLong(id));
+				if (newCampaign.getResources() != null && newCampaign.getResources().getResources() != null) {
+					newCampaign.getResources().getResources().add(template);
+				} else {
+					newCampaign.getResources().setResources(new ArrayList<Resource>());
+					newCampaign.getResources().getResources().add(template);
+				}
+
+			}
+		}
 		
 		// Adding the new campaign to the Assembly Resource Space
 		Campaign.create(newCampaign);

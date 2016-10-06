@@ -561,7 +561,7 @@ public class User extends Model implements Subject {
 			AssemblyTransfer newAssemblyTransfer = groupSignupUser.getNewAssembly();
 			if (newAssemblyTransfer!=null) {
 				// create the assembly with user as creator
-				AssembliesDelegate.create(newAssemblyTransfer, user);
+				AssembliesDelegate.create(newAssemblyTransfer, user, null);
 			}
 		}
 		

@@ -2,7 +2,10 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import akka.actor.Cancellable;
+import delegates.ResourcesDelegate;
 import models.misc.InitialDataConfig;
 
 import org.apache.commons.io.FileUtils;
@@ -11,6 +14,7 @@ import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.Play;
+import play.libs.Akka;
 import play.libs.Yaml;
 import play.mvc.Call;
 
@@ -26,6 +30,7 @@ import play.libs.F.Promise;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
+import scala.concurrent.duration.Duration;
 
 public class Global extends GlobalSettings {
 
@@ -39,9 +44,10 @@ public class Global extends GlobalSettings {
 	public void onStart(Application app) {
 		Logger.info("Application has started");
 		initializeData(app);
-		initializeAuthenticationResolver();		
+		initializeAuthenticationResolver();
+		initializeScheduler();
 	}
-	
+
 	private void initializeData(Application app) {
 		/**
 		 * If the project configuration ask for the database to be clean,
@@ -223,8 +229,28 @@ public class Global extends GlobalSettings {
 		}
 	}
 
+	private Cancellable scheduler;
+
+	private void initializeScheduler() {
+		Logger.info("Initialize Scheduler...");
+		int timeDelayFromAppStartToLogFirstLogInMs = 0;
+		int timeGapBetweenMemoryLogsInMinutes = 1440; // 1 day
+		scheduler = Akka.system().scheduler().schedule(Duration.create(timeDelayFromAppStartToLogFirstLogInMs, TimeUnit.MILLISECONDS),
+				Duration.create(timeGapBetweenMemoryLogsInMinutes, TimeUnit.MINUTES),
+				new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("Cron Job");
+						// Call a function (to print JVM stats)
+						ResourcesDelegate.deleteUnconfirmedContributionTemplates();
+					}
+				},
+				Akka.system().dispatcher());
+	}
+
 	public void onStop(Application app) {
 		Logger.info("Application shutdown...");
+		scheduler.cancel();
 	}
 	
 	// For CORS

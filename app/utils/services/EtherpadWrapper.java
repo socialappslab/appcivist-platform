@@ -95,6 +95,10 @@ public class EtherpadWrapper {
 	public void setHTML(String padId, String html) {
 		this.client.setHTML(padId, html);
 	}
+
+	public void setText(String padId, String text) {
+		this.client.setText(padId, text);
+	}
 	
 	public String getReadOnlyUrl(String padId) {
 		String id = getReadOnlyId(padId);

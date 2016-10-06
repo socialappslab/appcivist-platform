@@ -3,10 +3,7 @@ package delegates;
 import java.util.ArrayList;
 import java.util.List;
 
-import models.Assembly;
-import models.MembershipInvitation;
-import models.ResourceSpace;
-import models.User;
+import models.*;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
 import models.transfer.InvitationTransfer;
@@ -69,7 +66,7 @@ public class AssembliesDelegate {
 	}
 
 	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
-			User creator) throws MembershipCreationException {
+			User creator, String templates) throws MembershipCreationException {
 
 		Assembly newAssembly = mapper.map(newAssemblyTransfer, Assembly.class);
 
@@ -81,6 +78,22 @@ public class AssembliesDelegate {
 
 		Logger.info("Creating assembly");
 		Logger.debug("=> " + newAssembly.toString());
+
+		// If templates !=  null the assembly must be related with the templates
+		if (templates != null && templates.compareTo("") != 0) {
+			String[] templatesIDs = templates.split(",");
+			for (String id: templatesIDs) {
+				Resource template = Resource.read(Long.parseLong(id));
+				if (newAssembly.getResources() != null && newAssembly.getResources().getResources() != null) {
+					newAssembly.getResources().getResources().add(template);
+				} else {
+					newAssembly.getResources().setResources(new ArrayList<Resource>());
+					newAssembly.getResources().getResources().add(template);
+				}
+
+			}
+		}
+
 		Assembly.create(newAssembly);
 
 		// Add List of Followed Assemblies

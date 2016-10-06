@@ -7,12 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import models.Assembly;
-import models.AssemblyProfile;
-import models.Membership;
-import models.MembershipAssembly;
-import models.Theme;
-import models.User;
+import models.*;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
 import models.transfer.MembershipCollectionTransfer;
@@ -178,11 +173,10 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "assembly_form", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result createAssembly() {
+	public static Result createAssembly(String templates) {
 		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
-
 		// Check for errors in received data
 		if (newAssemblyForm.hasErrors()) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
@@ -193,10 +187,11 @@ public class Assemblies extends Controller {
 			AssemblyTransfer newAssembly = newAssemblyForm.get();
 			// Do not create assemblies with names that already exist
 			Assembly a = Assembly.findByName(newAssembly.getName());
+
 			if (a==null) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates);
 					Ebean.commitTransaction();
 					return ok(Json.toJson(created));
 				} catch (Exception e) {
