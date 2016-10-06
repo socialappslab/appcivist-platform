@@ -189,7 +189,7 @@ public class Campaigns extends Controller {
 	// TODO re-enable the control for creating campaigns once it works
 	// @Dynamic(value = "CoordinatorOfAssembly", meta =
 	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createCampaignInAssembly(Long aid) {
+	public static Result createCampaignInAssembly(Long aid, String templates) {
 		try {
 			Ebean.beginTransaction();
 			// 1. obtaining the user of the requestor
@@ -210,7 +210,7 @@ public class Campaigns extends Controller {
 			} else {
 				CampaignTransfer campaignTransfer = newCampaignForm.get();
 				CampaignTransfer newCampaign = CampaignDelegate.create(
-						campaignTransfer, campaignCreator, aid);
+						campaignTransfer, campaignCreator, aid, templates);
 				Ebean.commitTransaction();
 				return ok(Json.toJson(newCampaign));
 			}
@@ -447,7 +447,12 @@ public class Campaigns extends Controller {
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
 		Resource res = ResourcesDelegate.createResource(campaignCreator, text, ResourceTypes.CONTRIBUTION_TEMPLATE);
-		return ok(Json.toJson(res));
+		if (res != null) {
+			return ok(Json.toJson(res));
+		} else {
+			return internalServerError("The HTML text is malformed.");
+		}
+
 	}
 
 	/**

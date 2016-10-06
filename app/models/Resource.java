@@ -310,14 +310,24 @@ public class Resource extends AppCivistBaseModel {
 		this.setUrl(new URL(eth.getReadOnlyUrl(this.padId)));
 	}
 
+	public void createReadablePad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException {
+		EtherpadWrapper eth = new EtherpadWrapper(etherpadServerUrl,etherpadApiKey);
+		eth.createPad(this.padId);
+		eth.setHTML(this.padId, text);
+		this.setUrl(new URL(eth.getEditUrl(this.padId)));
+	}
+
     public static List<Resource> findByResourceType(ResourceTypes contributionTemplate) {
 		return find.where().eq("resourceType",contributionTemplate.toString()).eq("confirmed", true).findList();
     }
 
 	public static void deleteUnconfirmedContributionTemplates(ResourceTypes contributionTemplate) {
 		List<Resource> resources = find.where().eq("resourceType",contributionTemplate.toString()).eq("confirmed", false).findList();
+		Date today = new Date();
 		for (Resource r: resources) {
-			find.ref(r.getResourceId()).delete();
+			// adding 172800 seconds
+			if (r.getCreation().getTime() < (today.getTime() - 172800l))
+				find.ref(r.getResourceId()).delete();
 		}
 	}
 }

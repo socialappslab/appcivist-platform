@@ -3,6 +3,7 @@ package delegates;
 import enums.ResourceTypes;
 import models.Resource;
 import models.User;
+import net.gjerull.etherpad.client.EPLiteException;
 import play.Play;
 import utils.GlobalData;
 
@@ -21,7 +22,11 @@ public class ResourcesDelegate {
 
     public static Resource createResource(User campaignCreator, String text, ResourceTypes type) {
         Resource res = new Resource();
-        res.setName("Proposal Template");
+        if (ResourceTypes.CONTRIBUTION_TEMPLATE.equals(type)) {
+            res.setName("Proposal Template");
+        } else {
+            res.setName("Contribution Proposal");
+        }
         res.setCreator(campaignCreator);
         res.setCreation(new Date());
         res.setResourceType(type);
@@ -31,10 +36,13 @@ public class ResourcesDelegate {
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         try {
-            res.createPad(etherpadServerUrl, etherpadApiKey, text);
+            res.createReadablePad(etherpadServerUrl, etherpadApiKey, text);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
-            System.out.println("ERROR");
+            System.out.println("MalformedURLException");
+            return null;
+        } catch (EPLiteException e2) {
+            System.out.println("EPLiteException");
+            return null;
         }
         Resource.create(res);
         return res;
