@@ -170,6 +170,10 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       contro
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
+
+POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
+GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
+
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
 POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
@@ -186,6 +190,10 @@ DELETE    /api/assembly/:aid/contribution/:cid                            contro
 
 POST      /api/contribution/pad                                           controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)
+
+#import/export contributions, type=IDEA
+POST      /api/assembly/:aid/campaign/:cid/contribution/import                    controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
+GET       /api/assembly/:aid/campaign/:cid/contribution/export                    controllers.Contributions.exportContributions(aid: Long, cid: Long, type?="")
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

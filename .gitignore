@@ -57,6 +57,7 @@ appcivist-core/app/models/B.java
 conf/application.conf
 conf/evolutions
 conf/local.conf
+conf/local.test.conf
 logs
 project/project
 project/target

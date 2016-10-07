@@ -1044,6 +1044,7 @@ alter table contribution_feedback add constraint fk_contribution_feedback_user f
 alter table contribution_feedback add constraint fk_contribution_feedback_contribution foreign key (contribution_id) references contribution (contribution_id);
 alter table contribution drop constraint "ck_contribution_type";
 alter table contribution add constraint "ck_contribution_type" check (type = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
+alter table contribution add column priority INTEGER;
 
 -- NEW for etherpad contributions template
 ALTER TABLE resource ALTER COLUMN resource_type TYPE character varying (25);

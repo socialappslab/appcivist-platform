@@ -1385,3 +1385,5 @@ CREATE TABLE IF NOT EXISTS `appcivistcore2`.`working_group_profile` (
   `cover` VARCHAR(255) NULL,
   PRIMARY KEY (`working_group_profile_id`));
 SET FOREIGN_KEY_CHECKS = 1;
+
+alter table contribution add column priority INTEGER;

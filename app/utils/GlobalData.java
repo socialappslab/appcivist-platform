@@ -53,6 +53,8 @@ public class GlobalData {
 	public static String CONTRIBUTION_CREATE_MSG_SUCCESS = "contribution.creation.success";
 	public static String CONTRIBUTION_CREATE_MSG_ERROR = "contribution.creation.error";
 	public static String CONTRIBUTION_UPDATE_MSG_ERROR = "contribution.update.error";
+	public static String CONTRIBUTION_THEME_CREATE_MSG_SUCCESS = "contribution.theme.creation.success";
+	public static String CONTRIBUTION_THEME_CREATE_MSG_ERROR = "contribution.theme.creation.error";
 	public static String CONTRIBUTION_BASE_PATH = "/contribution";
 	
 

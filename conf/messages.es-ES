@@ -169,6 +169,8 @@ membership.invitation.creation.unauthorized = La membresía no pudo ser creada p
 membership.invitation.email.subject=Invitación para unirse a AppCivist {0}
 membership.request.email.subject=Petición para unirse a AppCivist {0}
 membership.confirmation.email.subject=Bienvenido a AppCivist {0}
+contribution.theme.creation.success = La categoría {0} se ha creado exitosamente.
+contribution.theme.creation.error = La categoría no se pudo crear. Hubo un problema con la solicitud: {0}
 
 notification.title.assembly.update=Nuevo en Asamblea
 notification.title.group.update=Nuevo en Grupo de Trabajo
