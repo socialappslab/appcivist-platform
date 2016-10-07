@@ -1412,7 +1412,7 @@ public class Contributions extends Controller {
 							Contribution c = new Contribution();
 							c.setType(ContributionTypes.IDEA);
 							c.setTitle(cell[0]);
-							c.setAssessmentSummary(cell[1]);
+							c.setText(cell[1]);
 							// TODO existing author
 							c.setFirstAuthorName(cell[2]);
 							// TODO existing theme
