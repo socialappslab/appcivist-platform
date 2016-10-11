@@ -1,22 +1,26 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import delegates.ResourcesDelegate;
+import enums.ResourceTypes;
 import http.Headers;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.Campaign;
-import models.CampaignTemplate;
-import models.Membership;
-import models.MembershipAssembly;
-import models.User;
+import models.*;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
+import models.transfer.ResourceTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -38,6 +42,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 import delegates.CampaignDelegate;
+import utils.services.EtherpadWrapper;
 
 @Api(value = "/campaign", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -184,7 +189,7 @@ public class Campaigns extends Controller {
 	// TODO re-enable the control for creating campaigns once it works
 	// @Dynamic(value = "CoordinatorOfAssembly", meta =
 	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createCampaignInAssembly(Long aid) {
+	public static Result createCampaignInAssembly(Long aid, String templates) {
 		try {
 			Ebean.beginTransaction();
 			// 1. obtaining the user of the requestor
@@ -205,7 +210,7 @@ public class Campaigns extends Controller {
 			} else {
 				CampaignTransfer campaignTransfer = newCampaignForm.get();
 				CampaignTransfer newCampaign = CampaignDelegate.create(
-						campaignTransfer, campaignCreator, aid);
+						campaignTransfer, campaignCreator, aid, templates);
 				Ebean.commitTransaction();
 				return ok(Json.toJson(newCampaign));
 			}
@@ -345,18 +350,21 @@ public class Campaigns extends Controller {
 	 * 
 	 * @return JSON array with the list of campaign templates
 	 */
-	@ApiOperation(httpMethod = "GET", response = CampaignTemplate.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
+	@ApiOperation(httpMethod = "GET", response = URL.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Template Found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
 	@SubjectPresent
 	public static Result findCampaignTemplates() {
-		List<CampaignTemplate> cts = CampaignTemplate.findAll();
-		if (cts != null && !cts.isEmpty())
-			return ok(Json.toJson(cts));
-		else
+		// Must return resource, padTransfer, writable url or read only url??
+		List<Resource> cts = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
+		if (cts != null && !cts.isEmpty()) {
+			List<URL> urls = cts.stream().map(sc -> sc.getUrl()).collect(Collectors.toList());
+			//return ok(Json.toJson(cts));
+			return ok(Json.toJson(urls));
+		} else {
 			return notFound(Json.toJson(new TransferResponseStatus(
 					"No campaign templates")));
-
+		}
 	}
 
 	// Private not exposed Methods
@@ -421,4 +429,47 @@ public class Campaigns extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus(
 					"No ongoing campaigns")));
 	}
+
+	/** TODO For templates and contribution, the resources (and related pad) not confirmed after x time must be eliminated **/
+
+	/**
+	 * POST /api/campaign/template
+	 * Create a new Resource CONTRIBUTION_TEMPLATE
+	 * @param text
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignTemplatePad(String text) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		Resource res = ResourcesDelegate.createResource(campaignCreator, text, ResourceTypes.CONTRIBUTION_TEMPLATE);
+		if (res != null) {
+			return ok(Json.toJson(res));
+		} else {
+			return internalServerError("The HTML text is malformed.");
+		}
+
+	}
+
+	/**
+	 * PUT /api/campaign/template
+	 * Confirm a Resource CONTRIBUTION_TEMPLATE
+	 * @param rid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", value = "Confirm Contribution Template")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource id", value = "Contribution Template", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result confirmCampaignTemplatePad(Long rid) {
+		Resource res = ResourcesDelegate.confirmResource(rid);
+		return ok(Json.toJson(res));
+	}
+
 }

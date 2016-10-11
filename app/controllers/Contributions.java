@@ -2,8 +2,9 @@ package controllers;
 
 import static play.data.Form.form;
 
+import delegates.ResourcesDelegate;
+import enums.*;
 import http.Headers;
-
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,17 +33,12 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import delegates.ContributionsDelegate;
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.ResourceSpaceTypes;
-import enums.ResponseStatus;
-import enums.SupportedMembershipRegistration;
 import exceptions.MembershipCreationException;
+import utils.services.EtherpadWrapper;
 
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -1416,7 +1412,7 @@ public class Contributions extends Controller {
 							Contribution c = new Contribution();
 							c.setType(ContributionTypes.IDEA);
 							c.setTitle(cell[0]);
-							c.setAssessmentSummary(cell[1]);
+							c.setText(cell[1]);
 							// TODO existing author
 							c.setFirstAuthorName(cell[2]);
 							// TODO existing theme
@@ -1507,4 +1503,72 @@ public class Contributions extends Controller {
 			return internalServerError();
 		}
 	}
+
+	/**
+	 * POST /api/assembly/:aid/contribution/pad
+	 * Create a new Resource PROPOSAL from CONTRIBUTION_TEMPLATE
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	public static Result createContributionPad(String aid, String cid) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+		String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+		// 1: find into campaign templates, 2: find into assembly templates, 3: find generic templates
+		List<Resource> templates = new ArrayList<Resource>();
+		if (aid != null && aid.compareTo("") != 0) {
+			Assembly a = Assembly.read(Long.parseLong(aid));
+			List<Resource> resources = a.getResources().getResources();
+			for (Resource r: resources) {
+				if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+					templates.add(r);
+				}
+			}
+		} else if (cid != null && cid.compareTo("") != 0) {
+			Campaign c = Campaign.read(Long.parseLong(cid));
+			List<Resource> resources = c.getResources().getResources();
+			for (Resource r: resources) {
+				if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+					templates.add(r);
+				}
+			}
+		} else {
+			templates = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
+		}
+		if (templates != null) {
+			// if there are more than one, then use the last
+			String padId = templates.get(templates.size() - 1).getPadId();
+			EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+			String templateHtml = wrapper.getHTML(padId);
+			Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL);
+			//Create this relationship when the contribution is saved
+			//Assembly ass = Assembly.read(aid);
+			//ass.getResources().addResource(res);
+			//ass.update();
+			return ok(Json.toJson(res));
+		} else {
+			return internalServerError("There are no templates available");
+		}
+
+	}
+
+	/**
+	 * PUT /api/assembly/:aid/contribution/pad
+	 * Confirm a Resource PROPOSAL
+	 * @param rid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	public static Result confirmContributionPad(Long rid) {
+		Resource res = ResourcesDelegate.confirmResource(rid);
+		return ok(Json.toJson(res));
+	}
+
 }
