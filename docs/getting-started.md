@@ -13,10 +13,11 @@ The AppCivist Core Platform provides a RESTful API implemented with the full-sta
     * Make a copy of **conf/play-authentica/mine.conf.sample** into **conf/play-authentica/mine.local.conf** and replace email address with and email address you own 
     * Make a copy of **conf/play-authentica/smtp.conf.sample** into **conf/play-authentica/smpt.local.conf** and replace email and passwords with your own. 
     * In **conf/local.conf** and **conf/local.test.conf**, replace the configuration values that start with **"${?*"** with required credentials for IMGUR, Amazon S3 and MapBox API. 
-7. Make sure you never commit the files in previous steps into the repository.
+    * Change the variable **application.baseUrl** and **swagger.api.basepath** to point to the url of your deployment (i.e., http://localhost:9000/). Change also the varialbe **appcivist.invitations.baseUrl** to point to the base URL of the frontend prototype to use. 
+4. Make sure you never commit the files in previous steps into the repository.
+5. **Create the database (only for testing, NOT for production):** for testing purposes, you can simply use in-memory H2 database already configured by default in the sample configuration file. If you do this, make sure to enable evolutions first (see how below). Otherwise, install **postgresql** or **mysql** and configure  the platform to use them (see below).
 
-3. **Create the database:** for testing purposes, you can simply use in-memory H2 database already configured by default in the sample configuration file. If you do this, make sure to enable evolutions first (see how below). For production, install **postgresql** or **mysql** and use the scripts **conf/sql/database-create-XXXX.sql** to create the database( XXXX = postgres for for PostgreSQL databases, XXXX = mysql for MySQL databases). 
-
+```
     # Enabling Evolutions
     # ~~~~~
     evolutions {
@@ -27,9 +28,13 @@ The AppCivist Core Platform provides a RESTful API implemented with the full-sta
             }
         }
     }
+```
 
-3. **Configure the database:** if you use H2, skipt this step. If you use something else, replace the driver, database name, username and password you use with the database. 
+6. **Create the database (for production):** disable Evolutions and install **postgresql** or **mysql**. Instead of evolution scripts, use the scripts **conf/sql/database-create-XXXX.sql** to create the database( XXXX = postgres for for PostgreSQL databases, XXXX = mysql for MySQL databases). 
 
+7. **Configure the database:** if you use H2, skipt this step. If you use something else, replace the driver, database name, username and password you use with the database. 
+
+```
     # Example of database configuration for PostgreSQL 
     db {
         default {
@@ -39,7 +44,7 @@ The AppCivist Core Platform provides a RESTful API implemented with the full-sta
             password="12345"
         }
     }
-
+```
 
 8. On a console, access your local copy of appcivist-core source code: **cd <PATH_TO_YOUR_LOCAL_REPO>/appcivist-platform**
 9. Run the command **activator** to enter the typsafe activator console (or if you want to enable debugging from your IDE, use **activator -jvm-debug 9999 -D**). It will automatically download all the dependencies and setup the [play framework][1].  
