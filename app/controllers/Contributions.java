@@ -1076,10 +1076,16 @@ public class Contributions extends Controller {
                                                   User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey,
                                                   ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
         newContrib.setType(type);
-        newContrib.addAuthor(author);
-        if (newContrib.getLang() == null)
-            newContrib.setLang(author.getLanguage());
-        newContrib.setContextUserId(author.getUserId());
+        // if type is PROPOSAL, then change the default status value
+        if (type.equals(ContributionTypes.PROPOSAL)) {
+            newContrib.setStatus(ContributionStatus.NEW);
+        }
+        if (author != null) {
+            newContrib.addAuthor(author);
+            if (newContrib.getLang() == null)
+                newContrib.setLang(author.getLanguage());
+            newContrib.setContextUserId(author.getUserId());
+        }
 
         if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
             // read etherpad server url from config file
@@ -1186,7 +1192,7 @@ public class Contributions extends Controller {
         // If contribution is a proposal and the resource space where it is added is a Campaign
         // create automatically a related candidate for the contribution in the bindingBallot
         // and consultiveBallot associated to the campaign.
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+        if (containerResourceSpace !=null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
             UUID binding = Campaign.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
                     .getResourceSpaceId());
             UUID consultive = Campaign.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
@@ -1510,7 +1516,7 @@ public class Contributions extends Controller {
 	 * @return
 	 */
 	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	public static Result createContributionPad(String aid, String cid) {
@@ -1563,7 +1569,7 @@ public class Contributions extends Controller {
 	 * @return
 	 */
 	@ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No resource found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	public static Result confirmContributionPad(Long rid) {
@@ -1571,4 +1577,157 @@ public class Contributions extends Controller {
 		return ok(Json.toJson(res));
 	}
 
+    /**
+     * PUT /api/assembly/:aid/contribution/:cid/:status
+     * Confirm a Resource PROPOSAL
+     * @param aid
+     * @param cid
+     * @param status
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result updateContributionStatus(Long aid, Long cid, String status) {
+        Contribution c = Contribution.read(cid);
+        String upStatus = status.toUpperCase();
+        if(ContributionStatus.valueOf(upStatus)!= null) {
+            c.setStatus(ContributionStatus.valueOf(upStatus));
+            c.update();
+            return ok(Json.toJson(c));
+        } else{
+            return internalServerError("The status is not valid");
+        }
+    }
+
+    /**
+     * POST       /api/contribution/:uuid
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContribution(String uuid) {
+        //TODO uuid from who? the contribution must be associated with the resource space at least
+
+        // 1. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
+            ContributionTypes type = newContribution.getType();
+            if (type == null) {
+                type = ContributionTypes.COMMENT;
+            }
+
+            ContributionTemplate template = null;
+            Contribution c = new Contribution();
+            c.setUuidAsString(uuid);
+            c.setUuid(UUID.fromString(uuid));
+            try {
+                c = createContribution(newContribution, null, type, template, null);
+            } catch (Exception e) {
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error when creating Contribution: " + e.toString())));
+            }
+            return ok(Json.toJson(c));
+        }
+    }
+
+
+    /**
+     * POST       /api/contribution/:uuid
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContributionOnCampaign(String uuid) {
+        // 1. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
+            ContributionTypes type = newContribution.getType();
+            if (type == null) {
+                type = ContributionTypes.COMMENT;
+            }
+
+            Campaign campaign = Campaign.readByUUID(UUID.fromString(uuid));
+
+            ContributionTemplate template = null;
+            Contribution c;
+            try {
+                c = createContribution(newContribution, null, type, template, campaign.getResources());
+            } catch (Exception e) {
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error when creating Contribution: " + e.toString())));
+            }
+            return ok(Json.toJson(c));
+        }
+    }
+
+    /**
+     * POST       /api/contribution/:uuid
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContributionOnAssembly(String uuid) {
+        // 1. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
+            ContributionTypes type = newContribution.getType();
+            if (type == null) {
+                type = ContributionTypes.COMMENT;
+            }
+
+            ContributionTemplate template = null;
+
+            Assembly assembly = Assembly.readByUUID(UUID.fromString(uuid));
+
+            Contribution c;
+            try {
+                c = createContribution(newContribution, null, type, template, assembly.getResources());
+            } catch (Exception e) {
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error when creating Contribution: " + e.toString())));
+            }
+            return ok(Json.toJson(c));
+        }
+    }
 }

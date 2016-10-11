@@ -191,6 +191,14 @@ DELETE    /api/assembly/:aid/contribution/:cid                            contro
 POST      /api/contribution/pad                                           controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)
 
+#update state of contribution
+PUT       /api/assembly/:aid/contribution/:cid/:status                   controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
+
+#support for non-member author contributions
+POST      /assembly/:uuid                                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
+POST      /campaign/:uuid                                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
+POST      /contribution/:uuid                                            controllers.Contributions.createAnonymousContribution(uuid: String)
+
 #import/export contributions, type=IDEA
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                    controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                    controllers.Contributions.exportContributions(aid: Long, cid: Long, type?="")

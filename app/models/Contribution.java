@@ -6,19 +6,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PreUpdate;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
+import enums.ContributionStatus;
 import models.location.Location;
 import play.data.validation.Constraints.Required;
 
@@ -61,6 +51,10 @@ public class Contribution extends AppCivistBaseModel {
     @Required
     private ContributionTypes type;
 
+    @Enumerated(EnumType.STRING)
+    @Required
+    private ContributionStatus status = ContributionStatus.PUBLISHED;
+
     @JsonIgnore
     @Index
     @Column(name = "text_index", columnDefinition = "text")
@@ -69,6 +63,9 @@ public class Contribution extends AppCivistBaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     @Index
     private Location location;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private NonMemberAuthor nonMemberAuthor;
 
     private String budget;
 
@@ -81,8 +78,8 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private User firstAuthor;
-    @Transient
 
+    @Transient
     private String firstAuthorName;
 
     @Transient
@@ -251,6 +248,14 @@ public class Contribution extends AppCivistBaseModel {
         this.type = type;
     }
 
+    public ContributionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ContributionStatus status) {
+        this.status = status;
+    }
+
     public List<User> getAuthors() {
         return authors;
     }
@@ -357,6 +362,14 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public NonMemberAuthor getNonMemberAuthor() {
+        return nonMemberAuthor;
+    }
+
+    public void setNonMemberAuthor(NonMemberAuthor nonMemberAuthor) {
+        this.nonMemberAuthor = nonMemberAuthor;
     }
 
     public String getBudget() {

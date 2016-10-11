@@ -1055,3 +1055,20 @@ ALTER TABLE resource
   'CONTRIBUTION_TEMPLATE'::character varying, 'PROPOSAL'::character varying]::text[]));
 
 ALTER TABLE resource ADD COLUMN confirmed boolean not null default false;
+
+ALTER TABLE contribution add column status CHARACTER VARYING(15);
+ALTER TABLE contribution
+  ADD CONSTRAINT ck_contrinution_contrinbutoin_status CHECK (status::text = ANY (ARRAY['NEW'::character varying, 'PUBLISHED'::character varying,
+  'ARCHIVED'::character varying, 'EXCLUDED'::character varying]::text[]));
+
+create table non_member_author (
+    id                              bigserial not null,
+    name                            varchar(255),
+    email                           varchar(255),
+    url                             varchar(255),
+    constraint pk_non_member_author primary key (id)
+
+);
+
+alter table contribution add column non_member_author_id bigint;
+alter table contribution add constraint fk_non_member_author foreign key (non_member_author_id) references non_member_author(id);
