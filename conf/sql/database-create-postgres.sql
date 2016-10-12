@@ -294,8 +294,8 @@ create table contribution_template_section (
   constraint pk_contribution_template_section primary key (id))
 ;
 
-create table contribution_historic (
-  rev           bigserial not null,
+create table contribution_history (
+  contribution_history_id   bigserial not null,
   contribution_id           bigserial not null,
   creation                  timestamp,
   last_update               timestamp,
@@ -312,7 +312,7 @@ create table contribution_historic (
   action_done               boolean,
   action                    varchar(255),
   assessment_summary        varchar(255),
-  constraint pk_contribution_historic primary key (rev))
+  constraint pk_contribution_history primary key (contribution_history_id))
 ;
 
 create table geo (
@@ -592,6 +592,12 @@ create table contribution_appcivist_user (
   constraint pk_contribution_appcivist_user primary key (contribution_contribution_id, appcivist_user_user_id))
 ;
 
+create table contribution_history_appcivist_user (
+  contribution_history_contribution_history_id   bigint not null,
+  appcivist_user_user_id         bigint not null,
+  constraint pk_contribution_history_appcivist_user primary key (contribution_history_contribution_history_id, appcivist_user_user_id))
+;
+
 create table MEMBERSHIP_ROLE (
   membership_membership_id       bigint not null,
   role_role_id                   bigint not null,
@@ -644,6 +650,12 @@ create table resource_space_contributions (
   resource_space_resource_space_id bigint not null,
   contribution_contribution_id   bigint not null,
   constraint pk_resource_space_contributions primary key (resource_space_resource_space_id, contribution_contribution_id))
+;
+
+create table resource_space_contribution_histories (
+  resource_space_resource_space_id bigint not null,
+  contribution_history_contribution_history_id   bigint not null,
+  constraint pk_resource_space_contribution_histories primary key (resource_space_resource_space_id, contribution_history_contribution_history_id))
 ;
 
 create table resource_space_assemblies (
@@ -776,6 +788,10 @@ alter table contribution_appcivist_user add constraint fk_contribution_appcivist
 
 alter table contribution_appcivist_user add constraint fk_contribution_appcivist_use_02 foreign key (appcivist_user_user_id) references appcivist_user (user_id);
 
+alter table contribution_history_appcivist_user add constraint fk_contribution_history_appcivist_use_01 foreign key (contribution_history_contribution_history_id) references contribution_history (contribution_history_id);
+
+alter table contribution_history_appcivist_user add constraint fk_contribution_history_appcivist_use_02 foreign key (appcivist_user_user_id) references appcivist_user (user_id);
+
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_membership_01 foreign key (membership_membership_id) references membership (membership_id);
 
 alter table MEMBERSHIP_ROLE add constraint fk_MEMBERSHIP_ROLE_security_r_02 foreign key (role_role_id) references security_role (role_id);
@@ -811,6 +827,10 @@ alter table resource_space_working_groups add constraint fk_resource_space_worki
 alter table resource_space_contributions add constraint fk_resource_space_contributio_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
 alter table resource_space_contributions add constraint fk_resource_space_contributio_02 foreign key (contribution_contribution_id) references contribution (contribution_id);
+
+alter table resource_space_contribution_histories add constraint fk_resource_space_contribution_histories_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
+
+alter table resource_space_contribution_histories add constraint fk_resource_space_contribution_histories_02 foreign key (contribution_history_contribution_history_id) references contribution_history(contribution_history_id);
 
 alter table resource_space_assemblies add constraint fk_resource_space_assemblies__01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 

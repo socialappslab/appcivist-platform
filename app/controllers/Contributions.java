@@ -203,16 +203,16 @@ public class Contributions extends Controller {
 	 * @param contributionId
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", response = ContributionHistoric.class, responseContainer = "List", produces = "application/json", value = "Get contributions change history")
+	@ApiOperation(httpMethod = "GET", response = ContributionHistory.class, responseContainer = "List", produces = "application/json", value = "Get contributions change history")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result getContributionsChangeHistory(Long aid, Long contributionId) {
-		List<ContributionHistoric> contributionHistorics = ContributionHistoric.getContributionsHistory(contributionId);
-		return ok(Json.toJson(contributionHistorics));
+	public static Result getContributionsChangeHistory(Long aid, Long contributionId) throws Exception{
+		List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(contributionId);
+		return ok(Json.toJson(contributionHistories));
 	}
 
 	/**

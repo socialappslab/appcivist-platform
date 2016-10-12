@@ -228,6 +228,10 @@ public class Contribution extends AppCivistBaseModel {
 		return authors;
 	}
 
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
+
 	@Transient
 	public User getFirstAuthor() {
 		return authors != null && authors.size() > 0 ? authors.get(0) : null;
@@ -660,7 +664,7 @@ public class Contribution extends AppCivistBaseModel {
 	}
 
 	public static Contribution update(Contribution c) {
-		ContributionHistoric.createHistoricFromContribution(c);
+		ContributionHistory.createHistoricFromContribution(c);
 		List<Theme> themes = new ArrayList<>();
 		for (Theme theme : c.getThemes()) {
 			if (theme.getThemeId() == null) {
