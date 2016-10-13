@@ -1,26 +1,31 @@
 package controllers;
 
 import static play.data.Form.form;
-
-import delegates.ResourcesDelegate;
-import enums.ResourceTypes;
 import http.Headers;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import models.*;
+import models.Assembly;
+import models.Campaign;
+import models.Membership;
+import models.MembershipAssembly;
+import models.Resource;
+import models.User;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
-import models.transfer.ResourceTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -34,15 +39,10 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 import delegates.CampaignDelegate;
-import utils.services.EtherpadWrapper;
+import delegates.ResourcesDelegate;
+import enums.ResourceTypes;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -60,10 +60,9 @@ public class Campaigns extends Controller {
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", value = "List campaigns of an Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result findCampaignsByAssemblyId(Long aid) {
+	public static Result findCampaignsByAssemblyId(@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
 		List<Campaign> campaigns = Assembly.findCampaigns(aid);
 		return campaigns != null && !campaigns.isEmpty() ? ok(Json
 				.toJson(campaigns)) : ok(Json
@@ -77,24 +76,22 @@ public class Campaigns extends Controller {
 	 * @param campaignId
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Read campaign by campaign and assembly IDs")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result findCampaignByAssemblyId(Long aid, Long campaignId) {
+	public static Result findCampaignByAssemblyId(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
 		Campaign campaign = Campaign.read(campaignId);
 		return campaign != null ? ok(Json.toJson(campaign)) : ok(Json
 				.toJson(new TransferResponseStatus("No campaign found")));
 	}
 	
-	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Get campaign by UUID")
+	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Read campaign by Universal ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "Campaign Universal ID (UUID)", dataType = "java.util.UUID", paramType = "path") })
-	public static Result findCampaignByUUID(UUID uuid) {
+	public static Result findCampaignByUUID(@ApiParam(name = "uuid", value = "Campaign Universal ID (UUID)") UUID uuid) {
 		CampaignSummaryTransfer summary = CampaignDelegate.getCampaignSummary(uuid);
 		return summary  != null ? ok(Json.toJson(summary)) : ok(Json
 				.toJson(new TransferResponseStatus("No campaign found")));
@@ -108,11 +105,9 @@ public class Campaigns extends Controller {
 	 * @param campaignId
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", response = CampaignSummaryTransfer.class, responseContainer="List", produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "GET", response = CampaignSummaryTransfer.class, responseContainer="List", produces = "application/json", value = "Read campaign by voting ballot Universal ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "Ballot UUID", dataType = "Long", paramType = "path") })
-	public static Result findCampaignsByBallot(UUID uuid) {
+	public static Result findCampaignsByBallot(@ApiParam(name = "uuid", value = "Ballot Universal ID")  UUID uuid) {
 		List<CampaignSummaryTransfer> campaignSummaries = CampaignDelegate.findByBindingBallot(uuid);
 		return campaignSummaries != null ? ok(Json.toJson(campaignSummaries)) : ok(Json
 				.toJson(new TransferResponseStatus("No campaign found")));
@@ -125,14 +120,15 @@ public class Campaigns extends Controller {
 	 * @param campaignId
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Get campaign by ID")
+	@ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Delete campaign by campaign and assembly IDs", notes="Only for COORDINATOS of assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result deleteCampaign(Long aid, Long campaignId) {
+	public static Result deleteCampaign(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+		// TODO: implement soft delete
 		Campaign.delete(campaignId);
 		return ok();
 	}
@@ -144,15 +140,15 @@ public class Campaigns extends Controller {
 	 * @param campaignId
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Delete campaign by ID")
+	@ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update a campaign by its ID and the assembly ID", notes="Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "cid", value = "Campaign numerical id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "new campaign form", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
+			@ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result updateCampaign(Long aid, Long campaignId) {
+	public static Result updateCampaign(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
 		// 1. read the campaign data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
@@ -180,16 +176,15 @@ public class Campaigns extends Controller {
 	 * @param aid
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
+	@ApiOperation(httpMethod = "POST", response = CampaignTransfer.class, produces = "application/json", value = "Create a new Campaign", notes="Only for COORDINATORS. The templates will be used to import all the resources from a list of existing campaigns to the new")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly owner numerical id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "New Campaign Form", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
+			@ApiImplicitParam(name = "Campaign simplified object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	// TODO re-enable the control for creating campaigns once it works
-	// @Dynamic(value = "CoordinatorOfAssembly", meta =
-	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createCampaignInAssembly(Long aid, String templates) {
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignInAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+			@ApiParam(name="templates", value="List of campaign ids (separated by comma) to use as template for the current campaign") String templates) {
 		try {
 			Ebean.beginTransaction();
 			// 1. obtaining the user of the requestor
@@ -234,17 +229,15 @@ public class Campaigns extends Controller {
 	 */
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", 
 			value = "Given an Assembly Universal ID (uuid), return its campaigns", 
-			notes = "Given an Assembly Universal ID (uuid), return its campaigns")
+			notes = "Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "Campaigns not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "Assembly's UUID", dataType = "java.util.UUID", paramType = "path"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", 
-					paramType = "header"),
-			@ApiImplicitParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", dataType = "String", 
-					paramType = "query", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") 
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 	})
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result findCampaignsByAssemblyUUID(UUID uuid, String filter) {
+	public static Result findCampaignsByAssemblyUUID(
+			@ApiParam(name = "uuid", value = "Assembly's Universal ID") UUID uuid, 
+			@ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
 		if (filter == null || filter.equals("ongoing")) {
 			return ongoingCampaignsByAssembly(uuid);
 		} else if (filter.equals("past")) {
@@ -270,17 +263,16 @@ public class Campaigns extends Controller {
 	 */
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", 
 			value = "Given a users local ID (uid), returns an array of campaigns that are organized by that user's assemblies", 
-			notes = "Given a users local ID (uid), returns an array of campaigns that are organized by that user's assemblies")
+			notes = "Only for SELF")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", 
-					paramType = "header"),
-			@ApiImplicitParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", dataType = "String", 
-					paramType = "query", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") 
+					paramType = "header")
 	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result campaignsByUserId(Long uid, String filter) {
+	public static Result campaignsByUserId(
+			@ApiParam(name = "uid", value = "User's ID") Long uid, 
+			@ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
 		if (filter == null || filter.equals("ongoing")) {
 			return ongoingCampaignsByUserId(uid);
 		} else if (filter.equals("past")) {
@@ -312,14 +304,15 @@ public class Campaigns extends Controller {
 	 */
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", 
 			value = "Given a users universal ID (uuid), returns an array of campaigns that are organized by that user's assemblies", 
-			notes = "Given a users universal ID (uuid), returns an array of campaigns that are organized by that user's assemblies")
+			notes = "Only for SELF")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "User's UUID", dataType = "java.util.UUID", paramType = "path"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", dataType = "String", paramType = "query", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
 	@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result campaignsByUserUuid(UUID uuid, String filter) {
+	public static Result campaignsByUserUuid(
+			@ApiParam(name = "uuid", value = "User's Universal ID") UUID uuid, 
+			@ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
 		if (filter == null || filter.equals("ongoing")) {
 			return ongoingCampaignsByUserUuid(uuid);
 		} else if (filter.equals("past")) {
@@ -383,7 +376,8 @@ public class Campaigns extends Controller {
 	 * @param uid User's Local Id
 	 * @return
 	 */
-	private static Result ongoingCampaignsByUserId(Long uid) {
+	private static Result ongoingCampaignsByUserId(
+			@ApiParam(name="id", value="User ID") Long uid) {
 		User u = User.read(uid);
 		return ongoingCampaignsByUser(u);
 	}
@@ -438,14 +432,15 @@ public class Campaigns extends Controller {
 	 * @param text
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template")
+	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template for the campaign", notes="Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createCampaignTemplatePad(String text) {
-		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignTemplatePad(
+			// TODO: move text to body of request
+			@ApiParam(name="text", value="text for the template") String text) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		Resource res = ResourcesDelegate.createResource(campaignCreator, text, ResourceTypes.CONTRIBUTION_TEMPLATE);
 		if (res != null) {
 			return ok(Json.toJson(res));
@@ -464,12 +459,11 @@ public class Campaigns extends Controller {
 	@ApiOperation(httpMethod = "PUT", value = "Confirm Contribution Template")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "Resource id", value = "Contribution Template", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	// SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result confirmCampaignTemplatePad(Long rid) {
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result confirmCampaignTemplatePad(
+			@ApiParam(name = "Resource ID", value = "Contribution Template") Long rid) {
 		Resource res = ResourcesDelegate.confirmResource(rid);
 		return ok(Json.toJson(res));
 	}
-
 }
