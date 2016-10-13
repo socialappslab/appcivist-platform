@@ -64,6 +64,8 @@ public class ContributionHistory extends AppCivistBaseModel {
     @Index
     @Column(name = "text_index", columnDefinition = "text")
     private String textIndex;
+    @Column(name = "moderation_comment", columnDefinition = "text")
+    private String moderationComment;
     private String budget;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
     private Date actionDueDate;
@@ -89,6 +91,14 @@ public class ContributionHistory extends AppCivistBaseModel {
 
     public void setContributionHistoryId(Long contributionHistoryId) {
         this.contributionHistoryId = contributionHistoryId;
+    }
+
+    public String getModerationComment() {
+        return moderationComment;
+    }
+
+    public void setModerationComment(String moderationComment) {
+        this.moderationComment = moderationComment;
     }
 
     public ContributionHistoryItem getChanges() {

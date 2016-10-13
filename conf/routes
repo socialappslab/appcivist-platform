@@ -183,6 +183,7 @@ POST      /api/assembly/:aid/contribution/:cid/attachment                 contro
 POST      /api/assembly/:aid/forumpost                                    controllers.Contributions.createAssemblyForumPost(aid: Long)
 POST      /api/assembly/:aid/group/:gid/forumpost                         controllers.Contributions.createWorkingGroupForumPost(aid: Long, gid: Long)
 PUT       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.updateContribution(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:cid/moderate                   controllers.Contributions.moderateContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/softremoval                controllers.Contributions.softDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)

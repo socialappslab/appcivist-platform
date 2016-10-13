@@ -60,6 +60,9 @@ public class Contribution extends AppCivistBaseModel {
     @Column(name = "text_index", columnDefinition = "text")
     private String textIndex;
 
+    @Column(name = "moderation_comment", columnDefinition = "text")
+    private String moderationComment;
+
     @OneToOne(cascade = CascadeType.ALL)
     @Index
     private Location location;
@@ -222,6 +225,14 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
+    }
+
+    public String getModerationComment() {
+        return moderationComment;
+    }
+
+    public void setModerationComment(String moderationComment) {
+        this.moderationComment = moderationComment;
     }
 
     public String getUuidAsString() {

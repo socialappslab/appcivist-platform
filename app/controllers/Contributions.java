@@ -946,6 +946,44 @@ public class Contributions extends Controller {
         }
     }
 
+    @ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Contribution moderation. Soft deletes contribution")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+            @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result moderateContribution(Long aid, Long contributionId) {
+        // 1. read the new contribution data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
+        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+
+        if (newContributionForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+                    newContributionForm.errorsAsJson()));
+            return badRequest(Json.toJson(responseBody));
+        } else {
+            Contribution contributionFromDatabase = Contribution.read(contributionId);
+            Contribution moderated = newContributionForm.get();
+//            newContribution.setContributionId(contributionId);
+//            newContribution.setContextUserId(author.getUserId());
+//            List<User> authors = new ArrayList<User>();
+//            for (User a : newContribution.getAuthors()) {
+//                User refreshedAuthor = User.read(a.getUserId());
+//                authors.add(refreshedAuthor);
+//            }
+//            newContribution.setAuthors(authors);
+            contributionFromDatabase.setModerationComment(moderated.getModerationComment());
+            Contribution.update(contributionFromDatabase);
+            Contribution.softDelete(contributionFromDatabase);
+            return ok();
+        }
+    }
+
     /**
      * PUT       /api/assembly/:aid/contribution/:cid/softremoval
      * TODO: create a dynamic handler to check if the contribution belongs to the user
