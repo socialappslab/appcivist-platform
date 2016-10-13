@@ -196,9 +196,9 @@ PUT       /api/contribution/pad                                           contro
 PUT       /api/assembly/:aid/contribution/:cid/:status                   controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 
 #support for non-member author contributions
-POST      /assembly/:uuid                                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
-POST      /campaign/:uuid                                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
-POST      /contribution/:uuid                                            controllers.Contributions.createAnonymousContribution(uuid: String)
+POST      /assembly/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
+POST      /campaign/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
+POST      /contribution/:uuid/contribution                               controllers.Contributions.createAnonymousContribution(uuid: String)
 
 #import/export contributions, type=IDEA
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                    controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")

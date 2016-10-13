@@ -1033,14 +1033,17 @@ public class Contributions extends Controller {
      * @param contributionId
      * @return
      */
-    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Delete a contribution (will remove it from the database)", 
+    		notes="Only for ADMINS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.ADMIN_ROLE)})
-    public static Result forceDeleteContribution(Long aid, Long contributionId) {
+    public static Result forceDeleteContribution(
+    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
+    		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
         Contribution.delete(contributionId);
         return ok();
     }
@@ -1649,7 +1652,7 @@ public class Contributions extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")
-    @ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
+    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
     public static Result updateContributionStatus(Long aid, Long cid, String status) {
@@ -1670,11 +1673,11 @@ public class Contributions extends Controller {
      * @param uuid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create an anonymous contribution within another contribution")
+    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Error creating contribution", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContribution(String uuid) {
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContribution(@ApiParam(name="uuid", value="Universal ID of the target contribution") String uuid) {
         //TODO uuid from who? the contribution must be associated with the resource space at least
 
         // 1. read the new role data from the body
@@ -1715,10 +1718,10 @@ public class Contributions extends Controller {
      * @param uuid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create an anonymous contribution in a campaign")
+    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
     public static Result createAnonymousContributionOnCampaign(String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
@@ -1757,11 +1760,11 @@ public class Contributions extends Controller {
      * @param uuid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create anonymous contribution in Assembly")
+    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContributionOnAssembly(String uuid) {
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContributionOnAssembly(@ApiParam(name="uuid", value="Universal ID of the target contribution") String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
