@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import views.html.*;
 
-@Api(value="/")
+@Api(value="08: Other")
 @With(Headers.class)
 public class Application extends Controller {
 
@@ -68,7 +68,7 @@ public class Application extends Controller {
 	 * @return
 	 */
 	@ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User session not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -94,7 +94,7 @@ public class Application extends Controller {
 	 * @return
 	 */
 	@ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body") })
 	public static Result logActivityPublic() {

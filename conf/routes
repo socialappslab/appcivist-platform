@@ -21,14 +21,13 @@ GET       /public/*file                                                   contro
 #GET       /api-docs.json                                controllers.ApiHelpController.getResources()
 GET       /api/doc                                                        controllers.Application.swaggerDocs()
 GET       /api/doc.json                                                   @controllers.ApiHelpController.getResources
-GET       /api/doc.json/user                                              @controllers.ApiHelpController.getResource(path="/user")
-GET       /api/doc.json/notification                                      @controllers.ApiHelpController.getResource(path="/notification")
 GET       /api/doc.json/assembly                                          @controllers.ApiHelpController.getResource(path="/assembly")
+GET       /api/doc.json/campaign                                          @controllers.ApiHelpController.getResource(path="/campaign")
 GET       /api/doc.json/group                                             @controllers.ApiHelpController.getResource(path="/group")
 GET       /api/doc.json/membership                                        @controllers.ApiHelpController.getResource(path="/membership")
-GET       /api/doc.json/campaign                                          @controllers.ApiHelpController.getResource(path="/campaign")
+GET       /api/doc.json/user                                              @controllers.ApiHelpController.getResource(path="/user")
 GET       /api/doc.json/contribution                                      @controllers.ApiHelpController.getResource(path="/contribution")
-GET       /api/doc.json/component                                         @controllers.ApiHelpController.getResource(path="/component")
+GET       /api/doc.json/notification                                      @controllers.ApiHelpController.getResource(path="/notification")
 
 ##################################################################################################################################################################
 # User and Authentication Management based on play-authenticate
@@ -104,8 +103,8 @@ GET       /api/membership/assembly/:aid/user/:uid                         contro
 GET       /api/membership/group/:gid/user/:uid                            controllers.Memberships.readUserMembershipInGroup(gid: Long, uid: Long)
 POST      /api/membership/assembly/:aid                                   controllers.Memberships.createSendInvitationToJoinAssembly(aid: Long) 
 POST      /api/membership/group/:gid                                      controllers.Memberships.createSendInvitationToJoinGroup(gid: Long)
-POST      /api/membership/assembly/:aid/request                           controllers.Memberships.createMembershipRequest(aid: Long)
-POST      /api/membership/group/:gid/request                              controllers.Memberships.createMembershipRequest(gid: Long)
+POST      /api/membership/assembly/:id/request                            controllers.Memberships.createMembershipRequest(id: Long)
+POST      /api/membership/group/:id/request                               controllers.Memberships.createMembershipRequest(id: Long)
 GET       /api/membership/:id                                             controllers.Memberships.readMembership(id: Long)
 GET       /api/membership/:id/role                                        controllers.Memberships.readMembershipRoles(id: Long)
 POST      /api/membership/:id/role                                        controllers.Memberships.addMembershipRole(id: Long)

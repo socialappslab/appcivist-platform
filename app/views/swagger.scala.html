@@ -71,6 +71,7 @@
       }
       window.swaggerUi = new SwaggerUi({
         url: url,
+        apisSorter: "alpha", 
         dom_id: "swagger-ui-container",
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
         onComplete: function(swaggerApi, swaggerUi){

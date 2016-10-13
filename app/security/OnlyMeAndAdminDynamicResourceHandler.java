@@ -10,6 +10,7 @@ import be.objectify.deadbolt.core.DeadboltAnalyzer;
 import be.objectify.deadbolt.java.AbstractDynamicResourceHandler;
 import be.objectify.deadbolt.java.DeadboltHandler;
 
+// Currently, it only works when meta="User"
 public class OnlyMeAndAdminDynamicResourceHandler extends AbstractDynamicResourceHandler {
 
 	@Override
@@ -30,40 +31,47 @@ public class OnlyMeAndAdminDynamicResourceHandler extends AbstractDynamicResourc
 							  .map( subjectOption -> {
 								  final boolean[] allowed = {false};
 									if (new DeadboltAnalyzer().hasRole(subjectOption, "ADMIN")) {
+									    Logger.debug("AUTHORIZATION: User is ADMIN");
 										allowed[0] = true;
 									} else {
 										subjectOption.ifPresent(subject -> {
+											// 1. Get user associated to the auth token
+											User u = User.findByUserName(subject.getIdentifier());
+										    if (u!=null) u.setSessionLanguage();
+										    Long requestorId = u.getUserId();
+										    UUID requestorUUID = u.getUuid();
+										    Logger.debug("AUTHORIZATION: Requestor user identified by: " + (requestorId == null ? requestorUUID : requestorId));
+										    
+											// 2. Get the Requested resource ID or UUID as it is specified in the request PATH
+											
 											String path = context.request().path();
 										    Long requestedResourceId = MyDynamicResourceHandler.getIdFromPath(path, meta);
 										    UUID requestedResourceUUID = null;
 										    if(requestedResourceId<0) {
 										    	requestedResourceUUID = MyDynamicResourceHandler.getUUIDFromPath(path, meta);
 										    }									    
-										    User u = User.findByUserName(subject.getIdentifier());
-										    if (u!=null) u.setSessionLanguage();
-										    Long requestorId = u.getUserId();
-										    UUID requestorUUID = u.getUuid();
 										    
-										    Logger.debug("Checking relationship of '"+meta+"' and user");
+										    Logger.debug("AUTHORIZATION: Requested resource '"+meta+"' identified as: " + (requestedResourceId == null ? requestedResourceUUID : requestedResourceId));
+										    Logger.debug("AUTHORIZATION: Checking for path /"+meta+(requestedResourceId == null ? requestedResourceUUID : requestedResourceId));
 										    
-										    // TODO: check permission of user on resource
+										    // TODO 3. Add control to check whether the User owns the Resource when meta!=USER
 										    
-										    Logger.debug("--> userId = "+requestorId);
-										    Logger.debug("--> userUUID = "+requestorUUID);
-										    Logger.debug("--> requestedResourceId = "+requestedResourceId);
-										    Logger.debug("--> requestedResourceUUID = "+requestedResourceUUID);
-										    Logger.debug("--> type of resource= "+meta);
-										    Logger.debug("Checking for path "+meta+requestedResourceId);
-										    
-										    Long requestedId = MyDynamicResourceHandler.getIdFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
-										    UUID requestedUUID = null;
-										    if(requestedId<0) {
-										    	requestedUUID = MyDynamicResourceHandler.getUUIDFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
-											    allowed[0] = requestorUUID.equals(requestedUUID);
-											    Logger.debug("Allowed = "+allowed[0]);	
+										    // 4. Check that the user in the session is the user identified in the endpoint /path
+										    Long requestedUserId = null;
+										    UUID requestedUserUUID = null;
+										    if (meta.equals(SecurityModelConstants.USER_RESOURCE_PATH)) {
+										    	requestedUserId = requestedResourceId;
 										    } else {
-											    allowed[0] = requestorId.equals(requestedId);
-											    Logger.debug("Allowed = "+allowed[0]);	
+										    	requestedUserId = MyDynamicResourceHandler.getIdFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
+										    }
+										    
+										    if(requestedUserId<0) {
+										    	requestedUserUUID = MyDynamicResourceHandler.getUUIDFromPath(path, SecurityModelConstants.USER_RESOURCE_PATH);
+											    allowed[0] = requestorUUID.equals(requestedUserUUID);
+											    Logger.debug("AUTHORIZATION: Allowed = "+allowed[0]);	
+										    } else {
+											    allowed[0] = requestorId.equals(requestedUserId);
+											    Logger.debug("AUTHORIZATION: Allowed = "+allowed[0]);	
 										    }
 										});
 									}

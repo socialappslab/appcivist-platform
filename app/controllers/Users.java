@@ -52,7 +52,7 @@ import enums.ResponseStatus;
  * @author cdparra
  *
  */
-@Api(value = "/user", description = "User Management operations")
+@Api(value = "00 user: User Management", description = "User Management operations")
 @With(Headers.class)
 public class Users extends Controller {
 	public static final Form<User> USER_FORM = form(User.class);
@@ -479,7 +479,7 @@ public class Users extends Controller {
 	@ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "password_change_form", value = "User's updated password form", dataType = "controllers.Users.PassworChange", paramType = "body") })
+			@ApiImplicitParam(name = "Password Change Object", value = "User's updated password form", dataType = "Form", paramType = "body") })
 	@Restrict(@Group(GlobalData.USER_ROLE))
 	public static Result doChangePassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());

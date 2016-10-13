@@ -43,7 +43,7 @@ import utils.services.EtherpadWrapper;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
-@Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
+@Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
 public class Contributions extends Controller {
 
@@ -63,13 +63,12 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "forum,resources", defaultValue = "forum"),
-            @ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findAssemblyContributions(Long aid, String space,
-                                                   String type) {
+    public static Result findAssemblyContributions(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+            @ApiParam(name = "space", value = "Resource space name within assembly from which we want to query contributions", allowableValues = "forum,resources", defaultValue = "forum") String space,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
         Assembly a = Assembly.read(aid);
         ResourceSpace rs = null;
         if (a != null) {
@@ -95,16 +94,17 @@ public class Contributions extends Controller {
      * @param type
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", 
+    		produces = "application/json", value = "Get contributions in a component of a campaign within an assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "ciid", value = "Component id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findCampaignComponentContributions(Long aid, Long cid, Long ciid, String type) {
+    public static Result findCampaignComponentContributions(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
+    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
+    		@ApiParam(name = "ciid", value = "Component ID") Long ciid, 
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
         Component c = Component.read(cid, ciid);
         ResourceSpace rs = null;
         if (c != null) {
@@ -129,13 +129,14 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Campaign")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findCampaignContributions(Long aid, Long cid, String type) {
-        Campaign c = Campaign.read(cid);
+    public static Result findCampaignContributions(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
+    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
+    	    @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
+        
+    	Campaign c = Campaign.read(cid);
         ResourceSpace rs = null;
         if (c != null) {
             rs = c.getResources();
@@ -156,17 +157,16 @@ public class Contributions extends Controller {
      * @param type
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Working Group")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "gid", value = "Group id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
-            @ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findAssemblyGroupContributions(Long aid, Long gid,
-                                                        String space, String type) {
+    public static Result findAssemblyGroupContributions(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
+    		@ApiParam(name = "gid", value = "Working Group ID") Long gid, 
+            @ApiParam(name = "space", value = "Resource space name within the working group from which we want to query contributions", allowableValues = "forum,resources", defaultValue = "forum") String space,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
         WorkingGroup wg = WorkingGroup.read(gid);
         ResourceSpace rs = null;
         if (wg != null) {
@@ -189,14 +189,16 @@ public class Contributions extends Controller {
      * @param contributionId
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contribution by ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findContribution(Long aid, Long contributionId) {
+    public static Result findContribution(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+    		@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution contribution = Contribution.read(contributionId);
         return ok(Json.toJson(contribution));
     }
@@ -208,14 +210,16 @@ public class Contributions extends Controller {
      * @param type
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in a Resource Space")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", 
+    		value = "Get contributions in a specific Resource Space",
+    		notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "type", value = "Type of contributions", dataType = "String", paramType = "query", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = ""),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
-    public static Result findResourceSpaceContributions(Long sid, String type) {
+    public static Result findResourceSpaceContributions(
+    		@ApiParam(name = "sid", value = "Resource Space ID") Long sid, 
+    		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
         ResourceSpace rs = ResourceSpace.read(sid);
         List<Contribution> contributions = ContributionsDelegate
                 .findContributionsInResourceSpace(rs, type, null);
@@ -231,15 +235,16 @@ public class Contributions extends Controller {
      * @param cid
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
+    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json", 
+    		value = "Get contributions statistics")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "coid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result readContributionStats(Long aid, Long cid, Long coid) {
+    public static Result readContributionStats(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
+    		@ApiParam(name = "coid", value = "Contribution ID") Long coid) {
         try {
             ContributionStatistics stats = new ContributionStatistics(coid);
             return ok(Json.toJson(stats));
@@ -261,11 +266,11 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findContributionPadId(Long aid, Long contributionId) {
+    public static Result findContributionPadId(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+    		@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution c = Contribution.read(contributionId);
         if (c != null) {
             Resource pad = c.getExtendedTextPad();
@@ -288,14 +293,14 @@ public class Contributions extends Controller {
      * @param contributionId
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the padId of a Contribution")
+    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Read comments on a Contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findContributionComments(Long aid, Long contributionId) {
+    public static Result findContributionComments(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+    		@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution c = Contribution.read(contributionId);
         if (c != null) {
             List<Contribution> comments = Contribution.readCommentsOfSpace(c.getResourceSpaceId());
@@ -316,10 +321,9 @@ public class Contributions extends Controller {
      */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "uuid", value = "Contribution's Universal Id (UUID)", dataType = "java.util.UUID", paramType = "path")})
     // TODO: add API token support, some API enpoints must be available only for registered clients
-    public static Result findContributionByUUID(UUID uuid) {
+    public static Result findContributionByUUID(
+    		@ApiParam(name="uuid", value="Contribution Universal ID") UUID uuid) {
         Contribution contribution;
         try {
             contribution = Contribution.readByUUID(uuid);
@@ -340,14 +344,13 @@ public class Contributions extends Controller {
      * @param sid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create a contribution in a specific Resource Space")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
-    public static Result createContributionInResourceSpaceWithId(Long sid) {
+    public static Result createContributionInResourceSpaceWithId(@ApiParam(name="sid", value="Resource Space ID") Long sid) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -993,7 +996,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", response = Theme.class, produces = "application/json", value = "Add a theme to a contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "theme", value = "Themes to add to the contribution", dataType = "models.ThemeListTransfer", paramType = "body")})
+            @ApiImplicitParam(name = "theme", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body")})
     public static Result addThemeToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
         Contribution contribution;
 
