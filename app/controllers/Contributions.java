@@ -415,15 +415,15 @@ public class Contributions extends Controller {
      * @param space
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contributions in Assembly")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create a Contribution in an Assembly")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "space", value = "Resource space name within assembly", dataType = "String", paramType = "query", allowableValues = "resources,forum", defaultValue = ""),
-            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createAssemblyContribution(Long aid, String space) {
+    public static Result createAssemblyContribution(
+    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
+    		 @ApiParam(name = "space", value = "Resource space name within assembly", allowableValues = "resources,forum", defaultValue = "resources") String space) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
