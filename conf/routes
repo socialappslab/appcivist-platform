@@ -21,14 +21,13 @@ GET       /public/*file                                                   contro
 #GET       /api-docs.json                                controllers.ApiHelpController.getResources()
 GET       /api/doc                                                        controllers.Application.swaggerDocs()
 GET       /api/doc.json                                                   @controllers.ApiHelpController.getResources
-GET       /api/doc.json/user                                              @controllers.ApiHelpController.getResource(path="/user")
-GET       /api/doc.json/notification                                      @controllers.ApiHelpController.getResource(path="/notification")
 GET       /api/doc.json/assembly                                          @controllers.ApiHelpController.getResource(path="/assembly")
+GET       /api/doc.json/campaign                                          @controllers.ApiHelpController.getResource(path="/campaign")
 GET       /api/doc.json/group                                             @controllers.ApiHelpController.getResource(path="/group")
 GET       /api/doc.json/membership                                        @controllers.ApiHelpController.getResource(path="/membership")
-GET       /api/doc.json/campaign                                          @controllers.ApiHelpController.getResource(path="/campaign")
+GET       /api/doc.json/user                                              @controllers.ApiHelpController.getResource(path="/user")
 GET       /api/doc.json/contribution                                      @controllers.ApiHelpController.getResource(path="/contribution")
-GET       /api/doc.json/component                                         @controllers.ApiHelpController.getResource(path="/component")
+GET       /api/doc.json/notification                                      @controllers.ApiHelpController.getResource(path="/notification")
 
 ##################################################################################################################################################################
 # User and Authentication Management based on play-authenticate

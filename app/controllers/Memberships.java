@@ -52,7 +52,7 @@ import enums.MyRoles;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
 
-@Api(value = "/membership", description = "Group Management endpoints in the Assembly Making service")
+@Api(value = "membership: Assembly and Working Group membership management", description = "Assembly and Working Group membership management endpoints. A membership connects a user to either a working group or an assembly, assigning him a role that is used for authorization purposes")
 @With(Headers.class)
 public class Memberships extends Controller {
 
@@ -132,14 +132,12 @@ public class Memberships extends Controller {
 	 *            Type of membership filter (assembly, group)
 	 * @return User's Membership record
 	 */
-	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Read user membership record by User UUID and Membership TYPE", notes = "This endpoint is only accessible to ADMIN users and the User identified by the provided UUID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "uuid", value = "User's UUID", dataType = "java.util.UUID", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "type", value = "type of membership requeste", dataType = "String", paramType = "query", allowableValues = "assembly,group") })
-	// TODO: implement the right access rule for this @Dynamic(value =
-	// "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+			@ApiImplicitParam(name = "type", value = "Type of membership to update", dataType = "String", paramType = "query", allowableValues = "assembly,group") })
 	public static Result findMembershipByUser(Long uid, String type) {
 		User u = User.findByUserId(uid);
 		if (u == null)
