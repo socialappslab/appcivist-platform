@@ -81,6 +81,14 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private String firstAuthorName;
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
+
+	@Transient
+	public User getFirstAuthor() {
+		return authors != null && authors.size() > 0 ? authors.get(0) : null;
+	}
 
     @Transient
     private Long assemblyId;
@@ -258,11 +266,6 @@ public class Contribution extends AppCivistBaseModel {
 
     public List<User> getAuthors() {
         return authors;
-    }
-
-    @Transient
-    public User getFirstAuthor() {
-        return authors != null && authors.size() > 0 ? authors.get(0) : null;
     }
 
     @Transient
@@ -700,6 +703,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public static Contribution update(Contribution c) {
+        ContributionHistory.createHistoricFromContribution(c);
         List<Theme> themes = new ArrayList<>();
         for (Theme theme : c.getThemes()) {
             if (theme.getThemeId() == null) {
