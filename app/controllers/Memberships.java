@@ -869,20 +869,16 @@ public class Memberships extends Controller {
 			@ApiParam(name="id", value="Membership ID") Long id, 
 			@ApiParam(name="token", value="Membership invitation token") String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final TokenAction ta = Users.tokenIsValid(token,
-				Type.MEMBERSHIP_INVITATION);
+		final TokenAction ta = Users.tokenIsValid(token, Type.MEMBERSHIP_INVITATION);
 		if (ta == null) {
-			return badRequest(Json.toJson(Messages
-					.get("playauthenticate.token.error.message")));
-			// TODO content negotiation: if content-type is HTML, render the
-			// response in HTML
+			return badRequest(Json.toJson(new TransferResponseStatus(ResponseStatus.BADREQUEST, Messages.get("playauthenticate.token.error.message"))));
+			// TODO content negotiation: if content-type is HTML, render the response in HTML
 			// return badRequest(no_token_or_invalid.render());
 		}
 
 		final String email = ta.targetUser.getEmail();
 		Membership.verify(id, ta.targetUser);
-		return ok(Json.toJson(Messages.get(
-				"playauthenticate.verify_email.success", email)));
+		return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, Messages.get("playauthenticate.verify_email.success", email))));
 	}
 
 	/****************************************************************************************************************
