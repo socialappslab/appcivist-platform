@@ -952,12 +952,12 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Contribution moderation. Soft deletes contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "contribution_form", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result moderateContribution(Long aid, Long contributionId) {
+    public static Result moderateContribution(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+            @ApiParam(name = "cid", value = "Contribution id") Long contributionId) {
         // 1. read the new contribution data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
