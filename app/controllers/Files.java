@@ -38,7 +38,7 @@ public class Files extends Controller {
 	@ApiOperation(httpMethod = "POST", response = S3File.class, produces = "application/json", value = "Upload a file and get its URL")
 	@ApiResponses(value = { @ApiResponse(code = BAD_REQUEST, message = "File upload error", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "file", value = "File to upload", dataType = "play.mvc.Http.MultipartFormData", paramType = "body"),
+			@ApiImplicitParam(name = "file", value = "File to upload", dataType = "file", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	public static Result upload() {
 		Http.MultipartFormData body = request().body().asMultipartFormData();

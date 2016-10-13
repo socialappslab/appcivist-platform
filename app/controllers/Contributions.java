@@ -993,7 +993,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", response = Theme.class, produces = "application/json", value = "Add a theme to a contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "theme", value = "Themes to add to the contribution", dataType = "models.ThemeListTransfer", paramType = "body")})
+            @ApiImplicitParam(name = "theme", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body")})
     public static Result addThemeToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
         Contribution contribution;
 
