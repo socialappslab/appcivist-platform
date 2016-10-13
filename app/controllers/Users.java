@@ -52,7 +52,7 @@ import enums.ResponseStatus;
  * @author cdparra
  *
  */
-@Api(value = "/user", description = "User Management operations")
+@Api(value = "00 user: User Management", description = "User Management operations")
 @With(Headers.class)
 public class Users extends Controller {
 	public static final Form<User> USER_FORM = form(User.class);

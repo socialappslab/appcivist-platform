@@ -43,7 +43,7 @@ import utils.services.EtherpadWrapper;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
-@Api(value = "/contribution", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
+@Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
 public class Contributions extends Controller {
 

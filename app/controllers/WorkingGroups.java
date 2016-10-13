@@ -46,7 +46,7 @@ import delegates.WorkingGroupsDelegate;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
 
-@Api(value = "/group", description = "Group Management endpoints in the Assembly Making service")
+@Api(value = "02 /group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
 public class WorkingGroups extends Controller {
 

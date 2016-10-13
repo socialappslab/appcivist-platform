@@ -44,7 +44,7 @@ import io.swagger.annotations.ApiResponses;
 import delegates.CampaignDelegate;
 import utils.services.EtherpadWrapper;
 
-@Api(value = "/campaign", description = "Campaign Making Service: create and manage assembly campaigns")
+@Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
 public class Campaigns extends Controller {
 

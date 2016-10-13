@@ -30,7 +30,8 @@ import java.util.List;
 
 import static play.data.Form.form;
 
-@Api(value="/component",description="Component Services: create and manage component instances")
+// TODO: review ane redesign this API
+@Api(value="/component",description="Component Services: create and manage component instances", hidden=true)
 @With(Headers.class)
 public class CampaignComponents extends Controller {
 

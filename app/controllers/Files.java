@@ -12,7 +12,7 @@ import play.mvc.With;
 import io.swagger.annotations.Api;
 import views.html.*;
 
-@Api(value = "/files")
+@Api(value = "07 files: Upload files")
 @With(Headers.class)
 public class Files extends Controller {
 

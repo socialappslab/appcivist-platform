@@ -55,7 +55,7 @@ import enums.MyRoles;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
 
-@Api(value = "membership: Assembly and Working Group membership management", description = "Assembly and Working Group membership management endpoints. A membership connects a user to either a working group or an assembly, assigning him a role that is used for authorization purposes")
+@Api(value = "04 membership: Membership management (for assemblies and working groups)", description = "Assembly and Working Group membership management endpoints. A membership connects a user to either a working group or an assembly, assigning him a role that is used for authorization purposes")
 @With(Headers.class)
 public class Memberships extends Controller {
 
