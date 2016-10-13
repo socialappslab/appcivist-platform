@@ -46,7 +46,7 @@ import http.Headers;
  *
  */
 @SuppressWarnings("unused")
-@Api(value="/notification")
+@Api(value="06 notification: Notifications management")
 @With(Headers.class)
 public class Notifications extends Controller {
 
