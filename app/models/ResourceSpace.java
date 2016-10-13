@@ -5,17 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -107,6 +97,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@JoinTable(name = "resource_space_contributions")
 	@Where(clause="${ta}.removed=false")
 	private List<Contribution> contributions;
+
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_contribution_histories")
+	@Where(clause="${ta}.removed=false")
+	private List<ContributionHistory> contributionHistories;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_assemblies")
@@ -370,6 +365,17 @@ public class ResourceSpace extends AppCivistBaseModel {
 		if(this.contributions==null)
 			this.contributions= new ArrayList<>();
 		this.contributions = contributions;
+	}
+
+
+	public List<ContributionHistory> getContributionHistories() {
+		if(this.contributionHistories==null)
+			this.contributionHistories = new ArrayList<>();
+		return contributionHistories;
+	}
+
+	public void setContributionHistories(List<ContributionHistory> contributionHistories) {
+		this.contributionHistories = contributionHistories;
 	}
 
 	public void addContribution(Contribution c) {

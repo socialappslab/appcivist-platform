@@ -1,18 +1,16 @@
 package controllers;
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.ContributionsDelegate;
 import delegates.ResourcesDelegate;
 import enums.*;
+import exceptions.MembershipCreationException;
 import http.Headers;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.io.*;
-
 import io.swagger.annotations.*;
 import models.*;
 import models.transfer.*;
@@ -23,25 +21,27 @@ import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import play.mvc.Http;
 import security.SecurityModelConstants;
 import utils.GlobalData;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import delegates.ContributionsDelegate;
-import exceptions.MembershipCreationException;
 import utils.services.EtherpadWrapper;
 
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static play.data.Form.form;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -333,6 +333,25 @@ public class Contributions extends Controller {
         }
         return ok(Json.toJson(contribution));
     }
+	/**
+	 * GET       /api/assembly/:aid/contribution/:cid
+	 * @param aid
+	 * @param contributionId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = ContributionHistory.class, responseContainer = "List", produces = "application/json", value = "Get contributions change history")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result getContributionsChangeHistory(Long aid, Long contributionId) throws Exception{
+		List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(contributionId);
+		return ok(Json.toJson(contributionHistories));
+	}
+
+
 
 	/* CREATE ENDPOINTS 
      * TODO: reduce complexity by removing uncessary create methods
