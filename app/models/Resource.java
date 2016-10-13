@@ -62,7 +62,6 @@ public class Resource extends AppCivistBaseModel {
 	private URL urlThumbnail;
 
 	private boolean confirmed;
-	private Date creation;
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -180,17 +179,6 @@ public class Resource extends AppCivistBaseModel {
 	public void setConfirmed(boolean confirmed) {
 		this.confirmed = confirmed;
 	}
-
-	@Override
-	public Date getCreation() {
-		return creation;
-	}
-
-	@Override
-	public void setCreation(Date creation) {
-		this.creation = creation;
-	}
-
 	// TODO @Transient getPadContent => GET using Etherpad Client
 	
 	public UUID getResourceSpaceWithServerConfigs() {
