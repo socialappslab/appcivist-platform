@@ -1113,3 +1113,6 @@ create table non_member_author (
 
 alter table contribution add column non_member_author_id bigint;
 alter table contribution add constraint fk_non_member_author foreign key (non_member_author_id) references non_member_author(id);
+
+ALTER TABLE contribution ADD COLUMN moderation_comment text;
+ALTER TABLE contribution_history ADD COLUMN moderation_comment text;
