@@ -1650,7 +1650,7 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
     public static Result updateContributionStatus(
-    		@ApiParam(name="aid", value="Assembly ID") String aid, 
+    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
 			@ApiParam(name="cid", value="Contribution ID") Long cid,
     		@ApiParam(name="status", value="New Status for the Contribution", allowableValues="NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
