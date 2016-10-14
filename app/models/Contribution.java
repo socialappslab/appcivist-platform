@@ -1,5 +1,8 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,39 +31,51 @@ import enums.ResourceSpaceTypes;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause = "removed=false")
+@ApiModel(
+		value="Contribution", 
+		description="Generic model for citizen contributions. A contribuiton represents IDEAS, PROPOSALS, DISCUSSION, COMMENTS, NOTES, ISSUES, ETC. ")
 public class Contribution extends AppCivistBaseModel {
 
     @Id
     @GeneratedValue
+    @ApiModelProperty(value="Contribution numerical ID", position=0)
     private Long contributionId;
 
     @Index
+    @ApiModelProperty(value="Contribution Universal ID (meant to be valid accross intances of the platform)", position=1)
     private UUID uuid = UUID.randomUUID();
 
     @Transient
+    @ApiModelProperty(hidden=true, notes="String version of the UUID to facilitate processing in server side. To be removed.")
     private String uuidAsString;
 
     @Required
+    @ApiModelProperty(value="Title of the contribution", position=2)
     private String title;
 
     @Required
+    @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
 
     @Enumerated(EnumType.STRING)
     @Required
+    @ApiModelProperty(value="Type of Contribution", position=4)
     private ContributionTypes type;
 
     @Enumerated(EnumType.STRING)
     @Required
+    @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
     private ContributionStatus status = ContributionStatus.PUBLISHED;
 
     @JsonIgnore
     @Index
     @Column(name = "text_index", columnDefinition = "text")
+    @ApiModelProperty(hidden=true)
     private String textIndex;
 
     @Column(name = "moderation_comment", columnDefinition = "text")
+    @ApiModelProperty(value="Comment explaining why a contribution is moderated (e.g., deleted, changed status, etc.)", position=6)
     private String moderationComment;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -68,37 +83,37 @@ public class Contribution extends AppCivistBaseModel {
     private Location location;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    // TODO: Needed? 
     private String budget;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @Where(clause = "${ta}.active=true")
     @JsonIgnoreProperties({"providers", "roles", "permissions", "sessionKey", "identifier"})
+    @ApiModelProperty(name="authors", value="List of authors when is more then one but not a working group")
     private List<User> authors = new ArrayList<User>();
 
+    // TODO: redo using priority matrix and allowing for multiple users to provide their priority matrix values
     private Integer priority;
 
     @Transient
+    @ApiModelProperty(value="Read only property displaying the first information", readOnly=true)
     private User firstAuthor;
 
     @Transient
+    @ApiModelProperty(value="Read only property displaying the first author name", readOnly=true)
     private String firstAuthorName;
-	public List<ResourceSpace> getContainingSpaces() {
-		return containingSpaces;
-	}
-
-	@Transient
-	public User getFirstAuthor() {
-		return authors != null && authors.size() > 0 ? authors.get(0) : null;
-	}
-
+	
     @Transient
+    @ApiModelProperty(value="Read only property displaying the Assembly where this Contribution was created", readOnly=true)
     private Long assemblyId;
 
 
     @JsonManagedReference
     @Transient
+    @ApiModelProperty(value="Working Groups to which this Contribution is associated")
     private List<WorkingGroup> workingGroupAuthors = new ArrayList<WorkingGroup>();
 
     @JsonIgnore
@@ -210,7 +225,15 @@ public class Contribution extends AppCivistBaseModel {
 	/*
      * Getters and Setters
 	 */
+    public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
 
+	@Transient
+	public User getFirstAuthor() {
+		return authors != null && authors.size() > 0 ? authors.get(0) : null;
+	}
+	
     public Long getContributionId() {
         return contributionId;
     }

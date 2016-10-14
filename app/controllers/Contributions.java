@@ -192,8 +192,6 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get contribution by ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findContribution(
@@ -365,7 +363,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create a contribution in a specific Resource Space")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name="sid", value="Resource Space ID") Long sid) {
@@ -436,7 +434,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create a Contribution in an Assembly")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createAssemblyContribution(
@@ -500,7 +498,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create contribution in a Component of a Campaign")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createCampaignComponentContribution(
@@ -740,7 +738,7 @@ public class Contributions extends Controller {
     		notes="A forum post is a contribution of type FORUM_POST in the the 'forum' resource space of the Working Group")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createWorkingGroupForumPost(@ApiParam(name="aid", value="Assembly ID") Long aid, @ApiParam(name="gid", value="Working Group ID") Long gid) {
@@ -952,7 +950,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Contribution moderation. Soft deletes contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
+            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result moderateContribution(
@@ -1036,8 +1034,6 @@ public class Contributions extends Controller {
     		notes="Only for ADMINS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-            @ApiImplicitParam(name = "cid", value = "Contribution id", dataType = "Long", paramType = "path"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result forceDeleteContribution(
@@ -1454,8 +1450,6 @@ public class Contributions extends Controller {
 					"The values must be separated by coma (,). If the theme column has more than one theme, then it must be separated by dash (-).")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			//@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			//@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	public static Result importContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
@@ -1524,8 +1518,6 @@ public class Contributions extends Controller {
 	@ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export campaign ideas to a CSV file")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
 	@ApiImplicitParams({
-			//@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			//@ApiImplicitParam(name = "cid", value = "Campaign id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
 											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
@@ -1584,7 +1576,9 @@ public class Contributions extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result createContributionPad(String aid, String cid) {
+	public static Result createContributionPad(
+			@ApiParam(name="aid", value="Assembly ID") String aid, 
+			@ApiParam(name="cid", value="Contribution ID") String cid) {
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
 		String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
@@ -1637,7 +1631,8 @@ public class Contributions extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No resource found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result confirmContributionPad(Long rid) {
+	public static Result confirmContributionPad(
+			@ApiParam(name="rid", value="Resource (that represents that PAD) ID") Long rid) {
 		Resource res = ResourcesDelegate.confirmResource(rid);
 		return ok(Json.toJson(res));
 	}
@@ -1654,7 +1649,10 @@ public class Contributions extends Controller {
     @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-    public static Result updateContributionStatus(Long aid, Long cid, String status) {
+    public static Result updateContributionStatus(
+    		@ApiParam(name="aid", value="Assembly ID") String aid, 
+			@ApiParam(name="cid", value="Contribution ID") Long cid,
+    		@ApiParam(name="status", value="New Status for the Contribution", allowableValues="NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
         if(ContributionStatus.valueOf(upStatus)!= null) {
@@ -1721,7 +1719,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContributionOnCampaign(String uuid) {
+    public static Result createAnonymousContributionOnCampaign(@ApiParam(name="uuid", value="Universal ID of the target contribution") String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
