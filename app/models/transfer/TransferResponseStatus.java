@@ -1,4 +1,7 @@
 package models.transfer;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -8,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.ResponseStatus;
 
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="TransferResponseStatus ", description="Response Model used for ERRORS in the API")
 public class TransferResponseStatus implements Serializable {
 
 	/**
@@ -15,12 +19,17 @@ public class TransferResponseStatus implements Serializable {
 	 */
 	private static final long serialVersionUID = 5142156998573460710L;
 
-
+	@ApiModelProperty(name="responseStatus", dataType="enums.ResponseStatus", allowableValues="BADREQUEST, UNAUTHORIZED, SERVERERROR, NOTAVAILABLE, NODATA, OK", value="Status of the request")
     private ResponseStatus responseStatus;
-	private String statusMessage;
+	@ApiModelProperty(name="responseMessage", dataType="String", value="Message explaining the response")
+    private String statusMessage;
+	@ApiModelProperty(name="errorTrace", dataType="String", value="Error trace for more details (if there is an error trace)")
 	private String errorTrace;
+	@ApiModelProperty(name="newResourceId", dataType="Long", value="If the status is OK and a new resource was created, this will indicate the new resource ID")
 	private Long newResourceId;
+	@ApiModelProperty(name="newResourceUrl", dataType="Long", value="If the status is OK and a new resource was created, this will indicate the new resource URL")
 	private String newResourceURL;
+	@ApiModelProperty(name="newResourceUuid", dataType="java.util.UUID", value="If the status is OK and a new resource was created, this will indicate the new resource Universal ID")
 	private UUID newResourceUuid;
 
 	public TransferResponseStatus(ResponseStatus responseStatus,

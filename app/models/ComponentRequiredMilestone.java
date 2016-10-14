@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.ComponentMilestoneTypes;
 
 @Entity
+@ApiModel(value="ComponentRequiredMilestone", description="A milestone required in the definition of component for a campaign")
 public class ComponentRequiredMilestone extends AppCivistBaseModel implements Comparator<ComponentRequiredMilestone> {
 
 	@Id

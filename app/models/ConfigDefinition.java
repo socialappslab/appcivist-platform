@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -12,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @UniqueConstraint(columnNames = { "key" })
+@ApiModel(value="ConfigDefinition", description="Definition of a configuration value")
 public class ConfigDefinition extends AppCivistBaseModel {
 	
 	@Id

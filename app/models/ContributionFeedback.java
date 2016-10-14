@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="ContributionFeedback", description="Feedback associated to a contribution")
 public class ContributionFeedback extends AppCivistBaseModel {
 
 	@Id
@@ -20,8 +23,10 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Boolean down = false;
 	private Boolean fav = false;
 	private Boolean flag = false;
+	// TODO: Add Priority Matrix score fields: benefit, need, feasibility, elegibility, text feedback
 	private Long contributionId;
 	private Long userId;
+	// TODO: Add a way of making feedback private or limited to a working group
 	
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 

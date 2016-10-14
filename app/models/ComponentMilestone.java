@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -26,6 +28,7 @@ import enums.ContributionTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="ComponentMilestone", description="Milestone associated to a component. It represents a deadline within that component")
 public class ComponentMilestone extends AppCivistBaseModel implements Comparator<ComponentMilestone> {
 
 	@Id

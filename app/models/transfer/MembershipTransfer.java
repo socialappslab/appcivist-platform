@@ -1,5 +1,8 @@
 package models.transfer;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 
 /**
  * Transfer model to receive membership creation objects
@@ -7,19 +10,25 @@ package models.transfer;
  * @author cdparra
  *
  */
+@ApiModel(
+		value = "Membership", 
+		description = "A Membership connects a user to an Assembly or a Working Group, assigning a role that is used for authorization purposes. Only Coordinators have the power to create and update memberships. Members can delete their own memberships."
+)
 public class MembershipTransfer {
-
-    /**
-     * The id of the user to be added to the group or assembly
-     */
     private Long userId;
     private Long groupId;
     private Long assemblyId;
+    @ApiModelProperty(value="Email of the person for whom a membership will be created")
     private String email;
+	@ApiModelProperty(value="Type identifies what type of membership depending on the target", allowableValues="ASSEMBLY, GROUP")
     private String type;
+
+	@ApiModelProperty(value="targetCollection is the the ID of the Assembly or Working Group to which we are associating the user")
     private String targetCollection;
     private Long defaultRoleId; 
     private String defaultRoleName;
+    
+    @ApiModelProperty(value="status", allowableValues="REQUESTED, INVITED, ACCEPTED or REJECTED")
 	private String status;
 
     public Long getUserId() {

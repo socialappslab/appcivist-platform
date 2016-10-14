@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.DiscriminatorValue;
@@ -17,6 +19,7 @@ import exceptions.MembershipCreationException;
 @Entity
 @DiscriminatorValue("GROUP")
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="MembershipGroup", description="Membership in a Working Group")
 public class MembershipGroup extends Membership {
 	
 	@ManyToOne

@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.UUID;
 
 import javax.persistence.Entity;
@@ -13,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="CampaignRequiredConfiguration", description="Required configuration value for a particular campaign")
 public class CampaignRequiredConfiguration extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue

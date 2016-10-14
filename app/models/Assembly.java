@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +44,7 @@ import exceptions.MembershipCreationException;
  */
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Assembly", description="An Assembly is an a space owned by a group of people to organize democratic actions")
 public class Assembly extends AppCivistBaseModel {
 	@Id @GeneratedValue @Column(name="assembly_id")
 	private Long assemblyId;

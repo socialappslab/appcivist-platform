@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -41,6 +43,7 @@ import enums.VotingSystemTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Campaign", description="Campaigns are actions or processes organized by an Assembly")
 public class Campaign extends AppCivistBaseModel {
 
 	@Id

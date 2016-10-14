@@ -1,13 +1,18 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+
 import be.objectify.deadbolt.core.models.Role;
+
 import com.avaje.ebean.Model;
 @Entity
+@ApiModel(value="SecurityRole", description="Roles assigned to Users")
 public class SecurityRole extends Model implements Role {
 
 	@Id

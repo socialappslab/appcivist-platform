@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +17,7 @@ import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
+@ApiModel(value="BallotPaper", description="An individual casted ballot")
 public class BallotPaper extends Model {
 	
 	@Id

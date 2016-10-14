@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name="Token_Action")
+@ApiModel(value="TokenAction", description="Generated tokens for verificatoin and other security actions")
 public class TokenAction extends Model {
 
 	public enum Type {

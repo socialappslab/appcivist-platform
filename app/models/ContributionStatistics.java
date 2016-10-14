@@ -1,6 +1,9 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
 
+
+@ApiModel(value="ContributionStatistics", description="Summarizes basic statistics on a contribution")
 public class ContributionStatistics extends AppCivistBaseModel {
 
 	private Long ups;

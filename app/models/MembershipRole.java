@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause="removed=false")
+@ApiModel(value="MembershipRole", description="Role of an User within an Assembly or a Working Group")
 public class MembershipRole extends Model {
 	@Column(name="membership_membership_id")
 	private Long membershipId;

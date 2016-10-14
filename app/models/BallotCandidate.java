@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name="candidate")
+@ApiModel(value="BallotCandidate", description="The pointer to a candidate in a a ballot paper. Represents a resource in AppCivist through its UUID")
 public class BallotCandidate extends Model {
 	
 	@Id

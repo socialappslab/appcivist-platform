@@ -7,12 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import models.Assembly;
-import models.AssemblyProfile;
-import models.Membership;
-import models.MembershipAssembly;
-import models.Theme;
-import models.User;
+import models.*;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
 import models.transfer.MembershipCollectionTransfer;
@@ -35,19 +30,20 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
 
-@Api(value = "/assembly", description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
+@Api(value = "01 assembly: Assembly Making", position=1, description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
 @With(Headers.class)
 public class Assemblies extends Controller {
 
@@ -61,12 +57,11 @@ public class Assemblies extends Controller {
 	 * Return the full list of assemblies for non users
 	 * 
 	 */
-	@ApiOperation(httpMethod = "GET", response = AssemblySummaryTransfer.class, responseContainer = "List", produces = "application/json", value = "Get list of assemblies based on query", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "GET", response = AssemblySummaryTransfer.class, responseContainer = "List", produces = "application/json", value = "Get list of assemblies based on query")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "query", value = "Search query string (keywords in title)", dataType = "String", paramType = "query"),
-			@ApiImplicitParam(name = "filter", value = "Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", dataType = "String", paramType = "query", allowableValues = "featured,nearby,summary,random"), })
-	public static Result findAssembliesPublic(String query, String filter) {
+	public static Result findAssembliesPublic(
+			@ApiParam(name = "query", value = "Search query string (keywords in title)") String query, 
+			@ApiParam(name = "filter", value = "Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", allowableValues = "featured,nearby,summary,random") String filter) {
 		List<AssemblySummaryTransfer> a = AssembliesDelegate
 				.findAssembliesPublic(query, filter);
 		if (a != null)
@@ -98,14 +93,15 @@ public class Assemblies extends Controller {
 	 * 
 	 * @return models.AssemblyCollection
 	 */
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of assemblies based on query", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of assemblies based on query")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "query", value = "Search query string (keywords in title)", dataType = "String", paramType = "query"),
-			@ApiImplicitParam(name = "filter", value = "Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", dataType = "String", paramType = "query", allowableValues = "featured,nearby,summary,random"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result findAssemblies(String query, String filter) {
+	public static Result findAssemblies(	
+			@ApiParam(name = "query", value = "Search query string (keywords in title)") String query, 
+			@ApiParam(name = "filter", value = "Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", allowableValues = "featured,nearby,summary,random") String filter) {
+		
 		List<Assembly> a = AssembliesDelegate.findAssemblies(query, filter, true);
 		if (a != null)
 			return ok(Json.toJson(a));
@@ -135,12 +131,11 @@ public class Assemblies extends Controller {
 	 * 
 	 * @return models.AssemblyCollection
 	 */
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of linked assemblies to a single assembly", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of linked assemblies to a single assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result findAssembliesLinked(Long aid) {
+	public static Result findAssembliesLinked(@ApiParam(name="aid", value="Assembly ID") Long aid) {
 		Assembly a = Assembly.read(aid);
 		if (a != null) {
 			List<Assembly> linked = a.getFollowedAssemblies();
@@ -159,10 +154,9 @@ public class Assemblies extends Controller {
 	 */
 	@ApiOperation(httpMethod = "GET", response = AssemblySummaryTransfer.class, produces = "application/json", value = "Get assembly profile if it is listed or if it is in the list of linked assemblies")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result getListedLinkedAssemblyProfile(Long aid) {
+	public static Result getListedLinkedAssemblyProfile(@ApiParam(name="aid", value="Assembly ID") Long aid) {
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		AssemblySummaryTransfer assembly = AssembliesDelegate.readListedLinkedAssembly(aid, requestor);
 		if (assembly != null) {
@@ -172,17 +166,16 @@ public class Assemblies extends Controller {
 		}
 	}
 	
-	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST")
+	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST", notes="The templates will be used to import all the resources from a list of existing assembly to the new")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "assembly_form", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
+			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result createAssembly() {
+	public static Result createAssembly(@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates) {
 		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
-
 		// Check for errors in received data
 		if (newAssemblyForm.hasErrors()) {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
@@ -193,10 +186,11 @@ public class Assemblies extends Controller {
 			AssemblyTransfer newAssembly = newAssemblyForm.get();
 			// Do not create assemblies with names that already exist
 			Assembly a = Assembly.findByName(newAssembly.getName());
+
 			if (a==null) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates);
 					Ebean.commitTransaction();
 					return ok(Json.toJson(created));
 				} catch (Exception e) {
@@ -216,38 +210,35 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Get Assembly by ID", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read Assembly by ID", notes="Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result findAssembly(Long id) {
+	public static Result findAssembly(@ApiParam(name = "id", value = "Assembly ID") Long id) {
 		Assembly a = Assembly.read(id);
 		return a != null ? ok(Json.toJson(a)) : notFound(Json
 				.toJson(new TransferResponseStatus(ResponseStatus.NODATA,
 						"No assembly with ID = " + id)));
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Delete Assembly by ID", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "DELETE", response = Assembly.class, produces = "application/json", value = "Delete Assembly by ID", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result deleteAssembly(Long id) {
+	public static Result deleteAssembly(@ApiParam(name = "id", value = "Assembly ID") Long id) {
 		Assembly.delete(id);
 		return ok();
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Update Assembly by ID", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "PUT", response = Assembly.class, produces = "application/json", value = "Update Assembly by ID", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "assembly_form", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
+			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result updateAssembly(Long id) {
+	public static Result updateAssembly(@ApiParam(name = "id", value = "Assembly ID") Long id) {
 		// 1. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<Assembly> newAssemblyForm = ASSEMBLY_FORM.bindFromRequest();
@@ -287,15 +278,15 @@ public class Assemblies extends Controller {
 	 * @param type
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Add membership to the assembly", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "POST", response = Membership.class, produces = "application/json", value = "Add membership to the assembly", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "type", value = "Type of membership", allowableValues = "INVITATION, REQUEST, SUBSCRIPTION", required = true, paramType = "path"),
-			@ApiImplicitParam(name = "membership_form", value = "membership's form in body", dataType = "models.transfer.MembershipTransfer", paramType = "body", required = true),
+			@ApiImplicitParam(name = "Membership simplified object", value = "Membership's form in body", dataType = "models.transfer.MembershipTransfer", paramType = "body", required = true),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createAssemblyMembership(Long id, String type) {
+	public static Result createAssemblyMembership(
+			@ApiParam(name = "id", value = "Assembly ID") Long id, 
+			@ApiParam(name = "type", value = "Type of membership", allowableValues = "INVITATION, REQUEST, SUBSCRIPTION") String type) {
 		// 1. obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -332,7 +323,7 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer="List", produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
@@ -348,14 +339,14 @@ public class Assemblies extends Controller {
 						+ id + "'")));
 	}
 	
-	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify if user is member of an assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "aid", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "uid", value = "User id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	//@SubjectPresent
-	public static Result isUserMemberOfAssembly(Long aid, Long userId) {
+	public static Result isUserMemberOfAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+			@ApiParam(name = "uid", value = "User id") Long userId) {
 		Boolean result = MembershipAssembly.isUserMemberOfAssembly(userId,aid);
 		if (result) return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, 
 					"User '" + userId + "' is a member of Assembly '"+ aid + "'")));
@@ -363,19 +354,19 @@ public class Assemblies extends Controller {
 				"User '" + userId + "' is not a member of Assembly '"+ aid + "'")));
 	}
 	
-	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Add membership to the assembly by listing AppCivist's users emails", notes = "Get the full list of assemblies. Only availabe to ADMINS")
+	// TODO: create a better model for the response in this request
+	@ApiOperation(httpMethod = "POST", response = Pair.class, responseContainer="List", produces = "application/json", value = "Add membership to the assembly by listing AppCivist's users emails", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "membership_form", value = "List of membership's form in the body including only the target's user email", dataType = "models.transfer.MembershipTransfer", paramType = "body", required = true),
+			@ApiImplicitParam(name = "Membership simplified object", value = "List of membership's form in the body including only the target's user email", dataType = "models.transfer.MembershipTransfer", paramType = "body", required = true),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result inviteNewMembers(Long id) {
+	public static Result inviteNewMembers(@ApiParam(name = "id", value = "Assembly ID") Long id) {
 		// 1. read the new group data from the body
 		// another way of getting the body content => request().body().asJson()
 		final Form<MembershipCollectionTransfer> newMembershipForm = INVITEES_FORM
 				.bindFromRequest();
-
+		
 		if (newMembershipForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setStatusMessage(Messages.get(
@@ -412,16 +403,14 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = AssemblyProfile.class, produces = "application/json", value = "Update the profile of the Assembly")
+	@ApiOperation(httpMethod="GET", response = AssemblyProfile.class, produces = "application/json", value = "Update the profile of the Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "assembly_profile_form", value = "Body of AssemblyProfile in JSON", required = true, dataType = "models.AssemblyProfile", paramType = "body"),
-			@ApiImplicitParam(name = "uuid", value = "UUID of Assembly", required = true, dataType = "java.util.UUID", paramType = "path"),
+			@ApiImplicitParam(name = "AssemblyProfile object", value = "Body of AssemblyProfile in JSON", required = true, dataType = "models.AssemblyProfile", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result updateProfile(UUID uuid) {
-		final Form<AssemblyProfile> updatedProfileForm = PROFILE_FORM
-				.bindFromRequest();
+	public static Result updateProfile(@ApiParam(name = "uuid", value = "Universal ID of the Assembly") UUID uuid) {
+		final Form<AssemblyProfile> updatedProfileForm = PROFILE_FORM.bindFromRequest();
 
 		if (updatedProfileForm.hasErrors()) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -449,13 +438,12 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = AssemblyProfile.class, produces = "application/json", value = "Get the profile of an Assembly")
+	@ApiOperation(response = AssemblyProfile.class, produces = "application/json", value = "Read the profile of an Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "UUID of Assembly", required = true, dataType = "java.util.UUID", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOrListed", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result getAssemblyProfile(UUID uuid) {
+	public static Result getAssemblyProfile(@ApiParam(name = "uuid", value = "Universal ID of Assembly") UUID uuid) {
 		AssemblyProfile ap = AssemblyProfile.findByAssembly(uuid);
 		if (ap == null) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -471,10 +459,9 @@ public class Assemblies extends Controller {
 	@ApiOperation(response = Theme.class, responseContainer = "List", produces = "application/json", value = "Get themes of an assembly by its UUID")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "UUID of Assembly", required = true, dataType = "java.util.UUID", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@SubjectPresent
-	public static Result getAssemblyThemes(UUID uuid) {
+	public static Result getAssemblyThemes(@ApiParam(name = "uuid", value = "Universal ID of Assembly") UUID uuid) {
 		Assembly a = Assembly.readByUUID(uuid);
 		if (a == null) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();

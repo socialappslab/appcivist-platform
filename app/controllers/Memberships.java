@@ -37,13 +37,16 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.AuthorizationScope;
 import delegates.MembershipsDelegate;
 import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
@@ -52,7 +55,7 @@ import enums.MyRoles;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
 
-@Api(value = "/membership", description = "Group Management endpoints in the Assembly Making service")
+@Api(value = "04 membership: Membership management (for assemblies and working groups)", description = "Assembly and Working Group membership management endpoints. A membership connects a user to either a working group or an assembly, assigning him a role that is used for authorization purposes")
 @With(Headers.class)
 public class Memberships extends Controller {
 
@@ -74,10 +77,13 @@ public class Memberships extends Controller {
 	 * 
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership with any desired status within an Assembly or a Group. Endpoint available only to ADMINS.")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@ApiOperation(httpMethod = "POST", response = Membership.class, produces = "application/json", value = "Create a membership with any desired status within an Assembly or a Group. Endpoint available only to ADMINS.")
+	@ApiImplicitParams({ 
+		@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
+		@ApiImplicitParam(name = "Membership Simplified Object", value = "The membership to create", dataType="models.transfer.MembershipTransfer", paramType="Body")
+		})
 	@ApiResponses({
-			@ApiResponse(code = ACCEPTED, message = "Membership was created", response = MembershipTransfer.class),
+			@ApiResponse(code = ACCEPTED, message = "Membership was created", response = Membership.class),
 			@ApiResponse(code = BAD_REQUEST, message = "Membership body has errors", response = TransferResponseStatus.class) })
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result createMembership() {
@@ -132,15 +138,15 @@ public class Memberships extends Controller {
 	 *            Type of membership filter (assembly, group)
 	 * @return User's Membership record
 	 */
-	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Update user information", notes = "Updates user information")
+	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Read user memberships by User ID and Membership TYPE", notes = "This endpoint is only accessible to ADMIN users and to the User identified by the provided UUID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User or Memberships not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "uuid", value = "User's UUID", dataType = "java.util.UUID", paramType = "path"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "type", value = "type of membership requeste", dataType = "String", paramType = "query", allowableValues = "assembly,group") })
-	// TODO: implement the right access rule for this @Dynamic(value =
-	// "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
-	public static Result findMembershipByUser(Long uid, String type) {
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+	public static Result findMembershipByUser(
+			@ApiParam(name = "uid", value = "User's ID") Long uid, 
+			@ApiParam(name = "type", value = "Type of memberships to read", allowableValues = "assembly,group") String type) {
 		User u = User.findByUserId(uid);
 		if (u == null)
 			return notFound(Json.toJson(new TransferResponseStatus(
@@ -178,15 +184,17 @@ public class Memberships extends Controller {
 	 *            the status of the invitation (INVITED, ACCEPTED, REJECTED)
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "GET", response = MembershipInvitation.class, responseContainer = "List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiOperation(httpMethod = "GET", response = MembershipInvitation.class, responseContainer = "List", produces = "application/json", value = "Get the list of invitations to the target Group or Assembly")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "targetId", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "status", value = "Invitation Status", allowableValues = "INVITED, ACCEPTED, REJECTED", dataType = "String", paramType = "path") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
 	@ApiResponses({
 			@ApiResponse(code = ACCEPTED, message = "Invitations found", response = MembershipInvitation.class),
 			@ApiResponse(code = NOT_FOUND, message = "Invitations not found", response = TransferResponseStatus.class) })
-	public static Result listInvitations(Long targetId, String status) {
+	public static Result listInvitations(
+			@ApiParam(name = "targetId", value = "Working Group or Assembly Id") Long targetId, 
+			@ApiParam(name = "status", value = "Invitation Status", allowableValues = "INVITED, ACCEPTED, REJECTED") String status) {
+		
 		List<MembershipInvitation> invitations = MembershipInvitation
 				.findByTargetIdAndStatus(targetId, status);
 		if (invitations != null && invitations.isEmpty()) {
@@ -208,11 +216,12 @@ public class Memberships extends Controller {
 	 *            invitation token
 	 * @return the invitation record
 	 */
-	@ApiOperation(httpMethod = "GET", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
+	@ApiOperation(httpMethod = "GET", response = MembershipInvitation.class, produces = "application/json", value = "Read an invitation by Token")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "token", value = "Invitation Token", dataType = "java.util.UUID", paramType = "path") })
-	public static Result readInvitation(UUID token) {
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	public static Result readInvitation(
+			@ApiParam(name = "token", value = "Invitation Token") UUID token) {
 		TokenAction ta = TokenAction.findByToken(token.toString(),
 				TokenAction.Type.MEMBERSHIP_INVITATION);
 		if (ta != null && ta.isValid()) {
@@ -235,16 +244,18 @@ public class Memberships extends Controller {
 	 *            The user id
 	 * @return the user's assembly or a notFound response
 	 */
-	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership of an user in an assembly")
+	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership record of an user within a specified assembly")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "aid", value = "Assembly Id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "uid", value = "User's id", dataType = "Long", paramType = "path") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
 	@ApiResponses({
 			@ApiResponse(code = OK, message = "Membership found", response = Membership.class),
 			@ApiResponse(code = NOT_FOUND, message = "Membership not found", response = TransferResponseStatus.class) })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result readUserMembershipInAssembly(Long aid, Long uid) {
+	public static Result readUserMembershipInAssembly(
+			@ApiParam(name = "aid", value = "Assembly Id") Long aid, 
+			@ApiParam(name = "uid", value = "User Id") Long uid) {
+
 		Membership ma = MembershipAssembly.findByUserAndAssemblyIds(uid, aid);
 		if (ma == null) {
 			// If there is no Membership record created (either REQUESTED or
@@ -284,16 +295,18 @@ public class Memberships extends Controller {
 	 *            The user id
 	 * @return the user's assembly or a notFound response
 	 */
-	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership of an user in a group")
+	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership record of a user within a group", notes = "Only available to COORDINATORS")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "uid", value = "User's id", dataType = "Long", paramType = "path") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
 	@ApiResponses({
 			@ApiResponse(code = OK, message = "Membership found", response = Membership.class),
 			@ApiResponse(code = NOT_FOUND, message = "Membership not found", response = TransferResponseStatus.class) })
 	@Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
-	public static Result readUserMembershipInGroup(Long gid, Long uid) {
+	public static Result readUserMembershipInGroup(
+			@ApiParam(name = "gid", value = "Working Group Id") Long gid, 
+			@ApiParam(name = "uid", value = "User's id") Long uid) {
+
 		Membership ma = MembershipGroup.findByUserAndGroupId(uid, gid);
 
 		if (ma == null) {
@@ -331,12 +344,13 @@ public class Memberships extends Controller {
 	 *            id of the assembly
 	 * @return the invitation record
 	 */
-	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send and to an Assembly")
+	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an Invitation to join an Assembly", notes="Only available to COORDINATORS")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "aid", value = "Assembly Id", dataType = "Long", paramType = "path") })
+			@ApiImplicitParam(name = "Invation Object", value = "Invitation details", dataType = "models.transfer.InvitationTransfer", paramType = "body") 
+	})
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createSendInvitationToJoinAssembly(Long aid) {
+	public static Result createSendInvitationToJoinAssembly(@ApiParam(name = "aid", value = "Assembly Id") Long aid) {
 		// 1. Obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -398,10 +412,10 @@ public class Memberships extends Controller {
 	 */
 	@ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Create and send an invitation to join a Group to a non-AppCivist user ")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "gid", value = "Working Group Id", dataType = "Long", paramType = "path") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
 	@Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
-	public static Result createSendInvitationToJoinGroup(Long gid) {
+	public static Result createSendInvitationToJoinGroup(@ApiParam(name = "gid", value = "Working Group Id") Long gid) {
 		// 1. Obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -437,11 +451,16 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer = "List", produces = "application/json", value = "Create and send an invitation to join an Assembly or a Group to a non-AppCivist user ")
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "token", value = "Working Group or Assembly Id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "response", value = "Invitation Status", allowableValues = "ACCEPT, REJECT", dataType = "String", paramType = "path") })
-	public static Result answerInvitation(UUID token, String answer) {
+	/**
+	 * Update invitation status
+	 * @param token
+	 * @param answer
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = User.class, responseContainer = "List", produces = "application/json", value = "Update invitation status")
+	public static Result answerInvitation(
+			@ApiParam(name = "token", value = "Invitation token") UUID token, 
+			@ApiParam(name = "answer", value = "Answer to the Invitation", allowableValues = "ACCEPT, REJECT") String answer) {
 		Ebean.beginTransaction();
 		MembershipStatus response = answer.equals("ACCEPT") ? MembershipStatus.ACCEPTED
 				: MembershipStatus.REJECTED;
@@ -490,12 +509,13 @@ public class Memberships extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Create a membership request for an Assembly or a Group")
+	@ApiOperation(httpMethod = "POST", response = Membership.class, produces = "application/json", value = "Create a membership request for an Assembly or a Group")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "targetId", dataType = "Long", required = true, paramType = "path") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
+			@ApiImplicitParam(name = "Membership simplified object", value = "A membership simplified object with details of the target assembly or group and the user requesting membership", dataType="models.transfer.MembershipTransfer", paramType = "body")
+	})
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result createMembershipRequest(Long targetId) {
+	public static Result createMembershipRequest(@ApiParam(name = "targetId", value="ID of the target Assembly or Group") Long targetId) {
 		// 1. obtaining the user of the requestor
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -554,8 +574,12 @@ public class Memberships extends Controller {
 	 * @param id
 	 * @return
 	 */
-	@Security.Authenticated(Secured.class)
-	public static Result readMembership(Long id) {
+	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read a membership record by its ID")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	@Security.Authenticated(Secured.class) // TODO: secured this by limiting the reading of specific membership by ids to OnlyMeAndAdmin
+	public static Result readMembership(@ApiParam(name="id", value="Membership ID") Long id) {
 		Membership m = Membership.read(id);
 		if (m != null) {
 			List<SecurityRole> roles = m.getRoles();
@@ -576,8 +600,12 @@ public class Memberships extends Controller {
 	 * @param id
 	 * @return
 	 */
+	@ApiOperation(httpMethod = "GET", response = SecurityRole.class, responseContainer="List", produces = "application/json", value = "Read roles assigned to a specific membership record by its ID")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
 	@Security.Authenticated(Secured.class)
-	public static Result readMembershipRoles(Long id) {
+	public static Result readMembershipRoles(@ApiParam(name="id", value="Membership ID") Long id) {
 		Membership m = Membership.read(id);
 		if (m != null) {
 			List<SecurityRole> roles = m.getRoles();
@@ -601,19 +629,22 @@ public class Memberships extends Controller {
 	 * @param id
 	 * @return
 	 */
+	@ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Add a role to a membership identified by its ID", notes="Only for COORDINATORS")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	// TODO: implement @Dynamic(value="CoordinatorOfAssemblyOrGroup", meta=SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
 	@Security.Authenticated(Secured.class)
-	public static Result addMembershipRole(Long id) {
+	public static Result addMembershipRole(@ApiParam(value="Membership ID", name="id") Long id) {
 		Membership m = Membership.read(id);
 		if (m != null) {
-			// TODO move all the role checking to another common place
 			User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 					.getUser(session()));
 			Boolean authorization = false;
-			// what's the requestor membership in the group/assembly related to
-			// this membership
 			Membership requestorMembership = MembershipsDelegate
 					.requestorMembership(requestor, m);
 
+			// TODO move authorization to a DynamicResourceHandler
 			if (requestorMembership != null) {
 				authorization = MembershipsDelegate.requestorIsCoordinator(
 						requestor, requestorMembership);
@@ -673,15 +704,22 @@ public class Memberships extends Controller {
 	}
 
 	/**
-	 * Add a Role to the membership (only Coordinators of the Assembly/Group)
+	 * Delete a membership role (only Coordinators of the Assembly/Group)
 	 * 
 	 * private Long roleId; private String name;
 	 * 
 	 * @param id
 	 * @return
 	 */
+	@ApiOperation(httpMethod = "DELETE", response = Membership.class, produces = "application/json", value = "Delete a role from a membership identified by its ID", notes="Only for COORDINATORS")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	// TODO: implement @Dynamic(value="CoordinatorOfAssemblyOrGroup", meta=SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
 	@Security.Authenticated(Secured.class)
-	public static Result deleteMembershipRole(Long id, Long rid) {
+	public static Result deleteMembershipRole(
+			@ApiParam(name="id", value="Membership ID") Long id, 
+			@ApiParam(name="rid", value="Role ID") Long rid) {
 		Membership m = Membership.read(id);
 		if (m != null) {
 			// TODO move all the role checking to another common place
@@ -732,11 +770,17 @@ public class Memberships extends Controller {
 	}
 
 	// PUT /api/membership/:id controllers.Memberships.update(id: Long)
+	@ApiOperation(httpMethod = "PUT", response = Membership.class, produces = "application/json", value = "Update status of a MEMBERSHIP", notes="Only for COORDINATORS")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	// TODO: implement @Dynamic(value="CoordinatorOfAssemblyOrGroup", meta=SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
-	public static Result updateMembershipStatus(Long id, String status) {
+	public static Result updateMembershipStatus(
+			@ApiParam(name="id", value="Membership ID") Long id, 
+			@ApiParam(name="status", value="New Membership Status") String status) {
 		String upStatus = status.toUpperCase();
 		Membership m = Membership.read(id);
-		// TODO move all the role checking to another common place
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
 		Boolean authorization = false;
@@ -745,6 +789,7 @@ public class Memberships extends Controller {
 		Membership requestorMembership = MembershipsDelegate
 				.requestorMembership(requestor, m);
 
+		// TODO: authorization no longer needed here, see the DynamicResourceHandler CoordinatorOfAssembly
 		if (requestorMembership != null) {
 			authorization = MembershipsDelegate.requestorIsCoordinator(
 					requestor, requestorMembership);
@@ -769,8 +814,14 @@ public class Memberships extends Controller {
 	}
 
 	// DELETE /api/membership/:id controllers.Memberships.delete(id: Long)
+	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a MEMBERSHIP", notes="Only for COORDINATORS and the User of the membership")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+	})
+	// TODO: move authorization logic to a DynamicResourceHandler "CoordinatorOrSelf"
 	@Security.Authenticated(Secured.class)
-	public static Result deleteMembership(Long id) {
+	public static Result deleteMembership(
+			@ApiParam(name="id", value="Membership ID") Long id) {
 		Membership m = Membership.read(id);
 		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
@@ -781,14 +832,11 @@ public class Memberships extends Controller {
 			return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK,
 					"Membership was deleted")));
 		} else {
-			// Also COORDINATORS of the associated assembly/group can delete
-			// memberships
+			// Also COORDINATORS of the associated assembly/group can delete memberships
 			Boolean authorization = false;
 
-			// what's the requestor membership in the group/assembly related to
-			// this membership
-			Membership requestorMembership = MembershipsDelegate
-					.requestorMembership(requestor, m);
+			// what's the requestor membership in the group/assembly related to this membership
+			Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
 
 			if (requestorMembership != null) {
 				authorization = MembershipsDelegate.requestorIsCoordinator(
@@ -813,25 +861,24 @@ public class Memberships extends Controller {
 		}
 	}
 
-	// TODO: TEST
 	// GET /api/membership/verify/:token
 	// controllers.Memberships.verifyMembership(token: String)
-	public static Result verifyMembership(Long id, String token) {
+	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a MEMBERSHIP", notes="Only for COORDINATORS and the User of the membership")
+	// TODO: move authorization logic to a DynamicResourceHandler "CoordinatorOrSelf"
+	public static Result verifyMembership(
+			@ApiParam(name="id", value="Membership ID") Long id, 
+			@ApiParam(name="token", value="Membership invitation token") String token) {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final TokenAction ta = Users.tokenIsValid(token,
-				Type.MEMBERSHIP_INVITATION);
+		final TokenAction ta = Users.tokenIsValid(token, Type.MEMBERSHIP_INVITATION);
 		if (ta == null) {
-			return badRequest(Json.toJson(Messages
-					.get("playauthenticate.token.error.message")));
-			// TODO content negotiation: if content-type is HTML, render the
-			// response in HTML
+			return badRequest(Json.toJson(new TransferResponseStatus(ResponseStatus.BADREQUEST, Messages.get("playauthenticate.token.error.message"))));
+			// TODO content negotiation: if content-type is HTML, render the response in HTML
 			// return badRequest(no_token_or_invalid.render());
 		}
 
 		final String email = ta.targetUser.getEmail();
 		Membership.verify(id, ta.targetUser);
-		return ok(Json.toJson(Messages.get(
-				"playauthenticate.verify_email.success", email)));
+		return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, Messages.get("playauthenticate.verify_email.success", email))));
 	}
 
 	/****************************************************************************************************************

@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,6 +18,7 @@ import java.util.UUID;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="UserProfile", description="Profile of Users")
 public class UserProfile extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue

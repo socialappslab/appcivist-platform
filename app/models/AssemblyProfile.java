@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +23,7 @@ import enums.SupportedMembershipRegistration;
 
 @Entity
 @JsonInclude(Include.NON_NULL)
+@ApiModel(value="AssemblyProfile", description="The profile of an Assembly")
 public class AssemblyProfile extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long assemblyProfileId;

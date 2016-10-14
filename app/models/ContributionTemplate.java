@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(content=Include.NON_NULL)
+@ApiModel(value="ContributionTemplate", description="Template for a contribution")
 public class ContributionTemplate extends AppCivistBaseModel {
 
 	@Id

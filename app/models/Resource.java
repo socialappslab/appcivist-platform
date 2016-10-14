@@ -1,7 +1,10 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +27,7 @@ import enums.ResourceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Resource", description="Resource represents external resources, accessible through an URL")
 public class Resource extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long resourceId;
@@ -59,7 +63,8 @@ public class Resource extends AppCivistBaseModel {
 	private URL urlMedium;
 	@JsonIgnore
 	private URL urlThumbnail;
-	
+
+	private boolean confirmed;
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -169,7 +174,14 @@ public class Resource extends AppCivistBaseModel {
 	public void setReadOnlyPadId(String padId) {
 		this.readOnlyPadId = padId;
 	}
-	
+
+	public boolean isConfirmed() {
+		return confirmed;
+	}
+
+	public void setConfirmed(boolean confirmed) {
+		this.confirmed = confirmed;
+	}
 	// TODO @Transient getPadContent => GET using Etherpad Client
 	
 	public UUID getResourceSpaceWithServerConfigs() {
@@ -287,5 +299,26 @@ public class Resource extends AppCivistBaseModel {
 		eth.createPad(this.padId);
 		eth.setHTML(this.padId, text);
 		this.setUrl(new URL(eth.getReadOnlyUrl(this.padId)));
+	}
+
+	public void createReadablePad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException {
+		EtherpadWrapper eth = new EtherpadWrapper(etherpadServerUrl,etherpadApiKey);
+		eth.createPad(this.padId);
+		eth.setHTML(this.padId, text);
+		this.setUrl(new URL(eth.getEditUrl(this.padId)));
+	}
+
+    public static List<Resource> findByResourceType(ResourceTypes contributionTemplate) {
+		return find.where().eq("resourceType",contributionTemplate.toString()).eq("confirmed", true).findList();
+    }
+
+	public static void deleteUnconfirmedContributionTemplates(ResourceTypes contributionTemplate) {
+		List<Resource> resources = find.where().eq("resourceType",contributionTemplate.toString()).eq("confirmed", false).findList();
+		Date today = new Date();
+		for (Resource r: resources) {
+			// adding 172800 seconds
+			if (r.getCreation().getTime() < (today.getTime() - 172800l))
+				find.ref(r.getResourceId()).delete();
+		}
 	}
 }
