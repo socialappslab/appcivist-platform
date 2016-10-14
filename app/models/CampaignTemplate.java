@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,6 +27,7 @@ import enums.CampaignTemplatesEnum;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="CampaignTemplate", description="A template for a campaign is composed by specified component definitions that can be used to instantiate a campaign of a certain type")
 public class CampaignTemplate extends AppCivistBaseModel {
 
 	@Id

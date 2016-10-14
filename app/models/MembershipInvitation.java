@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +40,7 @@ import exceptions.MembershipCreationException;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause="removed=false")
+@ApiModel(value="MembershipInvitation", description="Invitation to become a member of a Working Group or an Assembly")
 public class MembershipInvitation extends AppCivistBaseModel {
 	@Id @GeneratedValue private Long id;
 	private String email;

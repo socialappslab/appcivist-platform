@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +17,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
+@ApiModel(value="Log", description="Log record for registering events in the system")
 public class Log extends Model {
 	@Id
     @GeneratedValue

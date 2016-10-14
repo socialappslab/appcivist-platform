@@ -1,15 +1,20 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import io.swagger.annotations.ApiModel;
 
-import javax.persistence.*;
 import java.net.URL;
 import java.util.List;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="NonMemberAuthor", description="Author of contributions who are not users of the platform")
 public class NonMemberAuthor extends AppCivistBaseModel {
 
     @Id
@@ -56,4 +61,28 @@ public class NonMemberAuthor extends AppCivistBaseModel {
     public static void update(Long id) {
         find.ref(id).update();
     }
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public URL getUrl() {
+		return url;
+	}
+
+	public void setUrl(URL url) {
+		this.url = url;
+	}
 }

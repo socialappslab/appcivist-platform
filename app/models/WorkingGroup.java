@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,6 +44,7 @@ import exceptions.MembershipCreationException;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="WorkingGroup", description="Model reprensenting Working Groups within an Assembly")
 public class WorkingGroup extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue

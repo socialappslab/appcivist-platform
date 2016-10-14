@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="CampaignTimelineEdge", description="Edge in the graph that represents the workflow of components associated to a campaign with a process")
 public class CampaignTimelineEdge extends AppCivistBaseModel {
 
 	@Id

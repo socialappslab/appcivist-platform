@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -25,6 +27,7 @@ import enums.ResourceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Resource", description="Resource represents external resources, accessible through an URL")
 public class Resource extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long resourceId;

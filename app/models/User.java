@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,7 +25,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
 import models.TokenAction.Type;
 import models.transfer.AssemblyTransfer;
@@ -66,6 +67,7 @@ import exceptions.TokenNotValidException;
 @JsonInclude(Include.NON_EMPTY)
 @Table(name="appcivist_user")
 @Where(clause="active=true")
+@ApiModel(value="User", description="Model representing each user in AppCivist")
 public class User extends Model implements Subject {
 
 	@Id

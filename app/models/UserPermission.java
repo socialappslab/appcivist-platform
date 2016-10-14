@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.Column;
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="UserPermission", description="Defines a permission associated with a role of an user")
 public class UserPermission extends Model implements Permission {
 
 	@Id

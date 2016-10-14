@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ import exceptions.MembershipCreationException;
 @Entity
 @DiscriminatorValue("ASSEMBLY")
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="MembershipAssembly", description="Membership in an assembly")
 public class MembershipAssembly extends Membership {
 	
 	@ManyToOne

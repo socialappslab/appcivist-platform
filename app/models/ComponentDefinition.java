@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @SequenceGenerator(name="componentDefSeq", initialValue=5, allocationSize=50)
+@ApiModel(value="ComponentDefinition", description="Definition of a component that can be used to create a workflow of a campaign.")
 public class ComponentDefinition extends AppCivistBaseModel {
 
 	@Id

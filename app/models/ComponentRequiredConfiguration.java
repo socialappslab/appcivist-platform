@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="ComponentRequiredConfiguration", description="A configuration required by the definition of component for a campaign")
 public class ComponentRequiredConfiguration extends AppCivistBaseModel {
 
 	@Id

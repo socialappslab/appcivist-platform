@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity(name="ballot_registration_fields")
+@ApiModel(value="BallotRegistrationField", description="Field associated to the registration form for voting in a ballot")
 public class BallotRegistrationField extends Model {
 	
 	

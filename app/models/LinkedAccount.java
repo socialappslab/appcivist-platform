@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,12 +9,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import com.avaje.ebean.Model;
 
+import com.avaje.ebean.Model;
 import com.feth.play.module.pa.user.AuthUser;
 
 @Entity
 @Table(name="Linked_Account")
+@ApiModel(value="LinkedAccount", description="Connected accounts to users (e.g., google, facebok, etc.)")
 public class LinkedAccount extends Model {
 
 	@Id

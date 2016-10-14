@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Comparator;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(content=Include.NON_NULL)
+@ApiModel(value="ContributionTemplateSection", description="Section of the template for a contribution")
 public class ContributionTemplateSection extends AppCivistBaseModel implements Comparator<ContributionTemplateSection> {
 	@Id
 	@GeneratedValue

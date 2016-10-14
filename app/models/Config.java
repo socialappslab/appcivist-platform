@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +22,7 @@ import enums.ConfigTargets;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Config", description="Generic model to store a configuration value")
 public class Config extends AppCivistBaseModel {
 
 	@Id

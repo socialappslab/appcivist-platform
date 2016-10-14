@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +24,7 @@ import enums.ResourceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="ResourceSpace", description="A Resource Space connects entities in the model to other entities")
 public class ResourceSpace extends AppCivistBaseModel {
 
 	@Id

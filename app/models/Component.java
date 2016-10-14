@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -35,6 +37,7 @@ import enums.ResourceSpaceTypes;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @SequenceGenerator(name="componentSeq", initialValue=9, allocationSize=50)
+@ApiModel(value="Component", description="A component represents a space of action within a campaign. It can be the stage in a process or the space of deliberation when a campaign des not have a process")
 public class Component extends AppCivistBaseModel implements Comparator<Component> {
 
 	@Id

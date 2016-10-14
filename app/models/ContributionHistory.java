@@ -6,14 +6,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import enums.ContributionTypes;
 import models.misc.ContributionHistoryAssociationChange;
 import models.misc.ContributionHistoryExternalChange;
 import models.misc.ContributionHistoryItem;
 import play.Logger;
 import play.data.validation.Constraints;
+import io.swagger.annotations.ApiModel;
 
 import javax.persistence.*;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@ApiModel(value="ContributionHistory", description="History of changes and events related to a contribution")
 public class ContributionHistory extends AppCivistBaseModel {
 
     public enum Types {

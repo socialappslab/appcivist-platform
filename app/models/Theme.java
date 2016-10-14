@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Theme", description="A Theme represents a top level categorization information")
 public class Theme extends AppCivistBaseModel {
 
     @Id

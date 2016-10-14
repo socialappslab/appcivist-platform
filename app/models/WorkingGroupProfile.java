@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +23,7 @@ import enums.SupportedMembershipRegistration;
 
 @Entity
 @JsonInclude(Include.NON_NULL)
+@ApiModel(value="WorkingGroupProfile", description="Profile of Working Groups")
 public class WorkingGroupProfile extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long workingGroupProfileId;

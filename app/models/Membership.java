@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +42,7 @@ import exceptions.MembershipCreationException;
 @DiscriminatorColumn(name = "MEMBERSHIP_TYPE")
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause="removed=false")
+@ApiModel(value="Membership", description="Model representing membership of users in Assemblies or Working Groups")
 public class Membership extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue

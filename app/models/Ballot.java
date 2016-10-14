@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +29,7 @@ import enums.VotingSystemTypes;
 
 @Entity(name="ballot")
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Ballot", description="Represents a ballot used for voting on AppCivist Core resources (contributions, users, working groups, themes, etc.)")
 public class Ballot extends Model {
 	
 	@Id

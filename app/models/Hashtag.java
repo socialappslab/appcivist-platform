@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@ApiModel(value="Hashtag", description="Hashtags represents keywords associated to resources in the system")
 public class Hashtag extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue

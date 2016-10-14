@@ -1,5 +1,7 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name="vote")
+@ApiModel(value="BallotVote", description="Individual vote in casted ballot")
 public class BallotVote extends Model {
 	@Id
 	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="votes_id_seq")
