@@ -629,6 +629,7 @@ public class Contribution extends AppCivistBaseModel {
         Contribution c = new Contribution(creator, title, text, type);
         c.save();
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
         return c;
     }
 
@@ -691,6 +692,7 @@ public class Contribution extends AppCivistBaseModel {
 
 
         c.refresh();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static Contribution read(Long contributionId) {
@@ -715,12 +717,14 @@ public class Contribution extends AppCivistBaseModel {
         c.setRemoved(true);
         c.setRemoval(new Date());
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static void softDelete(Contribution c) {
         c.setRemoved(true);
         c.setRemoval(new Date());
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static void softRecovery(Long id) {
@@ -728,16 +732,17 @@ public class Contribution extends AppCivistBaseModel {
         c.setRemoved(false);
         c.setRemoval(null);
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static void softRecovery(Contribution c) {
         c.setRemoved(false);
         c.setRemoval(null);
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static Contribution update(Contribution c) {
-        ContributionHistory.createHistoricFromContribution(c);
         List<Theme> themes = new ArrayList<>();
         for (Theme theme : c.getThemes()) {
             if (theme.getThemeId() == null) {
@@ -771,6 +776,7 @@ public class Contribution extends AppCivistBaseModel {
         }
         c.update();
         c.refresh();
+        ContributionHistory.createHistoricFromContribution(c);
         return c;
     }
 

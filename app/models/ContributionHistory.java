@@ -271,7 +271,7 @@ public class ContributionHistory extends AppCivistBaseModel {
     }
 
     public static List<ContributionHistory> getContributionsHistory(Long contributionId) throws Exception {
-        List<ContributionHistory> histories = find.where().eq("contributionId", contributionId).eq("removed", false).orderBy("contributionHistoryId").findList();
+        List<ContributionHistory> histories = find.where().eq("contributionId", contributionId).eq("removed", false).orderBy("creation").findList();
         ContributionHistory previousHistory = null;
         for (ContributionHistory history : histories) {
             history.initChangeset(previousHistory);
