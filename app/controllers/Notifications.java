@@ -1,5 +1,7 @@
 package controllers;
 
+import static play.data.Form.form;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -8,33 +10,44 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Assembly;
+import models.AssemblyProfile;
+import models.Ballot;
 import models.Campaign;
 import models.Component;
 import models.ComponentMilestone;
 import models.Contribution;
 import models.Membership;
 import models.MembershipAssembly;
+import models.NotificationEvent;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
+import models.transfer.AssemblyTransfer;
+import models.transfer.NotificationSignalTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.UpdateTransfer;
+import models.transfer.VotingBallotTransfer;
 import be.objectify.deadbolt.java.actions.Dynamic;
-
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
 import play.*;
+import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
+import play.libs.ws.WSResponse;
 import play.mvc.*;
 import security.SecurityModelConstants;
+import utils.GlobalData;
+import utils.services.NotificationServiceWrapper;
 import views.html.*;
 import http.Headers;
 
@@ -112,6 +125,7 @@ public class Notifications extends Controller {
 			return notFound(Json.toJson(new TransferResponseStatus("No updates")));
 	}
 
+	/* PRIVATE METHODS */
 	private static List<UpdateTransfer> processMyAssemblies(User u,
 			List<UpdateTransfer> updates, List<Membership> myAssemblyMemberships) {
 

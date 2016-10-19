@@ -520,7 +520,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 	
 	public List<Long> getAssemblies() {
 		List <Long> assemblyIds = new ArrayList<>();
-		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY).collect(Collectors.toList());
+		List<ResourceSpace> spaces = this.containingSpaces
+				.stream().filter(
+						p -> p.getType().equals(ResourceSpaceTypes.ASSEMBLY))
+								.collect(Collectors.toList()
+						);
 		
 		for (ResourceSpace resourceSpace : spaces) {
 			Assembly a = resourceSpace.getAssemblyResources();
@@ -586,6 +590,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public static List<Contribution> listWorkingGroupContributions(Long wgid) {
 		WorkingGroup wg = WorkingGroup.read(wgid);
 		return wg.getResources().getContributions();
+	}
+
+	public static WorkingGroup readByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
 	}
 
 }
