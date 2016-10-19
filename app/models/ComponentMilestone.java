@@ -215,4 +215,8 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 //		return o1.getStart().after(o2.getStart()) ? 1 : o1.getStart().equals(o2.getStart()) ? 0 : -1;
 		return o1.getPosition() - o2.getPosition();
 	}
+
+	public static ComponentMilestone readByUUID(UUID resourceUUID) {
+		return find.where().eq("uuid",resourceUUID).findUnique();
+	}
 }

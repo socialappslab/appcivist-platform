@@ -1,35 +1,15 @@
 package controllers;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-import com.avaje.ebean.Ebean;
-import com.feth.play.module.pa.PlayAuthenticate;
-import delegates.ContributionsDelegate;
-import delegates.ResourcesDelegate;
-import enums.*;
-import exceptions.MembershipCreationException;
+import static play.data.Form.form;
 import http.Headers;
-import io.swagger.annotations.*;
-import models.*;
-import models.transfer.*;
-import org.apache.commons.io.FileUtils;
-import play.Logger;
-import play.Play;
-import play.data.Form;
-import play.i18n.Messages;
-import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
-import security.SecurityModelConstants;
-import utils.GlobalData;
-import utils.services.EtherpadWrapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -41,7 +21,66 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static play.data.Form.form;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+
+import models.Assembly;
+import models.Ballot;
+import models.BallotCandidate;
+import models.Campaign;
+import models.Component;
+import models.Contribution;
+import models.ContributionFeedback;
+import models.ContributionHistory;
+import models.ContributionStatistics;
+import models.ContributionTemplate;
+import models.MembershipInvitation;
+import models.Resource;
+import models.ResourceSpace;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
+import models.WorkingGroupProfile;
+import models.transfer.ApiResponseTransfer;
+import models.transfer.InvitationTransfer;
+import models.transfer.PadTransfer;
+import models.transfer.ThemeListTransfer;
+import models.transfer.TransferResponseStatus;
+
+import org.apache.commons.io.FileUtils;
+
+import play.Logger;
+import play.Play;
+import play.data.Form;
+import play.i18n.Messages;
+import play.libs.F.Promise;
+import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.With;
+import security.SecurityModelConstants;
+import utils.GlobalData;
+import utils.services.EtherpadWrapper;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+
+import com.avaje.ebean.Ebean;
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import delegates.ContributionsDelegate;
+import delegates.NotificationsDelegate;
+import delegates.ResourcesDelegate;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
+import enums.ManagementTypes;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
+import enums.SupportedMembershipRegistration;
+import exceptions.MembershipCreationException;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -404,8 +443,8 @@ public class Contributions extends Controller {
                         }
                     }
                 }
-
             }
+
             newContribution.setContextUserId(author.getUserId());
             Contribution c;
             try {
@@ -420,6 +459,12 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
+            
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
+            });
+            
             return ok(Json.toJson(c));
         }
     }
@@ -483,6 +528,11 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
+            
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInAssembly(a, c);
+            });
             return ok(Json.toJson(c));
         }
     }
@@ -545,6 +595,11 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
+            
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInCampaignComponent(ci, c);
+            });
             return ok(Json.toJson(c));
         }
     }
@@ -607,6 +662,11 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
+            
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInAssemblyGroup(wg, c);
+            });
             return ok(Json.toJson(c));
         }
     }
@@ -666,6 +726,11 @@ public class Contributions extends Controller {
                 rs.addContribution(cNew);
                 rs.update();
             }
+
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInContribution(c, cNew);
+            });
             return ok(Json.toJson(cNew));
         }
     }
@@ -723,6 +788,11 @@ public class Contributions extends Controller {
                 rs.addContribution(cNew);
                 rs.update();
             }
+
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInAssembly(a, cNew);
+            });
             return ok(Json.toJson(cNew));
         }
     }
@@ -781,6 +851,11 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
+
+            // Signal a notification asynchronously
+            Promise.promise(() -> { 
+            	return NotificationsDelegate.newContributionInAssemblyGroup(wg, c);
+            });
             return ok(Json.toJson(c));
         }
     }
