@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.Transient;
 
 import models.location.Location;
+import models.misc.Views;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 import utils.GlobalData;
@@ -49,21 +51,28 @@ public class Assembly extends AppCivistBaseModel {
 	@Id @GeneratedValue @Column(name="assembly_id")
 	private Long assemblyId;
 	@Index
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@MaxLength(value = 200) @Required
+	@JsonView(Views.Public.class)
 	private String name; 
 	// Short, url friendly, version of the Name
 	@MaxLength(value = 120)
+	@JsonView(Views.Public.class)
 	private String shortname; 
 	@Required
 	@Column(name="description", columnDefinition="text")
-	private String description; 
+	@JsonView(Views.Public.class)
+	private String description;
+	@JsonView(Views.Public.class)
 	private String url; 
 	// If true, the 'profile' is public
+	@JsonView(Views.Public.class)
 	private Boolean listed = true;
 	@Column(name="invitationEmail", columnDefinition="text")
+	@JsonView(Views.Public.class)
 	private String invitationEmail;
 
 	@OneToOne(cascade=CascadeType.ALL)

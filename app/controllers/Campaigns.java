@@ -1,6 +1,10 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.ContributionTypes;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -22,6 +26,7 @@ import models.Membership;
 import models.MembershipAssembly;
 import models.Resource;
 import models.User;
+import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
@@ -31,7 +36,9 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Results;
 import play.mvc.With;
+import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -92,9 +99,43 @@ public class Campaigns extends Controller {
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Read campaign by Universal ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	public static Result findCampaignByUUID(@ApiParam(name = "uuid", value = "Campaign Universal ID (UUID)") UUID uuid) {
-		CampaignSummaryTransfer summary = CampaignDelegate.getCampaignSummary(uuid);
-		return summary  != null ? ok(Json.toJson(summary)) : ok(Json
-				.toJson(new TransferResponseStatus("No campaign found")));
+		try{
+
+			Campaign summary = CampaignDelegate.getCampaignSummary(uuid);
+			if(summary == null){
+				return ok(Json
+						.toJson(new TransferResponseStatus("No campaign found")));
+			}
+			//We have to show only ideas, discussions or proposals
+			summary.setContributions(summary.getContributions().stream().filter(c -> {
+				if(c.getType().equals(ContributionTypes.IDEA) || c.getType().equals(ContributionTypes.DISCUSSION)
+						|| c.getType().equals(ContributionTypes.PROPOSAL)){
+					return true;
+				}else {
+					return false;
+				}
+			}).collect(Collectors.toList()));
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(summary);
+
+			Content ret = new Content() {
+				@Override public String body() { return result; }
+				@Override public String contentType() { return "application/json"; }
+			};
+
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+//		CampaignSummaryTransfer summary = CampaignDelegate.getCampaignSummary(uuid);
+//		ObjectMapper mapper = new ObjectMapper();
+//		String result = mapper.writerWithView(Views.Public.class)
+//				.writeValueAsString(summary);
+//		return summary  != null ? ok(Json.toJson(summary)) : ok(Json
+//				.toJson(new TransferResponseStatus("No campaign found")));
 	}
 
 

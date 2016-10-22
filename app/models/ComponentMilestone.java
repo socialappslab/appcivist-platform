@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Calendar;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ComponentMilestoneTypes;
 import enums.ContributionTypes;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -34,21 +36,27 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 	@Id
 	@GeneratedValue
 	private Long componentMilestoneId;
-
+	@JsonView(Views.Public.class)
 	private String title; // name of milestone
+	@JsonView(Views.Public.class)
 	private String key; // key of milestone
+	@JsonView(Views.Public.class)
 	private int position;
+	@JsonView(Views.Public.class)
 	@Column(name="description", columnDefinition="text")
 	private String description;
+	@JsonView(Views.Public.class)
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date date = Calendar.getInstance().getTime();	// starting date of the milestone
+	@JsonView(Views.Public.class)
 	private Integer days = 1; // duration in dates
-	private UUID uuid = UUID.randomUUID(); 
+	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@Enumerated(EnumType.STRING)
+	@JsonView(Views.Public.class)
 	private ComponentMilestoneTypes type = ComponentMilestoneTypes.END;
-	
+	@JsonView(Views.Public.class)
 	private ContributionTypes mainContributionType = ContributionTypes.BRAINSTORMING;
 
 	@JsonIgnore

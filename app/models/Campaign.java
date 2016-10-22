@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -25,18 +26,14 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
+import models.misc.Views;
 import utils.GlobalData;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ResourceSpaceTypes;
 import enums.VotingSystemTypes;
@@ -50,19 +47,27 @@ public class Campaign extends AppCivistBaseModel {
 	@GeneratedValue
 	@Column(name="campaign_id")
 	private Long campaignId;
+	@JsonView(Views.Public.class)
 	private String title; // e.g., "PB for Vallejo 2015"
+	@JsonView(Views.Public.class)
 	private String shortname;
 	@Column(name="goal", columnDefinition="text")
-	private String goal;	
+	@JsonView(Views.Public.class)
+	private String goal;
+	@JsonView(Views.Public.class)
 	private String url;
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
-	// If the campaign is listed, its basic profile is reading accessible by all 
+	// If the campaign is listed, its basic profile is reading accessible by all
+	@JsonView(Views.Public.class)
 	private Boolean listed = true;
+	@JsonView(Views.Public.class)
 	private UUID consultiveBallot; 
 	@Transient
-	private String consultiveBallotAsString; 
+	private String consultiveBallotAsString;
+	@JsonView(Views.Public.class)
 	private UUID bindingBallot; 
 	@Transient
 	private String bindingBallotAsString; 
@@ -82,6 +87,7 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
 	@Transient
+	@JsonView(Views.Public.class)
 	private List<Component> components = new ArrayList<>();
 	@Transient
 	private List<Config> configs = new ArrayList<>();
@@ -92,6 +98,7 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	private List<Long> assemblies = new ArrayList<>();
 	@Transient
+	@JsonView(Views.Public.class)
 	private List<Contribution> contributions = new ArrayList<>();
 	@Transient
 	private List<Ballot> ballots = new ArrayList<>();
@@ -358,7 +365,7 @@ String uuidAsString, List<Component> phases) {
 		this.workingGroups.add(wg);
 		this.resources.addWorkingGroup(wg);
 	}
-	
+
 	public List<Long> getAssemblies() {
 		List <Long> assemblyIds = new ArrayList<>();
 		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
@@ -371,6 +378,22 @@ String uuidAsString, List<Component> phases) {
 			}
 		}
 		return assemblyIds;
+	}
+
+	@JsonView(Views.Public.class)
+	@JsonProperty("assemblies")
+	public List<Assembly> getAssembliesObjects() {
+		List <Assembly> assemblies = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
+				.collect(Collectors.toList());
+
+		for (ResourceSpace resourceSpace : spaces) {
+			Assembly a = resourceSpace.getAssemblyResources();
+			if(a!=null) {
+				assemblies.add(a);
+			}
+		}
+		return assemblies;
 	}
 
 	public List<Contribution> getContributions() {

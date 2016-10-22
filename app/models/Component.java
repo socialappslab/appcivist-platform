@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -25,14 +26,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ResourceSpaceTypes;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -44,12 +41,18 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="componentSeq")
 	@Column(name = "component_id")
 	private Long componentId;
+	@JsonView(Views.Public.class)
 	private String title;
+	@JsonView(Views.Public.class)
 	private String key;
+	@JsonView(Views.Public.class)
 	@Column(name = "description", columnDefinition = "text")
 	private String description;
+	@JsonView(Views.Public.class)
 	private Date startDate;
+	@JsonView(Views.Public.class)
 	private Date endDate;
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	private int position;
 	private int timeline;
@@ -87,6 +90,7 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	private List<ResourceSpace> containingSpaces;
 
 	@Transient
+	@JsonView(Views.Public.class)
 	private List<ComponentMilestone> milestones = new ArrayList<ComponentMilestone>();
 
 	@Transient
