@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -13,17 +14,13 @@ import javax.persistence.*;
 
 import enums.ContributionStatus;
 import models.location.Location;
+import models.misc.Views;
 import play.data.validation.Constraints.Required;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
@@ -41,6 +38,7 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Contribution numerical ID", position=0)
     private Long contributionId;
 
+    @JsonView(Views.Public.class)
     @Index
     @ApiModelProperty(value="Contribution Universal ID (meant to be valid accross intances of the platform)", position=1)
     private UUID uuid = UUID.randomUUID();
@@ -49,20 +47,24 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(hidden=true, notes="String version of the UUID to facilitate processing in server side. To be removed.")
     private String uuidAsString;
 
+    @JsonView(Views.Public.class)
     @Required
     @ApiModelProperty(value="Title of the contribution", position=2)
     private String title;
 
+    @JsonView(Views.Public.class)
     @Required
     @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
 
+    @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
     @Required
     @ApiModelProperty(value="Type of Contribution", position=4)
     private ContributionTypes type;
 
+    @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
     @Required
     @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
@@ -138,6 +140,7 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Hashtag> hashtags = new ArrayList<Hashtag>();
     @Transient
+    @JsonView(Views.Public.class)
     private List<Contribution> comments = new ArrayList<Contribution>();
     @Transient
     private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();

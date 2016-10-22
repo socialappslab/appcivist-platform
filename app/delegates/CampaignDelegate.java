@@ -57,10 +57,9 @@ public class CampaignDelegate {
 		return newCampaignTransfer;
 	}
 
-	public static CampaignSummaryTransfer getCampaignSummary(UUID campaignUUID) {
+	public static Campaign getCampaignSummary(UUID campaignUUID) {
 		Campaign campaign = Campaign.readByUUID(campaignUUID);
-		CampaignSummaryTransfer campaignSummary = mapper.map(campaign, CampaignSummaryTransfer.class);	
-		return campaignSummary;
+		return campaign;
 	}
 
 	public static List<CampaignSummaryTransfer> findByBindingBallot(UUID uuid) {
