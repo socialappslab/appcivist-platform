@@ -380,8 +380,18 @@ String uuidAsString, List<Component> phases) {
 		return assemblyIds;
 	}
 
+	public static abstract class AssembliesVisibleMixin {
+
+		@JsonView(Views.Public.class)
+		@JsonProperty("assemblies")
+		@JsonIgnore(false)
+		abstract int getAssembliesObjects();
+
+	}
+
 	@JsonView(Views.Public.class)
 	@JsonProperty("assemblies")
+	@JsonIgnore
 	public List<Assembly> getAssembliesObjects() {
 		List <Assembly> assemblies = new ArrayList<>();
 		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
