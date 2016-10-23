@@ -117,6 +117,7 @@ public class Campaigns extends Controller {
 			}).collect(Collectors.toList()));
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
 			String result = mapper.writerWithView(Views.Public.class)
 					.writeValueAsString(summary);
 
@@ -130,12 +131,7 @@ public class Campaigns extends Controller {
 			return badRequest(Json.toJson(Json
 					.toJson(new TransferResponseStatus("Error processing request"))));
 		}
-//		CampaignSummaryTransfer summary = CampaignDelegate.getCampaignSummary(uuid);
-//		ObjectMapper mapper = new ObjectMapper();
-//		String result = mapper.writerWithView(Views.Public.class)
-//				.writeValueAsString(summary);
-//		return summary  != null ? ok(Json.toJson(summary)) : ok(Json
-//				.toJson(new TransferResponseStatus("No campaign found")));
+
 	}
 
 
