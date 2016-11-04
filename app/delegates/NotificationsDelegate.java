@@ -169,6 +169,7 @@ public class NotificationsDelegate {
 				resourceDate = resource.getCreation();
 				resourceType = ((Contribution) resource).getType().toString();
 				if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
+				title = "[AppCivist] New "+resourceType+" in "+originName;
 				int numAuthors = ((Contribution) resource).getAuthors().size();
 				associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
 				break;
@@ -184,6 +185,7 @@ public class NotificationsDelegate {
 				resourceDate = resource.getLastUpdate();
 				resourceType = ((Contribution) resource).getType().toString();
 				if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
+				title = "[AppCivist] Updated "+resourceType+" in "+originName;
 				numAuthors = ((Contribution) resource).getAuthors().size();
 				associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
 				break;
@@ -206,6 +208,7 @@ public class NotificationsDelegate {
 				resourceText = ((Campaign) resource).getGoal();
 				resourceDate = resource.getCreation();
 				resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
+				title = "[AppCivist] New "+resourceType+" in "+originName;
 				// TODO: add creator to campaign associatedUser = ((Campaign) resource).getCreator().getName();
 				break;
 			case UPDATED_CAMPAIGN:
@@ -214,6 +217,7 @@ public class NotificationsDelegate {
 				resourceText = ((Campaign) resource).getGoal();
 				resourceDate = resource.getLastUpdate();
 				resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
+				title = "[AppCivist] Updated "+resourceType+" in "+originName;
 				// TODO: add creator to campaign associatedUser = ((Campaign) resource).getCreator().getName();
 				break;
 			case NEW_WORKING_GROUP:
@@ -222,6 +226,7 @@ public class NotificationsDelegate {
 				resourceText = ((WorkingGroup) resource).getText();
 				resourceDate = resource.getCreation();
 				resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
+				title = "[AppCivist] New "+resourceType+" in "+originName;
 				associatedUser = ((WorkingGroup) resource).getCreator().getName();
 				break;
 			case UPDATED_WORKING_GROUP:
@@ -230,6 +235,7 @@ public class NotificationsDelegate {
 				resourceText = ((WorkingGroup) resource).getText();
 				resourceDate = resource.getLastUpdate();
 				resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
+				title = "[AppCivist] Updated "+resourceType+" in "+originName;
 				associatedUser = ((WorkingGroup) resource).getCreator().getName();
 				break;
 //			case NEW_VOTING_BALLOT:
@@ -310,7 +316,7 @@ public class NotificationsDelegate {
 		
 		newNotificationSignal.setEventId(notificationEvent.getOrigin().toString()+"_"+notificationEvent.getEventName());
 		// TODO: after updating notification service, use title for something different
-		newNotificationSignal.setEventTitle(notificationEvent.getOrigin().toString()+"_"+notificationEvent.getEventName());
+		newNotificationSignal.setEventTitle(notificationEvent.getTitle());
 		
 		// parts of the notification text
 		//  There are news related to a {0} in {1} '{2}' / {3} / {4}
