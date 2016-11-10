@@ -85,7 +85,14 @@ public class Campaign extends AppCivistBaseModel {
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonView(Views.Public.class)
 	private Long resourceSpaceId;
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonView(Views.Public.class)
+	private Long resourceSpaceUUId;
+
 	@Transient
 	@JsonView(Views.Public.class)
 	private List<Component> components = new ArrayList<>();
@@ -289,6 +296,10 @@ String uuidAsString, List<Component> phases) {
 	public void setResourceSpaceId(Long id) {
 		if (this.resources !=null && this.resources.getResourceSpaceId() == null) 
 			this.resources .setResourceSpaceId(id);
+	}
+
+	public String getResourceSpaceUUId() {
+		return resources != null ? resources.getResourceSpaceUuid().toString() : null;
 	}
 
 	public List<Component> getComponents() {

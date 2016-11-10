@@ -165,6 +165,7 @@ GET       /api/assembly/:aid/group/:gid/contribution                      contro
 GET       /api/assembly/:aid/contribution/:cid                            controllers.Contributions.findContribution(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/history                    controllers.Contributions.getContributionsChangeHistory(aid: Long, cid: Long)
 GET       /api/space/:sid/contribution                                    controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="")
+GET       /api/space/:uuid/contribution/public                            controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="")
 GET       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.readContributionFeedback(aid: Long, cid: Long)
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long)
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)

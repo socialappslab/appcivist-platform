@@ -370,6 +370,27 @@ public class Contributions extends Controller {
         }
         return ok(Json.toJson(contribution));
     }
+
+    /**
+     * GET       /api/space/:uuid/contribution
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal Resource Space ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
+    // TODO: add API token support, some API enpoints must be available only for registered clients
+    public static Result findResourceSpaceContributionsByUUID(
+            @ApiParam(name="uuid", value="Resource Space Universal ID") UUID uuid,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
+        ResourceSpace rs = ResourceSpace.readByUUID(uuid);
+        List<Contribution> contributions = ContributionsDelegate
+                .findContributionsInResourceSpace(rs, type, null);
+        return contributions != null ? ok(Json.toJson(contributions))
+                : notFound(Json.toJson(new TransferResponseStatus(
+                "No contributions for {resource space}: " + uuid + ", type=" + type)));
+    }
+
 	/**
 	 * GET       /api/assembly/:aid/contribution/:cid
 	 * @param aid
