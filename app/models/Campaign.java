@@ -85,14 +85,11 @@ public class Campaign extends AppCivistBaseModel {
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	@JsonView(Views.Public.class)
 	private Long resourceSpaceId;
-
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
 	private Long resourceSpaceUUId;
-
 	@Transient
 	@JsonView(Views.Public.class)
 	private List<Component> components = new ArrayList<>();
