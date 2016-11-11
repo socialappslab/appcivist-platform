@@ -132,9 +132,14 @@ DELETE    /api/assembly/:aid/config/:cid                                  contro
 ##################################################################################################################################################################
 # Campaign Template and Configuration endpoints
 
-GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
-POST      /api/campaign/template                                          controllers.Campaigns.createCampaignTemplatePad(text: String)
-PUT       /api/campaign/template                                          controllers.Campaigns.confirmCampaignTemplatePad(rid: Long)
+GET       /api/campaign/template                                          controllers.Campaigns.findContributionTemplatesInCampaign()
+POST      /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.createContributionTemplateInCampaign(aid: Long, cid: Long, text: String)
+PUT       /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.confirmContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
+
+GET       /api/assembly/:aid/campaign/template                            controllers.Campaigns.findCampaignTemplatesInAssembly(aid: Long)
+POST      /api/assembly/:aid/campaign/template                            controllers.Campaigns.createCampaignTemplateInAssembly(aid: Long)
+PUT       /api/assembly/:aid/campaign/template/:rid                       controllers.Campaigns.confirmCampaignTemplateInAssembly(aid: Long, rid: Long)
+DELETE    /api/assembly/:aid/campaign/template/:rid                       controllers.Campaigns.deleteCampaignTemplateInAssembly(aid: Long, rid: Long)
 
 ##################################################################################################################################################################
 # Campaign API

@@ -1118,3 +1118,10 @@ ALTER TABLE contribution ADD COLUMN moderation_comment text;
 ALTER TABLE contribution_history ADD COLUMN moderation_comment text;
 ALTER TABLE resource ADD COLUMN title text;
 ALTER TABLE resource ADD COLUMN description text;
+
+-- NEW for etherpad campaign template
+ALTER TABLE resource DROP CONSTRAINT ck_resource_resource_type;
+ALTER TABLE resource
+  ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying, 'VIDEO'::character varying,
+  'PAD'::character varying, 'TEXT'::character varying, 'WEBPAGE'::character varying, 'FILE'::character varying, 'AUDIO'::character varying,
+  'CONTRIBUTION_TEMPLATE'::character varying, 'CAMPAIGN_TEMPLATE'::character varying, 'PROPOSAL'::character varying]::text[]));

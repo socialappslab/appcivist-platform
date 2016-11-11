@@ -20,14 +20,17 @@ public class ResourcesDelegate {
         Resource.deleteUnconfirmedContributionTemplates(ResourceTypes.CONTRIBUTION_TEMPLATE);
     }
 
-    public static Resource createResource(User campaignCreator, String text, ResourceTypes type) {
-        Resource res = new Resource();
-        if (ResourceTypes.CONTRIBUTION_TEMPLATE.equals(type)) {
-            res.setName("Proposal Template");
-        } else {
-            res.setName("Contribution Proposal");
+    public static Resource createResource(User creator, String text, ResourceTypes type) {
+        if(text == null || "".equals(text)){
+            text = "<html></html>";
         }
-        res.setCreator(campaignCreator);
+        Resource res = new Resource();
+//        if (ResourceTypes.CONTRIBUTION_TEMPLATE.equals(type)) {
+//            res.setName("Proposal Template");
+//        } else {
+//            res.setName("Contribution Proposal");
+//        }
+        res.setCreator(creator);
         res.setCreation(new Date());
         res.setResourceType(type);
         res.setConfirmed(false);
@@ -42,6 +45,7 @@ public class ResourcesDelegate {
             return null;
         } catch (EPLiteException e2) {
             System.out.println("EPLiteException");
+            e2.printStackTrace();
             return null;
         }
         Resource.create(res);
