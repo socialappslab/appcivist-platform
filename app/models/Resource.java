@@ -42,6 +42,8 @@ public class Resource extends AppCivistBaseModel {
 	private ResourceTypes resourceType;
 
 	private String name;
+	private String title;
+	private String description;
 	/*
 	 * Fields specific to each type
 	 */
@@ -320,5 +322,21 @@ public class Resource extends AppCivistBaseModel {
 			if (r.getCreation().getTime() < (today.getTime() - 172800l))
 				find.ref(r.getResourceId()).delete();
 		}
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }
