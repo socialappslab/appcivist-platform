@@ -96,6 +96,8 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	private List<Config> configs = new ArrayList<>();
 	@Transient
+	private List<Resource> resourceList = new ArrayList<>();
+	@Transient
 	private List<Theme> themes = new ArrayList<>();
 	@Transient
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
@@ -344,6 +346,14 @@ String uuidAsString, List<Component> phases) {
 	public void setConfigs(List<Config> configs) {
 		this.configs = configs;
 		this.resources.setConfigs(configs);
+	}
+	public List<Resource> getResourceList() {
+		return this.resources.getResources();
+	}
+
+	public void setResourceList(List<Resource> resources) {
+		this.resourceList = resources;
+		this.resources.setResources(resourceList);
 	}
 
 	public List<Theme> getThemes() {

@@ -1116,3 +1116,5 @@ alter table contribution add constraint fk_non_member_author foreign key (non_me
 
 ALTER TABLE contribution ADD COLUMN moderation_comment text;
 ALTER TABLE contribution_history ADD COLUMN moderation_comment text;
+ALTER TABLE resource ADD COLUMN title text;
+ALTER TABLE resource ADD COLUMN description text;

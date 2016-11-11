@@ -503,4 +503,40 @@ public class Campaigns extends Controller {
 		Resource res = ResourcesDelegate.confirmResource(rid);
 		return ok(Json.toJson(res));
 	}
+
+	/**
+	 * POST /api/campaign/:cid/resource
+	 * Create a new Resource CONTRIBUTION_TEMPLATE
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Resource for the campaign", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignResource(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
+		if (resourceForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+					resourceForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			Resource newResource = resourceForm.get();
+			newResource.setConfirmed(true);
+			newResource.setContextUserId(campaignCreator.getUserId());
+			newResource = Resource.create(newResource);
+			Campaign campaign = Campaign.read(campaignId);
+			campaign.getResourceList().add(newResource);
+			Campaign.update(campaign);
+			return ok(Json.toJson(newResource));
+		}
+
+	}
 }
