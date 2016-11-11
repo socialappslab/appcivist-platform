@@ -55,7 +55,7 @@ dist
 appcivist-core/app/models/A.java
 appcivist-core/app/models/B.java
 conf/application.conf
-conf/evolutions
+#conf/evolutions
 conf/local.conf
 conf/local.test.conf
 logs
