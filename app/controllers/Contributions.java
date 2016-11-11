@@ -1681,7 +1681,17 @@ public class Contributions extends Controller {
 		String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 		// 1: find into campaign templates, 2: find into assembly templates, 3: find generic templates
 		List<Resource> templates = new ArrayList<Resource>();
-		if (aid != null && aid.compareTo("") != 0) {
+
+        if (cid != null && cid.compareTo("") != 0) {
+            Campaign c = Campaign.read(Long.parseLong(cid));
+            List<Resource> resources = c.getResources().getResources();
+            for (Resource r: resources) {
+                if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+                    templates.add(r);
+                }
+            }
+        }
+		if (aid != null && aid.compareTo("") != 0 && templates.isEmpty()) {
 			Assembly a = Assembly.read(Long.parseLong(aid));
 			List<Resource> resources = a.getResources().getResources();
 			for (Resource r: resources) {
@@ -1689,17 +1699,11 @@ public class Contributions extends Controller {
 					templates.add(r);
 				}
 			}
-		} else if (cid != null && cid.compareTo("") != 0) {
-			Campaign c = Campaign.read(Long.parseLong(cid));
-			List<Resource> resources = c.getResources().getResources();
-			for (Resource r: resources) {
-				if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
-					templates.add(r);
-				}
-			}
-		} else {
+		}
+		if(templates.isEmpty()){
 			templates = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
 		}
+
 		if (templates != null) {
 			// if there are more than one, then use the last
 			String padId = templates.get(templates.size() - 1).getPadId();
