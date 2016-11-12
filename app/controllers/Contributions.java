@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
@@ -1553,13 +1554,15 @@ public class Contributions extends Controller {
 											 @ApiParam(value = "Type of contribution", required = true, defaultValue = "IDEA", example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
 		Http.MultipartFormData body = request().body().asMultipartFormData();
 		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
-		Campaign campaign = Campaign.read(cid);
-		ResourceSpace rs = null;
-		if (campaign != null) {
-			rs = campaign.getResources();
-		}
+		Campaign campaign = null;
+
 		if (uploadFilePart != null) {
 			try {
+                campaign = Campaign.read(cid);
+                ResourceSpace rs = null;
+                if (campaign != null) {
+                    rs = campaign.getResources();
+                }
 				//Ebean.beginTransaction();
 				// read csv file
 				BufferedReader br = null;
@@ -1586,6 +1589,7 @@ public class Contributions extends Controller {
 								themesList.add(t);
 							}
 							c.setThemes(themesList);
+                            c.setSourceCode(cell[4]);
 							Contribution.create(c);
 							rs.addContribution(c);
 							ResourceSpace.update(rs);
@@ -1596,7 +1600,9 @@ public class Contributions extends Controller {
 
 				}
 				//Ebean.commitTransaction();
-			} catch (Exception e) {
+			} catch (EntityNotFoundException ex) {
+                return internalServerError("The campaign doesn't exist");
+            } catch (Exception e) {
 				//Ebean.rollbackTransaction();
 				return contributionFeedbackError(null, e.getLocalizedMessage());
 			}
@@ -1618,49 +1624,57 @@ public class Contributions extends Controller {
 	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
 											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
 											 @ApiParam(value = "Type of contribution", required = true, example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
-		String csv = "idea title,idea summary,idea author,idea theme\n";
-		Campaign campaign = Campaign.read(cid);
-		ResourceSpace rs = null;
-		if (campaign != null) {
-			rs = campaign.getResources();
-		}
-		Integer t = null;
-		switch (type) {
-			case "IDEA":
-				t = ContributionTypes.IDEA.ordinal();
-				break;
-			default:
-				break;
-		}
-		if (t != null && rs != null) {
-			List<Contribution> contributions = ContributionsDelegate
-					.findContributionsInResourceSpace(rs, t);
-			for (Contribution c: contributions) {
-				csv = csv + c.getTitle()  + ",";
-				csv = csv + c.getAssessmentSummary() + ",";
-				// TODO existing author
-				csv = csv + c.getFirstAuthorName();
-				csv = csv + ",";
-				int themeSize = c.getThemes().size();
-				for(int i=0; i < themeSize; i++) {
-					if (i > 0 && i < themeSize + 1) {
-						csv = csv + "-";
-					}
-					csv = csv + c.getThemes().get(i).getTitle();
-				}
-				csv = csv + "\n";
-			}
-		}
-		response().setContentType("application/csv");
-		response().setHeader("Content-disposition","attachment; filename=contributions.csv");
-		File tempFile;
-		try {
-			tempFile = File.createTempFile("contributions.csv", ".tmp");
-			FileUtils.writeStringToFile(tempFile, csv);
-			return ok(tempFile);
-		} catch (IOException e) {
-			return internalServerError();
-		}
+		String csv = "idea title,idea summary,idea author,idea theme, source code\n";
+		Campaign campaign = null;
+        try {
+            campaign = Campaign.read(cid);
+            ResourceSpace rs = null;
+            if (campaign != null) {
+                rs = campaign.getResources();
+                Integer t = null;
+                switch (type) {
+                    case "IDEA":
+                        t = ContributionTypes.IDEA.ordinal();
+                        break;
+                    default:
+                        break;
+                }
+                if (t != null && rs != null) {
+                    List<Contribution> contributions = ContributionsDelegate
+                            .findContributionsInResourceSpace(rs, t);
+                    for (Contribution c: contributions) {
+                        csv = csv + (c.getTitle() != null ? c.getTitle() : "")  + ",";
+                        csv = csv + (c.getAssessmentSummary() != null ? c.getAssessmentSummary() : "") + ",";
+                        // TODO existing author
+                        csv = csv + (c.getFirstAuthorName() != null ? c.getFirstAuthorName() : "");
+                        csv = csv + ",";
+                        int themeSize = c.getThemes().size();
+                        for(int i=0; i < themeSize; i++) {
+                            if (i > 0 && i < themeSize + 1) {
+                                csv = csv + "-";
+                            }
+                            csv = csv + c.getThemes().get(i).getTitle();
+                        }
+                        csv = csv + "," + (c.getSourceCode() != null ? c.getSourceCode() : "") + "\n";
+                    }
+                }
+
+            }
+        } catch (EntityNotFoundException ex) {
+            return internalServerError("The campaign doesn't exist");
+        }
+
+        response().setContentType("application/csv");
+        response().setHeader("Content-disposition","attachment; filename=contributions.csv");
+        File tempFile;
+        try {
+            tempFile = File.createTempFile("contributions.csv", ".tmp");
+            FileUtils.writeStringToFile(tempFile, csv);
+            return ok(tempFile);
+        } catch (IOException e) {
+            return internalServerError();
+        }
+
 	}
 
 	/**
