@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.annotation.Where;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -9,16 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import play.Logger;
 import utils.GlobalData;
@@ -113,6 +105,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 	private List<Long> assemblies;
 	@Transient
 	private List<Long> campaigns;
+
+	@JsonIgnore
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "working_group_ballot_history")
+	@Where(clause="${ta}.removed=false")
+	private List<Ballot> ballotHistories;
 	
 	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -596,4 +594,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
 
+	public List<Ballot> getBallotHistories() {
+		if(ballotHistories == null){
+			ballotHistories = new ArrayList<>();
+		}
+		return ballotHistories;
+	}
+
+	public void setBallotHistories(List<Ballot> ballotHistories) {
+		this.ballotHistories = ballotHistories;
+	}
 }

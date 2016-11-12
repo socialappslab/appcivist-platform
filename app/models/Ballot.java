@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.VotingSystemTypes;
+import play.Logger;
+import utils.GlobalData;
 
 @Entity(name="ballot")
 @JsonInclude(Include.NON_EMPTY)
@@ -245,5 +247,75 @@ public class Ballot extends Model {
 
 	public static Ballot findByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
+	}
+
+	@JsonIgnore
+	public List<BallotCandidate> getBallotCandidates(){
+		Finder<Long, BallotCandidate> ballotCandidateFinder = new Finder<>(
+				BallotCandidate.class);
+		return ballotCandidateFinder.where().eq("ballotId", this.id).findList();
+	}
+
+	public static Ballot createConsensusBallotForWorkingGroup(WorkingGroup workingGroup){
+		ResourceSpace groupResources = workingGroup.getResources();
+		Ballot consensusBallot = new Ballot();
+		Date startBallot = Calendar.getInstance().getTime();
+		// TODO: add the due date for reaching consensus in the WG creation form
+		//       by default, the groups gets 30 days for reaching consensus
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startBallot);
+		cal.add(Calendar.DATE, 30);
+		Date endBallot = cal.getTime();
+
+		Logger.info("Creating consensus ballot for Working Group: " + workingGroup.getName());
+		consensusBallot.setStartsAt(startBallot);
+		consensusBallot.setEndsAt(endBallot);
+		consensusBallot.setPassword(workingGroup.getUuid().toString());
+		consensusBallot.setVotingSystemType(VotingSystemTypes.PLURALITY);
+		consensusBallot.setRequireRegistration(false);
+		consensusBallot.setUserUuidAsSignature(true);
+		consensusBallot.setDecisionType("BINDING");
+		consensusBallot.save();
+		consensusBallot.refresh();
+
+		workingGroup.setConsensusBallotAsString(consensusBallot.getUuid().toString());
+		groupResources.addBallot(consensusBallot);
+
+		// TODO: figure out why updates trigger inserts in the resource space
+		// for resources that already exist
+		workingGroup.update();
+		groupResources.update();
+
+		// Add Ballot configurations
+
+		// VOTING SYSTEM
+		BallotConfiguration ballotConfig = new BallotConfiguration();
+		ballotConfig.setBallotId(consensusBallot.getId());
+		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
+		ballotConfig.setValue("PLURALITY");
+		ballotConfig.save();
+
+		// VOTING SYSTEM BLOCK THRESHOLD
+		ballotConfig = new BallotConfiguration();
+		ballotConfig.setBallotId(consensusBallot.getId());
+		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE);
+		if (workingGroup.getBlockMajority()) {
+			ballotConfig.setValue("YES/NO/ABSTAIN/BLOCK");
+			ballotConfig.save();
+			ballotConfig = new BallotConfiguration();
+			ballotConfig.setBallotId(consensusBallot.getId());
+			ballotConfig
+					.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_BLOCK_THRESHOLD);
+			ballotConfig
+					.setValue(workingGroup.getMajorityThreshold() != null ? workingGroup
+							.getMajorityThreshold() : "SIMPLE");
+			ballotConfig.save();
+		} else {
+			ballotConfig.setValue("YES/NO/ABSTAIN");
+			ballotConfig.save();
+		}
+
+		return consensusBallot;
+
 	}
 }

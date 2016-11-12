@@ -1,6 +1,9 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.ContributionStatus;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -10,17 +13,12 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.Campaign;
-import models.Contribution;
-import models.Membership;
-import models.MembershipGroup;
-import models.MembershipInvitation;
-import models.ResourceSpace;
-import models.User;
-import models.WorkingGroup;
+import models.*;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
@@ -450,5 +448,62 @@ public class WorkingGroups extends Controller {
 		TransferResponseStatus responseBody = new TransferResponseStatus();
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
+	}
+
+	@ApiOperation(httpMethod = "POST", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result nextBallotForWorkingGroup(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+
+		List<String> selectedProposalsPayload = null;
+		List<UUID> selectedProposals = null;
+		if(request().body().asJson().isArray()){
+			selectedProposalsPayload = new ObjectMapper().convertValue(request().body().asJson(), ArrayList.class);
+			selectedProposals = selectedProposalsPayload.stream().map(p -> UUID.fromString(p)).collect(Collectors.toList());
+		}
+		//First, we have to find the working group and the current Ballot for the working group
+		WorkingGroup workingGroup = WorkingGroup.read(gid);
+		UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(workingGroup.getResourcesResourceSpaceId());
+		Ballot currentBallot = Ballot.findByUUID(consensus);
+		List<BallotCandidate> newCandidates = new ArrayList<>();
+
+		//Creates new candidates based on selected proposals (if any), or based on current non excluded proposals
+		List<BallotCandidate> currentCandidates = currentBallot.getBallotCandidates();
+		if(selectedProposals == null || selectedProposals.isEmpty()){
+			//Select only candidates with non-excluded proposals
+			if(currentCandidates != null){
+				newCandidates = currentCandidates.stream().
+						filter(candidate -> !ContributionStatus.EXCLUDED.equals(candidate.getContribution().getStatus())).collect(Collectors.toList());
+			}
+		}else{
+			newCandidates = selectedProposals.stream().map(c -> {
+				BallotCandidate filtered = null;
+				for(BallotCandidate bc : currentCandidates){
+					if(bc.getContributionUuid().equals(c)){
+						filtered =  bc;
+						break;
+					}
+				}
+				return filtered;
+			}).collect(Collectors.toList());
+		}
+		Ballot newBallot = Ballot.createConsensusBallotForWorkingGroup(workingGroup);
+
+		for(BallotCandidate candidate : newCandidates){
+			BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+			contributionAssociatedCandidate.setBallotId(newBallot.getId());
+			contributionAssociatedCandidate.setCandidateType(new Integer(1));
+			contributionAssociatedCandidate.setContributionUuid(candidate.getContribution().getUuid());
+			contributionAssociatedCandidate.save();
+		}
+		//Send the current ballot to a historic
+		workingGroup.getBallotHistories().add(currentBallot);
+		workingGroup.save();
+
+		return ok(Json.toJson(newBallot));
 	}
 }
