@@ -875,14 +875,16 @@ public class Contribution extends AppCivistBaseModel {
 
     public static List<Contribution> findAllByContainingSpaceAndType(
             ResourceSpace rs, String t) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
         return find.where().eq("containingSpaces", rs)
-                .eq("type", t.toUpperCase()).findList();
+                .eq("type", type).findList();
     }
 
     public static List<Contribution> findAllByContainingSpaceAndTypeAndQuery(
             ResourceSpace rs, String t, String query) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
         return find.where().eq("containingSpaces", rs)
-                .eq("type", t.toUpperCase())
+                .eq("type", type)
                 .ilike("textIndex", "%" + query + "%").findList();
     }
 
