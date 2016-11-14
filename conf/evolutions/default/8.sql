@@ -88,3 +88,4 @@ alter table working_group_ballot_history add constraint fk_working_group_ballot_
 
 alter table ballot add column status INTEGER;
 alter table ballot add constraint "ck_ballot_status" check (status = ANY (ARRAY[0, 1]));
+ALTER TABLE contribution ADD COLUMN source_code varchar(255);

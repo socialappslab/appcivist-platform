@@ -168,6 +168,9 @@ public class Contribution extends AppCivistBaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     private Resource extendedTextPad;
 
+    @Column(name = "source_code")
+    private String sourceCode;
+
     // Fields specific to the type PROPOSAL
     @Transient
     private List<Contribution> assessments;
@@ -303,6 +306,14 @@ public class Contribution extends AppCivistBaseModel {
 
     public List<User> getAuthors() {
         return authors;
+    }
+
+    public String getSourceCode() {
+        return sourceCode;
+    }
+
+    public void setSourceCode(String sourceCode) {
+        this.sourceCode = sourceCode;
     }
 
     @Transient
