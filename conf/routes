@@ -88,6 +88,7 @@ GET       /api/assembly/:aid/group/:gid/proposals                         contro
 GET       /api/assembly/:aid/group/:gid/contributions                     controllers.WorkingGroups.listWorkingGroupContributions(aid: Long, gid: Long) 
 GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 POST      /api/assembly/:aid/group/:gid/ballot                            controllers.WorkingGroups.nextBallotForWorkingGroup(aid: Long, gid: Long)
+PUT       /api/assembly/:aid/group/:gid/ballot                            controllers.WorkingGroups.archiveWorkingGroupsBallot(aid: Long, gid: Long)
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly

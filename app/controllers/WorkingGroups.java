@@ -3,6 +3,7 @@ package controllers;
 import static play.data.Form.form;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.BallotStatus;
 import enums.ContributionStatus;
 import http.Headers;
 import io.swagger.annotations.Api;
@@ -451,7 +452,7 @@ public class WorkingGroups extends Controller {
 	}
 
 	@ApiOperation(httpMethod = "POST", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
@@ -504,6 +505,26 @@ public class WorkingGroups extends Controller {
 		workingGroup.getBallotHistories().add(currentBallot);
 		workingGroup.save();
 
+		//Archive previous ballot
+		currentBallot.setStatus(BallotStatus.ARCHIVED);
+
 		return ok(Json.toJson(newBallot));
+	}
+
+	@ApiOperation(httpMethod = "PUT", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result archiveWorkingGroupsBallot(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+
+		WorkingGroup workingGroup = WorkingGroup.read(gid);
+		UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(workingGroup.getResourcesResourceSpaceId());
+		Ballot ballot = Ballot.findByUUID(consensus);
+		ballot.setStatus(BallotStatus.ARCHIVED);
+		ballot.update();
+		return ok(Json.toJson(ballot));
 	}
 }

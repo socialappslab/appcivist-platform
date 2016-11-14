@@ -1,5 +1,6 @@
 package models;
 
+import enums.BallotStatus;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Calendar;
@@ -48,6 +49,8 @@ public class Ballot extends Model {
 	private String notes;
 	@Enumerated(EnumType.STRING)
 	private VotingSystemTypes votingSystemType;
+	@Enumerated(EnumType.ORDINAL)
+	private BallotStatus status = BallotStatus.ACTIVE;
 	private Boolean requireRegistration = true;
     private Boolean userUuidAsSignature = false;
     private String decisionType = "BINDING";
@@ -243,6 +246,14 @@ public class Ballot extends Model {
 
 	public void setRemovedAt(Date removedAt) {
 		this.removedAt = removedAt;
+	}
+
+	public BallotStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(BallotStatus status) {
+		this.status = status;
 	}
 
 	public static Ballot findByUUID(UUID uuid) {

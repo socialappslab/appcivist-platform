@@ -86,3 +86,5 @@ create table working_group_ballot_history(
 alter table working_group_ballot_history add constraint fk_working_group_ballot_history_01 foreign key (working_group_group_id) references working_group (group_id);
 alter table working_group_ballot_history add constraint fk_working_group_ballot_history_02 foreign key (ballot_id) references ballot(id);
 
+alter table ballot add column status INTEGER;
+alter table ballot add constraint "ck_ballot_status" check (status = ANY (ARRAY[0, 1]));
