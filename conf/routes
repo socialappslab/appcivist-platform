@@ -70,6 +70,10 @@ GET       /api/assembly/:aid/user/:uid                                    contro
 POST      /api/assembly/:id/invitations                                   controllers.Assemblies.inviteNewMembers(id: Long)
 GET       /api/assembly/:aid/linked                                       controllers.Assemblies.findAssembliesLinked(aid: Long)
 GET       /api/assembly/:aid/public                                       controllers.Assemblies.getListedLinkedAssemblyProfile(aid: Long) 
+GET       /api/assembly/:aid/contribution/template                        controllers.Assemblies.findContributionTemplatesInAssembly(aid: Long)
+POST      /api/assembly/:aid/contribution/template                        controllers.Assemblies.createContributionTemplateInAssembly(aid: Long)
+PUT       /api/assembly/:aid/contribution/template/:rid                   controllers.Assemblies.confirmContributionTemplateInAssembly(aid: Long, rid: Long)
+DELETE    /api/assembly/:aid/contribution/template/:rid                   controllers.Assemblies.deleteContributionTemplateInAssembly(aid: Long, rid: Long)
 
 ##################################################################################################################################################################
 # WorkingGroup API
@@ -133,14 +137,11 @@ DELETE    /api/assembly/:aid/config/:cid                                  contro
 ##################################################################################################################################################################
 # Campaign Template and Configuration endpoints
 
-GET       /api/campaign/template                                          controllers.Campaigns.findContributionTemplatesInCampaign()
+GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
+GET       /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.findContributionTemplatesInCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.createContributionTemplateInCampaign(aid: Long, cid: Long, text: String)
-PUT       /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.confirmContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
-
-GET       /api/assembly/:aid/campaign/template                            controllers.Campaigns.findCampaignTemplatesInAssembly(aid: Long)
-POST      /api/assembly/:aid/campaign/template                            controllers.Campaigns.createCampaignTemplateInAssembly(aid: Long)
-PUT       /api/assembly/:aid/campaign/template/:rid                       controllers.Campaigns.confirmCampaignTemplateInAssembly(aid: Long, rid: Long)
-DELETE    /api/assembly/:aid/campaign/template/:rid                       controllers.Campaigns.deleteCampaignTemplateInAssembly(aid: Long, rid: Long)
+PUT       /api/assembly/:aid/campaign/:cid/contribution/template/:rid     controllers.Campaigns.confirmContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
+DELETE    /api/assembly/:aid/campaign/:cid/contribution/template/:rid     controllers.Campaigns.deleteContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
 
 ##################################################################################################################################################################
 # Campaign API
@@ -201,16 +202,16 @@ POST      /api/contribution/pad                                           contro
 PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)
 
 #update state of contribution
-PUT       /api/assembly/:aid/contribution/:cid/:status                   controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
+PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 
 #support for non-member author contributions
-POST      /assembly/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
-POST      /campaign/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
-POST      /contribution/:uuid/contribution                               controllers.Contributions.createAnonymousContribution(uuid: String)
+POST      /assembly/:uuid/contribution                                    controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
+POST      /campaign/:uuid/contribution                                    controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
+POST      /contribution/:uuid/contribution                                controllers.Contributions.createAnonymousContribution(uuid: String)
 
 #import/export contributions, type=IDEA
-POST      /api/assembly/:aid/campaign/:cid/contribution/import                    controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
-GET       /api/assembly/:aid/campaign/:cid/contribution/export                    controllers.Contributions.exportContributions(aid: Long, cid: Long, type?="")
+POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
+GET       /api/assembly/:aid/campaign/:cid/contribution/export            controllers.Contributions.exportContributions(aid: Long, cid: Long, type?="")
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

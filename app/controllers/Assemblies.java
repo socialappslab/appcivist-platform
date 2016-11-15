@@ -3,9 +3,11 @@ package controllers;
 import static play.data.Form.form;
 import http.Headers;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import models.*;
 import models.transfer.AssemblySummaryTransfer;
@@ -40,6 +42,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
+import delegates.ResourcesDelegate;
+import enums.ResourceTypes;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
 
@@ -480,5 +484,92 @@ public class Assemblies extends Controller {
 				return notFound(Json.toJson(responseBody));
 			}
 		}
+	}
+	
+	/**
+	 * POST /api/assembly/:aid/contribution/template
+	 * Create a new Resource CAMPAIGN_TEMPLATE
+	 * @param aid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template in an assembly", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createContributionTemplateInAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.RESOURCE_TEMPLATE);
+		Assembly assembly = Assembly.read(aid);
+		assembly.getResources().getResources().add(res);
+		Assembly.update(assembly);
+		if (res != null) {
+			return ok(Json.toJson(res));
+		} else {
+			return internalServerError("The HTML text is malformed.");
+		}
+
+	}
+
+	/**
+	 * PUT /api/assembly/:aid/contribution/template/:rid
+	 * Confirms a Resource CAMPAIGN_TEMPLATE
+	 * @param rid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", value = "Confirm Contribution Template")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution template found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result confirmContributionTemplateInAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "Resource ID", value = "Contribution Template") Long rid) {
+		Resource res = ResourcesDelegate.confirmResource(rid);
+		return ok(Json.toJson(res));
+	}
+
+	/**
+	 * GET /api/assembly/:aid/contribution/template Get list of available campaign templates in the assembly
+	 *
+	 * @return JSON array with the list of campaign templates
+	 */
+	@ApiOperation(httpMethod = "GET", response = URL.class, responseContainer = "List", produces = "application/json", value = "Get list of available contribution templates in assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Contribution Template Found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findContributionTemplatesInAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
+
+		Assembly assembly = Assembly.read(aid);
+		List<Resource> cts = assembly.getResources().getResources().stream().filter((r) ->
+				ResourceTypes.CONTRIBUTION_TEMPLATE.equals(r.getResourceType())).collect(Collectors.toList());
+		if (cts != null && !cts.isEmpty()) {
+			List<URL> urls = cts.stream().map(sc -> sc.getUrl()).collect(Collectors.toList());
+			return ok(Json.toJson(urls));
+		} else {
+			return notFound(Json.toJson(new TransferResponseStatus(
+					"No contribution templates")));
+		}
+	}
+
+	/**
+	 * DELETE /api/assembly/:aid/campaign/template/:rid
+	 * Delete campaign by ID
+	 * @param aid
+	 * @param resourceId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Delete contribution template from assembly", notes="Only for COORDINATOS of assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result deleteContributionTemplateInAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "rid", value = "Resource ID") Long resourceId) {
+		Resource.delete(resourceId);
+		return ok();
 	}
 }
