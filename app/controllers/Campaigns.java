@@ -523,7 +523,7 @@ public class Campaigns extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "Resource Object", value = "The new resource to add", dataType = "models.Resource", paramType = "body") })
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createCampaignResource(
 			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
