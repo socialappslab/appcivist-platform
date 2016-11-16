@@ -595,4 +595,26 @@ public class Campaigns extends Controller {
 		}
 
 	}
+
+    /**
+     * GET /api/assembly/:aid/campaign/:cid/resource
+     * Returns the Resources associated to the campaign
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", value = "Lists campaign's resources", notes="Only for COORDINATORS")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result listCampaignResources(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        Campaign campaign = Campaign.read(campaignId);
+        return ok(Json.toJson(campaign.getResourceList()));
+
+    }
 }

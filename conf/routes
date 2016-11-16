@@ -154,7 +154,7 @@ GET       /api/assembly/:uuid/campaign                                    contro
 GET       /api/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
 GET       /api/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
 POST      /api/assembly/:aid/campaign/:cid/resource                       controllers.Campaigns.createCampaignResource(aid: Long, cid: Long)
-
+GET       /api/assembly/:aid/campaign/:cid/resource                       controllers.Campaigns.listCampaignResources(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
 # CampaignComponent API
