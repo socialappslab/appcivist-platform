@@ -2,9 +2,12 @@ package controllers;
 
 import static play.data.Form.form;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import delegates.CampaignDelegate;
 import enums.BallotStatus;
 import enums.ContributionStatus;
+import enums.ContributionTypes;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -20,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import models.*;
+import models.misc.Views;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
@@ -30,7 +34,9 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Results;
 import play.mvc.With;
+import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -526,5 +532,36 @@ public class WorkingGroups extends Controller {
 		ballot.setStatus(BallotStatus.ARCHIVED);
 		ballot.update();
 		return ok(Json.toJson(ballot));
+	}
+
+
+	@ApiOperation(httpMethod = "GET", response = WorkingGroup.class, produces = "application/json", value = "Read working group by Universal ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No working group found", response = TransferResponseStatus.class) })
+	public static Result findWorkingGroupByUUID(@ApiParam(name = "uuid", value = "Working Group Universal ID (UUID)") UUID uuid) {
+		try{
+
+			WorkingGroup wgroup = WorkingGroup.readByUUID(uuid);
+			if(wgroup == null){
+				return ok(Json
+						.toJson(new TransferResponseStatus("No working group found")));
+			}
+
+			/*ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(summary);
+
+			Content ret = new Content() {
+				@Override public String body() { return result; }
+				@Override public String contentType() { return "application/json"; }
+			};*/
+
+			return Results.ok(Json.toJson(wgroup));
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
 	}
 }

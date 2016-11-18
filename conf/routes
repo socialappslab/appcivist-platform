@@ -74,6 +74,7 @@ GET       /api/assembly/:aid/contribution/template                        contro
 POST      /api/assembly/:aid/contribution/template                        controllers.Assemblies.createContributionTemplateInAssembly(aid: Long)
 PUT       /api/assembly/:aid/contribution/template/:rid                   controllers.Assemblies.confirmContributionTemplateInAssembly(aid: Long, rid: Long)
 DELETE    /api/assembly/:aid/contribution/template/:rid                   controllers.Assemblies.deleteContributionTemplateInAssembly(aid: Long, rid: Long)
+GET       /api/assembly/public/:uuid                                      controllers.Assemblies.findAssemblyByUUID(uuid: java.util.UUID)
 
 ##################################################################################################################################################################
 # WorkingGroup API
@@ -93,6 +94,7 @@ GET       /api/assembly/:aid/group/:gid/contributions                     contro
 GET       /api/assembly/:aid/group/:gid/public                            controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 POST      /api/assembly/:aid/group/:gid/ballot                            controllers.WorkingGroups.nextBallotForWorkingGroup(aid: Long, gid: Long)
 PUT       /api/assembly/:aid/group/:gid/ballot                            controllers.WorkingGroups.archiveWorkingGroupsBallot(aid: Long, gid: Long)
+GET       /api/group/:uuid                                                controllers.WorkingGroups.findWorkingGroupByUUID(uuid: java.util.UUID)
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
@@ -248,3 +250,7 @@ GET       /api/files                                                      contro
 POST      /api/upload                                                     controllers.Files.upload()
 POST      /api/log                                                        controllers.Application.logActivity()
 POST      /api/log/public                                                 controllers.Application.logActivityPublic()
+
+##################################################################################################################################################################
+# Space endpoints
+GET       /api/space/:sid                                                 controllers.Spaces.getSpace(sid: Long)

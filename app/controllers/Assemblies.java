@@ -21,6 +21,7 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Results;
 import play.mvc.With;
 import security.SecurityModelConstants;
 import utils.GlobalData;
@@ -571,5 +572,35 @@ public class Assemblies extends Controller {
 			@ApiParam(name = "rid", value = "Resource ID") Long resourceId) {
 		Resource.delete(resourceId);
 		return ok();
+	}
+
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read assembly by Universal ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	public static Result findAssemblyByUUID(@ApiParam(name = "uuid", value = "Assembly Universal ID (UUID)") UUID uuid) {
+		try{
+
+			Assembly assembly = Assembly.readByUUID(uuid);
+			if(assembly == null){
+				return ok(Json
+						.toJson(new TransferResponseStatus("No assembly found")));
+			}
+
+			/*ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(summary);
+
+			Content ret = new Content() {
+				@Override public String body() { return result; }
+				@Override public String contentType() { return "application/json"; }
+			};*/
+
+			return Results.ok(Json.toJson(assembly));
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
 	}
 }
