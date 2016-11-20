@@ -139,7 +139,7 @@ DELETE    /api/assembly/:aid/config/:cid                                  contro
 
 GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
 GET       /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.findContributionTemplatesInCampaign(aid: Long, cid: Long)
-POST      /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.createContributionTemplateInCampaign(aid: Long, cid: Long, text: String)
+POST      /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.createContributionTemplateInCampaign(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/contribution/template/:rid     controllers.Campaigns.confirmContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
 DELETE    /api/assembly/:aid/campaign/:cid/contribution/template/:rid     controllers.Campaigns.deleteContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
 
