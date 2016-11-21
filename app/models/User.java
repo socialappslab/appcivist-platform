@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.MalformedURLException;
@@ -27,6 +28,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import models.TokenAction.Type;
+import models.misc.Views;
 import models.transfer.AssemblyTransfer;
 import play.Play;
 import play.db.ebean.Transactional;
@@ -73,11 +75,13 @@ public class User extends Model implements Subject {
 	@Id
 	@GeneratedValue
 	private Long userId;
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@Column(unique=true)
 	private String email;
+	@JsonView(Views.Public.class)
 	private String name;
 	@Column(unique=true)
 	private String username;

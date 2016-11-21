@@ -546,18 +546,17 @@ public class WorkingGroups extends Controller {
 						.toJson(new TransferResponseStatus("No working group found")));
 			}
 
-			/*ObjectMapper mapper = new ObjectMapper();
+			ObjectMapper mapper = new ObjectMapper();
 			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
-			mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
 			String result = mapper.writerWithView(Views.Public.class)
-					.writeValueAsString(summary);
+					.writeValueAsString(wgroup);
 
 			Content ret = new Content() {
 				@Override public String body() { return result; }
 				@Override public String contentType() { return "application/json"; }
-			};*/
+			};
+			return Results.ok(ret);
 
-			return Results.ok(Json.toJson(wgroup));
 		}catch(Exception e){
 			return badRequest(Json.toJson(Json
 					.toJson(new TransferResponseStatus("Error processing request"))));
