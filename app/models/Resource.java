@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.MalformedURLException;
@@ -15,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
+import models.misc.Views;
 import utils.services.EtherpadWrapper;
 import models.location.Location;
 
@@ -32,17 +34,24 @@ public class Resource extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long resourceId;
 	@Index
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
+	@JsonView(Views.Public.class)
 	private URL url;
 	@Transient
+	@JsonView(Views.Public.class)
 	private String urlAsString;
 	private User creator;
+	@JsonView(Views.Public.class)
 	private Location location;
+	@JsonView(Views.Public.class)
 	@Enumerated(EnumType.STRING)
 	private ResourceTypes resourceType;
-
+	@JsonView(Views.Public.class)
 	private String name;
+	@JsonView(Views.Public.class)
 	private String title;
+	@JsonView(Views.Public.class)
 	private String description;
 	/*
 	 * Fields specific to each type

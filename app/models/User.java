@@ -83,11 +83,13 @@ public class User extends Model implements Subject {
 	private String email;
 	@JsonView(Views.Public.class)
 	private String name;
+	@JsonView(Views.Public.class)
 	@Column(unique=true)
 	private String username;
 	private String language = GlobalData.DEFAULT_LANGUAGE;	
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
+	@JsonView(Views.Public.class)
 	@Column(name = "profile_pic")
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "resourceId", "location", "resourceType"})

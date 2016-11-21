@@ -548,6 +548,8 @@ public class WorkingGroups extends Controller {
 
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			mapper.addMixIn(WorkingGroup.class, WorkingGroup.MembeshipsVisibleMixin.class);
+			mapper.addMixIn(Membership.class, Membership.AuthorsVisibleMixin.class);
 			String result = mapper.writerWithView(Views.Public.class)
 					.writeValueAsString(wgroup);
 

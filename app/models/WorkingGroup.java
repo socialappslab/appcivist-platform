@@ -103,6 +103,13 @@ public class WorkingGroup extends AppCivistBaseModel {
  	@JsonIgnore
  	@OneToMany(cascade = CascadeType.REMOVE, mappedBy="workingGroup",fetch=FetchType.LAZY)
  	private List<MembershipGroup> members;
+	//Mixin to show memberships in public view
+	public static abstract class MembeshipsVisibleMixin {
+		@JsonView(Views.Public.class)
+		@JsonIgnore(false)
+		private List<MembershipGroup> members;
+
+	}
 
 	@Transient
 	@JsonIgnore
