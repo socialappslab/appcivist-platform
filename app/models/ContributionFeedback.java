@@ -1,5 +1,6 @@
 package models;
 
+import enums.ContributionFeedbackTypes;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -28,7 +29,8 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Long userId;
 	// TODO: Add a way of making feedback private or limited to a working group
 	// TODO: Add a way of making feedback 
-	
+	private ContributionFeedbackTypes type;
+
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 
 	public ContributionFeedback() {
@@ -95,9 +97,18 @@ public class ContributionFeedback extends AppCivistBaseModel {
 		this.userId = user;
 	}
 
+
+	public ContributionFeedbackTypes getType() {
+		return type;
+	}
+
+	public void setType(ContributionFeedbackTypes type) {
+		this.type = type;
+	}
+
 	/*
-	 * Basic Data operations
-	 */
+         * Basic Data operations
+         */
 	public static ContributionFeedback read(Long id) {
 		return find.ref(id);
 	}
