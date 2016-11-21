@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.PrePersist;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import models.misc.Views;
 import utils.services.MapBoxWrapper;
 
 import com.avaje.ebean.Model.Finder;
@@ -23,16 +25,23 @@ public class Location {
 	@Id
 	@GeneratedValue
 	private Long locationId;
+	@JsonView(Views.Public.class)
 	private String placeName; // "1969 calle de alberto aguilera en la coruña"
+	@JsonView(Views.Public.class)
 	private String street; //: "1969 calle de alberto aguilera",
+	@JsonView(Views.Public.class)
 	private String city; //: "la coruña",
+	@JsonView(Views.Public.class)
 	private String state; //: "asturias",
+	@JsonView(Views.Public.class)
 	private String zip; //: "56298"
+	@JsonView(Views.Public.class)
 	private String country; //: "spain"
 	@JsonIgnore
 	@Index
 	private String serializedLocation;
 	@Column(columnDefinition="TEXT")
+	@JsonView(Views.Public.class)
 	private String geoJson; 
 
 	/**

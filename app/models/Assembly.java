@@ -75,11 +75,13 @@ public class Assembly extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private String invitationEmail;
 
+	@JsonView(Views.Public.class)
 	@OneToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
 	@JsonInclude(Include.NON_EMPTY)
 	private AssemblyProfile profile = new AssemblyProfile();
-	
+
+	@JsonView(Views.Public.class)
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Location location = new Location();
 
@@ -103,6 +105,7 @@ public class Assembly extends AppCivistBaseModel {
 	/**
 	 * The User who created the Assembly
 	 */
+	@JsonView(Views.Public.class)
 	@ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
 	@Where(clause="${ta}.removed=false")
@@ -114,23 +117,29 @@ public class Assembly extends AppCivistBaseModel {
 	private List<MembershipAssembly> memberships;
 	
 	// Shortcuts to resources in the Assembly Resource Space ('resources')
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Component> components = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Config> configs = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Theme> themes = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "forumPosts", "proposals", "brainstormingContributions"})
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)	
 	@JsonIgnoreProperties({ "configs", "workingGroups"})
 	private List<Campaign> campaigns = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Contribution> forumPosts = new ArrayList<>();

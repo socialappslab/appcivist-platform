@@ -1,6 +1,9 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import http.Headers;
 
 import java.net.URL;
@@ -10,6 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import models.*;
+import models.misc.Views;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
 import models.transfer.MembershipCollectionTransfer;
@@ -23,6 +27,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.With;
+import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.Pair;
@@ -580,23 +585,22 @@ public class Assemblies extends Controller {
 		try{
 
 			Assembly assembly = Assembly.readByUUID(uuid);
-			if(assembly == null){
-				return ok(Json
-						.toJson(new TransferResponseStatus("No assembly found")));
-			}
+//			if(assembly == null){
+//				return ok(Json
+//						.toJson(new TransferResponseStatus("No assembly found")));
+//			}
 
-			/*ObjectMapper mapper = new ObjectMapper();
+			ObjectMapper mapper = new ObjectMapper();
 			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
-			mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
 			String result = mapper.writerWithView(Views.Public.class)
-					.writeValueAsString(summary);
+					.writeValueAsString(assembly);
 
 			Content ret = new Content() {
 				@Override public String body() { return result; }
 				@Override public String contentType() { return "application/json"; }
-			};*/
+			};
 
-			return Results.ok(Json.toJson(assembly));
+			return Results.ok(ret);
 		}catch(Exception e){
 			return badRequest(Json.toJson(Json
 					.toJson(new TransferResponseStatus("Error processing request"))));
