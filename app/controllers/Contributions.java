@@ -256,11 +256,13 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result findResourceSpaceContributions(
-    		@ApiParam(name = "sid", value = "Resource Space ID") Long sid, 
-    		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
+    		@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+    		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
+            @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
+            @ApiParam(name = "pageSize", value = "Number of elements per page", defaultValue = "10") Integer pageSize) {
         ResourceSpace rs = ResourceSpace.read(sid);
         List<Contribution> contributions = ContributionsDelegate
-                .findContributionsInResourceSpace(rs, type, null);
+                .findPagedContributionsInResourceSpace(rs, type, null, page, pageSize);
         return contributions != null ? ok(Json.toJson(contributions))
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for {resource space}: " + sid + ", type=" + type)));

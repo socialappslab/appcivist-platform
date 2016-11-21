@@ -822,6 +822,12 @@ public class Contribution extends AppCivistBaseModel {
         return contribs;
     }
 
+    public static List<Contribution> findPagedByContainingSpace(Long sid, Integer page, Integer pageSize) {
+        List<Contribution> contribs = find.where()
+                .eq("containingSpaces.resourceSpaceId", sid).findPagedList(page, pageSize).getList();
+        return contribs;
+    }
+
 	public static List<Contribution> findAllByContainingSpaceAndType(
 			ResourceSpace rs, Integer t) {
 		return find.where().eq("containingSpaces", rs).eq("type", t).findList();
@@ -832,6 +838,14 @@ public class Contribution extends AppCivistBaseModel {
         List<Contribution> contribs = find.where()
                 .eq("containingSpaces.resourceSpaceId", sid)
                 .ilike("textIndex", "%" + query + "%").findList();
+        return contribs;
+    }
+
+    public static List<Contribution> findPagedByContainingSpaceAndQuery(Long sid,
+                                                                      String query, Integer page, Integer pageSize) {
+        List<Contribution> contribs = find.where()
+                .eq("containingSpaces.resourceSpaceId", sid)
+                .ilike("textIndex", "%" + query + "%").findPagedList(page, pageSize).getList();
         return contribs;
     }
 
@@ -880,12 +894,27 @@ public class Contribution extends AppCivistBaseModel {
                 .eq("type", type).findList();
     }
 
+    public static List<Contribution> findPagedByContainingSpaceAndType(
+            ResourceSpace rs, String t, Integer page, Integer pageSize) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
+        return find.where().eq("containingSpaces", rs)
+                .eq("type", type).findPagedList(page, pageSize).getList();
+    }
+
     public static List<Contribution> findAllByContainingSpaceAndTypeAndQuery(
             ResourceSpace rs, String t, String query) {
         ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
         return find.where().eq("containingSpaces", rs)
                 .eq("type", type)
                 .ilike("textIndex", "%" + query + "%").findList();
+    }
+
+    public static List<Contribution> findPagedByContainingSpaceAndTypeAndQuery(
+            ResourceSpace rs, String t, String query, Integer page, Integer pageSize) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
+        return find.where().eq("containingSpaces", rs)
+                .eq("type", type)
+                .ilike("textIndex", "%" + query + "%").findPagedList(page, pageSize).getList();
     }
 
     public static List<Contribution> findAllByContainingSpaceIdAndType(

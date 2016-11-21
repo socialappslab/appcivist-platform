@@ -89,6 +89,15 @@ public class ContributionsDelegate {
                 .findAllByContainingSpaceAndQuery(sid, query);
     }
 
+    /**
+     * Return queries based on a query and a filter
+     */
+    public static List<Contribution> findPagedContributionsInResourceSpace(Long sid, String query, Integer page, Integer pageSize) {
+        return query != null && !query.isEmpty() ?  Contribution
+                .findPagedByContainingSpaceAndQuery(sid, query, page, pageSize) : Contribution
+                .findPagedByContainingSpace(sid, page, pageSize);
+    }
+
     public static List<Contribution> findContributionsInResourceSpace(
             ResourceSpace rs, String type, String query) {
         if (type != null && !type.isEmpty()) {
@@ -99,6 +108,17 @@ public class ContributionsDelegate {
             return query != null && !query.isEmpty() ?
                     findContributionsInResourceSpace(rs.getResourceSpaceId(), query) :
                     rs != null ? rs.getContributions() : null;
+        }
+    }
+
+    public static List<Contribution> findPagedContributionsInResourceSpace(
+            ResourceSpace rs, String type, String query, Integer page, Integer pageSize) {
+        if (type != null && !type.isEmpty()) {
+            return query != null && !query.isEmpty() ?
+                    Contribution.findPagedByContainingSpaceAndTypeAndQuery(rs, type, query, page, pageSize) :
+                    Contribution.findPagedByContainingSpaceAndType(rs, type, page, pageSize);
+        } else {
+            return findPagedContributionsInResourceSpace(rs.getResourceSpaceId(), query, page, pageSize);
         }
     }
     
