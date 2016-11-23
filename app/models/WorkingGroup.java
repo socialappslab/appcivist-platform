@@ -594,6 +594,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
 
+	// TODO change get(0)
+	public static WorkingGroup readByName(String wgroupName) {
+		ExpressionList<WorkingGroup> wgroups = find.where().eq("name",wgroupName);
+		return wgroups.findList() != null && !wgroups.findList().isEmpty() ? wgroups.findList().get(0) : null;
+	}
+
 	public List<Ballot> getBallotHistories() {
 		if(ballotHistories == null){
 			ballotHistories = new ArrayList<>();

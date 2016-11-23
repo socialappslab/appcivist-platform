@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1529,7 +1530,6 @@ public class Contributions extends Controller {
     }
 
 	/** IDEAS **/
-	// TODO authorization
 	/**
 	 * POST /api/assembly/:aid/contribution/ideas/import
 	 * Import ideas file
@@ -1544,7 +1544,7 @@ public class Contributions extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result importContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+	public static Result importContributionsOld(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
 											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
 		Http.MultipartFormData body = request().body().asMultipartFormData();
 		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
@@ -1717,6 +1717,162 @@ public class Contributions extends Controller {
         }
 
 	}
+
+
+
+    /** TODO NEW IDEAS & PROPOSALS IMPORT **/
+    /**
+     * POST /api/assembly/:aid/contribution/ideas/import
+     * Import ideas file
+     * @param aid Assembly Id
+     * @param cid Campaing Id
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
+            notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            /*@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")*/ })
+    public static Result importContributions(@ApiParam(name="type", value="Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        Campaign campaign = null;
+
+        if (uploadFilePart != null) {
+            try {
+                BufferedReader br = null;
+                br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+                String cvsSplitBy = ";";
+                String line = br.readLine();
+
+                switch (type) {
+                    case "IDEA":
+                        while ((line = br.readLine()) != null) {
+                            System.out.println(line);
+                            String[] cell = line.split(cvsSplitBy);
+                            Contribution c = new Contribution();
+                            c.setType(ContributionTypes.IDEA);
+                            // get source code from cell 1
+                            c.setSourceCode(cell[0]);
+                            // get author name from cell 2
+                            // TODO existing author
+                            c.setFirstAuthorName(cell[1]);
+                            // ignore cells 3,4
+                            // TODO get age & gender from cells 5,6
+                            // ignore cell 7
+                            // get title from cell 8
+                            c.setTitle(cell[8]);
+                            // get description from cell 9
+                            c.setText(cell[9]);
+                            // TODO get category & subcategory from cells 10,11
+                            Contribution.create(c);
+                        }
+                        break;
+                    case "PROPOSAL":
+                        while ((line = br.readLine()) != null) {
+                            System.out.println(line);
+                            String[] cell = line.split(cvsSplitBy);
+                            Contribution c = new Contribution();
+                            c.setType(ContributionTypes.PROPOSAL);
+
+                            // get source code from cell 1
+                            c.setSourceCode(cell[0]);
+
+                            // get title from cell 2
+                            c.setTitle(cell[1]);
+
+                            // get summary from cell 3 for ehterpad support we need aid & cid
+                            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+                            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+                            Resource res = new Resource();
+                            if (cell[2] != null) {
+                                res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);
+                            } else {
+                                // use generic template
+                                List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
+
+                                if (templates != null) {
+                                    // if there are more than one, then use the last
+                                    String padId = templates.get(templates.size() - 1).getPadId();
+                                    EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+                                    String templateHtml = wrapper.getHTML(padId);
+                                    // save the etherpad
+                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
+                                }
+                            }
+                            if (res != null) {
+                                List<Resource> contribResources = new ArrayList<>();
+                                contribResources.add(res);
+                                c.setExistingResources(contribResources);
+                            }
+
+                            // get wgroup from cell 4 & get resource space from wgroup
+                            WorkingGroup wg = WorkingGroup.readByName(cell[3]);
+                            ResourceSpace rs = null;
+                            if (campaign != null) {
+                                rs = wg.getResources();
+                            }
+
+                            // ignore cells 5-12
+
+                            // get & create atachments from cells 13,14,15
+                            List<Resource> resources = new ArrayList<>();
+                            String url1 = cell[12];
+                            if (url1 != null && !url1.equals("")) {
+                                Resource resource = new Resource();
+                                resource.setUrl(new URL(url1));
+                                resource.setResourceType(ResourceTypes.FILE);
+                                resources.add(resource);
+                            }
+                            String url2 = cell[13];
+                            if (url2 != null && !url2.equals("")) {
+                                Resource resource = new Resource();
+                                resource.setUrl(new URL(url2));
+                                resource.setResourceType(ResourceTypes.FILE);
+                                resources.add(resource);
+                            }
+                            String url3 = cell[14];
+                            if (url3 != null && !url3.equals("")) {
+                                Resource resource = new Resource();
+                                resource.setUrl(new URL(url3));
+                                resource.setResourceType(ResourceTypes.FILE);
+                                resources.add(resource);
+                            }
+
+                            List<Contribution> inspirations = new ArrayList<>();
+                            for (int i=15; i < cell.length; i++) {
+                                // get source code from cell i
+                                Contribution contrib = Contribution.readBySourceCode(cell[i]);
+                                if (contrib != null) {
+                                    inspirations.add(contrib);
+                                }
+                            }
+                            c.setInspirations(inspirations);
+
+                            Contribution.create(c);
+
+                            if (rs != null) {
+                                rs.addContribution(c);
+                                ResourceSpace.update(rs);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                //Ebean.commitTransaction();
+            } catch (Exception e) {
+                //Ebean.rollbackTransaction();
+                e.printStackTrace();
+                return contributionFeedbackError(null, e.getLocalizedMessage());
+            }
+        }
+        return ok();
+    }
+
+
 
 	/**
 	 * POST /api/assembly/:aid/contribution/pad
