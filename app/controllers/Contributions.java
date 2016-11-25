@@ -1,6 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -25,23 +27,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
-import models.Assembly;
-import models.Ballot;
-import models.BallotCandidate;
-import models.Campaign;
-import models.Component;
-import models.Contribution;
-import models.ContributionFeedback;
-import models.ContributionHistory;
-import models.ContributionStatistics;
-import models.ContributionTemplate;
-import models.MembershipInvitation;
-import models.Resource;
-import models.ResourceSpace;
-import models.Theme;
-import models.User;
-import models.WorkingGroup;
-import models.WorkingGroupProfile;
+import models.*;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
 import models.transfer.PadTransfer;
@@ -74,13 +60,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
-import enums.SupportedMembershipRegistration;
 import exceptions.MembershipCreationException;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
@@ -979,20 +958,52 @@ public class Contributions extends Controller {
         if (updatedFeedbackForm.hasErrors()) {
             return contributionFeedbackError(updatedFeedbackForm);
         } else {
-            ContributionFeedback existingFeedback = ContributionFeedback.findByContributionAndUserId(cid, author.getUserId());
             ContributionFeedback feedback = updatedFeedbackForm.get();
+            ContributionFeedback existingFeedback = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
+                    feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus());
+
 
             try {
                 Ebean.beginTransaction();
                 feedback.setContributionId(cid);
                 feedback.setUserId(author.getUserId());
 
+                //If we found a previous feedback, we set that feedback as archived
                 if (existingFeedback != null) {
-                    feedback.setId(existingFeedback.getId());
-                    feedback.update();
-                } else {
-                    ContributionFeedback.create(feedback);
+                    existingFeedback.setArchived(true);
+                    existingFeedback.update();
                 }
+
+                //We have to do some authorization control
+                if(feedback.getWorkingGroupId() != null){
+                    //The user has to be member of working group
+                    Membership m = MembershipGroup.findByUserAndGroupId(feedback.getUserId(), feedback.getWorkingGroupId());
+                    List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MEMBER.getName());
+                    if(membershipRoles == null || membershipRoles.isEmpty()){
+                        //Error
+                        return internalServerError(Json
+                                .toJson(new TransferResponseStatus(
+                                        ResponseStatus.UNAUTHORIZED,
+                                        "User has to be member of working group")));
+                    }
+
+                    if(feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()){
+                        //The user has to be coordinator of working group
+                        membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+                        if(membershipRoles == null || membershipRoles.isEmpty()){
+                            //Error
+                            return internalServerError(Json
+                                    .toJson(new TransferResponseStatus(
+                                            ResponseStatus.UNAUTHORIZED,
+                                            "User has to be coordinator of working group")));
+                        }
+                    }
+                }
+
+
+
+                ContributionFeedback.create(feedback);
+
                 Ebean.commitTransaction();
             } catch (Exception e) {
                 Ebean.rollbackTransaction();

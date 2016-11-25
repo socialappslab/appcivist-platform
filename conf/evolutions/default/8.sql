@@ -89,3 +89,19 @@ alter table working_group_ballot_history add constraint fk_working_group_ballot_
 alter table ballot add column status INTEGER;
 alter table ballot add constraint "ck_ballot_status" check (status = ANY (ARRAY[0, 1]));
 ALTER TABLE contribution ADD COLUMN source_code varchar(255);
+
+ALTER TABLE contribution_feedback add column benefit INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_benefit" check (benefit = ANY (ARRAY[1, 2, 3, 4, 5]));
+ALTER TABLE contribution_feedback add column need INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_need" check (need = ANY (ARRAY[1, 2, 3, 4, 5]));
+ALTER TABLE contribution_feedback add column feasibility INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_feasibility" check (feasibility = ANY (ARRAY[1, 2, 3, 4, 5]));
+ALTER TABLE contribution_feedback add column elegibility BOOLEAN;
+ALTER TABLE contribution_feedback add column textual_feedback text;
+alter table contribution_feedback add column type INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_type" check (type = ANY (ARRAY[0, 1, 2]));
+alter table contribution_feedback add column status INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_status" check (type = ANY (ARRAY[0, 1]));
+alter table contribution_feedback add column working_group_id BIGINT;
+alter table contribution_feedback add column official_group_feedback BOOLEAN;
+alter table contribution_feedback add column archived BOOLEAN;
