@@ -492,7 +492,6 @@ public class Campaigns extends Controller {
 	 * Create a new Resource CONTRIBUTION_TEMPLATE
 	 * @param aid
 	 * @param campaignId
-	 * @param text
 	 * @return
 	 */
 	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template for the campaign", notes="Only for COORDINATORS")
@@ -504,8 +503,7 @@ public class Campaigns extends Controller {
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createContributionTemplateInCampaign(
 			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
-			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
-			@ApiParam(name="text", value="text for the template") String text) {
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.CONTRIBUTION_TEMPLATE);
 		Campaign campaign = Campaign.read(campaignId);
