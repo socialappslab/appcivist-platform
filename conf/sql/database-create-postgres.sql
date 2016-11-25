@@ -838,7 +838,8 @@ alter table resource_space_assemblies add constraint fk_resource_space_assemblie
 
 alter table resource_space_resource add constraint fk_resource_space_resource_re_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
-alter table resource_space_resource add constraint fk_resource_space_resource_re_02 foreign key (resource_resource_id) references resource (resource_id);
+alter table resource_space_resource add constraint fk_resource_space_resource_re_02 foreign key (resource_resource_id) references resource (resource_id) 
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE CASCADE;
 
 alter table resource_space_hashtag add constraint fk_resource_space_hashtag_res_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
