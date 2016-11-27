@@ -52,6 +52,9 @@ GET       /api/user/:uid/campaign                                         contro
 # Notification Server
 # TODO: integrate a proper message queue manager like rabbitmq
 GET       /api/notification/user/:uuid                                    controllers.Notifications.userInbox(uuid: java.util.UUID)
+GET       /api/notification/subscription                                  controllers.Notifications.subscriptions()
+POST      /api/notification/subscription                                  controllers.Notifications.subscribe()
+DELETE    /api/notification/subscription/:origin/:eventName               controllers.Notifications.unsubscribe(origin: java.util.UUID, eventName: String)
 
 ##################################################################################################################################################################
 # Assemblies API
@@ -207,9 +210,9 @@ PUT       /api/contribution/pad                                           contro
 PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 
 #support for non-member author contributions
-POST      /api/assembly/:uuid/contribution                                    controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
-POST      /api/campaign/:uuid/contribution                                    controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
-POST      /api/contribution/:uuid/contribution                                controllers.Contributions.createAnonymousContribution(uuid: String)
+POST      /api/assembly/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
+POST      /api/campaign/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
+POST      /api/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
 
 #import/export contributions, type=IDEA
 POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")

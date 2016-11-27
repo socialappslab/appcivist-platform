@@ -2,10 +2,10 @@ package models.transfer;
 
 import io.swagger.annotations.ApiModel;
 
-@ApiModel(value="NotificationSignalTransfer", description="O")
+@ApiModel(value="NotificationSignalTransfer", description="Basic Notification Signals")
 public class NotificationSignalTransfer {
 	private String eventId;
-	private String eventTitle;
+	private String title;
 	private String text;
 	private String data; 
 	
@@ -21,12 +21,12 @@ public class NotificationSignalTransfer {
 		this.eventId = eventId;
 	}
 
-	public String getEventTitle() {
-		return eventTitle;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setEventTitle(String eventTitle) {
-		this.eventTitle = eventTitle;
+	public void setTitle(String eventTitle) {
+		this.title = eventTitle;
 	}
 
 	public String getText() {

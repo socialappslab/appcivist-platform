@@ -1154,3 +1154,31 @@ alter table contribution_feedback add constraint "ck_contribution_feedback_statu
 alter table contribution_feedback add column working_group_id BIGINT;
 alter table contribution_feedback add column official_group_feedback BOOLEAN;
 alter table contribution_feedback add column archived BOOLEAN;
+
+-- Adding persistence for notifications
+create table notification_event_signal (
+  id                        bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  origin                    varchar(40),
+  origin_type               varchar(13),
+  event_name                varchar(40),
+  origin_name               varchar(255),
+  title                     varchar(255),
+  text                      text,
+  resource_type             varchar(255), 
+  resource_uuid             varchar(40),
+  resource_title            varchar(255),
+  resource_text             text,
+  notification_date         timestamp,  
+  associated_user           varchar(255),
+  signaled                  boolean,
+  constraint pk_notification_event primary key (id))
+;
+
+create index ix_notification_event_id on notification_event (id);
+create index ix_notification_event_uuid on notification_event (uuid);
