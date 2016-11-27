@@ -44,7 +44,7 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	private String resourceTitle;
 	private String resourceText;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-	private Date notificaitonDate = new Date();
+	private Date notificationDate = new Date();
 	private String associatedUser;
 	private Boolean signaled = false;
 
@@ -152,11 +152,11 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	}
 
 	public Date getNotificationDate() {
-		return notificaitonDate;
+		return notificationDate;
 	}
 
 	public void setNotificationDate(Date date) {
-		this.notificaitonDate = date;
+		this.notificationDate = date;
 	}
 
 	public String getAssociatedUser() {

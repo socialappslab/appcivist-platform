@@ -315,7 +315,7 @@ public class NotificationsDelegate {
 			return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created",response.getBody())));
 		} else {
 			Logger.info("NOTIFICATION: Error while subscribing => "+response.getBody().toString());
-			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.asJson().toString())));
+			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
 		}
 	}
 	
