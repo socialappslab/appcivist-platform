@@ -1,11 +1,16 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,12 +19,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
 
-//TODO: persist notifications for history @Entity(name = "notification_event")
+@Entity
 @JsonInclude(Include.NON_EMPTY)
-public class NotificationEvent extends AppCivistBaseModel {
-	// TODO: persist notifications for history @Id
-	// TODO: persist notifications for history @GeneratedValue
-	// TODO: persist notifications for history private Long id;
+@ApiModel(value="NotificationEventSignal", description="A notification event signal is a single notification that is signaled (i.e., sent) to users who have subscribed to the event name in the resource space")
+public class NotificationEventSignal extends AppCivistBaseModel {
+	@Id
+	@GeneratedValue
+	private Long id;
+	private UUID uuid;
+	
 	// Information about the space where the event happened
 	private UUID origin;
 	@Enumerated(EnumType.STRING)
@@ -36,16 +44,33 @@ public class NotificationEvent extends AppCivistBaseModel {
 	private String resourceTitle;
 	private String resourceText;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-	private Date date = new Date();
+	private Date notificaitonDate = new Date();
 	private String associatedUser;
+	private Boolean signaled = false;
 
-	public static Finder<Long, NotificationEvent> find = new Finder<>(
-			NotificationEvent.class);
+	public static Finder<Long, NotificationEventSignal> find = new Finder<>(
+			NotificationEventSignal.class);
 
-	public NotificationEvent() {
+	public NotificationEventSignal() {
 		super();
 	}
 
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public Long getId () {
+		return this.id;
+	}
+	
+	public void setId(Long id) {
+		this.id = id; 
+	}
+	
 	public UUID getOrigin() {
 		return origin;
 	}
@@ -126,12 +151,12 @@ public class NotificationEvent extends AppCivistBaseModel {
 		this.resourceText = resourceText;
 	}
 
-	public Date getDate() {
-		return date;
+	public Date getNotificationDate() {
+		return notificaitonDate;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setNotificationDate(Date date) {
+		this.notificaitonDate = date;
 	}
 
 	public String getAssociatedUser() {
@@ -142,21 +167,29 @@ public class NotificationEvent extends AppCivistBaseModel {
 		this.associatedUser = associatedUser;
 	}
 
-	public static NotificationEvent read(Long id) {
+	public Boolean getSignaled() {
+		return signaled;
+	}
+
+	public void setSignaled(Boolean signaled) {
+		this.signaled = signaled;
+	}
+
+	public static NotificationEventSignal read(Long id) {
 		return find.ref(id);
 	}
 
-	public static List<NotificationEvent> findAll() {
+	public static List<NotificationEventSignal> findAll() {
 		return find.all();
 	}
 
-	public static NotificationEvent create(NotificationEvent notification) {
+	public static NotificationEventSignal create(NotificationEventSignal notification) {
 		notification.save();
 		notification.refresh();
 		return notification;
 	}
 
-	public static NotificationEvent createObject(NotificationEvent notification) {
+	public static NotificationEventSignal createObject(NotificationEventSignal notification) {
 		notification.save();
 		return notification;
 	}
@@ -168,5 +201,4 @@ public class NotificationEvent extends AppCivistBaseModel {
 	public static void update(Long id) {
 		find.ref(id).update();
 	}
-
 }
