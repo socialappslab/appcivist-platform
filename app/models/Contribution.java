@@ -144,8 +144,17 @@ public class Contribution extends AppCivistBaseModel {
     private List<Contribution> comments = new ArrayList<Contribution>();
     @Transient
     private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
+    //@Transient
+    //private List<Contribution> inspirations;
+
+    @JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
+            "budget", "priority", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
+            "attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
+            "actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
+            "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes"
+    })
     @Transient
-    private List<Contribution> inspirations;
+    private List<Contribution> associatedContributions;
 
 	/*
      * The following fields are specific to each type of contribution
@@ -470,24 +479,33 @@ public class Contribution extends AppCivistBaseModel {
             this.resourceSpace.addContribution(c);
     }
 
-    public List<Contribution> getInspirations() {
-        return this.inspirations;
+//    public List<Contribution> getInspirations() {
+//        return this.inspirations;
+//    }
+//
+//    @JsonIgnore
+//    public List<Contribution> getTransientInspirations() {
+//        return this.inspirations;
+//    }
+
+//    public void setInspirations(List<Contribution> inspirations) {
+//        this.inspirations = inspirations;
+//        this.getResourceSpace().getContributions().addAll(inspirations);
+//    }
+
+    public List<Contribution> getAssociatedContributions(){
+        return this.resourceSpace.getContributions();
     }
 
-    @JsonIgnore
-    public List<Contribution> getTransientInspirations() {
-        return this.inspirations;
+    public void setAssociatedContributions(List<Contribution> contributions){
+        this.associatedContributions = contributions;
+        this.getResourceSpace().getContributions().addAll(associatedContributions);
     }
 
-    public void setInspirations(List<Contribution> inspirations) {
-        this.inspirations = inspirations;
-        this.getResourceSpace().getContributions().addAll(inspirations);
-    }
-
-    public void addInspiration(Contribution c) {
-        if (c.getType() == ContributionTypes.BRAINSTORMING)
-            this.resourceSpace.addContribution(c);
-    }
+//    public void addInspiration(Contribution c) {
+//        if (c.getType() == ContributionTypes.BRAINSTORMING)
+//            this.resourceSpace.addContribution(c);
+//    }
 
     public String getReadOnlyPadUrl() {
         return extendedTextPad != null ? extendedTextPad.getUrlAsString()

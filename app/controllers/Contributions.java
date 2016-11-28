@@ -1246,6 +1246,7 @@ public class Contributions extends Controller {
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey,
                                                   ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
+
         newContrib.setType(type);
         // if type is PROPOSAL, then change the default status value
         if (type.equals(ContributionTypes.PROPOSAL)) {
@@ -1281,7 +1282,7 @@ public class Contributions extends Controller {
         Logger.debug("=> " + newContrib.toString());
 
         // Get list of BRAINSTORMING contributions that inspire the new one
-        List<Contribution> inspirations = newContrib.getTransientInspirations();
+        List<Contribution> inspirations = newContrib.getAssociatedContributions();
 
         // If contribution is a proposal and there is no working group associated as author,
         // create one automatically with the creator as coordinator
@@ -1342,7 +1343,9 @@ public class Contributions extends Controller {
         Contribution.create(newContrib);
         newContrib.refresh();
 
-        if (newContrib.getType().equals(ContributionTypes.PROPOSAL) && inspirations != null) {
+        //Previously we also asked the associated contribution to be PROPOSAL,
+        //but now any type of contribution can be associated to another
+        if (inspirations != null && !inspirations.isEmpty()) {
             ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());
             for (Contribution inspiration : inspirations) {
                 Contribution c = Contribution.read(inspiration.getContributionId());
