@@ -9,6 +9,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.feth.play.module.pa.PlayAuthenticate;
+
+import delegates.NotificationsDelegate;
 import models.Assembly;
 import models.AssemblyProfile;
 import models.Ballot;
@@ -18,21 +21,26 @@ import models.ComponentMilestone;
 import models.Contribution;
 import models.Membership;
 import models.MembershipAssembly;
-import models.NotificationEvent;
+import models.NotificationEventSignal;
 import models.ResourceSpace;
 import models.User;
 import models.WorkingGroup;
 import models.transfer.AssemblyTransfer;
+import models.transfer.NotificationEventTransfer;
 import models.transfer.NotificationSignalTransfer;
+import models.transfer.NotificationSubscriptionTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.UpdateTransfer;
 import models.transfer.VotingBallotTransfer;
 import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import enums.AppcivistNotificationTypes;
@@ -81,6 +89,8 @@ public class Notifications extends Controller {
 	final private static String NOTIFICATION_DESCRIPTION_CAMPAIGN_CONTRIBUTION = "notification.description.campaign.contribution";
 	final private static String NOTIFICATION_DESCRIPTION_UPCOMING_MILESTONE = "notification.description.campaign.upcoming.milestone";
 	
+	public static final Form<NotificationSubscriptionTransfer> SUBSCRIPTION_FORM = form(NotificationSubscriptionTransfer.class);
+	
 	/**
 	 * userInbox is the method called by the route GET /user/{uuid}/inbox
 	 * it returns a list of TransferUpdate containing the latest news from User's assemblies, groups, and contributions
@@ -123,6 +133,58 @@ public class Notifications extends Controller {
 		if (!updates.isEmpty()) return ok(Json.toJson(updates));
 		else
 			return notFound(Json.toJson(new TransferResponseStatus("No updates")));
+	}
+
+	
+	@ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod="POST")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.NotificationSubscriptionTransfer", paramType = "body", example="{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5','eventName':'NEW_CONTRIBUTION_IDEA'}"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result subscribe() {
+		// Get the user record of the creator
+		User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		final Form<NotificationSubscriptionTransfer> newSubscriptionForm = SUBSCRIPTION_FORM.bindFromRequest();
+		if (newSubscriptionForm.hasErrors()) {
+			return badRequest(Json.toJson(TransferResponseStatus.badMessage("Subscription error", newSubscriptionForm.errorsAsJson().toString())));
+		} else {
+			NotificationSubscriptionTransfer newSubscription = newSubscriptionForm.get();
+			newSubscription.setEventIdFromOriginAndEventName();
+			// TODO: add support for other endpoint types beyond email
+			newSubscription.setAlertEndpoint(subscriber.getEmail());
+			newSubscription.setEndpointType("email");
+			return NotificationsDelegate.subscribeToEvent(newSubscription);
+		}		
+	}
+
+	@ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Unsubscribe to stop receiving notifications for eventName on origin", httpMethod="DELETE")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result unsubscribe(UUID origin, String eventName) {
+		// Get the user record of the creator
+		User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		NotificationSubscriptionTransfer subscription = new NotificationSubscriptionTransfer();
+		subscription.setOrigin(origin);
+		subscription.setEventName(NotificationEventName.valueOf(eventName));
+		subscription.setEventIdFromOriginAndEventName();
+		// TODO: add support for other endpoint types beyond email
+		subscription.setAlertEndpoint(subscriber.getEmail());
+		subscription.setEndpointType("email");
+		return NotificationsDelegate.unSubscribeToEvent(subscription);
+	}
+	
+	@ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List", produces = "application/json", value = "List notification events to which the user is subscribed", httpMethod="GET")
+	@ApiResponses(value = { @ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Restrict({ @Group(GlobalData.USER_ROLE) })
+	public static Result subscriptions() {
+		// Get the user record of the creator
+		User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		return NotificationsDelegate.listSubscriptions(subscriber.getEmail());
 	}
 
 	/* PRIVATE METHODS */
@@ -261,6 +323,4 @@ public class Notifications extends Controller {
 		
 		return null;
 	}
-
-
 }

@@ -9,10 +9,11 @@ import models.Campaign;
 import models.Component;
 import models.ComponentMilestone;
 import models.Contribution;
-import models.NotificationEvent;
+import models.NotificationEventSignal;
 import models.ResourceSpace;
 import models.WorkingGroup;
 import models.transfer.NotificationSignalTransfer;
+import models.transfer.NotificationSubscriptionTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.i18n.Messages;
@@ -267,7 +268,7 @@ public class NotificationsDelegate {
 			String title, String text, UUID resourceUuid, String resourceTitle, String resourceText, 
 			Date notificationDate, String resourceType, String associatedUser) {
 		// 1. Prepare the notification event data
-		NotificationEvent notificationEvent = new NotificationEvent();
+		NotificationEventSignal notificationEvent = new NotificationEventSignal();
 		notificationEvent.setOrigin(origin);
 		notificationEvent.setOriginType(originType);
 		notificationEvent.setOriginName(originName);
@@ -277,7 +278,7 @@ public class NotificationsDelegate {
 		notificationEvent.setResourceUUID(resourceUuid);
 		notificationEvent.setResourceTitle(resourceTitle);
 		notificationEvent.setResourceText(resourceText);
-		notificationEvent.setDate(notificationDate);
+		notificationEvent.setNotificationDate(notificationDate);
 		notificationEvent.setResourceType(resourceType);
 		notificationEvent.setAssociatedUser(associatedUser);
 		Logger.info("NOTIFICATION: Notification event ready");
@@ -295,13 +296,54 @@ public class NotificationsDelegate {
 		// Relay response to requestor
 		if (response.getStatus() == 200) {
 			Logger.info("NOTIFICATION: Signaled and with OK status => "+response.getBody().toString());
-			// TODO: persist notifications for history NotificationEvent.create(notificationEvent);
+			notificationEvent.setSignaled(true);
+			NotificationEventSignal.create(notificationEvent);
 			return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled",response.getBody())));
 		} else {
 			Logger.info("NOTIFICATION: Error while signaling => "+response.getBody().toString());
-			return Controller.internalServerError(response.asJson());
+			NotificationEventSignal.create(notificationEvent);
+			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
 		}
     }
+
+	public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) {
+		NotificationServiceWrapper ns = new NotificationServiceWrapper();
+		WSResponse response = ns.createNotificationSubscription(subscription);
+		// Relay response to requestor
+		if (response.getStatus() == 200) {
+			Logger.info("NOTIFICATION: Subscription created => "+response.getBody().toString());
+			return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created",response.getBody())));
+		} else {
+			Logger.info("NOTIFICATION: Error while subscribing => "+response.getBody().toString());
+			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
+		}
+	}
+	
+	public static Result unSubscribeToEvent(NotificationSubscriptionTransfer subscription) {
+		NotificationServiceWrapper ns = new NotificationServiceWrapper();
+		WSResponse response = ns.deleteSubscription(subscription);
+		// Relay response to requestor
+		if (response.getStatus() == 200) {
+			Logger.info("NOTIFICATION: Subscription deleted => "+response.getBody().toString());
+			return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created",response.getBody())));
+		} else {
+			Logger.info("NOTIFICATION: Error while un-subscribing => "+response.getBody().toString());
+			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.asJson().toString())));
+		}
+	}
+
+	public static Result listSubscriptions(String alertEndpoint) {
+		NotificationServiceWrapper ns = new NotificationServiceWrapper();
+		WSResponse response = ns.listSubscriptionPerAlertEndpoint(alertEndpoint);
+		// Relay response to requestor
+		if (response.getStatus() == 200) {
+			Logger.info("NOTIFICATION: Subscription deleted => "+response.getBody().toString());
+			return Controller.ok(response.getBody());
+		} else {
+			Logger.info("NOTIFICATION: Error while un-subscribing => "+response.getBody().toString());
+			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.asJson().toString())));
+		}
+	}
 	
 	/**
 	 * Method to prepare a quick notificaiton event object and send it to the local notification endpoint that will prepare the full notificaiton 
@@ -311,12 +353,12 @@ public class NotificationsDelegate {
 	 * @param originUUID
 	 * @param resourceUUID
 	 */
-	private static NotificationSignalTransfer prepareNotificationSignal(NotificationEvent notificationEvent) {
+	private static NotificationSignalTransfer prepareNotificationSignal(NotificationEventSignal notificationEvent) {
 		NotificationSignalTransfer newNotificationSignal = new NotificationSignalTransfer();
 		
 		newNotificationSignal.setEventId(notificationEvent.getOrigin().toString()+"_"+notificationEvent.getEventName());
 		// TODO: after updating notification service, use title for something different
-		newNotificationSignal.setEventTitle(notificationEvent.getTitle());
+		newNotificationSignal.setTitle(notificationEvent.getTitle());
 		
 		// parts of the notification text
 		//  There are news related to a {0} in {1} '{2}' / {3} / {4}
@@ -325,7 +367,7 @@ public class NotificationsDelegate {
 		String originType = notificationEvent.getOriginType().toString();
 		String originName = notificationEvent.getOriginName();
 		String associatedUser = notificationEvent.getAssociatedUser();
-		String associatedDate = notificationEvent.getDate().toString();
+		String associatedDate = notificationEvent.getNotificationDate().toString();
 		
 		String messageCode = "notification.description.general";
 		// Get proper i8tnl messages format
