@@ -1749,15 +1749,21 @@ public class Contributions extends Controller {
                 switch (type) {
                     case "IDEA":
                         while ((line = br.readLine()) != null) {
-                            System.out.println(line);
+
                             String[] cell = line.split(cvsSplitBy);
                             Contribution c = new Contribution();
                             c.setType(ContributionTypes.IDEA);
                             // get source code from cell 1
                             c.setSourceCode(cell[0]);
                             // get author name from cell 2
-                            // TODO existing author
                             c.setFirstAuthorName(cell[1]);
+                            List<User> authors = User.findByName(c.getFirstAuthorName());
+                            //If more than one user matches the name criteria, we'll skip the author set up
+                            if(authors != null && authors.size() == 1){
+                                c.getAuthors().add(authors.get(0));
+                            }else{
+                                Logger.info("Cannot set author for contribution with SourceCode: " + c.getSourceCode());
+                            }
                             // ignore cells 3,4
                             // TODO get age & gender from cells 5,6
                             // ignore cell 7

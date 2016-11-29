@@ -664,6 +664,14 @@ public class User extends Model implements Subject {
                    .findUnique();
     }
 
+	public static List<User> findByName(String name)
+	{
+		return find.where()
+				.eq("name",
+						name)
+				.findList();
+	}
+
 
 	public static User findByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
