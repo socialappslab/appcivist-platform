@@ -834,6 +834,13 @@ public class Contribution extends AppCivistBaseModel {
         return contributions.findList().size();
     }
 
+    // TODO change get(0)
+    public static Contribution readBySourceCode(String sourceCode) {
+        ExpressionList<Contribution> contributions = find.where().eq("sourceCode",
+                sourceCode);
+        return contributions.findList() != null && !contributions.findList().isEmpty() ? contributions.findList().get(0) : null;
+    }
+
     public static List<Contribution> findAllByContainingSpace(Long sid) {
         List<Contribution> contribs = find.where()
                 .eq("containingSpaces.resourceSpaceId", sid).findList();

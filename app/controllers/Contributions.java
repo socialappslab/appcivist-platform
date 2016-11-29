@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1550,7 +1551,6 @@ public class Contributions extends Controller {
     }
 
 	/** IDEAS **/
-	// TODO authorization
 	/**
 	 * POST /api/assembly/:aid/contribution/ideas/import
 	 * Import ideas file
@@ -1565,9 +1565,8 @@ public class Contributions extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result importContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
-											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
-											 @ApiParam(value = "Type of contribution", required = true, defaultValue = "IDEA", example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
+	public static Result importContributionsOld(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
 		Http.MultipartFormData body = request().body().asMultipartFormData();
 		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
 		Campaign campaign = null;
@@ -1586,40 +1585,97 @@ public class Contributions extends Controller {
 				String cvsSplitBy = ",";
 				String line = br.readLine();
 				while ((line = br.readLine()) != null) {
+				    System.out.println(line);
 					String[] cell = line.split(cvsSplitBy);
-					switch (type) {
+                    Contribution c = new Contribution();
+                    c.setTitle(cell[0]);
+                    c.setText(cell[1]);
+                    // TODO existing author
+                    c.setFirstAuthorName(cell[2]);
+                    // TODO existing theme
+                    List<Theme> themesList = new ArrayList<Theme>();
+                    String themeSplitBy = "-";
+                    String[] themes = cell[3].split(themeSplitBy);
+                    for(String theme: themes) {
+                        Theme t = new Theme();
+                        t.setTitle(theme);
+                        themesList.add(t);
+                    }
+                    c.setThemes(themesList);
+                    c.setSourceCode(cell[4]);
+
+                    Resource res = null;
+
+					switch (cell[5]) {
 						case "IDEA":
-							Contribution c = new Contribution();
 							c.setType(ContributionTypes.IDEA);
-							c.setTitle(cell[0]);
-							c.setText(cell[1]);
-							// TODO existing author
-							c.setFirstAuthorName(cell[2]);
-							// TODO existing theme
-							List<Theme> themesList = new ArrayList<Theme>();
-							String themeSplitBy = "-";
-							String[] themes = cell[3].split(themeSplitBy);
-							for(String theme: themes) {
-								Theme t = new Theme();
-								t.setTitle(theme);
-								themesList.add(t);
-							}
-							c.setThemes(themesList);
-                            c.setSourceCode(cell[4]);
-							Contribution.create(c);
-							rs.addContribution(c);
-							ResourceSpace.update(rs);
 							break;
+                        case "PROPOSAL":
+                            c.setType(ContributionTypes.PROPOSAL);
+                            // Etherpad support
+                            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+                            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+                            if (cell[6] != null) {
+                                res = ResourcesDelegate.createResource(null, cell[6], ResourceTypes.PROPOSAL, true);
+                            } else {
+                                List<Resource> templates = ContributionsDelegate.getTemplates(aid.toString(), cid.toString());
+
+                                if (templates != null) {
+                                    // if there are more than one, then use the last
+                                    String padId = templates.get(templates.size() - 1).getPadId();
+                                    EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+                                    String templateHtml = wrapper.getHTML(padId);
+                                    // save the etherpad
+                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
+                                }
+                            }
+                            break;
 						default:
 							break;
 					}
 
+                    rs.addContribution(c);
+                    ResourceSpace.update(rs);
+
+                    if (res != null) {
+                        List<Resource> resources = new ArrayList<>();
+                        resources.add(res);
+                        c.setExistingResources(resources);
+                    }
+
+                    Contribution.create(c);
+
+                    // Feedback support
+                    if (cell.length == 9) {
+                        String feedback = cell[7];
+                        String feedbackUser = cell[8];
+                        ContributionFeedback cFeed = cFeed = new ContributionFeedback();
+                        switch (feedback) {
+                            case "up":
+                                cFeed.setUp(true);
+                                break;
+                            case "down":
+                                cFeed.setDown(true);
+                                break;
+                            default:
+                                break;
+                        }
+                        User user = User.findByUserName(cell[8]);
+                        cFeed.setUserId(user.getUserId());
+                        cFeed.setContributionId(c.getContributionId());
+                        cFeed.setType(ContributionFeedbackTypes.TECHNICAL_ASSESSMENT);
+                        ContributionFeedback.create(cFeed);
+                    }
+
 				}
 				//Ebean.commitTransaction();
 			} catch (EntityNotFoundException ex) {
+			    ex.printStackTrace();
                 return internalServerError("The campaign doesn't exist");
             } catch (Exception e) {
 				//Ebean.rollbackTransaction();
+                e.printStackTrace();
 				return contributionFeedbackError(null, e.getLocalizedMessage());
 			}
 		}
@@ -1638,41 +1694,31 @@ public class Contributions extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
-											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid,
-											 @ApiParam(value = "Type of contribution", required = true, example = "IDEA") @QueryParam("nro_nombre_llamado") String type) {
-		String csv = "idea title,idea summary,idea author,idea theme, source code\n";
+											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
+		String csv = "idea title,idea summary,idea author,idea theme, source code, type\n";
 		Campaign campaign = null;
         try {
             campaign = Campaign.read(cid);
             ResourceSpace rs = null;
             if (campaign != null) {
                 rs = campaign.getResources();
-                Integer t = null;
-                switch (type) {
-                    case "IDEA":
-                        t = ContributionTypes.IDEA.ordinal();
-                        break;
-                    default:
-                        break;
-                }
-                if (t != null && rs != null) {
-                    List<Contribution> contributions = ContributionsDelegate
-                            .findContributionsInResourceSpace(rs, t);
-                    for (Contribution c: contributions) {
-                        csv = csv + (c.getTitle() != null ? c.getTitle() : "")  + ",";
-                        csv = csv + (c.getAssessmentSummary() != null ? c.getAssessmentSummary() : "") + ",";
-                        // TODO existing author
-                        csv = csv + (c.getFirstAuthorName() != null ? c.getFirstAuthorName() : "");
-                        csv = csv + ",";
-                        int themeSize = c.getThemes().size();
-                        for(int i=0; i < themeSize; i++) {
-                            if (i > 0 && i < themeSize + 1) {
-                                csv = csv + "-";
-                            }
-                            csv = csv + c.getThemes().get(i).getTitle();
+                List<Contribution> contributions = ContributionsDelegate
+                        .findContributionsInResourceSpace(rs, null);
+                for (Contribution c: contributions) {
+                    csv = csv + (c.getTitle() != null ? c.getTitle() : "")  + ",";
+                    csv = csv + (c.getAssessmentSummary() != null ? c.getAssessmentSummary() : "") + ",";
+                    // TODO existing author
+                    csv = csv + (c.getFirstAuthorName() != null ? c.getFirstAuthorName() : "");
+                    csv = csv + ",";
+                    int themeSize = c.getThemes().size();
+                    for(int i=0; i < themeSize; i++) {
+                        if (i > 0 && i < themeSize + 1) {
+                            csv = csv + "-";
                         }
-                        csv = csv + "," + (c.getSourceCode() != null ? c.getSourceCode() : "") + "\n";
+                        csv = csv + c.getThemes().get(i).getTitle();
                     }
+                    csv = csv + "," + (c.getSourceCode() != null ? c.getSourceCode() : "");
+                    csv = csv + "," + c.getType().toString()  + "\n";
                 }
 
             }
@@ -1693,6 +1739,168 @@ public class Contributions extends Controller {
 
 	}
 
+
+
+    /** TODO NEW IDEAS & PROPOSALS IMPORT **/
+    /**
+     * POST /api/assembly/:aid/contribution/ideas/import
+     * Import ideas file
+     * @param aid Assembly Id
+     * @param cid Campaing Id
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
+            notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            /*@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")*/ })
+    public static Result importContributions(@ApiParam(name="type", value="Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        Campaign campaign = null;
+
+        if (uploadFilePart != null) {
+            try {
+                BufferedReader br = null;
+                br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+                String cvsSplitBy = ";";
+                String line = br.readLine();
+
+                switch (type) {
+                    case "IDEA":
+                        while ((line = br.readLine()) != null) {
+
+                            String[] cell = line.split(cvsSplitBy);
+                            Contribution c = new Contribution();
+                            c.setType(ContributionTypes.IDEA);
+                            // get source code from cell 1
+                            c.setSourceCode(cell[0]);
+                            // get author name from cell 2
+                            c.setFirstAuthorName(cell[1]);
+                            List<User> authors = User.findByName(c.getFirstAuthorName());
+                            //If more than one user matches the name criteria, we'll skip the author set up
+                            if(authors != null && authors.size() == 1){
+                                c.getAuthors().add(authors.get(0));
+                            }else{
+                                Logger.info("Cannot set author for contribution with SourceCode: " + c.getSourceCode());
+                            }
+                            // ignore cells 3,4
+                            // TODO get age & gender from cells 5,6
+                            // ignore cell 7
+                            // get title from cell 8
+                            c.setTitle(cell[8]);
+                            // get description from cell 9
+                            c.setText(cell[9]);
+                            // TODO get category & subcategory from cells 10,11
+                            Contribution.create(c);
+                        }
+                        break;
+                    case "PROPOSAL":
+                        while ((line = br.readLine()) != null) {
+                            System.out.println(line);
+                            String[] cell = line.split(cvsSplitBy);
+                            Contribution c = new Contribution();
+                            c.setType(ContributionTypes.PROPOSAL);
+
+                            // get source code from cell 1
+                            c.setSourceCode(cell[0]);
+
+                            // get title from cell 2
+                            c.setTitle(cell[1]);
+
+                            // get summary from cell 3 for ehterpad support we need aid & cid
+                            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+                            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+                            Resource res = new Resource();
+                            if (cell[2] != null) {
+                                res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);
+                            } else {
+                                // use generic template
+                                List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
+
+                                if (templates != null) {
+                                    // if there are more than one, then use the last
+                                    String padId = templates.get(templates.size() - 1).getPadId();
+                                    EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+                                    String templateHtml = wrapper.getHTML(padId);
+                                    // save the etherpad
+                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
+                                }
+                            }
+                            if (res != null) {
+                                List<Resource> contribResources = new ArrayList<>();
+                                contribResources.add(res);
+                                c.setExistingResources(contribResources);
+                            }
+
+                            // get wgroup from cell 4 & get resource space from wgroup
+                            WorkingGroup wg = WorkingGroup.readByName(cell[3]);
+                            ResourceSpace rs = null;
+                            if (campaign != null) {
+                                rs = wg.getResources();
+                            }
+
+                            // ignore cells 5-12
+
+                            // get & create atachments from cells 13,14,15
+                            List<Resource> resources = new ArrayList<>();
+                            String url1 = cell[12];
+                            if (url1 != null && !url1.equals("")) {
+                                Resource resource = new Resource();
+                                resource.setUrl(new URL(url1));
+                                resource.setResourceType(ResourceTypes.FILE);
+                                resources.add(resource);
+                            }
+                            String url2 = cell[13];
+                            if (url2 != null && !url2.equals("")) {
+                                Resource resource = new Resource();
+                                resource.setUrl(new URL(url2));
+                                resource.setResourceType(ResourceTypes.FILE);
+                                resources.add(resource);
+                            }
+                            String url3 = cell[14];
+                            if (url3 != null && !url3.equals("")) {
+                                Resource resource = new Resource();
+                                resource.setUrl(new URL(url3));
+                                resource.setResourceType(ResourceTypes.FILE);
+                                resources.add(resource);
+                            }
+
+                            List<Contribution> inspirations = new ArrayList<>();
+                            for (int i=15; i < cell.length; i++) {
+                                // get source code from cell i
+                                Contribution contrib = Contribution.readBySourceCode(cell[i]);
+                                if (contrib != null) {
+                                    inspirations.add(contrib);
+                                }
+                            }
+                            c.setAssociatedContributions(inspirations);
+
+                            Contribution.create(c);
+
+                            if (rs != null) {
+                                rs.addContribution(c);
+                                ResourceSpace.update(rs);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                //Ebean.commitTransaction();
+            } catch (Exception e) {
+                //Ebean.rollbackTransaction();
+                e.printStackTrace();
+                return contributionFeedbackError(null, e.getLocalizedMessage());
+            }
+        }
+        return ok();
+    }
+
+
+
 	/**
 	 * POST /api/assembly/:aid/contribution/pad
 	 * Create a new Resource PROPOSAL from CONTRIBUTION_TEMPLATE
@@ -1710,36 +1918,14 @@ public class Contributions extends Controller {
 		String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
 		String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 		// 1: find into campaign templates, 2: find into assembly templates, 3: find generic templates
-		List<Resource> templates = new ArrayList<Resource>();
-
-        if (cid != null && cid.compareTo("") != 0) {
-            Campaign c = Campaign.read(Long.parseLong(cid));
-            List<Resource> resources = c.getResources().getResources();
-            for (Resource r: resources) {
-                if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
-                    templates.add(r);
-                }
-            }
-        }
-		if (aid != null && aid.compareTo("") != 0 && templates.isEmpty()) {
-			Assembly a = Assembly.read(Long.parseLong(aid));
-			List<Resource> resources = a.getResources().getResources();
-			for (Resource r: resources) {
-				if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
-					templates.add(r);
-				}
-			}
-		}
-		if(templates.isEmpty()){
-			templates = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
-		}
+        List<Resource> templates = ContributionsDelegate.getTemplates(aid, cid);
 
 		if (templates != null) {
 			// if there are more than one, then use the last
 			String padId = templates.get(templates.size() - 1).getPadId();
 			EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
 			String templateHtml = wrapper.getHTML(padId);
-			Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL);
+			Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL, false);
 			//Create this relationship when the contribution is saved
 			//Assembly ass = Assembly.read(aid);
 			//ass.getResources().addResource(res);

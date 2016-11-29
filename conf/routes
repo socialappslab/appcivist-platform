@@ -215,8 +215,9 @@ POST      /api/campaign/:uuid/contribution                                contro
 POST      /api/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
 
 #import/export contributions, type=IDEA
-POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
-GET       /api/assembly/:aid/campaign/:cid/contribution/export            controllers.Contributions.exportContributions(aid: Long, cid: Long, type?="")
+POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
+POST      /api/contribution/import                                        controllers.Contributions.importContributions(type?="")
+GET       /api/assembly/:aid/campaign/:cid/contribution/export            controllers.Contributions.exportContributions(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better

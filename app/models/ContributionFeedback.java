@@ -25,7 +25,6 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Long contributionId;
 	private Long userId;
 	// TODO: Add a way of making feedback private or limited to a working group
-	// TODO: Add a way of making feedback
 
 	private Integer benefit;
 	private Integer need;

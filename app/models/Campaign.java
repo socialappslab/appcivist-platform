@@ -727,6 +727,12 @@ String uuidAsString, List<Component> phases) {
 		return campaigns.findList().size();
 	}
 
+	// TODO change get(0)
+	public static Campaign findByTitle(String campaignTitle) {
+		ExpressionList<Campaign> campaigns = find.where().eq("title",campaignTitle);
+		return campaigns.findList() != null && !campaigns.findList().isEmpty() ? campaigns.findList().get(0) : null;
+	}
+
 	public static Campaign createObject(Campaign campaign) {
 		campaign.save();
 		return campaign;

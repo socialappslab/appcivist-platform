@@ -207,4 +207,30 @@ public class ContributionsDelegate {
         return header + tBody + "</body>";
     }
 
+    public static List<Resource> getTemplates(String aid, String cid) {
+        List<Resource> templates = new ArrayList<Resource>();
+        if (cid != null && cid.compareTo("") != 0) {
+            Campaign c = Campaign.read(Long.parseLong(cid));
+            List<Resource> resources = c.getResources().getResources();
+            for (Resource r: resources) {
+                if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+                    templates.add(r);
+                }
+            }
+        }
+        if (aid != null && aid.compareTo("") != 0 && templates.isEmpty()) {
+            Assembly a = Assembly.read(Long.parseLong(aid));
+            List<Resource> resources = a.getResources().getResources();
+            for (Resource r: resources) {
+                if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+                    templates.add(r);
+                }
+            }
+        }
+        if(templates.isEmpty()){
+            templates = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
+        }
+        return templates;
+    }
+
 }
