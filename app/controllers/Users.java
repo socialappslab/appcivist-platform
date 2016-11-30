@@ -479,7 +479,7 @@ public class Users extends Controller {
 	@ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "Password Change Object", value = "User's updated password form", dataType = "Form", paramType = "body") })
+			@ApiImplicitParam(name = "Password Change Object", value = "User's updated password form", dataType = "models.Users.PasswordChange", paramType = "body") })
 	@Restrict(@Group(GlobalData.USER_ROLE))
 	public static Result doChangePassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());

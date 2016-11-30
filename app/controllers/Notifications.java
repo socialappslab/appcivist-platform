@@ -139,7 +139,7 @@ public class Notifications extends Controller {
 	@ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod="POST")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.NotificationSubscriptionTransfer", paramType = "body", example="{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5','eventName':'NEW_CONTRIBUTION_IDEA'}"),
+			@ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.transfer.NotificationSubscriptionTransfer", paramType = "body", example="{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5','eventName':'NEW_CONTRIBUTION_IDEA'}"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result subscribe() {
