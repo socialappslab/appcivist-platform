@@ -1838,8 +1838,13 @@ public class Contributions extends Controller {
                             // get wgroup from cell 4 & get resource space from wgroup
                             WorkingGroup wg = WorkingGroup.readByName(cell[3]);
                             ResourceSpace rs = null;
-                            if (campaign != null) {
-                                rs = wg.getResources();
+//                            if (campaign != null) {
+//                                rs = wg.getResources();
+//                            }
+                            if(wg != null){
+                                wg.getResources().getContributions().add(c);
+                            }else{
+                                Logger.info("working group with name '" + cell[3] + "' not found");
                             }
 
                             // ignore cells 5-12
@@ -1868,6 +1873,9 @@ public class Contributions extends Controller {
                                 resources.add(resource);
                             }
 
+                            Logger.info("URL Resources size: " + resources.size());
+                            c.getResourceSpace().setResources(resources);
+
                             List<Contribution> inspirations = new ArrayList<>();
                             for (int i=15; i < cell.length; i++) {
                                 // get source code from cell i
@@ -1879,6 +1887,9 @@ public class Contributions extends Controller {
                             c.setAssociatedContributions(inspirations);
 
                             Contribution.create(c);
+                            if(wg != null){
+                                wg.update();
+                            }
 
                             if (rs != null) {
                                 rs.addContribution(c);
