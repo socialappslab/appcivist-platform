@@ -17,6 +17,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -563,6 +564,40 @@ public class WorkingGroups extends Controller {
 			return badRequest(Json.toJson(Json
 					.toJson(new TransferResponseStatus("Error processing request"))));
 		}
+
+	}
+
+	@ApiOperation(httpMethod = "POST", response = WorkingGroup.class, produces = "application/json", value = "Assigns contributions to the working group")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result assignContributionsToGroup(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long cid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+
+		try {
+			List<BigInteger> selectedContributionsPayload = null;
+			List<Long> selectedContributions = null;
+			if (request().body().asJson().isArray()) {
+				selectedContributionsPayload = new ObjectMapper().convertValue(request().body().asJson(), ArrayList.class);
+				selectedContributions = selectedContributionsPayload.stream().map(p -> p.longValue()).collect(Collectors.toList());
+			}
+
+			List<Contribution> selectedContributionsList = selectedContributions.stream().map(p -> Contribution.read(p)).collect(Collectors.toList());
+			WorkingGroup workingGroup = WorkingGroup.read(gid);
+			workingGroup.getAssignedContributions().addAll(selectedContributionsList);
+			workingGroup.update();
+			for(Contribution contribution : selectedContributionsList){
+				ContributionHistory.createHistoricFromContribution(contribution);
+			}
+			return ok(Json.toJson(workingGroup));
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
 
 	}
 }

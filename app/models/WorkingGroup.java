@@ -129,6 +129,18 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JoinTable(name = "working_group_ballot_history")
 	@Where(clause="${ta}.removed=false")
 	private List<Ballot> ballotHistories;
+
+	//TODO verify why including this field ends up in infinite recursion
+	@JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
+			"budget", "priority", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
+			"attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
+			"actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
+			"existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes, workingGroupAuthors",
+			"authors", "workingGroups"
+	})
+	@JsonIgnore
+	@Transient
+	private List<Contribution> assignedContributions;
 	
 	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -627,5 +639,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	public void setBallotHistories(List<Ballot> ballotHistories) {
 		this.ballotHistories = ballotHistories;
+	}
+
+	public List<Contribution> getAssignedContributions(){
+		return this.resources.getContributions();
+	}
+
+	public void setAssignedContributions(List<Contribution> contributions){
+		this.assignedContributions = contributions;
+		this.resources.getContributions().addAll(assignedContributions);
 	}
 }

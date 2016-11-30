@@ -98,6 +98,7 @@ GET       /api/assembly/:aid/group/:gid/public                            contro
 POST      /api/assembly/:aid/group/:gid/ballot                            controllers.WorkingGroups.nextBallotForWorkingGroup(aid: Long, gid: Long)
 PUT       /api/assembly/:aid/group/:gid/ballot                            controllers.WorkingGroups.archiveWorkingGroupsBallot(aid: Long, gid: Long)
 GET       /api/group/:uuid                                                controllers.WorkingGroups.findWorkingGroupByUUID(uuid: java.util.UUID)
+POST      /api/assembly/:aid/campaign/:cid/group/:gid/assignments         controllers.WorkingGroups.assignContributionsToGroup(aid: Long, cid: Long, gid: Long)
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
