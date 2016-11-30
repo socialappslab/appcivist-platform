@@ -1180,5 +1180,5 @@ create table notification_event_signal (
   constraint pk_notification_event primary key (id))
 ;
 
-create index ix_notification_event_id on notification_event (id);
-create index ix_notification_event_uuid on notification_event (uuid);
+create index ix_notification_event_id on notification_event_signal (id);
+create index ix_notification_event_uuid on notification_event_signal (uuid);
