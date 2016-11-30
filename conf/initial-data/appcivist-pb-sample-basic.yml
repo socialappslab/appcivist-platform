@@ -657,12 +657,12 @@
     componentDefId: 1
     name: "Ideas"
     description: "The ideas stage is about raising issues, brainstorming ideas, forming working groups, and starting proposals."
-    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9a"
   - &pd2 !!models.ComponentDefinition
     componentDefId: 2
     name: "Proposals"
     description: "The proposals stage is about raising issues, brainstorming ideas, forming working groups, and starting proposals."
-    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9b"
     requiredConfigurations: 
     - &componentConfig1 !!models.ComponentRequiredConfiguration
       componentDef: *pd2
@@ -674,7 +674,7 @@
     componentDefId: 3
     name: "Deliberation"    
     description: "is the careful consideration of proposals through comments and evidence. In this stage, proposals can only be discussed, praised or criticized, but not edited."
-    uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9c"
     requiredConfigurations: 
     - &componentConfig31 !!models.ComponentRequiredConfiguration
       componentDef: *pd3
@@ -695,7 +695,7 @@
     componentDefId: 4
     name: "Voting"
     description: "Voting determines the winning proposal/s, based on the voting system selected and the number of winners allowed"
-    uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9d"
     requiredConfigurations: 
     - &componentConfig51 !!models.ComponentRequiredConfiguration
       componentDef: *pd4
@@ -743,7 +743,7 @@
     componentDefId: 5
     name: "Implementation"
     description: "Implementation allows assembly members to follow the progress of winning proposals or to find new opportunites for proposals that were not selected durin the voting stage."
-    uuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9e"
   - &pd6 !!models.ComponentDefinition
     componentDefId: 6
     name: "Scheduling"
@@ -751,23 +751,23 @@
   - &pd7 !!models.ComponentDefinition
     componentDefId: 7
     name: "Implementation"
-    uuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9g"
   - &pd8 !!models.ComponentDefinition
     componentDefId: 8
     name: "Mobilization"
-    uuidAsString: "12fa3984-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa3984-407a-11e5-a151-feff819cdc9h"
   - &pd9 !!models.ComponentDefinition
     componentDefId: 9    
     name: "Visualization"
-    uuidAsString: "12fa0348-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa0348-407a-11e5-a151-feff819cdc9i"
   - &pd10 !!models.ComponentDefinition
     componentDefId: 10
     name: "Reporting"
-    uuidAsString: "12fa0934-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa0934-407a-11e5-a151-feff819cdc9j"
   - &pd11 !!models.ComponentDefinition
     componentDefId: 11
     name: "Mapping"
-    uuidAsString: "12fa8923-407a-11e5-a151-feff819cdc9f"
+    uuidAsString: "12fa8923-407a-11e5-a151-feff819cdc9k"
  
 ##############################################################################################################################################################################################
 # Campaign Templates
