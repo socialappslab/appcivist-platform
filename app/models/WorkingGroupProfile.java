@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import models.misc.Views;
 import utils.GlobalData;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,12 +31,16 @@ public class WorkingGroupProfile extends AppCivistBaseModel {
 	private Long workingGroupProfileId;
 	@OneToOne(mappedBy="profile")
 	@JoinColumn(name="working_group_profile_id", unique= true, nullable=true, insertable=true, updatable=true)
-	private WorkingGroup workingGroup; 
+	private WorkingGroup workingGroup;
+	@JsonView(Views.Public.class)
 	@Enumerated(EnumType.STRING)
 	private SupportedMembershipRegistration supportedMembership = SupportedMembershipRegistration.INVITATION_AND_REQUEST;
+	@JsonView(Views.Public.class)
 	@Enumerated(EnumType.STRING)
 	private ManagementTypes managementType = ManagementTypes.COORDINATED_AND_MODERATED;
+	@JsonView(Views.Public.class)
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
+	@JsonView(Views.Public.class)
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
 	
 	// TODO: 

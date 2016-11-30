@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ConfigTargets;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -26,13 +28,17 @@ import enums.ConfigTargets;
 public class Config extends AppCivistBaseModel {
 
 	@Id
+    @JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
+    @JsonView(Views.Public.class)
     private String key;
 	@Column(name="value", columnDefinition="text")
+    @JsonView(Views.Public.class)
     private String value;
+    @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
     private ConfigTargets configTarget;
-    
+    @JsonView(Views.Public.class)
     @Column(name="target_uuid")
     private UUID targetUuid;
     @Transient

@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import javax.persistence.CascadeType;
@@ -13,6 +14,7 @@ import javax.persistence.ManyToMany;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import models.misc.Views;
 
 import java.util.List;
 
@@ -25,13 +27,14 @@ public class Theme extends AppCivistBaseModel {
     @GeneratedValue
     private Long themeId;
 
+    @JsonView(Views.Public.class)
     private String title;
-
+    @JsonView(Views.Public.class)
     @Column(name = "description", columnDefinition = "text")
     private String description;
-
+    @JsonView(Views.Public.class)
     private String icon;
-
+    @JsonView(Views.Public.class)
     private String cover;
 
     @JsonIgnore

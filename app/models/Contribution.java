@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -13,17 +14,13 @@ import javax.persistence.*;
 
 import enums.ContributionStatus;
 import models.location.Location;
+import models.misc.Views;
 import play.data.validation.Constraints.Required;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
@@ -41,6 +38,7 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Contribution numerical ID", position=0)
     private Long contributionId;
 
+    @JsonView(Views.Public.class)
     @Index
     @ApiModelProperty(value="Contribution Universal ID (meant to be valid accross intances of the platform)", position=1)
     private UUID uuid = UUID.randomUUID();
@@ -49,20 +47,24 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(hidden=true, notes="String version of the UUID to facilitate processing in server side. To be removed.")
     private String uuidAsString;
 
+    @JsonView(Views.Public.class)
     @Required
     @ApiModelProperty(value="Title of the contribution", position=2)
     private String title;
 
+    @JsonView(Views.Public.class)
     @Required
     @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
 
+    @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
     @Required
     @ApiModelProperty(value="Type of Contribution", position=4)
     private ContributionTypes type;
 
+    @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
     @Required
     @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
@@ -138,11 +140,21 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Hashtag> hashtags = new ArrayList<Hashtag>();
     @Transient
+    @JsonView(Views.Public.class)
     private List<Contribution> comments = new ArrayList<Contribution>();
     @Transient
     private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
+    //@Transient
+    //private List<Contribution> inspirations;
+
+    @JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
+            "budget", "priority", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
+            "attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
+            "actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
+            "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes"
+    })
     @Transient
-    private List<Contribution> inspirations;
+    private List<Contribution> associatedContributions;
 
 	/*
      * The following fields are specific to each type of contribution
@@ -164,6 +176,9 @@ public class Contribution extends AppCivistBaseModel {
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @OneToOne(cascade = CascadeType.ALL)
     private Resource extendedTextPad;
+
+    @Column(name = "source_code")
+    private String sourceCode;
 
     // Fields specific to the type PROPOSAL
     @Transient
@@ -300,6 +315,14 @@ public class Contribution extends AppCivistBaseModel {
 
     public List<User> getAuthors() {
         return authors;
+    }
+
+    public String getSourceCode() {
+        return sourceCode;
+    }
+
+    public void setSourceCode(String sourceCode) {
+        this.sourceCode = sourceCode;
     }
 
     @Transient
@@ -456,24 +479,33 @@ public class Contribution extends AppCivistBaseModel {
             this.resourceSpace.addContribution(c);
     }
 
-    public List<Contribution> getInspirations() {
-        return this.inspirations;
+//    public List<Contribution> getInspirations() {
+//        return this.inspirations;
+//    }
+//
+//    @JsonIgnore
+//    public List<Contribution> getTransientInspirations() {
+//        return this.inspirations;
+//    }
+
+//    public void setInspirations(List<Contribution> inspirations) {
+//        this.inspirations = inspirations;
+//        this.getResourceSpace().getContributions().addAll(inspirations);
+//    }
+
+    public List<Contribution> getAssociatedContributions(){
+        return this.resourceSpace.getContributions();
     }
 
-    @JsonIgnore
-    public List<Contribution> getTransientInspirations() {
-        return this.inspirations;
+    public void setAssociatedContributions(List<Contribution> contributions){
+        this.associatedContributions = contributions;
+        this.getResourceSpace().getContributions().addAll(associatedContributions);
     }
 
-    public void setInspirations(List<Contribution> inspirations) {
-        this.inspirations = inspirations;
-        this.getResourceSpace().getContributions().addAll(inspirations);
-    }
-
-    public void addInspiration(Contribution c) {
-        if (c.getType() == ContributionTypes.BRAINSTORMING)
-            this.resourceSpace.addContribution(c);
-    }
+//    public void addInspiration(Contribution c) {
+//        if (c.getType() == ContributionTypes.BRAINSTORMING)
+//            this.resourceSpace.addContribution(c);
+//    }
 
     public String getReadOnlyPadUrl() {
         return extendedTextPad != null ? extendedTextPad.getUrlAsString()
@@ -629,6 +661,7 @@ public class Contribution extends AppCivistBaseModel {
         Contribution c = new Contribution(creator, title, text, type);
         c.save();
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
         return c;
     }
 
@@ -691,6 +724,7 @@ public class Contribution extends AppCivistBaseModel {
 
 
         c.refresh();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static Contribution read(Long contributionId) {
@@ -715,12 +749,14 @@ public class Contribution extends AppCivistBaseModel {
         c.setRemoved(true);
         c.setRemoval(new Date());
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static void softDelete(Contribution c) {
         c.setRemoved(true);
         c.setRemoval(new Date());
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static void softRecovery(Long id) {
@@ -728,16 +764,17 @@ public class Contribution extends AppCivistBaseModel {
         c.setRemoved(false);
         c.setRemoval(null);
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static void softRecovery(Contribution c) {
         c.setRemoved(false);
         c.setRemoval(null);
         c.update();
+        ContributionHistory.createHistoricFromContribution(c);
     }
 
     public static Contribution update(Contribution c) {
-        ContributionHistory.createHistoricFromContribution(c);
         List<Theme> themes = new ArrayList<>();
         for (Theme theme : c.getThemes()) {
             if (theme.getThemeId() == null) {
@@ -771,6 +808,7 @@ public class Contribution extends AppCivistBaseModel {
         }
         c.update();
         c.refresh();
+        ContributionHistory.createHistoricFromContribution(c);
         return c;
     }
 
@@ -796,9 +834,22 @@ public class Contribution extends AppCivistBaseModel {
         return contributions.findList().size();
     }
 
+    // TODO change get(0)
+    public static Contribution readBySourceCode(String sourceCode) {
+        ExpressionList<Contribution> contributions = find.where().eq("sourceCode",
+                sourceCode);
+        return contributions.findList() != null && !contributions.findList().isEmpty() ? contributions.findList().get(0) : null;
+    }
+
     public static List<Contribution> findAllByContainingSpace(Long sid) {
         List<Contribution> contribs = find.where()
                 .eq("containingSpaces.resourceSpaceId", sid).findList();
+        return contribs;
+    }
+
+    public static List<Contribution> findPagedByContainingSpace(Long sid, Integer page, Integer pageSize) {
+        List<Contribution> contribs = find.where()
+                .eq("containingSpaces.resourceSpaceId", sid).findPagedList(page, pageSize).getList();
         return contribs;
     }
 
@@ -812,6 +863,14 @@ public class Contribution extends AppCivistBaseModel {
         List<Contribution> contribs = find.where()
                 .eq("containingSpaces.resourceSpaceId", sid)
                 .ilike("textIndex", "%" + query + "%").findList();
+        return contribs;
+    }
+
+    public static List<Contribution> findPagedByContainingSpaceAndQuery(Long sid,
+                                                                      String query, Integer page, Integer pageSize) {
+        List<Contribution> contribs = find.where()
+                .eq("containingSpaces.resourceSpaceId", sid)
+                .ilike("textIndex", "%" + query + "%").findPagedList(page, pageSize).getList();
         return contribs;
     }
 
@@ -855,15 +914,32 @@ public class Contribution extends AppCivistBaseModel {
 
     public static List<Contribution> findAllByContainingSpaceAndType(
             ResourceSpace rs, String t) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
         return find.where().eq("containingSpaces", rs)
-                .eq("type", t.toUpperCase()).findList();
+                .eq("type", type).findList();
+    }
+
+    public static List<Contribution> findPagedByContainingSpaceAndType(
+            ResourceSpace rs, String t, Integer page, Integer pageSize) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
+        return find.where().eq("containingSpaces", rs)
+                .eq("type", type).findPagedList(page, pageSize).getList();
     }
 
     public static List<Contribution> findAllByContainingSpaceAndTypeAndQuery(
             ResourceSpace rs, String t, String query) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
         return find.where().eq("containingSpaces", rs)
-                .eq("type", t.toUpperCase())
+                .eq("type", type)
                 .ilike("textIndex", "%" + query + "%").findList();
+    }
+
+    public static List<Contribution> findPagedByContainingSpaceAndTypeAndQuery(
+            ResourceSpace rs, String t, String query, Integer page, Integer pageSize) {
+        ContributionTypes type = ContributionTypes.valueOf(t.toUpperCase());
+        return find.where().eq("containingSpaces", rs)
+                .eq("type", type)
+                .ilike("textIndex", "%" + query + "%").findPagedList(page, pageSize).getList();
     }
 
     public static List<Contribution> findAllByContainingSpaceIdAndType(

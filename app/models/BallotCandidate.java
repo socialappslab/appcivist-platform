@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Calendar;
@@ -161,5 +162,10 @@ public class BallotCandidate extends Model {
 		return find.where()
 				.eq("ballotId",ballotId)
 				.eq("contributionUuid",uuid).findUnique();
+	}
+
+	@JsonIgnore
+	public Contribution getContribution(){
+		return Contribution.find.where().eq("uuid", this.contributionUuid).findUnique();
 	}
 }

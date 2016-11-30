@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.MalformedURLException;
@@ -27,6 +28,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import models.TokenAction.Type;
+import models.misc.Views;
 import models.transfer.AssemblyTransfer;
 import play.Play;
 import play.db.ebean.Transactional;
@@ -73,17 +75,21 @@ public class User extends Model implements Subject {
 	@Id
 	@GeneratedValue
 	private Long userId;
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@Column(unique=true)
 	private String email;
+	@JsonView(Views.Public.class)
 	private String name;
+	@JsonView(Views.Public.class)
 	@Column(unique=true)
 	private String username;
 	private String language = GlobalData.DEFAULT_LANGUAGE;	
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
+	@JsonView(Views.Public.class)
 	@Column(name = "profile_pic")
 	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "resourceId", "location", "resourceType"})
@@ -663,6 +669,14 @@ public class User extends Model implements Subject {
                        userName)
                    .findUnique();
     }
+
+	public static List<User> findByName(String name)
+	{
+		return find.where()
+				.eq("name",
+						name)
+				.findList();
+	}
 
 
 	public static User findByUUID(UUID uuid) {

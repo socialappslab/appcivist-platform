@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.Transient;
 
 import models.location.Location;
+import models.misc.Views;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 import utils.GlobalData;
@@ -49,28 +51,37 @@ public class Assembly extends AppCivistBaseModel {
 	@Id @GeneratedValue @Column(name="assembly_id")
 	private Long assemblyId;
 	@Index
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
 	@MaxLength(value = 200) @Required
+	@JsonView(Views.Public.class)
 	private String name; 
 	// Short, url friendly, version of the Name
 	@MaxLength(value = 120)
+	@JsonView(Views.Public.class)
 	private String shortname; 
 	@Required
 	@Column(name="description", columnDefinition="text")
-	private String description; 
+	@JsonView(Views.Public.class)
+	private String description;
+	@JsonView(Views.Public.class)
 	private String url; 
 	// If true, the 'profile' is public
+	@JsonView(Views.Public.class)
 	private Boolean listed = true;
 	@Column(name="invitationEmail", columnDefinition="text")
+	@JsonView(Views.Public.class)
 	private String invitationEmail;
 
+	@JsonView(Views.Public.class)
 	@OneToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({ "assemblyProfileId", "assembly" })
 	@JsonInclude(Include.NON_EMPTY)
 	private AssemblyProfile profile = new AssemblyProfile();
-	
+
+	@JsonView(Views.Public.class)
 	@ManyToOne(cascade=CascadeType.ALL)
 	private Location location = new Location();
 
@@ -94,6 +105,7 @@ public class Assembly extends AppCivistBaseModel {
 	/**
 	 * The User who created the Assembly
 	 */
+	@JsonView(Views.Public.class)
 	@ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
 	@Where(clause="${ta}.removed=false")
@@ -105,23 +117,29 @@ public class Assembly extends AppCivistBaseModel {
 	private List<MembershipAssembly> memberships;
 	
 	// Shortcuts to resources in the Assembly Resource Space ('resources')
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Component> components = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Config> configs = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Theme> themes = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "forumPosts", "proposals", "brainstormingContributions"})
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)	
 	@JsonIgnoreProperties({ "configs", "workingGroups"})
 	private List<Campaign> campaigns = new ArrayList<>();
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Contribution> forumPosts = new ArrayList<>();

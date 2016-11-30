@@ -1,5 +1,7 @@
 package models;
 
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -9,17 +11,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
+import models.misc.Views;
 import play.Logger;
 import utils.GlobalData;
 import models.transfer.InvitationTransfer;
@@ -28,10 +22,6 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ContributionTypes;
@@ -49,25 +39,36 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
     private Long groupId;
+	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
+	@JsonView(Views.Public.class)
     private String name;
+	@JsonView(Views.Public.class)
 	@Column(name="text", columnDefinition="text")
     private String text;
+	@JsonView(Views.Public.class)
     private Boolean listed = true;
+	@JsonView(Views.Public.class)
     private String majorityThreshold;
+	@JsonView(Views.Public.class)
     private Boolean blockMajority;
+	@JsonView(Views.Public.class)
     private UUID consensusBallot; 
     @Transient
-    private String consensusBallotAsString; 
+    private String consensusBallotAsString;
+	@JsonView(Views.Public.class)
     private User creator;
-    
+
+	@JsonView(Views.Public.class)
     @OneToOne(cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({ "workingGroupProfileId", "workingGroup" })
 	@JsonInclude(Include.NON_EMPTY)
 	private WorkingGroupProfile profile = new WorkingGroupProfile();
 
+	@JsonView(Views.Public.class)
 	@Column(name="invitationEmail", columnDefinition="text")
 	private String invitationEmail;
+	@JsonView(Views.Public.class)
 	@Transient private List<InvitationTransfer> invitations;
     
     /**
@@ -81,7 +82,8 @@ public class WorkingGroup extends AppCivistBaseModel {
  	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.WORKING_GROUP);
- 
+
+	@JsonView(Views.Public.class)
  	@JsonBackReference
  	@Transient
 	private List<Contribution> proposals = new ArrayList<Contribution>();
@@ -100,11 +102,19 @@ public class WorkingGroup extends AppCivistBaseModel {
  	
  	@JsonIgnore
  	@OneToMany(cascade = CascadeType.REMOVE, mappedBy="workingGroup",fetch=FetchType.LAZY)
- 	private List<MembershipGroup> members; 
- 	
+ 	private List<MembershipGroup> members;
+	//Mixin to show memberships in public view
+	public static abstract class MembeshipsVisibleMixin {
+		@JsonView(Views.Public.class)
+		@JsonIgnore(false)
+		private List<MembershipGroup> members;
+
+	}
+
 	@Transient
 	@JsonIgnore
 	private List<Theme> existingThemes;
+	@JsonView(Views.Public.class)
 	@Transient
 	@JsonIgnore
 	private List<Contribution> existingContributions;
@@ -113,6 +123,24 @@ public class WorkingGroup extends AppCivistBaseModel {
 	private List<Long> assemblies;
 	@Transient
 	private List<Long> campaigns;
+
+	@JsonIgnore
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "working_group_ballot_history")
+	@Where(clause="${ta}.removed=false")
+	private List<Ballot> ballotHistories;
+
+	//TODO verify why including this field ends up in infinite recursion
+	@JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
+			"budget", "priority", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
+			"attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
+			"actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
+			"existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes, workingGroupAuthors",
+			"authors", "workingGroups"
+	})
+	@JsonIgnore
+	@Transient
+	private List<Contribution> assignedContributions;
 	
 	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -424,7 +452,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		this.profile.setSupportedMembership(supportedMembership);
 	}
 
-	
+	@JsonView(Views.Public.class)
 	public List<Theme> getThemes() {
 		return resources.getThemes();
 	}
@@ -520,7 +548,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 	
 	public List<Long> getAssemblies() {
 		List <Long> assemblyIds = new ArrayList<>();
-		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY).collect(Collectors.toList());
+		List<ResourceSpace> spaces = this.containingSpaces
+				.stream().filter(
+						p -> p.getType().equals(ResourceSpaceTypes.ASSEMBLY))
+								.collect(Collectors.toList()
+						);
 		
 		for (ResourceSpace resourceSpace : spaces) {
 			Assembly a = resourceSpace.getAssemblyResources();
@@ -530,7 +562,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		}
 		return assemblyIds;
 	}
-	
+
 	public List<Long> getCampaigns() {
 		List<Long> campaignIds = this.campaigns;
 		if (campaignIds == null) {
@@ -559,7 +591,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 				.filter(p -> p.getType() == type)
 				.collect(Collectors.toList());
 	}
-	
+
 	public List<Campaign> getWorkingGroupCampaigns(String status) {
 		List<ResourceSpace> campaignSpaces = getContainingSpacesFilteredByType(ResourceSpaceTypes.CAMPAIGN);
 		List<Campaign> campaigns = new ArrayList<>();
@@ -588,4 +620,33 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return wg.getResources().getContributions();
 	}
 
+	public static WorkingGroup readByUUID(UUID uuid) {
+		return find.where().eq("uuid", uuid).findUnique();
+	}
+
+	// TODO change get(0)
+	public static WorkingGroup readByName(String wgroupName) {
+		ExpressionList<WorkingGroup> wgroups = find.where().eq("name",wgroupName);
+		return wgroups.findList() != null && !wgroups.findList().isEmpty() ? wgroups.findList().get(0) : null;
+	}
+
+	public List<Ballot> getBallotHistories() {
+		if(ballotHistories == null){
+			ballotHistories = new ArrayList<>();
+		}
+		return ballotHistories;
+	}
+
+	public void setBallotHistories(List<Ballot> ballotHistories) {
+		this.ballotHistories = ballotHistories;
+	}
+
+	public List<Contribution> getAssignedContributions(){
+		return this.resources.getContributions();
+	}
+
+	public void setAssignedContributions(List<Contribution> contributions){
+		this.assignedContributions = contributions;
+		this.resources.getContributions().addAll(assignedContributions);
+	}
 }

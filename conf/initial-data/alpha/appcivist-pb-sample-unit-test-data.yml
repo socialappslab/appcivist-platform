@@ -1,0 +1,31 @@
+# AppCivist Test Data
+---
+
+# Service Definitions (the registry)
+  - &sd999 !!models.services.ServiceDefinition
+      serviceDefinitionId: 999
+      name: Loomio
+      #operations: 
+      #  - *sod999
+      #  - *sod4
+
+# Service Operation Definitions
+  - &sod999 !!models.services.ServiceOperationDefinition
+      operationDefinitionId: 999
+      serviceDefinition: *sd999
+      name: groups
+      type: HTTP
+      method: POST
+      parameters: 
+        - &spd999 !!models.services.ServiceParameterDefinition
+            parameterDefinitionId: 999
+            name: group
+            type: BODY_PARAM
+            dataType: JSON
+            # TODO: would prefer to use a HashMap, but Ebean does not support ElementCollections
+            dataModel: 
+              - &dm999 !!models.services.ServiceParameterDataModel
+                  dataModelId: 999
+                  dataKey: 'name'
+                  annotations: 'STRING, REQUIRED'
+                  definition: *spd999

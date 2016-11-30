@@ -838,7 +838,8 @@ alter table resource_space_assemblies add constraint fk_resource_space_assemblie
 
 alter table resource_space_resource add constraint fk_resource_space_resource_re_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
-alter table resource_space_resource add constraint fk_resource_space_resource_re_02 foreign key (resource_resource_id) references resource (resource_id);
+alter table resource_space_resource add constraint fk_resource_space_resource_re_02 foreign key (resource_resource_id) references resource (resource_id) 
+    MATCH SIMPLE ON UPDATE NO ACTION ON DELETE CASCADE;
 
 alter table resource_space_hashtag add constraint fk_resource_space_hashtag_res_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
@@ -1116,3 +1117,68 @@ alter table contribution add constraint fk_non_member_author foreign key (non_me
 
 ALTER TABLE contribution ADD COLUMN moderation_comment text;
 ALTER TABLE contribution_history ADD COLUMN moderation_comment text;
+ALTER TABLE resource ADD COLUMN title text;
+ALTER TABLE resource ADD COLUMN description text;
+
+-- NEW for etherpad campaign template
+ALTER TABLE resource DROP CONSTRAINT ck_resource_resource_type;
+ALTER TABLE resource
+  ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying, 'VIDEO'::character varying,
+  'PAD'::character varying, 'TEXT'::character varying, 'WEBPAGE'::character varying, 'FILE'::character varying, 'AUDIO'::character varying,
+  'CONTRIBUTION_TEMPLATE'::character varying, 'CAMPAIGN_TEMPLATE'::character varying, 'PROPOSAL'::character varying]::text[]));
+
+create table working_group_ballot_history(
+  working_group_group_id bigint not null,
+  ballot_id   bigint not null,
+  constraint pk_working_group_ballot_history primary key (working_group_group_id, ballot_id))
+;
+alter table working_group_ballot_history add constraint fk_working_group_ballot_history_01 foreign key (working_group_group_id) references working_group (group_id);
+alter table working_group_ballot_history add constraint fk_working_group_ballot_history_02 foreign key (ballot_id) references ballot(id);
+
+alter table ballot add column status INTEGER;
+alter table ballot add constraint "ck_ballot_status" check (status = ANY (ARRAY[0, 1]));
+ALTER TABLE contribution ADD COLUMN source_code varchar(255);
+
+ALTER TABLE contribution_feedback add column benefit INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_benefit" check (benefit = ANY (ARRAY[1, 2, 3, 4, 5]));
+ALTER TABLE contribution_feedback add column need INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_need" check (need = ANY (ARRAY[1, 2, 3, 4, 5]));
+ALTER TABLE contribution_feedback add column feasibility INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_feasibility" check (feasibility = ANY (ARRAY[1, 2, 3, 4, 5]));
+ALTER TABLE contribution_feedback add column elegibility BOOLEAN;
+ALTER TABLE contribution_feedback add column textual_feedback text;
+alter table contribution_feedback add column type INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_type" check (type = ANY (ARRAY[0, 1, 2]));
+alter table contribution_feedback add column status INTEGER;
+alter table contribution_feedback add constraint "ck_contribution_feedback_status" check (type = ANY (ARRAY[0, 1]));
+alter table contribution_feedback add column working_group_id BIGINT;
+alter table contribution_feedback add column official_group_feedback BOOLEAN;
+alter table contribution_feedback add column archived BOOLEAN;
+
+-- Adding persistence for notifications
+create table notification_event_signal (
+  id                        bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  origin                    varchar(40),
+  origin_type               varchar(13),
+  event_name                varchar(40),
+  origin_name               varchar(255),
+  title                     varchar(255),
+  text                      text,
+  resource_type             varchar(255), 
+  resource_uuid             varchar(40),
+  resource_title            varchar(255),
+  resource_text             text,
+  notification_date         timestamp,  
+  associated_user           varchar(255),
+  signaled                  boolean,
+  constraint pk_notification_event primary key (id))
+;
+
+create index ix_notification_event_id on notification_event_signal (id);
+create index ix_notification_event_uuid on notification_event_signal (uuid);

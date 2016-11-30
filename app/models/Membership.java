@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import enums.ManagementTypes;
 import enums.MembershipStatus;
 import enums.MembershipTypes;
 import exceptions.MembershipCreationException;
+import models.misc.Views;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -47,7 +49,9 @@ public class Membership extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long membershipId;
+	@JsonView(Views.Public.class)
 	private Long expiration;
+	@JsonView(Views.Public.class)
 	@Enumerated(EnumType.STRING)
 	private MembershipStatus status;
 
@@ -58,12 +62,23 @@ public class Membership extends AppCivistBaseModel {
 	@ManyToOne
 	private User user;
 
+	public static abstract class AuthorsVisibleMixin {
+		@JsonView(Views.Public.class)
+		@JsonIgnore(false)
+		private User creator;
+		@JsonView(Views.Public.class)
+		@JsonIgnore(false)
+		private User user;
+
+	}
+
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable( name = "membership_role", 
 			joinColumns = { @JoinColumn(name = "membership_membership_id", referencedColumnName = "membership_id", insertable=true, updatable=true) }, 
 			inverseJoinColumns = { @JoinColumn(name = "role_role_id", referencedColumnName = "role_id", insertable=true, updatable=true)})
 	private List<SecurityRole> roles = new ArrayList<SecurityRole>();
 
+	@JsonView(Views.Public.class)
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)
 	private String membershipType;
 

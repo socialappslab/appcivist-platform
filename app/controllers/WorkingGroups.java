@@ -1,6 +1,13 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import delegates.CampaignDelegate;
+import enums.BallotStatus;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -10,17 +17,14 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.Campaign;
-import models.Contribution;
-import models.Membership;
-import models.MembershipGroup;
-import models.MembershipInvitation;
-import models.ResourceSpace;
-import models.User;
-import models.WorkingGroup;
+import models.*;
+import models.misc.Views;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
@@ -31,7 +35,9 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Results;
 import play.mvc.With;
+import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -450,5 +456,148 @@ public class WorkingGroups extends Controller {
 		TransferResponseStatus responseBody = new TransferResponseStatus();
 		responseBody.setStatusMessage("Not implemented yet");
 		return notFound(Json.toJson(responseBody));
+	}
+
+	@ApiOperation(httpMethod = "POST", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result nextBallotForWorkingGroup(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+
+		List<String> selectedProposalsPayload = null;
+		List<UUID> selectedProposals = null;
+		if(request().body().asJson().isArray()){
+			selectedProposalsPayload = new ObjectMapper().convertValue(request().body().asJson(), ArrayList.class);
+			selectedProposals = selectedProposalsPayload.stream().map(p -> UUID.fromString(p)).collect(Collectors.toList());
+		}
+		//First, we have to find the working group and the current Ballot for the working group
+		WorkingGroup workingGroup = WorkingGroup.read(gid);
+		UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(workingGroup.getResourcesResourceSpaceId());
+		Ballot currentBallot = Ballot.findByUUID(consensus);
+		List<BallotCandidate> newCandidates = new ArrayList<>();
+
+		//Creates new candidates based on selected proposals (if any), or based on current non excluded proposals
+		List<BallotCandidate> currentCandidates = currentBallot.getBallotCandidates();
+		if(selectedProposals == null || selectedProposals.isEmpty()){
+			//Select only candidates with non-excluded proposals
+			if(currentCandidates != null){
+				newCandidates = currentCandidates.stream().
+						filter(candidate -> !ContributionStatus.EXCLUDED.equals(candidate.getContribution().getStatus())).collect(Collectors.toList());
+			}
+		}else{
+			newCandidates = selectedProposals.stream().map(c -> {
+				BallotCandidate filtered = null;
+				for(BallotCandidate bc : currentCandidates){
+					if(bc.getContributionUuid().equals(c)){
+						filtered =  bc;
+						break;
+					}
+				}
+				return filtered;
+			}).collect(Collectors.toList());
+		}
+		Ballot newBallot = Ballot.createConsensusBallotForWorkingGroup(workingGroup);
+
+		for(BallotCandidate candidate : newCandidates){
+			BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+			contributionAssociatedCandidate.setBallotId(newBallot.getId());
+			contributionAssociatedCandidate.setCandidateType(new Integer(1));
+			contributionAssociatedCandidate.setContributionUuid(candidate.getContribution().getUuid());
+			contributionAssociatedCandidate.save();
+		}
+		//Send the current ballot to a historic
+		workingGroup.getBallotHistories().add(currentBallot);
+		workingGroup.save();
+
+		//Archive previous ballot
+		currentBallot.setStatus(BallotStatus.ARCHIVED);
+
+		return ok(Json.toJson(newBallot));
+	}
+
+	@ApiOperation(httpMethod = "PUT", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result archiveWorkingGroupsBallot(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+
+		WorkingGroup workingGroup = WorkingGroup.read(gid);
+		UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(workingGroup.getResourcesResourceSpaceId());
+		Ballot ballot = Ballot.findByUUID(consensus);
+		ballot.setStatus(BallotStatus.ARCHIVED);
+		ballot.update();
+		return ok(Json.toJson(ballot));
+	}
+
+
+	@ApiOperation(httpMethod = "GET", response = WorkingGroup.class, produces = "application/json", value = "Read working group by Universal ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No working group found", response = TransferResponseStatus.class) })
+	public static Result findWorkingGroupByUUID(@ApiParam(name = "uuid", value = "Working Group Universal ID (UUID)") UUID uuid) {
+		try{
+
+			WorkingGroup wgroup = WorkingGroup.readByUUID(uuid);
+			if(wgroup == null){
+				return ok(Json
+						.toJson(new TransferResponseStatus("No working group found")));
+			}
+
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			mapper.addMixIn(WorkingGroup.class, WorkingGroup.MembeshipsVisibleMixin.class);
+			mapper.addMixIn(Membership.class, Membership.AuthorsVisibleMixin.class);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(wgroup);
+
+			Content ret = new Content() {
+				@Override public String body() { return result; }
+				@Override public String contentType() { return "application/json"; }
+			};
+			return Results.ok(ret);
+
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
+	}
+
+	@ApiOperation(httpMethod = "POST", response = WorkingGroup.class, produces = "application/json", value = "Assigns contributions to the working group")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result assignContributionsToGroup(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long cid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+
+		try {
+			List<BigInteger> selectedContributionsPayload = null;
+			List<Long> selectedContributions = null;
+			if (request().body().asJson().isArray()) {
+				selectedContributionsPayload = new ObjectMapper().convertValue(request().body().asJson(), ArrayList.class);
+				selectedContributions = selectedContributionsPayload.stream().map(p -> p.longValue()).collect(Collectors.toList());
+			}
+
+			List<Contribution> selectedContributionsList = selectedContributions.stream().map(p -> Contribution.read(p)).collect(Collectors.toList());
+			WorkingGroup workingGroup = WorkingGroup.read(gid);
+			workingGroup.getAssignedContributions().addAll(selectedContributionsList);
+			workingGroup.update();
+			for(Contribution contribution : selectedContributionsList){
+				ContributionHistory.createHistoricFromContribution(contribution);
+			}
+			return ok(Json.toJson(workingGroup));
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
+
 	}
 }

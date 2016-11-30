@@ -20,23 +20,28 @@ public class ResourcesDelegate {
         Resource.deleteUnconfirmedContributionTemplates(ResourceTypes.CONTRIBUTION_TEMPLATE);
     }
 
-    public static Resource createResource(User campaignCreator, String text, ResourceTypes type) {
-        Resource res = new Resource();
-        if (ResourceTypes.CONTRIBUTION_TEMPLATE.equals(type)) {
-            res.setName("Proposal Template");
-        } else {
-            res.setName("Contribution Proposal");
+    public static Resource createResource(User creator, String text, ResourceTypes type, boolean confirmed) {
+        if(text == null || "".equals(text)){
+            text = "<html></html>";
         }
-        res.setCreator(campaignCreator);
+        System.out.println("------------------- text " + text);
+        Resource res = new Resource();
+//        if (ResourceTypes.CONTRIBUTION_TEMPLATE.equals(type)) {
+//            res.setName("Proposal Template");
+//        } else {
+//            res.setName("Contribution Proposal");
+//        }
+        res.setCreator(creator);
         res.setCreation(new Date());
         res.setResourceType(type);
-        res.setConfirmed(false);
+        res.setConfirmed(confirmed);
         UUID uid = UUID.randomUUID();
         res.setPadId(uid.toString());
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         try {
-            res.createReadablePad(etherpadServerUrl, etherpadApiKey, text);
+            //res.createReadablePad(etherpadServerUrl, etherpadApiKey, text);
+            res.createPad(etherpadServerUrl, etherpadApiKey, text);
         } catch (MalformedURLException e) {
             System.out.println("MalformedURLException");
             return null;

@@ -1,0 +1,2025 @@
+# AppCivist Sample Data for Testing Purposes
+# Summary of the data 
+
+---
+##############################################################################################################################################################################################
+# Roles
+  - &r1 !!models.SecurityRole
+    name:       "ADMIN"
+  - &r2 !!models.SecurityRole
+    name:       "USER"
+  - &r3 !!models.SecurityRole
+    name:       "COORDINATOR"
+  - &r4 !!models.SecurityRole
+    name:       "MEMBER"
+  - &r5 !!models.SecurityRole
+    name:       "EXPERT"
+  - &r6 !!models.SecurityRole
+    name:       "FOLLOWER"
+  - &r7 !!models.SecurityRole
+    name:       "MODERATOR"
+##############################################################################################################################################################################################
+# Themes
+  - &cat1 !!models.Theme
+    title: "Streets and Transportation"
+    description: "Streets are the veins of our city. Transportation is its blood. They are the reason why we are moving, and to keep moving, they must be as healty as possible"
+  - &cat2 !!models.Theme
+    title: "Economic Development"
+    description: "What we do everyday has an impact in our local economy. What can we do to foster its growth? And how can we ensure that growth benefits us all?"
+  - &cat3 !!models.Theme
+    title: "Community and Culture"
+    description: "Culture speak to us about our history, values and traditions. It is the soul that keeps the heart of our communities pumping."
+  - &cat4 !!models.Theme
+    title: "Public Safety"
+    description: "To thrive, our communities need a safe space to live. Your contributions to improve public safety go here."
+  - &cat5 !!models.Theme
+    title: "Parks and Recreation"
+    description: "All work no play?. We all know life is so much more. Let's assure our parks give us all the recreation opportunities our communities need to enjoy life."
+  - &cat6 !!models.Theme
+    title: "Education"
+    description: "'Education is the most powerful weapon which you can use to change the world'. Indeed Mr. Mandela."
+  - &cat7 !!models.Theme
+    title: "Urban Infrastructure"
+    description: "Better infrastructure for our urban environments"
+    
+##############################################################################################################################################################################################      
+# Resources for Attachments and User Profile Pics
+  - &upic1 !!models.Resource     
+    urlLargeString: "https://s3-us-west-1.amazonaws.com/appcivist-files/users/Carmen+Profile.jpg"
+    resourceType: PICTURE
+  - &upic2 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/women/77.jpg"
+    resourceType: PICTURE
+  - &upic3 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/66.jpg"
+    resourceType: PICTURE
+  - &upic4 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/women/66.jpg"
+  - &upic5 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/55.jpg"
+    resourceType: PICTURE
+  - &upic6 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/women/55.jpg"
+    resourceType: PICTURE
+  - &upic7 !!models.Resource     
+    urlLargeString: "https://randomuser.me/api/portraits/med/men/38.jpg"
+    resourceType: PICTURE
+  - &res1 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/chart1.jpg"
+    resourceType: PICTURE
+  - &res2 !!models.Resource
+    url: "https://upload.wikimedia.org/wikipedia/commons/e/e4/A_plaza_and_garden_at_Calle_Mayor%2C_Madrid_01.JPG"
+    resourceType: PICTURE
+  - &res3 !!models.Resource
+    url: "https://www.youtube.com/watch?v=sGbxmsDFVnE"
+    resourceType: VIDEO
+  - &res4 !!models.Resource
+    url: "http://www.ign.com/videos/2015/10/20/every-shot-so-far-from-star-wars-the-force-awakens-in-order-we-think"
+    resourceType: WEBPAGE
+  - &res5 !!models.Resource
+    url: "https://farm4.staticflickr.com/3385/4597658105_06ec2519ee_o_d.gif"
+    resourceType: PICTURE
+  - &res6 !!models.Resource
+    url: "https://farm1.staticflickr.com/191/506378526_1ee84e7114_z_d.jpg"
+    resourceType: PICTURE
+  - &pad1 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad2 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad3 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad4 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad5 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad6 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad7 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad8 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD
+  - &pad9 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.3e926ddb032b971ddb872d51f899c17d"
+    readOnlyPadId: "r.3e926ddb032b971ddb872d51f899c17d"
+    padId: "057f16ab-370b-448e-97a9-e801ce512e07"
+    resourceType: PAD    
+  - &propimg1 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/belleville.jpg"
+    resourceType: PICTURE
+  - &propimg2 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/forrest.jpg"
+    resourceType: PICTURE
+  - &propimg3 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/lights1.jpg"
+    resourceType: PICTURE
+  - &propimg4 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/lights2.png"
+    resourceType: PICTURE
+  - &propimg5 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/rue-ramponeau.jpg"
+    resourceType: PICTURE
+  - &propimg6 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/street1.png"
+    resourceType: PICTURE
+  - &propimg7 !!models.Resource
+    url: "https://s3-us-west-1.amazonaws.com/appcivist-files/proposals/chart2.jpg"
+    resourceType: PICTURE
+  - &pad10 !!models.Resource
+    url: "http://etherpad.appcivist.org/p/r.80b00c7946924d3ea4dc4b896ed50193"
+    readOnlyPadId: "r.80b00c7946924d3ea4dc4b896ed50193"
+    padId: "proposal-template-1"
+    resourceType: PAD
+    
+##############################################################################################################################################################################################
+# Users (Testing Users)
+# Summary
+# Id / email                           / password             / language/ role   
+# 1  / carmen@example.com              / hopiov3              / "en-US" / ADMIN  
+# 2  / jane@example.com                / fix8nca              / "en-US" / ADMIN  
+# 3  / jeff@example.com                / sipel55              / "it-IT" / ADMIN  
+# 4  / sara@example.com                / praise23nk           / "fr-FR"          
+# 5  / alicia@example.com              / knitshht             / "es-ES"          
+# 6  / ted@example.com                 / clip8ouc             / "en-US"          
+# 7  / leia@example.com                / singj1jb             / "it-IT"          
+# 8  / luke@example.com                / likeociv             / "es-ES"          
+# 9  / ahsoka@example.com              / vouchmo25            / "en-US"          
+# 10 / bob@example.com                 / sip93un              / "it-IT"          
+# 11 / appcivistapp+EN_ADMIN@gmail.com /                      / "en-US" / ADMIN  
+# 12 / appcivistapp+ES_ADMIN@gmail.com /                      / "es-ES" / ADMIN  
+# 13 / appcivistapp+FR_ADMIN@gmail.com /                      / "fr-FR" / ADMIN  
+# 14 / appcivistapp+DE_ADMIN@gmail.com /                      / "de-DE" / ADMIN  
+# 15 / appcivistapp+IT_ADMIN@gmail.com /                      / "it-IT" / ADMIN  
+# 16 / appcivistapp+EN@gmail.com       /                      / "en-US" / ADMIN  
+# 17 / appcivistapp+ES@gmail.com       /                      / "es-ES" / ADMIN  
+# 18 / appcivistapp+FR@gmail.com       /                      / "fr-FR" / ADMIN  
+# 19 / appcivistapp+DE@gmail.com       /                      / "de-DE" / ADMIN  
+# 20 / appcivistapp+IT@gmail.com       /                      / "it-IT" / ADMIN  
+  - &u1 !!models.User
+    userId: 1
+    email:      carmen@example.com
+    name:       Carmen
+    uuidAsString: "f8dbbd14-8891-47ff-94d3-42c7172c248b"
+    username:   carmen
+    language:   "en-US" 
+    profilePic: *upic1
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua1 !!models.LinkedAccount
+      providerUserId: "$2a$10$ujQY4Acdp0fNKYy7hzUoaOz.mjqpPvRO67Dh0IhoeUeVf0.ly0vy."
+      providerKey: password
+      user: *u1
+  - &u2 !!models.User
+    userId: 2
+    email:      jane@example.com
+    name:       Jane
+    uuidAsString: "600f924c-8857-4619-9575-e3c16ddbf651"
+    username:   jane
+    language:   "en-US"
+    profilePic: *upic2
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua2 !!models.LinkedAccount
+      providerUserId: "$2a$10$tU/XfhjqUCctYg5zaxlhk.Eu0ymxodGV/VdDX1g0sNnYiseM0bYmy"
+      providerKey: password
+      user: *u2
+  - &u3 !!models.User
+    userId: 3
+    email:      jeff@example.com
+    name:       Jeff
+    username:   jeff
+    language:   "it-IT"
+    profilePic: *upic3
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua3 !!models.LinkedAccount
+      providerUserId: "$2a$10$tSWVysK4LZamfIusaO0Luu0DkN2elkCO9ZwOMfa4fpc9/pG/knBTy"
+      providerKey: password
+      user: *u3
+  - &u4 !!models.User
+    userId: 4
+    email:      sara@example.com
+    name:       Sara
+    username:   sara
+    language:   "fr-FR"
+    profilePic: *upic4
+    roles: 
+      - *r2 # USER
+    linkedAccounts:
+    - &ua4 !!models.LinkedAccount
+      providerUserId: "$2a$10$9E5FZjxnI6nn7d0Re.3AH.8HL42ptZlY3Nosnn6qbC/BjLxkdSwRa"
+      providerKey: password
+      user: *u4
+  - &u5 !!models.User
+    userId: 5
+    email:      alicia@example.com
+    name:       Alicia
+    username:   alicia
+    language:   "es-ES"
+    profilePic: *upic6
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua5 !!models.LinkedAccount
+      providerUserId: "$2a$10$2zqj.oHnfykphGOL8hweIO.SM9.j4SctsKhRMeeeg2fXbvvgOeDL2"
+      providerKey: password
+      user: *u5
+  - &u6 !!models.User
+    userId: 6
+    email:      ted@example.com
+    name:       Ted
+    username:   ted
+    language:   "en-US"
+    profilePic: *upic7
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua6 !!models.LinkedAccount
+      providerUserId: "$2a$10$2tAq8Zl9qe9XnzEdlZkGSePa4Jccy8VP5QE08r1x/LTulGW8CKkPm"
+      providerKey: password
+      user: *u6
+  - &u7 !!models.User
+    userId: 7
+    email:      leia@example.com
+    name:       Leia
+    username:   leia
+    language:   "it-IT"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua7 !!models.LinkedAccount
+      providerUserId: "$2a$10$LCsnfy1HQQFTOp/4Lm/Lbu8wEu/.Xw6EsM1wwHLvpNUaBPkc4AU1e"
+      providerKey: password
+      user: *u7
+  - &u8 !!models.User
+    userId: 8
+    email:      luke@example.com
+    name:       Luke
+    username:   luke
+    language:   "es-ES"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua8 !!models.LinkedAccount
+      providerUserId: "$2a$10$MuagELnFkT6jq59pM4UIAONQkOa64VVbNsp6toUeph4J8oEFGJyu2"
+      providerKey: password
+      user: *u8
+  - &u9 !!models.User
+    userId: 9
+    email:      ahsoka@example.com
+    name:       Ahsoka
+    username:   ahsoka
+    language:   "en-US"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua9 !!models.LinkedAccount
+      providerUserId: "$2a$10$036oE7WzljYFQnLnZk6br.XntXZf/B.q48pd2cy8DkLfS/tdGcuk6"
+      providerKey: password
+      user: *u9
+  - &u10 !!models.User
+    userId: 10
+    email:      bob@example.com
+    name:       Bob
+    username:   bob
+    language:   "it-IT"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua10 !!models.LinkedAccount
+      providerUserId: "$2a$10$HBaRxn/DR0BAq3ffMDnu2OPrWPx/fMqIiaw4NMJckj2FzkBXv1Cm6"
+      providerKey: password
+      user: *u10   
+  - &u11 !!models.User
+    userId: 11
+    email:  appcivistapp+EN_ADMIN@gmail.com
+    name:   AppCivist_EN_ADMIN
+    username: appcivist_en_admin
+    language: "en-US"
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua11 !!models.LinkedAccount
+      providerUserId: "$2a$10$02Uwk3R5Y8t0Y6LAerPQJ.oN6g7NCdsfUYlenLp2d3WB9KGo5vB72"
+      providerKey: password
+      user: *u11 
+  - &u12 !!models.User
+    userId: 12
+    email:  appcivistapp+ES_ADMIN@gmail.com
+    name:   AppCivist_ES_ADMIN
+    username: appcivist_es_admin
+    language: "es-ES"
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua12 !!models.LinkedAccount
+      providerUserId: "$2a$10$DKhuDiYBSbQ16Dp5x/7j.es4jrQcoB5XAj3Lgu6ExFQjJzQDifJNO"
+      providerKey: password
+      user: *u12
+  - &u13 !!models.User
+    userId: 13
+    email:  appcivistapp+FR_ADMIN@gmail.com
+    name:   AppCivist_FR_ADMIN
+    username: appcivist_fr_admin
+    language: "fr-FR"
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua13 !!models.LinkedAccount
+      providerUserId: "$2a$10$h00nEl.w8KmqzJXqft32R.CYjH2Ukg3aIPThgZSK/q7ID5y8vkwkm"
+      providerKey: password
+      user: *u13
+  - &u14 !!models.User
+    userId: 14
+    email:  appcivistapp+DE_ADMIN@gmail.com
+    name:   AppCivist_DE_ADMIN
+    username: appcivist_de_admin
+    language: "de-DE"
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua14 !!models.LinkedAccount
+      providerUserId: "$2a$10$RHT7L0/YKSNrl8.MPKa5yeJXzbGfz7Qz1v68Jt2yMqzwSlCZQWz.y"
+      providerKey: password
+      user: *u14
+  - &u15 !!models.User
+    userId: 15
+    email:  appcivistapp+IT_ADMIN@gmail.com
+    name:   AppCivist_IT_ADMIN
+    username: appcivist_it_admin
+    language: "it-IT"
+    roles:
+      - *r1 # ADMIN
+      - *r2 # USER
+    linkedAccounts:
+    - &ua15 !!models.LinkedAccount
+      providerUserId: "$2a$10$9Es.d3eo/Y0b8sik6t20bO8pcqbpgrOK4bcEX8m2LWa/xwGU8qKQm"
+      providerKey: password
+      user: *u15
+  - &u16 !!models.User
+    userId: 16
+    email:  appcivistapp+EN@gmail.com
+    name:   AppCivist_EN
+    username: appcivist_en
+    language: "en-US"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua16 !!models.LinkedAccount
+      providerUserId: "$2a$10$dQZ/wLPbYhypM6VI2bvu8utyXD0fjGFPXn9RiQ8FXAFPrSgufzi3q"
+      providerKey: password
+      user: *u16 
+  - &u17 !!models.User
+    userId: 17
+    email:  appcivistapp+ES@gmail.com
+    name:   AppCivist_ES
+    username: appcivist_es
+    language: "es-ES"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua17 !!models.LinkedAccount
+      providerUserId: "$2a$10$iF7QvzoTj6wQR0799tqhf.sNb.gAXp8R3Fzj/rywFutGaKyHvo81e"
+      providerKey: password
+      user: *u16
+  - &u18 !!models.User
+    userId: 18
+    email:  appcivistapp+FR@gmail.com
+    name:   AppCivist_FR
+    username: appcivist_fr
+    language: "fr-FR"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua18 !!models.LinkedAccount
+      providerUserId: "$2a$10$7NGHcvQ4UfjfjEX1j7z69eW/A8Jrqgg8AVnlT3CVOvz6YiUfjmR7i"
+      providerKey: password
+      user: *u18
+  - &u19 !!models.User
+    userId: 19
+    email:  appcivistapp+DE@gmail.com
+    name:   AppCivist_DE
+    username: appcivist_de
+    language: "de-DE"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua19 !!models.LinkedAccount
+      providerUserId: "$2a$10$gv/8lYTQK/LLX1P1BSYEX.7R5C6sYoxJ1XM.QIgy9CSPiVgv7zZTG"
+      providerKey: password
+      user: *u19
+  - &u20 !!models.User
+    userId: 20
+    email:  appcivistapp+IT@gmail.com
+    name:   AppCivist_IT
+    username: appcivist_it
+    language: "it-IT"
+    roles:
+      - *r2 # USER
+    linkedAccounts:
+    - &ua20 !!models.LinkedAccount
+      providerUserId: "$2a$10$pH.8GFGe5kkX5hCoubBagOwUQT53RWQi9ls2RD7fSPUrJxjY0tBKC"
+      providerKey: password
+      user: *u20
+
+##############################################################################################################################################################################################      
+# User Profiles
+  - &up1 !!models.UserProfile     
+    user: *u1
+    uuidAsString: "12f9fa2a-407a-11e5-a151-feff819cdc9f"
+    name: "Bob"
+    middleName: "Jameson" 
+    lastName: "Sager"
+    birthdate: "1982-08-19"
+    address: "1145 Shattuck Avenue, Berkeley, CA"    
+  - &up2 !!models.UserProfile     
+    user: *u2
+    uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
+    name: "Jane"
+    middleName: "" 
+    lastName: "Doe"
+    birthdate: "1972-08-19"
+    address: "432 Berkeley Way, Berkeley, CA"
+  - &up3 !!models.UserProfile     
+    user: *u3
+    uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
+    name: "Jeff"
+    middleName: "" 
+    lastName: "Dameron"
+    birthdate: "1972-08-19"
+    address: "432 Berkeley Way, Berkeley, CA"
+
+##############################################################################################################################################################################################
+# Configuration Definitions
+  - &config1 !!models.ConfigDefinition
+    key: "component.proposalmaking.enable.proposal.merge-split"
+    valueType: Boolean
+    description: "Enable proposal merge/split (if enabled, multiple proposals can be combined or a single proposal can be split into several)" 
+    defaultValue: "false"
+    configTarget: COMPONENT
+  - &config2 !!models.ConfigDefinition
+    key: "component.proposalmaking.enable.working-groups.comments.external"
+    valueType: Boolean
+    description: "Enable comments in proposals by members of non-authoring Working Groups" 
+    defaultValue: "true"
+    configTarget: COMPONENT
+  - &config3 !!models.ConfigDefinition
+    key: "component.deliberation.enable.technical-assesment"
+    valueType: Boolean
+    description: "Enable technical assessment of proposals" 
+    defaultValue: "true" 
+    configTarget: COMPONENT
+  - &config4 !!models.ConfigDefinition
+    key: "component.deliberation.disable.additional.versioning-deliberation"
+    valueType: Boolean
+    description: "Disable additional rounds of versioning and deliberation" 
+    defaultValue: "false"
+    configTarget: COMPONENT
+  - &config21 !!models.ConfigDefinition
+    key: "component.deliberation.who-deliberates"
+    valueType: String
+    description: "Who Deliberates?" 
+    defaultValue: "All assembly members" 
+    #defaultValue: "Randomly selected jury" 
+    configTarget: COMPONENT
+  - &config22 !!models.ConfigDefinition
+    key: "component.deliberation.who-deliberates.jury"
+    valueType: String
+    description: "Who Deliberates?" 
+    defaultValue: "From assembly members" 
+    #defaultValue: "From campaign WG members"
+    configTarget: COMPONENT
+  - &config23 !!models.ConfigDefinition
+    key: "component.deliberation.who-deliberates.jury.percentage"
+    valueType: Double
+    description: "How many people should be on the Jury?" 
+    defaultValue: "20" 
+    #defaultValue: "From campaign WG members"
+    configTarget: COMPONENT
+  - &config24 !!models.ConfigDefinition
+    key: "component.voting.system"
+    valueType: String
+    description: "Select voting system" 
+    defaultValue: "Range" 
+    #defaultValue: "Ranked"
+    #defaultValue: "Distribution"
+    #defaultValue: "Plurality (Winners take all)"
+    configTarget: COMPONENT
+  - &config25 !!models.ConfigDefinition
+    key: "component.voting.system.range.min-score"
+    valueType: Integer
+    description: "Configure score range min" 
+    defaultValue: "0" 
+    configTarget: COMPONENT
+  - &config26 !!models.ConfigDefinition
+    key: "component.voting.system.range.max-score"
+    valueType: Integer
+    description: "Configure score range max" 
+    defaultValue: "100" 
+    configTarget: COMPONENT
+  - &config27 !!models.ConfigDefinition
+    key: "component.voting.system.ranked.number-proposals"
+    valueType: Integer
+    description: "How many proposals can a voter select?" 
+    defaultValue: "5" 
+    configTarget: COMPONENT
+  - &config28 !!models.ConfigDefinition
+    key: "component.voting.system.distributed.points"
+    valueType: Integer
+    description: "How many points can a voter distribute?" 
+    defaultValue: "30" 
+    configTarget: COMPONENT
+  - &config29 !!models.ConfigDefinition
+    key: "component.voting.system.plurality.type"
+    valueType: String
+    description: "Select type" 
+    defaultValue: "Yes" 
+    #defaultValue: "Yes/No"
+    #defaultValue: "Yes/No/Abstain"
+    #defaultValue: "Yes/No/Abstain/Block"
+    configTarget: COMPONENT
+  - &config30 !!models.ConfigDefinition
+    key: "component.voting.system.plurality.block.threshold"
+    valueType: Double
+    description: "Block threshold" 
+    defaultValue: "0.1" 
+    configTarget: COMPONENT
+  - &config31 !!models.ConfigDefinition
+    key: "component.voting.system.winners"
+    valueType: String
+    description: "Configure number of winners"
+    #description: "Fixed regardless of budget" 
+    defaultValue: "FIXED" 
+    #defaultValue: "DYNAMIC1"
+    #defaultValue: "DYNAMIC2"
+    configTarget: COMPONENT
+  - &config32 !!models.ConfigDefinition
+    key: "component.voting.system.winners.fixed.number"
+    valueType: Integer
+    description: "Number of winners" 
+    defaultValue: "3" 
+    configTarget: COMPONENT
+  - &config33 !!models.ConfigDefinition
+    key: "component.voting.system.winners.n-ranked"
+    valueType: Boolean
+    description: "Dynamic 1: first N-ranked proposals that can be fully funded by available budget (may result in unspent funds)" 
+    defaultValue: "false" 
+    configTarget: COMPONENT
+  - &config34 !!models.ConfigDefinition
+    key: "component.voting.system.winners.n-ranked.leapfrogging"
+    valueType: Boolean
+    description: "Dynamic 2: first N-ranked proposals that can be fully funded by available budget, allocating all the funds (may result in 'leapfrogging')" 
+    defaultValue: "false" 
+    configTarget: COMPONENT
+  - &config35 !!models.ConfigDefinition
+    key: "component.voting.system.quorum.enable"
+    valueType: Boolean
+    description: "Enable quorum threshold" 
+    defaultValue: "true" 
+    configTarget: COMPONENT
+  - &config36 !!models.ConfigDefinition
+    key: "component.voting.system.quorum"
+    valueType: Double
+    description: "Quorum threshold percentage" 
+    defaultValue: "0.6" 
+    configTarget: COMPONENT
+  - &config37 !!models.ConfigDefinition
+    key: "component.proposal-making.template-sections"
+    valueType: json
+    description: "Proposal Template" 
+    defaultValue: "[]" 
+    configTarget: COMPONENT    
+  - &config6 !!models.ConfigDefinition
+    key: "campaign.pb.budget"
+    valueType: Double
+    description: "Amount to spend in winning projects" 
+    configTarget: CAMPAIGN
+  - &config7 !!models.ConfigDefinition
+    key: "campaign.pb.budget.currency"
+    valueType: String
+    description: "Currency of the amount to spend in winning projects" 
+    defaultValue: "USD"
+    configTarget: CAMPAIGN
+  - &config8 !!models.ConfigDefinition
+    key: "assembly.face-to-face.scheduling"
+    valueType: Boolean
+    description: "Enable face-to-face scheduling" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+  - &config9 !!models.ConfigDefinition
+    key: "assembly.enable.messaging"
+    valueType: Boolean
+    description: "Enable messaging for the assembly" 
+    defaultValue: "true"
+    configTarget: ASSEMBLY
+  - &config10 !!models.ConfigDefinition
+    key: "campaign.pb.use-linked-campaign-deliberation"
+    valueType: Boolean
+    description: "Use the linked campaign's Deliberation and Voting components." 
+    configTarget: CAMPAIGN
+
+##############################################################################################################################################################################################    
+# Components: definition of components avaialble to use in appcivist
+  - &pd1 !!models.ComponentDefinition
+    componentDefId: 1
+    name: "Ideas"
+    description: "The ideas stage is about raising issues, brainstorming ideas, forming working groups, and starting proposals."
+    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9a"
+  - &pd2 !!models.ComponentDefinition
+    componentDefId: 2
+    name: "Proposals"
+    description: "The proposals stage is about raising issues, brainstorming ideas, forming working groups, and starting proposals."
+    uuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9b"
+    requiredConfigurations: 
+    - &componentConfig1 !!models.ComponentRequiredConfiguration
+      componentDef: *pd2
+      configDef: *config1
+    - &componentConfig21 !!models.ComponentRequiredConfiguration
+      componentDef: *pd2
+      configDef: *config2 
+  - &pd3 !!models.ComponentDefinition
+    componentDefId: 3
+    name: "Deliberation"    
+    description: "is the careful consideration of proposals through comments and evidence. In this stage, proposals can only be discussed, praised or criticized, but not edited."
+    uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9c"
+    requiredConfigurations: 
+    - &componentConfig31 !!models.ComponentRequiredConfiguration
+      componentDef: *pd3
+      configDef: *config3
+    - &componentConfig32 !!models.ComponentRequiredConfiguration
+      componentDef: *pd3
+      configDef: *config4 
+    - &componentConfig39 !!models.ComponentRequiredConfiguration
+      componentDef: *pd3
+      configDef: *config21
+    - &componentConfig41 !!models.ComponentRequiredConfiguration
+      componentDef: *pd3
+      configDef: *config22
+    - &componentConfig42 !!models.ComponentRequiredConfiguration
+      componentDef: *pd3
+      configDef: *config23
+  - &pd4 !!models.ComponentDefinition
+    componentDefId: 4
+    name: "Voting"
+    description: "Voting determines the winning proposal/s, based on the voting system selected and the number of winners allowed"
+    uuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9d"
+    requiredConfigurations: 
+    - &componentConfig51 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config24
+    - &componentConfig52 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config25 
+    - &componentConfig54 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config26
+    - &componentConfig55 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config27
+    - &componentConfig56 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config28
+    - &componentConfig57 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config29 
+    - &componentConfig58 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config30
+    - &componentConfig59 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config31
+    - &componentConfig61 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config32
+    - &componentConfig62 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config33
+    - &componentConfig63 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config34
+    - &componentConfig64 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config35
+    - &componentConfig65 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config36
+    - &componentConfig66 !!models.ComponentRequiredConfiguration
+      componentDef: *pd4
+      configDef: *config37
+  - &pd5 !!models.ComponentDefinition
+    componentDefId: 5
+    name: "Implementation"
+    description: "Implementation allows assembly members to follow the progress of winning proposals or to find new opportunites for proposals that were not selected durin the voting stage."
+    uuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9e"
+  - &pd6 !!models.ComponentDefinition
+    componentDefId: 6
+    name: "Scheduling"
+    uuidAsString: "12fa0538-407a-11e5-a151-feff819cdc9f"
+  - &pd7 !!models.ComponentDefinition
+    componentDefId: 7
+    name: "Implementation"
+    uuidAsString: "12fa0894-407a-11e5-a151-feff819cdc9g"
+  - &pd8 !!models.ComponentDefinition
+    componentDefId: 8
+    name: "Mobilization"
+    uuidAsString: "12fa3984-407a-11e5-a151-feff819cdc9h"
+  - &pd9 !!models.ComponentDefinition
+    componentDefId: 9    
+    name: "Visualization"
+    uuidAsString: "12fa0348-407a-11e5-a151-feff819cdc9i"
+  - &pd10 !!models.ComponentDefinition
+    componentDefId: 10
+    name: "Reporting"
+    uuidAsString: "12fa0934-407a-11e5-a151-feff819cdc9j"
+  - &pd11 !!models.ComponentDefinition
+    componentDefId: 11
+    name: "Mapping"
+    uuidAsString: "12fa8923-407a-11e5-a151-feff819cdc9k"
+ 
+##############################################################################################################################################################################################
+# Campaign Templates
+  - &ct1 !!models.CampaignTemplate
+    nameKey: "PROPOSAL_MAKING"
+    name: "Proposal and decision making" 
+    defComponents: 
+      - *pd1
+      - *pd2
+      - *pd3
+      - *pd4
+      - *pd5
+    reqConfigs: 
+    - &campaignConfig1 !!models.CampaignRequiredConfiguration
+      campaignTemplate: *ct1
+      configDefinition: *config6 
+    - &campaignConfig2 !!models.CampaignRequiredConfiguration
+      campaignTemplate: *ct1
+      configDefinition: *config7
+    - &campaignConfig3 !!models.CampaignRequiredConfiguration
+      campaignTemplate: *ct1
+      configDefinition: *config10
+    reqMilestones:
+    - &m0 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Idea Collection Start
+      key: start_brainstorming
+      description: Begin brainstorming by raising issues and suggesting ideas
+      position: 0
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdf9c"
+      type: START
+    - &m1 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Proposal Making Start
+      key: start_proposalmaking
+      description: Form working groups and turn ideas into proposals
+      position: 1
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      type: START
+    - &m2 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Idea Collection End Date
+      key: end_brainstorming
+      description: "Until this date, members can brainstorm by raising issues or suggesting ideas"
+      position: 2
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdf9c"      
+      type: END
+    - &m3 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Working Groups Formation End Date
+      key: end_wgroups_create
+      description: "Until this date, members can create or join working groups to develop proposals"
+      position: 3
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+      type: END      
+    - &m4 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Proposals Making End Date
+      key: end_proposalmaking
+      description: "Until this date, members can edit their proposals in working groups."
+      position: 4
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+      type: END
+#    - &m5 !!models.ComponentRequiredMilestone
+#      campaignTemplate: *ct1
+#      title: Working Group Consensus Due (withing Working Groups)
+#      key: end_internal_selection 
+#      description: Until this date, working groups can select what proposals they want to put forward to the Assembly for deliberation and voting.
+#      position: 5
+#      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"      
+    - &m5 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Deliberation Closing Date
+      key: end_discussion
+      description: Until this date, members can discuss published proposals for deliberation
+      position: 5
+      targetComponentUuidAsString: "12f9fd18-407a-11e5-a151-feff819cdc9f"
+      type: END
+    - &m6 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Technical Assessment Due Date
+      key: end_assessment
+      description: "Until this date, published proposals for deliberation will be open for evaluation"
+      position: 6
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"      
+      type: END
+    - &m7 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Voting Start
+      key: start_voting
+      description: "Starting on this date, members can explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
+      position: 7
+      targetComponentUuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"      
+      type: START
+    - &m8 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      description: "Until this date, members can edit their votes. After it, whatever vote has been casted will be considered final."
+      title: Voting period end date
+      key: end_voting
+      position: 8
+      targetComponentUuidAsString: "12fa0196-407a-11e5-a151-feff819cdc9f"         
+      type: END  
+    - &m9 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct1
+      title: Implementation Start
+      key: start_implementation
+      description: "Starting this date, winning proposals will be available on the website to follow up upon their implementations"
+      position: 9
+      targetComponentUuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"         
+      type: START   
+  - &ct2 !!models.CampaignTemplate
+    nameKey: "FUNDRAISING"
+    name: "Fundraising" 
+    reqMilestones:
+    - &m9 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct2
+      title: Fundraising start date
+      key: start_fundraising
+      description: Begin fundraising
+      position: 0
+      type: START
+    - &m10 !!models.ComponentRequiredMilestone
+      campaignTemplate: *ct2
+      title: Fundraising end date
+      key: end_fundraising
+      description: End fundraising
+      position: 1
+      type: END
+  - &ct3 !!models.CampaignTemplate
+    nameKey: "MOBILIZATION"
+    name: "Mobilization"
+
+########################################################################################################################################
+# Milestones: dates that represent deadlines in each component
+  - &ci0 !!models.ComponentMilestone
+    title: Idea Collection Start
+    key: start_brainstorming
+    description: Begin brainstorming by raising issues and suggesting ideas
+    position: 0
+    date: "2016-11-01"
+    type: START
+  - &ci1 !!models.ComponentMilestone
+    title: Proposal Making Start
+    key: start_proposalmaking
+    description: Form working groups and turn ideas into proposals
+    position: 1
+    date: "2016-11-29"
+    type: START
+  - &ci2 !!models.ComponentMilestone
+    title: Idea Collection End Date
+    key: end_brainstorming
+    description: "Until this date, members can brainstorm by raising issues or suggesting ideas"
+    position: 2
+    date: "2016-12-31"      
+    type: END
+  - &ci3 !!models.ComponentMilestone
+    title: Working Groups Formation End Date
+    key: end_wgroups_create
+    description: "Until this date, members can create or join working groups to develop proposals"
+    position: 3
+    date: "2016-12-31"      
+    type: END      
+  - &ci4 !!models.ComponentMilestone
+    title: Proposals Making End Date
+    key: end_proposalmaking
+    description: "Until this date, members can edit their proposals in working groups."
+    position: 4
+    date: "2016-12-31"      
+    type: END
+  - &ci5 !!models.ComponentMilestone
+    title: Deliberation Closing Date
+    key: end_discussion
+    description: Until this date, members can discuss published proposals for deliberation
+    position: 5
+    date: "2016-01-31"
+    type: END
+  - &ci6 !!models.ComponentMilestone
+    title: Technical Assessment Due Date
+    key: end_assessment
+    description: "Until this date, published proposals for deliberation will be open for evaluation"
+    position: 6
+    date: "2016-01-31"      
+    type: END
+  - &ci7 !!models.ComponentMilestone
+    title: Voting Start
+    key: start_voting
+    description: "Starting on this date, members can explore and evaluate published proposals. When you are ready, open the voting ballot and cast your vote. You will be provided with a secret code to recover your voting ballot and update it anytime until the voting period is over."
+    position: 7
+    date: "2016-02-01"      
+    type: START
+  - &ci8 !!models.ComponentMilestone
+    description: "Until this date, members can edit their votes. After it, whatever vote has been casted will be considered final."
+    title: Voting period end date
+    key: end_voting
+    position: 8
+    date: "2016-02-28"         
+    type: END   
+  - &ci9 !!models.ComponentMilestone
+    title: Implementation Start
+    key: start_implementation
+    description: "Starting this date, winning proposals will be available on the website to follow up upon their implementations"
+    position: 9
+    date: "2017-03-01"
+    type: START
+   
+##############################################################################################################################################################################################
+# Contributions for Contributions ==> COMMENTS
+  - &contrib5 !!models.Contribution
+    title: GREAT!
+    text: This sounds great. We should probably invite Mike to join the assembly. He has some great ideas about Urban Infrastructure
+    type: COMMENT
+    authors: 
+      - *u1
+  - &contrib7 !!models.Contribution
+    title: Hi
+    text: Just joined the Assembly. Will be happy to contribute with some ideas....
+    type: COMMENT
+    authors: 
+      - *u3
+  - &contrib8 !!models.Contribution
+    title: Random comment
+    text: Hi, this is a random comment
+    type: COMMENT
+    authors: 
+      - *u3
+  - &contrib9 !!models.Contribution
+    title: Random comment
+    text: Hi, this is a random comment
+    type: COMMENT
+    authors: 
+      - *u3
+  - &contrib10 !!models.Contribution
+    title: comment
+    text: This sounds great. We should probably invite Mike to join the assembly. He has some great ideas about Urban Infrastructure.
+    type: COMMENT
+    authors: 
+      - *u3
+  - &contrib21 !!models.Contribution
+    title: comment
+    text: Hi! Just joined the Assembly. Will be happy to contribute with some ideas....
+    type: COMMENT
+    authors: 
+      - *u2
+      
+##############################################################################################################################################################################################
+# Contribution Resource Spaces
+  - &rs7 !!models.ResourceSpace
+    type: CONTRIBUTION
+    contributions:
+      - *contrib5
+      - *contrib7
+  - &rs8 !!models.ResourceSpace
+    type: CONTRIBUTION
+    contributions: 
+      - *contrib9
+  - &rs9 !!models.ResourceSpace
+    type: CONTRIBUTION
+    contributions: 
+      - *contrib10 
+      - *contrib21
+
+##############################################################################################################################################################################################
+# More Contributions for Assembly Forum and Campaign Copmonents
+  - &contrib1 !!models.Contribution
+    title: Proposals for Urban infrastructure
+    text: Hey guys, I think we should start a campaign to develop proposals for Urban Infrastructure. What do you think?
+    type: DISCUSSION
+    themes: 
+      - *cat1
+      - *cat2
+    resourceSpace: *rs7
+    authors: 
+      - *u2
+  - &contrib2 !!models.Contribution
+    title: Pizza 
+    text: Hi all! let's meet tomorrow and have pizza... Who's in?
+    type: DISCUSSION
+    authors: 
+      - *u1
+  - &contrib3 !!models.Contribution
+    title: When do we start creating groups for PB?
+    text: I'm not sure how the process go. Can somebody tell me how this groups thing works?
+    type: DISCUSSION
+    themes: 
+      - *cat7
+    authors: 
+      - *u3
+  - &contrib4 !!models.Contribution
+    title: PB 2014
+    text: Everyone, we just created a campaign to collaboratively create proposals for PB
+    type: DISCUSSION
+    authors: 
+      - *u1
+  - &contrib11 !!models.Contribution
+    title: Empty lot in Channing and Telegraph
+    text: For the past 10 years, this empty lot has been a problem for the community
+    type: IDEA
+    resourceSpace: *rs8
+    authors: 
+      - *u3
+    themes: 
+      - *cat7
+  - &contrib12 !!models.Contribution
+    title: Little or no awareness about rising housing prices
+    text: Housing prices are wy up and poeople's is doing nothing to get them down. I present a graph of the housing prices evolution in the last ten years. We need to stop this!
+    type: IDEA
+    resourceSpace: *rs9
+    authors: 
+      - *u1
+    themes: 
+      - *cat6
+    attachments: 
+      - *res1
+  - &contrib13 !!models.Contribution
+    title: A Garden for the empty lot
+    text: We can give a good use to the empty lot in channing by simply creating a cooperative garden on it
+    type: IDEA
+    authors: 
+      - *u2
+    themes: 
+      - *cat7
+    attachments: 
+      - *propimg2
+  - &contrib14 !!models.Contribution
+    title: A library for the empty lot
+    type: IDEA
+    authors: 
+      - *u3
+    themes: 
+      - *cat7
+  - &contrib15 !!models.Contribution
+    title: A park for the empty lot
+    text: "let's build a children's park! One of those with the safe floor made of rubber or something"
+    type: IDEA
+    authors: 
+      - *u1
+    themes: 
+      - *cat5
+  - &contrib16 !!models.Contribution
+    title: A park for the empty lot
+    text: "let's build a children's park! One of those with the safe floor made of rubber or something"
+    type: IDEA
+    authors: 
+      - *u1
+    themes: 
+      - *cat5
+  - &contrib17 !!models.Contribution
+    title: Cycling path
+    text: "This is not entirely fleshed out yet, but I would definitely like to see more entirely dedicated cycling path parks"
+    type: IDEA
+    authors: 
+      - *u3
+    themes: 
+      - *cat1
+  - &contrib18 !!models.Contribution
+    title: Why is this neighborhood so poorly serviced by Public Transportation and how can we get a better service?
+    text: 
+    type: IDEA
+    authors: 
+      - *u2
+    themes: 
+      - *cat1
+  - &contrib19 !!models.Contribution
+    title: We need more empathy towards inmigrants
+    text: 
+    type: IDEA
+    authors: 
+      - *u3
+    themes: 
+      - *cat6
+  - &contrib20 !!models.Contribution
+    title: Interactive Lights Project
+    text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
+    type: PROPOSAL
+    uuidAsString: 40cb0cf6-f0aa-11e5-9ce9-5e5517507c66
+    extendedTextPad: *pad1
+#    workingGroupAuthors: 
+#      - *wg1
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg3
+      - *propimg4
+  - &contrib21 !!models.Contribution
+    title: Smart Traffic Lights
+    text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
+    type: PROPOSAL
+    uuidAsString: 40cb1142-f0aa-11e5-9ce9-5e5517507c66
+    extendedTextPad: *pad2
+#    workingGroupAuthors: 
+#      - *wg3
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg6
+      - *res1
+  - &contrib22 !!models.Contribution
+    title: Library at Rue Ramponeau
+    text: Let's create a public library
+    type: PROPOSAL
+    uuidAsString: 40cb1246-f0aa-11e5-9ce9-5e5517507c66
+    extendedTextPad: *pad3
+#    workingGroupAuthors: 
+#      - *wg2
+    themes: 
+      - *cat6
+    associatedMilestones:
+      - *ci3
+    attachments:
+      - *propimg5
+      - *propimg7
+  - &contrib30 !!models.Contribution
+    title: Interactive Lights Project
+    text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
+    type: PROPOSAL
+    extendedTextPad: *pad4
+    uuidAsString: 40cb144e-f0aa-11e5-9ce9-5e5517507c66    
+#    workingGroupAuthors: 
+#      - *wg1
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg3
+      - *propimg4
+  - &contrib31 !!models.Contribution
+    title: Smart Traffic Lights
+    text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
+    type: PROPOSAL
+    uuidAsString: 40cb152a-f0aa-11e5-9ce9-5e5517507c66
+    extendedTextPad: *pad5
+#    workingGroupAuthors: 
+#      - *wg3
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg3
+      - *propimg4
+  - &contrib32 !!models.Contribution
+    title: Library at Rue Ramponeau
+    text: Let's create a public library
+    type: PROPOSAL
+    uuidAsString: 40cb1750-f0aa-11e5-9ce9-5e5517507c66    
+    extendedTextPad: *pad6
+#    workingGroupAuthors: 
+#      - *wg2
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg5
+      - *propimg6
+  - &contrib40 !!models.Contribution
+    title: Interactive Lights Project
+    text: This is project is about creating a permanent interactive installation at the central civic center, where people will pass by and lights will interactively follow
+    type: PROPOSAL
+    uuidAsString: 40cb1890-f0aa-11e5-9ce9-5e5517507c66    
+    extendedTextPad: *pad7
+#    workingGroupAuthors: 
+#      - *wg1
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg3
+      - *propimg4
+  - &contrib41 !!models.Contribution
+    title: Smart Traffic Lights
+    text: The intersection at channing and telegraph has been the spot of many accidents. We need some smart lights there. 
+    type: PROPOSAL
+    extendedTextPad: *pad8
+    uuidAsString: 40cb1a8e-f0aa-11e5-9ce9-5e5517507c66
+#    workingGroupAuthors: 
+#      - *wg3
+    themes: 
+      - *cat6
+    attachments:
+      - *res6
+      - *res1
+  - &contrib42 !!models.Contribution
+    title: Library at Rue Ramponeau
+    text: Let's create a public library
+    type: PROPOSAL
+    uuidAsString: ceb1ce38-f0aa-11e5-9ce9-5e5517507c66
+    extendedTextPad: *pad9
+#    workingGroupAuthors: 
+#      - *wg2
+    themes: 
+      - *cat6
+    attachments:
+      - *propimg3
+      - *propimg4
+      
+##############################################################################################################################################################################################
+# Working Group Resource Spaces
+  - &rs4 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+  - &rs11 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+  - &rs12 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat4
+      - *cat5
+      - *cat6
+  - &rs13 !!models.ResourceSpace
+    type: WORKING_GROUP
+    themes: 
+      - *cat1
+      - *cat3
+      - *cat5
+      
+##############################################################################################################################################################################################
+# Working Groups
+  - &wg1 !!models.WorkingGroup
+    creator: *u1
+    name: "Conseil Belleville" 
+    text: Commitee in charge of managing contributions in for PB Belleville
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Conseil Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: false
+    consensusBallotAsString: 29483080-f169-11e5-9ce9-5e5517507c66
+    resources: *rs4
+    proposals: 
+      - *contrib20
+      - *contrib30
+      - *contrib40
+  - &wg2 !!models.WorkingGroup
+    creator: *u1
+    name: "Passionées du Parc de Belleville" 
+    text: Group developing Urban Infrastructure proposals for Parc de Belleville
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Passionées du Parc de Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: true
+    consensusBallotAsString: 294834d6-f169-11e5-9ce9-5e5517507c66
+    resources: *rs11
+    proposals: 
+      - *contrib22
+      - *contrib32
+      - *contrib42
+  - &wg3 !!models.WorkingGroup
+    creator: *u1
+    name: "Neighborhood 14, Category Parks" 
+    text: Group of neighbors from district 13, focused on Parks
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'Neighborhood 14, Category Parks' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: true
+    consensusBallotAsString: 294836b6-f169-11e5-9ce9-5e5517507c66
+    resources: *rs12
+    proposals: 
+      - *contrib21
+      - *contrib31
+      - *contrib41
+  - &wg4 !!models.WorkingGroup
+    creator: *u1
+    listed: true
+    name: "AntiEviction Proposals Team" 
+    text: Team in charge of turning Ideas into proposals
+    invitationEmail: "Hello! You have been invited to be a member of the Working Group 'AntiEviction Proposals Team' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: false
+    consensusBallotAsString: 29483c24-f169-11e5-9ce9-5e5517507c66
+    resources: *rs13
+      
+      
+####################################################################################################################################################################################
+# Component Instances: 
+  - &ph0 !!models.Component
+    title: Ideas
+    key: Ideas
+    position: 0
+    timeline: 1
+    componentId: 1
+    definition: *pd1
+    milestones: 
+      - *ci0
+      - *ci2
+  - &ph1 !!models.Component
+    title: Proposals
+    key: Proposals
+    position: 1
+    timeline: 1
+    componentId: 2
+    definition: *pd2
+    milestones: 
+      - *ci1
+      - *ci3
+      - *ci4
+  - &ph2 !!models.Component
+    title: Deliberation
+    key: Deliberation
+    position: 2
+    timeline: 1
+    componentId: 3
+    definition: *pd3
+    milestones: 
+      - *ci5
+      - *ci6
+  - &ph3 !!models.Component
+    title: Voting
+    key: Voting
+    position: 3
+    timeline: 1
+    componentId: 4
+    definition: *pd4
+    #configs
+    milestones:
+      - *ci7 
+      - *ci8 
+  - &ph4 !!models.Component
+    title: Implementation
+    key: Implementation
+    position: 4
+    timeline: 1
+    componentId: 5
+    definition: *pd5
+    #configs
+    milestones:
+      - *ci9
+  - &ph7 !!models.Component
+    title: Deliberation
+    key: Deliberation
+    position: 1
+    timeline: 1
+    componentId: 7
+    definition: *pd3
+    milestones: 
+      - *ci5
+      - *ci6
+  - &ph8 !!models.Component
+    title: Voting
+    key: Voting
+    position: 4
+    #configs
+    timeline: 1
+    componentId: 8
+    definition: *pd4
+    milestones: 
+      - *ci7
+      - *ci8 
+  - &ph9 !!models.Component
+    title: Implementation
+    key: Implementation
+    position: 5
+    #configs
+    timeline: 1
+    componentId: 9
+    definition: *pd4
+    milestones: 
+      - *ci9
+
+####################################################################################################################################################################################
+# Voting Ballot Examples 
+  - &vb1 !!models.Ballot
+    id: 1
+    uuidAsString: c0301524-f0b2-11e5-9ce9-5e5517507c66
+    instructions: "All Assembly members may vote.\nThe voting system your Assembly selected and configured for this campaign is Plurality Voting:\n\nFor each proposal, assign select YES, NO, ABSTAIN or BLOCK.\nThe 3 proposals with the largest yes/no ratio that meet quorum and have less than X block votes will be declared winners"
+    notes: ""
+    password: secret
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    votingSystemType: PLURALITY
+    startsAt: "2016-11-01"
+    endsAt: "2016-12-31"
+    component: *ph7
+  - &vb2 !!models.Ballot
+    id: 2
+    uuidAsString: 3cb04204-f0b3-11e5-9ce9-5e5517507c66
+    instructions: "Consultive ballot to use for controlling up and down votes during proposal making and deliberation, but not used to select winners"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: CONSULTIVE
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb3 !!models.Ballot
+    id: 3
+    uuidAsString: 29483080-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb4 !!models.Ballot
+    id: 4
+    uuidAsString: 294834d6-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb5 !!models.Ballot
+    id: 5
+    uuidAsString: 294836b6-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb6 !!models.Ballot
+    id: 6
+    uuidAsString: 29483c24-f169-11e5-9ce9-5e5517507c66
+    instructions: "BINDING ballot to use for controlling group consensus"
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    notes: ""
+    password: secret
+    votingSystemType: PLURALITY
+  - &vb7 !!models.Ballot
+    id: 7
+    uuidAsString: c0301524-f0b2-11e5-9ce9-5e5517507c99
+    instructions: "All Assembly members may vote.\nThe voting system your Assembly selected and configured for this campaign is Plurality Voting:\n\nFor each proposal, assign select YES, NO, ABSTAIN or BLOCK.\nThe 3 proposals with the largest yes/no ratio that meet quorum and have less than X block votes will be declared winners"
+    notes: ""
+    password: secret
+    requireRegistration: false
+    userUuidAsSignature: true
+    decisionType: BINDING
+    votingSystemType: PLURALITY
+    startsAt: "2016-11-01"
+    endsAt: "2016-12-31"
+    component: *ph3  
+
+##############################################################################################################################################################################################
+# Campaign Resource Spaces: 
+  - &rs5 !!models.ResourceSpace
+    type: CAMPAIGN
+    #configs
+    components:
+      - *ph0
+      - *ph1
+      - *ph2
+      - *ph3
+      - *ph4
+    ballots:
+      - *vb7
+    workingGroups:
+      - *wg1
+      - *wg2
+      - *wg3
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3 
+    contributions: 
+      - *contrib11 
+      - *contrib12 
+      - *contrib13 
+      - *contrib14 
+      - *contrib15 
+      - *contrib16 
+      - *contrib17 
+      - *contrib18 
+      - *contrib19
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
+  - &rs6 !!models.ResourceSpace
+    type: CAMPAIGN
+    #configs
+    components:
+      - *ph7
+      - *ph8
+      - *ph9
+    ballots:
+      - *vb1
+    workingGroups:
+      - *wg3
+    contributions: 
+      - *contrib20
+      - *contrib21 
+      - *contrib22 
+      - *contrib30
+      - *contrib31 
+      - *contrib32 
+      - *contrib40
+      - *contrib41 
+      - *contrib42 
+      
+##############################################################################################################################################################################################
+# Campaigns
+  - &c1 !!models.Campaign
+    title: "Belleville - Paris PB 2016"
+    shortname: belleville-paris-pb-2016
+    listed: true
+    template: *ct1
+    uuidAsString: e1998630-4079-11e5-a151-feff819cdc9f
+    bindingBallotAsString: c0301524-f0b2-11e5-9ce9-5e5517507c66
+    consultiveBallotAsString: 3cb04204-f0b3-11e5-9ce9-5e5517507c66
+    resources: *rs5
+  - &c2 !!models.Campaign
+    title: "Fundraising for art program at neighborhood school"
+    shortname: fundraising-art-program
+    listed: true
+    template: *ct2
+    uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
+  - &c3 !!models.Campaign
+    title: "Mobilize anti-eviction initiative"
+    shortname: anti-eviction
+    listed: true
+    template: *ct3
+    uuidAsString: c496c618-408f-11e5-a151-feff819cdc9f
+  - &c4 !!models.Campaign
+    title: "Paris PB 2016"
+    shortname: paris-pb-2016
+    listed: true
+    template: *ct1
+    uuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+    resources: *rs6
+
+##############################################################################################################################################################################################
+# Campaign Timeline Edges
+  - &ctl1 !!models.CampaignTimelineEdge
+    campaign: *c1
+    fromComponent: *ph1
+    toComponent: *ph2
+    start: true
+  - &ctl2 !!models.CampaignTimelineEdge
+    campaign: *c1
+    fromComponent: *ph2
+    toComponent: *ph3
+  - &ctl3 !!models.CampaignTimelineEdge
+    campaign: *c1
+    fromComponent: *ph3
+    toComponent: *ph4
+  - &ctl4 !!models.CampaignTimelineEdge
+    campaign: *c4
+    fromComponent: *ph7
+    toComponent: *ph8
+    start: true
+
+##############################################################################################################################################################################################
+# Assembly Resource spaces
+  - &rs1 !!models.ResourceSpace
+    type: ASSEMBLY
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+    campaigns: 
+      - *c1
+      - *c2
+      - *c3
+    configs: 
+      - &ac1 !!models.Config
+        key: assembly.face-to-face.scheduling
+        value: true
+        configTarget: ASSEMBLY
+        targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+        definition: *config8
+      - &ac2 !!models.Config
+        key: assembly.enable.messaging
+        value: true
+        configTarget: ASSEMBLY
+        targetUuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+        definition: *config9
+    workingGroups: 
+      - *wg1
+      - *wg2
+      - *wg3
+  - &rs2 !!models.ResourceSpace
+    type: ASSEMBLY
+    themes: 
+      - *cat1
+      - *cat2
+      - *cat3
+      - *cat4
+      - *cat5
+      - *cat6
+    campaigns: 
+      - *c4
+    configs:
+      - &ac3 !!models.Config
+        key: assembly.enable.messaging
+        value: false
+        configTarget: ASSEMBLY
+        targetUuidAsString: e199882e-4079-11e5-a151-feff819cdc9f
+        definition: *config9
+    workingGroups:  
+      - *wg1
+      - *wg2
+      - *wg3
+  - &rs3 !!models.ResourceSpace
+    type: ASSEMBLY
+    contributions:
+      - *contrib1
+      - *contrib2
+      - *contrib3
+      - *contrib4
+    workingGroups: 
+      - *wg4
+  
+##############################################################################################################################################################################################
+# Assemblies
+  - &a1 !!models.Assembly
+    creator: *u1
+    name: "Assemblèe Belleville"
+    shortname: "assemblee-belleville"
+    description: Assembly of residents of Belleville. We are using AppCivist to develop proposals to improve the neighborhood and then submit these proposals to the Mairie de Paris. We also use this medium to organize other civic actions.
+    uuidAsString: e199839c-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Assemblèe Belleville' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    profile: &ap1 !!models.AssemblyProfile
+      targetAudience: Residents of Belleville 
+      supportedMembership: OPEN
+      managementType: COORDINATED
+      icon: /assets/images/belleville-small.jpg
+      cover: /assets/images/covers/brainstormng-kid
+      primaryContactName: Carmen Taylor
+      primaryContactPhone: +33 0778805410
+      primaryContactEmail: carmen.taylor@example.com
+    location: &loc1 !!models.location.Location
+      placeName: "Belleville"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{   'type': 'FeatureCollection',   'features': [     {       'type': 'Feature',       'properties': {},       'geometry': {         'type': 'Polygon',         'coordinates': [           [             [               -122.28950500488281,               38.11808198029142             ],             [               -122.29568481445312,               38.111869281948955             ],             [               -122.30667114257812,               38.10511574955449             ],             [               -122.27611541748045,               38.06647354576796             ],             [               -122.25036621093749,               38.071338722995776             ],             [               -122.22633361816406,               38.06512205022704             ],             [               -122.20470428466797,               38.065932950547484             ],             [               -122.19406127929688,               38.07620357665235             ],             [               -122.18891143798828,               38.100793161158784             ],             [               -122.18135833740233,               38.10430528370985             ],             [               -122.18238830566406,               38.13428653167248             ],             [               -122.19165802001953,               38.14265747385727             ],             [               -122.20779418945311,               38.15129743915324             ],             [               -122.23079681396483,               38.161016176890456             ],             [               -122.23731994628905,               38.17289287509456             ],             [               -122.26821899414061,               38.15858661388428             ],             [               -122.27817535400389,               38.150757471302285             ],             [               -122.28710174560547,               38.133206340153684             ],             [               -122.28950500488281,               38.11808198029142             ]           ]         ]       }     }   ] }"
+    resources: *rs1
+    forum: *rs3
+  - &a2 !!models.Assembly
+    creator: *u1
+    name: "PB Paris - Mairie de Paris"
+    shortname: "pb-paris-mairie-de-paris"
+    description: Mayor's Office launches Participatory Budgeting 2016
+    uuidAsString: e1998748-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'PB Paris - Mairie de Paris' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    profile: &ap2 !!models.AssemblyProfile
+      targetAudience: Residents of Paris 
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: https://storage.googleapis.com/static.panoramio.com/photos/small/69912008.jpg
+      cover: https://storage.googleapis.com/static.panoramio.com/photos/large/69912008.jpg
+      primaryContactName: Anne Hidalgo
+      primaryContactPhone: +33 3975
+      primaryContactEmail: anne.hidalgo@example.com
+    location: &loc2 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
+    resources: *rs2
+  - &a3 !!models.Assembly
+    creator: *u1
+    name: "PB Belleville Paris"
+    shortname: "pb-belleville-paris"
+    description: Belleville assembly
+    uuidAsString: e199890a-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'PB Belleville Paris' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    profile: &ap3 !!models.AssemblyProfile
+      targetAudience: Residents of Belleville 
+      supportedMembership: OPEN
+      managementType: OPEN
+      icon: https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Metro_de_Paris_-_Ligne_2_-_Belleville_02.jpg/320px-Metro_de_Paris_-_Ligne_2_-_Belleville_02.jpg
+      cover: https://upload.wikimedia.org/wikipedia/commons/b/b1/Metro_de_Paris_-_Ligne_2_-_Belleville_02.jpg
+      primaryContactName: Edith Piaf
+      primaryContactPhone: +33 3975
+      primaryContactEmail: edit.piaf@example.com
+    location: &loc3 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"   
+  - &a4 !!models.Assembly
+    creator: *u1
+    name: "Arrondissement 07"
+    shortname: "arrondissement7"
+    description: We are a group of activist collaborating to oppose the wrongdoings of article 19 in arrondissement 7
+    uuidAsString: e1998d4c-4079-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Arrondissement 07' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    profile: &ap4 !!models.AssemblyProfile
+      targetAudience: Residents of Arrondissement 07
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: /assets/images/article19-140.png
+      cover: /assets/images/covers/arch-800x400.jpeg
+      primaryContactName: Edith Piaf
+      primaryContactPhone: +33 3975
+      primaryContactEmail: edit.piaf@example.com
+    location: &loc4 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"  
+  - &a5 !!models.Assembly
+    creator: *u1
+    name: "Assemblé Droit au Logement"
+    shortname: "droit-au-logement"
+    description: We work to end evitcions in Paris and bring new housing infrastructures for the people
+    uuidAsString: c496bf24-408f-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Assemblé Droit au Logement' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    profile: &ap5 !!models.AssemblyProfile
+      targetAudience: Everyone in Paris
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: http://droitaulogement.org/wp-content/uploads/2015/03/A3-foule-sans-date1.jpeg
+      cover: http://droitaulogement.org/wp-content/uploads/2012/05/dal-logo1.png
+      primaryContactName: Jacques Brel
+      primaryContactPhone: +33 3975
+      primaryContactEmail: jacques.brel@example.com
+    location: &loc5 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
+  - &a6 !!models.Assembly
+    creator: *u1
+    name: "Doctors without borders"
+    shortname: "doctors-without-borders"
+    description: Assembly of the Non-Profit Doctors without borders, workin out proposals for our future initiatives
+    uuidAsString: c496c1fe-408f-11e5-a151-feff819cdc9f
+    invitationEmail: "Hello! You have been invited to be a member of the Assembly 'Doctors without borders' in AppCivist. If you are interested, follow the link attached to this invitation to accept it. If you are not interested, you can just ignore this message"
+    listed: false
+    profile: &ap6 !!models.AssemblyProfile
+      targetAudience: Doctors
+      supportedMembership: INVITATION_AND_REQUEST
+      managementType: COORDINATED_AND_MODERATED
+      icon: /assets/images/barefootdoctor-140.png
+      cover: https://donate.doctorswithoutborders.org/images/header_msf_logo.png
+      primaryContactName: Charles Aznavour
+      primaryContactPhone: +33 3975
+      primaryContactEmail: charles.aznavour@example.com
+    location: &loc6 !!models.location.Location
+      placeName: "Paris"
+      city: "Paris"
+      state: ""
+      country: "France"
+      geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
+    
+
+##############################################################################################################################################################################################
+# Assembly Memberships
+  - &am1 !!models.MembershipAssembly
+    assembly: *a1
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am2 !!models.MembershipAssembly
+    status: ACCEPTED
+    creator: *u1
+    user: *u2
+    roles: 
+      - *r4
+    assembly: *a1
+  - &am3 !!models.MembershipAssembly
+    assembly: *a1
+    user: *u3
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r4
+  - &am4 !!models.MembershipAssembly
+    assembly: *a2
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am5 !!models.MembershipAssembly
+    assembly: *a3
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &am6 !!models.MembershipAssembly
+    assembly: *a3
+    user: *u2
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &am7 !!models.MembershipAssembly
+    assembly: *a3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+##############################################################################################################################################################################################
+# Group Memberships
+  - &gm1 !!models.MembershipGroup
+    user: *u3
+    workingGroup: *wg1
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm2 !!models.MembershipGroup
+    user: *u4
+    workingGroup: *wg1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm3 !!models.MembershipGroup
+    workingGroup: *wg2
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm4 !!models.MembershipGroup
+    workingGroup: *wg3
+    user: *u3
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm5 !!models.MembershipGroup
+    workingGroup: *wg3
+    user: *u4
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm6 !!models.MembershipGroup
+    workingGroup: *wg3    
+    user: *u5
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r4
+  - &gm7 !!models.MembershipGroup
+    workingGroup: *wg3
+    user: *u6
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.MembershipGroup
+    workingGroup: *wg4    
+    user: *u3
+    creator: *u1
+    status: REQUESTED
+    roles: 
+      - *r3
+      - *r4
+  - &gm1 !!models.MembershipGroup
+    workingGroup: *wg3    
+    user: *u1
+    creator: *u1
+    status: ACCEPTED
+    roles: 
+      - *r3
+      - *r4
+##############################################################################################################################################################################################
+# Assembly and Group Membership Invitations
+  - &mi1 !!models.MembershipInvitation
+    email: "ezra.bridger@example.com"
+    targetId: 1
+    creator: *u1
+    status: INVITED
+    targetType: ASSEMBLY
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f4350-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi2 !!models.MembershipInvitation
+    email: "sabine.wren@example.com"
+    targetId: 1
+    creator: *u1
+    status: INVITED
+    targetType: ASSEMBLY
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f483c-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi3 !!models.MembershipInvitation
+    email: "sara@example.com"
+    targetId: 1
+    userId: 5
+    creator: *u1
+    status: INVITED
+    targetType: ASSEMBLY
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f4ada-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi4 !!models.MembershipInvitation
+    email: "ezra.bridger@example.com"
+    targetId: 3
+    creator: *u1
+    status: INVITED
+    targetType: GROUP
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "438f5020-c7b8-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"
+  - &mi4 !!models.MembershipInvitation
+    email: "bob@example.com"
+    targetId: 3
+    creator: *u1
+    userId: 10
+    status: INVITED
+    targetType: GROUP
+    roles: 
+      - *r3
+      - *r4
+      - *r7
+    token: &ta1 !!models.TokenAction 
+      token: "7618c668-c83d-11e5-9956-625662870761"
+      type: "MEMBERSHIP_INVITATION"
+      created: "2016-02-06 16:39:13.299"
+      expires: "2017-02-06 16:39:13.299"

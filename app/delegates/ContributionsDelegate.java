@@ -89,6 +89,15 @@ public class ContributionsDelegate {
                 .findAllByContainingSpaceAndQuery(sid, query);
     }
 
+    /**
+     * Return queries based on a query and a filter
+     */
+    public static List<Contribution> findPagedContributionsInResourceSpace(Long sid, String query, Integer page, Integer pageSize) {
+        return query != null && !query.isEmpty() ?  Contribution
+                .findPagedByContainingSpaceAndQuery(sid, query, page, pageSize) : Contribution
+                .findPagedByContainingSpace(sid, page, pageSize);
+    }
+
     public static List<Contribution> findContributionsInResourceSpace(
             ResourceSpace rs, String type, String query) {
         if (type != null && !type.isEmpty()) {
@@ -99,6 +108,17 @@ public class ContributionsDelegate {
             return query != null && !query.isEmpty() ?
                     findContributionsInResourceSpace(rs.getResourceSpaceId(), query) :
                     rs != null ? rs.getContributions() : null;
+        }
+    }
+
+    public static List<Contribution> findPagedContributionsInResourceSpace(
+            ResourceSpace rs, String type, String query, Integer page, Integer pageSize) {
+        if (type != null && !type.isEmpty()) {
+            return query != null && !query.isEmpty() ?
+                    Contribution.findPagedByContainingSpaceAndTypeAndQuery(rs, type, query, page, pageSize) :
+                    Contribution.findPagedByContainingSpaceAndType(rs, type, page, pageSize);
+        } else {
+            return findPagedContributionsInResourceSpace(rs.getResourceSpaceId(), query, page, pageSize);
         }
     }
     
@@ -185,6 +205,32 @@ public class ContributionsDelegate {
             tBody += "<strong>" + section.getTitle() + " (" + section.getLength() + " words)" + "</strong><br>" + section.getDescription() + "<br><br>";
         }
         return header + tBody + "</body>";
+    }
+
+    public static List<Resource> getTemplates(String aid, String cid) {
+        List<Resource> templates = new ArrayList<Resource>();
+        if (cid != null && cid.compareTo("") != 0) {
+            Campaign c = Campaign.read(Long.parseLong(cid));
+            List<Resource> resources = c.getResources().getResources();
+            for (Resource r: resources) {
+                if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+                    templates.add(r);
+                }
+            }
+        }
+        if (aid != null && aid.compareTo("") != 0 && templates.isEmpty()) {
+            Assembly a = Assembly.read(Long.parseLong(aid));
+            List<Resource> resources = a.getResources().getResources();
+            for (Resource r: resources) {
+                if (r.getResourceType().equals(ResourceTypes.CONTRIBUTION_TEMPLATE)) {
+                    templates.add(r);
+                }
+            }
+        }
+        if(templates.isEmpty()){
+            templates = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
+        }
+        return templates;
     }
 
 }

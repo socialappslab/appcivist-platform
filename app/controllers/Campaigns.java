@@ -1,6 +1,11 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import enums.ContributionTypes;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -18,10 +23,12 @@ import java.util.stream.Collectors;
 
 import models.Assembly;
 import models.Campaign;
+import models.CampaignTemplate;
 import models.Membership;
 import models.MembershipAssembly;
 import models.Resource;
 import models.User;
+import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
@@ -31,7 +38,9 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Results;
 import play.mvc.With;
+import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -92,9 +101,39 @@ public class Campaigns extends Controller {
 	@ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Read campaign by Universal ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	public static Result findCampaignByUUID(@ApiParam(name = "uuid", value = "Campaign Universal ID (UUID)") UUID uuid) {
-		CampaignSummaryTransfer summary = CampaignDelegate.getCampaignSummary(uuid);
-		return summary  != null ? ok(Json.toJson(summary)) : ok(Json
-				.toJson(new TransferResponseStatus("No campaign found")));
+		try{
+
+			Campaign summary = CampaignDelegate.getCampaignSummary(uuid);
+			if(summary == null){
+				return ok(Json
+						.toJson(new TransferResponseStatus("No campaign found")));
+			}
+			//We have to show only ideas, discussions or proposals
+			summary.setContributions(summary.getContributions().stream().filter(c -> {
+				if(c.getType().equals(ContributionTypes.IDEA) || c.getType().equals(ContributionTypes.DISCUSSION)
+						|| c.getType().equals(ContributionTypes.PROPOSAL)){
+					return true;
+				}else {
+					return false;
+				}
+			}).collect(Collectors.toList()));
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(summary);
+
+			Content ret = new Content() {
+				@Override public String body() { return result; }
+				@Override public String contentType() { return "application/json"; }
+			};
+
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
 	}
 
 
@@ -339,21 +378,43 @@ public class Campaigns extends Controller {
 	}
 
 	/**
+	 * GET /api/assembly/:aid/campaign/:cid/template Get list of available contribution templates in a campaign
+	 * 
+	 * @return JSON array with the list of campaign templates
+	 */
+	@ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Template Found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
+	@SubjectPresent
+	public static Result findContributionTemplatesInCampaign(
+			@ApiParam(name="aid", value="Assembly ID") Long aid, 
+			@ApiParam(name="cid", value="Campaign ID") Long cid) {
+		// Must return resource, padTransfer, writable url or read only url??
+		Campaign campaign = Campaign.read(cid);
+		List<Resource> cts = campaign.getResources().getResources().stream().filter((r) ->
+			ResourceTypes.CONTRIBUTION_TEMPLATE.equals(r.getResourceType())).collect(Collectors.toList());
+		if (cts != null && !cts.isEmpty()) {
+			//List<URL> urls = cts.stream().map(sc -> sc.getUrl()).collect(Collectors.toList());
+			return ok(Json.toJson(cts));
+		} else {
+			return notFound(Json.toJson(new TransferResponseStatus(
+					"No campaign templates")));
+		}
+	}
+	
+	/**
 	 * GET /api/campaign/template Get list of available campaign templates
 	 * 
 	 * @return JSON array with the list of campaign templates
 	 */
-	@ApiOperation(httpMethod = "GET", response = URL.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
+	@ApiOperation(httpMethod = "GET", response = CampaignTemplate.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Campaign Template Found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
 	@SubjectPresent
 	public static Result findCampaignTemplates() {
-		// Must return resource, padTransfer, writable url or read only url??
-		List<Resource> cts = Resource.findByResourceType(ResourceTypes.CONTRIBUTION_TEMPLATE);
+		List<CampaignTemplate> cts = CampaignTemplate.findAll();
 		if (cts != null && !cts.isEmpty()) {
-			List<URL> urls = cts.stream().map(sc -> sc.getUrl()).collect(Collectors.toList());
-			//return ok(Json.toJson(cts));
-			return ok(Json.toJson(urls));
+			return ok(Json.toJson(cts));
 		} else {
 			return notFound(Json.toJson(new TransferResponseStatus(
 					"No campaign templates")));
@@ -427,21 +488,27 @@ public class Campaigns extends Controller {
 	/** TODO For templates and contribution, the resources (and related pad) not confirmed after x time must be eliminated **/
 
 	/**
-	 * POST /api/campaign/template
+	 * POST /api/assembly/:aid/campaign/:cid/contribution/template
 	 * Create a new Resource CONTRIBUTION_TEMPLATE
-	 * @param text
+	 * @param aid
+	 * @param campaignId
 	 * @return
 	 */
 	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Contribution Template for the campaign", notes="Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), 
+			// TODO: change the following to a more appropriate model, use this instead of the query parameter text
+			@ApiImplicitParam(name = "text", value = "Template Body Text", dataType = "String", paramType = "body") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result createCampaignTemplatePad(
-			// TODO: move text to body of request
-			@ApiParam(name="text", value="text for the template") String text) {
+	public static Result createContributionTemplateInCampaign(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-		Resource res = ResourcesDelegate.createResource(campaignCreator, text, ResourceTypes.CONTRIBUTION_TEMPLATE);
+		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.CONTRIBUTION_TEMPLATE, false);
+		Campaign campaign = Campaign.read(campaignId);
+		campaign.getResourceList().add(res);
+		Campaign.update(campaign);
 		if (res != null) {
 			return ok(Json.toJson(res));
 		} else {
@@ -451,8 +518,8 @@ public class Campaigns extends Controller {
 	}
 
 	/**
-	 * PUT /api/campaign/template
-	 * Confirm a Resource CONTRIBUTION_TEMPLATE
+	 * PUT /api/assembly/:aid/campaign/:cid/contribution/template
+	 * Confirms a Resource CONTRIBUTION_TEMPLATE
 	 * @param rid
 	 * @return
 	 */
@@ -461,9 +528,91 @@ public class Campaigns extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result confirmCampaignTemplatePad(
+	public static Result confirmContributionTemplateInCampaign(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
 			@ApiParam(name = "Resource ID", value = "Contribution Template") Long rid) {
 		Resource res = ResourcesDelegate.confirmResource(rid);
 		return ok(Json.toJson(res));
 	}
+	
+	/**
+	 * DELETE /api/assembly/:aid/campaign/:cid/contribution/template/:rid
+	 * Delete campaign by ID
+	 * @param aid assembly id
+	 * @param cid campaign id
+	 * @param resourceId id of resource to delete
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Delete campaign cotribution template", notes="Only for COORDINATOS of assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result deleteContributionTemplateInCampaign(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long cid,
+			@ApiParam(name = "rid", value = "Resource ID") Long resourceId) {
+		Resource.delete(resourceId);
+		return ok();
+	}
+
+	/**
+	 * POST /api/assembly/:aid/campaign/:cid/resource
+	 * Create a new Resource CONTRIBUTION_TEMPLATE
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = Resource.class, value = "Create a new Resource for the campaign", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createCampaignResource(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
+		if (resourceForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get(
+					GlobalData.CONTRIBUTION_CREATE_MSG_ERROR,
+					resourceForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			Resource newResource = resourceForm.get();
+			newResource.setConfirmed(true);
+			newResource.setContextUserId(campaignCreator.getUserId());
+			newResource = Resource.create(newResource);
+			Campaign campaign = Campaign.read(campaignId);
+			campaign.getResourceList().add(newResource);
+			Campaign.update(campaign);
+			return ok(Json.toJson(newResource));
+		}
+
+	}
+
+    /**
+     * GET /api/assembly/:aid/campaign/:cid/resource
+     * Returns the Resources associated to the campaign
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", value = "Lists campaign's resources", notes="Only for COORDINATORS")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result listCampaignResources(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        Campaign campaign = Campaign.read(campaignId);
+        return ok(Json.toJson(campaign.getResourceList()));
+
+    }
 }
