@@ -153,7 +153,7 @@ public class Global extends GlobalSettings {
 					} catch (Exception e) {
 						Logger.info("---> AppCivist: A problem occurred while loading '"
 								+ dataFile + "'...");
-						e.printStackTrace();
+						Logger.debug("Exception: "+e.getStackTrace().toString());
 					}
 				} else {
 					Logger.info("---> AppCivist: '" + dataFile
