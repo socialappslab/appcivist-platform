@@ -852,6 +852,11 @@ public class Contribution extends AppCivistBaseModel {
                 .eq("containingSpaces.resourceSpaceId", sid).findPagedList(page, pageSize).getList();
         return contribs;
     }
+
+	public static List<Contribution> findAllByContainingSpaceAndType(
+			ResourceSpace rs, Integer t) {
+		return find.where().eq("containingSpaces", rs).eq("type", t).findList();
+	}
     		 
     public static List<Contribution> findAllByContainingSpaceAndQuery(Long sid,
                                                                       String query) {
