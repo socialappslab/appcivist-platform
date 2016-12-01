@@ -122,8 +122,7 @@ public class ContributionsDelegate {
         }
     }
     
-	public static List<Contribution> findContributionsInResourceSpace(
-			ResourceSpace rs, Integer type) {
+	public static List<Contribution> findContributionsInResourceSpace(ResourceSpace rs, String type) {
 		return Contribution.findAllByContainingSpaceAndType(rs, type);
 	}
 

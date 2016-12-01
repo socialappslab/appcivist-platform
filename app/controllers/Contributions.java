@@ -1702,8 +1702,7 @@ public class Contributions extends Controller {
             ResourceSpace rs = null;
             if (campaign != null) {
                 rs = campaign.getResources();
-                List<Contribution> contributions = ContributionsDelegate
-                        .findContributionsInResourceSpace(rs, null);
+                List<Contribution> contributions = ContributionsDelegate.findContributionsInResourceSpace(rs, null, null);
                 for (Contribution c: contributions) {
                     csv = csv + (c.getTitle() != null ? c.getTitle() : "")  + ",";
                     csv = csv + (c.getAssessmentSummary() != null ? c.getAssessmentSummary() : "") + ",";
