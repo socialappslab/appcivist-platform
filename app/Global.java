@@ -1,5 +1,7 @@
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -23,8 +25,8 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
 import com.feth.play.module.pa.exceptions.AuthException;
-import io.swagger.converter.ModelConverters;
 
+import io.swagger.converter.ModelConverters;
 import controllers.routes;
 import play.libs.F.Promise;
 import play.mvc.Action;
@@ -153,7 +155,10 @@ public class Global extends GlobalSettings {
 					} catch (Exception e) {
 						Logger.info("---> AppCivist: A problem occurred while loading '"
 								+ dataFile + "'...");
-						Logger.debug("Exception: "+e.getStackTrace().toString());
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);
+						Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
 					}
 				} else {
 					Logger.info("---> AppCivist: '" + dataFile
