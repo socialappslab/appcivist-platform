@@ -158,7 +158,7 @@
 # Users (Testing Users)
 # Summary
 # Id / email                           / password             / language/ role   
-# 1  / carmen@example.com              / hopiov3              / "en-US" / ADMIN  
+# 1  / carmen@example.com              / spellhivm            / "en-US" / ADMIN  
 # 2  / jane@example.com                / fix8nca              / "en-US" / ADMIN  
 # 3  / jeff@example.com                / sipel55              / "it-IT" / ADMIN  
 # 4  / sara@example.com                / praise23nk           / "fr-FR"          
@@ -191,7 +191,7 @@
       - *r2 # USER
     linkedAccounts:
     - &ua1 !!models.LinkedAccount
-      providerUserId: "$2a$10$ujQY4Acdp0fNKYy7hzUoaOz.mjqpPvRO67Dh0IhoeUeVf0.ly0vy."
+      providerUserId: "$2a$10$/SZEU7EY5HP8TUUSie24HeQatJtCqUVMp7zZmGDdhDD.lGaAX99/K"
       providerKey: password
       user: *u1
   - &u2 !!models.User
