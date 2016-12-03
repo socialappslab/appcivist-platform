@@ -33,6 +33,13 @@ public class UserProfile extends AppCivistBaseModel {
 	private Date birthdate;
 	@Column(name="address", columnDefinition="text")
 	private String address;
+	@Column(name="note", columnDefinition="text")
+	private String note;
+	@Column(name="phone")
+	private String phone;
+	@Column(name="gender")
+	private String gender;
+
 	// TODO add contact information
 	@JsonIgnore
 	@OneToOne
@@ -130,6 +137,30 @@ public class UserProfile extends AppCivistBaseModel {
 
 	public void setUuidAsString(String uuidAsString) {
 		this.uuid = UUID.fromString(uuidAsString);
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
 	}
 
 	public static UserProfile readByUserId(Long id) {
