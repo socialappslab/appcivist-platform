@@ -19,6 +19,8 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 
 import models.misc.InitialDataConfig;
 import models.misc.S3File;
@@ -90,6 +92,11 @@ public class Files extends Controller {
 			Logger.info("Copying data into database...");
 			try {
 				loadDataFile(filename, file);
+
+				// update sequences to match the inserted ids
+				String sql = "SELECT setval_max('public');";
+				SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+				List<SqlRow> list = sqlQuery.findList();
 			} catch (Exception e) {
 				Logger.info("---> AppCivist: A problem occurred while loading '"+ filename + "'...");
 				StringWriter sw = new StringWriter();

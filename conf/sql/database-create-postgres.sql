@@ -1155,6 +1155,7 @@ alter table contribution_feedback add column working_group_id BIGINT;
 alter table contribution_feedback add column official_group_feedback BOOLEAN;
 alter table contribution_feedback add column archived BOOLEAN;
 
+--- 10.sql
 -- Adding persistence for notifications
 create table notification_event_signal (
   id                        bigserial not null,
@@ -1183,20 +1184,20 @@ create table notification_event_signal (
 create index ix_notification_event_id on notification_event_signal (id);
 create index ix_notification_event_uuid on notification_event_signal (uuid);
 
-/*
-Created by @josepmv
-https://github.com/josepmv/dbadailystuff/blob/master/postgresql_setval_max.sql
+--- 11.sql
+-- Created by @josepmv
+-- https://github.com/josepmv/dbadailystuff/blob/master/postgresql_setval_max.sql
 
-SETVAL for all sequences in a schema or for a unique table
-In PostgreSQL, when you’re working with sequences, if you insert a future value due to the incrementing values, you will get an error
- when that value is going to be inserted. I like much more how SQL Server handles autoincrement columns with its IDENTITY property, 
- that would be like the sequences linked to a table like SERIAL, but it’s much more restrictive and by default you cannot INSERT a register
- specifying the value of this column as you can do with PostgreSQL.
-The PostgreSQL setval() function, explained in Sequence Manipulation Functions (http://www.postgresql.org/docs/current/interactive/functions-sequence.html), 
-is the way that PostgreSQL has to change the value of a sequence. But only accepts one table as a parameter. 
-So, if you need to set all the sequences in a schema to the max(id) of every table, 
-you can do can use the following script, based on Updating sequence values from table select (http://wiki.postgresql.org/wiki/Fixing_Sequences).
-*/
+-- SETVAL for all sequences in a schema or for a unique table
+-- In PostgreSQL, when you’re working with sequences, if you insert a future value due to the incrementing values, you will get an error
+--  when that value is going to be inserted. I like much more how SQL Server handles autoincrement columns with its IDENTITY property, 
+--  that would be like the sequences linked to a table like SERIAL, but it’s much more restrictive and by default you cannot INSERT a register
+--  specifying the value of this column as you can do with PostgreSQL.
+-- The PostgreSQL setval() function, explained in Sequence Manipulation Functions (http://www.postgresql.org/docs/current/interactive/functions-sequence.html), 
+-- is the way that PostgreSQL has to change the value of a sequence. But only accepts one table as a parameter. 
+-- So, if you need to set all the sequences in a schema to the max(id) of every table, 
+-- you can do can use the following script, based on Updating sequence values from table select (http://wiki.postgresql.org/wiki/Fixing_Sequences).
+-- */
 
 CREATE OR REPLACE FUNCTION setval_max
 (
@@ -1241,3 +1242,9 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
+
+--- 12.sql
+ALTER TABLE theme ADD COLUMN type varchar(255) DEFAULT 'EMERGENT';
+ALTER TABLE user_profile ADD COLUMN phone varchar(30);
+ALTER TABLE user_profile ADD COLUMN note text;
+ALTER TABLE user_profile ADD COLUMN gender varchar(30);

@@ -21,6 +21,8 @@ import play.libs.Yaml;
 import play.mvc.Call;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
@@ -152,6 +154,11 @@ public class Global extends GlobalSettings {
 						fileConfig.save();
 						Logger.info("---> AppCivist: '" + dataFile
 								+ "' loaded successfully!");
+
+						// update sequences to match the inserted ids
+						String sql = "SELECT setval_max('public');";
+						SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+						List<SqlRow> rows = sqlQuery.findList();
 					} catch (Exception e) {
 						Logger.info("---> AppCivist: A problem occurred while loading '"
 								+ dataFile + "'...");
