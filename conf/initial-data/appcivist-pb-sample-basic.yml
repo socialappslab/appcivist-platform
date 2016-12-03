@@ -23,24 +23,31 @@
   - &cat1 !!models.Theme
     title: "Streets and Transportation"
     description: "Streets are the veins of our city. Transportation is its blood. They are the reason why we are moving, and to keep moving, they must be as healty as possible"
+    type: "OFFICIAL_PRE_DEFINED"
   - &cat2 !!models.Theme
     title: "Economic Development"
     description: "What we do everyday has an impact in our local economy. What can we do to foster its growth? And how can we ensure that growth benefits us all?"
+    type: "OFFICIAL_PRE_DEFINED"
   - &cat3 !!models.Theme
     title: "Community and Culture"
     description: "Culture speak to us about our history, values and traditions. It is the soul that keeps the heart of our communities pumping."
+    type: "OFFICIAL_PRE_DEFINED"
   - &cat4 !!models.Theme
     title: "Public Safety"
     description: "To thrive, our communities need a safe space to live. Your contributions to improve public safety go here."
+    type: "OFFICIAL_PRE_DEFINED"
   - &cat5 !!models.Theme
     title: "Parks and Recreation"
     description: "All work no play?. We all know life is so much more. Let's assure our parks give us all the recreation opportunities our communities need to enjoy life."
+    type: "OFFICIAL_PRE_DEFINED"
   - &cat6 !!models.Theme
     title: "Education"
     description: "'Education is the most powerful weapon which you can use to change the world'. Indeed Mr. Mandela."
+    type: "OFFICIAL_PRE_DEFINED"
   - &cat7 !!models.Theme
     title: "Urban Infrastructure"
     description: "Better infrastructure for our urban environments"
+    type: "OFFICIAL_PRE_DEFINED"
     
 ##############################################################################################################################################################################################      
 # Resources for Attachments and User Profile Pics
@@ -153,9 +160,8 @@
     readOnlyPadId: "r.80b00c7946924d3ea4dc4b896ed50193"
     padId: "proposal-template-1"
     resourceType: PAD
-    
-##############################################################################################################################################################################################
-# Users (Testing Users)
+
+
 # Summary
 # Id / email                           / password             / language/ role   
 # 1  / carmen@example.com              / spellhivm            / "en-US" / ADMIN  
@@ -178,6 +184,8 @@
 # 18 / appcivistapp+FR@gmail.com       /                      / "fr-FR" / ADMIN  
 # 19 / appcivistapp+DE@gmail.com       /                      / "de-DE" / ADMIN  
 # 20 / appcivistapp+IT@gmail.com       /                      / "it-IT" / ADMIN  
+##############################################################################################################################################################################################
+# Users (Testing Users)
   - &u1 !!models.User
     userId: 1
     email:      carmen@example.com
@@ -464,7 +472,8 @@
     middleName: "Jameson" 
     lastName: "Sager"
     birthdate: "1982-08-19"
-    address: "1145 Shattuck Avenue, Berkeley, CA"    
+    address: "1145 Shattuck Avenue, Berkeley, CA" 
+    gender: "male"
   - &up2 !!models.UserProfile     
     user: *u2
     uuidAsString: "12f9fe3a-407a-11e5-a151-feff819cdc9f"
@@ -473,6 +482,7 @@
     lastName: "Doe"
     birthdate: "1972-08-19"
     address: "432 Berkeley Way, Berkeley, CA"
+    gender: "female"
   - &up3 !!models.UserProfile     
     user: *u3
     uuidAsString: "12fa0038-407a-11e5-a151-feff819cdc9f"
@@ -481,7 +491,8 @@
     lastName: "Dameron"
     birthdate: "1972-08-19"
     address: "432 Berkeley Way, Berkeley, CA"
-
+    gender: "male"
+  
 ##############################################################################################################################################################################################
 # Configuration Definitions
   - &config1 !!models.ConfigDefinition
@@ -1335,8 +1346,7 @@
     listed: false
     consensusBallotAsString: 29483c24-f169-11e5-9ce9-5e5517507c66
     resources: *rs13
-      
-      
+           
 ####################################################################################################################################################################################
 # Component Instances: 
   - &ph0 !!models.Component
@@ -1819,7 +1829,6 @@
       country: "France"
       geoJson: "{  'type': 'FeatureCollection',  'features': [    {      'type': 'Feature',      'properties': {},      'geometry': {        'type': 'Point',        'coordinates': [          2.34832763671875,          48.866521538507754        ]      }    }  ]}"
     
-
 ##############################################################################################################################################################################################
 # Assembly Memberships
   - &am1 !!models.MembershipAssembly
