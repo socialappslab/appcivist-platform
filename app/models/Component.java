@@ -1,6 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -14,6 +13,8 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,11 +26,19 @@ import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Transient;
 
-import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import enums.ResourceSpaceTypes;
 import models.misc.Views;
+
+import com.avaje.ebean.ExpressionList;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonView;
+
+import enums.ComponentTypes;
+import enums.ResourceSpaceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -43,6 +52,9 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	private Long componentId;
 	@JsonView(Views.Public.class)
 	private String title;
+	@Enumerated(EnumType.STRING)
+	@JsonView(Views.Public.class)
+	private ComponentTypes type = ComponentTypes.IDEAS;
 	@JsonView(Views.Public.class)
 	private String key;
 	@JsonView(Views.Public.class)
@@ -148,6 +160,14 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public ComponentTypes getType() {
+		return type;
+	}
+
+	public void setType(ComponentTypes type) {
+		this.type = type;
 	}
 
 	public String getKey() {

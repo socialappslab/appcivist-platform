@@ -5,18 +5,25 @@
 ##############################################################################################################################################################################################
 # Roles
   - &r1 !!models.SecurityRole
+    roleId: 1
     name:       "ADMIN"
   - &r2 !!models.SecurityRole
+    roleId: 2
     name:       "USER"
   - &r3 !!models.SecurityRole
+    roleId: 3
     name:       "COORDINATOR"
   - &r4 !!models.SecurityRole
+    roleId: 4
     name:       "MEMBER"
   - &r5 !!models.SecurityRole
+    roleId: 5
     name:       "EXPERT"
   - &r6 !!models.SecurityRole
+    roleId: 6
     name:       "FOLLOWER"
   - &r7 !!models.SecurityRole
+    roleId: 7
     name:       "MODERATOR"
 ##############################################################################################################################################################################################
 # Themes
@@ -783,6 +790,7 @@
 ##############################################################################################################################################################################################
 # Campaign Templates
   - &ct1 !!models.CampaignTemplate
+    campaignTemplateId: 1
     nameKey: "PROPOSAL_MAKING"
     name: "Proposal and decision making" 
     defComponents: 
@@ -890,6 +898,7 @@
       targetComponentUuidAsString: "12fa0326-407a-11e5-a151-feff819cdc9f"         
       type: START   
   - &ct2 !!models.CampaignTemplate
+    campaignTemplateId: 2
     nameKey: "FUNDRAISING"
     name: "Fundraising" 
     reqMilestones:
@@ -908,6 +917,7 @@
       position: 1
       type: END
   - &ct3 !!models.CampaignTemplate
+    campaignTemplateId: 3
     nameKey: "MOBILIZATION"
     name: "Mobilization"
 
@@ -1352,6 +1362,7 @@
   - &ph0 !!models.Component
     title: Ideas
     key: Ideas
+    type: IDEAS
     position: 0
     timeline: 1
     componentId: 1
@@ -1362,6 +1373,7 @@
   - &ph1 !!models.Component
     title: Proposals
     key: Proposals
+    type: PROPOSALS
     position: 1
     timeline: 1
     componentId: 2
@@ -1373,6 +1385,7 @@
   - &ph2 !!models.Component
     title: Deliberation
     key: Deliberation
+    type: DELIBERATION
     position: 2
     timeline: 1
     componentId: 3
@@ -1383,6 +1396,7 @@
   - &ph3 !!models.Component
     title: Voting
     key: Voting
+    type: VOTING
     position: 3
     timeline: 1
     componentId: 4
@@ -1394,6 +1408,7 @@
   - &ph4 !!models.Component
     title: Implementation
     key: Implementation
+    type: IMPLEMENTATION
     position: 4
     timeline: 1
     componentId: 5
@@ -1404,6 +1419,7 @@
   - &ph7 !!models.Component
     title: Deliberation
     key: Deliberation
+    type: DELIBERATION
     position: 1
     timeline: 1
     componentId: 7
@@ -1414,6 +1430,7 @@
   - &ph8 !!models.Component
     title: Voting
     key: Voting
+    type: VOTING
     position: 4
     #configs
     timeline: 1
@@ -1425,6 +1442,7 @@
   - &ph9 !!models.Component
     title: Implementation
     key: Implementation
+    type: IMPLEMENTATION
     position: 5
     #configs
     timeline: 1
