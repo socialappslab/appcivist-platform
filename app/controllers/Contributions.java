@@ -1885,9 +1885,12 @@ public class Contributions extends Controller {
 										Logger.info("Addng contribution to WG => "+wgName);
 										wg.addContribution(c);
 										wg.update();
-										ContributionHistory.createHistoricFromContribution(c);
 									}
 								}
+                            	Logger.info("Adding contribution to campaign...");
+								campaign.getResources().addContribution(c);
+								campaign.update();
+								ContributionHistory.createHistoricFromContribution(c);
 								
 							}
                         } catch (Exception e) {
