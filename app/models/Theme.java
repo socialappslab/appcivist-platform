@@ -145,4 +145,8 @@ public class Theme extends AppCivistBaseModel {
     public static void update(Long id) {
         find.ref(id).update();
     }
+
+	public static List<Theme> findByTitle(String t) {
+		return find.where().eq("title",t).findList();
+	}
 }

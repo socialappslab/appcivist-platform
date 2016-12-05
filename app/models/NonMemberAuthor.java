@@ -9,13 +9,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="NonMemberAuthor", description="Author of contributions who are not users of the platform")
-public class NonMemberAuthor extends AppCivistBaseModel {
+public class NonMemberAuthor extends Model {
 
     @Id
     @GeneratedValue
@@ -26,6 +27,10 @@ public class NonMemberAuthor extends AppCivistBaseModel {
     private String email;
 
     private URL url;
+    
+    private String gender; 
+    
+    private Integer age; 
 
     /**
      * The find property is an static property that facilitates database query creation
@@ -84,5 +89,21 @@ public class NonMemberAuthor extends AppCivistBaseModel {
 
 	public void setUrl(URL url) {
 		this.url = url;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public Integer getAge() {
+		return age;
+	}
+
+	public void setAge(Integer age) {
+		this.age = age;
 	}
 }

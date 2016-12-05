@@ -31,13 +31,13 @@ $BODY$
 --  SELECT setval_max('public','mytable',true);
 
 DECLARE
-    row_data RECORD;
-    sql_code TEXT;
+    row_data RECORD;;
+    sql_code TEXT;;
 
 BEGIN
     IF ((SELECT COUNT(*) FROM pg_namespace WHERE nspname = schema_name) = 0) THEN
-        RAISE EXCEPTION 'The schema "%" does not exist', schema_name;
-    END IF;
+        RAISE EXCEPTION 'The schema "%" does not exist', schema_name;;
+    END IF;;
 
     FOR sql_code IN
         SELECT 'SELECT SETVAL(' ||quote_literal(N.nspname || '.' || S.relname)|| ', MAX(' ||quote_ident(C.attname)|| ') ) FROM ' || quote_ident(N.nspname) || '.' || quote_ident(T.relname)|| ';' AS sql_code
@@ -50,11 +50,11 @@ BEGIN
             ORDER BY S.relname
     LOOP
         IF (raise_notice) THEN
-            RAISE NOTICE 'sql_code: %', sql_code;
-        END IF;
-        EXECUTE sql_code;
-    END LOOP;
-END;
+            RAISE NOTICE 'sql_code: %', sql_code;;
+        END IF;;
+        EXECUTE sql_code;;
+    END LOOP;;
+END;;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 

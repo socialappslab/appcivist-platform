@@ -1251,3 +1251,7 @@ ALTER TABLE user_profile ADD COLUMN gender varchar(30);
 
 -- 13.sql 
 ALTER TABLE component ADD COLUMN type varchar(30) DEFAULT 'IDEAS';
+
+-- 14.sql
+ALTER TABLE non_member_author ADD COLUMN gender varchar(30);
+ALTER TABLE non_member_author ADD COLUMN age smallint;

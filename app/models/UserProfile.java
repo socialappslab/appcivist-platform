@@ -2,6 +2,9 @@ package models;
 
 import io.swagger.annotations.ApiModel;
 
+import java.util.Date;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,9 +15,6 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
