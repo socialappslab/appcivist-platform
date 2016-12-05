@@ -1182,3 +1182,16 @@ create table notification_event_signal (
 
 create index ix_notification_event_id on notification_event (id);
 create index ix_notification_event_uuid on notification_event (uuid);
+
+create table contribution_publish_history(
+  id                        bigserial not null,
+  contribution_id           bigint not null,
+  resource_id               bigint not null,
+  revision                  INTEGER not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  removal                   timestamp,
+  removed                   boolean,
+  lang                      varchar(255),
+  constraint pk_contribution_publish_history primary key (id))
+;

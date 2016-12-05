@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiResponses;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,9 @@ import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.WorkingGroupSummaryTransfer;
+import org.json.simple.JSONArray;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -51,6 +54,7 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.WorkingGroupsDelegate;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
+import utils.services.EtherpadWrapper;
 
 @Api(value = "02 group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
@@ -594,6 +598,51 @@ public class WorkingGroups extends Controller {
 			}
 			return ok(Json.toJson(workingGroup));
 		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
+
+	}
+
+
+	@ApiOperation(httpMethod = "PUT", response = Integer.class, produces = "application/json", value = "Publishes a Contribution")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result publishProposal(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "gid", value = "Working Group ID") Long gid,
+			@ApiParam(name = "pid", value = "Contribution ID") Long pid) {
+
+		try {
+			Contribution proposal = Contribution.read(pid);
+
+			String etherpadServerUrl = Play
+					.application()
+					.configuration()
+					.getString(
+							"appcivist.services.etherpad.default.serverBaseUrl");
+			String etherpadApiKey = Play.application().configuration()
+					.getString("appcivist.services.etherpad.default.apiKey");
+			EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+
+			//Let's save the revision with no number, so etherpad can generate one by itself
+			wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());
+			Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
+
+			JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
+			Integer newRevision = null;
+			if(savedRevisions != null && !savedRevisions.isEmpty()){
+				newRevision = ((Long)savedRevisions.get(savedRevisions.size() - 1)).intValue();
+				proposal.addRevisionToContributionPublishHistory(newRevision);
+			}
+
+
+			return ok(Json.toJson(newRevision));
+		}catch(Exception e){
+			e.printStackTrace();
 			return badRequest(Json.toJson(Json
 					.toJson(new TransferResponseStatus("Error processing request"))));
 		}
