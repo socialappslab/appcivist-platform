@@ -15,6 +15,7 @@ import javax.persistence.*;
 import enums.ContributionStatus;
 import models.location.Location;
 import models.misc.Views;
+import play.Logger;
 import play.data.validation.Constraints.Required;
 
 import com.avaje.ebean.ExpressionList;
@@ -176,6 +177,19 @@ public class Contribution extends AppCivistBaseModel {
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @OneToOne(cascade = CascadeType.ALL)
     private Resource extendedTextPad;
+
+    // Fields specific to the type PROPOSAL and ASSESSMENT
+    @Transient
+    @JsonIgnore
+    private List<ContributionPublishHistory> publicRevisionHistory = new ArrayList<>();
+
+    @Transient
+    @JsonView(Views.Public.class)
+    private Integer publicRevision;
+
+    // Fields specific to the type PROPOSAL and ASSESSMENT
+//    @OneToOne(cascade = CascadeType.ALL)
+//    private Resource publicRevision;
 
     @Column(name = "source_code")
     private String sourceCode;
@@ -1061,5 +1075,34 @@ public class Contribution extends AppCivistBaseModel {
             ResourceSpace rs = ResourceSpace.read(long1);
             this.containingSpaces.add(rs);
         }
+    }
+
+    public List<ContributionPublishHistory> getPublicRevisionHistory() {
+        this.publicRevisionHistory = ContributionPublishHistory.getContributionsPublishHistory(this);
+        return this.publicRevisionHistory;
+    }
+
+//    public void setPublicRevisionHistory(List<ContributionPublishHistory> publicRevisionHistory) {
+//        this.publicRevisionHistory = publicRevisionHistory;
+//    }
+
+    /**
+     * Adds revision to history
+     * @param revision
+     */
+    public void addRevisionToContributionPublishHistory(Integer revision){
+        ContributionPublishHistory contributionPublishHistory = new ContributionPublishHistory();
+        contributionPublishHistory.setContributionId(this.getContributionId());
+        contributionPublishHistory.setResourceId(this.extendedTextPad.getResourceId());
+        contributionPublishHistory.setRevision(revision);
+        contributionPublishHistory.save();
+    }
+
+    public Integer getPublicRevision(){
+        List<ContributionPublishHistory> publishHistories = this.getPublicRevisionHistory();
+        if(publishHistories != null && !publishHistories.isEmpty()){
+            this.publicRevision = publishHistories.get(publishHistories.size() - 1).getRevision();
+        }
+        return this.publicRevision;
     }
 }
