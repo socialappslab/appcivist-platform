@@ -86,8 +86,7 @@ public class ContributionHistory extends AppCivistBaseModel {
     @Transient
     ContributionHistoryItem changes;
 
-    public static Finder<Long, ContributionHistory> find = new Finder<>(
-            ContributionHistory.class);
+    public static Finder<Long, ContributionHistory> find = new Finder<>(ContributionHistory.class);
 
     public Long getContributionHistoryId() {
         return contributionHistoryId;
@@ -271,6 +270,7 @@ public class ContributionHistory extends AppCivistBaseModel {
     }
 
     public static List<ContributionHistory> getContributionsHistory(Long contributionId) throws Exception {
+    	find = new Finder<>(ContributionHistory.class);
         List<ContributionHistory> histories = find.where().eq("contributionId", contributionId).eq("removed", false).orderBy("creation").findList();
         ContributionHistory previousHistory = null;
         for (ContributionHistory history : histories) {
