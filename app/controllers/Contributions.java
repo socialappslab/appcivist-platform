@@ -1805,7 +1805,6 @@ public class Contributions extends Controller {
                     	try {
                     		Ebean.beginTransaction();
                     		while ((line = br.readLine()) != null) {
-                            
 								String[] cell = line.split(cvsSplitBy);
 								Contribution c = new Contribution();
 								c.setType(ContributionTypes.IDEA);
@@ -1817,59 +1816,85 @@ public class Contributions extends Controller {
 								c.setSourceCode(cell[0]);
 								c.setTitle(cell[1]);
 								c.setText(cell[2].replaceAll("\n", ""));
-								
+								Logger.info("Importing => Contribution => "+cell[0]);
 								// SET categories	
 								// TODO: use some kind of string buffer to make this more efficient as strings are immutable
-								String categoriesLine = cell [4];
-								String[] categories = categoriesLine.split(",");
-								List<Theme> existing = new ArrayList<>();
-								for (String category : categories) {
-									List<Theme> themes = campaign.filterThemesByTitle(category.trim());
-									Logger.info(themes.size()+" themes found thath match category "+category);
-									existing.addAll(themes);
+								if (cell.length>4) {
+									String categoriesLine = cell [4];
+									String[] categories = categoriesLine.split(",");
+									List<Theme> existing = new ArrayList<>();
+									for (String category : categories) {
+										Logger.info("Importing => Category => "+category);
+										List<Theme> themes = campaign.filterThemesByTitle(category.trim());
+										Logger.info(themes.size()+" themes found thath match category "+category);
+										existing.addAll(themes);
+									}	
+									c.setExistingThemes(existing);
 								}
-								c.setExistingThemes(existing);
-								// SET author	age	gender	creation_date
-								// get author name from cell 2
-								c.setFirstAuthorName(cell[5]);
-								List<User> authors = User.findByName(c.getFirstAuthorName());
-								//If more than one user matches the name criteria, we'll skip the author set up
-								if (authors != null && authors.size() == 1){
-								    c.getAuthors().add(authors.get(0));
-								    Logger.info("The author was FOUND!");
-								} else {
-									// Create a non member author
-									NonMemberAuthor nma = new NonMemberAuthor(); 
-									nma.setName(c.getFirstAuthorName());
-									nma.setAge(new Integer(cell[6]));
-									nma.setGender(cell[7]);
-									nma.save();
-								    Logger.info("New Non Member Author!");
-									c.setNonMemberAuthor(nma);
-								}
-								String creationDate = cell [8];
-								DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-								LocalDate ldt = LocalDate.parse(creationDate,formatter);
-								c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 								
+								if (cell.length>5) {	
+									// SET author	age	gender	creation_date
+									// get author name from cell 2
+									Logger.info("Importing => author => "+cell.length);
+									String author = cell[5];
+									Logger.info("Importing => author => "+author);
+									List<User> authors = null;
+									
+									if (author != null && !author.equals("")) {
+										c.setFirstAuthorName(cell[5]);
+										authors = User.findByName(c
+												.getFirstAuthorName());
+										// If more than one user matches the name
+										// criteria, we'll skip the author set up
+										if (authors != null && authors.size() == 1) {
+											c.getAuthors().add(authors.get(0));
+											Logger.info("The author was FOUND!");
+										}
+									}
+									if (authors == null && (cell.length>6) ) {
+		
+										Logger.info("Importing => non member author => "+author);
+										// Create a non member author
+										NonMemberAuthor nma = new NonMemberAuthor();
+										nma.setName(c.getFirstAuthorName());
+										nma.setAge(new Integer(cell[6]));
+										if (cell.length>7)
+											nma.setGender(cell[7]);
+										nma.save();
+										c.setNonMemberAuthor(nma);
+									}
+								}
+
+								if (cell.length>8) {	
+									String creationDate = cell [8];
+									DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+									Logger.info("Importing => date => "+creationDate);
+									
+									LocalDate ldt = LocalDate.parse(creationDate,formatter);
+									c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+									Logger.info("Importing => creating...");
+								}
 								// Create the contribution
 								Contribution.create(c);
 								
-								// Add IDEA to Working Group
-								String wgName = cell[3];
-								WorkingGroup wg = WorkingGroup.readByName(wgName);
-								if (wg!=null) {
-									wg.addContribution(c);
-									wg.update();
+								if (cell.length>3) {
+									// Add IDEA to Working Group
+									String wgName = cell[3];
+									Logger.info("Importing => wg => "+wgName);
+									
+									WorkingGroup wg = WorkingGroup.readByName(wgName);
+									if (wg!=null) {
+										wg.addContribution(c);
+										wg.update();
+									}
 								}
-								
 								// TODO: is this correct? 
 								ContributionHistory.createHistoricFromContribution(c);
 							}
                         } catch (Exception e) {
 							Ebean.rollbackTransaction();
 							Logger.info(e.getLocalizedMessage());
+							e.printStackTrace();
 							return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
 						}
                         Ebean.commitTransaction();
@@ -1948,7 +1973,8 @@ public class Contributions extends Controller {
 									}
 									
 								}
-								
+								ResourceSpace rs = c.getResourceSpace();
+
 								// get & create atachments from cells 5,6
 								List<Resource> resources = new ArrayList<>();
 								if (cell[5]!=null) {
@@ -1974,7 +2000,7 @@ public class Contributions extends Controller {
 								}
 								
 								Logger.info("URL Resources size: " + resources.size());
-								c.getResourceSpace().setResources(resources);
+								rs.getResources().addAll(resources);
 
 								// get related contributions by source_code
 								List<Contribution> inspirations = new ArrayList<>();
@@ -1988,11 +2014,13 @@ public class Contributions extends Controller {
 									        inspirations.add(contrib);
 									    }
 									}
-									c.setAssociatedContributions(inspirations);
+									rs.getContributions().addAll(inspirations);
 								}
-
+								
                             	Logger.info("Creating contribution...");
 								Contribution.create(c);
+
+								rs.update();
 								
 								if(wg != null){
 								    wg.update();
