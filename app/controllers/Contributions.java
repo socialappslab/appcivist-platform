@@ -1,8 +1,6 @@
 package controllers;
 
 import static play.data.Form.form;
-
-import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -18,7 +16,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -26,9 +28,28 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 
-import models.*;
+import models.Assembly;
+import models.Ballot;
+import models.BallotCandidate;
+import models.Campaign;
+import models.Component;
+import models.Contribution;
+import models.ContributionFeedback;
+import models.ContributionHistory;
+import models.ContributionStatistics;
+import models.ContributionTemplate;
+import models.Membership;
+import models.MembershipGroup;
+import models.MembershipInvitation;
+import models.NonMemberAuthor;
+import models.Resource;
+import models.ResourceSpace;
+import models.SecurityRole;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
+import models.WorkingGroupProfile;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
 import models.transfer.PadTransfer;
@@ -61,6 +82,15 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
+import enums.ContributionFeedbackTypes;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
+import enums.ManagementTypes;
+import enums.MyRoles;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
+import enums.SupportedMembershipRegistration;
 import exceptions.MembershipCreationException;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
@@ -1693,8 +1723,8 @@ public class Contributions extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
-											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
+	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
+											 @ApiParam(value = "Campaign id") @PathParam("cid") Long cid) {
 		String csv = "idea title,idea summary,idea author,idea theme, source code, type\n";
 		Campaign campaign = null;
         try {
@@ -1741,7 +1771,6 @@ public class Contributions extends Controller {
 
 
 
-    /** TODO NEW IDEAS & PROPOSALS IMPORT **/
     /**
      * POST /api/assembly/:aid/contribution/ideas/import
      * Import ideas file
@@ -1754,157 +1783,274 @@ public class Contributions extends Controller {
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
-            /*@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")*/ })
-    public static Result importContributions(@ApiParam(name="type", value="Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result importContributions(
+    		@ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
+			@ApiParam(value = "Campaign id") @PathParam("cid") Long cid,
+    		@ApiParam(name="type", value="Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
-        Campaign campaign = null;
+        Campaign campaign = Campaign.read(cid);
 
-        if (uploadFilePart != null) {
+        if (uploadFilePart != null && campaign != null) {
             try {
                 BufferedReader br = null;
                 br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
-                String cvsSplitBy = ";";
+                String cvsSplitBy = "\\t";
                 String line = br.readLine();
-
+            	Logger.debug("Importing record => "+line);
                 switch (type) {
                     case "IDEA":
-                        while ((line = br.readLine()) != null) {
+                    	try {
+                    		Ebean.beginTransaction();
+                    		while ((line = br.readLine()) != null) {
+								String[] cell = line.split(cvsSplitBy);
+								Contribution c = new Contribution();
+								c.setType(ContributionTypes.IDEA);
+								
+								// Supported Format: 
+								// source_code	title	text	working group	categories	author	age	gender	creation_date
+								
+								// SET source_code	title	text
+								c.setSourceCode(cell[0]);
+								c.setTitle(cell[1]);
+								c.setText(cell[2].replaceAll("\n", ""));
+								Logger.info("Importing => Contribution => "+cell[0]);
+								// SET categories	
+								// TODO: use some kind of string buffer to make this more efficient as strings are immutable
+								if (cell.length>4) {
+									String categoriesLine = cell [4];
+									String[] categories = categoriesLine.split(",");
+									List<Theme> existing = new ArrayList<>();
+									for (String category : categories) {
+										Logger.info("Importing => Category => "+category);
+										List<Theme> themes = campaign.filterThemesByTitle(category.trim());
+										Logger.info(themes.size()+" themes found thath match category "+category);
+										existing.addAll(themes);
+									}	
+									c.setExistingThemes(existing);
+								}
+								
+								if (cell.length>5) {	
+									// SET author	age	gender	creation_date
+									// get author name from cell 2
+									Logger.info("Importing => author => "+cell.length);
+									String author = cell[5];
+									Logger.info("Importing => author => "+author);
+									List<User> authors = null;
+									
+									if (author != null && !author.equals("")) {
+										c.setFirstAuthorName(cell[5]);
+										authors = User.findByName(c
+												.getFirstAuthorName());
+										// If more than one user matches the name
+										// criteria, we'll skip the author set up
+										if (authors != null && authors.size() == 1) {
+											c.getAuthors().add(authors.get(0));
+											Logger.info("The author was FOUND!");
+										}
+									}
+									if (authors == null && (cell.length>6) ) {
+		
+										Logger.info("Importing => non member author => "+author);
+										// Create a non member author
+										NonMemberAuthor nma = new NonMemberAuthor();
+										nma.setName(c.getFirstAuthorName());
+										nma.setAge(new Integer(cell[6]));
+										if (cell.length>7)
+											nma.setGender(cell[7]);
+										nma.save();
+										c.setNonMemberAuthor(nma);
+									}
+								}
 
-                            String[] cell = line.split(cvsSplitBy);
-                            Contribution c = new Contribution();
-                            c.setType(ContributionTypes.IDEA);
-                            // get source code from cell 1
-                            c.setSourceCode(cell[0]);
-                            // get author name from cell 2
-                            c.setFirstAuthorName(cell[1]);
-                            List<User> authors = User.findByName(c.getFirstAuthorName());
-                            //If more than one user matches the name criteria, we'll skip the author set up
-                            if(authors != null && authors.size() == 1){
-                                c.getAuthors().add(authors.get(0));
-                            }else{
-                                Logger.info("Cannot set author for contribution with SourceCode: " + c.getSourceCode());
-                            }
-                            // ignore cells 3,4
-                            // TODO get age & gender from cells 5,6
-                            // ignore cell 7
-                            // get title from cell 8
-                            c.setTitle(cell[8]);
-                            // get description from cell 9
-                            c.setText(cell[9]);
-                            // TODO get category & subcategory from cells 10,11
-                            Contribution.create(c);
-                        }
+								if (cell.length>8) {	
+									String creationDate = cell [8];
+									DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+									Logger.info("Importing => date => "+creationDate);
+									
+									LocalDate ldt = LocalDate.parse(creationDate,formatter);
+									c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+									Logger.info("Importing => creating...");
+								}
+								// Create the contribution
+								Contribution.create(c);
+								
+								if (cell.length>3) {
+									// Add IDEA to Working Group
+									String wgName = cell[3];
+									Logger.info("Importing => wg => "+wgName);
+									
+									WorkingGroup wg = WorkingGroup.readByName(wgName);
+									if (wg!=null) {
+										wg.addContribution(c);
+										wg.update();
+									}
+								}
+								// TODO: is this correct? 
+								ContributionHistory.createHistoricFromContribution(c);
+							}
+                        } catch (Exception e) {
+							Ebean.rollbackTransaction();
+							Logger.info(e.getLocalizedMessage());
+							e.printStackTrace();
+							return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+						}
+                        Ebean.commitTransaction();
                         break;
                     case "PROPOSAL":
-                        while ((line = br.readLine()) != null) {
-                            System.out.println(line);
-                            String[] cell = line.split(cvsSplitBy);
-                            Contribution c = new Contribution();
-                            c.setType(ContributionTypes.PROPOSAL);
+                    	Ebean.beginTransaction();
+                    	Logger.info("Beginning import transaction...");
+                    	try {
+                    		while ((line = br.readLine()) != null) {   
+                        		String[] cell = line.split(cvsSplitBy);
+								Contribution c = new Contribution();
+								c.setType(ContributionTypes.PROPOSAL);
+								// get source code from cell 1
+								c.setSourceCode(cell[0]);
+								// get title from cell 2
+								c.setTitle(cell[1]);
 
-                            // get source code from cell 1
-                            c.setSourceCode(cell[0]);
+                            	Logger.info("Importing "+cell[1]+"...");
+								// get summary from cell 3 for ehterpad support we need aid & cid
+								String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+								String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 
-                            // get title from cell 2
-                            c.setTitle(cell[1]);
+								Resource res = new Resource();
+								if (cell[2] != null) {
+	                            	Logger.info("Creating etherpad...");
+									// set text, only first paragraph
+									String fullText = cell [2];
+									String[] paragraphs = fullText.split("\\.");
+									if (paragraphs!=null) {
+		                            	Logger.info("Copying first paragraph..."+paragraphs.length);
+		                            	Logger.info("Text: "+paragraphs[0]);
+										String text = paragraphs[0];
+										c.setText(text);
+									    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);	
+									}
+								} else {
+	                            	Logger.info("Creating etherpad from template...");
+	                            	// use generic template
+								    List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
 
-                            // get summary from cell 3 for ehterpad support we need aid & cid
-                            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
-                            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+								    if (templates != null) {
+								        // if there are more than one, then use the last
+								        String padId = templates.get(templates.size() - 1).getPadId();
+								        EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+								        String templateHtml = wrapper.getHTML(padId);
+								        // save the etherpad
+								        res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
+								    }
+								}
+								
+								if (res != null) {
+	                            	Logger.info("Adding etherpad to contribution...");
+								    List<Resource> contribResources = new ArrayList<>();
+								    contribResources.add(res);
+								    c.setExistingResources(contribResources);
+								}
 
-                            Resource res = new Resource();
-                            if (cell[2] != null) {
-                                res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);
-                            } else {
-                                // use generic template
-                                List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
+								// get wgroup from cell 4 & get resource space from wgroup
+								WorkingGroup wg = WorkingGroup.readByName(cell[3]);
+								if(wg != null){
+	                            	Logger.info("Adding contribution to working group...");
+								    wg.getResources().getContributions().add(c);
+								}else{
+								    Logger.info("working group with name '" + cell[3] + "' not found");
+								}
 
-                                if (templates != null) {
-                                    // if there are more than one, then use the last
-                                    String padId = templates.get(templates.size() - 1).getPadId();
-                                    EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
-                                    String templateHtml = wrapper.getHTML(padId);
-                                    // save the etherpad
-                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
-                                }
-                            }
-                            if (res != null) {
-                                List<Resource> contribResources = new ArrayList<>();
-                                contribResources.add(res);
-                                c.setExistingResources(contribResources);
-                            }
+								// email authors
+								if (cell[4]!=null) {
+	                            	Logger.info("Adding authors...");
+									String [] emails = cell[4].split(",");
+									for (String email : emails) {
+										User u = User.findByEmail(email);
+										if (u!=null) {
+											c.getAuthors().add(u); 
+										}
+									}
+									
+								}
+								ResourceSpace rs = c.getResourceSpace();
 
-                            // get wgroup from cell 4 & get resource space from wgroup
-                            WorkingGroup wg = WorkingGroup.readByName(cell[3]);
-                            ResourceSpace rs = null;
-//                            if (campaign != null) {
-//                                rs = wg.getResources();
-//                            }
-                            if(wg != null){
-                                wg.getResources().getContributions().add(c);
-                            }else{
-                                Logger.info("working group with name '" + cell[3] + "' not found");
-                            }
+								// get & create atachments from cells 5,6
+								List<Resource> resources = new ArrayList<>();
+								if (cell[5]!=null) {
 
-                            // ignore cells 5-12
+	                            	Logger.info("Adding attachments to contribution...");
+									String[] attachmentNames = cell[5].split(",");
+									String[] attachmentUrls = cell[6].split(","); 
+									
+									for (int i = 0; i < attachmentUrls.length; i++) {
+										String name = attachmentNames[i];
+										String url = attachmentUrls[i];
+										
+										if (name != null && !name.equals("")) {
+		                            	Logger.info("Adding attachment"+attachmentNames[i]+"...");
+											Resource resource = new Resource();
+									    	resource.setName(attachmentNames[i]);
+									    	Logger.info(attachmentNames[i]+" => "+attachmentUrls[i]);
+									    	resource.setUrl(new URL(attachmentUrls[i]));
+									    	resource.setResourceType(ResourceTypes.FILE);
+									    	resources.add(resource);
+										}
+									}
+								}
+								
+								Logger.info("URL Resources size: " + resources.size());
+								rs.getResources().addAll(resources);
 
-                            // get & create atachments from cells 13,14,15
-                            List<Resource> resources = new ArrayList<>();
-                            String url1 = cell[12];
-                            if (url1 != null && !url1.equals("")) {
-                                Resource resource = new Resource();
-                                resource.setUrl(new URL(url1));
-                                resource.setResourceType(ResourceTypes.FILE);
-                                resources.add(resource);
-                            }
-                            String url2 = cell[13];
-                            if (url2 != null && !url2.equals("")) {
-                                Resource resource = new Resource();
-                                resource.setUrl(new URL(url2));
-                                resource.setResourceType(ResourceTypes.FILE);
-                                resources.add(resource);
-                            }
-                            String url3 = cell[14];
-                            if (url3 != null && !url3.equals("")) {
-                                Resource resource = new Resource();
-                                resource.setUrl(new URL(url3));
-                                resource.setResourceType(ResourceTypes.FILE);
-                                resources.add(resource);
-                            }
+								// get related contributions by source_code
+								List<Contribution> inspirations = new ArrayList<>();
+								if (cell[7]!=null) {
+	                            	Logger.info("Adding inspirations...");
+									for (String sourceCode : cell[7].split(",")) {
+		                            	Logger.info("Adding inspiration "+sourceCode+"...");
+									    // get source code from cell i
+									    Contribution contrib = Contribution.readBySourceCode(sourceCode);
+									    if (contrib != null) {
+									        inspirations.add(contrib);
+									    }
+									}
+									rs.getContributions().addAll(inspirations);
+								}
+								
+                            	Logger.info("Creating contribution...");
+								Contribution.create(c);
 
-                            Logger.info("URL Resources size: " + resources.size());
-                            c.getResourceSpace().setResources(resources);
+								rs.update();
+								
+								if(wg != null){
+								    wg.update();
+								}
 
-                            List<Contribution> inspirations = new ArrayList<>();
-                            for (int i=15; i < cell.length; i++) {
-                                // get source code from cell i
-                                Contribution contrib = Contribution.readBySourceCode(cell[i]);
-                                if (contrib != null) {
-                                    inspirations.add(contrib);
-                                }
-                            }
-                            c.setAssociatedContributions(inspirations);
+                            	Logger.info("Adding contribution to campaign...");
+								campaign.getResources().addContribution(c);
+								campaign.update();
 
-                            Contribution.create(c);
-                            if(wg != null){
-                                wg.update();
-                            }
-
-                            if (rs != null) {
-                                rs.addContribution(c);
-                                ResourceSpace.update(rs);
-                            }
-                        }
+								// TODO: is this correct? 
+                            	Logger.info("Updating history of contribution...");
+								ContributionHistory.createHistoricFromContribution(c);
+	                            for (Contribution inspiration : inspirations) {
+									ContributionHistory.createHistoricFromContribution(inspiration);
+								}
+                        	} 
+                        } catch (Exception e) {
+							Ebean.rollbackTransaction();
+							Logger.info(e.getLocalizedMessage());
+							e.printStackTrace();
+							return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+						}
+                        Ebean.commitTransaction();
                         break;
                     default:
                         break;
                 }
-                //Ebean.commitTransaction();
             } catch (Exception e) {
-                //Ebean.rollbackTransaction();
-                e.printStackTrace();
-                return contributionFeedbackError(null, e.getLocalizedMessage());
+            	Logger.info(e.getLocalizedMessage());
+            	return contributionFeedbackError(null, e.getLocalizedMessage());
             }
         }
         return ok();

@@ -1,5 +1,7 @@
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -19,12 +21,14 @@ import play.libs.Yaml;
 import play.mvc.Call;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
 import com.feth.play.module.pa.exceptions.AuthException;
-import io.swagger.converter.ModelConverters;
 
+import io.swagger.converter.ModelConverters;
 import controllers.routes;
 import play.libs.F.Promise;
 import play.mvc.Action;
@@ -150,10 +154,18 @@ public class Global extends GlobalSettings {
 						fileConfig.save();
 						Logger.info("---> AppCivist: '" + dataFile
 								+ "' loaded successfully!");
+
+						// update sequences to match the inserted ids
+						String sql = "SELECT setval_max('public');";
+						SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+						List<SqlRow> rows = sqlQuery.findList();
 					} catch (Exception e) {
 						Logger.info("---> AppCivist: A problem occurred while loading '"
 								+ dataFile + "'...");
-						e.printStackTrace();
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);
+						Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
 					}
 				} else {
 					Logger.info("---> AppCivist: '" + dataFile

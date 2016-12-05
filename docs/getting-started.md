@@ -55,6 +55,7 @@ The AppCivist Core Platform provides a RESTful API implemented with the full-sta
 ## Package 
 
 This file will be packaged with your application, when using `activator dist`.
+In production settings, `./activator stage` will compile the app and create an executable binary. You can then use [this sample](https://gist.github.com/cdparra/c771013842dd6cef8d5f28d8b0dd738a) to create a proper init.d script 
 
 ## Other getting started guides
 1. [Getting Started with AppCivist-PB web front-end](https://github.com/socialappslab/appcivist-pb-client)

@@ -2,6 +2,9 @@ package models;
 
 import io.swagger.annotations.ApiModel;
 
+import java.util.Date;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,9 +15,6 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -33,6 +33,13 @@ public class UserProfile extends AppCivistBaseModel {
 	private Date birthdate;
 	@Column(name="address", columnDefinition="text")
 	private String address;
+	@Column(name="note", columnDefinition="text")
+	private String note;
+	@Column(name="phone")
+	private String phone;
+	@Column(name="gender")
+	private String gender;
+
 	// TODO add contact information
 	@JsonIgnore
 	@OneToOne
@@ -130,6 +137,30 @@ public class UserProfile extends AppCivistBaseModel {
 
 	public void setUuidAsString(String uuidAsString) {
 		this.uuid = UUID.fromString(uuidAsString);
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
 	}
 
 	public static UserProfile readByUserId(Long id) {

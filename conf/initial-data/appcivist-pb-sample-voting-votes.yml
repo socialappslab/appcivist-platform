@@ -1,46 +1,46 @@
 ####################################################################################################################################################################################
 # Voting Ballot Vote Examples
   - &vbv1 !!models.BallotVote
-    candidateId: -9
-    ballotPaperId: -2
+    candidateId: 9
+    ballotPaperId: 2
     value: "YES"   
   - &vbv2 !!models.BallotVote
-    candidateId: -8
-    ballotPaperId: -2
+    candidateId: 8
+    ballotPaperId: 2
     value: "YES"   
   - &vbv3 !!models.BallotVote
-    candidateId: -7
-    ballotPaperId: -2
+    candidateId: 7
+    ballotPaperId: 2
     value: "NO"   
   - &vbv4 !!models.BallotVote
-    candidateId: -6
-    ballotPaperId: -2
+    candidateId: 6
+    ballotPaperId: 2
     value: "YES"   
   - &vbv5 !!models.BallotVote
-    candidateId: -5
-    ballotPaperId: -2
+    candidateId: 5
+    ballotPaperId: 2
     value: "NO"   
   - &vbv6 !!models.BallotVote
-    candidateId: -4
-    ballotPaperId: -2
+    candidateId: 4
+    ballotPaperId: 2
     value: "NO"   
   - &vbv7 !!models.BallotVote
-    candidateId: -7
-    ballotPaperId: -1
+    candidateId: 7
+    ballotPaperId: 1
     value: "NO"   
   - &vbv8 !!models.BallotVote
-    candidateId: -6
-    ballotPaperId: -1
+    candidateId: 6
+    ballotPaperId: 1
     value: "NO"   
   - &vbv9 !!models.BallotVote
-    candidateId: -5
-    ballotPaperId: -1
+    candidateId: 5
+    ballotPaperId: 1
     value: "YES"   
   - &vbv10 !!models.BallotVote
-    candidateId: -4
-    ballotPaperId: -1
+    candidateId: 4
+    ballotPaperId: 1
     value: "YES"   
   - &vbv11 !!models.BallotVote
-    candidateId: -3
-    ballotPaperId: -1
+    candidateId: 3
+    ballotPaperId: 1
     value: "YES"

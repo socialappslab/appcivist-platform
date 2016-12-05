@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.*;
+
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -805,5 +806,12 @@ String uuidAsString, List<Component> phases) {
 
 	public static List<Campaign> findByBindingBallotUUID(UUID uuid) {
 		return find.where().eq("bindingBallot",uuid).findList();
+	}
+
+	public List<Theme> filterThemesByTitle(String t) {
+		return this.resources.getThemes()
+				.stream()
+				.filter(theme -> theme.getTitle().equals(t))
+				.collect(Collectors.toList());
 	}
 }

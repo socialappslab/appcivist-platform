@@ -217,8 +217,8 @@ POST      /api/campaign/:uuid/contribution                                contro
 POST      /api/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
 
 #import/export contributions, type=IDEA
-POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
-POST      /api/contribution/import                                        controllers.Contributions.importContributions(type?="")
+#POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
+POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
 GET       /api/assembly/:aid/campaign/:cid/contribution/export            controllers.Contributions.exportContributions(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
@@ -254,6 +254,7 @@ GET       /api/location/:query                                            contro
 GET       /api/file/upload-form                                           controllers.Files.index()
 GET       /api/files                                                      controllers.Files.list()
 POST      /api/upload                                                     controllers.Files.upload()
+POST      /api/upload/data                                                controllers.Files.uploadData()
 POST      /api/log                                                        controllers.Application.logActivity()
 POST      /api/log/public                                                 controllers.Application.logActivityPublic()
 

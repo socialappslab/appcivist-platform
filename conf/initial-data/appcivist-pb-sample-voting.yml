@@ -1,0 +1,131 @@
+####################################################################################################################################################################################
+# Voting Ballot Candidate Examples 
+  - &vbca1 !!models.BallotCandidate
+    id: 9
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb0cf6-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca2 !!models.BallotCandidate
+    id: 8
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb1142-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca3 !!models.BallotCandidate
+    id: 7
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb1246-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca4 !!models.BallotCandidate
+    id: 6
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb144e-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca5 !!models.BallotCandidate
+    id: 5
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb152a-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca6 !!models.BallotCandidate
+    id: 4
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb1750-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca7 !!models.BallotCandidate
+    id: 3
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb1890-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca8 !!models.BallotCandidate
+    id: 2
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: 40cb1a8e-f0aa-11e5-9ce9-5e5517507c66
+  - &vbca9 !!models.BallotCandidate
+    id: 1
+    ballotId: 1
+    candidateType: 1
+    contributionUuidAsString: ceb1ce38-f0aa-11e5-9ce9-5e5517507c66
+####################################################################################################################################################################################
+# Voting Ballot Candidate Examples - For Up and Downs 
+  - &vbcud1 !!models.BallotCandidate
+    id: 19
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb0cf6-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud2 !!models.BallotCandidate
+    id: 18
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb1142-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud3 !!models.BallotCandidate
+    id: 17
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb1246-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud4 !!models.BallotCandidate
+    id: 16
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb144e-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud5 !!models.BallotCandidate
+    id: 15
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb152a-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud6 !!models.BallotCandidate
+    id: 14
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb1750-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud7 !!models.BallotCandidate
+    id: 13
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb1890-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud8 !!models.BallotCandidate
+    id: 12
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: 40cb1a8e-f0aa-11e5-9ce9-5e5517507c66
+  - &vbcud9 !!models.BallotCandidate
+    id: 11
+    ballotId: 2
+    candidateType: 1
+    contributionUuidAsString: ceb1ce38-f0aa-11e5-9ce9-5e5517507c66
+####################################################################################################################################################################################
+# Voting Ballot Registration Fields Examples
+  - &vbf1 !!models.BallotRegistrationField
+    ballotId: 1
+    name: Name
+    description: This is the name
+  - &vbf2 !!models.BallotRegistrationField
+    ballotId: 1
+    name: Zip
+    description: This is the zip
+    expectedValue: 94702
+
+####################################################################################################################################################################################
+# Voting Ballot Configuration Examples
+  - &vbc1 !!models.BallotConfiguration
+    ballotId: 1
+    key: component.voting.system.plurality.type
+    value: YES/NO/ABSTAIN/BLOCK
+    position: 0
+  - &vbc2 !!models.BallotConfiguration
+    ballotId: 1
+    key: component.voting.system.plurality.block.threshold
+    value: 60%
+    position: 1
+    
+####################################################################################################################################################################################
+# Voting Ballot Paper Examples
+  - &vbp1 !!models.BallotPaper
+    id: 2
+    ballotId: 1
+    signature: "f8dbbd14-8891-47ff-94d3-42c7172c248b"
+    status: 0
+  - &vbp2 !!models.BallotPaper
+    id: 1
+    ballotId: 1
+    signature: "600f924c-8857-4619-9575-e3c16ddbf651"
+    status: 0

@@ -1,11 +1,15 @@
 package models;
 
+import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.swagger.annotations.ApiModel;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -14,6 +18,8 @@ import javax.persistence.ManyToMany;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import enums.ThemeTypes;
 import models.misc.Views;
 
 import java.util.List;
@@ -36,6 +42,10 @@ public class Theme extends AppCivistBaseModel {
     private String icon;
     @JsonView(Views.Public.class)
     private String cover;
+    @JsonView(Views.Public.class)
+    @Enumerated(EnumType.STRING)
+    private ThemeTypes type = ThemeTypes.EMERGENT;
+    
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "themes", cascade = CascadeType.ALL)
@@ -90,7 +100,15 @@ public class Theme extends AppCivistBaseModel {
         this.cover = cover;
     }
 
-    public List<ResourceSpace> getContainingSpaces() {
+    public ThemeTypes getType() {
+		return type;
+	}
+
+	public void setType(ThemeTypes type) {
+		this.type = type;
+	}
+
+	public List<ResourceSpace> getContainingSpaces() {
         return containingSpaces;
     }
 
@@ -127,4 +145,8 @@ public class Theme extends AppCivistBaseModel {
     public static void update(Long id) {
         find.ref(id).update();
     }
+
+	public static List<Theme> findByTitle(String t) {
+		return find.where().eq("title",t).findList();
+	}
 }

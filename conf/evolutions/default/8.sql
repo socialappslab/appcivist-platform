@@ -1,3 +1,4 @@
+# --- !Ups
 -- NEW for ContributionHistory support.
 create table contribution_history (
   contribution_history_id   bigserial not null,
@@ -105,3 +106,12 @@ alter table contribution_feedback add constraint "ck_contribution_feedback_statu
 alter table contribution_feedback add column working_group_id BIGINT;
 alter table contribution_feedback add column official_group_feedback BOOLEAN;
 alter table contribution_feedback add column archived BOOLEAN;
+
+# --- !Downs
+drop table resource_space_contribution_histories;
+drop table contribution_history_appcivist_user;
+drop table contribution_history;
+alter table contribution drop column non_member_author_id;
+alter table contribution drop constraint fk_non_member_author;
+drop table non_member_author;
+drop table working_group_ballot_history;
