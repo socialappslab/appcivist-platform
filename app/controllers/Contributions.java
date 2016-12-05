@@ -1821,7 +1821,7 @@ public class Contributions extends Controller {
 								// SET categories	
 								// TODO: use some kind of string buffer to make this more efficient as strings are immutable
 								String categoriesLine = cell [4];
-								String [] categories = categoriesLine.split(",");
+								String[] categories = categoriesLine.split(",");
 								List<Theme> existing = new ArrayList<>();
 								for (String category : categories) {
 									List<Theme> themes = campaign.filterThemesByTitle(category.trim());
@@ -1896,9 +1896,15 @@ public class Contributions extends Controller {
 								if (cell[2] != null) {
 	                            	Logger.info("Creating etherpad...");
 									// set text, only first paragraph
-									String text = cell[2].split(".")[0];
-									c.setText(text);
-								    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);
+									String fullText = cell [2];
+									String[] paragraphs = fullText.split("\\.");
+									if (paragraphs!=null) {
+		                            	Logger.info("Copying first paragraph..."+paragraphs.length);
+		                            	Logger.info("Text: "+paragraphs[0]);
+										String text = paragraphs[0];
+										c.setText(text);
+									    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);	
+									}
 								} else {
 	                            	Logger.info("Creating etherpad from template...");
 	                            	// use generic template
@@ -1952,12 +1958,18 @@ public class Contributions extends Controller {
 									String[] attachmentUrls = cell[6].split(","); 
 									
 									for (int i = 0; i < attachmentUrls.length; i++) {
+										String name = attachmentNames[i];
+										String url = attachmentUrls[i];
+										
+										if (name != null && !name.equals("")) {
 		                            	Logger.info("Adding attachment"+attachmentNames[i]+"...");
-										Resource resource = new Resource();
-									    resource.setName(attachmentNames[i]);
-									    resource.setUrl(new URL(attachmentUrls[i]));
-									    resource.setResourceType(ResourceTypes.FILE);
-									    resources.add(resource);
+											Resource resource = new Resource();
+									    	resource.setName(attachmentNames[i]);
+									    	Logger.info(attachmentNames[i]+" => "+attachmentUrls[i]);
+									    	resource.setUrl(new URL(attachmentUrls[i]));
+									    	resource.setResourceType(ResourceTypes.FILE);
+									    	resources.add(resource);
+										}
 									}
 								}
 								
