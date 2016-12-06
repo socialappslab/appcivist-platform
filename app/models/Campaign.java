@@ -1,43 +1,20 @@
 package models;
 
-import com.fasterxml.jackson.annotation.*;
-
-import io.swagger.annotations.ApiModel;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Transient;
-
-import models.misc.Views;
-import utils.GlobalData;
-
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import enums.ResourceSpaceTypes;
 import enums.VotingSystemTypes;
+import io.swagger.annotations.ApiModel;
+import models.misc.Views;
+import utils.GlobalData;
+
+import javax.persistence.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -105,7 +82,7 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	private List<Long> assemblies = new ArrayList<>();
 	@Transient
-	@JsonView(Views.Public.class)
+	@JsonIgnore
 	private List<Contribution> contributions = new ArrayList<>();
 	@Transient
 	private List<Ballot> ballots = new ArrayList<>();
