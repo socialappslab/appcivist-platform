@@ -505,7 +505,7 @@ public class Campaigns extends Controller {
 			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
 			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.CONTRIBUTION_TEMPLATE, false);
+		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.CONTRIBUTION_TEMPLATE, false, false);
 		Campaign campaign = Campaign.read(campaignId);
 		campaign.getResourceList().add(res);
 		Campaign.update(campaign);
