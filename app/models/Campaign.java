@@ -56,9 +56,10 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnore
 	private ResourceSpace resources;
 	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="campaign")
-	@JsonInclude(Include.NON_EMPTY)
-	@JsonManagedReference
-	@JsonIgnoreProperties({ "fromComponent", "toComponent" })
+//	@JsonInclude(Include.NON_EMPTY)
+//	@JsonManagedReference
+//	@JsonIgnoreProperties({ "fromComponent", "toComponent" })
+	@JsonIgnore
 	@OrderBy("start DESC")
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
 	@Transient
@@ -69,15 +70,18 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private Long resourceSpaceUUId;
 	@Transient
-	@JsonView(Views.Public.class)
+	//@JsonView(Views.Public.class)
+	@JsonIgnore
 	private List<Component> components = new ArrayList<>();
 	@Transient
 	private List<Config> configs = new ArrayList<>();
 	@Transient
 	private List<Resource> resourceList = new ArrayList<>();
 	@Transient
+	@JsonIgnore
 	private List<Theme> themes = new ArrayList<>();
 	@Transient
+	@JsonIgnore
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	@Transient
 	private List<Long> assemblies = new ArrayList<>();
@@ -254,6 +258,12 @@ String uuidAsString, List<Component> phases) {
 		return resources;
 	}
 
+	public List<Resource> getPagedResources(Integer page, Integer pageSize) {
+		Finder<Long, Resource> find = new Finder<>(Resource.class);
+		return find.where().eq("containingSpaces", this.resources).
+				findPagedList(page, pageSize).getList();
+	}
+
 	public void setResources(ResourceSpace resources) {
 		this.resources = resources;
 	}
@@ -264,6 +274,11 @@ String uuidAsString, List<Component> phases) {
 
 	public void setTimelineEdges(List<CampaignTimelineEdge> timelineEdges) {
 		this.timelineEdges = timelineEdges;
+	}
+
+	public List<CampaignTimelineEdge> getPagedTimelineEdges(Integer page, Integer pageSize){
+		Finder<Long, CampaignTimelineEdge> find = new Finder<>(CampaignTimelineEdge.class);
+		return find.where().eq("campaign", this).findPagedList(page, pageSize).getList();
 	}
 	
 	public Long getResourceSpaceId() {
@@ -303,6 +318,12 @@ String uuidAsString, List<Component> phases) {
 
 	}
 
+	public List<Component> getPagedComponents(Integer page, Integer pageSize) {
+		Finder<Long, Component> find = new Finder<>(Component.class);
+		return find.where().eq("containingSpaces", this.resources).
+				findPagedList(page, pageSize).getList();
+	}
+
 	public void setComponents(List<Component> components) {
 		this.components = components;
 		this.resources.setComponents(components);
@@ -338,6 +359,12 @@ String uuidAsString, List<Component> phases) {
 		return this.resources.getThemes();
 	}
 
+	public List<Theme> getPagedThemes(Integer page, Integer pageSize) {
+		Finder<Long, Theme> find = new Finder<>(Theme.class);
+		return find.where().eq("containingSpaces", this.resources).
+				findPagedList(page, pageSize).getList();
+	}
+
 	public void setThemes(List<Theme> themes) {
 		this.themes = themes;
 		this.resources.setThemes(themes);
@@ -350,6 +377,12 @@ String uuidAsString, List<Component> phases) {
 	
 	public List<WorkingGroup> getWorkingGroups() {
 		return this.resources.getWorkingGroups();
+	}
+
+	public List<WorkingGroup> getPagedWorkingGroups(Integer page, Integer pageSize) {
+		Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
+		return find.where().eq("containingSpaces", this.resources).
+				findPagedList(page, pageSize).getList();
 	}
 
 	public void setWorkingGroups(List<WorkingGroup> workingGroups) {

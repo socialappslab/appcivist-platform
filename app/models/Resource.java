@@ -9,12 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.misc.Views;
 import utils.services.EtherpadWrapper;
@@ -76,6 +71,10 @@ public class Resource extends AppCivistBaseModel {
 	private URL urlThumbnail;
 
 	private boolean confirmed;
+
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "resources", cascade = CascadeType.ALL)
+	private List<ResourceSpace> containingSpaces;
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation

@@ -21,13 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.Campaign;
-import models.CampaignTemplate;
-import models.Membership;
-import models.MembershipAssembly;
-import models.Resource;
-import models.User;
+import models.*;
 import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
@@ -595,7 +589,7 @@ public class Campaigns extends Controller {
 	}
 
     /**
-     * GET /api/assembly/:aid/campaign/:cid/resource
+     * GET /api/assembly/:aid/campaign/:cid/resources
      * Returns the Resources associated to the campaign
      * @param aid
      * @param campaignId
@@ -609,10 +603,155 @@ public class Campaigns extends Controller {
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result listCampaignResources(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
-            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
-        User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-        Campaign campaign = Campaign.read(campaignId);
-        return ok(Json.toJson(campaign.getResourceList()));
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "all", value = "Integer") Integer page,
+			@ApiParam(name = "all", value = "Integer") Integer pageSize) {
+		if(pageSize == null){
+			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+		}
+		Campaign campaign = Campaign.read(campaignId);
+		List<Resource> resources;
+		if(all != null){
+			resources = campaign.getResourceList();
+		}else{
+			resources = campaign.getPagedResources(page, pageSize);
+		}
+		return ok(Json.toJson(resources));
 
     }
+
+	/**
+	 * GET /api/assembly/:aid/campaign/:cid/components
+	 * Returns the Components associated to the campaign
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Component.class, responseContainer = "List", value = "Lists campaign's components", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result listCampaignComponents(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "all", value = "Integer") Integer page,
+			@ApiParam(name = "all", value = "Integer") Integer pageSize) {
+		if(pageSize == null){
+			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+		}
+		Campaign campaign = Campaign.read(campaignId);
+		List<Component> components;
+		if(all != null){
+			components = campaign.getComponents();
+		}else{
+			components = campaign.getPagedComponents(page, pageSize);
+		}
+		return ok(Json.toJson(components));
+
+	}
+
+	/**
+	 * GET /api/assembly/:aid/campaign/:cid/themes
+	 * Returns the Themes associated to the campaign
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", value = "Lists campaign's themes", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result listCampaignThemes(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "all", value = "Integer") Integer page,
+			@ApiParam(name = "all", value = "Integer") Integer pageSize) {
+		if(pageSize == null){
+			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+		}
+		Campaign campaign = Campaign.read(campaignId);
+		List<Theme> themes;
+		if(all != null){
+			themes = campaign.getThemes();
+		}else{
+			themes = campaign.getPagedThemes(page, pageSize);
+		}
+		return ok(Json.toJson(themes));
+
+	}
+
+	/**
+	 * GET /api/assembly/:aid/campaign/:cid/groups
+	 * Returns the Working groups associated to the campaign
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", value = "Lists campaign's working groups", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result listCampaignGroups(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "all", value = "Integer") Integer page,
+			@ApiParam(name = "all", value = "Integer") Integer pageSize) {
+
+		if(pageSize == null){
+			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+		}
+		Campaign campaign = Campaign.read(campaignId);
+		List<WorkingGroup> workingGroups;
+		if(all != null){
+			workingGroups = campaign.getWorkingGroups();
+		}else{
+			workingGroups = campaign.getPagedWorkingGroups(page, pageSize);
+		}
+		return ok(Json.toJson(workingGroups));
+
+	}
+
+	/**
+	 * GET /api/assembly/:aid/campaign/:cid/timeline
+	 * Returns the CampaignTimelineEdges associated to the campaign
+	 * @param aid
+	 * @param campaignId
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = CampaignTimelineEdge.class, responseContainer = "List", value = "Lists campaign's timeline", notes="Only for COORDINATORS")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result listCampaignTimeline(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "all", value = "Integer") Integer page,
+			@ApiParam(name = "all", value = "Integer") Integer pageSize) {
+
+		if(pageSize == null){
+			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+		}
+		List<CampaignTimelineEdge> campaignTimelineEdges;
+		Campaign campaign = Campaign.read(campaignId);
+		if(all != null){
+			campaignTimelineEdges = campaign.getTimelineEdges();
+		}else{
+			campaignTimelineEdges = campaign.getPagedTimelineEdges(page, pageSize);
+		}
+		return ok(Json.toJson(campaignTimelineEdges));
+
+	}
 }

@@ -85,4 +85,6 @@ public class GlobalData {
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_RANKED_NUMBER_PROPOSALS = "component.voting.system.ranked.number-proposals";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_WINNERS = "component.voting.system.winners";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_WINNERS_FIXED_NUMBER = "component.voting.system.winners.fixed.number";
+
+	public static final Integer DEFAULT_PAGE_SIZE = 16;
 }
