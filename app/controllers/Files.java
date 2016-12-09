@@ -78,7 +78,7 @@ public class Files extends Controller {
 	@ApiOperation(httpMethod = "POST", response = S3File.class, consumes="multipart/form-data", produces = "application/json", value = "Upload YML data")
 	@ApiResponses(value = { @ApiResponse(code = BAD_REQUEST, message = "File upload error", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "file", value = "File to upload", dataType = "java.io.File", paramType = "body"),
+        	@ApiImplicitParam(name = "file", value = "File with Data to Upload", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
 	public static Result uploadData() {

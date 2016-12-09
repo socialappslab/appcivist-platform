@@ -506,7 +506,7 @@ public class Assemblies extends Controller {
 	public static Result createContributionTemplateInAssembly(
 			@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
 		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.CONTRIBUTION_TEMPLATE, false);
+		Resource res = ResourcesDelegate.createResource(campaignCreator, "", ResourceTypes.CONTRIBUTION_TEMPLATE, false, false);
 		Assembly assembly = Assembly.read(aid);
 		assembly.getResources().getResources().add(res);
 		Assembly.update(assembly);

@@ -1647,7 +1647,7 @@ public class Contributions extends Controller {
                             String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 
                             if (cell[6] != null) {
-                                res = ResourcesDelegate.createResource(null, cell[6], ResourceTypes.PROPOSAL, true);
+                                res = ResourcesDelegate.createResource(null, cell[6], ResourceTypes.PROPOSAL, true, false);
                             } else {
                                 List<Resource> templates = ContributionsDelegate.getTemplates(aid.toString(), cid.toString());
 
@@ -1657,7 +1657,7 @@ public class Contributions extends Controller {
                                     EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
                                     String templateHtml = wrapper.getHTML(padId);
                                     // save the etherpad
-                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
+                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true, false);
                                 }
                             }
                             break;
@@ -1930,7 +1930,7 @@ public class Contributions extends Controller {
 		                            	Logger.info("Text: "+paragraphs[0]);
 										String text = paragraphs[0];
 										c.setText(text);
-									    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true);	
+									    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true, false);	
 									}
 								} else {
 	                            	Logger.info("Creating etherpad from template...");
@@ -1943,15 +1943,13 @@ public class Contributions extends Controller {
 								        EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
 								        String templateHtml = wrapper.getHTML(padId);
 								        // save the etherpad
-								        res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true);
+								        res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true, false);
 								    }
 								}
 								
 								if (res != null) {
 	                            	Logger.info("Adding etherpad to contribution...");
-								    List<Resource> contribResources = new ArrayList<>();
-								    contribResources.add(res);
-								    c.setExistingResources(contribResources);
+								    c.setExtendedTextPad(res);
 								}
 
 								// get wgroup from cell 4 & get resource space from wgroup
@@ -2082,7 +2080,7 @@ public class Contributions extends Controller {
 			String padId = templates.get(templates.size() - 1).getPadId();
 			EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
 			String templateHtml = wrapper.getHTML(padId);
-			Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL, false);
+			Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL, false, true);
 			//Create this relationship when the contribution is saved
 			//Assembly ass = Assembly.read(aid);
 			//ass.getResources().addResource(res);
