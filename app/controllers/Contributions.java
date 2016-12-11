@@ -390,6 +390,40 @@ public class Contributions extends Controller {
     }
 
     /**
+     * GET       /api/assembly/:aid/contribution/:cid/contributions
+     *
+     * @param aid
+     * @param contributionId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Read associated contributions of a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result findAssociatedContributions(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId,
+            @ApiParam(name = "all", value = "Boolean") String all,
+            @ApiParam(name = "page", value = "Integer") Integer page,
+            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+        Contribution c = Contribution.read(contributionId);
+        if(c == null){
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID " + contributionId + " not found")));
+        }
+        if(pageSize == null){
+            pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+        }
+        List<Contribution> associatedContributions;
+        if(all != null){
+            associatedContributions = c.getAssociatedContributions();
+        }else{
+            associatedContributions = c.getPagedAssociatedContributions(page, pageSize);
+        }
+        return ok(Json.toJson(associatedContributions));
+    }
+
+    /**
      * GET       /api/contribution/:uuid
      *
      * @param uuid

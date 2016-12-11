@@ -190,6 +190,7 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       contro
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
+GET       /api/assembly/:aid/contribution/:cid/contributions              controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
 POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
 GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")

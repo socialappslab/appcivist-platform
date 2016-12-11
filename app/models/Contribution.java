@@ -514,6 +514,12 @@ public class Contribution extends AppCivistBaseModel {
         return this.resourceSpace.getContributions();
     }
 
+    public List<Contribution> getPagedAssociatedContributions(Integer page, Integer pageSize) {
+        Finder<Long, Contribution> find = new Finder<>(Contribution.class);
+        return find.where().eq("containingSpaces", this.resourceSpace).
+                findPagedList(page, pageSize).getList();
+    }
+
     public void setAssociatedContributions(List<Contribution> contributions){
         this.associatedContributions = contributions;
         this.getResourceSpace().getContributions().addAll(associatedContributions);
