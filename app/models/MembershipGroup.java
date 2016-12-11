@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -21,7 +22,8 @@ import exceptions.MembershipCreationException;
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="MembershipGroup", description="Membership in a Working Group")
 public class MembershipGroup extends Membership {
-	
+
+	@JsonIgnore
 	@ManyToOne
 	@JsonIgnoreProperties({"creator", "members"})
 	private WorkingGroup workingGroup;

@@ -106,7 +106,7 @@ PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish            contro
 # TODO: mark for review and removal if not needed
 POST      /api/membership                                                 controllers.Memberships.createMembership() 
 # TODO: change and use users numerical id instead of UUID
-GET       /api/membership/user/:uid                                       controllers.Memberships.findMembershipByUser(uid: Long, type ?="")
+GET       /api/membership/user/:uid                                       controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly: Integer ?=null)
 POST      /api/membership/invitation/:iid/email                           controllers.Memberships.reSendInvitation(iid: Long)
 GET       /api/membership/invitation/:targetId/:status                    controllers.Memberships.listInvitations(targetId: Long, status: String)
 GET       /api/membership/invitation/:token                               controllers.Memberships.readInvitation(token: java.util.UUID) 

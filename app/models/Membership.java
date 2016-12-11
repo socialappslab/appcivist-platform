@@ -1,6 +1,6 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -29,8 +29,6 @@ import models.TokenAction.Type;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ManagementTypes;
@@ -38,6 +36,7 @@ import enums.MembershipStatus;
 import enums.MembershipTypes;
 import exceptions.MembershipCreationException;
 import models.misc.Views;
+import play.Logger;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -82,10 +81,16 @@ public class Membership extends AppCivistBaseModel {
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)
 	private String membershipType;
 
-	@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
+	@ManyToOne
+	@JoinColumn(name = "assembly_assembly_id")
+	//@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
+	@JsonIgnore
 	private Assembly targetAssembly;
 
-	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
+	//@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
+	@ManyToOne
+	@JoinColumn(name = "working_group_group_id")
+	@JsonIgnore
 	private WorkingGroup targetGroup;
 
 	private UUID targetUuid;
@@ -325,6 +330,12 @@ public class Membership extends AppCivistBaseModel {
 		return membs;
 	}
 
+	public static List<Membership> findByUserAndAssembly(User u, Integer assemblyId) {
+		Query<Membership> q = find.where().eq("user",u).eq("targetAssembly.assemblyId", assemblyId).query();
+		List<Membership> membs = q.findList();
+		return membs;
+	}
+
 	public static List<Membership> findByUserAndTargetUuid(User u, UUID targetUuid) {
 		return find.where().eq("user",u).eq("targetUuid", targetUuid).findList();
 	}
@@ -366,5 +377,19 @@ public class Membership extends AppCivistBaseModel {
 		}
 		
 		return Membership.checkIfExists(tempMem);
+	}
+
+	public List<Membership> getGroupsMemberships(){
+
+		List<Membership> membershipsInResourceSpace = new ArrayList<>();
+		if (this.membershipType.equals("ASSEMBLY")) {
+			membershipsInResourceSpace = find.where().
+					eq("targetGroup.containingSpaces.resourceSpaceId",
+							((MembershipAssembly) this).getAssembly().getResourcesResourceSpaceId()).eq("user", this.user).findList();
+
+		}
+
+		return membershipsInResourceSpace;
+
 	}
 }

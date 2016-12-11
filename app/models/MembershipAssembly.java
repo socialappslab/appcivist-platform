@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -22,7 +23,8 @@ import exceptions.MembershipCreationException;
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="MembershipAssembly", description="Membership in an assembly")
 public class MembershipAssembly extends Membership {
-	
+
+	@JsonIgnore
 	@ManyToOne
 	@JsonIgnoreProperties({"creator", "membershipRole", "campaigns", "assemblyConfigs"})
 	private Assembly assembly;

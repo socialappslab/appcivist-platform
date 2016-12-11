@@ -146,7 +146,8 @@ public class Memberships extends Controller {
 	@Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
 	public static Result findMembershipByUser(
 			@ApiParam(name = "uid", value = "User's ID") Long uid, 
-			@ApiParam(name = "type", value = "Type of memberships to read", allowableValues = "assembly,group") String type) {
+			@ApiParam(name = "type", value = "Type of memberships to read", allowableValues = "assembly,group") String type,
+			@ApiParam(name = "by_assembly", value = "AssemblyId") Integer assemblyId) {
 		User u = User.findByUserId(uid);
 		if (u == null)
 			return notFound(Json.toJson(new TransferResponseStatus(
@@ -166,7 +167,13 @@ public class Memberships extends Controller {
 			}
 		}
 
-		List<Membership> memberships = Membership.findByUser(u, membershipType);
+
+		List<Membership> memberships;
+		if(assemblyId == null){
+			memberships = Membership.findByUser(u, membershipType);
+		}else{
+			memberships = Membership.findByUserAndAssembly(u, assemblyId);
+		}
 		if (memberships == null || memberships.isEmpty())
 			return notFound(Json.toJson(new TransferResponseStatus(
 					ResponseStatus.NODATA, "No memberships for user with ID = "
