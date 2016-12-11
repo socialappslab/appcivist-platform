@@ -738,8 +738,8 @@ public class Campaigns extends Controller {
 			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
 			@ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
 			@ApiParam(name = "all", value = "Boolean") String all,
-			@ApiParam(name = "all", value = "Integer") Integer page,
-			@ApiParam(name = "all", value = "Integer") Integer pageSize) {
+			@ApiParam(name = "page", value = "Integer") Integer page,
+			@ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
 
 		if(pageSize == null){
 			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
