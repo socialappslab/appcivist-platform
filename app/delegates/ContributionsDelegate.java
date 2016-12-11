@@ -7,15 +7,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import com.avaje.ebean.Ebean;
+import com.avaje.ebean.*;
 import enums.ContributionTypes;
 import models.*;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Model;
 
 import org.dozer.DozerBeanMapper;
+import play.Logger;
 import play.Play;
 import utils.services.EtherpadWrapper;
 import enums.ResourceTypes;
@@ -120,6 +120,96 @@ public class ContributionsDelegate {
         } else {
             return findPagedContributionsInResourceSpace(rs.getResourceSpaceId(), query, page, pageSize);
         }
+    }
+
+    public static List<Contribution> findContributions(Map<String, Object> conditions, Integer page, Integer pageSize){
+
+        ExpressionList<Contribution> where = null;
+        String rawQuery = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal,\n " +
+                "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
+                "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, t0.priority,\n " +
+                "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
+                "  t0.source_code from contribution t0\n ";
+        if(conditions != null){
+            for(String key : conditions.keySet()){
+                switch (key){
+                    case "group":
+                        rawQuery += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
+                                "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
+                                "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
+                        break;
+                    case "containingSpaces":
+                        rawQuery += "join resource_space_contributions rsc on rsc.contribution_contribution_id = t0.contribution_id \n " +
+                                "join resource_space rs on rs.resource_space_id = rsc.resource_space_resource_space_id\n ";
+                        break;
+                    case "theme":
+                        rawQuery += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id\n ";
+                        break;
+                }
+            }
+            //Logger.info("Constructed query: \n" + rawQuery);
+            RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+            where = finder.setRawSql(rawSql).where();
+
+            for(String key : conditions.keySet()){
+                Object value = conditions.get(key);
+                //We look at the keys, some of them have special treatment
+                switch (key){
+                    case "group":
+                        List<Integer> groups = (List)value;
+                        Expression previous = null;
+                        for(Integer g : groups){
+                            Expression e = Expr.eq("wg.group_id", g.longValue());
+                            if(previous == null){
+                                previous = e;
+                            }else{
+                                previous = Expr.or(previous, e);
+                            }
+                        }
+                        where.add(previous);
+                        break;
+                    case "containingSpaces":
+                        where.add(Expr.eq("rs.resource_space_id", value));
+                        break;
+                    case "by_text":
+                        Expression expression = Expr.or(Expr.ilike("t0.title", "%" + ((String)value).toLowerCase() + "%"),
+                                Expr.ilike("t0.text", "%" + ((String)value).toLowerCase() + "%"));
+                        where.add(expression);
+                        break;
+                    case "theme":
+                        List<Integer> themes = (List)value;
+                        Expression p = null;
+                        for(Integer t : themes){
+                            Expression e = Expr.eq("rst.theme_theme_id", t.longValue());
+                            if(p == null){
+                                p = e;
+                            }else{
+                                p = Expr.or(p, e);
+                            }
+                        }
+                        where.add(p);
+                        break;
+                    default:
+                        if(value instanceof String){
+                            where.ilike(key, ("t0."+(String)value).toLowerCase() + "%");
+                        }else{
+                            where.eq("t0." + key, value);
+                        }
+
+                }
+
+
+            }
+        }
+
+        List<Contribution> contributions;
+        if(page != null && pageSize != null){
+            contributions = where.findPagedList(page, pageSize).getList();
+        }else{
+            contributions = where.findList();
+        }
+        return contributions;
+
     }
     
 	public static List<Contribution> findContributionsInResourceSpace(

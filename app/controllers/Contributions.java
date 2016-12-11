@@ -19,11 +19,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
@@ -268,11 +264,41 @@ public class Contributions extends Controller {
     public static Result findResourceSpaceContributions(
     		@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
     		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
+            @ApiParam(name = "by_text", value = "String") String byText,
+            @ApiParam(name = "groups", value = "List") List<Integer> byGroup,
+            @ApiParam(name = "themes", value = "List") List<Integer> byTheme,
+            @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
-            @ApiParam(name = "pageSize", value = "Number of elements per page", defaultValue = "10") Integer pageSize) {
+            @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize) {
+        if(pageSize == null){
+            pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+        }
         ResourceSpace rs = ResourceSpace.read(sid);
-        List<Contribution> contributions = ContributionsDelegate
-                .findPagedContributionsInResourceSpace(rs, type, null, page, pageSize);
+        List<Contribution> contributions;
+
+
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("containingSpaces", rs.getResourceSpaceId());
+        if(type != null && !type.isEmpty()){
+            ContributionTypes mappedType = ContributionTypes.valueOf(type.toUpperCase());
+            conditions.put("type", mappedType);
+        }
+        if(byText != null && !byText.isEmpty()){
+            conditions.put("by_text", byText);
+        }
+        if(byGroup != null && !byGroup.isEmpty()){
+            conditions.put("group", byGroup);
+        }
+        if(byTheme != null && !byTheme.isEmpty()){
+            conditions.put("theme", byTheme);
+        }
+        if(all != null){
+            contributions = ContributionsDelegate.findContributions(conditions, null, null);
+        }else{
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+        }
+
+
         return contributions != null ? ok(Json.toJson(contributions))
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for {resource space}: " + sid + ", type=" + type)));

@@ -114,6 +114,7 @@ public class Contribution extends AppCivistBaseModel {
     private Long assemblyId;
 
 
+    @JsonIgnore
     @JsonManagedReference
     @Transient
     @ApiModelProperty(value="Working Groups to which this Contribution is associated")
@@ -141,7 +142,8 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Hashtag> hashtags = new ArrayList<Hashtag>();
     @Transient
-    @JsonView(Views.Public.class)
+    //@JsonView(Views.Public.class)
+    @JsonIgnore
     private List<Contribution> comments = new ArrayList<Contribution>();
     @Transient
     private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
@@ -154,6 +156,7 @@ public class Contribution extends AppCivistBaseModel {
             "actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
             "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes"
     })
+    @JsonIgnore
     @Transient
     private List<Contribution> associatedContributions;
 
