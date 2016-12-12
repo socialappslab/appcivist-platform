@@ -225,19 +225,19 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static long getUpsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("up", true).findRowCount();
+		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("up", true).findRowCount();
 	}
 	
 	public static long getDownsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("down", true).findRowCount();
+		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("down", true).findRowCount();
 	}
 	
 	public static long getFavsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("fav", true).findRowCount();
+		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("fav", true).findRowCount();
 	}
 	
 	public static long getFlagsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("flag", true).findRowCount();
+		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("flag", true).findRowCount();
 	}
 	
 	public static long getPointsForContribution(Long contributionId) {
@@ -245,7 +245,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static ContributionFeedback findByContributionAndUserId(Long cid, Long userId) {
-		return find.where().eq("contributionId", cid).eq("userId", userId).findUnique();
+		return find.where().eq("contributionId", cid).eq("archived", false).eq("userId", userId).findUnique();
 	}
 
 	/**
