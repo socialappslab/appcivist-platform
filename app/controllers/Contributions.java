@@ -1107,8 +1107,33 @@ public class Contributions extends Controller {
             }
 
             ContributionStatistics updatedStats = new ContributionStatistics(cid);
+            Contribution contribution = Contribution.read(cid);
+            contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
+            contribution.update();
             return ok(Json.toJson(updatedStats));
         }
+    }
+
+    /**
+     *
+     * PUT       /api/assembly/:aid/contributions/popularity
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = ContributionStatistics.class, produces = "application/json", value = "Response status")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result updateContributionsPopularity(
+            @ApiParam(name="aid", value="Assembly ID") Long aid){
+        List<Contribution> contributions = Contribution.findAll();
+        for(Contribution c : contributions){
+            ContributionStatistics updatedStats = new ContributionStatistics(c.getContributionId());
+            c.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
+            c.update();
+        }
+        return ok(Json.toJson("Ok"));
+
     }
 
     /**

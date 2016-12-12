@@ -1269,3 +1269,5 @@ create table contribution_publish_history(
   lang                      varchar(255),
   constraint pk_contribution_publish_history primary key (id))
 ;
+
+alter table contribution add column popularity integer;

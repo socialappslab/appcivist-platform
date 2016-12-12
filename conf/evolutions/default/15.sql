@@ -14,3 +14,5 @@ create table contribution_publish_history(
 
 # --- !Downs
 drop table contribution_publish_history;
+
+alter table contribution add column popularity integer;

@@ -209,6 +209,7 @@ PUT       /api/assembly/:aid/contribution/:cid/softremoval                contro
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/contributions/popularity                     controllers.Contributions.updateContributionsPopularity(aid: Long)
 
 POST      /api/contribution/pad                                           controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)

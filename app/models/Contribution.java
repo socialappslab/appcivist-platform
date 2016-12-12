@@ -117,6 +117,8 @@ public class Contribution extends AppCivistBaseModel {
     // TODO: redo using priority matrix and allowing for multiple users to provide their priority matrix values
     private Integer priority;
 
+    private Integer popularity;
+
     @Transient
     @ApiModelProperty(value="Read only property displaying the first information", readOnly=true)
     private User firstAuthor;
@@ -1129,5 +1131,13 @@ public class Contribution extends AppCivistBaseModel {
             this.publicRevision = publishHistories.get(publishHistories.size() - 1).getRevision();
         }
         return this.publicRevision;
+    }
+
+    public Integer getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(Integer popularity) {
+        this.popularity = popularity;
     }
 }
