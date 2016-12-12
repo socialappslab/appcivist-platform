@@ -1,6 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -10,19 +9,36 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PreUpdate;
+import javax.persistence.Transient;
 
-import enums.ContributionStatus;
 import models.location.Location;
 import models.misc.Views;
-import play.Logger;
 import play.data.validation.Constraints.Required;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
 
+import enums.ContributionStatus;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 
@@ -114,7 +130,7 @@ public class Contribution extends AppCivistBaseModel {
     private Long assemblyId;
 
 
-    @JsonIgnore
+   // @JsonIgnore
     @JsonManagedReference
     @Transient
     @ApiModelProperty(value="Working Groups to which this Contribution is associated")
