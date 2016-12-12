@@ -493,9 +493,10 @@ public class Users extends Controller {
 			final String newPassword = filledForm.get().password;
 			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),
 					true);
-			flash(Application.FLASH_MESSAGE_KEY,
-					Messages.get("playauthenticate.change_password.success"));
-			return redirect(routes.Users.profile(user.getUserId()));
+			//flash(Application.FLASH_MESSAGE_KEY,
+			//		Messages.get("playauthenticate.change_password.success"));
+			//return redirect(routes.Users.profile(user.getUserId()));
+			return ok(Json.toJson("ok"));
 		}
 	}
 
