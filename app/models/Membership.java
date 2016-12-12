@@ -84,15 +84,25 @@ public class Membership extends AppCivistBaseModel {
 	@ManyToOne
 	@JoinColumn(name = "assembly_assembly_id")
 	//@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
-	@JsonIgnore
+	@JsonView(Views.Public.class)
 	private Assembly targetAssembly;
 
 	//@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	@ManyToOne
 	@JoinColumn(name = "working_group_group_id")
-	@JsonIgnore
+	@JsonView(Views.Public.class)
 	private WorkingGroup targetGroup;
 
+	@Transient
+	private Long targetGroupId;
+
+	@Transient
+	private List<Long> targetGroupAssemblies;
+	
+	@Transient
+	private Long targetAssemblyId;
+
+	
 	private UUID targetUuid;
 	
 	@Transient 
@@ -193,6 +203,18 @@ public class Membership extends AppCivistBaseModel {
 
 	public void setTargetGroup(WorkingGroup targetGroup) {
 		this.targetGroup = targetGroup;
+	}
+
+	public Long getTargetGroupId() {
+		return targetGroup != null ? targetGroup.getGroupId() : null ;
+	}
+
+	public void setTargetGroupId(Long targetGroupId) {
+		this.targetGroupId = targetGroupId;
+	}
+
+	public Long getTargetAssemblyId() {
+		return targetAssembly != null ? targetAssembly.getAssemblyId() : null ;
 	}
 
 	public UUID getTargetUuid() {
