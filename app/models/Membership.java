@@ -81,20 +81,20 @@ public class Membership extends AppCivistBaseModel {
 	@Column(name = "MEMBERSHIP_TYPE", insertable = false, updatable = false)
 	private String membershipType;
 
-	@ManyToOne
-	@JoinColumn(name = "assembly_assembly_id")
-	//@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
+	//@ManyToOne
+	//@JoinColumn(name = "assembly_assembly_id")
+	@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
 	@JsonIgnore
 	private Assembly targetAssembly;
 
-	//@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
-	@ManyToOne
-	@JoinColumn(name = "working_group_group_id")
+	//@ManyToOne
+	//@JoinColumn(name = "working_group_group_id")
 	@JsonIgnore
+	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	private WorkingGroup targetGroup;
 
 	private UUID targetUuid;
-	
+
 	@Transient 
 	private String invitationToken; 
 	
@@ -331,7 +331,7 @@ public class Membership extends AppCivistBaseModel {
 	}
 
 	public static List<Membership> findByUserAndAssembly(User u, Integer assemblyId) {
-		Query<Membership> q = find.where().eq("user",u).eq("targetAssembly.assemblyId", assemblyId).query();
+		Query<Membership> q = find.where().eq("user",u).eq("assembly.assemblyId", assemblyId).query();
 		List<Membership> membs = q.findList();
 		return membs;
 	}
@@ -384,7 +384,7 @@ public class Membership extends AppCivistBaseModel {
 		List<Membership> membershipsInResourceSpace = new ArrayList<>();
 		if (this.membershipType.equals("ASSEMBLY")) {
 			membershipsInResourceSpace = find.where().
-					eq("targetGroup.containingSpaces.resourceSpaceId",
+					eq("workingGroup.containingSpaces.resourceSpaceId",
 							((MembershipAssembly) this).getAssembly().getResourcesResourceSpaceId()).eq("user", this.user).findList();
 
 		}
