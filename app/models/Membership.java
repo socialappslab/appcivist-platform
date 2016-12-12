@@ -84,12 +84,12 @@ public class Membership extends AppCivistBaseModel {
 	//@ManyToOne
 	//@JoinColumn(name = "assembly_assembly_id")
 	@Column(name = "ASSEMBLY_ASSEMBLY_ID", insertable = false, updatable = false)
-	@JsonIgnore
+	//@JsonIgnore
 	private Assembly targetAssembly;
 
 	//@ManyToOne
 	//@JoinColumn(name = "working_group_group_id")
-	@JsonIgnore
+	//@JsonIgnore
 	@Column(name = "WORKING_GROUP_GROUP_ID", insertable = false, updatable = false)
 	private WorkingGroup targetGroup;
 

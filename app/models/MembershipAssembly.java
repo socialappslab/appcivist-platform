@@ -24,7 +24,7 @@ import exceptions.MembershipCreationException;
 @ApiModel(value="MembershipAssembly", description="Membership in an assembly")
 public class MembershipAssembly extends Membership {
 
-	@JsonIgnore
+	//@JsonIgnore
 	@ManyToOne
 	@JsonIgnoreProperties({"creator", "membershipRole", "campaigns", "assemblyConfigs"})
 	private Assembly assembly;

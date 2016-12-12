@@ -23,7 +23,7 @@ import exceptions.MembershipCreationException;
 @ApiModel(value="MembershipGroup", description="Membership in a Working Group")
 public class MembershipGroup extends Membership {
 
-	@JsonIgnore
+	//@JsonIgnore
 	@ManyToOne
 	@JsonIgnoreProperties({"creator", "members"})
 	private WorkingGroup workingGroup;
