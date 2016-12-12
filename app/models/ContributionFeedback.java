@@ -257,11 +257,11 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	 * @param status
 	 * @return
 	 */
-	public static ContributionFeedback findPreviousContributionFeedback(Long cid, Long userId, Long workingGroupId,
+	public static List<ContributionFeedback> findPreviousContributionFeedback(Long cid, Long userId, Long workingGroupId,
 												ContributionFeedbackTypes type, ContributionFeedbackStatus status ){
 		return find.where().eq("contributionId", cid).eq("workingGroupId", workingGroupId).
 				eq("userId", userId).eq("type", type == null ? null : type.ordinal()).
-				eq("status", status == null ? null : status.ordinal()).eq("archived", false).findUnique();
+				eq("status", status == null ? null : status.ordinal()).eq("archived", false).findList();
 
 	}
 }

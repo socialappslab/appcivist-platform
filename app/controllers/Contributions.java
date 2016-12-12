@@ -1050,7 +1050,9 @@ public class Contributions extends Controller {
             return contributionFeedbackError(updatedFeedbackForm);
         } else {
             ContributionFeedback feedback = updatedFeedbackForm.get();
-            ContributionFeedback existingFeedback = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
+            feedback.setContributionId(cid);
+            feedback.setUserId(author.getUserId());
+            List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus());
 
 
@@ -1060,9 +1062,12 @@ public class Contributions extends Controller {
                 feedback.setUserId(author.getUserId());
 
                 //If we found a previous feedback, we set that feedback as archived
-                if (existingFeedback != null) {
-                    existingFeedback.setArchived(true);
-                    existingFeedback.update();
+                if (existingFeedbacks != null) {
+                    for(ContributionFeedback existingFeedback : existingFeedbacks){
+                        existingFeedback.setArchived(true);
+                        existingFeedback.update();
+                    }
+
                 }
 
                 //We have to do some authorization control
