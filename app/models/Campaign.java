@@ -421,7 +421,7 @@ String uuidAsString, List<Component> phases) {
 	@JsonView(Views.Public.class)
 	@JsonProperty("assemblies")
 	@JsonIgnore
-	public List<Assembly> getAssembliesObjects() {
+	public List<UUID> getAssembliesObjects() {
 		List <Assembly> assemblies = new ArrayList<>();
 		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
 				.collect(Collectors.toList());
@@ -432,7 +432,8 @@ String uuidAsString, List<Component> phases) {
 				assemblies.add(a);
 			}
 		}
-		return assemblies;
+		List<UUID> uuids = assemblies.stream().map(assembly -> assembly.getUuid()).collect(Collectors.toList());
+		return uuids;
 	}
 
 	public List<Contribution> getContributions() {
