@@ -303,6 +303,38 @@ public class Contributions extends Controller {
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for {resource space}: " + sid + ", type=" + type)));
     }
+    
+    
+    
+    /**
+     * GET       /api/space/:sid/contribution
+     *
+     * @param sid
+     * @param type
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", 
+    		value = "Get contributions in a specific Resource Space",
+    		notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
+    public static Result findResourceSpacePinnedContributions(
+    		@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+    		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
+    	
+    	ContributionTypes mappedType = null; 
+    	if (type!=null)
+    		ContributionTypes.valueOf(type.toUpperCase());
+        List<Contribution> contributions = ContributionsDelegate.findPinnedContributionsInSpace(sid, mappedType);
+        if (contributions==null) {
+        	contributions = new ArrayList<Contribution>();
+        }
+        return contributions != null ? ok(Json.toJson(contributions))
+                : notFound(Json.toJson(new TransferResponseStatus(
+                "No pinned contributions for {resource space}: " + sid + ", type=" + type)));
+    }
 
     /**
      * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats
@@ -459,6 +491,23 @@ public class Contributions extends Controller {
         ResourceSpace rs = ResourceSpace.readByUUID(uuid);
         List<Contribution> contributions = ContributionsDelegate
                 .findContributionsInResourceSpace(rs, type, null);
+        return contributions != null ? ok(Json.toJson(contributions))
+                : notFound(Json.toJson(new TransferResponseStatus(
+                "No contributions for {resource space}: " + uuid + ", type=" + type)));
+    }
+    
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal Resource Space ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
+    // TODO: add API token support, some API enpoints must be available only for registered clients
+    public static Result findResourceSpacePinnedContributionsByUUID(
+            @ApiParam(name="uuid", value="Resource Space Universal ID") UUID uuid,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
+        ResourceSpace rs = ResourceSpace.readByUUID(uuid);
+        ContributionTypes mappedType = null;
+        if (type!=null) 
+        	mappedType = ContributionTypes.valueOf(type.toUpperCase());
+        List<Contribution> contributions = ContributionsDelegate
+                .findPinnedContributionsInResourceSpace(rs, mappedType, ContributionStatus.PUBLISHED);
         return contributions != null ? ok(Json.toJson(contributions))
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for {resource space}: " + uuid + ", type=" + type)));

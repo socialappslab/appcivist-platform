@@ -11,10 +11,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.avaje.ebean.*;
+
+import enums.ContributionStatus;
 import enums.ContributionTypes;
 import models.*;
 
 import org.dozer.DozerBeanMapper;
+
 import play.Logger;
 import play.Play;
 import utils.services.EtherpadWrapper;
@@ -197,11 +200,11 @@ public class ContributionsDelegate {
                         }
 
                 }
-
-
-            }
+            }            
         }
-
+        
+        where.eq("pinned",false);
+        
         List<Contribution> contributions;
         if(page != null && pageSize != null){
             contributions = where.findPagedList(page, pageSize).getList();
@@ -322,5 +325,20 @@ public class ContributionsDelegate {
         }
         return templates;
     }
+
+	public static List<Contribution> findPinnedContributionsInSpace(Long sid, ContributionTypes type) {
+		return Contribution.findPinnedInSpace(sid, type);
+	}
+
+	public static List<Contribution> findPinnedContributionsInResourceSpace(ResourceSpace rs, ContributionTypes type, ContributionStatus status) {
+		Long sid;
+		if (rs!=null) {
+			sid = rs.getResourceSpaceId();
+			return Contribution.findPinnedInSpace(sid, type, status);
+		} else {
+			return null;
+		}
+			
+	}
 
 }

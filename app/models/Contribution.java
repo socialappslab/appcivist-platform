@@ -118,6 +118,8 @@ public class Contribution extends AppCivistBaseModel {
     private Integer priority;
 
     private Integer popularity;
+    
+    private Boolean pinned;
 
     @Transient
     @ApiModelProperty(value="Read only property displaying the first information", readOnly=true)
@@ -1140,4 +1142,46 @@ public class Contribution extends AppCivistBaseModel {
     public void setPopularity(Integer popularity) {
         this.popularity = popularity;
     }
+
+	public Boolean getPinned() {
+		return pinned;
+	}
+
+	public void setPinned(Boolean pinned) {
+		this.pinned = pinned;
+	}
+
+	public static List<Contribution> findPinnedInSpace(Long sid, ContributionTypes type) {
+		if (type!=null) {
+			return find.where()
+				.eq("pinned", true)
+				.eq("type", type)
+				.eq("containingSpaces.resourceSpaceId", sid)
+				.findList();
+		} else {
+			return find.where()
+					.eq("pinned", true)
+					.eq("containingSpaces.resourceSpaceId", sid)
+					.findList();			
+		}
+	}
+
+	public static List<Contribution> findPinnedInSpace(Long sid,
+			ContributionTypes type, ContributionStatus status) {
+		if (type!=null) {
+			return find.where()
+					.eq("pinned", true)
+					.eq("type", type)
+					.eq("containingSpaces.resourceSpaceId", sid)
+					.eq("status", status)
+					.findList();	
+		} else {
+			return find.where()
+					.eq("pinned", true)
+					.eq("containingSpaces.resourceSpaceId", sid)
+					.eq("status", status)
+					.findList();			
+		}
+		
+	}
 }
