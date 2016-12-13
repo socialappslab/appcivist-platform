@@ -269,7 +269,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "themes", value = "List") List<Integer> byTheme,
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
-            @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize) {
+            @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
+            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
         if(pageSize == null){
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -291,6 +292,9 @@ public class Contributions extends Controller {
         }
         if(byTheme != null && !byTheme.isEmpty()){
             conditions.put("theme", byTheme);
+        }
+        if(sorting != null && !sorting.isEmpty()){
+            conditions.put("sorting", sorting);
         }
         if(all != null){
             contributions = ContributionsDelegate.findContributions(conditions, null, null);

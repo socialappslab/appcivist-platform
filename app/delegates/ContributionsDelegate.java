@@ -133,6 +133,8 @@ public class ContributionsDelegate {
                 "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, t0.priority,\n " +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
                 "  t0.source_code from contribution t0\n ";
+        String sorting = "pinned";
+
         if(conditions != null){
             for(String key : conditions.keySet()){
                 switch (key){
@@ -192,6 +194,18 @@ public class ContributionsDelegate {
                         }
                         where.add(p);
                         break;
+                    case "sorting":
+                    	String sortingValue = (String) value;
+                    	if (sortingValue.equals("popularity")) {
+                    		sorting +=", popularity";
+                    	} else if (sortingValue.equals("random")) {
+                    		// TODO find a way of producing a random ordering
+                    	} else if (sortingValue.equals("date_asc")) {
+                    		sorting +=", creation asc";                    		
+                    	} else if (sortingValue.equals("date_desc")) {
+                    		sorting +=", creation desc";
+                    	}
+                    	break;
                     default:
                         if(value instanceof String){
                             where.ilike(key, ("t0."+(String)value).toLowerCase() + "%");
@@ -203,7 +217,7 @@ public class ContributionsDelegate {
             }            
         }
         
-        where.eq("pinned",false);
+        where.orderBy(sorting);
         
         List<Contribution> contributions;
         if(page != null && pageSize != null){
