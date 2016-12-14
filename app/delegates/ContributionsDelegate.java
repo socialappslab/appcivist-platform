@@ -132,8 +132,8 @@ public class ContributionsDelegate {
                 "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
                 "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, t0.priority,\n " +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
-                "  t0.source_code from contribution t0\n ";
-        String sorting = "pinned";
+                "  t0.source_code, t0.popularity, t0.pinned from contribution t0\n ";
+        String sorting = "pinned desc";
 
         if(conditions != null){
             for(String key : conditions.keySet()){
@@ -197,7 +197,7 @@ public class ContributionsDelegate {
                     case "sorting":
                     	String sortingValue = (String) value;
                     	if (sortingValue.equals("popularity")) {
-                    		sorting +=", popularity";
+                    		sorting +=", popularity desc";
                     	} else if (sortingValue.equals("random")) {
                     		// TODO find a way of producing a random ordering
                     	} else if (sortingValue.equals("date_asc")) {

@@ -119,7 +119,7 @@ public class Contribution extends AppCivistBaseModel {
 
     private Integer popularity;
     
-    private Boolean pinned;
+    private Boolean pinned = false;
 
     @Transient
     @ApiModelProperty(value="Read only property displaying the first information", readOnly=true)
