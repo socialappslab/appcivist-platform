@@ -70,8 +70,7 @@ public class Secured extends Security.Authenticator {
 					Logger.debug("AUTH: session expiring code: " + user_exp);
 					Logger.debug("AUTH: session provider id: " + provider_id);
 					Logger.debug("AUTH: session user id: " + user_id);
-
-					LogActions.logActivity(user_id, ctx);
+					Logger.debug("AUTH: request uri: " + ctx.request().uri());
 
 					ctx.session().put(PlayAuthenticateLocal.EXPIRES_KEY, user_exp);
 					ctx.session().put(PlayAuthenticateLocal.PROVIDER_KEY, provider_id);
@@ -84,7 +83,6 @@ public class Secured extends Security.Authenticator {
 				Logger.error(e.getMessage());
 			}
 		} else {
-			LogActions.logActivity("ANONYMOUS", ctx);
 			if (ctx.request().cookie("SESSION_KEY") == null) {
 				ctx.session().clear();
 			}

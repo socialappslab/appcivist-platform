@@ -2,7 +2,6 @@ package controllers;
 
 import static play.data.Form.form;
 import static play.libs.Json.toJson;
-
 import enums.ResourceTypes;
 import http.Headers;
 
@@ -24,6 +23,7 @@ import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
+import play.mvc.Security;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.With;
@@ -43,13 +43,13 @@ import views.html.*;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 import enums.ResponseStatus;
 /**
  * User Management operations, including authentication of users, 
@@ -256,7 +256,7 @@ public class Users extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
 			@ApiImplicitParam(name = "user_body", value = "Logout body must be empty JSON", dataType = "String", paramType = "body") })
-	@SubjectPresent
+	@Restrict(@Group(GlobalData.USER_ROLE))
 	public static Result doLogout() {
 		// TODO: modify to return HTML or JSON instead of redirect
 		return com.feth.play.module.pa.controllers.Authenticate.logout();

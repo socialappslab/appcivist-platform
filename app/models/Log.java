@@ -31,6 +31,7 @@ public class Log extends Model {
     private String action;
     private String resourceType;
     private String resourceUuid;
+    private String remoteAddress;
     
     public static Finder<Long,Log> find = new Finder<>(Log.class);
     
@@ -109,5 +110,13 @@ public class Log extends Model {
 
 	public void setResourceUuid(String resourceUUID) {
 		this.resourceUuid = resourceUUID;
+	}
+
+	public String getRemoteAddress() {
+		return remoteAddress;
+	}
+
+	public void setRemoteAddress(String remoteAddress) {
+		this.remoteAddress = remoteAddress;
 	}
 }

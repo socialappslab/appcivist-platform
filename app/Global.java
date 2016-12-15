@@ -16,6 +16,7 @@ import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.Play;
+import play.api.mvc.Session;
 import play.libs.Akka;
 import play.libs.Yaml;
 import play.mvc.Call;
@@ -23,6 +24,7 @@ import play.mvc.Call;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.PlayAuthenticate.Resolver;
 import com.feth.play.module.pa.exceptions.AccessDeniedException;
@@ -35,6 +37,8 @@ import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 import scala.concurrent.duration.Duration;
+import service.PlayAuthenticateLocal;
+import utils.LogActions;
 
 public class Global extends GlobalSettings {
 
@@ -123,7 +127,7 @@ public class Global extends GlobalSettings {
 		});
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unused" })
 	private void loadDataFiles(List<String> dataLoadFiles) {
 		if (dataLoadFiles.size() > 0) {
 			Logger.info("Loading data using the folloiwing initial data files: ");
@@ -284,6 +288,22 @@ public class Global extends GlobalSettings {
 	@Override
 	public Action<?> onRequest(Http.Request request,
 			java.lang.reflect.Method actionMethod) {
+		String play_session = request.getHeader("SESSION_KEY");
+		if (play_session == null || play_session.isEmpty()) {
+			Logger.debug("Logging access of anonymous user");
+			if (request.path().equals("/api/user/login")) {
+				JsonNode body = request.body().asJson();
+				JsonNode email_field = body.get("email");
+				if (email_field!=null) {
+					String email = email_field.asText();	
+					LogActions.logActivity(email, request);		
+				} else {
+					LogActions.logActivity("ANONYMOUS", request);
+				}
+			} else {
+				LogActions.logActivity("ANONYMOUS", request);		
+			}
+		} 
 		return new ActionWrapper(super.onRequest(request, actionMethod));
 	}
 }
