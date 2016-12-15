@@ -2,14 +2,18 @@ package controllers;
 
 import static play.data.Form.form;
 import static play.libs.Json.toJson;
+
+import enums.ResourceTypes;
 import http.Headers;
 
 import java.util.List;
 
+import models.Resource;
 import models.TokenAction;
 import models.TokenAction.Type;
 import models.User;
 import models.UserProfile;
+import models.misc.S3File;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -19,6 +23,7 @@ import play.data.validation.Constraints.Required;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.With;
@@ -279,6 +284,32 @@ public class Users extends Controller {
 			updatedUser.update();
 			Logger.info("Updating User");
 			Logger.debug("=> " + updatedUserForm.toString());
+
+			Http.MultipartFormData body = request().body().asMultipartFormData();
+			Http.MultipartFormData.FilePart uploadFilePart = null;
+			if(body != null){
+				uploadFilePart = body.getFile("profile_pic");
+			}
+			if (uploadFilePart != null) {
+
+				try{
+					Logger.info("Processing profile pic");
+					S3File s3File = new S3File();
+					s3File.name = uploadFilePart.getFilename();
+					s3File.file = uploadFilePart.getFile();
+					s3File.save();
+					Resource resource = new Resource();
+					resource.setUrl(s3File.getUrl());
+					resource.setResourceType(ResourceTypes.PICTURE);
+					resource.save();
+					updatedUser.setProfilePic(resource);
+					updatedUser.update();
+				}catch(Exception e){
+					return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.BADREQUEST,
+							"Error updating user's picture")));
+				}
+
+			}
 
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			responseBody.setNewResourceId(updatedUser.getUserId());
