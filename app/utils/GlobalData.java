@@ -74,7 +74,7 @@ public class GlobalData {
 	public static final String CONFIG_APPCIVIST_ETHERPAD_SERVER = "appcivist.services.etherpad.default.serverBaseUrl";
 	public static final String CONFIG_APPCIVIST_ETHERPAD_API_KEY = "appcivist.services.etherpad.default.apiKey";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM = "component.voting.system";
-	
+	public static final String CONFIG_USER_ACTIONS_LOGGING = "appcivist.logging";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_DISTRIBUTED_POINTS = "component.voting.system.distributed.points";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_BLOCK_THRESHOLD = "component.voting.system.plurality.block.threshold";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE = "component.voting.system.plurality.type";

@@ -4,12 +4,10 @@ import play.Logger;
 import play.api.mvc.CookieBaker;
 import play.api.mvc.Session;
 import play.mvc.*;
-import play.mvc.Http;
 //import play.mvc.Http.Session;
 import play.mvc.Http.Context;
-import play.mvc.Result;
-import play.mvc.Security;
 import service.PlayAuthenticateLocal;
+import utils.LogActions;
 
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
@@ -73,6 +71,8 @@ public class Secured extends Security.Authenticator {
 					Logger.debug("AUTH: session provider id: " + provider_id);
 					Logger.debug("AUTH: session user id: " + user_id);
 
+					LogActions.logActivity(user_id, ctx);
+
 					ctx.session().put(PlayAuthenticateLocal.EXPIRES_KEY, user_exp);
 					ctx.session().put(PlayAuthenticateLocal.PROVIDER_KEY, provider_id);
 					ctx.session().put(PlayAuthenticateLocal.USER_KEY, user_id);
@@ -84,6 +84,7 @@ public class Secured extends Security.Authenticator {
 				Logger.error(e.getMessage());
 			}
 		} else {
+			LogActions.logActivity("ANONYMOUS", ctx);
 			if (ctx.request().cookie("SESSION_KEY") == null) {
 				ctx.session().clear();
 			}
