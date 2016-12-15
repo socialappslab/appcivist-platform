@@ -17,7 +17,7 @@ create sequence log_id_seq
     NO MAXVALUE
     CACHE 1;
 
-alter sequence log_id_seq OWNED BY ballot_paper.id;
+alter sequence log_id_seq OWNED BY log.id;
 alter table log alter column id set default nextval('log_id_seq');
     
 # --- !Downs
