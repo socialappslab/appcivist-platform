@@ -1272,3 +1272,4 @@ create table contribution_publish_history(
 
 alter table contribution add column popularity integer;
 alter table contribution add column pinned boolean default false;
+alter table log add column remote_address varchar(255);
