@@ -55,7 +55,6 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 		HANDLERS.put("OnlyMeAndAdmin", Optional.of(new OnlyMeAndAdminDynamicResourceHandler())); 
 		HANDLERS.put("MemberOrListed", Optional.of(new AssemblyProfileDynamicResourceHandler())); 
 		HANDLERS.put("AuthorOfContribution", Optional.of(new ContributionDynamicResourceHandler())); 
-		HANDLERS.put("Anonymous", Optional.of(new AnonymousDynamicResourceHandler())); 
 	}
 
     @Override
