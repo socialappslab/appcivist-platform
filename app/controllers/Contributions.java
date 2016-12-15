@@ -491,10 +491,44 @@ public class Contributions extends Controller {
     // TODO: add API token support, some API enpoints must be available only for registered clients
     public static Result findResourceSpaceContributionsByUUID(
             @ApiParam(name="uuid", value="Resource Space Universal ID") UUID uuid,
-            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
+            @ApiParam(name = "by_text", value = "String") String byText,
+            @ApiParam(name = "groups", value = "List") List<Integer> byGroup,
+            @ApiParam(name = "themes", value = "List") List<Integer> byTheme,
+            @ApiParam(name = "all", value = "Boolean") String all,
+            @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
+            @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
+            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
+        if(pageSize == null){
+            pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+        }
         ResourceSpace rs = ResourceSpace.readByUUID(uuid);
-        List<Contribution> contributions = ContributionsDelegate
-                .findContributionsInResourceSpace(rs, type, null);
+        List<Contribution> contributions;
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("containingSpaces", rs.getResourceSpaceId());
+        if(type != null && !type.isEmpty()){
+            ContributionTypes mappedType = ContributionTypes.valueOf(type.toUpperCase());
+            conditions.put("type", mappedType);
+        }
+        if(byText != null && !byText.isEmpty()){
+            conditions.put("by_text", byText);
+        }
+        if(byGroup != null && !byGroup.isEmpty()){
+            conditions.put("group", byGroup);
+        }
+        if(byTheme != null && !byTheme.isEmpty()){
+            conditions.put("theme", byTheme);
+        }
+        if(sorting != null && !sorting.isEmpty()){
+            conditions.put("sorting", sorting);
+        }
+
+        if(all != null){
+            contributions = ContributionsDelegate.findContributions(conditions, null, null);
+        }else{
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+        }
+
         return contributions != null ? ok(Json.toJson(contributions))
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for {resource space}: " + uuid + ", type=" + type)));
