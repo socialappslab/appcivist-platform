@@ -622,6 +622,57 @@ public class Campaigns extends Controller {
     }
 
 	/**
+	 * GET /api/campaign/:uuid/resources
+	 * Returns the Resources associated to the campaign
+	 * @param campaignUUID
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", value = "Lists campaign's resources", notes="Public View")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	public static Result listPublicCampaignResources(
+			@ApiParam(name = "uuid", value = "Campaign UUID") UUID campaignUUID,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "page", value = "Integer") Integer page,
+			@ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+
+		try{
+		if(pageSize == null){
+			pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+		}
+		Campaign campaign = Campaign.readByUUID(campaignUUID);
+		List<Resource> resources;
+		if(all != null){
+			resources = campaign.getResourceList();
+		}else{
+			resources = campaign.getPagedResources(page, pageSize);
+		}
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(resources);
+
+			Content ret = new Content() {
+				@Override
+				public String body() {
+					return result;
+				}
+
+				@Override
+				public String contentType() {
+					return "application/json";
+				}
+			};
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
+	}
+
+	/**
 	 * GET /api/assembly/:aid/campaign/:cid/components
 	 * Returns the Components associated to the campaign
 	 * @param aid
@@ -655,6 +706,58 @@ public class Campaigns extends Controller {
 	}
 
 	/**
+	 * GET /api/campaign/:uuid/components
+	 * Returns the Components associated to the campaign
+	 * @param campaignUUID
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Component.class, responseContainer = "List", value = "Lists campaign's components", notes="Public View")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	public static Result listPublicCampaignComponents(
+			@ApiParam(name = "uuid", value = "Campaign UUID") UUID campaignUUID,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "page", value = "Integer") Integer page,
+			@ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+
+		try{
+			if(pageSize == null){
+				pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+			}
+			Campaign campaign = Campaign.readByUUID(campaignUUID);
+			List<Component> components;
+			if(all != null){
+				components = campaign.getComponents();
+			}else{
+				components = campaign.getPagedComponents(page, pageSize);
+			}
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(components);
+
+			Content ret = new Content() {
+				@Override
+				public String body() {
+					return result;
+				}
+
+				@Override
+				public String contentType() {
+					return "application/json";
+				}
+			};
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
+
+	}
+
+	/**
 	 * GET /api/assembly/:aid/campaign/:cid/themes
 	 * Returns the Themes associated to the campaign
 	 * @param aid
@@ -684,6 +787,59 @@ public class Campaigns extends Controller {
 			themes = campaign.getPagedThemes(page, pageSize);
 		}
 		return ok(Json.toJson(themes));
+
+	}
+
+	/**
+	 * GET /api/campaign/:uuid/themes
+	 * Returns the Themes associated to the campaign
+	 * @param campaignUUID
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", value = "Lists campaign's themes", notes="Public View")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	public static Result listPublicCampaignThemes(
+			@ApiParam(name = "uuid", value = "Campaign UUID") UUID campaignUUID,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "page", value = "Integer") Integer page,
+			@ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+
+		try{
+			if(pageSize == null){
+				pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+			}
+			Campaign campaign = Campaign.readByUUID(campaignUUID);
+			List<Theme> themes;
+			if(all != null){
+				themes = campaign.getThemes();
+			}else{
+				themes = campaign.getPagedThemes(page, pageSize);
+			}
+
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(themes);
+
+			Content ret = new Content() {
+				@Override
+				public String body() {
+					return result;
+				}
+
+				@Override
+				public String contentType() {
+					return "application/json";
+				}
+			};
+
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
 
 	}
 
@@ -722,6 +878,59 @@ public class Campaigns extends Controller {
 	}
 
 	/**
+	 * GET /api/campaign/:uuid/groups
+	 * Returns the Working groups associated to the campaign
+	 * @param campaignUUID
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", value = "Lists campaign's working groups", notes="Public view")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	public static Result listPublicCampaignGroups(
+			@ApiParam(name = "uuid", value = "Campaign UUID") UUID campaignUUID,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "page", value = "Integer") Integer page,
+			@ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+
+		try{
+			if(pageSize == null){
+				pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+			}
+			Campaign campaign = Campaign.readByUUID(campaignUUID);
+			List<WorkingGroup> workingGroups;
+			if(all != null){
+				workingGroups = campaign.getWorkingGroups();
+			}else{
+				workingGroups = campaign.getPagedWorkingGroups(page, pageSize);
+			}
+
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(workingGroups);
+
+			Content ret = new Content() {
+				@Override
+				public String body() {
+					return result;
+				}
+
+				@Override
+				public String contentType() {
+					return "application/json";
+				}
+			};
+
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
+	}
+
+	/**
 	 * GET /api/assembly/:aid/campaign/:cid/timeline
 	 * Returns the CampaignTimelineEdges associated to the campaign
 	 * @param aid
@@ -752,6 +961,62 @@ public class Campaigns extends Controller {
 			campaignTimelineEdges = campaign.getPagedTimelineEdges(page, pageSize);
 		}
 		return ok(Json.toJson(campaignTimelineEdges));
+
+	}
+
+	/**
+	 * GET /api/campaign/:uuid/timeline
+	 * Returns the CampaignTimelineEdges associated to the campaign
+	 * @param campaignUUID
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = CampaignTimelineEdge.class, responseContainer = "List", value = "Lists campaign's timeline", notes="Public view")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body") })
+	public static Result listPublicCampaignTimeline(
+			@ApiParam(name = "uuid", value = "Campaign UUID") UUID campaignUUID,
+			@ApiParam(name = "all", value = "Boolean") String all,
+			@ApiParam(name = "page", value = "Integer") Integer page,
+			@ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+
+		try {
+
+
+			if (pageSize == null) {
+				pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+			}
+			List<CampaignTimelineEdge> campaignTimelineEdges;
+			Campaign campaign = Campaign.readByUUID(campaignUUID);
+			if (all != null) {
+				campaignTimelineEdges = campaign.getTimelineEdges();
+			} else {
+				campaignTimelineEdges = campaign.getPagedTimelineEdges(page, pageSize);
+			}
+
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(campaignTimelineEdges);
+
+			Content ret = new Content() {
+				@Override
+				public String body() {
+					return result;
+				}
+
+				@Override
+				public String contentType() {
+					return "application/json";
+				}
+			};
+
+			return Results.ok(ret);
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+
 
 	}
 }

@@ -162,10 +162,15 @@ GET       /api/campaign/:uuid                                             contro
 GET       /api/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
 POST      /api/assembly/:aid/campaign/:cid/resource                       controllers.Campaigns.createCampaignResource(aid: Long, cid: Long)
 GET       /api/assembly/:aid/campaign/:cid/resources                      controllers.Campaigns.listCampaignResources(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/campaign/:uuid/resources                                   controllers.Campaigns.listPublicCampaignResources(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/components                     controllers.Campaigns.listCampaignComponents(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/campaign/:uuid/components                                  controllers.Campaigns.listPublicCampaignComponents(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/themes                         controllers.Campaigns.listCampaignThemes(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/campaign/:uuid/themes                                      controllers.Campaigns.listPublicCampaignThemes(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/groups                         controllers.Campaigns.listCampaignGroups(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/campaign/:uuid/groups                                      controllers.Campaigns.listPublicCampaignGroups(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/timeline                       controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
 ##################################################################################################################################################################
 # CampaignComponent API

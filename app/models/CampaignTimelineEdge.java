@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -28,17 +30,20 @@ public class CampaignTimelineEdge extends AppCivistBaseModel {
 	@ManyToOne(cascade=CascadeType.ALL)
 	@JsonBackReference
 	private Campaign campaign;
-	
+
+	@JsonView(Views.Public.class)
 	private Boolean start = false;
 	
 	@ManyToOne
 	@JsonManagedReference
+	@JsonView(Views.Public.class)
 	private Component fromComponent;
 	@Transient
 	private Long fromComponentId;
 	@ManyToOne
 	@JsonManagedReference
-	private Component toComponent;	
+	@JsonView(Views.Public.class)
+	private Component toComponent;
 	@Transient
 	private Long toComponentId;
 
