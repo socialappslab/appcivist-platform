@@ -2389,6 +2389,8 @@ public class Contributions extends Controller {
             Contribution c;
             try {
                 c = createContribution(newContribution, null, type, template, campaign.getResources());
+                campaign.getResources().getContributions().add(c);
+                campaign.getResources().update();
             } catch (Exception e) {
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
