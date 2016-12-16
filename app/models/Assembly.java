@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -727,5 +728,10 @@ public class Assembly extends AppCivistBaseModel {
 	public static Assembly findByName(String n) {
 		List<Assembly> as = find.where().eq("name", n).findList();
 		return as!=null && as.size()>0 ? as.get(0) : null;	
+	}
+
+	public static Assembly findById(Long aid) {
+		Assembly a = find.byId(aid);
+		return a;
 	}
 }

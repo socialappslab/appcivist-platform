@@ -146,8 +146,8 @@ public class Assemblies extends Controller {
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result findAssembliesLinked(@ApiParam(name="aid", value="Assembly ID") Long aid) {
-		Assembly a = Assembly.read(aid);
-		if (a != null) {
+		Assembly a = Assembly.findById(aid);
+		if (a != null && a.getResources() != null) {
 			List<Assembly> linked = a.getFollowedAssemblies();
 			if (linked!=null && !linked.isEmpty())
 				return ok(Json.toJson(linked));
