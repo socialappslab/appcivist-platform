@@ -10,7 +10,7 @@ import play.mvc.Http.Request;
 public class LogActions {
 	public static void logActivity(String u, String a, String r) {
 		Boolean logActions = Play.application().configuration().getBoolean(GlobalData.CONFIG_USER_ACTIONS_LOGGING);
-		if (logActions) {
+		if (logActions!=null && logActions) {
 			Log l = new Log();
 			l.setUser(u);
 			l.setAction(a);
@@ -21,7 +21,7 @@ public class LogActions {
 	}
 	public static void logActivity(String u, String a, String r, String rt, String ruuid) {
 		Boolean logActions = Play.application().configuration().getBoolean(GlobalData.CONFIG_USER_ACTIONS_LOGGING);
-		if (logActions) {
+		if (logActions!=null && logActions) {
 			Log l = new Log();
 			l.setUser(u);
 			l.setAction(a);
@@ -34,7 +34,7 @@ public class LogActions {
 	}
 	public static Log logActivity(Log l) {
 		Boolean logActions = Play.application().configuration().getBoolean(GlobalData.CONFIG_USER_ACTIONS_LOGGING);
-		if (logActions) {
+		if (logActions!=null && logActions) {
 			l.save();
 			l.refresh();
 		}
@@ -42,7 +42,7 @@ public class LogActions {
 	}
 	public static void logActivity(String user_id, Context ctx) {
 		Boolean logActions = Play.application().configuration().getBoolean(GlobalData.CONFIG_USER_ACTIONS_LOGGING);
-		if (logActions) {
+		if (logActions!=null && logActions) {
 			Log l = new Log();
 			l.setUser(user_id);
 			l.setAction(ctx.request().method());
@@ -54,7 +54,7 @@ public class LogActions {
 	}
 	public static void logActivity(String user_id, Request req) {
 		Boolean logActions = Play.application().configuration().getBoolean(GlobalData.CONFIG_USER_ACTIONS_LOGGING);
-		if (logActions) {
+		if (logActions!=null && logActions) {
 			Log l = new Log();
 			l.setUser(user_id);
 			l.setAction(req.method());
