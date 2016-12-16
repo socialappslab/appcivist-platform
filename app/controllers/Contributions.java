@@ -2341,12 +2341,14 @@ public class Contributions extends Controller {
             }
 
             ContributionTemplate template = null;
-            Contribution c = new Contribution();
-            c.setUuidAsString(uuid);
-            c.setUuid(UUID.fromString(uuid));
+            Contribution c;
+            Contribution inContribution = Contribution.readByUUID(UUID.fromString(uuid));
             try {
-                c = createContribution(newContribution, null, type, template, null);
+                c = createContribution(newContribution, null, type, template, inContribution.getResourceSpace());
+                inContribution.getResourceSpace().getContributions().add(c);
+                inContribution.getResourceSpace().update();
             } catch (Exception e) {
+                Logger.error("Error creating ", e);
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
