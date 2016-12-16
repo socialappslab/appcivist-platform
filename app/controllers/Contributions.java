@@ -1,6 +1,9 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -46,6 +49,7 @@ import models.Theme;
 import models.User;
 import models.WorkingGroup;
 import models.WorkingGroupProfile;
+import models.misc.Views;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
 import models.transfer.PadTransfer;
@@ -60,10 +64,8 @@ import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F.Promise;
 import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
+import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.services.EtherpadWrapper;
@@ -502,36 +504,58 @@ public class Contributions extends Controller {
         if(pageSize == null){
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
-        ResourceSpace rs = ResourceSpace.readByUUID(uuid);
-        List<Contribution> contributions;
-        Map<String, Object> conditions = new HashMap<>();
-        conditions.put("containingSpaces", rs.getResourceSpaceId());
-        if(type != null && !type.isEmpty()){
-            ContributionTypes mappedType = ContributionTypes.valueOf(type.toUpperCase());
-            conditions.put("type", mappedType);
-        }
-        if(byText != null && !byText.isEmpty()){
-            conditions.put("by_text", byText);
-        }
-        if(byGroup != null && !byGroup.isEmpty()){
-            conditions.put("group", byGroup);
-        }
-        if(byTheme != null && !byTheme.isEmpty()){
-            conditions.put("theme", byTheme);
-        }
-        if(sorting != null && !sorting.isEmpty()){
-            conditions.put("sorting", sorting);
-        }
+        try {
+            ResourceSpace rs = ResourceSpace.readByUUID(uuid);
+            List<Contribution> contributions;
+            Map<String, Object> conditions = new HashMap<>();
+            conditions.put("containingSpaces", rs.getResourceSpaceId());
+            if (type != null && !type.isEmpty()) {
+                ContributionTypes mappedType = ContributionTypes.valueOf(type.toUpperCase());
+                conditions.put("type", mappedType);
+            }
+            if (byText != null && !byText.isEmpty()) {
+                conditions.put("by_text", byText);
+            }
+            if (byGroup != null && !byGroup.isEmpty()) {
+                conditions.put("group", byGroup);
+            }
+            if (byTheme != null && !byTheme.isEmpty()) {
+                conditions.put("theme", byTheme);
+            }
+            if (sorting != null && !sorting.isEmpty()) {
+                conditions.put("sorting", sorting);
+            }
 
-        if(all != null){
-            contributions = ContributionsDelegate.findContributions(conditions, null, null);
-        }else{
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
-        }
+            if (all != null) {
+                contributions = ContributionsDelegate.findContributions(conditions, null, null);
+            } else {
+                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+            }
 
-        return contributions != null ? ok(Json.toJson(contributions))
-                : notFound(Json.toJson(new TransferResponseStatus(
-                "No contributions for {resource space}: " + uuid + ", type=" + type)));
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+            String result = mapper.writerWithView(Views.Public.class)
+                    .writeValueAsString(contributions);
+
+            Content ret = new Content() {
+                @Override
+                public String body() {
+                    return result;
+                }
+
+                @Override
+                public String contentType() {
+                    return "application/json";
+                }
+            };
+
+            return Results.ok(ret);
+
+        }catch(Exception e){
+            return badRequest(Json.toJson(Json
+                    .toJson(new TransferResponseStatus("Error processing request"))));
+        }
+        
     }
     
     @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal Resource Space ID")

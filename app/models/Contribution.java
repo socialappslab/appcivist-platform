@@ -118,7 +118,7 @@ public class Contribution extends AppCivistBaseModel {
     private Integer priority;
 
     private Integer popularity;
-    
+
     private Boolean pinned = false;
 
     @Transient
@@ -493,6 +493,12 @@ public class Contribution extends AppCivistBaseModel {
     public Long getResourceSpaceId() {
         return this.resourceSpace != null ? this.resourceSpace
                 .getResourceSpaceId() : null;
+    }
+
+    @JsonView(Views.Public.class)
+    public UUID getResourceSpaceUUID() {
+        return this.resourceSpace != null ? this.resourceSpace
+                .getResourceSpaceUuid() : null;
     }
 
     public void setResourceSpaceId(Long id) {
