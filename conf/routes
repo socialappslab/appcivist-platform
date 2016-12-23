@@ -194,6 +194,7 @@ GET       /api/space/:uuid/contribution/public                            contro
 GET       /api/space/:uuid/contribution/public/pinned                     controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")
 #GET       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.readContributionFeedback(aid: Long, cid: Long)
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long)
+GET       /api/assembly/:aid/campaign/:cid/group/:gid/contribution/:coid/stats       controllers.Contributions.readWGContributionStats(aid: Long, cid: Long,gid: Long, coid: Long)
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback    controllers.Contributions.readContributionFeedbacks(aid: Long, cid: Long, coid: Long)
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback/:fid    controllers.Contributions.readContributionFeedback(aid: Long, cid: Long, coid: Long, fid: Long)
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)

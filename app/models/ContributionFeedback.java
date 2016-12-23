@@ -232,21 +232,49 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	public static long getUpsForContribution(Long contributionId) {
 		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("up", true).findRowCount();
 	}
+
+	public static long getUpsForGroup(Long workingGroupId, Long contributionId) {
+		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+				eq("archived", false).eq("up", true).
+				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
+	}
 	
 	public static long getDownsForContribution(Long contributionId) {
 		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("down", true).findRowCount();
+	}
+
+	public static long getDownsForGroup(Long workingGroupId, Long contributionId) {
+		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+				eq("archived", false).eq("down", true).
+				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
 	}
 	
 	public static long getFavsForContribution(Long contributionId) {
 		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("fav", true).findRowCount();
 	}
+
+	public static long getFavsForGroup(Long workingGroupId, Long contributionId) {
+		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+				eq("archived", false).eq("fav", true).
+				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
+	}
 	
 	public static long getFlagsForContribution(Long contributionId) {
 		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("flag", true).findRowCount();
 	}
+
+	public static long getFlagsForGroup(Long workingGroupId, Long contributionId) {
+		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+				eq("archived", false).eq("flag", true).
+				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
+	}
 	
 	public static long getPointsForContribution(Long contributionId) {
 		return getUpsForContribution(contributionId)-getDownsForContribution(contributionId);
+	}
+
+	public static long getPointsForGroup(Long workingGroupId, Long contributionId) {
+		return getUpsForGroup(workingGroupId, contributionId)-getDownsForGroup(workingGroupId, contributionId);
 	}
 
 	public static ContributionFeedback findByContributionAndUserId(Long cid, Long userId) {
@@ -260,7 +288,19 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				" group by contribution_id";
 		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 		where = find.setRawSql(rawSql).where();
-		return where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findUnique().getBenefit();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getBenefit() != null ? feedbacks.get(0).getBenefit() : 0;
+	}
+
+	public static Integer getAverageBenefitForGroup(Long workingGroupId, Long contributionId) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, sum(t0.benefit) / count(contribution_id) as benefit from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		List<ContributionFeedback> feedbacks = where.eq("t0.working_group_id", workingGroupId).eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		return feedbacks != null && !feedbacks.isEmpty()  && feedbacks.get(0).getBenefit() != null ? feedbacks.get(0).getBenefit() : 0;
 	}
 
 	public static Integer getAverageNeedForContribution(Long contributionId) {
@@ -270,7 +310,19 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				" group by contribution_id";
 		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 		where = find.setRawSql(rawSql).where();
-		return where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findUnique().getNeed();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getNeed() != null ? feedbacks.get(0).getNeed() : 0;
+	}
+
+	public static Integer getAverageNeedForGroup(Long workingGroupId, Long contributionId) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, sum(t0.need) / count(contribution_id) as need from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.working_group_id", workingGroupId).eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getNeed() != null ? feedbacks.get(0).getNeed() : 0;
 	}
 
 	public static Integer getAverageFeasibilityForContribution(Long contributionId) {
@@ -280,7 +332,19 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				" group by contribution_id";
 		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 		where = find.setRawSql(rawSql).where();
-		return where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findUnique().getFeasibility();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getFeasibility() != null ? feedbacks.get(0).getFeasibility() : 0;
+	}
+
+	public static Integer getAverageFeasibilityForGroup(Long workingGroupId, Long contributionId) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, sum(t0.feasibility) / count(contribution_id) as feasibility from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.working_group_id", workingGroupId).eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getFeasibility() != null ? feedbacks.get(0).getFeasibility() : 0;
 	}
 
 	public static Integer getElegibilityCountForContribution(Long contributionId, boolean elegibility) {
@@ -293,7 +357,21 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 		List<ContributionFeedback> feedbacks = where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).eq("elegibility", elegibility).
 				findList();
-		return feedbacks != null && !feedbacks.isEmpty() ? feedbacks.get(0).getBenefit() : 0;
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getBenefit() != null ? feedbacks.get(0).getBenefit() : 0;
+	}
+
+	public static Integer getElegibilityCountForGroup(Long workingGroupId, Long contributionId, boolean elegibility) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, count(elegibility) as benefit from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+
+		List<ContributionFeedback> feedbacks = where.eq("t0.working_group_id", workingGroupId).
+				eq("t0.contribution_id", contributionId).eq("t0.archived", false).eq("elegibility", elegibility).
+				findList();
+		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getBenefit() != null ? feedbacks.get(0).getBenefit() : 0;
 	}
 
 	/**

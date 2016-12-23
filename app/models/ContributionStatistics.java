@@ -6,17 +6,22 @@ import io.swagger.annotations.ApiModel;
 @ApiModel(value="ContributionStatistics", description="Summarizes basic statistics on a contribution")
 public class ContributionStatistics extends AppCivistBaseModel {
 
+	public static final String STATISTICS_GROUP = "STATISTICS_GROUP";
+	public static final String STATISTICS_CONTRIBUTION = "STATISTICS_CONTRIBUTION";
+
 	private Long ups;
 	private Long downs;
 	private Long favs;
 	private Long flags;
 	private Long points;
 	private Long contributionId;
+	private Long groupId;
 	private Integer averageBenefit;
 	private Integer averageNeed;
 	private Integer averageFeasibility;
 	private Integer eligibilityTrue;
 	private Integer eligibilityFalse;
+	private String type;
 
 
 	public ContributionStatistics() {
@@ -30,6 +35,15 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	public ContributionStatistics(Long contributionId) {
 		super();
 		this.contributionId = contributionId;
+		this.type = STATISTICS_CONTRIBUTION;
+	}
+
+	public ContributionStatistics(Long groupId, Long contributionId) {
+		super();
+		this.contributionId = contributionId;
+		this.groupId = groupId;
+		this.type = STATISTICS_GROUP;
+
 	}
 
 	/*
@@ -37,52 +51,114 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	 */
 
 	public Long getUps() {
-		this.ups = ContributionFeedback.getUpsForContribution(this.contributionId);
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.ups = ContributionFeedback.getUpsForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.ups = ContributionFeedback.getUpsForGroup(this.groupId, this.contributionId);
+		}
+
 		return this.ups;
 	}
 
 	public Long getDowns() {
-		this.downs = ContributionFeedback.getDownsForContribution(this.contributionId);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.downs = ContributionFeedback.getDownsForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.downs = ContributionFeedback.getDownsForGroup(this.groupId, this.contributionId);
+		}
 		return this.downs;
 	}
 
 	public Long getFavs() {
-		this.favs = ContributionFeedback.getFavsForContribution(this.contributionId);
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.favs = ContributionFeedback.getFavsForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.favs = ContributionFeedback.getFavsForGroup(this.groupId, this.contributionId);
+		}
 		return this.favs;
 	}
 
 	public Long getFlags() {
-		this.flags = ContributionFeedback.getFlagsForContribution(this.contributionId);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.flags = ContributionFeedback.getFlagsForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.flags = ContributionFeedback.getFlagsForGroup(this.groupId, this.contributionId);
+		}
+
 		return this.flags;
 	}
 
 	public Long getPoints() {
-		this.points = ContributionFeedback.getPointsForContribution(this.contributionId);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.points = ContributionFeedback.getPointsForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.points = ContributionFeedback.getPointsForGroup(this.groupId, this.contributionId);
+		}
 		return this.points;
 	}
 
 	public Integer getAverageBenefit() {
-		this.averageBenefit = ContributionFeedback.getAverageBenefitForContribution(this.contributionId);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.averageBenefit = ContributionFeedback.getAverageBenefitForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.averageBenefit = ContributionFeedback.getAverageBenefitForGroup(this.groupId, this.contributionId);
+		}
 		return this.averageBenefit;
 	}
 
 	public Integer getAverageNeed() {
-		this.averageNeed = ContributionFeedback.getAverageNeedForContribution(this.contributionId);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.averageNeed = ContributionFeedback.getAverageNeedForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.averageNeed = ContributionFeedback.getAverageNeedForGroup(this.groupId, this.contributionId);
+		}
+
 		return this.averageNeed;
 	}
 
 	public Integer getAverageFeasibility() {
-		this.averageFeasibility = ContributionFeedback.getAverageFeasibilityForContribution(this.contributionId);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.averageFeasibility = ContributionFeedback.getAverageFeasibilityForContribution(this.contributionId);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.averageFeasibility = ContributionFeedback.getAverageFeasibilityForGroup(this.groupId, this.contributionId);
+		}
 		return this.averageFeasibility;
 	}
 
 	public Integer getEligibilityTrue() {
-		this.eligibilityTrue = ContributionFeedback.getElegibilityCountForContribution(this.contributionId, true);
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.eligibilityTrue = ContributionFeedback.getElegibilityCountForContribution(this.contributionId, true);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.eligibilityTrue = ContributionFeedback.getElegibilityCountForGroup(this.groupId, this.contributionId, true);
+		}
 		return this.eligibilityTrue;
 	}
 
 	public Integer getEligibilityFalse() {
-		this.eligibilityFalse = ContributionFeedback.getElegibilityCountForContribution(this.contributionId, false);
+
+
+		if(type.equals(STATISTICS_CONTRIBUTION)){
+			this.eligibilityFalse = ContributionFeedback.getElegibilityCountForContribution(this.contributionId, false);
+		}
+		if(type.equals(STATISTICS_GROUP)){
+			this.eligibilityFalse = ContributionFeedback.getElegibilityCountForGroup(this.groupId, this.contributionId, false);
+		}
 		return this.eligibilityFalse;
 	}
 }

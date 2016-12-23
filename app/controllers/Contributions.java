@@ -372,6 +372,36 @@ public class Contributions extends Controller {
     }
 
     /**
+     * GET       /api/assembly/:aid/campaign/:cid/group/:gid/contribution/:coid/stats
+     *
+     * @param aid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions statistics")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result readWGContributionStats(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "gud", value = "Group ID") Long gid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
+        try {
+            ContributionStatistics stats = new ContributionStatistics(gid, coid);
+            return ok(Json.toJson(stats));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error reading contribution stats: " + e.getMessage())));
+        }
+    }
+
+    /**
      * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback
      *
      * @param aid
