@@ -12,6 +12,12 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	private Long flags;
 	private Long points;
 	private Long contributionId;
+	private Integer averageBenefit;
+	private Integer averageNeed;
+	private Integer averageFeasibility;
+	private Integer eligibilityTrue;
+	private Integer eligibilityFalse;
+
 
 	public ContributionStatistics() {
 		super();
@@ -53,5 +59,30 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	public Long getPoints() {
 		this.points = ContributionFeedback.getPointsForContribution(this.contributionId);
 		return this.points;
+	}
+
+	public Integer getAverageBenefit() {
+		this.averageBenefit = ContributionFeedback.getAverageBenefitForContribution(this.contributionId);
+		return this.averageBenefit;
+	}
+
+	public Integer getAverageNeed() {
+		this.averageNeed = ContributionFeedback.getAverageNeedForContribution(this.contributionId);
+		return this.averageNeed;
+	}
+
+	public Integer getAverageFeasibility() {
+		this.averageFeasibility = ContributionFeedback.getAverageFeasibilityForContribution(this.contributionId);
+		return this.averageFeasibility;
+	}
+
+	public Integer getEligibilityTrue() {
+		this.eligibilityTrue = ContributionFeedback.getElegibilityCountForContribution(this.contributionId, true);
+		return this.eligibilityTrue;
+	}
+
+	public Integer getEligibilityFalse() {
+		this.eligibilityFalse = ContributionFeedback.getElegibilityCountForContribution(this.contributionId, false);
+		return this.eligibilityFalse;
 	}
 }

@@ -1,5 +1,8 @@
 package models;
 
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.RawSql;
+import com.avaje.ebean.RawSqlBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.ContributionFeedbackStatus;
@@ -246,6 +249,49 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 	public static ContributionFeedback findByContributionAndUserId(Long cid, Long userId) {
 		return find.where().eq("contributionId", cid).eq("archived", false).eq("userId", userId).findUnique();
+	}
+
+	public static Integer getAverageBenefitForContribution(Long contributionId) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, sum(t0.benefit) / count(contribution_id) as benefit from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		return where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findUnique().getBenefit();
+	}
+
+	public static Integer getAverageNeedForContribution(Long contributionId) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, sum(t0.need) / count(contribution_id) as need from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		return where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findUnique().getNeed();
+	}
+
+	public static Integer getAverageFeasibilityForContribution(Long contributionId) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, sum(t0.feasibility) / count(contribution_id) as feasibility from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		return where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findUnique().getFeasibility();
+	}
+
+	public static Integer getElegibilityCountForContribution(Long contributionId, boolean elegibility) {
+
+		ExpressionList<ContributionFeedback> where;
+		String rawQuery = "select contribution_id as id, count(elegibility) as benefit from contribution_feedback t0 " +
+				" group by contribution_id";
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+
+		List<ContributionFeedback> feedbacks = where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).eq("elegibility", elegibility).
+				findList();
+		return feedbacks != null && !feedbacks.isEmpty() ? feedbacks.get(0).getBenefit() : 0;
 	}
 
 	/**

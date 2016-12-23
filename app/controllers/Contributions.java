@@ -363,6 +363,7 @@ public class Contributions extends Controller {
             ContributionStatistics stats = new ContributionStatistics(coid);
             return ok(Json.toJson(stats));
         } catch (Exception e) {
+            e.printStackTrace();
             return internalServerError(Json
                     .toJson(new TransferResponseStatus(
                             ResponseStatus.SERVERERROR,
