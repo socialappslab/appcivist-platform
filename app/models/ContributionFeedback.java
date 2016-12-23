@@ -3,6 +3,7 @@ package models;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSqlBuilder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.ContributionFeedbackStatus;
@@ -59,6 +60,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	 * Finds all the archived feedbacks that are previous states of this feedback
 	 * @return
 	 */
+	@JsonIgnore
 	public List<ContributionFeedback> getContributionFeedbackHistory(){
 		return find.where().eq("contributionId", this.contributionId).eq("workingGroupId", workingGroupId).
 				eq("userId", this.userId).eq("status", this.status == null ? null : this.status.ordinal()).
@@ -309,5 +311,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				eq("userId", userId).eq("type", type == null ? null : type.ordinal()).
 				eq("status", status == null ? null : status.ordinal()).eq("archived", false).findList();
 
+	}
+
+	public static List<ContributionFeedback> getFeedbacksByContribution(Long contributionId) {
+		return find.where().eq("contributionId", contributionId).eq("archived", false).findList();
 	}
 }

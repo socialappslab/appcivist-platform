@@ -372,6 +372,65 @@ public class Contributions extends Controller {
     }
 
     /**
+     * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback
+     *
+     * @param aid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions statistics")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result readContributionFeedbacks(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
+        try {
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getFeedbacksByContribution(coid);
+            return ok(Json.toJson(feedbacks));
+        } catch (Exception e) {
+            Logger.error("Error retrieving feedbacks", e);
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error reading contribution stats: " + e.getMessage())));
+        }
+    }
+
+    /**
+     * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback/:fid
+     *
+     * @param aid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions statistics")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result readContributionFeedback(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "fid", value = "Feedback ID") Long fid) {
+        try {
+            ContributionFeedback feedback= ContributionFeedback.read(fid);
+            return ok(Json.toJson(feedback));
+        } catch (Exception e) {
+            Logger.error("Error retrieving feedbacks", e);
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error reading contribution stats: " + e.getMessage())));
+        }
+    }
+
+    /**
      * GET       /api/assembly/:aid/contribution/:cid/padid
      *
      * @param aid
@@ -1110,20 +1169,21 @@ public class Contributions extends Controller {
 	/* Update Endpoints */
 
     /**
-     * PUT       /api/assembly/:aid/contribution/:cid/feedback
+     * GET       /api/assembly/:aid/contribution/:cid/feedback
      *
      * @param aid
      * @param cid
      * @return
      */
     // TODO: REVIEW to evaluate if removing
+    // TODO: erased from routes
     @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, produces = "application/json", value = "Read contribution Feedback",
     		notes="Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "ContributionFeedback form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result readContributionFeedback(
+    public static Result readContributionFeedbackByUser(
     		@ApiParam(name="aid", value="Assembly ID") Long aid, 
     		@ApiParam(name="cid", value="Contribution ID") Long cid) {
         User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
