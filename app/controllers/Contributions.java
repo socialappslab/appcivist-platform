@@ -378,8 +378,8 @@ public class Contributions extends Controller {
      * @param cid
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json",
-            value = "Get contributions statistics")
+    @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions feedbacks")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
@@ -407,8 +407,8 @@ public class Contributions extends Controller {
      * @param cid
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json",
-            value = "Get contributions statistics")
+    @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, produces = "application/json",
+            value = "Get individual ContributionFeedback")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
