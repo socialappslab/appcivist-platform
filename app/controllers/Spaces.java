@@ -39,7 +39,7 @@ public class Spaces extends Controller {
         if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
             name = rs.getAssemblyResources().getName();
         } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-            name = rs.getWorkingGroupForum().getName();
+            name = rs.getWorkingGroupResources().getName();
         } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
             name = rs.getCampaign().getTitle();
         }
