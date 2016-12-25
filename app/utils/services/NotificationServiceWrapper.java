@@ -179,4 +179,5 @@ public class NotificationServiceWrapper {
         holder.setBody(Json.toJson(body));
         return holder;
     }
+
 }

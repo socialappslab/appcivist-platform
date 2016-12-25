@@ -1,26 +1,20 @@
 package controllers;
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.CampaignDelegate;
+import delegates.NotificationsDelegate;
+import delegates.ResourcesDelegate;
 import enums.ContributionTypes;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
+import exceptions.ConfigurationException;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
@@ -37,15 +31,13 @@ import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import com.avaje.ebean.Ebean;
-import com.feth.play.module.pa.PlayAuthenticate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-import delegates.CampaignDelegate;
-import delegates.ResourcesDelegate;
-import enums.ResourceTypes;
+import static play.data.Form.form;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -239,6 +231,11 @@ public class Campaigns extends Controller {
 				CampaignTransfer campaignTransfer = newCampaignForm.get();
 				CampaignTransfer newCampaign = CampaignDelegate.create(
 						campaignTransfer, campaignCreator, aid, templates);
+				try {
+					NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.CAMPAIGN.toString(), newCampaign);
+				} catch (ConfigurationException e) {
+					Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
+				}
 				Ebean.commitTransaction();
 				return ok(Json.toJson(newCampaign));
 			}
