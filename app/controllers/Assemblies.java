@@ -4,6 +4,9 @@ import static play.data.Form.form;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import delegates.NotificationsDelegate;
+import enums.ResourceSpaceTypes;
+import exceptions.ConfigurationException;
 import http.Headers;
 
 import java.net.URL;
@@ -202,6 +205,11 @@ public class Assemblies extends Controller {
 				try {
 					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates);
 					Ebean.commitTransaction();
+					try {
+						NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.ASSEMBLY.toString(), created);
+					} catch (ConfigurationException e) {
+						Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
+					}
 					return ok(Json.toJson(created));
 				} catch (Exception e) {
 					Logger.error(e.getStackTrace().toString());

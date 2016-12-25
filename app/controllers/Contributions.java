@@ -4,6 +4,7 @@ import static play.data.Form.form;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -754,7 +755,16 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-            
+
+            Logger.info("SE ENVIARA NOTIFICACION SI SON DEL TIPO IDEA O PROPOSAL: " + c.getType());
+            if(c.getType().equals(ContributionTypes.IDEA) ||
+                    c.getType().equals(ContributionTypes.PROPOSAL)){
+                try {
+                    NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.CONTRIBUTION.toString(), c);
+                } catch (ConfigurationException e) {
+                    Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
+                }
+            }
             // Signal a notification asynchronously
             Promise.promise(() -> { 
             	return NotificationsDelegate.newContributionInResourceSpace(rs, c);

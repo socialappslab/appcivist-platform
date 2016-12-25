@@ -5,9 +5,7 @@ import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
 import exceptions.ConfigurationException;
 import models.*;
-import models.transfer.NotificationSignalTransfer;
-import models.transfer.NotificationSubscriptionTransfer;
-import models.transfer.TransferResponseStatus;
+import models.transfer.*;
 import play.Logger;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -17,9 +15,118 @@ import play.mvc.Result;
 import utils.services.NotificationServiceWrapper;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
+import static enums.ResourceSpaceTypes.*;
+
 public class NotificationsDelegate {
+
+    public static HashMap<NotificationEventName, String> eventsTitleByType = new HashMap<>();
+    static {
+        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "New Campaign");
+        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "New Working Group");
+        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "New Voting Ballot");
+        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "New Milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "New Contribution Idea");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "New Contribution Proposal");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "New Contribution Discussion");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "New Contribution Comment");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "New Contribution note");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "New Contribution Post in Forum");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "New Contribution Feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "Updated Campaign");
+        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "Updated Working Group");
+        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "Updated Voting ballot");
+        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "Updated Milestone");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "Updated Contribution Idea");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "Updated Contribution Proposal");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "Updated Contribution Discussion");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "Updated Contribution Comment");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "Updated Contribution Note");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "Updated Contribution Post");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "Updated Contribution Feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "Updated Contribution History");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "Milestone Passed!");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "Upcoming Milestone");
+    }
+    public static NotificationEventName assemblyEvents[] = {
+            NotificationEventName.NEW_CAMPAIGN,
+            NotificationEventName.NEW_WORKING_GROUP,
+            NotificationEventName.NEW_VOTING_BALLOT,
+            NotificationEventName.NEW_CONTRIBUTION_IDEA,
+            NotificationEventName.NEW_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.NEW_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.NEW_CONTRIBUTION_COMMENT,
+            NotificationEventName.NEW_CONTRIBUTION_NOTE,
+            NotificationEventName.UPDATED_CAMPAIGN,
+            NotificationEventName.UPDATED_VOTING_BALLOT,
+            NotificationEventName.UPDATED_CONTRIBUTION_IDEA,
+            NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.UPDATED_CONTRIBUTION_COMMENT,
+            NotificationEventName.UPDATED_CONTRIBUTION_NOTE,
+            NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
+            NotificationEventName.MEMBER_JOINED
+    };
+    public static NotificationEventName campaignEvents[] = {NotificationEventName.NEW_WORKING_GROUP,
+            NotificationEventName.NEW_VOTING_BALLOT,
+            NotificationEventName.NEW_MILESTONE,
+            NotificationEventName.NEW_CONTRIBUTION_IDEA,
+            NotificationEventName.NEW_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.NEW_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.NEW_CONTRIBUTION_COMMENT,
+            NotificationEventName.NEW_CONTRIBUTION_NOTE,
+            NotificationEventName.NEW_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_CAMPAIGN,
+            NotificationEventName.UPDATED_VOTING_BALLOT,
+            NotificationEventName.UPDATED_MILESTONE,
+            NotificationEventName.UPDATED_CONTRIBUTION_IDEA,
+            NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.UPDATED_CONTRIBUTION_COMMENT,
+            NotificationEventName.UPDATED_CONTRIBUTION_NOTE,
+            NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
+            NotificationEventName.MILESTONE_PASSED,
+            NotificationEventName.MILESTONE_UPCOMING_IN_A_WEEK,
+            NotificationEventName.MILESTONE_UPCOMING_IN_A_DAY
+    };
+    public static NotificationEventName workingGroupEvents[] = {
+            NotificationEventName.NEW_VOTING_BALLOT,
+            NotificationEventName.NEW_CONTRIBUTION_IDEA,
+            NotificationEventName.NEW_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.NEW_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.NEW_CONTRIBUTION_COMMENT,
+            NotificationEventName.NEW_CONTRIBUTION_NOTE,
+            NotificationEventName.NEW_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_WORKING_GROUP,
+            NotificationEventName.UPDATED_VOTING_BALLOT,
+            NotificationEventName.UPDATED_MILESTONE,
+            NotificationEventName.UPDATED_CONTRIBUTION_IDEA,
+            NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.UPDATED_CONTRIBUTION_COMMENT,
+            NotificationEventName.UPDATED_CONTRIBUTION_NOTE,
+            NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY
+    };
+    public static NotificationEventName proposalEvents[] = {
+            NotificationEventName.NEW_CONTRIBUTION_IDEA,
+            NotificationEventName.NEW_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.NEW_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.NEW_CONTRIBUTION_COMMENT,
+            NotificationEventName.NEW_CONTRIBUTION_NOTE,
+            NotificationEventName.NEW_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_CONTRIBUTION_IDEA,
+            NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL,
+            NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION,
+            NotificationEventName.UPDATED_CONTRIBUTION_COMMENT,
+            NotificationEventName.UPDATED_CONTRIBUTION_NOTE,
+            NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK,
+            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY
+    };
 
 	/** 
 	 * Notify of a new contribution in a Resource Space
@@ -341,12 +448,8 @@ public class NotificationsDelegate {
 	
 	/**
 	 * Method to prepare a quick notificaiton event object and send it to the local notification endpoint that will prepare the full notificaiton 
-	 * and send the signal to the notification service 
-     * @param originType
-	 * @param eventName
-	 * @param originUUID
-	 * @param resourceUUID
-	 */
+	 * and send the signal to the notification service
+     */
 	private static NotificationSignalTransfer prepareNotificationSignal(NotificationEventSignal notificationEvent) {
 		NotificationSignalTransfer newNotificationSignal = new NotificationSignalTransfer();
 		
@@ -407,4 +510,72 @@ public class NotificationsDelegate {
 		}		
 		return eventName;
 	}
+
+    public static void createNotificationEvent(UUID uuid, NotificationEventName eventName, String title ) throws ConfigurationException {
+        NotificationServiceWrapper wrapper = new NotificationServiceWrapper();
+        NotificationEventTransfer net = new NotificationEventTransfer();
+        net.setEventId(uuid +"_"+ eventName);
+        net.setTitle(title);
+        wrapper.createNotificationEvent(net);
+    }
+
+    public static NotificationEventName[] getEventsByResourceType(String type) throws ConfigurationException {
+
+	    if(type.equals(ASSEMBLY.name())){
+            return assemblyEvents;
+        }
+        if(type.equals(WORKING_GROUP.name())){
+            return workingGroupEvents;
+        }
+        if(type.equals(CAMPAIGN.name())){
+            return campaignEvents;
+        }
+        if(type.equals(CONTRIBUTION.name())){
+            return proposalEvents;
+        }
+        return null;
+    }
+
+    public static void createNotificationEventsByType(String type, Object transfer) throws ConfigurationException {
+        if(type.equals(ASSEMBLY.name())){
+            NotificationEventName[] events = getEventsByResourceType(CAMPAIGN.name());
+            createAssemblyNotificationEvents(events, (AssemblyTransfer)transfer);
+        }
+        if(type.equals(WORKING_GROUP.name())){
+            NotificationEventName[] events = getEventsByResourceType(WORKING_GROUP.name());
+            createWorkingGroupNotificationEvents(events, (WorkingGroup) transfer);
+        }
+        if(type.equals(CAMPAIGN.name())){
+            NotificationEventName[] events = getEventsByResourceType(CAMPAIGN.name());
+            createCampaignNotificationEvents(events, (CampaignTransfer) transfer);
+        }
+        if(type.equals(CONTRIBUTION.name())){
+            NotificationEventName[] events = getEventsByResourceType(CONTRIBUTION.name());
+            createContributionNotificationEvents(events, (Contribution)transfer);
+        }
+    }
+
+    public static void createAssemblyNotificationEvents(NotificationEventName[] events, AssemblyTransfer newResource) throws ConfigurationException {
+        for(NotificationEventName e: events){
+            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
+        }
+    }
+
+    public static void createCampaignNotificationEvents(NotificationEventName[] events, CampaignTransfer newResource) throws ConfigurationException {
+        for(NotificationEventName e: events){
+            createNotificationEvent(newResource.getUuid(), e,  eventsTitleByType.get(e));
+        }
+    }
+
+    public static void createWorkingGroupNotificationEvents(NotificationEventName[] events, WorkingGroup newResource) throws ConfigurationException {
+        for(NotificationEventName e: events){
+            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
+        }
+    }
+
+    public static void createContributionNotificationEvents(NotificationEventName[] events, Contribution newResource) throws ConfigurationException {
+        for(NotificationEventName e: events){
+            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
+        }
+    }
 }
