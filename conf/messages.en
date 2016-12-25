@@ -195,3 +195,5 @@ notification.description.campaign.upcoming.milestone_passed={0} just passed (due
 notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
 notification.description.general.resource_updated={0} of {1} '{2}' was updated by {3}
 notification.description.general=There are news related to a {0} in {1} '{2}'
+
+appcivist.configuration.missing=Configurations not found in local.conf {0}

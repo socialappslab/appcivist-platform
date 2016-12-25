@@ -85,6 +85,9 @@ public class GlobalData {
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_RANKED_NUMBER_PROPOSALS = "component.voting.system.ranked.number-proposals";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_WINNERS = "component.voting.system.winners";
 	public static final String CONFIG_COMPONENT_VOTING_SYSTEM_WINNERS_FIXED_NUMBER = "component.voting.system.winners.fixed.number";
+	public static final String CONFIG_NOTIFICATION_DEFAULT_SERVER_BASE = "appcivist.services.notification.default.serverBaseUrl";
+	public static final String CONFIG_NOTIFICATION_DEFAULT_API_KEY = "appcivist.services.notification.default.apiKey";
+	public static final String MISSING_CONFIGURATION = "appcivist.configuration.missing";
 
 	public static final Integer DEFAULT_PAGE_SIZE = 16;
 }

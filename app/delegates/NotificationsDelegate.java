@@ -1,17 +1,10 @@
 package delegates;
 
-import java.util.Date;
-import java.util.UUID;
-
-import models.AppCivistBaseModel;
-import models.Assembly;
-import models.Campaign;
-import models.Component;
-import models.ComponentMilestone;
-import models.Contribution;
-import models.NotificationEventSignal;
-import models.ResourceSpace;
-import models.WorkingGroup;
+import enums.AppcivistResourceTypes;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
+import exceptions.ConfigurationException;
+import models.*;
 import models.transfer.NotificationSignalTransfer;
 import models.transfer.NotificationSubscriptionTransfer;
 import models.transfer.TransferResponseStatus;
@@ -22,9 +15,9 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.services.NotificationServiceWrapper;
-import enums.AppcivistResourceTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
+
+import java.util.Date;
+import java.util.UUID;
 
 public class NotificationsDelegate {
 
@@ -35,7 +28,7 @@ public class NotificationsDelegate {
 	 * @param c the contribution
 	 * @return the result from sending the signal to the notification service
 	 */
-	public static Result newContributionInResourceSpace(ResourceSpace rs, Contribution c) {
+	public static Result newContributionInResourceSpace(ResourceSpace rs, Contribution c) throws ConfigurationException {
 		Logger.info("NOTIFICATION: New contribution in RESOURCE SPACE of type '"+rs.getType()+"'");
 		ResourceSpaceTypes originType = rs.getType();
         NotificationEventName eventName = getContributionEventName(c);
@@ -65,7 +58,7 @@ public class NotificationsDelegate {
 	 * @param resource the contribution
 	 * @return the result from sending the signal to the notification service
 	 */
-	public static Result newContributionInAssembly(Assembly origin, Contribution resource) {
+	public static Result newContributionInAssembly(Assembly origin, Contribution resource) throws ConfigurationException {
 		Logger.info("NOTIFICATION: New contribution in ASSEMBLY of '"+origin.getName()+"'");
 		ResourceSpaceTypes originType = ResourceSpaceTypes.ASSEMBLY;
         NotificationEventName eventName = getContributionEventName(resource);
@@ -79,7 +72,7 @@ public class NotificationsDelegate {
 	 * @param resource the new contribution
 	 * @return the result from sending the signal to the notification service
 	 */
-	public static Object newContributionInContribution(Contribution origin, Contribution resource) {
+	public static Object newContributionInContribution(Contribution origin, Contribution resource) throws ConfigurationException {
 		Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '"+resource.getTitle()+"'");
 		ResourceSpaceTypes originType = ResourceSpaceTypes.CONTRIBUTION;
         NotificationEventName eventName = getContributionEventName(resource);
@@ -93,7 +86,7 @@ public class NotificationsDelegate {
 	 * @param resource the new contribution
 	 * @return the result from sending the signal to the notification service
 	 */
-	public static Object newContributionInCampaignComponent(Component origin, Contribution resource) {
+	public static Object newContributionInCampaignComponent(Component origin, Contribution resource) throws ConfigurationException {
 		Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '"+resource.getTitle()+"'");
 		ResourceSpaceTypes originType = ResourceSpaceTypes.COMPONENT;
         NotificationEventName eventName = getContributionEventName(resource);
@@ -107,7 +100,7 @@ public class NotificationsDelegate {
 	 * @param resource the new contribution
 	 * @return the result from sending the signal to the notification service
 	 */
-	public static Object newContributionInAssemblyGroup(WorkingGroup origin, Contribution resource) {
+	public static Object newContributionInAssemblyGroup(WorkingGroup origin, Contribution resource) throws ConfigurationException {
 		Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '"+resource.getTitle()+"'");
 		ResourceSpaceTypes originType = ResourceSpaceTypes.COMPONENT;
         NotificationEventName eventName = getContributionEventName(resource);
@@ -123,7 +116,7 @@ public class NotificationsDelegate {
 	 * @param resource the resource we are referring to in the notification
 	 * @return the result from sending the signal to the notification service
 	 */
-	public static Result signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName, AppCivistBaseModel origin, AppCivistBaseModel resource) {
+	public static Result signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName, AppCivistBaseModel origin, AppCivistBaseModel resource) throws ConfigurationException {
 		Logger.info("NOTIFICATION: Prepare the notification event details");
 		UUID originUUID = null;
 		String originName = "";
@@ -265,8 +258,9 @@ public class NotificationsDelegate {
 	
 	public static Result signalNotification(UUID origin,
 			ResourceSpaceTypes originType, String originName, NotificationEventName eventName,
-			String title, String text, UUID resourceUuid, String resourceTitle, String resourceText, 
-			Date notificationDate, String resourceType, String associatedUser) {
+			String title, String text
+			, UUID resourceUuid, String resourceTitle, String resourceText,
+			Date notificationDate, String resourceType, String associatedUser) throws ConfigurationException {
 		// 1. Prepare the notification event data
 		NotificationEventSignal notificationEvent = new NotificationEventSignal();
 		notificationEvent.setOrigin(origin);
@@ -306,7 +300,7 @@ public class NotificationsDelegate {
 		}
     }
 
-	public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) {
+	public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) throws ConfigurationException {
 		NotificationServiceWrapper ns = new NotificationServiceWrapper();
 		WSResponse response = ns.createNotificationSubscription(subscription);
 		// Relay response to requestor
@@ -319,20 +313,20 @@ public class NotificationsDelegate {
 		}
 	}
 	
-	public static Result unSubscribeToEvent(NotificationSubscriptionTransfer subscription) {
+	public static Result unSubscribeToEvent(NotificationSubscriptionTransfer subscription) throws ConfigurationException {
 		NotificationServiceWrapper ns = new NotificationServiceWrapper();
 		WSResponse response = ns.deleteSubscription(subscription);
 		// Relay response to requestor
 		if (response.getStatus() == 200) {
 			Logger.info("NOTIFICATION: Subscription deleted => "+response.getBody().toString());
-			return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created",response.getBody())));
+			return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription deleted",response.getBody())));
 		} else {
 			Logger.info("NOTIFICATION: Error while un-subscribing => "+response.getBody().toString());
-			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.asJson().toString())));
+			return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
 		}
 	}
 
-	public static Result listSubscriptions(String alertEndpoint) {
+	public static Result listSubscriptions(String alertEndpoint) throws ConfigurationException {
 		NotificationServiceWrapper ns = new NotificationServiceWrapper();
 		WSResponse response = ns.listSubscriptionPerAlertEndpoint(alertEndpoint);
 		// Relay response to requestor
@@ -348,7 +342,7 @@ public class NotificationsDelegate {
 	/**
 	 * Method to prepare a quick notificaiton event object and send it to the local notification endpoint that will prepare the full notificaiton 
 	 * and send the signal to the notification service 
-	 * @param originType
+     * @param originType
 	 * @param eventName
 	 * @param originUUID
 	 * @param resourceUUID
