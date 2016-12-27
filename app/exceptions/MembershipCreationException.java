@@ -9,9 +9,19 @@ import javax.xml.ws.Response;
 public class MembershipCreationException extends Exception {
 	ResponseStatus status;
 	JsonNode response;
+	String msg;
 
 	public MembershipCreationException() {
 		super();
+	}
+	public MembershipCreationException(ResponseStatus status, String message) {
+		super();
+		this.status = status;
+		this.msg = message;
+	}
+
+	public String getMessage(){
+		return msg;
 	}
 	public MembershipCreationException(ResponseStatus status, JsonNode node) {
 		super();

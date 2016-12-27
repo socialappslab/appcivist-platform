@@ -114,13 +114,17 @@ public class Memberships extends Controller {
                     return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
                 });
             }
-
-
             Ebean.commitTransaction();
             return ok(Json.toJson(m));
         } catch (MembershipCreationException e) {
             Ebean.rollbackTransaction();
-            if (e.getResponseStatus().equals(ResponseStatus.BADREQUEST))
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+            GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+            "Error " + e.getResponseStatus() + ": " + e.getMessage()));
+            return internalServerError(Json.toJson(responseBody));
+
+            /*if (e.getResponseStatus().equals(ResponseStatus.BADREQUEST))
                 return badRequest(e.getResponse());
             if (e.getResponseStatus().equals(ResponseStatus.NODATA))
                 return notFound(e.getResponse());
@@ -129,7 +133,7 @@ public class Memberships extends Controller {
             else if (e.getResponseStatus().equals(ResponseStatus.SERVERERROR))
                 return internalServerError(e.getResponse());
             else
-                return unauthorized(e.getResponse());
+                return unauthorized(e.getResponse());*/
         }
     }
 
@@ -891,7 +895,7 @@ public class Memberships extends Controller {
         if (r == null) {
             return m;
         } else {
-            throw new MembershipCreationException(r.getResponseStatus(), Json.toJson(r));
+            throw new MembershipCreationException(r.getResponseStatus(), r.getStatusMessage());
         }
     }
 
