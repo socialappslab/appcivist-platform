@@ -358,21 +358,7 @@ public class WorkingGroups extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             MembershipTransfer newMembership = newMembershipForm.get();
-            try {
-                Ebean.beginTransaction();
-                Result r = Memberships.createMembership(requestor, "group", id, type,
-                        newMembership.getUserId(), newMembership.getEmail(),
-                        newMembership.getDefaultRoleId(),
-                        newMembership.getDefaultRoleName());
-                return r;
-            } catch (MembershipCreationException e) {
-                Ebean.rollbackTransaction();
-                TransferResponseStatus responseBody = new TransferResponseStatus();
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-                        "Error: " + e.getMessage()));
-                return internalServerError(Json.toJson(responseBody));
-            }
+            return Memberships.createMemberShip(requestor, "group", newMembership, id);
         }
     }
 

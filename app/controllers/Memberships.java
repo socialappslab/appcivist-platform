@@ -7,6 +7,7 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.MembershipsDelegate;
+import delegates.NotificationsDelegate;
 import enums.*;
 import exceptions.MembershipCreationException;
 import http.Headers;
@@ -19,6 +20,7 @@ import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -100,6 +102,20 @@ public class Memberships extends Controller {
                     newMembership.getUserId(), newMembership.getEmail(),
                     newMembership.getDefaultRoleId(),
                     newMembership.getDefaultRoleName());
+            if(targetCollection.toUpperCase().equals("GROUP")){
+                WorkingGroup rs = WorkingGroup.read(targetCollectionId);
+                F.Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
+                });
+            }
+            if(targetCollection.toUpperCase().equals("ASSEMBLY")){
+                Assembly rs = Assembly.read(targetCollectionId);
+                F.Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
+                });
+            }
+
+
             Ebean.commitTransaction();
             return ok(Json.toJson(m));
         } catch (MembershipCreationException e) {
