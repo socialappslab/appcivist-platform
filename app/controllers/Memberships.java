@@ -102,13 +102,13 @@ public class Memberships extends Controller {
                     newMembership.getUserId(), newMembership.getEmail(),
                     newMembership.getDefaultRoleId(),
                     newMembership.getDefaultRoleName());
-            if(targetCollection.toUpperCase().equals("GROUP")){
+            if (targetCollection.toUpperCase().equals("GROUP")) {
                 WorkingGroup rs = WorkingGroup.read(targetCollectionId);
                 F.Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
                 });
             }
-            if(targetCollection.toUpperCase().equals("ASSEMBLY")){
+            if (targetCollection.toUpperCase().equals("ASSEMBLY")) {
                 Assembly rs = Assembly.read(targetCollectionId);
                 F.Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
@@ -120,8 +120,8 @@ public class Memberships extends Controller {
             Ebean.rollbackTransaction();
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
-            GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-            "Error " + e.getResponseStatus() + ": " + e.getMessage()));
+                    GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
+                    "Error " + e.getResponseStatus() + ": " + e.getMessage()));
             return internalServerError(Json.toJson(responseBody));
 
             /*if (e.getResponseStatus().equals(ResponseStatus.BADREQUEST))

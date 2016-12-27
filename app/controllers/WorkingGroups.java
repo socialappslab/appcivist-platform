@@ -265,6 +265,16 @@ public class WorkingGroups extends Controller {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
                     }
+
+
+                    WorkingGroup finalNewWorkingGroup = newWorkingGroup;
+                    Promise.promise(() -> {
+                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN,
+                                NotificationEventName.NEW_WORKING_GROUP,
+                                c,
+                                finalNewWorkingGroup);
+                    });
+
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
                     e.printStackTrace();
