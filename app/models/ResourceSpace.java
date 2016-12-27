@@ -21,6 +21,7 @@ import enums.CampaignTemplatesEnum;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
+import models.transfer.NotificationSignalTransfer;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)

@@ -4,6 +4,7 @@ import static play.data.Form.form;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.*;
 import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.Api;
@@ -81,15 +82,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionFeedbackTypes;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.MyRoles;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
-import enums.SupportedMembershipRegistration;
 import exceptions.MembershipCreationException;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
@@ -766,9 +758,14 @@ public class Contributions extends Controller {
                 }
             }
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
+            /*Promise.promise(() -> {
             	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            });
+            });*/
+            try{
+                NotificationsDelegate.newContributionInResourceSpace(rs, c);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
             
             return ok(Json.toJson(c));
         }
@@ -1312,6 +1309,11 @@ public class Contributions extends Controller {
 
                 ContributionFeedback.create(feedback);
 
+                Assembly rs = Assembly.read(aid);
+                Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, rs, feedback);
+                });
+
                 Ebean.commitTransaction();
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
@@ -1386,6 +1388,12 @@ public class Contributions extends Controller {
             }
             newContribution.setAuthors(authors);
             Contribution.update(newContribution);
+
+            ResourceSpace rs = Assembly.read(aid).getResources();
+            Promise.promise(() -> {
+                return NotificationsDelegate.updatedContributionInResourceSpace(rs, newContribution);
+            });
+
             return ok(Json.toJson(newContribution));
         }
     }
@@ -1424,6 +1432,10 @@ public class Contributions extends Controller {
             contributionFromDatabase.setModerationComment(moderated.getModerationComment());
             Contribution.update(contributionFromDatabase);
             Contribution.softDelete(contributionFromDatabase);
+            ResourceSpace rs = Assembly.read(aid).getResources();
+            Promise.promise(() -> {
+                return NotificationsDelegate.updatedContributionInResourceSpace(rs, contributionFromDatabase);
+            });
             return ok();
         }
     }
@@ -1443,7 +1455,12 @@ public class Contributions extends Controller {
     public static Result softDeleteContribution(
     		@ApiParam(name="aid", value="Assembly ID") Long aid, 
     		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
-    	Contribution.softDelete(contributionId);
+        Contribution c = Contribution.read(contributionId);
+        Contribution.softDelete(contributionId);
+        ResourceSpace rs = Assembly.read(aid).getResources();
+        Promise.promise(() -> {
+            return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
+        });
         return ok();
     }
 
@@ -1463,6 +1480,11 @@ public class Contributions extends Controller {
     		@ApiParam(name="aid", value="Assembly ID") Long aid, 
     		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
     	Contribution.softRecovery(contributionId);
+    	Contribution c = Contribution.read(contributionId);
+        ResourceSpace rs = Assembly.read(aid).getResources();
+        Promise.promise(() -> {
+            return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
+        });
         return ok();
     }
 

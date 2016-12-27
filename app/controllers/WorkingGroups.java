@@ -1,29 +1,20 @@
 package controllers;
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import delegates.CampaignDelegate;
+import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.NotificationsDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.ConfigurationException;
+import exceptions.MembershipCreationException;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
 import models.transfer.InvitationTransfer;
@@ -35,6 +26,7 @@ import play.Logger;
 import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F.Promise;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -43,17 +35,16 @@ import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import delegates.WorkingGroupsDelegate;
-import exceptions.MembershipCreationException;
 import utils.services.EtherpadWrapper;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static play.data.Form.form;
 
 @Api(value = "02 group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
@@ -184,6 +175,12 @@ public class WorkingGroups extends Controller {
                     } catch (ConfigurationException e) {
                         Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                     }
+
+                    Assembly assembly = Assembly.read(aid);
+                    WorkingGroup finalNewWorkingGroup = newWorkingGroup;
+                    Promise.promise(() -> {
+                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_WORKING_GROUP, assembly, finalNewWorkingGroup);
+                    });
 
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
@@ -521,6 +518,10 @@ public class WorkingGroups extends Controller {
         //Archive previous ballot
         currentBallot.setStatus(BallotStatus.ARCHIVED);
 
+        Promise.promise(() -> {
+            return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.NEW_VOTING_BALLOT, workingGroup, workingGroup);
+        });
+
         return ok(Json.toJson(newBallot));
     }
 
@@ -538,6 +539,9 @@ public class WorkingGroups extends Controller {
         Ballot ballot = Ballot.findByUUID(consensus);
         ballot.setStatus(BallotStatus.ARCHIVED);
         ballot.update();
+        Promise.promise(() -> {
+            return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.UPDATED_VOTING_BALLOT, workingGroup, workingGroup);
+        });
         return ok(Json.toJson(ballot));
     }
 

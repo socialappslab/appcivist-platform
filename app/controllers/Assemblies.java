@@ -322,22 +322,7 @@ public class Assemblies extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			MembershipTransfer newMembership = newMembershipForm.get();
-			try {
-				Ebean.beginTransaction();
-				Result r = Memberships.createMembership(requestor, "assembly", id,
-						type, newMembership.getUserId(), newMembership.getEmail(),
-						newMembership.getDefaultRoleId(),
-						newMembership.getDefaultRoleName());
-				Ebean.commitTransaction();
-				return r;
-			} catch (MembershipCreationException e) {
-				Ebean.rollbackTransaction();
-				TransferResponseStatus responseBody = new TransferResponseStatus();
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-						"Error: "+e.getMessage()));
-				return internalServerError(Json.toJson(responseBody));
-			}
+			return Memberships.createMemberShip(requestor, "assembly", newMembership,id);
 		}
 	}
 
