@@ -228,6 +228,13 @@ public class NotificationsDelegate {
         return signalNotification(originType, eventName, origin, resource);
     }
 
+    public static Object newContributionInCampaign(Campaign origin, Contribution resource) throws ConfigurationException {
+        Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '" + resource.getTitle() + "'");
+        ResourceSpaceTypes originType = ResourceSpaceTypes.COMPONENT;
+        NotificationEventName eventName = getNewContributionEventName(resource);
+        return signalNotification(originType, eventName, origin, resource);
+    }
+
     /**
      * Notify of a new contribution in a working group
      *

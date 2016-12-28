@@ -105,7 +105,7 @@ public class Memberships extends Controller {
             if (targetCollection.toUpperCase().equals("GROUP")) {
                 WorkingGroup rs = WorkingGroup.read(targetCollectionId);
                 F.Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.MEMBER_JOINED, rs, m);
                 });
             }
             if (targetCollection.toUpperCase().equals("ASSEMBLY")) {

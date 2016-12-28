@@ -107,7 +107,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findAssemblyContributions(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "space", value = "Resource space name within assembly from which we want to query contributions", allowableValues = "forum,resources", defaultValue = "forum") String space,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
         Assembly a = Assembly.read(aid);
@@ -135,16 +135,16 @@ public class Contributions extends Controller {
      * @param type
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", 
-    		produces = "application/json", value = "Get contributions in a component of a campaign within an assembly")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions in a component of a campaign within an assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findCampaignComponentContributions(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
-    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
-    		@ApiParam(name = "ciid", value = "Component ID") Long ciid, 
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "ciid", value = "Component ID") Long ciid,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
         Component c = Component.read(cid, ciid);
         ResourceSpace rs = null;
@@ -173,11 +173,11 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findCampaignContributions(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
-    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
-    	    @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
-        
-    	Campaign c = Campaign.read(cid);
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
+
+        Campaign c = Campaign.read(cid);
         ResourceSpace rs = null;
         if (c != null) {
             rs = c.getResources();
@@ -204,8 +204,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findAssemblyGroupContributions(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
-    		@ApiParam(name = "gid", value = "Working Group ID") Long gid, 
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "gid", value = "Working Group ID") Long gid,
             @ApiParam(name = "space", value = "Resource space name within the working group from which we want to query contributions", allowableValues = "forum,resources", defaultValue = "forum") String space,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note, discussion", defaultValue = "idea") String type) {
         WorkingGroup wg = WorkingGroup.read(gid);
@@ -236,8 +236,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findContribution(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
-    		@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution contribution = Contribution.read(contributionId);
         return ok(Json.toJson(contribution));
     }
@@ -249,16 +249,16 @@ public class Contributions extends Controller {
      * @param type
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", 
-    		value = "Get contributions in a specific Resource Space",
-    		notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions in a specific Resource Space",
+            notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result findResourceSpaceContributions(
-    		@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
-    		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
             @ApiParam(name = "by_text", value = "String") String byText,
             @ApiParam(name = "groups", value = "List") List<Integer> byGroup,
             @ApiParam(name = "themes", value = "List") List<Integer> byTheme,
@@ -266,7 +266,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
-        if(pageSize == null){
+        if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
         ResourceSpace rs = ResourceSpace.read(sid);
@@ -275,25 +275,25 @@ public class Contributions extends Controller {
 
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("containingSpaces", rs.getResourceSpaceId());
-        if(type != null && !type.isEmpty()){
+        if (type != null && !type.isEmpty()) {
             ContributionTypes mappedType = ContributionTypes.valueOf(type.toUpperCase());
             conditions.put("type", mappedType);
         }
-        if(byText != null && !byText.isEmpty()){
+        if (byText != null && !byText.isEmpty()) {
             conditions.put("by_text", byText);
         }
-        if(byGroup != null && !byGroup.isEmpty()){
+        if (byGroup != null && !byGroup.isEmpty()) {
             conditions.put("group", byGroup);
         }
-        if(byTheme != null && !byTheme.isEmpty()){
+        if (byTheme != null && !byTheme.isEmpty()) {
             conditions.put("theme", byTheme);
         }
-        if(sorting != null && !sorting.isEmpty()){
+        if (sorting != null && !sorting.isEmpty()) {
             conditions.put("sorting", sorting);
         }
-        if(all != null){
+        if (all != null) {
             contributions = ContributionsDelegate.findContributions(conditions, null, null);
-        }else{
+        } else {
             contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
         }
 
@@ -302,9 +302,8 @@ public class Contributions extends Controller {
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for {resource space}: " + sid + ", type=" + type)));
     }
-    
-    
-    
+
+
     /**
      * GET       /api/space/:sid/contribution
      *
@@ -312,23 +311,23 @@ public class Contributions extends Controller {
      * @param type
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", 
-    		value = "Get contributions in a specific Resource Space",
-    		notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions in a specific Resource Space",
+            notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result findResourceSpacePinnedContributions(
-    		@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
-    		@ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
-    	
-    	ContributionTypes mappedType = null; 
-    	if (type!=null)
-    		ContributionTypes.valueOf(type.toUpperCase());
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
+
+        ContributionTypes mappedType = null;
+        if (type != null)
+            ContributionTypes.valueOf(type.toUpperCase());
         List<Contribution> contributions = ContributionsDelegate.findPinnedContributionsInSpace(sid, mappedType);
-        if (contributions==null) {
-        	contributions = new ArrayList<Contribution>();
+        if (contributions == null) {
+            contributions = new ArrayList<Contribution>();
         }
         return contributions != null ? ok(Json.toJson(contributions))
                 : notFound(Json.toJson(new TransferResponseStatus(
@@ -342,16 +341,16 @@ public class Contributions extends Controller {
      * @param cid
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json", 
-    		value = "Get contributions statistics")
+    @ApiOperation(httpMethod = "GET", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json",
+            value = "Get contributions statistics")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result readContributionStats(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
-    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
-    		@ApiParam(name = "coid", value = "Contribution ID") Long coid) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
         try {
             ContributionStatistics stats = new ContributionStatistics(coid);
             return ok(Json.toJson(stats));
@@ -442,7 +441,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
             @ApiParam(name = "fid", value = "Feedback ID") Long fid) {
         try {
-            ContributionFeedback feedback= ContributionFeedback.read(fid);
+            ContributionFeedback feedback = ContributionFeedback.read(fid);
             return ok(Json.toJson(feedback));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -466,8 +465,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findContributionPadId(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
-    		@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution c = Contribution.read(contributionId);
         if (c != null) {
             Resource pad = c.getExtendedTextPad();
@@ -496,8 +495,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result findContributionComments(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
-    		@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution c = Contribution.read(contributionId);
         if (c != null) {
             List<Contribution> comments = Contribution.readCommentsOfSpace(c.getResourceSpaceId());
@@ -529,16 +528,16 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Integer") Integer page,
             @ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
         Contribution c = Contribution.read(contributionId);
-        if(c == null){
+        if (c == null) {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID " + contributionId + " not found")));
         }
-        if(pageSize == null){
+        if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
         List<Contribution> associatedContributions;
-        if(all != null){
+        if (all != null) {
             associatedContributions = c.getAssociatedContributions();
-        }else{
+        } else {
             associatedContributions = c.getPagedAssociatedContributions(page, pageSize);
         }
         return ok(Json.toJson(associatedContributions));
@@ -554,7 +553,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     // TODO: add API token support, some API enpoints must be available only for registered clients
     public static Result findContributionByUUID(
-    		@ApiParam(name="uuid", value="Contribution Universal ID") UUID uuid) {
+            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
         Contribution contribution;
         try {
             contribution = Contribution.readByUUID(uuid);
@@ -575,7 +574,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     // TODO: add API token support, some API enpoints must be available only for registered clients
     public static Result findResourceSpaceContributionsByUUID(
-            @ApiParam(name="uuid", value="Resource Space Universal ID") UUID uuid,
+            @ApiParam(name = "uuid", value = "Resource Space Universal ID") UUID uuid,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
             @ApiParam(name = "by_text", value = "String") String byText,
             @ApiParam(name = "groups", value = "List") List<Integer> byGroup,
@@ -584,7 +583,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
-        if(pageSize == null){
+        if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
         try {
@@ -634,23 +633,23 @@ public class Contributions extends Controller {
 
             return Results.ok(ret);
 
-        }catch(Exception e){
+        } catch (Exception e) {
             return badRequest(Json.toJson(Json
                     .toJson(new TransferResponseStatus("Error processing request"))));
         }
-        
+
     }
-    
+
     @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution by its Universal Resource Space ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     // TODO: add API token support, some API enpoints must be available only for registered clients
     public static Result findResourceSpacePinnedContributionsByUUID(
-            @ApiParam(name="uuid", value="Resource Space Universal ID") UUID uuid,
+            @ApiParam(name = "uuid", value = "Resource Space Universal ID") UUID uuid,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type) {
         ResourceSpace rs = ResourceSpace.readByUUID(uuid);
         ContributionTypes mappedType = null;
-        if (type!=null) 
-        	mappedType = ContributionTypes.valueOf(type.toUpperCase());
+        if (type != null)
+            mappedType = ContributionTypes.valueOf(type.toUpperCase());
         List<Contribution> contributions = ContributionsDelegate
                 .findPinnedContributionsInResourceSpace(rs, mappedType, ContributionStatus.PUBLISHED);
         return contributions != null ? ok(Json.toJson(contributions))
@@ -658,22 +657,23 @@ public class Contributions extends Controller {
                 "No contributions for {resource space}: " + uuid + ", type=" + type)));
     }
 
-	/**
-	 * GET       /api/assembly/:aid/contribution/:cid
-	 * @param aid
-	 * @param contributionId
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "GET", response = ContributionHistory.class, responseContainer = "List", produces = "application/json", value = "Get contributions change history")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class) })
+    /**
+     * GET       /api/assembly/:aid/contribution/:cid
+     *
+     * @param aid
+     * @param contributionId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionHistory.class, responseContainer = "List", produces = "application/json", value = "Get contributions change history")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
 //	@ApiImplicitParams({
 //			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result getContributionsChangeHistory(
-			@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
-			@ApiParam(name = "cid", value = "Contribution ID") Long contributionId) throws Exception{
-		List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(contributionId);
-		return ok(Json.toJson(contributionHistories));
-	}
+    public static Result getContributionsChangeHistory(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) throws Exception {
+        List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(contributionId);
+        return ok(Json.toJson(contributionHistories));
+    }
 
 
 
@@ -693,7 +693,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
-    public static Result createContributionInResourceSpaceWithId(@ApiParam(name="sid", value="Resource Space ID") Long sid) {
+    public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -749,8 +749,8 @@ public class Contributions extends Controller {
             }
 
             Logger.info("SE ENVIARA NOTIFICACION SI SON DEL TIPO IDEA O PROPOSAL: " + c.getType());
-            if(c.getType().equals(ContributionTypes.IDEA) ||
-                    c.getType().equals(ContributionTypes.PROPOSAL)){
+            if (c.getType().equals(ContributionTypes.IDEA) ||
+                    c.getType().equals(ContributionTypes.PROPOSAL)) {
                 try {
                     NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.CONTRIBUTION.toString(), c);
                 } catch (ConfigurationException e) {
@@ -759,14 +759,14 @@ public class Contributions extends Controller {
             }
             // Signal a notification asynchronously
             /*Promise.promise(() -> {
-            	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
+                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });*/
-            try{
+            try {
                 NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             return ok(Json.toJson(c));
         }
     }
@@ -785,8 +785,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createAssemblyContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name = "space", value = "Resource space name within assembly", allowableValues = "resources,forum", defaultValue = "resources") String space) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "space", value = "Resource space name within assembly", allowableValues = "resources,forum", defaultValue = "resources") String space) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -830,10 +830,10 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-            
+
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
-            	return NotificationsDelegate.newContributionInAssembly(a, c);
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInAssembly(a, c);
             });
             return ok(Json.toJson(c));
         }
@@ -854,9 +854,9 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createCampaignComponentContribution(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid,  
-    		@ApiParam(name = "cid", value = "Campaign ID") Long cid, 
-    		@ApiParam(name = "ciid", value = "Component ID") Long ciid) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "ciid", value = "Component ID") Long ciid) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -897,10 +897,10 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-            
+
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
-            	return NotificationsDelegate.newContributionInCampaignComponent(ci, c);
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInCampaignComponent(ci, c);
             });
             return ok(Json.toJson(c));
         }
@@ -921,9 +921,9 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createAssemblyGroupContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="gid", value="Working Group ID") Long gid, 
-    		@ApiParam(name="space", value="Resource Space within Working Group", allowableValues="resources, forum", defaultValue="resources") String space) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "gid", value = "Working Group ID") Long gid,
+            @ApiParam(name = "space", value = "Resource Space within Working Group", allowableValues = "resources, forum", defaultValue = "resources") String space) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -964,10 +964,10 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-            
+
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
-            	return NotificationsDelegate.newContributionInAssemblyGroup(wg, c);
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInAssemblyGroup(wg, c);
             });
             return ok(Json.toJson(c));
         }
@@ -987,8 +987,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createContributionComment(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long cid) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -1029,9 +1029,10 @@ public class Contributions extends Controller {
                 rs.update();
             }
 
+            ResourceSpace resourceSpace = Assembly.read(aid).getResources();
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
-            	return NotificationsDelegate.newContributionInContribution(c, cNew);
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInContribution(c, cNew);
             });
             return ok(Json.toJson(cNew));
         }
@@ -1044,13 +1045,13 @@ public class Contributions extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create Assembly forum post",
-    		notes="An Assembly Forum POST is a contribution of type FORUM_POST in the 'forum' resource space of an Assembly")
+            notes = "An Assembly Forum POST is a contribution of type FORUM_POST in the 'forum' resource space of an Assembly")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createAssemblyForumPost(@ApiParam(name="aid", value="Assembly ID") Long aid) {
+    public static Result createAssemblyForumPost(@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -1092,8 +1093,8 @@ public class Contributions extends Controller {
             }
 
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
-            	return NotificationsDelegate.newContributionInAssembly(a, cNew);
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInAssembly(a, cNew);
             });
             return ok(Json.toJson(cNew));
         }
@@ -1106,14 +1107,14 @@ public class Contributions extends Controller {
      * @param gid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Crete forum post in Working Group", 
-    		notes="A forum post is a contribution of type FORUM_POST in the the 'forum' resource space of the Working Group")
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Crete forum post in Working Group",
+            notes = "A forum post is a contribution of type FORUM_POST in the the 'forum' resource space of the Working Group")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createWorkingGroupForumPost(@ApiParam(name="aid", value="Assembly ID") Long aid, @ApiParam(name="gid", value="Working Group ID") Long gid) {
+    public static Result createWorkingGroupForumPost(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -1155,8 +1156,8 @@ public class Contributions extends Controller {
             }
 
             // Signal a notification asynchronously
-            Promise.promise(() -> { 
-            	return NotificationsDelegate.newContributionInAssemblyGroup(wg, c);
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInAssemblyGroup(wg, c);
             });
             return ok(Json.toJson(c));
         }
@@ -1170,15 +1171,15 @@ public class Contributions extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "POST", response = Resource.class, responseContainer = "List", produces = "application/json", value = "Add an attachment to a contribution",
-    		notes="An attachment is a RESOURCE (with an URL) added to the 'resources' resource space of a Contribution")
+            notes = "An attachment is a RESOURCE (with an URL) added to the 'resources' resource space of a Contribution")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Resource form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Attachment object", value = "Body of Contribution in JSON", required = true, dataType = "models.Resource", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result addAttachmentContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         // 1. read the new contribution data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Resource> newAttachmentForm = ATTACHMENT_FORM
@@ -1215,14 +1216,14 @@ public class Contributions extends Controller {
     // TODO: REVIEW to evaluate if removing
     // TODO: erased from routes
     @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, produces = "application/json", value = "Read contribution Feedback",
-    		notes="Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
+            notes = "Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "ContributionFeedback form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result readContributionFeedbackByUser(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long cid) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ContributionFeedback feedback = ContributionFeedback.findByContributionAndUserId(cid, user.getUserId());
         if (feedback != null) {
@@ -1242,16 +1243,16 @@ public class Contributions extends Controller {
      * @return
      */
     // TODO: REVIEW to evaluate if removing
-    @ApiOperation(httpMethod = "PUT", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json", value = "Update Feedback on a Contribution", 
-    		notes="Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
+    @ApiOperation(httpMethod = "PUT", response = ContributionStatistics.class, responseContainer = "List", produces = "application/json", value = "Update Feedback on a Contribution",
+            notes = "Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Statistics object", value = "Body of Contribution Statistics in JSON", required = true, dataType = "models.ContributionStatistics", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateContributionFeedback(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long cid) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
 
@@ -1272,19 +1273,20 @@ public class Contributions extends Controller {
 
                 //If we found a previous feedback, we set that feedback as archived
                 if (existingFeedbacks != null) {
-                    for(ContributionFeedback existingFeedback : existingFeedbacks){
+                    for (ContributionFeedback existingFeedback : existingFeedbacks) {
                         existingFeedback.setArchived(true);
                         existingFeedback.update();
                     }
 
+
                 }
 
                 //We have to do some authorization control
-                if(feedback.getWorkingGroupId() != null){
+                if (feedback.getWorkingGroupId() != null) {
                     //The user has to be member of working group
                     Membership m = MembershipGroup.findByUserAndGroupId(feedback.getUserId(), feedback.getWorkingGroupId());
                     List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MEMBER.getName());
-                    if(membershipRoles == null || membershipRoles.isEmpty()){
+                    if (membershipRoles == null || membershipRoles.isEmpty()) {
                         //Error
                         return internalServerError(Json
                                 .toJson(new TransferResponseStatus(
@@ -1292,10 +1294,10 @@ public class Contributions extends Controller {
                                         "User has to be member of working group")));
                     }
 
-                    if(feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()){
+                    if (feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()) {
                         //The user has to be coordinator of working group
                         membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-                        if(membershipRoles == null || membershipRoles.isEmpty()){
+                        if (membershipRoles == null || membershipRoles.isEmpty()) {
                             //Error
                             return internalServerError(Json
                                     .toJson(new TransferResponseStatus(
@@ -1305,13 +1307,24 @@ public class Contributions extends Controller {
                     }
                 }
 
-
-
                 ContributionFeedback.create(feedback);
 
-                Assembly rs = Assembly.read(aid);
+                //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
+                NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
+                Contribution c = Contribution.read(feedback.getContributionId());
+                for (Long campId : c.getCampaignIds()) {
+                    Campaign campaign = Campaign.read(campId);
+                    Promise.promise(() -> {
+                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
+                    });
+                }
+                feedback.getWorkingGroupId();
                 Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, rs, feedback);
+                    return NotificationsDelegate.signalNotification(
+                            ResourceSpaceTypes.WORKING_GROUP,
+                            eventName,
+                            WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
+                            feedback);
                 });
 
                 Ebean.commitTransaction();
@@ -1329,8 +1342,8 @@ public class Contributions extends Controller {
     }
 
     /**
-     *
      * PUT       /api/assembly/:aid/contributions/popularity
+     *
      * @return
      */
     @ApiOperation(httpMethod = "PUT", response = ContributionStatistics.class, produces = "application/json", value = "Response status")
@@ -1339,9 +1352,9 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateContributionsPopularity(
-            @ApiParam(name="aid", value="Assembly ID") Long aid){
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid) {
         List<Contribution> contributions = Contribution.findAll();
-        for(Contribution c : contributions){
+        for (Contribution c : contributions) {
             ContributionStatistics updatedStats = new ContributionStatistics(c.getContributionId());
             c.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
             c.update();
@@ -1364,8 +1377,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         // 1. read the new contribution data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
@@ -1405,7 +1418,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result moderateContribution(
-    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution id") Long contributionId) {
         // 1. read the new contribution data from the body
         // another way of getting the body content => request().body().asJson()
@@ -1453,8 +1466,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     //@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result softDeleteContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution c = Contribution.read(contributionId);
         Contribution.softDelete(contributionId);
         ResourceSpace rs = Assembly.read(aid).getResources();
@@ -1477,10 +1490,10 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result recoverContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
-    	Contribution.softRecovery(contributionId);
-    	Contribution c = Contribution.read(contributionId);
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
+        Contribution.softRecovery(contributionId);
+        Contribution c = Contribution.read(contributionId);
         ResourceSpace rs = Assembly.read(aid).getResources();
         Promise.promise(() -> {
             return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
@@ -1495,15 +1508,15 @@ public class Contributions extends Controller {
      * @param contributionId
      * @return
      */
-    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Delete a contribution (will remove it from the database)", 
-    		notes="Only for ADMINS")
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Delete a contribution (will remove it from the database)",
+            notes = "Only for ADMINS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result forceDeleteContribution(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-    		@ApiParam(name="cid", value="Contribution ID") Long contributionId) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution.delete(contributionId);
         return ok();
     }
@@ -1721,7 +1734,7 @@ public class Contributions extends Controller {
         // If contribution is a proposal and the resource space where it is added is a Campaign
         // create automatically a related candidate for the contribution in the bindingBallot
         // and consultiveBallot associated to the campaign.
-        if (containerResourceSpace !=null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
             UUID binding = Campaign.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
                     .getResourceSpaceId());
             UUID consultive = Campaign.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
@@ -1904,43 +1917,44 @@ public class Contributions extends Controller {
         return badRequest(Json.toJson(responseBody));
     }
 
-	/** IDEAS **/
-	/**
-	 * POST /api/assembly/:aid/contribution/ideas/import
-	 * Import ideas file
-	 * @param aid Assembly Id
-	 * @param cid Campaing Id
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
-			notes = "CSV format: idea title, idea summary, idea author, idea theme <br/>" +
-					"The values must be separated by coma (,). If the theme column has more than one theme, then it must be separated by dash (-).")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result importContributionsOld(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
-											 @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
-		Http.MultipartFormData body = request().body().asMultipartFormData();
-		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
-		Campaign campaign = null;
+    /** IDEAS **/
+    /**
+     * POST /api/assembly/:aid/contribution/ideas/import
+     * Import ideas file
+     *
+     * @param aid Assembly Id
+     * @param cid Campaing Id
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
+            notes = "CSV format: idea title, idea summary, idea author, idea theme <br/>" +
+                    "The values must be separated by coma (,). If the theme column has more than one theme, then it must be separated by dash (-).")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result importContributionsOld(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
+                                                @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        Campaign campaign = null;
 
-		if (uploadFilePart != null) {
-			try {
+        if (uploadFilePart != null) {
+            try {
                 campaign = Campaign.read(cid);
                 ResourceSpace rs = null;
                 if (campaign != null) {
                     rs = campaign.getResources();
                 }
-				//Ebean.beginTransaction();
-				// read csv file
-				BufferedReader br = null;
-				br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
-				String cvsSplitBy = ",";
-				String line = br.readLine();
-				while ((line = br.readLine()) != null) {
-				    System.out.println(line);
-					String[] cell = line.split(cvsSplitBy);
+                //Ebean.beginTransaction();
+                // read csv file
+                BufferedReader br = null;
+                br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+                String cvsSplitBy = ",";
+                String line = br.readLine();
+                while ((line = br.readLine()) != null) {
+                    System.out.println(line);
+                    String[] cell = line.split(cvsSplitBy);
                     Contribution c = new Contribution();
                     c.setTitle(cell[0]);
                     c.setText(cell[1]);
@@ -1950,7 +1964,7 @@ public class Contributions extends Controller {
                     List<Theme> themesList = new ArrayList<Theme>();
                     String themeSplitBy = "-";
                     String[] themes = cell[3].split(themeSplitBy);
-                    for(String theme: themes) {
+                    for (String theme : themes) {
                         Theme t = new Theme();
                         t.setTitle(theme);
                         themesList.add(t);
@@ -1960,10 +1974,10 @@ public class Contributions extends Controller {
 
                     Resource res = null;
 
-					switch (cell[5]) {
-						case "IDEA":
-							c.setType(ContributionTypes.IDEA);
-							break;
+                    switch (cell[5]) {
+                        case "IDEA":
+                            c.setType(ContributionTypes.IDEA);
+                            break;
                         case "PROPOSAL":
                             c.setType(ContributionTypes.PROPOSAL);
                             // Etherpad support
@@ -1985,9 +1999,9 @@ public class Contributions extends Controller {
                                 }
                             }
                             break;
-						default:
-							break;
-					}
+                        default:
+                            break;
+                    }
 
                     rs.addContribution(c);
                     ResourceSpace.update(rs);
@@ -2022,35 +2036,36 @@ public class Contributions extends Controller {
                         ContributionFeedback.create(cFeed);
                     }
 
-				}
-				//Ebean.commitTransaction();
-			} catch (EntityNotFoundException ex) {
-			    ex.printStackTrace();
+                }
+                //Ebean.commitTransaction();
+            } catch (EntityNotFoundException ex) {
+                ex.printStackTrace();
                 return internalServerError("The campaign doesn't exist");
             } catch (Exception e) {
-				//Ebean.rollbackTransaction();
+                //Ebean.rollbackTransaction();
                 e.printStackTrace();
-				return contributionFeedbackError(null, e.getLocalizedMessage());
-			}
-		}
-		return ok();
-	}
+                return contributionFeedbackError(null, e.getLocalizedMessage());
+            }
+        }
+        return ok();
+    }
 
-	/**
-	 * GET /api/assembly/:aid/contribution/ideas/export
-	 * Export ideas file
-	 * @param aid Assembly Id
-	 * @param cid Campaing Id
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export campaign ideas to a CSV file")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
-											 @ApiParam(value = "Campaign id") @PathParam("cid") Long cid) {
-		String csv = "idea title,idea summary,idea author,idea theme, source code, type\n";
-		Campaign campaign = null;
+    /**
+     * GET /api/assembly/:aid/contribution/ideas/export
+     * Export ideas file
+     *
+     * @param aid Assembly Id
+     * @param cid Campaing Id
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export campaign ideas to a CSV file")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
+                                             @ApiParam(value = "Campaign id") @PathParam("cid") Long cid) {
+        String csv = "idea title,idea summary,idea author,idea theme, source code, type\n";
+        Campaign campaign = null;
         try {
             campaign = Campaign.read(cid);
             ResourceSpace rs = null;
@@ -2058,21 +2073,21 @@ public class Contributions extends Controller {
                 rs = campaign.getResources();
                 List<Contribution> contributions = ContributionsDelegate
                         .findContributionsInResourceSpace(rs, null);
-                for (Contribution c: contributions) {
-                    csv = csv + (c.getTitle() != null ? c.getTitle() : "")  + ",";
+                for (Contribution c : contributions) {
+                    csv = csv + (c.getTitle() != null ? c.getTitle() : "") + ",";
                     csv = csv + (c.getAssessmentSummary() != null ? c.getAssessmentSummary() : "") + ",";
                     // TODO existing author
                     csv = csv + (c.getFirstAuthorName() != null ? c.getFirstAuthorName() : "");
                     csv = csv + ",";
                     int themeSize = c.getThemes().size();
-                    for(int i=0; i < themeSize; i++) {
+                    for (int i = 0; i < themeSize; i++) {
                         if (i > 0 && i < themeSize + 1) {
                             csv = csv + "-";
                         }
                         csv = csv + c.getThemes().get(i).getTitle();
                     }
                     csv = csv + "," + (c.getSourceCode() != null ? c.getSourceCode() : "");
-                    csv = csv + "," + c.getType().toString()  + "\n";
+                    csv = csv + "," + c.getType().toString() + "\n";
                 }
 
             }
@@ -2081,7 +2096,7 @@ public class Contributions extends Controller {
         }
 
         response().setContentType("application/csv");
-        response().setHeader("Content-disposition","attachment; filename=contributions.csv");
+        response().setHeader("Content-disposition", "attachment; filename=contributions.csv");
         File tempFile;
         try {
             tempFile = File.createTempFile("contributions.csv", ".tmp");
@@ -2091,27 +2106,28 @@ public class Contributions extends Controller {
             return internalServerError();
         }
 
-	}
+    }
 
 
     /**
      * POST /api/assembly/:aid/contribution/ideas/import
      * Import ideas file
+     *
      * @param aid Assembly Id
      * @param cid Campaing Id
      * @return
      */
     @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
             notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
-    @ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
-    		@ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
-			@ApiParam(value = "Campaign id") @PathParam("cid") Long cid,
-    		@ApiParam(name="type", value="Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
+            @ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
+            @ApiParam(value = "Campaign id") @PathParam("cid") Long cid,
+            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         Campaign campaign = Campaign.read(cid);
@@ -2122,339 +2138,341 @@ public class Contributions extends Controller {
                 br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
                 String cvsSplitBy = "\\t";
                 String line = br.readLine();
-            	Logger.debug("Importing record => "+line);
+                Logger.debug("Importing record => " + line);
                 switch (type) {
                     case "IDEA":
-                    	try {
-                    		Ebean.beginTransaction();
-                    		while ((line = br.readLine()) != null) {
-								String[] cell = line.split(cvsSplitBy);
-								Contribution c = new Contribution();
-								c.setType(ContributionTypes.IDEA);
-								
-								// Supported Format: 
-								// source_code	title	text	working group	categories	author	age	gender	creation_date
-								
-								// SET source_code	title	text
-								c.setSourceCode(cell[0]);
-								c.setTitle(cell[1]);
-								c.setText(cell[2].replaceAll("\n", ""));
-								Logger.info("Importing => Contribution => "+cell[0]);
-								if (cell.length>8) {	
-									String creationDate = cell [8];
-									DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-									Logger.info("Importing => date => "+creationDate);
-									
-									LocalDate ldt = LocalDate.parse(creationDate,formatter);
-									c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-									Logger.info("Importing => creating...");
-								}
-								
+                        try {
+                            Ebean.beginTransaction();
+                            while ((line = br.readLine()) != null) {
+                                String[] cell = line.split(cvsSplitBy);
+                                Contribution c = new Contribution();
+                                c.setType(ContributionTypes.IDEA);
 
-								// TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
-								if (cell.length>5) {	
-									// SET author	age	gender	creation_date
-									// get author name from cell 2
-									Logger.info("Importing => author => "+cell.length);
-									String author = cell[5];
-									Logger.info("Importing => author => "+author);
-									boolean createNonMember = false;
-									if (author != null && !author.equals("")) {
-										c.setFirstAuthorName(author);
-										List<User> authors = User.findByName(c.getFirstAuthorName());
-										// If more than one user matches the name
-										// criteria, we'll skip the author set up
-										if (authors != null && authors.size() == 1) {
-											c.getAuthors().add(authors.get(0));
-											Logger.info("The author was FOUND!");
-										} else {
-											createNonMember = true;
-										}
-									}
-									
-									if (createNonMember) {
-										Logger.info("Importing => non member author => "+author);
-										// Create a non member author
-										NonMemberAuthor nma = new NonMemberAuthor();
-										nma.setName(c.getFirstAuthorName());
-										if (cell.length>6) nma.setAge(new Integer(cell[6]));
-										if (cell.length>7) nma.setGender(cell[7]);
-										nma.save();
-										c.setNonMemberAuthor(nma);
-									}
-								}
+                                // Supported Format:
+                                // source_code	title	text	working group	categories	author	age	gender	creation_date
 
-								// SET categories	
-								// TODO: use some kind of string buffer to make this more efficient as strings are immutable
-								if (cell.length>4) {
-									String categoriesLine = cell [4];
-									String[] categories = categoriesLine.split(",");
-									List<Theme> existing = new ArrayList<>();
-									for (String category : categories) {
-										Logger.info("Importing => Category => "+category);
-										List<Theme> themes = campaign.filterThemesByTitle(category.trim());
-										Logger.info(themes.size()+" themes found thath match category "+category);
-										existing.addAll(themes);
-									}	
-									c.setExistingThemes(existing);
-								}
-								// Create the contribution
-								Contribution.create(c);
-								if (cell.length>3) {
-									// Add IDEA to Working Group
-									String wgName = cell[3];
-									Logger.info("Importing => wg => "+wgName);
-									WorkingGroup wg = WorkingGroup.readByName(wgName);
-									if (wg!=null) {
-										Logger.info("Addng contribution to WG => "+wgName);
-										wg.addContribution(c);
-										wg.update();
-									}
-								}
-                            	Logger.info("Adding contribution to campaign...");
-								campaign.getResources().addContribution(c);
-								campaign.update();
-								ContributionHistory.createHistoricFromContribution(c);
-								
-							}
+                                // SET source_code	title	text
+                                c.setSourceCode(cell[0]);
+                                c.setTitle(cell[1]);
+                                c.setText(cell[2].replaceAll("\n", ""));
+                                Logger.info("Importing => Contribution => " + cell[0]);
+                                if (cell.length > 8) {
+                                    String creationDate = cell[8];
+                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                                    Logger.info("Importing => date => " + creationDate);
+
+                                    LocalDate ldt = LocalDate.parse(creationDate, formatter);
+                                    c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                                    Logger.info("Importing => creating...");
+                                }
+
+
+                                // TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
+                                if (cell.length > 5) {
+                                    // SET author	age	gender	creation_date
+                                    // get author name from cell 2
+                                    Logger.info("Importing => author => " + cell.length);
+                                    String author = cell[5];
+                                    Logger.info("Importing => author => " + author);
+                                    boolean createNonMember = false;
+                                    if (author != null && !author.equals("")) {
+                                        c.setFirstAuthorName(author);
+                                        List<User> authors = User.findByName(c.getFirstAuthorName());
+                                        // If more than one user matches the name
+                                        // criteria, we'll skip the author set up
+                                        if (authors != null && authors.size() == 1) {
+                                            c.getAuthors().add(authors.get(0));
+                                            Logger.info("The author was FOUND!");
+                                        } else {
+                                            createNonMember = true;
+                                        }
+                                    }
+
+                                    if (createNonMember) {
+                                        Logger.info("Importing => non member author => " + author);
+                                        // Create a non member author
+                                        NonMemberAuthor nma = new NonMemberAuthor();
+                                        nma.setName(c.getFirstAuthorName());
+                                        if (cell.length > 6) nma.setAge(new Integer(cell[6]));
+                                        if (cell.length > 7) nma.setGender(cell[7]);
+                                        nma.save();
+                                        c.setNonMemberAuthor(nma);
+                                    }
+                                }
+
+                                // SET categories
+                                // TODO: use some kind of string buffer to make this more efficient as strings are immutable
+                                if (cell.length > 4) {
+                                    String categoriesLine = cell[4];
+                                    String[] categories = categoriesLine.split(",");
+                                    List<Theme> existing = new ArrayList<>();
+                                    for (String category : categories) {
+                                        Logger.info("Importing => Category => " + category);
+                                        List<Theme> themes = campaign.filterThemesByTitle(category.trim());
+                                        Logger.info(themes.size() + " themes found thath match category " + category);
+                                        existing.addAll(themes);
+                                    }
+                                    c.setExistingThemes(existing);
+                                }
+                                // Create the contribution
+                                Contribution.create(c);
+                                if (cell.length > 3) {
+                                    // Add IDEA to Working Group
+                                    String wgName = cell[3];
+                                    Logger.info("Importing => wg => " + wgName);
+                                    WorkingGroup wg = WorkingGroup.readByName(wgName);
+                                    if (wg != null) {
+                                        Logger.info("Addng contribution to WG => " + wgName);
+                                        wg.addContribution(c);
+                                        wg.update();
+                                    }
+                                }
+                                Logger.info("Adding contribution to campaign...");
+                                campaign.getResources().addContribution(c);
+                                campaign.update();
+                                ContributionHistory.createHistoricFromContribution(c);
+
+                            }
                         } catch (Exception e) {
-							Ebean.rollbackTransaction();
-							Logger.info(e.getLocalizedMessage());
-							e.printStackTrace();
-							return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
-						}
+                            Ebean.rollbackTransaction();
+                            Logger.info(e.getLocalizedMessage());
+                            e.printStackTrace();
+                            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+                        }
                         Ebean.commitTransaction();
                         break;
                     case "PROPOSAL":
-                    	Ebean.beginTransaction();
-                    	Logger.info("Beginning import transaction...");
-                    	try {
-                    		while ((line = br.readLine()) != null) {   
-                        		String[] cell = line.split(cvsSplitBy);
-								Contribution c = new Contribution();
-								c.setType(ContributionTypes.PROPOSAL);
-								// get source code from cell 1
-								c.setSourceCode(cell[0]);
-								// get title from cell 2
-								c.setTitle(cell[1]);
+                        Ebean.beginTransaction();
+                        Logger.info("Beginning import transaction...");
+                        try {
+                            while ((line = br.readLine()) != null) {
+                                String[] cell = line.split(cvsSplitBy);
+                                Contribution c = new Contribution();
+                                c.setType(ContributionTypes.PROPOSAL);
+                                // get source code from cell 1
+                                c.setSourceCode(cell[0]);
+                                // get title from cell 2
+                                c.setTitle(cell[1]);
 
-                            	Logger.info("Importing "+cell[1]+"...");
-								// get summary from cell 3 for ehterpad support we need aid & cid
-								String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
-								String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+                                Logger.info("Importing " + cell[1] + "...");
+                                // get summary from cell 3 for ehterpad support we need aid & cid
+                                String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+                                String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 
-								Resource res = new Resource();
-								if (cell[2] != null) {
-	                            	Logger.info("Creating etherpad...");
-									// set text, only first paragraph
-									String fullText = cell [2];
-									String[] paragraphs = fullText.split("\\.");
-									if (paragraphs!=null) {
-		                            	Logger.info("Copying first paragraph..."+paragraphs.length);
-		                            	Logger.info("Text: "+paragraphs[0]);
-										String text = paragraphs[0];
-										c.setText(text);
-									    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true, false);	
-									}
-								} else {
-	                            	Logger.info("Creating etherpad from template...");
-	                            	// use generic template
-								    List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
+                                Resource res = new Resource();
+                                if (cell[2] != null) {
+                                    Logger.info("Creating etherpad...");
+                                    // set text, only first paragraph
+                                    String fullText = cell[2];
+                                    String[] paragraphs = fullText.split("\\.");
+                                    if (paragraphs != null) {
+                                        Logger.info("Copying first paragraph..." + paragraphs.length);
+                                        Logger.info("Text: " + paragraphs[0]);
+                                        String text = paragraphs[0];
+                                        c.setText(text);
+                                        res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true, false);
+                                    }
+                                } else {
+                                    Logger.info("Creating etherpad from template...");
+                                    // use generic template
+                                    List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
 
-								    if (templates != null) {
-								        // if there are more than one, then use the last
-								        String padId = templates.get(templates.size() - 1).getPadId();
-								        EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
-								        String templateHtml = wrapper.getHTML(padId);
-								        // save the etherpad
-								        res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true, false);
-								    }
-								}
-								
-								if (res != null) {
-	                            	Logger.info("Adding etherpad to contribution...");
-								    c.setExtendedTextPad(res);
-								}
+                                    if (templates != null) {
+                                        // if there are more than one, then use the last
+                                        String padId = templates.get(templates.size() - 1).getPadId();
+                                        EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+                                        String templateHtml = wrapper.getHTML(padId);
+                                        // save the etherpad
+                                        res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true, false);
+                                    }
+                                }
 
-								// get wgroup from cell 4 & get resource space from wgroup
-								WorkingGroup wg = WorkingGroup.readByName(cell[3]);
-								if(wg != null){
-	                            	Logger.info("Adding contribution to working group...");
-								    wg.getResources().getContributions().add(c);
-								}else{
-								    Logger.info("working group with name '" + cell[3] + "' not found");
-								}
+                                if (res != null) {
+                                    Logger.info("Adding etherpad to contribution...");
+                                    c.setExtendedTextPad(res);
+                                }
 
-								// email authors
-								if (cell.length>4&&cell[4]!=null) {
-	                            	Logger.info("Adding authors...");
-									String [] emails = cell[4].split(",");
-									for (String email : emails) {
-										User u = User.findByEmail(email);
-										if (u!=null) {
-											c.getAuthors().add(u); 
-										}
-									}
-									
-								}
-								
-                            	Logger.info("Creating contribution...");
-								Contribution.create(c);
-								c.refresh();
-								
-								// get & create atachments from cells 5,6
-								List<Resource> resources = new ArrayList<>();
-								if (cell.length>5&&cell[5]!=null) {
-	                            	Logger.info("Adding attachments to contribution...");
-									String[] attachmentNames = cell[5].split(",");
-									String[] attachmentUrls = cell[6].split(","); 									
-									for (int i = 0; i < attachmentUrls.length; i++) {
-										String name = attachmentNames[i];
-										String url = attachmentUrls[i];
-										
-										if (name != null && !name.equals("")) {
-		                            	Logger.info("Adding attachment"+attachmentNames[i]+"...");
-											Resource resource = new Resource();
-									    	resource.setName(attachmentNames[i]);
-									    	Logger.info(attachmentNames[i]+" => "+attachmentUrls[i]);
-									    	resource.setUrl(new URL(attachmentUrls[i]));
-									    	resource.setResourceType(ResourceTypes.FILE);
-									    	resources.add(resource);
-										}
-									}
-								}
-								
-								Logger.info("URL Resources size: " + resources.size());
-								c.getAttachments().addAll(resources);
-								c.update();
-								
-								// get related contributions by source_code
-								List<Contribution> inspirations = new ArrayList<>();
-								if (cell.length>7&&cell[7]!=null) {
-	                            	Logger.info("Adding inspirations...");
-									for (String sourceCode : cell[7].split(",")) {
-		                            	Logger.info("Adding inspiration "+sourceCode+"...");
-									    // get source code from cell i
-									    Contribution contrib = Contribution.readBySourceCode(sourceCode);
-									    if (contrib != null) {
-									        inspirations.add(contrib);
-									    }
-									}
-									c.getAssociatedContributions().addAll(inspirations);
-								}
-								c.update();
-								
-								if(wg != null){
-								    wg.update();
-								}
+                                // get wgroup from cell 4 & get resource space from wgroup
+                                WorkingGroup wg = WorkingGroup.readByName(cell[3]);
+                                if (wg != null) {
+                                    Logger.info("Adding contribution to working group...");
+                                    wg.getResources().getContributions().add(c);
+                                } else {
+                                    Logger.info("working group with name '" + cell[3] + "' not found");
+                                }
 
-                            	Logger.info("Adding contribution to campaign...");
-								campaign.getResources().addContribution(c);
-								campaign.update();
+                                // email authors
+                                if (cell.length > 4 && cell[4] != null) {
+                                    Logger.info("Adding authors...");
+                                    String[] emails = cell[4].split(",");
+                                    for (String email : emails) {
+                                        User u = User.findByEmail(email);
+                                        if (u != null) {
+                                            c.getAuthors().add(u);
+                                        }
+                                    }
 
-								// TODO: is this correct? 
-                            	Logger.info("Updating history of contribution...");
-								ContributionHistory.createHistoricFromContribution(c);
-	                            for (Contribution inspiration : inspirations) {
-									ContributionHistory.createHistoricFromContribution(inspiration);
-								}
-                        	} 
+                                }
+
+                                Logger.info("Creating contribution...");
+                                Contribution.create(c);
+                                c.refresh();
+
+                                // get & create atachments from cells 5,6
+                                List<Resource> resources = new ArrayList<>();
+                                if (cell.length > 5 && cell[5] != null) {
+                                    Logger.info("Adding attachments to contribution...");
+                                    String[] attachmentNames = cell[5].split(",");
+                                    String[] attachmentUrls = cell[6].split(",");
+                                    for (int i = 0; i < attachmentUrls.length; i++) {
+                                        String name = attachmentNames[i];
+                                        String url = attachmentUrls[i];
+
+                                        if (name != null && !name.equals("")) {
+                                            Logger.info("Adding attachment" + attachmentNames[i] + "...");
+                                            Resource resource = new Resource();
+                                            resource.setName(attachmentNames[i]);
+                                            Logger.info(attachmentNames[i] + " => " + attachmentUrls[i]);
+                                            resource.setUrl(new URL(attachmentUrls[i]));
+                                            resource.setResourceType(ResourceTypes.FILE);
+                                            resources.add(resource);
+                                        }
+                                    }
+                                }
+
+                                Logger.info("URL Resources size: " + resources.size());
+                                c.getAttachments().addAll(resources);
+                                c.update();
+
+                                // get related contributions by source_code
+                                List<Contribution> inspirations = new ArrayList<>();
+                                if (cell.length > 7 && cell[7] != null) {
+                                    Logger.info("Adding inspirations...");
+                                    for (String sourceCode : cell[7].split(",")) {
+                                        Logger.info("Adding inspiration " + sourceCode + "...");
+                                        // get source code from cell i
+                                        Contribution contrib = Contribution.readBySourceCode(sourceCode);
+                                        if (contrib != null) {
+                                            inspirations.add(contrib);
+                                        }
+                                    }
+                                    c.getAssociatedContributions().addAll(inspirations);
+                                }
+                                c.update();
+
+                                if (wg != null) {
+                                    wg.update();
+                                }
+
+                                Logger.info("Adding contribution to campaign...");
+                                campaign.getResources().addContribution(c);
+                                campaign.update();
+
+                                // TODO: is this correct?
+                                Logger.info("Updating history of contribution...");
+                                ContributionHistory.createHistoricFromContribution(c);
+                                for (Contribution inspiration : inspirations) {
+                                    ContributionHistory.createHistoricFromContribution(inspiration);
+                                }
+                            }
                         } catch (Exception e) {
-							Ebean.rollbackTransaction();
-							Logger.info(e.getLocalizedMessage());
-							e.printStackTrace();
-							return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
-						}
+                            Ebean.rollbackTransaction();
+                            Logger.info(e.getLocalizedMessage());
+                            e.printStackTrace();
+                            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+                        }
                         Ebean.commitTransaction();
                         break;
                     default:
                         break;
                 }
             } catch (Exception e) {
-            	Logger.info(e.getLocalizedMessage());
-            	return contributionFeedbackError(null, e.getLocalizedMessage());
+                Logger.info(e.getLocalizedMessage());
+                return contributionFeedbackError(null, e.getLocalizedMessage());
             }
         }
         return ok();
     }
 
 
-
-	/**
-	 * POST /api/assembly/:aid/contribution/pad
-	 * Create a new Resource PROPOSAL from CONTRIBUTION_TEMPLATE
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result createContributionPad(
-			@ApiParam(name="aid", value="Assembly ID") String aid, 
-			@ApiParam(name="cid", value="Contribution ID") String cid) {
-		User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
-		String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
-		String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
-		// 1: find into campaign templates, 2: find into assembly templates, 3: find generic templates
+    /**
+     * POST /api/assembly/:aid/contribution/pad
+     * Create a new Resource PROPOSAL from CONTRIBUTION_TEMPLATE
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result createContributionPad(
+            @ApiParam(name = "aid", value = "Assembly ID") String aid,
+            @ApiParam(name = "cid", value = "Contribution ID") String cid) {
+        User campaignCreator = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+        String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+        // 1: find into campaign templates, 2: find into assembly templates, 3: find generic templates
         List<Resource> templates = ContributionsDelegate.getTemplates(aid, cid);
 
-		if (templates != null) {
-			// if there are more than one, then use the last
-			String padId = templates.get(templates.size() - 1).getPadId();
-			EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
-			String templateHtml = wrapper.getHTML(padId);
-			Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL, false, true);
-			//Create this relationship when the contribution is saved
-			//Assembly ass = Assembly.read(aid);
-			//ass.getResources().addResource(res);
-			//ass.update();
-			return ok(Json.toJson(res));
-		} else {
-			return internalServerError("There are no templates available");
-		}
+        if (templates != null) {
+            // if there are more than one, then use the last
+            String padId = templates.get(templates.size() - 1).getPadId();
+            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+            String templateHtml = wrapper.getHTML(padId);
+            Resource res = ResourcesDelegate.createResource(campaignCreator, templateHtml, ResourceTypes.PROPOSAL, false, true);
+            //Create this relationship when the contribution is saved
+            //Assembly ass = Assembly.read(aid);
+            //ass.getResources().addResource(res);
+            //ass.update();
+            return ok(Json.toJson(res));
+        } else {
+            return internalServerError("There are no templates available");
+        }
 
-	}
+    }
 
-	/**
-	 * PUT /api/assembly/:aid/contribution/pad
-	 * Confirm a Resource PROPOSAL
-	 * @param rid
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "No resource found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	public static Result confirmContributionPad(
-			@ApiParam(name="rid", value="Resource (that represents that PAD) ID") Long rid) {
-		Resource res = ResourcesDelegate.confirmResource(rid);
-		return ok(Json.toJson(res));
-	}
+    /**
+     * PUT /api/assembly/:aid/contribution/pad
+     * Confirm a Resource PROPOSAL
+     *
+     * @param rid
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Create a new Campaign")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result confirmContributionPad(
+            @ApiParam(name = "rid", value = "Resource (that represents that PAD) ID") Long rid) {
+        Resource res = ResourcesDelegate.confirmResource(rid);
+        return ok(Json.toJson(res));
+    }
 
     /**
      * PUT /api/assembly/:aid/contribution/:cid/:status
      * Confirm a Resource PROPOSAL
+     *
      * @param aid
      * @param cid
      * @param status
      * @return
      */
     @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")
-    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result updateContributionStatus(
-    		@ApiParam(name="aid", value="Assembly ID") Long aid, 
-			@ApiParam(name="cid", value="Contribution ID") Long cid,
-    		@ApiParam(name="status", value="New Status for the Contribution", allowableValues="NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid,
+            @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
-        if(ContributionStatus.valueOf(upStatus)!= null) {
+        if (ContributionStatus.valueOf(upStatus) != null) {
             c.setStatus(ContributionStatus.valueOf(upStatus));
             c.update();
             return ok(Json.toJson(c));
-        } else{
+        } else {
             return internalServerError("The status is not valid");
         }
     }
@@ -2466,10 +2484,10 @@ public class Contributions extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create an anonymous contribution within another contribution")
-    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Error creating contribution", response = TransferResponseStatus.class) })
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Error creating contribution", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContribution(@ApiParam(name="uuid", value="Universal ID of the target contribution") String uuid) {
+    public static Result createAnonymousContribution(@ApiParam(name = "uuid", value = "Universal ID of the target contribution") String uuid) {
         //TODO uuid from who? the contribution must be associated with the resource space at least
 
         // 1. read the new role data from the body
@@ -2513,10 +2531,10 @@ public class Contributions extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create an anonymous contribution in a campaign")
-    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContributionOnCampaign(@ApiParam(name="uuid", value="Universal ID of the target contribution") String uuid) {
+    public static Result createAnonymousContributionOnCampaign(@ApiParam(name = "uuid", value = "Universal ID of the target contribution") String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
@@ -2540,12 +2558,22 @@ public class Contributions extends Controller {
                 c = createContribution(newContribution, null, type, template, campaign.getResources());
                 campaign.getResources().getContributions().add(c);
                 campaign.getResources().update();
+                Promise.promise(() -> {
+                    return NotificationsDelegate.newContributionInResourceSpace(campaign.getResources(),
+                            c);
+                });
+
             } catch (Exception e) {
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
                                 "Error when creating Contribution: " + e.toString())));
             }
+
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInCampaign(campaign, c);
+            });
+
             return ok(Json.toJson(c));
         }
     }
@@ -2557,10 +2585,10 @@ public class Contributions extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create anonymous contribution in Assembly")
-    @ApiResponses(value = { @ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class) })
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContributionOnAssembly(@ApiParam(name="uuid", value="Universal ID of the target contribution") String uuid) {
+    public static Result createAnonymousContributionOnAssembly(@ApiParam(name = "uuid", value = "Universal ID of the target contribution") String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
@@ -2583,6 +2611,10 @@ public class Contributions extends Controller {
             Contribution c;
             try {
                 c = createContribution(newContribution, null, type, template, assembly.getResources());
+                Promise.promise(() -> {
+                    return NotificationsDelegate.newContributionInResourceSpace(assembly.getResources(), c);
+                });
+
             } catch (Exception e) {
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(

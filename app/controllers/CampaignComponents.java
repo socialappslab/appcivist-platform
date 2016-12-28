@@ -4,6 +4,7 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
+import enums.ComponentTypes;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -104,7 +105,6 @@ public class CampaignComponents extends Controller {
 			Component.update(newCampaignComponent);
 			Logger.info("Updating phase in campaign =>" + campaignId);
 			Logger.debug("=> " + newCampaignComponentForm.toString());
-
 
 			return ok(Json.toJson(newCampaignComponent));
 		}

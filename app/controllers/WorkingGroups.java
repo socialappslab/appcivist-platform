@@ -335,6 +335,12 @@ public class WorkingGroups extends Controller {
                 responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
                         + newWorkingGroup.getGroupId());
             }
+            Promise.promise(() -> {
+                return NotificationsDelegate.signalNotification(
+                        ResourceSpaceTypes.WORKING_GROUP,
+                        NotificationEventName.UPDATED_WORKING_GROUP,
+                        Assembly.read(aid).getResources(), newWorkingGroup);
+            });
 
             return ok(Json.toJson(responseBody));
         }
@@ -536,7 +542,18 @@ public class WorkingGroups extends Controller {
         ballot.setStatus(BallotStatus.ARCHIVED);
         ballot.update();
         Promise.promise(() -> {
-            return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.UPDATED_VOTING_BALLOT, workingGroup, workingGroup);
+            return NotificationsDelegate.signalNotification(
+                    ResourceSpaceTypes.WORKING_GROUP,
+                    NotificationEventName.UPDATED_VOTING_BALLOT,
+                    workingGroup,
+                    workingGroup);
+        });
+        Promise.promise(() -> {
+            return NotificationsDelegate.signalNotification(
+                    ResourceSpaceTypes.ASSEMBLY,
+                    NotificationEventName.UPDATED_VOTING_BALLOT,
+                    Assembly.read(aid).getResources(),
+                    workingGroup);
         });
         return ok(Json.toJson(ballot));
     }
@@ -604,7 +621,17 @@ public class WorkingGroups extends Controller {
             workingGroup.update();
             for (Contribution contribution : selectedContributionsList) {
                 ContributionHistory.createHistoricFromContribution(contribution);
+                Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(
+                            ResourceSpaceTypes.WORKING_GROUP,
+                            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
+                            workingGroup.getResources(),
+                            contribution);
+                });
             }
+
+
+
             return ok(Json.toJson(workingGroup));
         } catch (Exception e) {
             return badRequest(Json.toJson(Json
@@ -647,7 +674,10 @@ public class WorkingGroups extends Controller {
                 newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
                 proposal.addRevisionToContributionPublishHistory(newRevision);
             }
-
+            Promise.promise(() -> {
+                ResourceSpace wg = WorkingGroup.read(gid).getResources();
+                return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
+            });
 
             return ok(Json.toJson(newRevision));
         } catch (Exception e) {

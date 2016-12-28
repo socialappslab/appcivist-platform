@@ -562,6 +562,7 @@ public class Campaigns extends Controller {
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
             @ApiParam(name = "Resource ID", value = "Contribution Template") Long rid) {
         Resource res = ResourcesDelegate.confirmResource(rid);
+
         return ok(Json.toJson(res));
     }
 
@@ -584,6 +585,7 @@ public class Campaigns extends Controller {
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "rid", value = "Resource ID") Long resourceId) {
         Resource.delete(resourceId);
+
         return ok();
     }
 
