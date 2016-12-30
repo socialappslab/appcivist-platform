@@ -131,7 +131,7 @@ public class Notifications extends Controller {
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.MISSING_CONFIGURATION, e.getMessage()));
-                Logger.error("Configuration error: " ,e);
+                Logger.error("Configuration error: ", e);
                 return internalServerError(Json.toJson(responseBody));
             }
         }
@@ -158,7 +158,7 @@ public class Notifications extends Controller {
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.MISSING_CONFIGURATION, e.getMessage()));
-            Logger.error("Configuration error: " ,e);
+            Logger.error("Configuration error: ", e);
             return internalServerError(Json.toJson(responseBody));
         }
     }
@@ -177,7 +177,7 @@ public class Notifications extends Controller {
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.MISSING_CONFIGURATION, e.getMessage()));
-            Logger.error("Configuration error: " ,e);
+            Logger.error("Configuration error: ", e);
             return internalServerError(Json.toJson(responseBody));
         }
     }
@@ -318,4 +318,20 @@ public class Notifications extends Controller {
 
         return null;
     }
+
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for events in resource space", httpMethod = "POST")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result subscribeToResourceSpace(long sid) {
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        return NotificationsDelegate.manageSubscriptionToResourceSpace("SUBSCRIBE", rs, "email", subscriber);
+    }
+
+    public static Result unsubscribeToResourceSpace(long sid) {
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        return NotificationsDelegate.manageSubscriptionToResourceSpace("UNSUBSCRIBE", rs, "email", subscriber);    }
 }

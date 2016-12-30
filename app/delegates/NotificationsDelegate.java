@@ -15,6 +15,8 @@ import play.mvc.Result;
 import utils.GlobalData;
 import utils.services.NotificationServiceWrapper;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
@@ -73,7 +75,8 @@ public class NotificationsDelegate {
             NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
             NotificationEventName.MEMBER_JOINED
     };
-    public static NotificationEventName campaignEvents[] = {NotificationEventName.NEW_WORKING_GROUP,
+    public static NotificationEventName campaignEvents[] = {
+            NotificationEventName.NEW_WORKING_GROUP,
             NotificationEventName.NEW_VOTING_BALLOT,
             NotificationEventName.NEW_MILESTONE,
             NotificationEventName.NEW_CONTRIBUTION_IDEA,
@@ -147,7 +150,7 @@ public class NotificationsDelegate {
         return signalNotification(originType, eventName, origin, resource);
     }
 
-    public static AppCivistBaseModel getOriginByContribution(ResourceSpace rs, Contribution c){
+    public static AppCivistBaseModel getOriginByContribution(ResourceSpace rs, Contribution c) {
         AppCivistBaseModel origin = null;
         switch (rs.getType()) {
             case ASSEMBLY:
@@ -695,6 +698,67 @@ public class NotificationsDelegate {
     public static void createContributionNotificationEvents(NotificationEventName[] events, Contribution newResource) throws ConfigurationException {
         for (NotificationEventName e : events) {
             createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
+        }
+    }
+
+    public static Result manageSubscriptionToResourceSpace(String action, ResourceSpace rs, String endpointType, User subscriber) {
+
+        try {
+            NotificationEventName events[] = getEventsByResourceType(rs.getType().name());
+            HashMap<String, ArrayList<String>> results = new HashMap<>();
+            results.put("OK", new ArrayList<>());
+            results.put("ERROR", new ArrayList<>());
+
+            for (NotificationEventName e : events) {
+                Logger.info("NOTIFICATION: Subscription to => " + e);
+                NotificationSubscriptionTransfer n = new NotificationSubscriptionTransfer();
+                n.setEventName(e);
+                n.setOrigin(getOriginUuId(rs));
+                n.setEventIdFromOriginAndEventName();
+                n.setEndpointType(endpointType);
+                n.setAlertEndpoint(subscriber.getEmail());
+                NotificationServiceWrapper ns = new NotificationServiceWrapper();
+
+                WSResponse response;
+                if(action.equals("SUBSCRIBE")){
+                    response = ns.createNotificationSubscription(n);
+                }else{
+                    response = ns.deleteSubscription(n);
+                }
+                if (response.getStatus() == 200) {
+                    results.get("OK").add(n.getEventId());
+                    Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
+                    //return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
+                } else {
+                    results.get("ERROR").add(n.getEventId() + ": " + response.getBody().toString());
+                    Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
+                    //return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
+                }
+            }
+
+            return Controller.ok(Json.toJson(results));
+        } catch (Exception ce) {
+            Logger.error("NOTIFICATION: Error while subscribing => ", ce);
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.MISSING_CONFIGURATION, ce.getMessage()));
+            Logger.error("Configuration error: ", ce);
+            return Controller.internalServerError(Json.toJson(responseBody));
+        }
+    }
+
+    private static UUID getOriginUuId(ResourceSpace origin) throws Exception {
+        switch (origin.getType()) {
+            case ASSEMBLY:
+                return origin.getAssemblyResources().getUuid();
+            case CAMPAIGN:
+                return origin.getCampaign().getUuid();
+            case CONTRIBUTION:
+                return origin.getContribution().getUuid();
+            case WORKING_GROUP:
+                return origin.getWorkingGroupResources().getUuid();
+            default:
+                throw new Exception("Not matching resource space found: " + origin.getType());
         }
     }
 }
