@@ -1,5 +1,7 @@
 package delegates;
 
+import com.avaje.ebean.Model;
+import controllers.Notifications;
 import enums.AppcivistResourceTypes;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
@@ -15,7 +17,6 @@ import play.mvc.Result;
 import utils.GlobalData;
 import utils.services.NotificationServiceWrapper;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -658,46 +659,28 @@ public class NotificationsDelegate {
         return null;
     }
 
-    public static void createNotificationEventsByType(String type, Object transfer) throws ConfigurationException {
+    public static void createNotificationEventsByType(String type, UUID uuid) throws ConfigurationException {
         if (type.equals(ASSEMBLY.name())) {
             NotificationEventName[] events = getEventsByResourceType(CAMPAIGN.name());
-            createAssemblyNotificationEvents(events, (AssemblyTransfer) transfer);
+            createNotificationEvents(events, uuid);
         }
         if (type.equals(WORKING_GROUP.name())) {
             NotificationEventName[] events = getEventsByResourceType(WORKING_GROUP.name());
-            createWorkingGroupNotificationEvents(events, (WorkingGroup) transfer);
+            createNotificationEvents(events, uuid);
         }
         if (type.equals(CAMPAIGN.name())) {
             NotificationEventName[] events = getEventsByResourceType(CAMPAIGN.name());
-            createCampaignNotificationEvents(events, (CampaignTransfer) transfer);
+            createNotificationEvents(events, uuid);
         }
         if (type.equals(CONTRIBUTION.name())) {
             NotificationEventName[] events = getEventsByResourceType(CONTRIBUTION.name());
-            createContributionNotificationEvents(events, (Contribution) transfer);
+            createNotificationEvents(events, uuid);
         }
     }
 
-    public static void createAssemblyNotificationEvents(NotificationEventName[] events, AssemblyTransfer newResource) throws ConfigurationException {
+    public static void createNotificationEvents(NotificationEventName[] events, UUID uuid) throws ConfigurationException {
         for (NotificationEventName e : events) {
-            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
-        }
-    }
-
-    public static void createCampaignNotificationEvents(NotificationEventName[] events, CampaignTransfer newResource) throws ConfigurationException {
-        for (NotificationEventName e : events) {
-            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
-        }
-    }
-
-    public static void createWorkingGroupNotificationEvents(NotificationEventName[] events, WorkingGroup newResource) throws ConfigurationException {
-        for (NotificationEventName e : events) {
-            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
-        }
-    }
-
-    public static void createContributionNotificationEvents(NotificationEventName[] events, Contribution newResource) throws ConfigurationException {
-        for (NotificationEventName e : events) {
-            createNotificationEvent(newResource.getUuid(), e, eventsTitleByType.get(e));
+            createNotificationEvent(uuid, e, eventsTitleByType.get(e));
         }
     }
 
@@ -720,9 +703,9 @@ public class NotificationsDelegate {
                 NotificationServiceWrapper ns = new NotificationServiceWrapper();
 
                 WSResponse response;
-                if(action.equals("SUBSCRIBE")){
+                if (action.equals("SUBSCRIBE")) {
                     response = ns.createNotificationSubscription(n);
-                }else{
+                } else {
                     response = ns.deleteSubscription(n);
                 }
                 if (response.getStatus() == 200) {
@@ -760,5 +743,51 @@ public class NotificationsDelegate {
             default:
                 throw new Exception("Not matching resource space found: " + origin.getType());
         }
+    }
+
+    public static void createAllEventsforResourceSpace(String type) throws Exception {
+        NotificationEventName events[] = getEventsByResourceType(type);
+
+        switch (ResourceSpaceTypes.valueOf(type)) {
+            case ASSEMBLY:
+                Model.Finder<Long, Assembly> assemblyFinder = new Model.Finder<>(
+                        Assembly.class);
+                for (Assembly c : assemblyFinder.all()) {
+                    for (NotificationEventName n : events) {
+                        createNotificationEvent(c.getUuid(), n, eventsTitleByType.get(n));
+                    }
+                }
+                break;
+            case CAMPAIGN:
+                Model.Finder<Long, Campaign> campaignFinder = new Model.Finder<>(
+                        Campaign.class);
+                for (Campaign c : campaignFinder.all()) {
+                    for (NotificationEventName n : events) {
+                        createNotificationEvent(c.getUuid(), n, eventsTitleByType.get(n));
+                    }
+                }
+                break;
+            case CONTRIBUTION:
+                Model.Finder<Long, Contribution> contributionFinder = new Model.Finder<>(
+                        Contribution.class);
+                for (Contribution c : contributionFinder.all()) {
+                    for (NotificationEventName n : events) {
+                        createNotificationEvent(c.getUuid(), n, eventsTitleByType.get(n));
+                    }
+                }
+                break;
+            case WORKING_GROUP:
+                Model.Finder<Long, WorkingGroup> workingFinder = new Model.Finder<>(
+                        WorkingGroup.class);
+                for (WorkingGroup c : workingFinder.all()) {
+                    for (NotificationEventName n : events) {
+                        createNotificationEvent(c.getUuid(), n, eventsTitleByType.get(n));
+                    }
+                }
+                break;
+            default:
+                throw new Exception("Not matching resource space found: " + type);
+        }
+
     }
 }

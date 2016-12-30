@@ -57,6 +57,8 @@ POST      /api/notification/subscription                                  contro
 DELETE    /api/notification/subscription/:origin/:eventName               controllers.Notifications.unsubscribe(origin: java.util.UUID, eventName: String)
 GET       /api/notification/subscription/:sid                             controllers.Notifications.subscribeToResourceSpace(sid: Long)
 DELETE    /api/notification/subscription/:sid                             controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
+POST      /api/notification/events/:type                                  controllers.Notifications.createResourceSpaceEvents(type: String)
+
 ##################################################################################################################################################################
 # Assemblies API
 GET       /api/assembly                                                   controllers.Assemblies.findAssemblies(query ?="", filter ?= "")

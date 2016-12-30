@@ -253,7 +253,8 @@ public class Campaigns extends Controller {
                 CampaignTransfer newCampaign = CampaignDelegate.create(
                         campaignTransfer, campaignCreator, aid, templates);
                 try {
-                    NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.CAMPAIGN.toString(), newCampaign);
+                    NotificationsDelegate.createNotificationEventsByType(
+                            ResourceSpaceTypes.CAMPAIGN.toString(), newCampaign.getUuid());
                 } catch (ConfigurationException e) {
                     Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                 }

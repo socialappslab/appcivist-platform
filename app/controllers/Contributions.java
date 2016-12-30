@@ -752,7 +752,8 @@ public class Contributions extends Controller {
             if (c.getType().equals(ContributionTypes.IDEA) ||
                     c.getType().equals(ContributionTypes.PROPOSAL)) {
                 try {
-                    NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.CONTRIBUTION.toString(), c);
+                    NotificationsDelegate.createNotificationEventsByType(
+                            ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
                 } catch (ConfigurationException e) {
                     Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                 }

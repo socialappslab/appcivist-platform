@@ -67,7 +67,10 @@ public class GlobalData {
 	// External Services Constants
 	public final static String GRAVATAR_BASE_URL = "http://www.gravatar.com/avatar/";
 	public final static String ETHERPAD_BASE_URL = "http://localhost:9001/";
-	
+
+	//Notifications
+	public static String MISSING_RESOURCE_SPACE_TYPE = "resourceSpace.type";
+
 	// Config keys
 	public static final String CONFIG_ETHERPAD_SERVER = "component.proposal-making.etherpad-server";
 	public static final String CONFIG_ETHERPAD_API_KEY = "component.proposal-making.etherpad-api-key";

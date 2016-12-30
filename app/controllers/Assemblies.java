@@ -208,7 +208,8 @@ public class Assemblies extends Controller {
 					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates);
 					Ebean.commitTransaction();
 					try {
-						NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.ASSEMBLY.toString(), created);
+						NotificationsDelegate.createNotificationEventsByType(
+								ResourceSpaceTypes.ASSEMBLY.toString(), created.getUuid());
 					} catch (ConfigurationException e) {
 						Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
 					}

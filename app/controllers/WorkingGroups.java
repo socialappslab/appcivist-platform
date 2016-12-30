@@ -171,7 +171,8 @@ public class WorkingGroups extends Controller {
                         }
                     }
                     try {
-                        NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.WORKING_GROUP.toString(), newWorkingGroup);
+                        NotificationsDelegate.createNotificationEventsByType(
+                                ResourceSpaceTypes.WORKING_GROUP.toString(), newWorkingGroup.getUuid());
                     } catch (ConfigurationException e) {
                         Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                     }

@@ -330,8 +330,32 @@ public class Notifications extends Controller {
         return NotificationsDelegate.manageSubscriptionToResourceSpace("SUBSCRIBE", rs, "email", subscriber);
     }
 
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Unsubscribe to receive notifications for events in resource space", httpMethod = "POST")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result unsubscribeToResourceSpace(long sid) {
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace rs = ResourceSpace.read(sid);
         return NotificationsDelegate.manageSubscriptionToResourceSpace("UNSUBSCRIBE", rs, "email", subscriber);    }
+
+    public static Result createResourceSpaceEvents(String type) {
+        try{
+            NotificationsDelegate.createAllEventsforResourceSpace(type);
+            return ok();
+        }catch(ConfigurationException e){
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.MISSING_CONFIGURATION, e.getMessage()));
+            Logger.error("Configuration error: ", e);
+            return internalServerError(Json.toJson(responseBody));
+        }catch(Exception e){
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.MISSING_RESOURCE_SPACE_TYPE, type));
+            Logger.error("Configuration error: ", e);
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
 }
