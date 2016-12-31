@@ -1,29 +1,20 @@
 package controllers;
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import delegates.CampaignDelegate;
+import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.NotificationsDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.ConfigurationException;
+import exceptions.MembershipCreationException;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
 import models.transfer.InvitationTransfer;
@@ -35,6 +26,7 @@ import play.Logger;
 import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F.Promise;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -43,17 +35,16 @@ import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import delegates.WorkingGroupsDelegate;
-import exceptions.MembershipCreationException;
 import utils.services.EtherpadWrapper;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static play.data.Form.form;
 
 @Api(value = "02 group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
@@ -180,10 +171,17 @@ public class WorkingGroups extends Controller {
                         }
                     }
                     try {
-                        NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.WORKING_GROUP.toString(), newWorkingGroup);
+                        NotificationsDelegate.createNotificationEventsByType(
+                                ResourceSpaceTypes.WORKING_GROUP.toString(), newWorkingGroup.getUuid());
                     } catch (ConfigurationException e) {
                         Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                     }
+
+                    Assembly assembly = Assembly.read(aid);
+                    WorkingGroup finalNewWorkingGroup = newWorkingGroup;
+                    Promise.promise(() -> {
+                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_WORKING_GROUP, assembly, finalNewWorkingGroup);
+                    });
 
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
@@ -268,6 +266,16 @@ public class WorkingGroups extends Controller {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
                     }
+
+
+                    WorkingGroup finalNewWorkingGroup = newWorkingGroup;
+                    Promise.promise(() -> {
+                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN,
+                                NotificationEventName.NEW_WORKING_GROUP,
+                                c,
+                                finalNewWorkingGroup);
+                    });
+
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
                     e.printStackTrace();
@@ -328,6 +336,12 @@ public class WorkingGroups extends Controller {
                 responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
                         + newWorkingGroup.getGroupId());
             }
+            Promise.promise(() -> {
+                return NotificationsDelegate.signalNotification(
+                        ResourceSpaceTypes.WORKING_GROUP,
+                        NotificationEventName.UPDATED_WORKING_GROUP,
+                        Assembly.read(aid).getResources(), newWorkingGroup);
+            });
 
             return ok(Json.toJson(responseBody));
         }
@@ -361,21 +375,7 @@ public class WorkingGroups extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             MembershipTransfer newMembership = newMembershipForm.get();
-            try {
-                Ebean.beginTransaction();
-                Result r = Memberships.createMembership(requestor, "group", id, type,
-                        newMembership.getUserId(), newMembership.getEmail(),
-                        newMembership.getDefaultRoleId(),
-                        newMembership.getDefaultRoleName());
-                return r;
-            } catch (MembershipCreationException e) {
-                Ebean.rollbackTransaction();
-                TransferResponseStatus responseBody = new TransferResponseStatus();
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-                        "Error: " + e.getMessage()));
-                return internalServerError(Json.toJson(responseBody));
-            }
+            return Memberships.createMemberShip(requestor, "group", newMembership, id);
         }
     }
 
@@ -521,6 +521,10 @@ public class WorkingGroups extends Controller {
         //Archive previous ballot
         currentBallot.setStatus(BallotStatus.ARCHIVED);
 
+        Promise.promise(() -> {
+            return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.NEW_VOTING_BALLOT, workingGroup, workingGroup);
+        });
+
         return ok(Json.toJson(newBallot));
     }
 
@@ -538,6 +542,20 @@ public class WorkingGroups extends Controller {
         Ballot ballot = Ballot.findByUUID(consensus);
         ballot.setStatus(BallotStatus.ARCHIVED);
         ballot.update();
+        Promise.promise(() -> {
+            return NotificationsDelegate.signalNotification(
+                    ResourceSpaceTypes.WORKING_GROUP,
+                    NotificationEventName.UPDATED_VOTING_BALLOT,
+                    workingGroup,
+                    workingGroup);
+        });
+        Promise.promise(() -> {
+            return NotificationsDelegate.signalNotification(
+                    ResourceSpaceTypes.ASSEMBLY,
+                    NotificationEventName.UPDATED_VOTING_BALLOT,
+                    Assembly.read(aid).getResources(),
+                    workingGroup);
+        });
         return ok(Json.toJson(ballot));
     }
 
@@ -604,7 +622,17 @@ public class WorkingGroups extends Controller {
             workingGroup.update();
             for (Contribution contribution : selectedContributionsList) {
                 ContributionHistory.createHistoricFromContribution(contribution);
+                Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(
+                            ResourceSpaceTypes.WORKING_GROUP,
+                            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
+                            workingGroup.getResources(),
+                            contribution);
+                });
             }
+
+
+
             return ok(Json.toJson(workingGroup));
         } catch (Exception e) {
             return badRequest(Json.toJson(Json
@@ -647,7 +675,10 @@ public class WorkingGroups extends Controller {
                 newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
                 proposal.addRevisionToContributionPublishHistory(newRevision);
             }
-
+            Promise.promise(() -> {
+                ResourceSpace wg = WorkingGroup.read(gid).getResources();
+                return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
+            });
 
             return ok(Json.toJson(newRevision));
         } catch (Exception e) {

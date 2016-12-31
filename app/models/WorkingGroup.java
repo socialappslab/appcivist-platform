@@ -189,7 +189,6 @@ public class WorkingGroup extends AppCivistBaseModel {
 	
 		// 2. Create the new working group
 		workingGroup.save();
-
 		// 3. Add existing entities in relationships to the manytomany resources then update
 		ResourceSpace groupResources = workingGroup.getResources();
 		if (existingThemes != null && !existingThemes.isEmpty())

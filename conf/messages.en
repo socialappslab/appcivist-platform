@@ -197,3 +197,4 @@ notification.description.general.resource_updated={0} of {1} '{2}' was updated b
 notification.description.general=There are news related to a {0} in {1} '{2}'
 
 appcivist.configuration.missing=Configurations not found in local.conf {0}
+resourceSpace.type=Missing resource space type: {0}

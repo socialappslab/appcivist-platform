@@ -5,6 +5,7 @@ import static play.data.Form.form;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import delegates.NotificationsDelegate;
+import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
 import exceptions.ConfigurationException;
 import http.Headers;
@@ -25,6 +26,7 @@ import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -206,7 +208,8 @@ public class Assemblies extends Controller {
 					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates);
 					Ebean.commitTransaction();
 					try {
-						NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.ASSEMBLY.toString(), created);
+						NotificationsDelegate.createNotificationEventsByType(
+								ResourceSpaceTypes.ASSEMBLY.toString(), created.getUuid());
 					} catch (ConfigurationException e) {
 						Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
 					}
@@ -322,22 +325,7 @@ public class Assemblies extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			MembershipTransfer newMembership = newMembershipForm.get();
-			try {
-				Ebean.beginTransaction();
-				Result r = Memberships.createMembership(requestor, "assembly", id,
-						type, newMembership.getUserId(), newMembership.getEmail(),
-						newMembership.getDefaultRoleId(),
-						newMembership.getDefaultRoleName());
-				Ebean.commitTransaction();
-				return r;
-			} catch (MembershipCreationException e) {
-				Ebean.rollbackTransaction();
-				TransferResponseStatus responseBody = new TransferResponseStatus();
-				responseBody.setStatusMessage(Messages.get(
-						GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
-						"Error: "+e.getMessage()));
-				return internalServerError(Json.toJson(responseBody));
-			}
+			return Memberships.createMemberShip(requestor, "assembly", newMembership,id);
 		}
 	}
 
