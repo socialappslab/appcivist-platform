@@ -4,6 +4,8 @@ import static play.data.Form.form;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import enums.*;
 import exceptions.ConfigurationException;
 import http.Headers;
@@ -291,16 +293,27 @@ public class Contributions extends Controller {
         if (sorting != null && !sorting.isEmpty()) {
             conditions.put("sorting", sorting);
         }
-        if (all != null) {
+
+        if(all != null){
             contributions = ContributionsDelegate.findContributions(conditions, null, null);
-        } else {
+            return contributions != null ? ok(Json.toJson(contributions))
+                    : notFound(Json.toJson(new TransferResponseStatus(
+                    "No contributions for {resource space}: " + sid + ", type=" + type)));
+        }else{
             contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+            ObjectNode paginationInfo = Json.newObject();
+            paginationInfo.put("currentPage", page);
+            paginationInfo.put("total", contribs.size());
+            paginationInfo.put("pageSize", pageSize);
+            ObjectNode contributionsJson = Json.newObject();
+            contributionsJson.put("list", Json.toJson(contributions));
+            contributionsJson.put("pagination", paginationInfo);
+            return contributions != null ? ok(contributionsJson)
+                    : notFound(Json.toJson(new TransferResponseStatus(
+                    "No contributions for {resource space}: " + sid + ", type=" + type)));
         }
 
-
-        return contributions != null ? ok(Json.toJson(contributions))
-                : notFound(Json.toJson(new TransferResponseStatus(
-                "No contributions for {resource space}: " + sid + ", type=" + type)));
     }
 
 
