@@ -1,6 +1,8 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
+import models.misc.Views;
 
 
 @ApiModel(value="ContributionStatistics", description="Summarizes basic statistics on a contribution")
@@ -9,18 +11,29 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	public static final String STATISTICS_GROUP = "STATISTICS_GROUP";
 	public static final String STATISTICS_CONTRIBUTION = "STATISTICS_CONTRIBUTION";
 
+	@JsonView(Views.Public.class)
 	private Long ups;
+	@JsonView(Views.Public.class)
 	private Long downs;
+	@JsonView(Views.Public.class)
 	private Long favs;
+	@JsonView(Views.Public.class)
 	private Long flags;
+	@JsonView(Views.Public.class)
 	private Long points;
 	private Long contributionId;
 	private Long groupId;
+	@JsonView(Views.Public.class)
 	private Integer averageBenefit;
+	@JsonView(Views.Public.class)
 	private Integer averageNeed;
+	@JsonView(Views.Public.class)
 	private Integer averageFeasibility;
+	@JsonView(Views.Public.class)
 	private Integer eligibilityTrue;
+	@JsonView(Views.Public.class)
 	private Integer eligibilityFalse;
+	@JsonView(Views.Public.class)
 	private String type;
 
 

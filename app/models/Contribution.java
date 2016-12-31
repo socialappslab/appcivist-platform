@@ -101,6 +101,7 @@ public class Contribution extends AppCivistBaseModel {
     @Index
     private Location location;
 
+    @JsonView(Views.Public.class)
     @ManyToOne(cascade = CascadeType.ALL)
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
@@ -135,6 +136,7 @@ public class Contribution extends AppCivistBaseModel {
 
 
    // @JsonIgnore
+   @JsonView(Views.Public.class)
     @JsonManagedReference
     @Transient
     @ApiModelProperty(value="Working Groups to which this Contribution is associated")
@@ -148,6 +150,7 @@ public class Contribution extends AppCivistBaseModel {
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 
+    @JsonView(Views.Public.class)
     @Transient
     private ContributionStatistics stats = new ContributionStatistics(this.contributionId);
 

@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.URL;
@@ -12,6 +13,7 @@ import javax.persistence.Id;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -22,14 +24,19 @@ public class NonMemberAuthor extends Model {
     @GeneratedValue
     private Long id;
 
+    @JsonView(Views.Public.class)
     private String name;
 
+    @JsonView(Views.Public.class)
     private String email;
 
+    @JsonView(Views.Public.class)
     private URL url;
-    
-    private String gender; 
-    
+
+    @JsonView(Views.Public.class)
+    private String gender;
+
+    @JsonView(Views.Public.class)
     private Integer age; 
 
     /**
