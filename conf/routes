@@ -263,7 +263,7 @@ POST      /api/user/merge                                                 contro
 GET       /api/user/password/forgot                                       controllers.Users.forgotPassword(email: String ?= "")
 POST      /api/user/password/forgot                                       controllers.Users.doForgotPassword
 GET       /api/user/logout/redirect                                       controllers.Users.redirectAfterLogout
-
+POST      /api/site/verify                                                controllers.Secured.verifyRecaptcha(k: String)
 ##################################################################################################################################################################
 # Location endpoints
 GET       /api/location/:query                                            controllers.Locations.findLocations(query: String)

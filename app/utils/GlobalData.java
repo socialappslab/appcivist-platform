@@ -91,6 +91,8 @@ public class GlobalData {
 	public static final String CONFIG_NOTIFICATION_DEFAULT_SERVER_BASE = "appcivist.services.notification.default.serverBaseUrl";
 	public static final String CONFIG_NOTIFICATION_DEFAULT_API_KEY = "appcivist.services.notification.default.apiKey";
 	public static final String MISSING_CONFIGURATION = "appcivist.configuration.missing";
+	public static final String CONFIG_RECAPTCHA_SERVER_URL = "appcivist.services.recaptcha.serverURL";
+	public static final String CONFIG_RECAPTCHA_SECRET = "appcivist.services.recaptcha.secret";
 
 	public static final Integer DEFAULT_PAGE_SIZE = 16;
 }

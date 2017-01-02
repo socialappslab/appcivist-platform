@@ -1,12 +1,23 @@
 package controllers;
 
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import io.swagger.annotations.*;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.api.mvc.CookieBaker;
 import play.api.mvc.Session;
+import play.libs.F;
+import play.libs.Json;
+import play.libs.ws.WS;
+import play.libs.ws.WSRequest;
+import play.libs.ws.WSResponse;
 import play.mvc.*;
 //import play.mvc.Http.Session;
 import play.mvc.Http.Context;
 import service.PlayAuthenticateLocal;
+import service.RecaptchaVerify;
+import utils.GlobalData;
 import utils.LogActions;
 
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -16,6 +27,18 @@ import http.Headers;
 
 @With(Headers.class)
 public class Secured extends Security.Authenticator {
+
+	@ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Verify recaptcha", httpMethod = "POST")
+	@ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@Restrict({@Group(GlobalData.USER_ROLE)})
+	public static Result verifyRecaptcha(String k) {
+		Logger.info("RECIBIDO: " + k);
+		RecaptchaVerify rv = new RecaptchaVerify();
+		Result response = rv.verifyRecaptcha(k);
+		return response;
+	}
 
 	/**
 	 * getUsername returns the User's ID (i.e., its email for password providers)
