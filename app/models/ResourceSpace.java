@@ -161,6 +161,10 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
 	@JsonIgnore
 	private Contribution contribution;
+
+	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
+	@JsonIgnore
+	private Campaign campaignForum;
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
 	@JsonIgnore
@@ -290,6 +294,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public void addCampaign(Campaign c) {
 		if(!this.campaigns.contains(c))
 			this.campaigns.add(c);
+	}
+
+	public Campaign getCampaignForum() {
+		return campaignForum;
+	}
+
+	public void setCampaignForum(Campaign campaignForum) {
+		this.campaignForum = campaignForum;
 	}
 
 	public List<Config> getConfigs() {

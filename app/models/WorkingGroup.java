@@ -95,6 +95,13 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourcesResourceSpaceId;
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long forumResourceSpaceUuid;
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long resourcesResourceSpaceUuid;
  	
  	@JsonIgnore
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
@@ -493,6 +500,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public void setResourcesResourceSpaceId(Long id) {
 		if(this.resources!=null && this.resources.getResourceSpaceId() == null)
 			this.resources.setResourceSpaceId(id);
+	}
+
+	// Only getters for resource space uuids
+	public String getForumResourceSpaceUUId() {
+		return forum != null ? forum.getResourceSpaceUuid().toString() : null;
+	}
+	public String getResourcesResourceSpaceUUId() {
+		return resources != null ? resources.getResourceSpaceUuid().toString() : null;
 	}
 	
 	public List<Contribution> getProposals() {

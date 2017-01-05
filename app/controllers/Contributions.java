@@ -621,6 +621,7 @@ public class Contributions extends Controller {
                 conditions.put("sorting", sorting);
             }
 
+            //javier
             if (all != null) {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null);
             } else {
@@ -644,7 +645,20 @@ public class Contributions extends Controller {
                 }
             };
 
-            return Results.ok(ret);
+            if(all != null){
+                return Results.ok(ret);
+            }else{
+                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+                ObjectNode paginationInfo = Json.newObject();
+                paginationInfo.put("currentPage", page);
+                paginationInfo.put("total", contribs.size());
+                paginationInfo.put("pageSize", pageSize);
+                ObjectNode contributionsJson = Json.newObject();
+                contributionsJson.put("list", Json.toJson(ret));
+                contributionsJson.put("pagination", paginationInfo);
+                return Results.ok(contributionsJson);
+            }
+            //return Results.ok(ret);
 
         } catch (Exception e) {
             return badRequest(Json.toJson(Json
@@ -2548,7 +2562,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContributionOnCampaign(@ApiParam(name = "uuid", value = "Universal ID of the target contribution") String uuid) {
+    public static Result createAnonymousContributionOnCampaign(@ApiParam(name = "uuid", value = "Universal ID of the target campaign") String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
@@ -2572,12 +2586,21 @@ public class Contributions extends Controller {
                 c = createContribution(newContribution, null, type, template, campaign.getResources());
                 campaign.getResources().getContributions().add(c);
                 campaign.getResources().update();
+                if (type == ContributionTypes.COMMENT || type == ContributionTypes.DISCUSSION) {
+                    if (campaign.getForum().getContributions() == null) {
+                        campaign.getForum().setContributions(new ArrayList<Contribution>());
+                    }
+                    campaign.getForum().getContributions().add(c);
+                    campaign.getForum().update();
+                }
+
                 Promise.promise(() -> {
                     return NotificationsDelegate.newContributionInResourceSpace(campaign.getResources(),
                             c);
                 });
 
             } catch (Exception e) {
+                e.printStackTrace();
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
@@ -2586,6 +2609,69 @@ public class Contributions extends Controller {
 
             Promise.promise(() -> {
                 return NotificationsDelegate.newContributionInCampaign(campaign, c);
+            });
+
+            return ok(Json.toJson(c));
+        }
+    }
+
+    /**
+     * POST       /api/group/:uuid/contribution
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create an anonymous contribution in a working group")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContributionOnWGroup(@ApiParam(name = "uuid", value = "Universal ID of the target working group") String uuid) {
+        // 1. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
+            ContributionTypes type = newContribution.getType();
+            if (type == null) {
+                type = ContributionTypes.COMMENT;
+            }
+
+            WorkingGroup wgroup = WorkingGroup.readByUUID(UUID.fromString(uuid));
+
+            ContributionTemplate template = null;
+            Contribution c;
+            try {
+                c = createContribution(newContribution, null, type, template, wgroup.getResources());
+                wgroup.getResources().getContributions().add(c);
+                wgroup.getResources().update();
+                if (type == ContributionTypes.COMMENT || type == ContributionTypes.DISCUSSION) {
+                    if (wgroup.getForum().getContributions() == null) {
+                        wgroup.getForum().setContributions(new ArrayList<Contribution>());
+                    }
+                    wgroup.getForum().getContributions().add(c);
+                    wgroup.getForum().update();
+                }
+
+                Promise.promise(() -> {
+                    return NotificationsDelegate.newContributionInResourceSpace(wgroup.getResources(),
+                            c);
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error when creating Contribution: " + e.toString())));
+            }
+
+            Promise.promise(() -> {
+                return NotificationsDelegate.newContributionInAssemblyGroup(wgroup, c);
             });
 
             return ok(Json.toJson(c));

@@ -55,6 +55,12 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnore
 	private ResourceSpace resources;
+
+	@JsonIgnore
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
+
 	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="campaign")
 //	@JsonInclude(Include.NON_EMPTY)
 //	@JsonManagedReference
@@ -69,6 +75,14 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
 	private Long resourceSpaceUUId;
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long forumResourceSpaceId;
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private Long forumResourceSpaceUuid;
+
 	@Transient
 	//@JsonView(Views.Public.class)
 	@JsonIgnore
@@ -287,11 +301,33 @@ String uuidAsString, List<Component> phases) {
 	
 	public void setResourceSpaceId(Long id) {
 		if (this.resources !=null && this.resources.getResourceSpaceId() == null) 
-			this.resources .setResourceSpaceId(id);
+			this.resources.setResourceSpaceId(id);
 	}
 
 	public String getResourceSpaceUUId() {
 		return resources != null ? resources.getResourceSpaceUuid().toString() : null;
+	}
+
+	// Forum resource space (id & uuid)
+	public ResourceSpace getForum() {
+		return forum;
+	}
+
+	public void setForum(ResourceSpace forum) {
+		this.forum = forum;
+	}
+
+	public Long getForumResourceSpaceId() {
+		return forum != null ? forum.getResourceSpaceId() : null;
+	}
+
+	public void setForumResourceSpaceId(Long id) {
+		if (this.forum !=null && this.forum.getResourceSpaceId() == null)
+			this.forum.setResourceSpaceId(id);
+	}
+
+	public String getForumResourceSpaceUUId() {
+		return forum != null ? forum.getResourceSpaceUuid().toString() : null;
 	}
 
 	public List<Component> getComponents() {

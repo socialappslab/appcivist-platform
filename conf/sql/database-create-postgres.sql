@@ -1273,3 +1273,12 @@ create table contribution_publish_history(
 alter table contribution add column popularity integer;
 alter table contribution add column pinned boolean default false;
 alter table log add column remote_address varchar(255);
+
+
+--18.sql
+ALTER TABLE campaign add column forum_resource_space_id integer;
+
+ALTER TABLE campaign
+  ADD CONSTRAINT fk_campaign_forum FOREIGN KEY (forum_resource_space_id)
+      REFERENCES public.resource_space (resource_space_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE;
