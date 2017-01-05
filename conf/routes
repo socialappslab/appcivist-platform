@@ -233,7 +233,7 @@ PUT       /api/assembly/:aid/contribution/:cid/:status                    contro
 #support for non-member author contributions
 POST      /api/assembly/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
 POST      /api/campaign/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
-POST      /api/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWGroup(uuid: String)
+POST      /api/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWorkingGroup(uuid: String)
 POST      /api/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
 
 #import/export contributions, type=IDEA

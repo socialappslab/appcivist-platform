@@ -2625,7 +2625,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
-    public static Result createAnonymousContributionOnWGroup(@ApiParam(name = "uuid", value = "Universal ID of the target working group") String uuid) {
+    public static Result createAnonymousContributionOnWorkingGroup(@ApiParam(name = "uuid", value = "Universal ID of the target working group") String uuid) {
         // 1. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
