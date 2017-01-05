@@ -59,6 +59,7 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonView(Views.Public.class)
 	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.CAMPAIGN);
 
 	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL, mappedBy="campaign")
@@ -68,9 +69,11 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonIgnore
 	@OrderBy("start DESC")
 	private List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
+
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
+
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
@@ -79,9 +82,11 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long forumResourceSpaceId;
+
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private Long forumResourceSpaceUuid;
+	@JsonView(Views.Public.class)
+	private Long forumResourceSpaceUUId;
 
 	@Transient
 	//@JsonView(Views.Public.class)

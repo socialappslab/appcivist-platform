@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonView;
 import enums.*;
 import exceptions.ConfigurationException;
 import http.Headers;
@@ -294,6 +295,7 @@ public class Contributions extends Controller {
             conditions.put("sorting", sorting);
         }
 
+        PaginatedContribution pag = new PaginatedContribution();
         if(all != null){
             contributions = ContributionsDelegate.findContributions(conditions, null, null);
             return contributions != null ? ok(Json.toJson(contributions))
@@ -302,14 +304,11 @@ public class Contributions extends Controller {
         }else{
             contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
-            ObjectNode paginationInfo = Json.newObject();
-            paginationInfo.put("currentPage", page);
-            paginationInfo.put("total", contribs.size());
-            paginationInfo.put("pageSize", pageSize);
-            ObjectNode contributionsJson = Json.newObject();
-            contributionsJson.put("list", Json.toJson(contributions));
-            contributionsJson.put("pagination", paginationInfo);
-            return contributions != null ? ok(contributionsJson)
+            pag.setPageSize(pageSize);
+            pag.setTotal(contribs.size());
+            pag.setPage(page);
+            pag.setList(contributions);
+            return contributions != null ? ok(Json.toJson(pag))
                     : notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         }
@@ -621,17 +620,28 @@ public class Contributions extends Controller {
                 conditions.put("sorting", sorting);
             }
 
-            //javier
+            PaginatedContribution pag = new PaginatedContribution();
             if (all != null) {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null);
             } else {
                 contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+                pag.setPageSize(pageSize);
+                pag.setTotal(contribs.size());
+                pag.setPage(page);
+                pag.setList(contributions);
             }
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
-            String result = mapper.writerWithView(Views.Public.class)
-                    .writeValueAsString(contributions);
+            String result;
+            if(all != null){
+                result = mapper.writerWithView(Views.Public.class)
+                        .writeValueAsString(contributions);
+            } else {
+                result = mapper.writerWithView(Views.Public.class)
+                        .writeValueAsString(pag);
+            }
 
             Content ret = new Content() {
                 @Override
@@ -645,22 +655,10 @@ public class Contributions extends Controller {
                 }
             };
 
-            if(all != null){
-                return Results.ok(ret);
-            }else{
-                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
-                ObjectNode paginationInfo = Json.newObject();
-                paginationInfo.put("currentPage", page);
-                paginationInfo.put("total", contribs.size());
-                paginationInfo.put("pageSize", pageSize);
-                ObjectNode contributionsJson = Json.newObject();
-                contributionsJson.put("list", Json.toJson(ret));
-                contributionsJson.put("pagination", paginationInfo);
-                return Results.ok(contributionsJson);
-            }
-            //return Results.ok(ret);
+            return Results.ok(ret);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return badRequest(Json.toJson(Json
                     .toJson(new TransferResponseStatus("Error processing request"))));
         }
@@ -2584,14 +2582,16 @@ public class Contributions extends Controller {
             Contribution c;
             try {
                 c = createContribution(newContribution, null, type, template, campaign.getResources());
-                campaign.getResources().getContributions().add(c);
-                campaign.getResources().update();
-                if (type == ContributionTypes.COMMENT || type == ContributionTypes.DISCUSSION) {
+
+                if (type.equals(ContributionTypes.COMMENT) || type.equals(ContributionTypes.DISCUSSION)) {
                     if (campaign.getForum().getContributions() == null) {
                         campaign.getForum().setContributions(new ArrayList<Contribution>());
                     }
                     campaign.getForum().getContributions().add(c);
                     campaign.getForum().update();
+                } else {
+                    campaign.getResources().getContributions().add(c);
+                    campaign.getResources().update();
                 }
 
                 Promise.promise(() -> {
@@ -2647,14 +2647,16 @@ public class Contributions extends Controller {
             Contribution c;
             try {
                 c = createContribution(newContribution, null, type, template, wgroup.getResources());
-                wgroup.getResources().getContributions().add(c);
-                wgroup.getResources().update();
-                if (type == ContributionTypes.COMMENT || type == ContributionTypes.DISCUSSION) {
+
+                if (type.equals(ContributionTypes.COMMENT) || type.equals(ContributionTypes.DISCUSSION)) {
                     if (wgroup.getForum().getContributions() == null) {
                         wgroup.getForum().setContributions(new ArrayList<Contribution>());
                     }
                     wgroup.getForum().getContributions().add(c);
                     wgroup.getForum().update();
+                } else {
+                    wgroup.getResources().getContributions().add(c);
+                    wgroup.getResources().update();
                 }
 
                 Promise.promise(() -> {
@@ -2723,5 +2725,52 @@ public class Contributions extends Controller {
             }
             return ok(Json.toJson(c));
         }
+    }
+}
+
+class PaginatedContribution {
+
+    @JsonView(Views.Public.class)
+    private int pageSize;
+
+    @JsonView(Views.Public.class)
+    private int page;
+
+    @JsonView(Views.Public.class)
+    private int total;
+
+    @JsonView(Views.Public.class)
+    private List<Contribution> list;
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public List<Contribution> getList() {
+        return list;
+    }
+
+    public void setList(List<Contribution> list) {
+        this.list = list;
     }
 }

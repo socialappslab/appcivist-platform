@@ -16,12 +16,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.CampaignTemplatesEnum;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
 import models.transfer.NotificationSignalTransfer;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -31,6 +33,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Id
 	@GeneratedValue
 	private Long resourceSpaceId;
+
+	@JsonView(Views.Public.class)
 	@Index
 	private UUID uuid = UUID.randomUUID();
 	@Transient
