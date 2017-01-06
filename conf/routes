@@ -277,6 +277,7 @@ POST      /api/upload                                                     contro
 POST      /api/upload/data                                                controllers.Files.uploadData()
 POST      /api/log                                                        controllers.Application.logActivity()
 POST      /api/log/public                                                 controllers.Application.logActivityPublic()
+POST      /api/log/front                                                  controllers.Application.logErrorFrontEnd()
 
 ##################################################################################################################################################################
 # Space endpoints
