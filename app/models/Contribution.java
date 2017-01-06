@@ -112,6 +112,7 @@ public class Contribution extends AppCivistBaseModel {
     @ManyToMany(cascade = CascadeType.PERSIST)
     @Where(clause = "${ta}.active=true")
     @JsonIgnoreProperties({"providers", "roles", "permissions", "sessionKey", "identifier"})
+    @JsonView(Views.Public.class) 
     @ApiModelProperty(name="authors", value="List of authors when is more then one but not a working group")
     private List<User> authors = new ArrayList<User>();
 

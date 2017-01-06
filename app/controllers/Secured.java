@@ -30,9 +30,6 @@ public class Secured extends Security.Authenticator {
 
 	@ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Verify recaptcha", httpMethod = "POST")
 	@ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-	@Restrict({@Group(GlobalData.USER_ROLE)})
 	public static Result verifyRecaptcha(String k) {
 		Logger.info("RECIBIDO: " + k);
 		RecaptchaVerify rv = new RecaptchaVerify();
