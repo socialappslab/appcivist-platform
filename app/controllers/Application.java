@@ -1,6 +1,7 @@
 package controllers;
 
 import static play.data.Form.form;
+
 import http.Headers;
 
 import java.text.SimpleDateFormat;
@@ -8,6 +9,7 @@ import java.util.Date;
 
 import models.Log;
 import models.User;
+import models.transfer.FrontEndError;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -28,94 +30,115 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import views.html.*;
 
-@Api(value="08: Other")
+@Api(value = "08: Other")
 @With(Headers.class)
 public class Application extends Controller {
 
-	public static final String FLASH_MESSAGE_KEY = "message";
-	public static final String FLASH_ERROR_KEY = "error";
-	public static final Form<Log> LOG_FORM = form(Log.class);
+    public static final String FLASH_MESSAGE_KEY = "message";
+    public static final String FLASH_ERROR_KEY = "error";
+    public static final Form<Log> LOG_FORM = form(Log.class);
+    public static final Form<FrontEndError> FRONT_END_ERROR = form(FrontEndError.class);
+    private static final Logger.ALogger FrontEndLogger = Logger.of("frontend");
 
-	public static Result index() {
-		return ok(index.render());
-	}
 
-	/**
-	 * Controller action added to support CORS requests
-	 * 
-	 * @param path
-	 * @return
-	 */
-	public static Result checkPreFlight(String path) {
-		Logger.debug("--> OPTIONS Preflight REQUEST");
-		response().setHeader("Access-Control-Allow-Origin", "*");
-		response().setHeader("Allow", "*");
-		response().setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
-		response().setHeader("Access-Control-Allow-Headers","Accept, Origin, Content-Type, X-Json, X-Prototype-Version, X-Requested-With, Referer, User-Agent, SESSION_KEY");
-		return ok();
-	}
-	
-	public static String formatTimestamp(final long t) {
-		return new SimpleDateFormat("yyyy-dd-MM HH:mm:ss").format(new Date(t));
-	}
+    public static Result index() {
+        return ok(index.render());
+    }
 
-	@ApiOperation(produces="text/html", value="API Swagger-UI documentation", httpMethod="GET")
-	public static Result swaggerDocs() {
-		return ok(swagger.render());
-	}
-	
-	/** POST       /api/log
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "User session not found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body"),
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-	@SubjectPresent
-	public static Result logActivity() {
-		User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-		final Form<Log> newLogForm = LOG_FORM.bindFromRequest();
-		if (newLogForm.hasErrors()) {
-			return internalServerError(Json.toJson(new TransferResponseStatus("Log is not valid")));
-		} else {
-			Log newLog = newLogForm.get();
-			if (user !=null) {
-				newLog.setUser(user.getEmail());
-				LogActions.logActivity(newLog);
-				return ok(Json.toJson(newLog));	
-			} else {
-				return notFound(Json.toJson(new TransferResponseStatus("User's session was null")));
-			}
-		}
-	}
-	
-	/** POST       /api/log/public
-	 * @return
-	 */
-	@ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
-	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body") })
-	public static Result logActivityPublic() {
-		final Form<Log> newLogForm = LOG_FORM.bindFromRequest();
-		if (newLogForm.hasErrors()) {
-			return internalServerError(Json.toJson(new TransferResponseStatus("Log is not valid")));
-		} else {
-			Log newLog = newLogForm.get();
-			String userEmail = newLog.getUser();
-			User user = null;
-			if (userEmail !=null ){
-				user = User.findByEmail(userEmail);	
-			}
-			if (user !=null) {
-				newLog.setUser(user.getEmail());
-				LogActions.logActivity(newLog);
-				return ok(Json.toJson(newLog));	
-			} else {
-				return notFound(Json.toJson(new TransferResponseStatus("User's email does not exist in our database")));
-			}
-		}
-	}
-	
+    /**
+     * Controller action added to support CORS requests
+     *
+     * @param path
+     * @return
+     */
+    public static Result checkPreFlight(String path) {
+        Logger.debug("--> OPTIONS Preflight REQUEST");
+        response().setHeader("Access-Control-Allow-Origin", "*");
+        response().setHeader("Allow", "*");
+        response().setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
+        response().setHeader("Access-Control-Allow-Headers", "Accept, Origin, Content-Type, X-Json, X-Prototype-Version, X-Requested-With, Referer, User-Agent, SESSION_KEY");
+        return ok();
+    }
+
+    public static String formatTimestamp(final long t) {
+        return new SimpleDateFormat("yyyy-dd-MM HH:mm:ss").format(new Date(t));
+    }
+
+    @ApiOperation(produces = "text/html", value = "API Swagger-UI documentation", httpMethod = "GET")
+    public static Result swaggerDocs() {
+        return ok(swagger.render());
+    }
+
+    /**
+     * POST       /api/log
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User session not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
+    public static Result logActivity() {
+        User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        final Form<Log> newLogForm = LOG_FORM.bindFromRequest();
+        if (newLogForm.hasErrors()) {
+            return internalServerError(Json.toJson(new TransferResponseStatus("Log is not valid")));
+        } else {
+            Log newLog = newLogForm.get();
+            if (user != null) {
+                newLog.setUser(user.getEmail());
+                LogActions.logActivity(newLog);
+                return ok(Json.toJson(newLog));
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus("User's session was null")));
+            }
+        }
+    }
+
+    /**
+     * POST       /api/log/public
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an action")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "log", value = "Body of Log in JSON", required = true, dataType = "models.Log", paramType = "body")})
+    public static Result logActivityPublic() {
+        final Form<Log> newLogForm = LOG_FORM.bindFromRequest();
+        if (newLogForm.hasErrors()) {
+            return internalServerError(Json.toJson(new TransferResponseStatus("Log is not valid")));
+        } else {
+            Log newLog = newLogForm.get();
+            String userEmail = newLog.getUser();
+            User user = null;
+            if (userEmail != null) {
+                user = User.findByEmail(userEmail);
+            }
+            if (user != null) {
+                newLog.setUser(user.getEmail());
+                LogActions.logActivity(newLog);
+                return ok(Json.toJson(newLog));
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus("User's email does not exist in our database")));
+            }
+        }
+    }
+
+    /**
+     * POST       /api/log/front
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Log.class, produces = "application/json", value = "Log an error in the frontend")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Error object", value = "Body of Error in JSON", required = true, dataType = "models.transfer.FrontEndError", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result logErrorFrontEnd() {
+        FrontEndLogger.error(FRONT_END_ERROR.bindFromRequest().get().toString());
+        return play.mvc.Results.ok();
+    }
 }
