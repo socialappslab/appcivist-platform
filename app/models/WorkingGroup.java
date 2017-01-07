@@ -503,9 +503,12 @@ public class WorkingGroup extends AppCivistBaseModel {
 	}
 
 	// Only getters for resource space uuids
+	@JsonView(Views.Public.class)
 	public String getForumResourceSpaceUUId() {
 		return forum != null ? forum.getResourceSpaceUuid().toString() : null;
 	}
+
+	@JsonView(Views.Public.class)
 	public String getResourcesResourceSpaceUUId() {
 		return resources != null ? resources.getResourceSpaceUuid().toString() : null;
 	}
