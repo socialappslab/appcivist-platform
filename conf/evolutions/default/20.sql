@@ -3,6 +3,7 @@
 -- Created by @cdparra
 -- Creates resource spaces for entities that don't have them
 -- */
+create extension "uuid-ossp";
 
 CREATE OR REPLACE FUNCTION create_missing_resource_spaces
 (
