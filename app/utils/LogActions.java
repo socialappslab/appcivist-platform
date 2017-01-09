@@ -49,6 +49,7 @@ public class LogActions {
 			l.setPath(ctx.request().uri());
 			l.setRemoteAddress(ctx.request().remoteAddress());
 			l.setTime(Calendar.getInstance().getTime());
+			l.setRemoteHost(ctx.request().getHeader("UI_PATH"));
 			LogActions.logActivity(l);
 		}
 	}
@@ -61,6 +62,7 @@ public class LogActions {
 			l.setPath(req.uri());
 			l.setRemoteAddress(req.remoteAddress());
 			l.setTime(Calendar.getInstance().getTime());
+			l.setRemoteHost(req.getHeader("UI_PATH"));
 			LogActions.logActivity(l);
 		}
 	}

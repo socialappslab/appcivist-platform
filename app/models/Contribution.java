@@ -150,6 +150,12 @@ public class Contribution extends AppCivistBaseModel {
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
+    
+    @JsonIgnore
+	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonView(Views.Public.class)
+	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 
     @JsonView(Views.Public.class)
     @Transient
@@ -173,7 +179,7 @@ public class Contribution extends AppCivistBaseModel {
     private List<ComponentMilestone> associatedMilestones = new ArrayList<ComponentMilestone>();
     //@Transient
     //private List<Contribution> inspirations;
-
+    
     @JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
             "budget", "priority", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
             "attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
@@ -510,7 +516,18 @@ public class Contribution extends AppCivistBaseModel {
                 && this.resourceSpace.getResourceSpaceId() == null)
             this.resourceSpace.setResourceSpaceId(id);
     }
+    
+    public Long getForumResourceSpaceId() {
+        return this.forum != null ? this.forum
+                .getResourceSpaceId() : null;
+    }
 
+    @JsonView(Views.Public.class)
+    public UUID getForumResourceSpaceUUID() {
+        return this.forum != null ? this.forum 
+                .getResourceSpaceUuid() : null;
+    }    
+   
     public List<Contribution> getComments() {
         return this.getResourceSpace()
                 .getContributionsFilteredByType(ContributionTypes.COMMENT);
