@@ -282,3 +282,4 @@ POST      /api/log/front                                                  contro
 ##################################################################################################################################################################
 # Space endpoints
 GET       /api/space/:sid                                                 controllers.Spaces.getSpace(sid: Long)
+GET       /api/space/:uuid/public                                         controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
