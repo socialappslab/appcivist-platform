@@ -40,8 +40,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Transient
 	private String uuidAsString;
 	@Enumerated(EnumType.STRING)
+	@JsonView(Views.Public.class)
 	private ResourceSpaceTypes type = ResourceSpaceTypes.ASSEMBLY;
 	private UUID parent;
+
+	@Transient
+	@JsonView(Views.Public.class)
+	private String name;
 
 	/**
 	 * 
@@ -72,53 +77,63 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_config")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Config> configs;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Theme> themes;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign")
 	@JsonManagedReference
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Campaign> campaigns;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign_components")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Component> components;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_campaign_milestones")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<ComponentMilestone> milestones;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_working_groups")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<WorkingGroup> workingGroups;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_contributions")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Contribution> contributions;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_contribution_histories")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<ContributionHistory> contributionHistories;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_assemblies")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Assembly> assemblies;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_resource")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Resource> resources;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
@@ -129,11 +144,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_ballots")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<Ballot> ballots;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_templates")
 	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
 	private List<ContributionTemplate> templates;
 
 	
@@ -671,5 +688,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 			return matchingConfigs.get(0);
 		} 
 		return null;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
