@@ -2536,8 +2536,16 @@ public class Contributions extends Controller {
             Contribution inContribution = Contribution.readByUUID(UUID.fromString(uuid));
             try {
                 c = createContribution(newContribution, null, type, template, inContribution.getResourceSpace());
-                inContribution.getResourceSpace().getContributions().add(c);
-                inContribution.getResourceSpace().update();
+                if (type.equals(ContributionTypes.COMMENT) || type.equals(ContributionTypes.DISCUSSION)) {
+                    if (inContribution.getForum().getContributions() == null) {
+                        inContribution.getForum().setContributions(new ArrayList<Contribution>());
+                    }
+                    inContribution.getForum().getContributions().add(c);
+                    inContribution.getForum().update();
+                } else {
+                    inContribution.getResourceSpace().getContributions().add(c);
+                    inContribution.getResourceSpace().update();
+                }
             } catch (Exception e) {
                 Logger.error("Error creating ", e);
                 return internalServerError(Json

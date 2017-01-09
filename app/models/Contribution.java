@@ -516,7 +516,15 @@ public class Contribution extends AppCivistBaseModel {
                 && this.resourceSpace.getResourceSpaceId() == null)
             this.resourceSpace.setResourceSpaceId(id);
     }
-    
+
+    public ResourceSpace getForum() {
+        return forum;
+    }
+
+    public void setForum(ResourceSpace forum) {
+        this.forum = forum;
+    }
+
     public Long getForumResourceSpaceId() {
         return this.forum != null ? this.forum
                 .getResourceSpaceId() : null;
