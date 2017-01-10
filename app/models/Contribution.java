@@ -119,7 +119,7 @@ public class Contribution extends AppCivistBaseModel {
     // TODO: redo using priority matrix and allowing for multiple users to provide their priority matrix values
     private Integer priority;
 
-    private Integer popularity;
+    private Integer popularity = 0;
 
     private Boolean pinned = false;
 
@@ -1171,7 +1171,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public Integer getPopularity() {
-        return popularity;
+        return popularity != null ? popularity : 0;
     }
 
     public void setPopularity(Integer popularity) {

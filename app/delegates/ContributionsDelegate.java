@@ -199,7 +199,8 @@ public class ContributionsDelegate {
                     	if (sortingValue.equals("popularity")) {
                     		sorting +=", popularity desc";
                     	} else if (sortingValue.equals("random")) {
-                    		// TODO find a way of producing a random ordering
+                    		// TODO find a way of producing a a REAL random ordering
+                    		sorting +=", uuid desc"; // create the illusion of random ordering
                     	} else if (sortingValue.equals("date_asc")) {
                     		sorting +=", creation asc";                    		
                     	} else if (sortingValue.equals("date_desc")) {
