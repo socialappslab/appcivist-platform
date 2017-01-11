@@ -1,5 +1,6 @@
 package delegates;
 
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
 import controllers.Notifications;
 import enums.AppcivistResourceTypes;
@@ -20,7 +21,9 @@ import utils.services.NotificationServiceWrapper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 
 import static enums.ResourceSpaceTypes.*;
 
@@ -789,5 +792,31 @@ public class NotificationsDelegate {
                 throw new Exception("Not matching resource space found: " + type);
         }
 
+    }
+
+    static Model.Finder<Long, NotificationEventSignal> finder = new Model.Finder<>(
+            NotificationEventSignal.class);
+
+    public static List<NotificationEventSignal> findNotifications(Map<String, Object> conditions, Integer page, Integer pageSize){
+        ExpressionList<NotificationEventSignal> q = finder.where();
+
+        if(conditions != null){
+            for(String key : conditions.keySet()){
+                switch (key){
+                    case "resourceSpaceUuid":
+                        q.eq("resourceUUID", conditions.get(key));
+                        break;
+                    case "userUuid": // just an example
+                        q.eq("userUuid", conditions.get(key));
+                        break;
+                }
+            }
+        }
+
+        if(page != null && pageSize != null){
+            return q.findPagedList(page, pageSize).getList();
+        }else{
+            return q.findList();
+        }
     }
 }

@@ -51,6 +51,7 @@ GET       /api/user/:uid/campaign                                         contro
 ##################################################################################################################################################################
 # Notification Server
 # TODO: integrate a proper message queue manager like rabbitmq
+GET       /api/notification/inbox/:sid                                    controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/notification/user/:uuid                                    controllers.Notifications.userInbox(uuid: java.util.UUID)
 GET       /api/notification/subscription                                  controllers.Notifications.subscriptions()
 POST      /api/notification/subscription                                  controllers.Notifications.subscribe()

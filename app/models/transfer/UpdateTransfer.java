@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import play.i18n.Messages;
 import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
+import models.NotificationEventSignal;
 
 @JsonInclude(Include.NON_EMPTY)
 public class UpdateTransfer {
@@ -29,7 +30,7 @@ public class UpdateTransfer {
 	private String relativeUrl;
 	private Map<String, Object> resource = new HashMap<>();
 	private Map<String, Object> container = new HashMap<>();
-	
+
 	public UpdateTransfer() {
 		super();
 	}
@@ -208,4 +209,5 @@ public class UpdateTransfer {
 	public void setContainerProperty(String key, Object value) {
 		this.container.put(key, value);
 	}
+
 }

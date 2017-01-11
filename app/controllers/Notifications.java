@@ -13,6 +13,7 @@ import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
 import models.transfer.NotificationSubscriptionTransfer;
+import models.transfer.PaginatedListTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.UpdateTransfer;
 import play.Logger;
@@ -357,5 +358,43 @@ public class Notifications extends Controller {
             Logger.error("Configuration error: ", e);
             return internalServerError(Json.toJson(responseBody));
         }
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = UpdateTransfer.class, responseContainer = "List", produces = "application/json", value = "Get space notifications inbox", notes = "Get space notifications inbox")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+    })
+    public static Result spaceInbox(@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+                                    @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
+                                    @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize) {
+        ResourceSpace rs = ResourceSpace.read(sid);
+
+        List<NotificationEventSignal> notifications = new ArrayList<NotificationEventSignal>();
+        notifications = processSpaceNotifications(rs, page, pageSize);
+        if (notifications.isEmpty()) {
+            return notFound(Json.toJson(new TransferResponseStatus("No updates")));
+        } else {
+            if (page != null && pageSize != null) {
+                PaginatedListTransfer<NotificationEventSignal> response = new PaginatedListTransfer<>();
+                List<NotificationEventSignal> notificationsTotal = processSpaceNotifications(rs, null, null);
+                response.setPage(page);
+                response.setPageSize(pageSize);
+                response.setTotal(notificationsTotal.size());
+                response.setList(notifications);
+                return ok(Json.toJson(response));
+            } else {
+                return ok(Json.toJson(notifications));
+            }
+        }
+
+    }
+
+    private static List<NotificationEventSignal> processSpaceNotifications(ResourceSpace rs, Integer page, Integer pageSize) {
+        // rs.getResourceSpaceUuid() must get in with conditions
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("resourceSpaceUuid", rs.getResourceSpaceUuid());
+        return NotificationsDelegate.findNotifications(conditions, page, pageSize);
     }
 }
