@@ -1,7 +1,6 @@
 package controllers;
 
 import static play.data.Form.form;
-
 import http.Headers;
 
 import java.text.SimpleDateFormat;
@@ -17,7 +16,10 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
+import utils.GlobalData;
 import utils.LogActions;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -137,6 +139,7 @@ public class Application extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Error object", value = "Body of Error in JSON", required = true, dataType = "models.transfer.FrontEndError", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@Restrict({ @Group(GlobalData.USER_ROLE), @Group(GlobalData.MEMBER_ROLE) })
     public static Result logErrorFrontEnd() {
         FrontEndLogger.error(FRONT_END_ERROR.bindFromRequest().get().toString());
         return play.mvc.Results.ok();
