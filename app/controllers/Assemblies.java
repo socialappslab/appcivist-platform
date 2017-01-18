@@ -243,6 +243,18 @@ public class Assemblies extends Controller {
 						"No assembly with ID = " + id)));
 	}
 
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read Assembly by Shortname", notes="Only for MEMBERS of the assembly")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result findAssemblyByShortname(@ApiParam(name = "shortname", value = "Assembly Shortname") String shortname) {
+		Assembly a = Assembly.findByShortName(shortname);
+		return a != null ? ok(Json.toJson(a)) : notFound(Json
+				.toJson(new TransferResponseStatus(ResponseStatus.NODATA,
+						"No assembly with Shortname = " + shortname)));
+	}
+
 	@ApiOperation(httpMethod = "DELETE", response = Assembly.class, produces = "application/json", value = "Delete Assembly by ID", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({

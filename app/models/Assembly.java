@@ -733,6 +733,11 @@ public class Assembly extends AppCivistBaseModel {
 		return as!=null && as.size()>0 ? as.get(0) : null;	
 	}
 
+    public static Assembly findByShortName(String n) {
+        List<Assembly> as = find.where().eq("shortname", n).findList();
+        return as!=null && as.size()>0 ? as.get(0) : null;
+    }
+
 	public static Assembly findById(Long aid) {
 		Assembly a = find.byId(aid);
 		return a;
