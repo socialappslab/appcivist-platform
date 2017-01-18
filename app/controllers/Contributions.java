@@ -1690,6 +1690,12 @@ public class Contributions extends Controller {
                 workingGroupAuthors = null;
                 newContrib.setWorkingGroupAuthors(null);
             }
+            List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
+            for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
+                WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
+                workingGroupAuthorsLoaded.add(contact);
+            }
+            newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
         }
 
         WorkingGroup newWorkingGroup = new WorkingGroup();
@@ -1733,7 +1739,14 @@ public class Contributions extends Controller {
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
         }
-
+        List<User> authorsLoaded = new ArrayList<User>();
+        for (User user: newContrib.getAuthors()) {
+            User contact = User.read(user.getUserId());
+            if(!user.getUserId().equals(author.getUserId())){
+                authorsLoaded.add(contact);
+            }
+        }
+        newContrib.setAuthors(authorsLoaded);
         Contribution.create(newContrib);
         newContrib.refresh();
 
