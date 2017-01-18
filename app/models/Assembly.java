@@ -75,6 +75,9 @@ public class Assembly extends AppCivistBaseModel {
 	@Column(name="invitationEmail", columnDefinition="text")
 	@JsonView(Views.Public.class)
 	private String invitationEmail;
+    @Column(name="principalAssembly", columnDefinition="text")
+	@JsonView(Views.Public.class)
+	private Boolean principalAssembly = false;
 
 	@JsonView(Views.Public.class)
 	@OneToOne(cascade=CascadeType.ALL)
@@ -733,5 +736,12 @@ public class Assembly extends AppCivistBaseModel {
 	public static Assembly findById(Long aid) {
 		Assembly a = find.byId(aid);
 		return a;
+	}
+	public Boolean getPrincipalAssembly() {
+		return principalAssembly;
+	}
+
+	public void setPrincipalAssembly(Boolean principalAssembly) {
+		this.principalAssembly = principalAssembly;
 	}
 }

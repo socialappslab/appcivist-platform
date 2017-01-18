@@ -1402,3 +1402,6 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
+
+-- 21.sql
+alter table assembly add column principalassembly boolean default FALSE;
