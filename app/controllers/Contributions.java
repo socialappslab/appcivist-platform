@@ -571,9 +571,46 @@ public class Contributions extends Controller {
             contribution = Contribution.readByUUID(uuid);
         } catch (Exception e) {
             e.printStackTrace();
-            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution withis uuid")));
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with this uuid")));
         }
         return ok(Json.toJson(contribution));
+    }
+
+    /**
+     * GET       /api/contribution/:uuid/history
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution history by its Universal ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution history found", response = TransferResponseStatus.class)})
+    public static Result findContributionHistoryByUUID(
+            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
+        List<ContributionHistory> contributionHistories;
+        String result;
+        try {
+            Contribution contribution = Contribution.readByUUID(uuid);
+            contributionHistories = ContributionHistory.getContributionsHistory(contribution.getContributionId());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+            result  = mapper.writerWithView(Views.Public.class)
+                    .writeValueAsString(contributionHistories);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution history with this uuid")));
+        }
+        Content ret = new Content() {
+            @Override
+            public String body() {
+                return result;
+            }
+
+            @Override
+            public String contentType() {
+                return "application/json";
+            }
+        };
+        return ok(ret);
     }
 
     /**
@@ -1690,6 +1727,12 @@ public class Contributions extends Controller {
                 workingGroupAuthors = null;
                 newContrib.setWorkingGroupAuthors(null);
             }
+            List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
+            for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
+                WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
+                workingGroupAuthorsLoaded.add(contact);
+            }
+            newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
         }
 
         WorkingGroup newWorkingGroup = new WorkingGroup();
@@ -1733,7 +1776,14 @@ public class Contributions extends Controller {
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
         }
-
+        List<User> authorsLoaded = new ArrayList<User>();
+        for (User user: newContrib.getAuthors()) {
+            User contact = User.read(user.getUserId());
+            if(!user.getUserId().equals(author.getUserId())){
+                authorsLoaded.add(contact);
+            }
+        }
+        newContrib.setAuthors(authorsLoaded);
         Contribution.create(newContrib);
         newContrib.refresh();
 
