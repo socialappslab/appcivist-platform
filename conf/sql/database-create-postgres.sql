@@ -1285,6 +1285,7 @@ ALTER TABLE campaign
       
 -- 19.sql
 alter table log add column remote_host varchar;
+alter table log add column comment varchar;
 alter table contribution add column forum_resource_space_id integer;
 
 ALTER TABLE contribution

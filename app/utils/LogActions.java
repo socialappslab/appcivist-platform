@@ -50,6 +50,9 @@ public class LogActions {
 			l.setRemoteAddress(ctx.request().remoteAddress());
 			l.setTime(Calendar.getInstance().getTime());
 			l.setRemoteHost(ctx.request().getHeader("UI_PATH"));
+			if (ctx.request().uri().equals("/api/log/front")) {
+				l.setComment(ctx.request().body().asJson().toString());	
+			}
 			LogActions.logActivity(l);
 		}
 	}
@@ -63,6 +66,9 @@ public class LogActions {
 			l.setRemoteAddress(req.remoteAddress());
 			l.setTime(Calendar.getInstance().getTime());
 			l.setRemoteHost(req.getHeader("UI_PATH"));
+			if (req.uri().equals("/api/log/front")) {
+				l.setComment(req.body().asJson().toString());	
+			}
 			LogActions.logActivity(l);
 		}
 	}
