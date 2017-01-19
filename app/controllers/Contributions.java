@@ -571,9 +571,30 @@ public class Contributions extends Controller {
             contribution = Contribution.readByUUID(uuid);
         } catch (Exception e) {
             e.printStackTrace();
-            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution withis uuid")));
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with this uuid")));
         }
         return ok(Json.toJson(contribution));
+    }
+
+    /**
+     * GET       /api/contribution/:uuid/history
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution history by its Universal ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution history found", response = TransferResponseStatus.class)})
+    public static Result findContributionHistoryByUUID(
+            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
+        List<ContributionHistory> contributionHistories;
+        try {
+            Contribution contribution = Contribution.readByUUID(uuid);
+            contributionHistories = ContributionHistory.getContributionsHistory(contribution.getContributionId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution history with this uuid")));
+        }
+        return ok(Json.toJson(contributionHistories));
     }
 
     /**
