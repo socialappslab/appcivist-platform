@@ -756,6 +756,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+    	Ebean.beginTransaction();
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -766,6 +767,7 @@ public class Contributions extends Controller {
                 .bindFromRequest();
 
         if (newContributionForm.hasErrors()) {
+            Ebean.rollbackTransaction();
             return contributionCreateError(newContributionForm);
         } else {
 
@@ -800,6 +802,9 @@ public class Contributions extends Controller {
             try {
                 c = createContribution(newContribution, author, type, template, rs);
             } catch (Exception e) {
+                Ebean.rollbackTransaction();
+                e.printStackTrace();
+                Logger.error(e.getStackTrace().toString());
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
@@ -829,7 +834,8 @@ public class Contributions extends Controller {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            
+            Ebean.commitTransaction();
             return ok(Json.toJson(c));
         }
     }
@@ -1835,11 +1841,14 @@ public class Contributions extends Controller {
         for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
             UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
             Ballot b = Ballot.findByUUID(consensus);
-            BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-            contributionAssociatedCandidate.setBallotId(b.getId());
-            contributionAssociatedCandidate.setCandidateType(new Integer(1));
-            contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
-            contributionAssociatedCandidate.save();
+
+            if (b!=null) {
+	            BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+	            contributionAssociatedCandidate.setBallotId(b.getId());
+	            contributionAssociatedCandidate.setCandidateType(new Integer(1));
+	            contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+	            contributionAssociatedCandidate.save();
+            }
         }
 
         return newContrib;
