@@ -756,7 +756,6 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
-    	Ebean.beginTransaction();
         // 1. obtaining the user of the requestor
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -767,7 +766,6 @@ public class Contributions extends Controller {
                 .bindFromRequest();
 
         if (newContributionForm.hasErrors()) {
-            Ebean.rollbackTransaction();
             return contributionCreateError(newContributionForm);
         } else {
 
@@ -799,6 +797,8 @@ public class Contributions extends Controller {
 
             newContribution.setContextUserId(author.getUserId());
             Contribution c;
+            
+            Ebean.beginTransaction();
             try {
                 c = createContribution(newContribution, author, type, template, rs);
             } catch (Exception e) {
@@ -814,7 +814,8 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-
+            
+            Ebean.commitTransaction();
             Logger.info("SE ENVIARA NOTIFICACION SI SON DEL TIPO IDEA O PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
                     c.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -835,7 +836,6 @@ public class Contributions extends Controller {
                 e.printStackTrace();
             }
             
-            Ebean.commitTransaction();
             return ok(Json.toJson(c));
         }
     }
