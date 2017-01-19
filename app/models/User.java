@@ -70,7 +70,7 @@ import exceptions.TokenNotValidException;
 @Table(name="appcivist_user")
 @Where(clause="active=true")
 @ApiModel(value="User", description="Model representing each user in AppCivist")
-public class User extends Model implements Subject {
+public class User extends AppCivistBaseModel implements Subject {
 
 	@Id
 	@GeneratedValue

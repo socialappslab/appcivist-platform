@@ -1405,3 +1405,10 @@ LANGUAGE plpgsql VOLATILE;
 
 -- 21.sql
 alter table assembly add column principalassembly boolean default FALSE;
+
+-- 22.sql
+alter table appcivist_user add column creation timestamp;
+alter table appcivist_user add column last_update timestamp;
+alter table appcivist_user add column lang varchar(255);
+alter table appcivist_user add column removal timestamp;
+alter table appcivist_user add column removed boolean;
