@@ -587,14 +587,30 @@ public class Contributions extends Controller {
     public static Result findContributionHistoryByUUID(
             @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
         List<ContributionHistory> contributionHistories;
+        String result;
         try {
             Contribution contribution = Contribution.readByUUID(uuid);
             contributionHistories = ContributionHistory.getContributionsHistory(contribution.getContributionId());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+            result  = mapper.writerWithView(Views.Public.class)
+                    .writeValueAsString(contributionHistories);
         } catch (Exception e) {
             e.printStackTrace();
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution history with this uuid")));
         }
-        return ok(Json.toJson(contributionHistories));
+        Content ret = new Content() {
+            @Override
+            public String body() {
+                return result;
+            }
+
+            @Override
+            public String contentType() {
+                return "application/json";
+            }
+        };
+        return ok(ret);
     }
 
     /**

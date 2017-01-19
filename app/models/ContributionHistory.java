@@ -5,12 +5,14 @@ import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import enums.ContributionTypes;
 import models.misc.ContributionHistoryAssociationChange;
 import models.misc.ContributionHistoryExternalChange;
 import models.misc.ContributionHistoryItem;
+import models.misc.Views;
 import play.Logger;
 import play.data.validation.Constraints;
 import io.swagger.annotations.ApiModel;
@@ -55,32 +57,44 @@ public class ContributionHistory extends AppCivistBaseModel {
     private List<ResourceSpace> relatedResourceSpaces;
     private Long contributionId;
     @Index
+    @JsonView(Views.Public.class)
     private UUID uuid = UUID.randomUUID();
     @Constraints.Required
+    @JsonView(Views.Public.class)
     private String title;
     @Constraints.Required
     @Column(name = "text", columnDefinition = "text")
+    @JsonView(Views.Public.class)
     private String text;
     @Enumerated(EnumType.STRING)
     @Constraints.Required
+    @JsonView(Views.Public.class)
     private ContributionTypes type;
     @JsonIgnore
     @Index
     @Column(name = "text_index", columnDefinition = "text")
+    @JsonView(Views.Public.class)
     private String textIndex;
     @Column(name = "moderation_comment", columnDefinition = "text")
+    @JsonView(Views.Public.class)
     private String moderationComment;
+    @JsonView(Views.Public.class)
     private String budget;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @JsonView(Views.Public.class)
     private Date actionDueDate;
+    @JsonView(Views.Public.class)
     private Boolean actionDone = false;
+    @JsonView(Views.Public.class)
     private String action;
+    @JsonView(Views.Public.class)
     private String assessmentSummary;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "contribution_history_appcivist_user")
     @Where(clause = "${ta}.active=true")
     @JsonIgnoreProperties({"providers", "roles", "permissions", "sessionKey", "identifier"})
+    @JsonView(Views.Public.class)
     private List<User> authors = new ArrayList<User>();
 
     @Transient
