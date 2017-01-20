@@ -218,6 +218,7 @@ public class ContributionsDelegate {
             }            
         }
         
+        where.eq("t0.removed", false);
         where.orderBy(sorting);
         
         List<Contribution> contributions;
