@@ -82,6 +82,9 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                                                Logger.debug("AUTHORIZATION --> Checking if user is Moderator");
                                                List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MODERATOR.getName());
                                                allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();                                           
+                                           } else if (m==null && resource.equals(SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)) {
+                                               Logger.debug("AUTHORIZATION --> Return ok, search for author feedbacks");
+                                               allowed[0] = true;
                                            } else {
                                              Logger.debug("AUTHORIZATION --> Checking if user is Member");
                                              allowed[0] = m!=null; 

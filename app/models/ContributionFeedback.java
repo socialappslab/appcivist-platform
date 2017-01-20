@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
+import enums.ContributionStatus;
 import io.swagger.annotations.ApiModel;
 
 import javax.persistence.*;
@@ -394,4 +395,35 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	public static List<ContributionFeedback> getFeedbacksByContribution(Long contributionId) {
 		return find.where().eq("contributionId", contributionId).eq("archived", false).findList();
 	}
+
+	public static List<ContributionFeedback> getPrivateFeedbacksByContributionTypeAndWGroup(Long contributionId, Long groupId, String type) {
+		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
+				.eq("archived", false)
+				//.eq("status", ContributionFeedbackStatus.PRIVATE)
+				.eq("workingGroupId", groupId);
+		if (type != null)
+			where.eq("type", ContributionFeedbackTypes.valueOf(type));
+		return where.findList();
+	}
+
+	public static List<ContributionFeedback> getPrivateFeedbacksByContributionType(Long contributionId, Long userId, String type) {
+		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
+				.eq("archived", false)
+				//.eq("status", ContributionFeedbackStatus.PRIVATE)
+				.eq("userId", userId)
+				.isNull("workingGroupId");
+		if (type != null)
+			where.eq("type", ContributionFeedbackTypes.valueOf(type));
+		return where.findList();
+	}
+
+	public static List<ContributionFeedback> getPublicFeedbacksByContributionType(Long contributionId, String type) {
+		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
+				.eq("archived", false)
+				.eq("status", ContributionFeedbackStatus.PUBLIC);
+		if (type != null)
+			where.eq("type", ContributionFeedbackTypes.valueOf(type));
+		return where.findList();
+	}
 }
+

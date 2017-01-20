@@ -2,6 +2,7 @@ package controllers;
 
 import static play.data.Form.form;
 
+import com.amazonaws.services.elasticache.model.SourceType;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -463,6 +464,103 @@ public class Contributions extends Controller {
                             "Error reading contribution stats: " + e.getMessage())));
         }
     }
+
+
+
+
+
+    /**
+     * GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback?type=x
+     *
+     * @param aid
+     * @param gid
+     * @param coid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json",
+            value = "Get ContributionFeedbacks")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
+    public static Result readContributionFeedbackPrivate(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "gid", value = "Group ID") Long gid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "type", value = "Type") String type) {
+        try {
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionTypeAndWGroup(coid, gid, type);
+            return ok(Json.toJson(feedbacks));
+        } catch (Exception e) {
+            Logger.error("Error retrieving feedbacks", e);
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error reading contribution stats: " + e.getMessage())));
+        }
+    }
+
+    /**
+     * GET       /api/assembly/:aid/contribution/:coid/feedback?type=x
+     *
+     * @param aid
+     * @param coid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json",
+            value = "Get ContributionFeedbacks")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)
+    public static Result readContributionFeedbackNoGroupId(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "type", value = "Type") String type) {
+        try {
+            // 1. obtaining the user of the requestor
+            User author = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
+            return ok(Json.toJson(feedbacks));
+        } catch (Exception e) {
+            Logger.error("Error retrieving feedbacks", e);
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error reading contribution stats: " + e.getMessage())));
+        }
+    }
+
+    // check
+    /**
+     * GET       /api/contribution/:couuid/feedback?type=x
+     *
+     * @param couuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json",
+            value = "Get ContributionFeedbacks")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result readContributionFeedbackPublic(
+            @ApiParam(name = "couuid", value = "Contribution UUID") String couuid,
+            @ApiParam(name = "type", value = "Type") String type) {
+        try {
+            Contribution co = Contribution.readByUUID(UUID.fromString(couuid));
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(co.getContributionId(), type);
+            return ok(Json.toJson(feedbacks));
+        } catch (Exception e) {
+            Logger.error("Error retrieving feedbacks", e);
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error reading contribution stats: " + e.getMessage())));
+        }
+    }
+
+
+
+
 
     /**
      * GET       /api/assembly/:aid/contribution/:cid/padid

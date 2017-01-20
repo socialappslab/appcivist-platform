@@ -207,6 +207,10 @@ GET       /api/assembly/:aid/contribution/:cid/comment                    contro
 GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
 GET       /api/assembly/:aid/contribution/:cid/contributions              controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
+GET       /api/contribution/:couuid/feedback                              controllers.Contributions.readContributionFeedbackPublic(couuid: String, type: String ?= null)
+GET       /api/assembly/:aid/contribution/:coid/feedback                  controllers.Contributions.readContributionFeedbackNoGroupId(aid: Long, coid: Long, type: String ?= null)
+GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback       controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
+
 POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
 GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
 
