@@ -1294,6 +1294,7 @@ ALTER TABLE contribution
       ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- 20.sql 
+-- Must be super user to create this extension
 create extension "uuid-ossp";
 CREATE OR REPLACE FUNCTION create_missing_resource_spaces
 (
