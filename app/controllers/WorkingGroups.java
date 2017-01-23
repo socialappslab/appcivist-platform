@@ -320,6 +320,14 @@ public class WorkingGroups extends Controller {
                 responseBody.setStatusMessage(status_message);
             } else {
                 newWorkingGroup.setGroupId(groupId);
+                List<Theme> themes = newWorkingGroup.getThemes();
+                List<Theme> themesLoaded = new ArrayList<Theme>();
+                for (Theme theme: themes
+                     ) {
+                    Theme themeRead = Theme.read(theme.getThemeId());
+                    themesLoaded.add(theme);
+                }
+                newWorkingGroup.setThemes(themesLoaded);
                 newWorkingGroup.update();
 
                 // TODO: return URL of the new group
