@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -1192,11 +1193,13 @@ public class Contribution extends AppCivistBaseModel {
 				.eq("pinned", true)
 				.eq("type", type)
 				.eq("containingSpaces.resourceSpaceId", sid)
+                .not(Expr.eq("removed",true))
 				.findList();
 		} else {
 			return find.where()
 					.eq("pinned", true)
 					.eq("containingSpaces.resourceSpaceId", sid)
+                    .not(Expr.eq("removed",true))
 					.findList();			
 		}
 	}
@@ -1209,12 +1212,14 @@ public class Contribution extends AppCivistBaseModel {
 					.eq("type", type)
 					.eq("containingSpaces.resourceSpaceId", sid)
 					.eq("status", status)
+                    .not(Expr.eq("removed",true))
 					.findList();	
 		} else {
 			return find.where()
 					.eq("pinned", true)
 					.eq("containingSpaces.resourceSpaceId", sid)
 					.eq("status", status)
+                    .not(Expr.eq("removed",true))
 					.findList();			
 		}
 		
