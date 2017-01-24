@@ -11,4 +11,5 @@ public interface SecurityModelConstants {
 	public static final String CONTRIBUTION_ID_FIELD = "contributionId";
 	public static final String USER_ID_FIELD = "userId";
 	public static final String DEFAULT_SECURITY_ROLE = "USER";
+	public static final String AUTHOR_OF_CONTRIBUTION_FEEDBACK = "author_feedbacks";
 }
