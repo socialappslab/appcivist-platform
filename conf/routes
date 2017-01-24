@@ -63,8 +63,8 @@ POST      /api/notification/events/:type                                  contro
 ##################################################################################################################################################################
 # Assemblies API
 GET       /api/assembly                                                   controllers.Assemblies.findAssemblies(query ?="", filter ?= "")
-GET       /api/assembly/:shortname                                        controllers.Assemblies.findAssemblyByShortname(shortname: String)
 POST      /api/assembly                                                   controllers.Assemblies.createAssembly(templates ?= "")
+GET       /api/assembly/name/:shortname                                   controllers.Assemblies.findAssemblyByShortname(shortname: String)
 GET       /api/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
 GET       /api/assembly/:uuid/profile                                     controllers.Assemblies.getAssemblyProfile(uuid: java.util.UUID)
 PUT       /api/assembly/:uuid/profile                                     controllers.Assemblies.updateProfile(uuid: java.util.UUID)
@@ -205,6 +205,7 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback/:fid    c
 GET       /api/assembly/:aid/contribution/:cid/padid                      controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
+GET       /api/contribution/:uuid/history                                 controllers.Contributions.findContributionHistoryByUUID(uuid: java.util.UUID)
 GET       /api/assembly/:aid/contribution/:cid/contributions              controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
 POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
