@@ -217,9 +217,9 @@ public class ContributionsDelegate {
                 }
             }            
         }
-        
+        where.add(Expr.not(Expr.eq("removed",true)));
         where.orderBy(sorting);
-        
+
         List<Contribution> contributions;
         if(page != null && pageSize != null){
             contributions = where.findPagedList(page, pageSize).getList();

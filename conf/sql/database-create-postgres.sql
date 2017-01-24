@@ -1285,6 +1285,7 @@ ALTER TABLE campaign
       
 -- 19.sql
 alter table log add column remote_host varchar;
+alter table log add column comment varchar;
 alter table contribution add column forum_resource_space_id integer;
 
 ALTER TABLE contribution
@@ -1293,6 +1294,7 @@ ALTER TABLE contribution
       ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- 20.sql 
+-- Must be super user to create this extension
 create extension "uuid-ossp";
 CREATE OR REPLACE FUNCTION create_missing_resource_spaces
 (
@@ -1405,3 +1407,10 @@ LANGUAGE plpgsql VOLATILE;
 
 -- 21.sql
 alter table assembly add column principalassembly boolean default FALSE;
+
+-- 22.sql
+alter table appcivist_user add column creation timestamp;
+alter table appcivist_user add column last_update timestamp;
+alter table appcivist_user add column lang varchar(255);
+alter table appcivist_user add column removal timestamp;
+alter table appcivist_user add column removed boolean;

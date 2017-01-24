@@ -571,9 +571,46 @@ public class Contributions extends Controller {
             contribution = Contribution.readByUUID(uuid);
         } catch (Exception e) {
             e.printStackTrace();
-            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution withis uuid")));
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with this uuid")));
         }
         return ok(Json.toJson(contribution));
+    }
+
+    /**
+     * GET       /api/contribution/:uuid/history
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json", value = "Get contribution history by its Universal ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution history found", response = TransferResponseStatus.class)})
+    public static Result findContributionHistoryByUUID(
+            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
+        List<ContributionHistory> contributionHistories;
+        String result;
+        try {
+            Contribution contribution = Contribution.readByUUID(uuid);
+            contributionHistories = ContributionHistory.getContributionsHistory(contribution.getContributionId());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+            result  = mapper.writerWithView(Views.Public.class)
+                    .writeValueAsString(contributionHistories);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution history with this uuid")));
+        }
+        Content ret = new Content() {
+            @Override
+            public String body() {
+                return result;
+            }
+
+            @Override
+            public String contentType() {
+                return "application/json";
+            }
+        };
+        return ok(ret);
     }
 
     /**
@@ -760,9 +797,14 @@ public class Contributions extends Controller {
 
             newContribution.setContextUserId(author.getUserId());
             Contribution c;
+            
+            Ebean.beginTransaction();
             try {
                 c = createContribution(newContribution, author, type, template, rs);
             } catch (Exception e) {
+                Ebean.rollbackTransaction();
+                e.printStackTrace();
+                Logger.error(e.getStackTrace().toString());
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
@@ -772,7 +814,8 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-
+            
+            Ebean.commitTransaction();
             Logger.info("SE ENVIARA NOTIFICACION SI SON DEL TIPO IDEA O PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
                     c.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -792,7 +835,7 @@ public class Contributions extends Controller {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            
             return ok(Json.toJson(c));
         }
     }
@@ -1798,11 +1841,14 @@ public class Contributions extends Controller {
         for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
             UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
             Ballot b = Ballot.findByUUID(consensus);
-            BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-            contributionAssociatedCandidate.setBallotId(b.getId());
-            contributionAssociatedCandidate.setCandidateType(new Integer(1));
-            contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
-            contributionAssociatedCandidate.save();
+
+            if (b!=null) {
+	            BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+	            contributionAssociatedCandidate.setBallotId(b.getId());
+	            contributionAssociatedCandidate.setCandidateType(new Integer(1));
+	            contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+	            contributionAssociatedCandidate.save();
+            }
         }
 
         return newContrib;
