@@ -115,9 +115,18 @@ public class Assemblies extends Controller {
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
 	public static Result findAssemblies(	
 			@ApiParam(name = "query", value = "Search query string (keywords in title)") String query, 
-			@ApiParam(name = "filter", value = "Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", allowableValues = "featured,nearby,summary,random") String filter) {
-		
-		List<Assembly> a = AssembliesDelegate.findAssemblies(query, filter, true);
+			@ApiParam(name = "filter", value = "Special filters. 'summary' returns only summarized info of assemblies, 'featured' returns a list of marks featured assemblies and 'nearby' limits the query to assemblies that are nearby of the user location, ", allowableValues = "featured,nearby,summary,random") String filter,
+			@ApiParam(name = "shortname", value = "Search by shortname") String shortname) {
+		List<Assembly> a = null;
+		if(shortname != null && !shortname.equals("")){
+			 Assembly assem= Assembly.findByShortName(shortname);
+			 if (assem !=null) {
+				 a = new ArrayList<Assembly>();
+				 a.add(assem);
+			 }
+		}else {
+			 a = AssembliesDelegate.findAssemblies(query, filter, true);
+		}
 		if (a != null)
 			return ok(Json.toJson(a));
 		else {
@@ -137,6 +146,10 @@ public class Assemblies extends Controller {
 			if (query != null && !query.isEmpty() && errorMsg.isEmpty())
 				errorMsg = "No assemblies with a title resembling query = '"
 						+ query + "'";
+			// 3. If there was a shortname, said something about the shortname
+			if (shortname != null && !shortname.isEmpty() && errorMsg.isEmpty())
+				errorMsg = "No assemblies with a shortname = '"
+						+ shortname + "'";
 			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
 					errorMsg, "")));
 		}

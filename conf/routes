@@ -62,7 +62,7 @@ POST      /api/notification/events/:type                                  contro
 
 ##################################################################################################################################################################
 # Assemblies API
-GET       /api/assembly                                                   controllers.Assemblies.findAssemblies(query ?="", filter ?= "")
+GET       /api/assembly                                                   controllers.Assemblies.findAssemblies(query ?="", filter ?= "", shortname ?= "")
 POST      /api/assembly                                                   controllers.Assemblies.createAssembly(templates ?= "")
 GET       /api/assembly/name/:shortname                                   controllers.Assemblies.findAssemblyByShortname(shortname: String)
 GET       /api/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
