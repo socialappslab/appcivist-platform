@@ -12,6 +12,7 @@ import http.Headers;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -309,9 +310,44 @@ public class Assemblies extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			Assembly newAssembly = newAssemblyForm.get();
-
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			newAssembly.setAssemblyId(id);
+			Assembly oldAssembly = Assembly.findById(id);
+			newAssembly.setForumPosts(oldAssembly.getForumPosts());
+			newAssembly.setFollowedAssemblies(oldAssembly.getFollowedAssemblies());
+			newAssembly.setFollowingAssemblies(oldAssembly.getFollowingAssemblies());
+			List<Theme> themes = newAssembly.getThemes();
+			List<Theme> themesLoaded = new ArrayList<Theme>();
+			for (Theme theme: themes
+				 ) {
+				Theme t = Theme.read(theme.getThemeId());
+				themesLoaded.add(t);
+			}
+			newAssembly.setThemes(themesLoaded);
+			List<Config> configs = newAssembly.getConfigs();
+			List<Config> configsLoaded = new ArrayList<Config>();
+			for (Config conf: configs
+				 ) {
+				Config c = Config.read(conf.getUuid());
+				configsLoaded.add(c);
+			}
+			newAssembly.setConfigs(configsLoaded);
+			List<Campaign> campaigns = newAssembly.getCampaigns();
+			List<Campaign> campaignsLoaded = new ArrayList<Campaign>();
+			for (Campaign camp: campaigns
+				 ) {
+				Campaign c = Campaign.read(camp.getCampaignId());
+				campaignsLoaded.add(c);
+			}
+			newAssembly.setCampaigns(campaignsLoaded);
+			List<WorkingGroup> wg = newAssembly.getWorkingGroups();
+			List<WorkingGroup> wgLoaded = new ArrayList<WorkingGroup>();
+			for (WorkingGroup wgroup: wg
+				 ) {
+				WorkingGroup workingGroup = WorkingGroup.read(wgroup.getGroupId());
+				wgLoaded.add(workingGroup);
+			}
+			newAssembly.setWorkingGroups(wgLoaded);
 			newAssembly.update();
 
 			// TODO: return URL of the new group

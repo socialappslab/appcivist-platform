@@ -197,7 +197,7 @@ public class Ballot extends Model {
 	}
 
 	public void setComponentId(Long componentId) {
-		this.component = Component.read(componenId);
+		this.component = Component.read(componentId);
 	}
 
 	public Date getStartsAt() {
