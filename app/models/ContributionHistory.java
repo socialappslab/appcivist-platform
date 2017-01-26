@@ -21,10 +21,7 @@ import javax.persistence.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel(value="ContributionHistory", description="History of changes and events related to a contribution")
@@ -281,6 +278,18 @@ public class ContributionHistory extends AppCivistBaseModel {
         }
 
         contributionHistory.save();
+
+        try {
+            List<ContributionHistory> histories = getContributionsHistory(contribution.getContributionId());
+            ContributionHistoryItem changeset = histories.get(histories.size()-1).getChanges();
+            if (changeset.getAssociationChanges().isEmpty() && changeset.getExternalChanges().isEmpty()
+                    && changeset.getInternalChanges().isEmpty()){
+                contributionHistory.softRemove();
+            }
+        } catch (Exception e) {
+            Logger.warn("Error getting histories");
+        }
+
     }
 
     public static List<ContributionHistory> getContributionsHistory(Long contributionId) throws Exception {
@@ -413,7 +422,6 @@ public class ContributionHistory extends AppCivistBaseModel {
             }
 
         }
-
         //Now, lets process the resourcespace
     }
 
