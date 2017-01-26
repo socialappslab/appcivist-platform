@@ -835,6 +835,36 @@ public class Contributions extends Controller {
         return ok(Json.toJson(contributionHistories));
     }
 
+    /**
+     * POST       /api/assembly/:aid/contribution/:cid
+     *
+     * @param aid
+     * @param contributionId
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = ContributionHistory.class, responseContainer = "List", produces = "application/json", value = "Delete duplicate contributions change history")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+//	@ApiImplicitParams({
+//			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result deleteContributionsChangeHistory(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) throws Exception {
+        List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(contributionId);
+        boolean createdHistory = false;
+        for (ContributionHistory contributionHistory :contributionHistories
+             ) {
+            if(createdHistory){
+                contributionHistory.softRemove();
+                contributionHistories.remove(contributionHistory);
+            }
+            if (contributionHistory.getChanges().getAssociationChanges().isEmpty() && contributionHistory.getChanges().getExternalChanges().isEmpty()
+                    && contributionHistory.getChanges().getInternalChanges().isEmpty()){
+                createdHistory = true;
+            }
+        }
+        return ok(Json.toJson(contributionHistories));
+    }
+
 
 
 	/* CREATE ENDPOINTS 
