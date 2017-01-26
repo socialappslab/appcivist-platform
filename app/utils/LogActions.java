@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.util.Calendar;
 
 import models.Log;
-import play.Logger;
 import play.Play;
 import play.mvc.Http.Context;
 import play.mvc.Http.Request;

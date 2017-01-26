@@ -1,18 +1,25 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSqlBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
-import enums.ContributionStatus;
-import io.swagger.annotations.ApiModel;
-
-import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -37,14 +44,14 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Boolean elegibility;
 	@Column(name = "textual_feedback")
 	private String textualFeedback;
-	@Enumerated(EnumType.ORDINAL)
+	@Enumerated(EnumType.STRING)
 	private ContributionFeedbackTypes type;
-	@Enumerated(EnumType.ORDINAL)
+	@Enumerated(EnumType.STRING)
 	private ContributionFeedbackStatus status;
 	@Column(name = "working_group_id")
 	private Long workingGroupId;
 	@Column(name = "official_group_feedback")
-	private Boolean officialGroupFeedback;
+	private Boolean officialGroupFeedback = false;
 	private Boolean archived = false;
 
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
@@ -64,8 +71,8 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	@JsonIgnore
 	public List<ContributionFeedback> getContributionFeedbackHistory(){
 		return find.where().eq("contributionId", this.contributionId).eq("workingGroupId", workingGroupId).
-				eq("userId", this.userId).eq("status", this.status == null ? null : this.status.ordinal()).
-				eq("type", this.type == null ? null : this.type.ordinal()).eq("archived", true).
+				eq("userId", this.userId).eq("status", this.status == null ? null : this.status).
+				eq("type", this.type == null ? null : this.type).eq("archived", true).
 				orderBy("creation").findList();
 	}
 
@@ -387,8 +394,8 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	public static List<ContributionFeedback> findPreviousContributionFeedback(Long cid, Long userId, Long workingGroupId,
 												ContributionFeedbackTypes type, ContributionFeedbackStatus status ){
 		return find.where().eq("contributionId", cid).eq("workingGroupId", workingGroupId).
-				eq("userId", userId).eq("type", type == null ? null : type.ordinal()).
-				eq("status", status == null ? null : status.ordinal()).eq("archived", false).findList();
+				eq("userId", userId).eq("type", type == null ? null : type).
+				eq("status", status == null ? null : status).eq("archived", false).findList();
 
 	}
 

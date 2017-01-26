@@ -1147,10 +1147,8 @@ ALTER TABLE contribution_feedback add column feasibility INTEGER;
 alter table contribution_feedback add constraint "ck_contribution_feedback_feasibility" check (feasibility = ANY (ARRAY[1, 2, 3, 4, 5]));
 ALTER TABLE contribution_feedback add column elegibility BOOLEAN;
 ALTER TABLE contribution_feedback add column textual_feedback text;
-alter table contribution_feedback add column type INTEGER;
-alter table contribution_feedback add constraint "ck_contribution_feedback_type" check (type = ANY (ARRAY[0, 1, 2]));
-alter table contribution_feedback add column status INTEGER;
-alter table contribution_feedback add constraint "ck_contribution_feedback_status" check (type = ANY (ARRAY[0, 1]));
+alter table contribution_feedback add column type character varying (25);
+alter table contribution_feedback add column status character varying (25);
 alter table contribution_feedback add column working_group_id BIGINT;
 alter table contribution_feedback add column official_group_feedback BOOLEAN;
 alter table contribution_feedback add column archived BOOLEAN;
@@ -1414,3 +1412,6 @@ alter table appcivist_user add column last_update timestamp;
 alter table appcivist_user add column lang varchar(255);
 alter table appcivist_user add column removal timestamp;
 alter table appcivist_user add column removed boolean;
+
+-- 23.sql
+-- This evolution is only for keeping evolutions not modified, the full create script already incorporates these changes on creation of the table

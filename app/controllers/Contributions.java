@@ -1470,6 +1470,7 @@ public class Contributions extends Controller {
 
                 }
 
+                // Make sure ContributionFeedback Type and Status are correct                
                 ContributionFeedback.create(feedback);
 
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
