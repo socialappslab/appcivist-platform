@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.annotation.JsonView;
+
 import enums.*;
 import exceptions.ConfigurationException;
 import http.Headers;
@@ -74,6 +75,7 @@ import play.mvc.*;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.LogActions;
 import utils.services.EtherpadWrapper;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
@@ -1422,6 +1424,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
+        ContributionStatistics updatedStats = new ContributionStatistics(cid);
 
         if (updatedFeedbackForm.hasErrors()) {
             return contributionFeedbackError(updatedFeedbackForm);
@@ -1432,9 +1435,8 @@ public class Contributions extends Controller {
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus());
 
-
+            Ebean.beginTransaction();
             try {
-                Ebean.beginTransaction();
                 feedback.setContributionId(cid);
                 feedback.setUserId(author.getUserId());
 
@@ -1448,30 +1450,24 @@ public class Contributions extends Controller {
 
                 }
 
-                //We have to do some authorization control
+                // We have to do some authorization control
                 if (feedback.getWorkingGroupId() != null) {
                     //The user has to be member of working group
                     Membership m = MembershipGroup.findByUserAndGroupId(feedback.getUserId(), feedback.getWorkingGroupId());
                     List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MEMBER.getName());
-                    if (membershipRoles == null || membershipRoles.isEmpty()) {
-                        //Error
-                        return internalServerError(Json
-                                .toJson(new TransferResponseStatus(
-                                        ResponseStatus.UNAUTHORIZED,
-                                        "User has to be member of working group")));
-                    }
 
-                    if (feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()) {
+                    if (feedback.getType().equals(ContributionFeedbackTypes.WORKING_GROUP) && feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()) {
                         //The user has to be coordinator of working group
                         membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
                         if (membershipRoles == null || membershipRoles.isEmpty()) {
-                            //Error
-                            return internalServerError(Json
+                        	Logger.error("User has to be coordinator of working group");
+                            return unauthorized(Json
                                     .toJson(new TransferResponseStatus(
                                             ResponseStatus.UNAUTHORIZED,
                                             "User has to be coordinator of working group")));
                         }
                     }
+
                 }
 
                 ContributionFeedback.create(feedback);
@@ -1494,16 +1490,20 @@ public class Contributions extends Controller {
                             feedback);
                 });
 
-                Ebean.commitTransaction();
+                Contribution contribution = Contribution.read(cid);
+                contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
+                contribution.update();
+
             } catch (Exception e) {
+            	Promise.promise(() -> {
+                    Logger.error(LogActions.exceptionStackTraceToString(e));
+                    return true;
+            	});
                 Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
             }
 
-            ContributionStatistics updatedStats = new ContributionStatistics(cid);
-            Contribution contribution = Contribution.read(cid);
-            contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
-            contribution.update();
+            Ebean.commitTransaction();
             return ok(Json.toJson(updatedStats));
         }
     }

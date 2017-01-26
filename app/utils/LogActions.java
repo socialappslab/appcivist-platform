@@ -1,5 +1,7 @@
 package utils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Calendar;
 
 import models.Log;
@@ -74,4 +76,10 @@ public class LogActions {
 		}
 	}
 	
+	public static String exceptionStackTraceToString(Exception e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
+	}
 }
