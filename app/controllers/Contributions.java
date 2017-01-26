@@ -1474,13 +1474,15 @@ public class Contributions extends Controller {
 
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
                 NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
-                Contribution c = Contribution.read(feedback.getContributionId());
-                for (Long campId : c.getCampaignIds()) {
-                    Campaign campaign = Campaign.read(campId);
-                    Promise.promise(() -> {
-                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
-                    });
-                }
+                Promise.promise(() -> {               
+	                Contribution c = Contribution.read(feedback.getContributionId());
+	                for (Long campId : c.getCampaignIds()) {
+	                    Campaign campaign = Campaign.read(campId);
+	                        NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
+	                }
+	                return true;
+                });
+
                 feedback.getWorkingGroupId();
                 Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
