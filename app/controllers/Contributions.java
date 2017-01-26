@@ -482,7 +482,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result readContributionFeedbackPrivate(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "gid", value = "Group ID") Long gid,
@@ -510,9 +510,6 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "GET", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json",
             value = "Get ContributionFeedbacks")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)
     public static Result readContributionFeedbackNoGroupId(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
