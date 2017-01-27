@@ -841,7 +841,7 @@ String uuidAsString, List<Component> phases) {
 		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
 		sqlQuery.setParameter("rsId", rsId);
 		SqlRow result = sqlQuery.findUnique();
-		return result.getUUID("binding_ballot");
+		return result !=null ? result.getUUID("binding_ballot") : null;
 	}
 	
 	public static UUID queryConsultiveBallotByCampaignResourceSpaceId(Long rsId) {
@@ -849,7 +849,7 @@ String uuidAsString, List<Component> phases) {
 		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
 		sqlQuery.setParameter("rsId", rsId);
 		SqlRow result = sqlQuery.findUnique();
-		return result.getUUID("consultive_ballot");	
+		return result !=null ? result.getUUID("consultive_ballot") : null;	
 	}
 
 	public static Campaign readByUUID(UUID uuid) {
