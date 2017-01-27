@@ -2,10 +2,12 @@ package delegates;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
+
 import controllers.Notifications;
 import enums.AppcivistResourceTypes;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
+import enums.ResponseStatus;
 import exceptions.ConfigurationException;
 import models.*;
 import models.transfer.*;
@@ -16,6 +18,7 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.GlobalData;
+import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
 import java.util.ArrayList;
@@ -494,8 +497,16 @@ public class NotificationsDelegate {
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.MISSING_CONFIGURATION, e.getMessage()));
-            Logger.error("Configuration error: ", e);
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+        	Logger.error("Configuration error: ", LogActions.exceptionStackTraceToString(e));
             return Controller.internalServerError(Json.toJson(responseBody));
+        } catch (Exception e) {
+            Logger.info("NOTIFICATION: Error while signaling => " + e.getMessage());
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(e.getMessage());
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+        	Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
+        	return Controller.internalServerError(Json.toJson(responseBody));
         }
     }
 

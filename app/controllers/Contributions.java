@@ -69,7 +69,9 @@ import play.Logger;
 import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F.Function;
 import play.libs.F.Promise;
+import play.libs.ws.WSResponse;
 import play.libs.Json;
 import play.mvc.*;
 import play.twirl.api.Content;
@@ -916,25 +918,27 @@ public class Contributions extends Controller {
             }
             
             Ebean.commitTransaction();
-            Logger.info("SE ENVIARA NOTIFICACION SI SON DEL TIPO IDEA O PROPOSAL: " + c.getType());
+            Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
                     c.getType().equals(ContributionTypes.PROPOSAL)) {
                 try {
                     NotificationsDelegate.createNotificationEventsByType(
                             ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
                 } catch (ConfigurationException e) {
-                    Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
+                    Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
+                } catch (Exception e) {
+                    Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
                 }
             }
-            // Signal a notification asynchronously
-            /*Promise.promise(() -> {
-                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            });*/
-            try {
-                NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            Promise<Result> p = Promise.promise( () -> {
+            	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
+            });
+//            try {
+//				p.get(10000);
+//			} catch (Exception e) {
+//                Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
+//			}
             
             return ok(Json.toJson(c));
         }
