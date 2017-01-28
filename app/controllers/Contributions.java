@@ -311,7 +311,10 @@ public class Contributions extends Controller {
         if (sorting != null && !sorting.isEmpty()) {
             conditions.put("sorting", sorting);
         }
-
+        if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+        	conditions.put("status",ContributionStatus.PUBLISHED);
+        }
+        	
         PaginatedContribution pag = new PaginatedContribution();
         if(all != null){
             contributions = ContributionsDelegate.findContributions(conditions, null, null);
