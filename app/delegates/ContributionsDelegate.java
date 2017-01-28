@@ -15,11 +15,13 @@ import com.avaje.ebean.*;
 import enums.ContributionStatus;
 import enums.ContributionTypes;
 import models.*;
+import net.gjerull.etherpad.client.EPLiteException;
 
 import org.dozer.DozerBeanMapper;
 
 import play.Logger;
 import play.Play;
+import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 import enums.ResourceTypes;
 
@@ -256,13 +258,22 @@ public class ContributionsDelegate {
         // Create pad and set text
         String padId = UUID.randomUUID().toString();
         String templateText = t != null ? prepareTemplate(t) : c.getText();
-
-        if (t != null) {
-            eth.createPad(padId);
-            eth.setHTML(padId, templateText);
+        Boolean isHtml = TextUtils.isHtml(templateText);
+        eth.createPad(padId);
+        if(isHtml) {
+        	try {
+				eth.setHTML(padId, templateText);
+			} catch (EPLiteException e) {
+				String htmlHead="<html><head></head><body>";
+				String htmlTail="</body></html>";
+				templateText=htmlHead+templateText+htmlTail;
+				eth.setHTML(padId, templateText);
+			}
+        	
         } else {
-            eth.createPad(padId, templateText);
+        	eth.setText(padId, templateText);
         }
+        
         String readId = eth.getReadOnlyId(padId);
         String readurl = eth.buildReadOnlyUrl(readId);
 
