@@ -18,6 +18,8 @@ import models.*;
 import net.gjerull.etherpad.client.EPLiteException;
 
 import org.dozer.DozerBeanMapper;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import play.Logger;
 import play.Play;
@@ -264,10 +266,8 @@ public class ContributionsDelegate {
         	try {
 				eth.setHTML(padId, templateText);
 			} catch (EPLiteException e) {
-				String htmlHead="<html><head></head><body>";
-				String htmlTail="</body></html>";
-				templateText=htmlHead+templateText+htmlTail;
-				eth.setHTML(padId, templateText);
+				Document doc = Jsoup.parseBodyFragment(templateText);
+				eth.setHTML(padId, doc.html());
 			}
         	
         } else {
