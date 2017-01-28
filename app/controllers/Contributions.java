@@ -1574,12 +1574,20 @@ public class Contributions extends Controller {
             Contribution newContribution = newContributionForm.get();
             newContribution.setContributionId(contributionId);
             newContribution.setContextUserId(author.getUserId());
-            List<User> authors = new ArrayList<User>();
-            for (User a : newContribution.getAuthors()) {
-                User refreshedAuthor = User.read(a.getUserId());
-                authors.add(refreshedAuthor);
+            
+            List<User> authorsLoaded = new ArrayList<User>();
+            Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
+            for (User user: newContribution.getAuthors()) {
+            	Long userId = user.getUserId();
+            	User auth = User.read(userId);
+            	Boolean alreadyAdded = authorAlreadyAdded.get(userId);
+            	if (alreadyAdded == null || !alreadyAdded) {
+            		authorsLoaded.add(auth);
+            		authorAlreadyAdded.put(auth .getUserId(), true);
+            	}
             }
-            newContribution.setAuthors(authors);
+            
+            newContribution.setAuthors(authorsLoaded);
             Contribution.update(newContribution);
 
             ResourceSpace rs = Assembly.read(aid).getResources();
