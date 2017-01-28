@@ -126,9 +126,6 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(name="authors", value="List of authors when is more then one but not a working group")
     private List<User> authors = new ArrayList<User>();
 
-    // TODO: redo using priority matrix and allowing for multiple users to provide their priority matrix values
-    private Integer priority;
-
     private Integer popularity = 0;
 
     private Boolean pinned = false;
@@ -191,7 +188,7 @@ public class Contribution extends AppCivistBaseModel {
     //private List<Contribution> inspirations;
     
     @JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
-            "budget", "priority", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
+            "budget", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
             "attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
             "actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
             "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes"

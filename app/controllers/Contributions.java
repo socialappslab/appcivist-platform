@@ -1883,12 +1883,17 @@ public class Contributions extends Controller {
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
         }
+
         List<User> authorsLoaded = new ArrayList<User>();
+        Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
         for (User user: newContrib.getAuthors()) {
-            User contact = User.read(user.getUserId());
-            if(!user.getUserId().equals(author.getUserId())){
-                authorsLoaded.add(contact);
-            }
+        	Long userId = user.getUserId();
+        	User auth = User.read(userId);
+        	Boolean alreadyAdded = authorAlreadyAdded.get(userId);
+        	if (alreadyAdded == null || !alreadyAdded) {
+        		authorsLoaded.add(auth);
+        		authorAlreadyAdded.put(auth .getUserId(), true);
+        	}
         }
         newContrib.setAuthors(authorsLoaded);
         Contribution.create(newContrib);

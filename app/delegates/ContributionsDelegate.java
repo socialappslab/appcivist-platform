@@ -1,8 +1,5 @@
 package delegates;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,21 +7,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.avaje.ebean.*;
-
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import models.*;
+import models.Assembly;
+import models.Campaign;
+import models.Contribution;
+import models.ContributionTemplate;
+import models.ContributionTemplateSection;
+import models.Resource;
+import models.ResourceSpace;
 import net.gjerull.etherpad.client.EPLiteException;
 
 import org.dozer.DozerBeanMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import play.Logger;
 import play.Play;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
+
+import com.avaje.ebean.Expr;
+import com.avaje.ebean.Expression;
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.Model;
+import com.avaje.ebean.RawSql;
+import com.avaje.ebean.RawSqlBuilder;
+
+import enums.ContributionStatus;
+import enums.ContributionTypes;
 import enums.ResourceTypes;
 
 public class ContributionsDelegate {
@@ -134,7 +142,7 @@ public class ContributionsDelegate {
         ExpressionList<Contribution> where = null;
         String rawQuery = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal,\n " +
                 "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
-                "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, t0.priority,\n " +
+                "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, "/*t0.priority,*/+"\n " +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
                 "  t0.source_code, t0.popularity, t0.pinned from contribution t0\n ";
         String sorting = "pinned desc";
