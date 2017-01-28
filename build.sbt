@@ -42,7 +42,8 @@ libraryDependencies ++= Seq(
   "org.hamcrest" % "hamcrest-library" % "1.3",
   "com.novocode" % "junit-interface" % "0.8" % "test->default", 
   "com.amazonaws" % "aws-java-sdk" % "1.10.42", 
-  "com.zaxxer" % "HikariCP" % "2.4.6"
+  "com.zaxxer" % "HikariCP" % "2.4.6", 
+  "org.jsoup" % "jsoup" % "1.10.2"
 )
 
 libraryDependencies += evolutions

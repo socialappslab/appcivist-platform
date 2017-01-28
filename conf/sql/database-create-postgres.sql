@@ -1415,3 +1415,7 @@ alter table appcivist_user add column removed boolean;
 
 -- 23.sql
 -- This evolution is only for keeping evolutions not modified, the full create script already incorporates these changes on creation of the table
+
+-- 24.sql
+alter table contribution add column plain_text text;
+update contribution set plain_text = text;

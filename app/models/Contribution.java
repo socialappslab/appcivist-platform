@@ -1,6 +1,7 @@
 package models;
 
 import com.avaje.ebean.Expr;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -27,6 +28,7 @@ import javax.persistence.Transient;
 import models.location.Location;
 import models.misc.Views;
 import play.data.validation.Constraints.Required;
+import utils.TextUtils;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
@@ -43,6 +45,8 @@ import enums.ContributionStatus;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause = "removed=false")
@@ -75,6 +79,11 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
+    
+    @JsonView(Views.Public.class)
+    @ApiModelProperty(value="Text describing the contribution, in plain text format", position=3)
+    @Column(name = "plain_text", columnDefinition = "plain_text")
+    private String plainText;
 
     @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
@@ -343,6 +352,14 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setText(String text) {
         this.text = text;
+    }
+    
+    public String getPlainText() {
+        return plainText;
+    }
+
+    public void setPlainText(String text) {
+        this.plainText = text;
     }
 
     public ContributionTypes getType() {
@@ -772,6 +789,12 @@ public class Contribution extends AppCivistBaseModel {
         // 2. Check if there are working group associated and save the groups in
         // a list to add the contribution to them later
         List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors();
+        
+        // Set plain text if text is HTML
+        if (TextUtils.isHtml(c.getText())) {
+        	c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
+        	c.setPlainText(Jsoup.parse(c.getText()).text());
+        }
         c.save();
 
         // 3. Add existing entities in relationships to the manytomany resources
@@ -800,7 +823,6 @@ public class Contribution extends AppCivistBaseModel {
             workingGroup.update();
             workingGroup.refresh();
         }
-
 
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
@@ -885,6 +907,13 @@ public class Contribution extends AppCivistBaseModel {
             });
             c.setWorkingGroups(null);
         }
+        
+        // Set plain text if text is HTML
+        if (TextUtils.isHtml(c.getText())) {
+        	c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
+        	c.setPlainText(Jsoup.parse(c.getText()).text());
+        }
+        
         c.update();
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
