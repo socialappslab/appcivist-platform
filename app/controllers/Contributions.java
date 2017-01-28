@@ -1591,7 +1591,18 @@ public class Contributions extends Controller {
             }
             
             newContribution.setAuthors(authorsLoaded);
-            Contribution.update(newContribution);
+            Ebean.beginTransaction();
+            try {
+				Contribution.update(newContribution);
+				Ebean.commitTransaction();
+			} catch (Exception e) {
+				Ebean.rollbackTransaction();
+				e.printStackTrace();
+				Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
+	            TransferResponseStatus responseBody = new TransferResponseStatus();
+	            responseBody.setStatusMessage(e.getMessage());
+	            return Controller.internalServerError(Json.toJson(responseBody));
+			}
 
             ResourceSpace rs = Assembly.read(aid).getResources();
             Promise.promise(() -> {

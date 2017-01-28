@@ -7,7 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -191,7 +194,7 @@ public class Contribution extends AppCivistBaseModel {
             "budget", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
             "attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
             "actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
-            "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes"
+            "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes", "addedThemes"
     })
     @JsonIgnore
     @Transient
@@ -255,6 +258,9 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Theme> existingThemes;
+
+    @Transient
+    private List<Theme> addedThemes;
 
     /**
      * The find property is an static property that facilitates database query
@@ -453,12 +459,12 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Theme> getThemes() {
-        return resourceSpace.getThemes();
+        return resourceSpace != null ? resourceSpace.getThemes() : null;
     }
 
     public void setThemes(List<Theme> themes) {
         this.themes = themes;
-        this.resourceSpace.setThemes(themes);
+        if (resourceSpace != null ) this.resourceSpace.setThemes(themes);
     }
 
     public void addTheme(Theme t) {
@@ -466,16 +472,16 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Resource> getAttachments() {
-        return resourceSpace.getResources();
+        return resourceSpace != null ? resourceSpace.getResources() : null;
     }
 
     public void setAttachments(List<Resource> attachments) {
         this.attachments = attachments;
-        this.resourceSpace.setResources(attachments);
+        if (resourceSpace != null) this.resourceSpace.setResources(attachments);
     }
 
     public void addAttachment(Resource attach) {
-        this.resourceSpace.addResource(attach);
+    	if(resourceSpace != null) this.resourceSpace.addResource(attach);
     }
 
     public Location getLocation() {
@@ -503,16 +509,16 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Hashtag> getHashtags() {
-        return resourceSpace.getHashtags();
+        return resourceSpace != null ? resourceSpace.getHashtags() : null;
     }
 
     public void setHashtags(List<Hashtag> hashtags) {
         this.hashtags = hashtags;
-        this.resourceSpace.setHashtags(hashtags);
+        if (resourceSpace != null) this.resourceSpace.setHashtags(hashtags);
     }
 
     public void addHashtag(Hashtag h) {
-        this.resourceSpace.addHashtag(h);
+        if (resourceSpace != null) this.resourceSpace.addHashtag(h);
     }
 
     public Long getResourceSpaceId() {
@@ -552,8 +558,7 @@ public class Contribution extends AppCivistBaseModel {
     }    
    
     public List<Contribution> getComments() {
-        return this.getResourceSpace()
-                .getContributionsFilteredByType(ContributionTypes.COMMENT);
+        return resourceSpace != null ? resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT) : null;
     }
 
     @JsonIgnore
@@ -581,7 +586,7 @@ public class Contribution extends AppCivistBaseModel {
 //    }
 
     public List<Contribution> getAssociatedContributions(){
-        return this.resourceSpace.getContributions();
+        return resourceSpace != null ? resourceSpace.getContributions() : null;
     }
 
     public List<Contribution> getPagedAssociatedContributions(Integer page, Integer pageSize) {
@@ -592,7 +597,7 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setAssociatedContributions(List<Contribution> contributions){
         this.associatedContributions = contributions;
-        this.getResourceSpace().getContributions().addAll(associatedContributions);
+        if (resourceSpace != null) resourceSpace.getContributions().addAll(associatedContributions);
     }
 
 //    public void addInspiration(Contribution c) {
@@ -609,18 +614,18 @@ public class Contribution extends AppCivistBaseModel {
     // updating the space directly
     public void setComments(List<Contribution> comments) {
         this.comments = comments;
-        this.resourceSpace.setContributionsFilteredByType(comments,
+        if (resourceSpace != null) this.resourceSpace.setContributionsFilteredByType(comments,
                 ContributionTypes.COMMENT);
     }
 
     public void setAssessments(List<Contribution> assessments) {
         this.assessments = assessments;
-        this.resourceSpace.setContributionsFilteredByType(assessments,
+        if (resourceSpace != null) this.resourceSpace.setContributionsFilteredByType(assessments,
                 ContributionTypes.ASSESSMENT);
     }
 
     public List<ComponentMilestone> getAssociatedMilestones() {
-        this.associatedMilestones = this.resourceSpace.getMilestones();
+        this.associatedMilestones = resourceSpace != null ? resourceSpace.getMilestones() : null;
         return this.associatedMilestones;
     }
 
@@ -689,8 +694,8 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Contribution> getAssessments() {
-        this.assessments = this.resourceSpace
-                .getContributionsFilteredByType(ContributionTypes.ASSESSMENT);
+        this.assessments = resourceSpace != null ? this.resourceSpace
+                .getContributionsFilteredByType(ContributionTypes.ASSESSMENT) : null;
         return this.assessments;
     }
 
@@ -744,6 +749,15 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setExistingThemes(List<Theme> existingThemes) {
         this.existingThemes = existingThemes;
+    }
+
+    @JsonIgnore
+    public List<Theme> getAddedThemes() {
+        return addedThemes;
+    }
+
+    public void setAddedThemes(List<Theme> addedThemes) {
+        this.addedThemes = addedThemes;
     }
 
     /*
@@ -873,41 +887,15 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public static Contribution update(Contribution c) {
-        List<Theme> themes = new ArrayList<>();
-        for (Theme theme : c.getThemes()) {
-            if (theme.getThemeId() == null) {
-                themes.add(theme);
-            } else {
-                theme.update();
-                theme.refresh();
-            }
-        }
-        c.setThemes(null);
-
-        List<Resource> attachments = new ArrayList<>();
-        for (Resource resource : c.getAttachments()) {
-            if (resource.getResourceId() == null) {
-                attachments.add(resource);
-            } else {
-                resource.update();
-                resource.refresh();
-            }
-        }
-        c.setAttachments(null);
-
-        // Asign the contribution to the working groups
-        List<WorkingGroup> workingGroups = c.getWorkingGroups();
-        if (workingGroups != null) {
-            workingGroups.forEach(wg -> {
-                wg.addContribution(c);
-                wg.update();
-            });
-            c.setWorkingGroups(null);
-        }
+    	Contribution original = Contribution.read(c.getContributionId());
+        // Do not touch things in the resource spaces attached to the contribution
+        c.setContainingSpaces(original.getContainingSpaces());
+        c.setForum(original.getForum());
+        c.setResourceSpace(original.getResourceSpace());
         
         // Set plain text if text is HTML
         if (TextUtils.isHtml(c.getText())) {
-        	c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
+        	c.setText(Jsoup.clean(c.getText(), Whitelist.basicWithImages()));
         	c.setPlainText(Jsoup.parse(c.getText()).text());
         }
         
@@ -917,7 +905,11 @@ public class Contribution extends AppCivistBaseModel {
         return c;
     }
 
-    public List<WorkingGroup> getWorkingGroups() {
+    private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
+		this.containingSpaces = containingSpaces2;
+	}
+
+	public List<WorkingGroup> getWorkingGroups() {
         return workingGroups;
     }
 
