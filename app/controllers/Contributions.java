@@ -931,14 +931,9 @@ public class Contributions extends Controller {
                 }
             }
 
-            Promise<Result> p = Promise.promise( () -> {
+            Promise.promise( () -> {
             	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
-//            try {
-//				p.get(10000);
-//			} catch (Exception e) {
-//                Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-//			}
             
             return ok(Json.toJson(c));
         }
