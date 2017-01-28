@@ -1,16 +1,6 @@
 package controllers;
 
 import static play.data.Form.form;
-
-import com.amazonaws.services.elasticache.model.SourceType;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.annotation.JsonView;
-
-import enums.*;
-import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -29,7 +19,12 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
@@ -69,11 +64,13 @@ import play.Logger;
 import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
-import play.libs.F.Function;
 import play.libs.F.Promise;
-import play.libs.ws.WSResponse;
 import play.libs.Json;
-import play.mvc.*;
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.Results;
+import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
@@ -85,11 +82,25 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
+import enums.ContributionFeedbackTypes;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
+import enums.ManagementTypes;
+import enums.MyRoles;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
+import enums.SupportedMembershipRegistration;
+import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
@@ -100,6 +111,7 @@ public class Contributions extends Controller {
     public static final Form<ContributionFeedback> CONTRIBUTION_FEEDBACK_FORM = form(ContributionFeedback.class);
     public static final Form<Resource> ATTACHMENT_FORM = form(Resource.class);
     public static final Form<ThemeListTransfer> THEMES_FORM = form(ThemeListTransfer.class);
+	private static BufferedReader br;
 
     /**
      * GET       /api/assembly/:aid/contribution
@@ -1197,7 +1209,6 @@ public class Contributions extends Controller {
                 rs.update();
             }
 
-            ResourceSpace resourceSpace = Assembly.read(aid).getResources();
             // Signal a notification asynchronously
             Promise.promise(() -> {
                 return NotificationsDelegate.newContributionInContribution(c, cNew);
@@ -1592,8 +1603,6 @@ public class Contributions extends Controller {
         // 1. read the new contribution data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM.bindFromRequest();
-        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-
         if (newContributionForm.hasErrors()) {
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
@@ -1603,14 +1612,6 @@ public class Contributions extends Controller {
         } else {
             Contribution contributionFromDatabase = Contribution.read(contributionId);
             Contribution moderated = newContributionForm.get();
-//            newContribution.setContributionId(contributionId);
-//            newContribution.setContextUserId(author.getUserId());
-//            List<User> authors = new ArrayList<User>();
-//            for (User a : newContribution.getAuthors()) {
-//                User refreshedAuthor = User.read(a.getUserId());
-//                authors.add(refreshedAuthor);
-//            }
-//            newContribution.setAuthors(authors);
             contributionFromDatabase.setModerationComment(moderated.getModerationComment());
             Contribution.update(contributionFromDatabase);
             Contribution.softDelete(contributionFromDatabase);
@@ -2131,9 +2132,6 @@ public class Contributions extends Controller {
                 if (campaign != null) {
                     rs = campaign.getResources();
                 }
-                //Ebean.beginTransaction();
-                // read csv file
-                BufferedReader br = null;
                 br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
                 String cvsSplitBy = ",";
                 String line = br.readLine();
@@ -2203,7 +2201,7 @@ public class Contributions extends Controller {
                     if (cell.length == 9) {
                         String feedback = cell[7];
                         String feedbackUser = cell[8];
-                        ContributionFeedback cFeed = cFeed = new ContributionFeedback();
+                        ContributionFeedback cFeed = new ContributionFeedback();
                         switch (feedback) {
                             case "up":
                                 cFeed.setUp(true);
@@ -2214,7 +2212,7 @@ public class Contributions extends Controller {
                             default:
                                 break;
                         }
-                        User user = User.findByUserName(cell[8]);
+                        User user = User.findByUserName(feedbackUser);
                         cFeed.setUserId(user.getUserId());
                         cFeed.setContributionId(c.getContributionId());
                         cFeed.setType(ContributionFeedbackTypes.TECHNICAL_ASSESSMENT);
@@ -2319,7 +2317,6 @@ public class Contributions extends Controller {
 
         if (uploadFilePart != null && campaign != null) {
             try {
-                BufferedReader br = null;
                 br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
                 String cvsSplitBy = "\\t";
                 String line = br.readLine();
@@ -2514,11 +2511,11 @@ public class Contributions extends Controller {
                                         String url = attachmentUrls[i];
 
                                         if (name != null && !name.equals("")) {
-                                            Logger.info("Adding attachment" + attachmentNames[i] + "...");
+                                            Logger.info("Adding attachment" + name + "...");
                                             Resource resource = new Resource();
-                                            resource.setName(attachmentNames[i]);
-                                            Logger.info(attachmentNames[i] + " => " + attachmentUrls[i]);
-                                            resource.setUrl(new URL(attachmentUrls[i]));
+                                            resource.setName(name);
+                                            Logger.info(name + " => " + url);
+                                            resource.setUrl(new URL(url));
                                             resource.setResourceType(ResourceTypes.FILE);
                                             resources.add(resource);
                                         }
