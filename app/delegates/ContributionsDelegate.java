@@ -19,6 +19,8 @@ import net.gjerull.etherpad.client.EPLiteException;
 import org.dozer.DozerBeanMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Document.OutputSettings;
+import org.jsoup.nodes.Entities.EscapeMode;
 
 import play.Play;
 import utils.TextUtils;
@@ -275,6 +277,9 @@ public class ContributionsDelegate {
 				eth.setHTML(padId, templateText);
 			} catch (EPLiteException e) {
 				Document doc = Jsoup.parseBodyFragment(templateText);
+				OutputSettings settings = new OutputSettings(); 
+				settings.escapeMode(EscapeMode.base);
+				doc.outputSettings(settings);
 				eth.setHTML(padId, doc.html());
 			}
         	
