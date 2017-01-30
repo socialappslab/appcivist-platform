@@ -512,6 +512,7 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     //@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)
+    @Restrict({@Group(GlobalData.USER_ROLE)}) 
     public static Result readContributionFeedbackNoGroupId(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
