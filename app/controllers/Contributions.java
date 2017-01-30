@@ -30,27 +30,7 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
 import javax.ws.rs.PathParam;
 
-import models.Assembly;
-import models.Ballot;
-import models.BallotCandidate;
-import models.Campaign;
-import models.Component;
-import models.Contribution;
-import models.ContributionFeedback;
-import models.ContributionHistory;
-import models.ContributionStatistics;
-import models.ContributionTemplate;
-import models.Membership;
-import models.MembershipGroup;
-import models.MembershipInvitation;
-import models.NonMemberAuthor;
-import models.Resource;
-import models.ResourceSpace;
-import models.SecurityRole;
-import models.Theme;
-import models.User;
-import models.WorkingGroup;
-import models.WorkingGroupProfile;
+import models.*;
 import models.misc.Views;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
@@ -501,7 +481,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result readContributionFeedbackPrivate(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "gid", value = "Group ID") Long gid,
@@ -531,7 +511,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)
+    //@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)
     public static Result readContributionFeedbackNoGroupId(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
@@ -540,8 +520,15 @@ public class Contributions extends Controller {
             // 1. obtaining the user of the requestor
             User author = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
-            List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
-            return ok(Json.toJson(feedbacks));
+            Membership m = MembershipAssembly.findByUserAndAssemblyIds(author.getUserId(), aid);
+            if (m!=null){
+                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
+                return ok(Json.toJson(feedbacks));
+            }else{
+                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
+                return ok(Json.toJson(feedbacks));
+            }
+
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
             return internalServerError(Json
