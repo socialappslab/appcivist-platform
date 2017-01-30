@@ -844,6 +844,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result createHistories() {
         List<Contribution> contributions = Contribution.findAll();
         for(Contribution c : contributions){
@@ -861,6 +862,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result deleteUnchangedContributionHistories() throws Exception {
         List<Contribution> contributions = Contribution.findAll();
         for(Contribution c : contributions){
