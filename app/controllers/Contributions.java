@@ -844,6 +844,56 @@ public class Contributions extends Controller {
         return ok(Json.toJson(contributionHistories));
     }
 
+    /**
+     * POST       /api/contribution/history
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", produces = "application/json", value = "Generates histories for all contributions")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result createHistories() {
+        List<Contribution> contributions = Contribution.findAll();
+        for(Contribution c : contributions){
+            ContributionHistory.createHistoricFromContribution(c);
+        }
+        return ok("ok");
+    }
+
+    /**
+     * POST       /api/contribution/clean/history
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", produces = "application/json", value = "Delete duplicate contributions change history")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result deleteUnchangedContributionHistories() throws Exception {
+        List<Contribution> contributions = Contribution.findAll();
+        for(Contribution c : contributions){
+            List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(c.getContributionId());
+            boolean createdHistory = false;
+            for (ContributionHistory contributionHistory :contributionHistories
+                    ) {
+                if(createdHistory){
+                    if (contributionHistory.getChanges().getAssociationChanges().isEmpty() && contributionHistory.getChanges().getExternalChanges().isEmpty()
+                            && contributionHistory.getChanges().getInternalChanges().isEmpty()){
+                        contributionHistory.softRemove();
+                    }
+                }
+                if (contributionHistory.getChanges().getAssociationChanges().isEmpty() && contributionHistory.getChanges().getExternalChanges().isEmpty()
+                        && contributionHistory.getChanges().getInternalChanges().isEmpty()){
+                    createdHistory = true;
+                }
+            }
+        }
+        return ok("ok");
+    }
+
 
 
 	/* CREATE ENDPOINTS 
