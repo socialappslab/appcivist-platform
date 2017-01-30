@@ -410,8 +410,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
 				.eq("archived", false)
 				//.eq("status", ContributionFeedbackStatus.PRIVATE)
-				.eq("userId", userId)
 				.isNull("workingGroupId");
+		if (userId != null)
+			where.eq("userId", userId);
 		if (type != null)
 			where.eq("type", ContributionFeedbackTypes.valueOf(type));
 		return where.findList();
