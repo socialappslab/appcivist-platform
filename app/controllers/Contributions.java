@@ -1507,11 +1507,11 @@ public class Contributions extends Controller {
                 if (feedback.getWorkingGroupId() != null) {
                     //The user has to be member of working group
                     Membership m = MembershipGroup.findByUserAndGroupId(feedback.getUserId(), feedback.getWorkingGroupId());
-                    List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MEMBER.getName());
+                    List<SecurityRole> membershipRoles = m!=null ? m.filterByRoleName(MyRoles.MEMBER.getName()) : null;
 
                     if (feedback.getType().equals(ContributionFeedbackTypes.WORKING_GROUP) && feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()) {
                         //The user has to be coordinator of working group
-                        membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+                        membershipRoles =  m!=null ? m.filterByRoleName(MyRoles.COORDINATOR.getName()) : null;
                         if (membershipRoles == null || membershipRoles.isEmpty()) {
                         	Logger.error("User has to be coordinator of working group");
                             return unauthorized(Json
