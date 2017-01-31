@@ -347,10 +347,9 @@ public class WorkingGroups extends Controller {
                 newWorkingGroup.setGroupId(groupId);
                 List<Theme> themes = newWorkingGroup.getThemes();
                 List<Theme> themesLoaded = new ArrayList<Theme>();
-                for (Theme theme: themes
-                     ) {
+                for (Theme theme: themes) {
                     Theme themeRead = Theme.read(theme.getThemeId());
-                    themesLoaded.add(theme);
+                    themesLoaded.add(themeRead);
                 }
                 newWorkingGroup.setThemes(themesLoaded);
                 newWorkingGroup.update();
