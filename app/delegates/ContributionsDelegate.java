@@ -285,7 +285,7 @@ public class ContributionsDelegate {
 				} catch (EPLiteException e2) {
 					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body manually.");
 					String html = "<html><head></head><body>" + templateText + "</body></html>";
-					eth.setHTML(padId, templateText);
+					eth.setHTML(padId, html);
 				}
 				
 			}
