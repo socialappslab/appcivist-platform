@@ -16,11 +16,13 @@ import models.Resource;
 import models.ResourceSpace;
 import net.gjerull.etherpad.client.EPLiteException;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.dozer.DozerBeanMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Entities.EscapeMode;
+import org.jsoup.safety.Whitelist;
 
 import play.Logger;
 import play.Play;
@@ -281,11 +283,14 @@ public class ContributionsDelegate {
 				try {
 					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body");
 					Document doc = Jsoup.parseBodyFragment(templateText);
-					eth.setHTML(padId, doc.html());
+					String wellFormedHtml = doc.html();
+					String wellFormedHtmlUnescaped = StringEscapeUtils.unescapeHtml4(wellFormedHtml); 
+					eth.setHTML(padId, wellFormedHtmlUnescaped);
 				} catch (EPLiteException e2) {
 					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body manually.");
-					String html = "<html><head></head><body>" + templateText + "</body></html>";
-					eth.setHTML(padId, html);
+					String wellFormedHtml = "<!DOCTYPE html><html><head><title></title></head><body>" + templateText + "</body></html>";
+					String wellFormedHtmlUnescaped = StringEscapeUtils.unescapeHtml4(wellFormedHtml); 
+					eth.setHTML(padId, wellFormedHtmlUnescaped);
 				}
 				
 			}
