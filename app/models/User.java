@@ -1,6 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.MalformedURLException;
@@ -45,12 +44,12 @@ import be.objectify.deadbolt.core.models.Subject;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.AuthUser;
@@ -569,7 +568,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			AssemblyTransfer newAssemblyTransfer = groupSignupUser.getNewAssembly();
 			if (newAssemblyTransfer!=null) {
 				// create the assembly with user as creator
-				AssembliesDelegate.create(newAssemblyTransfer, user, null);
+				AssembliesDelegate.create(newAssemblyTransfer, user, null, null);
 			}
 		}
 		
