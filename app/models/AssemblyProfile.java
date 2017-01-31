@@ -30,7 +30,7 @@ public class AssemblyProfile extends AppCivistBaseModel {
 	@Id @GeneratedValue
 	private Long assemblyProfileId;
 	@OneToOne(mappedBy="profile")
-	@JoinColumn(name="assembly_profile_id", unique= true, nullable=true, insertable=true, updatable=true)
+	//@JoinColumn(name="assembly_profile_id", unique= true, nullable=true, insertable=true, updatable=true)
 	private Assembly assembly;
 	@JsonView(Views.Public.class)
 	private String targetAudience;
@@ -196,5 +196,9 @@ public class AssemblyProfile extends AppCivistBaseModel {
 
 	public static AssemblyProfile findByAssembly(UUID uuid) {
 		return find.where().eq("assembly.uuid", uuid).findUnique();
+	}		
+	
+	public static AssemblyProfile findByAssembly(Long id) {
+		return find.where().eq("assembly.assemblyId", id).findUnique();
 	}		
 }

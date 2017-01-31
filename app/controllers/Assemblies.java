@@ -370,50 +370,69 @@ public class Assemblies extends Controller {
 					newAssemblyForm.errorsAsJson()));
 			return badRequest(Json.toJson(responseBody));
 		} else {
-			Assembly newAssembly = newAssemblyForm.get();
+			Ebean.beginTransaction();
+			
+			Assembly newAssembly = null;
 			TransferResponseStatus responseBody = new TransferResponseStatus();
-			newAssembly.setAssemblyId(id);
-			Assembly oldAssembly = Assembly.findById(id);
-			newAssembly.setForumPosts(oldAssembly.getForumPosts());
-			newAssembly.setFollowedAssemblies(oldAssembly.getFollowedAssemblies());
-			newAssembly.setFollowingAssemblies(oldAssembly.getFollowingAssemblies());
-			List<Theme> themes = newAssembly.getThemes();
-			List<Theme> themesLoaded = new ArrayList<Theme>();
-			for (Theme theme: themes
-				 ) {
-				Theme t = Theme.read(theme.getThemeId());
-				themesLoaded.add(t);
+			try {
+				newAssembly = newAssemblyForm.get();
+				newAssembly.setAssemblyId(id);
+				Assembly oldAssembly = Assembly.findById(id);
+				newAssembly.setForumPosts(oldAssembly.getForumPosts());
+				newAssembly.setFollowedAssemblies(oldAssembly.getFollowedAssemblies());
+				newAssembly.setFollowingAssemblies(oldAssembly.getFollowingAssemblies());
+				List<Theme> themes = newAssembly.getThemes();
+				List<Theme> themesLoaded = new ArrayList<Theme>();
+				for (Theme theme: themes
+					 ) {
+					Theme t = Theme.read(theme.getThemeId());
+					themesLoaded.add(t);
+				}
+				newAssembly.setThemes(themesLoaded);
+				List<Config> configs = newAssembly.getConfigs();
+				List<Config> configsLoaded = new ArrayList<Config>();
+				for (Config conf: configs
+					 ) {
+					Config c = Config.read(conf.getUuid());
+					configsLoaded.add(c);
+				}
+				newAssembly.setConfigs(configsLoaded);
+				List<Campaign> campaigns = newAssembly.getCampaigns();
+				List<Campaign> campaignsLoaded = new ArrayList<Campaign>();
+				for (Campaign camp: campaigns
+					 ) {
+					Campaign c = Campaign.read(camp.getCampaignId());
+					campaignsLoaded.add(c);
+				}
+				newAssembly.setCampaigns(campaignsLoaded);
+				List<WorkingGroup> wg = newAssembly.getWorkingGroups();
+				List<WorkingGroup> wgLoaded = new ArrayList<WorkingGroup>();
+				for (WorkingGroup wgroup: wg
+					 ) {
+					WorkingGroup workingGroup = WorkingGroup.read(wgroup.getGroupId());
+					wgLoaded.add(workingGroup);
+				}
+				newAssembly.setWorkingGroups(wgLoaded);
+				
+				AssemblyProfile profile = newAssembly.getProfile();
+				AssemblyProfile profileDB = AssemblyProfile.findByAssembly(newAssembly.getUuid());
+				profile.setAssemblyProfileId(profileDB.getAssemblyProfileId());
+				profile.update();
+				// TODO: return URL of the new group
+				Logger.info("Updating assembly");
+				Logger.debug("=> " + newAssemblyForm.toString());
+				
+				
+				newAssembly.update();
+			} catch (Exception e) {
+				Ebean.rollbackTransaction();
+				Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
+				responseBody.setStatusMessage(Messages.get(
+						GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+						newAssembly.getName()));
+				return internalServerError(Json.toJson(responseBody));
 			}
-			newAssembly.setThemes(themesLoaded);
-			List<Config> configs = newAssembly.getConfigs();
-			List<Config> configsLoaded = new ArrayList<Config>();
-			for (Config conf: configs
-				 ) {
-				Config c = Config.read(conf.getUuid());
-				configsLoaded.add(c);
-			}
-			newAssembly.setConfigs(configsLoaded);
-			List<Campaign> campaigns = newAssembly.getCampaigns();
-			List<Campaign> campaignsLoaded = new ArrayList<Campaign>();
-			for (Campaign camp: campaigns
-				 ) {
-				Campaign c = Campaign.read(camp.getCampaignId());
-				campaignsLoaded.add(c);
-			}
-			newAssembly.setCampaigns(campaignsLoaded);
-			List<WorkingGroup> wg = newAssembly.getWorkingGroups();
-			List<WorkingGroup> wgLoaded = new ArrayList<WorkingGroup>();
-			for (WorkingGroup wgroup: wg
-				 ) {
-				WorkingGroup workingGroup = WorkingGroup.read(wgroup.getGroupId());
-				wgLoaded.add(workingGroup);
-			}
-			newAssembly.setWorkingGroups(wgLoaded);
-			newAssembly.update();
-
-			// TODO: return URL of the new group
-			Logger.info("Updating assembly");
-			Logger.debug("=> " + newAssemblyForm.toString());
+			Ebean.commitTransaction();
 
 			responseBody.setNewResourceId(newAssembly.getAssemblyId());
 			responseBody.setStatusMessage(Messages.get(
