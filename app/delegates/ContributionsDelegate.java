@@ -22,6 +22,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Entities.EscapeMode;
 
+import play.Logger;
 import play.Play;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
@@ -274,8 +275,10 @@ public class ContributionsDelegate {
         eth.createPad(padId);
         if(isHtml) {
         	try {
+        		Logger.info("Trying to create etherpad of proposal with HTML");
 				eth.setHTML(padId, templateText);
 			} catch (EPLiteException e) {
+        		Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body");
 				Document doc = Jsoup.parseBodyFragment(templateText);
 				OutputSettings settings = new OutputSettings(); 
 				settings.escapeMode(EscapeMode.base);
