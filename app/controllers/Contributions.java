@@ -895,6 +895,38 @@ public class Contributions extends Controller {
         return ok("ok");
     }
 
+    /**
+     * POST       /api/contribution/clean/feedback
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", produces = "application/json", value = "Archives duplicated feedbacks")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result cleanUnarchivedContributionFeedbacks() throws Exception {
+
+        List<ContributionFeedback> feedbacks = ContributionFeedback.findAll();
+
+        for(ContributionFeedback feedback : feedbacks){
+            List<ContributionFeedback> relatedFeedbacks = ContributionFeedback.findPreviousContributionFeedback(
+                    feedback.getContributionId(), feedback.getUserId(), feedback.getWorkingGroupId(),
+                    feedback.getType(), feedback.getStatus());
+            if(relatedFeedbacks != null && relatedFeedbacks.size() > 1){
+                relatedFeedbacks.stream().sorted((feedback1, feedback2) -> feedback1.getCreation().
+                        compareTo(feedback2.getCreation()));
+                //We have to mark every feedback (but the last, wich is the newer) as archived
+                relatedFeedbacks.remove(relatedFeedbacks.size() - 1);
+                for(ContributionFeedback relatedFeedback : relatedFeedbacks){
+                    relatedFeedback.setArchived(true);
+                    relatedFeedback.update();
+                }
+            }
+        }
+        return ok("ok");
+    }
+
 
 
 	/* CREATE ENDPOINTS 
