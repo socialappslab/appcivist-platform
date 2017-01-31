@@ -66,7 +66,7 @@ public class AssembliesDelegate {
 	}
 
 	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
-			User creator, String templates) throws MembershipCreationException {
+			User creator, String templates, Assembly principal) throws MembershipCreationException {
 
 		Assembly newAssembly = mapper.map(newAssemblyTransfer, Assembly.class);
 
@@ -111,6 +111,13 @@ public class AssembliesDelegate {
 		Logger.info("Assembly created!");
 		newAssembly.refresh();
 
+		// Adding new assembly to principal assembly if created under it
+		if (principal!=null) {
+			ResourceSpace rsprincipal = principal.getResources();
+			rsprincipal.addAssembly(newAssembly);
+			rsprincipal.update();
+		}
+		
 		// Create and send invitations
 		List<InvitationTransfer> invitations = newAssemblyTransfer
 				.getInvitations();
@@ -123,6 +130,7 @@ public class AssembliesDelegate {
 		return created;
 	}
 
+	
 	public static AssemblySummaryTransfer readListedLinkedAssembly(Long aid, User requestor) {
 		// 1. Read the assembly and check if it is listed
 		Assembly a = Assembly.read(aid);

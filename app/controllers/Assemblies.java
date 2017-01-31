@@ -225,7 +225,7 @@ public class Assemblies extends Controller {
 			if (a==null) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, null);
 					Ebean.commitTransaction();
 					try {
 						NotificationsDelegate.createNotificationEventsByType(
@@ -253,6 +253,59 @@ public class Assemblies extends Controller {
 		}
 	}
 
+	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly in a principal assembly", httpMethod="POST")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result createAssemblyInAssembly(
+			@ApiParam(name="id", value="Id of the principal assembly under which to create the new") Long id, 
+			@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates) {
+		// Get the user record of the creator
+		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
+		// Check for errors in received data
+		if (newAssemblyForm.hasErrors()) {
+			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+					Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+							newAssemblyForm.errorsAsJson()), newAssemblyForm
+							.errorsAsJson().toString())));
+		} else {
+			AssemblyTransfer newAssembly = newAssemblyForm.get();
+			// Do not create assemblies with names that already exist
+			// Sub-Assemblies can have repeated names because they will not have a domain name associated 
+			// Assembly a = Assembly.findByName(newAssembly.getName());
+			
+			// Read principal assembly
+			Assembly a = Assembly.read(id);
+			if (a!=null && a.getPrincipalAssembly()) {
+				Ebean.beginTransaction();
+				try {
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, a);
+					Ebean.commitTransaction();
+					try {
+						NotificationsDelegate.createNotificationEventsByType(
+								ResourceSpaceTypes.ASSEMBLY.toString(), created.getUuid());
+					} catch (ConfigurationException e) {
+						Logger.error("Configuration error when creating events for notifications: " + LogActions.exceptionStackTraceToString(e));
+					} catch (Exception e) {
+						Logger.error("Error when creating events for notifications: " + LogActions.exceptionStackTraceToString(e));						
+					}
+					return ok(Json.toJson(created));
+				} catch (Exception e) {
+					Logger.error(LogActions.exceptionStackTraceToString(e));
+					Ebean.rollbackTransaction();
+					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
+							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+									e.getMessage()), "")));
+				}
+			} else {
+				return badRequest(Json.toJson("Assembly " + id + " is not a principal assembly"));
+			}
+		}
+	}
+	
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read Assembly by ID", notes="Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({

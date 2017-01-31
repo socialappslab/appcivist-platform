@@ -71,6 +71,7 @@ PUT       /api/assembly/:uuid/profile                                     contro
 GET       /api/assembly/:uuid/theme                                       controllers.Assemblies.getAssemblyThemes(uuid: java.util.UUID)
 GET       /api/assembly/:id                                               controllers.Assemblies.findAssembly(id: Long)
 PUT       /api/assembly/:id                                               controllers.Assemblies.updateAssembly(id: Long)
+POST      /api/assembly:id/assembly                                       controllers.Assemblies.createAssemblyInAssembly(id: Long, templates ?= "")
 DELETE    /api/assembly/:id                                               controllers.Assemblies.deleteAssembly(id: Long)
 POST      /api/assembly/:id/membership/:type                              controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
 GET       /api/assembly/:id/membership/:status                            controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
