@@ -278,12 +278,16 @@ public class ContributionsDelegate {
         		Logger.info("Trying to create etherpad of proposal with HTML");
 				eth.setHTML(padId, templateText);
 			} catch (EPLiteException e) {
-        		Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body");
-				Document doc = Jsoup.parseBodyFragment(templateText);
-				OutputSettings settings = new OutputSettings(); 
-				settings.escapeMode(EscapeMode.base);
-				doc.outputSettings(settings);
-				eth.setHTML(padId, doc.html());
+				try {
+					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body");
+					Document doc = Jsoup.parseBodyFragment(templateText);
+					eth.setHTML(padId, doc.html());
+				} catch (EPLiteException e2) {
+					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body manually.");
+					String html = "<html><head></head><body>" + templateText + "</body></html>";
+					eth.setHTML(padId, templateText);
+				}
+				
 			}
         	
         } else {
