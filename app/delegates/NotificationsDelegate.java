@@ -1,16 +1,32 @@
 package delegates;
 
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Model;
+import static enums.ResourceSpaceTypes.ASSEMBLY;
+import static enums.ResourceSpaceTypes.CAMPAIGN;
+import static enums.ResourceSpaceTypes.CONTRIBUTION;
+import static enums.ResourceSpaceTypes.WORKING_GROUP;
 
-import controllers.Notifications;
-import enums.AppcivistResourceTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResponseStatus;
-import exceptions.ConfigurationException;
-import models.*;
-import models.transfer.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import models.AppCivistBaseModel;
+import models.Assembly;
+import models.Ballot;
+import models.Campaign;
+import models.Component;
+import models.ComponentMilestone;
+import models.Contribution;
+import models.NotificationEventSignal;
+import models.ResourceSpace;
+import models.User;
+import models.WorkingGroup;
+import models.transfer.NotificationEventTransfer;
+import models.transfer.NotificationSignalTransfer;
+import models.transfer.NotificationSubscriptionTransfer;
+import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.i18n.Messages;
 import play.libs.Json;
@@ -21,14 +37,14 @@ import utils.GlobalData;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.List;
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.Model;
 
-import static enums.ResourceSpaceTypes.*;
+import enums.AppcivistResourceTypes;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
+import enums.ResponseStatus;
+import exceptions.ConfigurationException;
 
 public class NotificationsDelegate {
 
@@ -675,7 +691,7 @@ public class NotificationsDelegate {
 
     public static void createNotificationEventsByType(String type, UUID uuid) throws ConfigurationException {
         if (type.equals(ASSEMBLY.name())) {
-            NotificationEventName[] events = getEventsByResourceType(CAMPAIGN.name());
+            NotificationEventName[] events = getEventsByResourceType(ASSEMBLY.name());
             createNotificationEvents(events, uuid);
         }
         if (type.equals(WORKING_GROUP.name())) {

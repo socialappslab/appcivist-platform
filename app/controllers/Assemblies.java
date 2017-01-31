@@ -1,23 +1,31 @@
 package controllers;
 
 import static play.data.Form.form;
-
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import delegates.NotificationsDelegate;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import exceptions.ConfigurationException;
 import http.Headers;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import models.*;
+import models.Assembly;
+import models.AssemblyProfile;
+import models.Campaign;
+import models.Config;
+import models.Membership;
+import models.MembershipAssembly;
+import models.Resource;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
 import models.misc.Views;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
@@ -27,7 +35,6 @@ import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
-import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -36,6 +43,7 @@ import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.LogActions;
 import utils.Pair;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
@@ -43,20 +51,18 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
+import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
+import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
 import enums.ResponseStatus;
+import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 
 @Api(value = "01 assembly: Assembly Making", position=1, description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
@@ -225,7 +231,9 @@ public class Assemblies extends Controller {
 						NotificationsDelegate.createNotificationEventsByType(
 								ResourceSpaceTypes.ASSEMBLY.toString(), created.getUuid());
 					} catch (ConfigurationException e) {
-						Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
+						Logger.error("Configuration error when creating events for notifications: " + LogActions.exceptionStackTraceToString(e));
+					} catch (Exception e) {
+						Logger.error("Error when creating events for notifications: " + LogActions.exceptionStackTraceToString(e));						
 					}
 					return ok(Json.toJson(created));
 				} catch (Exception e) {

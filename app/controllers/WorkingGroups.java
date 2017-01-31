@@ -1,27 +1,43 @@
 package controllers;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.pa.PlayAuthenticate;
-import delegates.NotificationsDelegate;
-import delegates.WorkingGroupsDelegate;
-import enums.*;
-import exceptions.ConfigurationException;
-import exceptions.MembershipCreationException;
+import static play.data.Form.form;
 import http.Headers;
-import io.swagger.annotations.*;
-import models.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import models.Assembly;
+import models.Ballot;
+import models.BallotCandidate;
+import models.Campaign;
+import models.Contribution;
+import models.ContributionHistory;
+import models.Membership;
+import models.MembershipGroup;
+import models.MembershipInvitation;
+import models.ResourceSpace;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
 import models.misc.Views;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.WorkingGroupSummaryTransfer;
+
 import org.json.simple.JSONArray;
+
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -36,15 +52,24 @@ import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.services.EtherpadWrapper;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.feth.play.module.pa.PlayAuthenticate;
 
-import static play.data.Form.form;
+import delegates.NotificationsDelegate;
+import delegates.WorkingGroupsDelegate;
+import enums.BallotStatus;
+import enums.ContributionStatus;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
+import enums.ResponseStatus;
+import exceptions.ConfigurationException;
 
 @Api(value = "02 group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
