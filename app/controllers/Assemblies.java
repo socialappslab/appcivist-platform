@@ -59,6 +59,7 @@ import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
+import enums.ConfigTargets;
 import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
 import enums.ResponseStatus;
@@ -383,24 +384,26 @@ public class Assemblies extends Controller {
 				newAssembly.setFollowingAssemblies(oldAssembly.getFollowingAssemblies());
 				List<Theme> themes = newAssembly.getThemes();
 				List<Theme> themesLoaded = new ArrayList<Theme>();
-				for (Theme theme: themes
-					 ) {
+				for (Theme theme: themes) {
 					Theme t = Theme.read(theme.getThemeId());
 					themesLoaded.add(t);
 				}
 				newAssembly.setThemes(themesLoaded);
 				List<Config> configs = newAssembly.getConfigs();
 				List<Config> configsLoaded = new ArrayList<Config>();
-				for (Config conf: configs
-					 ) {
+				for (Config conf: configs) {
 					Config c = Config.read(conf.getUuid());
-					configsLoaded.add(c);
+					if (c==null) {
+						conf.setConfigTarget(ConfigTargets.ASSEMBLY);
+						conf.setTargetUuid(newAssembly.getUuid());
+						Config.create(conf);
+					} 
+					configsLoaded.add(conf);
 				}
 				newAssembly.setConfigs(configsLoaded);
 				List<Campaign> campaigns = newAssembly.getCampaigns();
 				List<Campaign> campaignsLoaded = new ArrayList<Campaign>();
-				for (Campaign camp: campaigns
-					 ) {
+				for (Campaign camp: campaigns) {
 					Campaign c = Campaign.read(camp.getCampaignId());
 					campaignsLoaded.add(c);
 				}
@@ -413,7 +416,7 @@ public class Assemblies extends Controller {
 					wgLoaded.add(workingGroup);
 				}
 				newAssembly.setWorkingGroups(wgLoaded);
-				
+								
 				AssemblyProfile profile = newAssembly.getProfile();
 				AssemblyProfile profileDB = AssemblyProfile.findByAssembly(newAssembly.getUuid());
 				profile.setAssemblyProfileId(profileDB.getAssemblyProfileId());
@@ -421,7 +424,6 @@ public class Assemblies extends Controller {
 				// TODO: return URL of the new group
 				Logger.info("Updating assembly");
 				Logger.debug("=> " + newAssemblyForm.toString());
-				
 				
 				newAssembly.update();
 			} catch (Exception e) {
