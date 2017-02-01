@@ -707,6 +707,8 @@ public class WorkingGroups extends Controller {
                 newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
                 proposal.addRevisionToContributionPublishHistory(newRevision);
             }
+            proposal.setStatus(ContributionStatus.PUBLISHED);
+            proposal.update();
             Promise.promise(() -> {
                 ResourceSpace wg = WorkingGroup.read(gid).getResources();
                 return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
