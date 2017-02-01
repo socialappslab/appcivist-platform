@@ -2,10 +2,12 @@ package controllers;
 
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
+
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import delegates.CampaignDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
@@ -33,6 +35,7 @@ import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.LogActions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -252,21 +255,20 @@ public class Campaigns extends Controller {
                 CampaignTransfer campaignTransfer = newCampaignForm.get();
                 CampaignTransfer newCampaign = CampaignDelegate.create(
                         campaignTransfer, campaignCreator, aid, templates);
-                try {
-                    NotificationsDelegate.createNotificationEventsByType(
-                            ResourceSpaceTypes.CAMPAIGN.toString(), newCampaign.getUuid());
-                } catch (ConfigurationException e) {
-                    Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
-                }
                 Ebean.commitTransaction();
-
-
                 Assembly rs = Assembly.read(aid);
                 Campaign c = Campaign.read(newCampaign.getCampaignId());
+
                 Promise.promise(() -> {
+                	try {
+                        NotificationsDelegate.createNotificationEventsByType(ResourceSpaceTypes.CAMPAIGN.toString(), newCampaign.getUuid());
+                    } catch (ConfigurationException e) {
+                        Logger.error("Configuration error when creating notification events for contribution: " + LogActions.exceptionStackTraceToString(e));
+                    } catch (Exception e) {
+                        Logger.error("Error when notification creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
+                    }
                     return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_CAMPAIGN, rs, c);
                 });
-
 
                 return ok(Json.toJson(newCampaign));
             }
@@ -277,7 +279,7 @@ public class Campaigns extends Controller {
                     "There was an internal error: " + e.getMessage()));
             Ebean.rollbackTransaction();
             e.printStackTrace();
-            return badRequest(Json.toJson(responseBody));
+            return internalServerError(Json.toJson(responseBody));
         }
     }
 
