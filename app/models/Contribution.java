@@ -14,19 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.PreUpdate;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.location.Location;
 import models.misc.Views;
@@ -170,6 +158,11 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     @Transient
     private ContributionStatistics stats = new ContributionStatistics(this.contributionId);
+
+    @OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="contribution")
+    @JsonIgnore
+    private List<ContributionFeedback> contributionFeedbacks;
+
 
     /*
      * Transient properties that take their values from the associated resource
@@ -391,6 +384,15 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setSourceCode(String sourceCode) {
         this.sourceCode = sourceCode;
+    }
+
+
+    public List<ContributionFeedback> getContributionFeedbacks() {
+        return contributionFeedbacks;
+    }
+
+    public void setContributionFeedbacks(List<ContributionFeedback> contributionFeedbacks) {
+        this.contributionFeedbacks = contributionFeedbacks;
     }
 
     @Transient

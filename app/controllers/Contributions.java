@@ -1511,19 +1511,19 @@ public class Contributions extends Controller {
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
         ContributionStatistics updatedStats = new ContributionStatistics(cid);
-
+        Contribution contribution = Contribution.read(cid);
         if (updatedFeedbackForm.hasErrors()) {
             return contributionFeedbackError(updatedFeedbackForm);
         } else {
             ContributionFeedback feedback = updatedFeedbackForm.get();
-            feedback.setContributionId(cid);
+            feedback.setContribution(contribution);
             feedback.setUserId(author.getUserId());
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus());
 
             Ebean.beginTransaction();
             try {
-                feedback.setContributionId(cid);
+                feedback.setContribution(contribution);
                 feedback.setUserId(author.getUserId());
 
                 //If we found a previous feedback, we set that feedback as archived
@@ -1579,9 +1579,9 @@ public class Contributions extends Controller {
                             feedback);
                 });
 
-                Contribution contribution = Contribution.read(cid);
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
+                ContributionHistory.createHistoricFromContribution(contribution);
 
             } catch (Exception e) {
             	Promise.promise(() -> {
@@ -2314,7 +2314,7 @@ public class Contributions extends Controller {
                         }
                         User user = User.findByUserName(feedbackUser);
                         cFeed.setUserId(user.getUserId());
-                        cFeed.setContributionId(c.getContributionId());
+                        cFeed.setContribution(c);
                         cFeed.setType(ContributionFeedbackTypes.TECHNICAL_ASSESSMENT);
                         ContributionFeedback.create(cFeed);
                     }
