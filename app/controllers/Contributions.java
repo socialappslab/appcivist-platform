@@ -20,12 +20,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.persistence.*;
@@ -1704,9 +1699,9 @@ public class Contributions extends Controller {
         ResourceSpace rs = ResourceSpace.read(sid);
         ResourceSpace rsNew = ResourceSpace.read(new_sid);
 
-        ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        ResourceSpace rCombined =  ResourceSpace.setResourceSpaceItems(rs,rsNew);
         try {
-            rs.update();
+            rCombined.update();
         } catch (Exception e) {
             return internalServerError(Json
                     .toJson(new TransferResponseStatus(
@@ -1742,9 +1737,10 @@ public class Contributions extends Controller {
         }
         ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
         ResourceSpace rs = ResourceSpace.read(sid);
-        ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        ResourceSpace rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+
         try {
-            rs.update();
+            rCombined.update();
             ContributionHistory.createHistoricFromContribution(contribution);
         } catch (Exception e) {
             return internalServerError(Json

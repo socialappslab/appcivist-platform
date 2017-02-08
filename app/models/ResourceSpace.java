@@ -194,7 +194,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
 	@JsonIgnore
 	private Component component;
-	
+
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -644,23 +644,15 @@ public class ResourceSpace extends AppCivistBaseModel {
 	public static ResourceSpace setResourceSpaceItems(ResourceSpace rs,
 			ResourceSpace rsNew) {
 		if(ResourceSpaceTypes.ASSEMBLY.equals(rsNew.getType())){
-			List<Assembly> assemblyList = rsNew.getAssemblies();
-			rs.getAssemblies().addAll(assemblyList);
+			rs.getAssemblies().add(rsNew.getAssemblyResources());
 		} else if(ResourceSpaceTypes.CAMPAIGN.equals(rsNew.getType())){
-			List<Campaign> campaignList = rsNew.getCampaigns();
-			rs.getCampaigns().addAll(campaignList);
+			rs.getCampaigns().add(rsNew.getCampaign());
 		} else if(ResourceSpaceTypes.COMPONENT.equals(rsNew.getType())){
-			List<Component> componentsList = rsNew.getComponents();
-			rs.getComponents().addAll(componentsList);
+			rs.getComponents().add(rsNew.getComponent());
 		} else if(ResourceSpaceTypes.CONTRIBUTION.equals(rsNew.getType())){
-			List<Contribution> contributionList = rsNew.getContributions();
-			rs.getContributions().addAll(contributionList);
-		} else if(ResourceSpaceTypes.VOTING_BALLOT.equals(rsNew.getType())){
-			List<Ballot>  ballotList = rsNew.getBallots();
-			rs.getBallots().addAll(ballotList);
+			rs.getContributions().add(rsNew.getContribution());
 		} else if(ResourceSpaceTypes.WORKING_GROUP.equals(rsNew.getType())){
-			List<WorkingGroup> workingGroupList = rsNew.getWorkingGroups();
-			rs.getWorkingGroups().addAll(workingGroupList);
+			rs.getWorkingGroups().add(rsNew.getWorkingGroupResources());
 		}
 		return rs;
 	}
