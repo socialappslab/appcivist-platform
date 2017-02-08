@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityNotFoundException;
+import javax.persistence.*;
 import javax.ws.rs.PathParam;
 
 import models.*;
@@ -1648,25 +1649,23 @@ public class Contributions extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             Contribution newContribution = newContributionForm.get();
-            newContribution.setContributionId(contributionId);
-            newContribution.setContextUserId(author.getUserId());
-            
-            List<User> authorsLoaded = new ArrayList<User>();
-            Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
-            for (User user: newContribution.getAuthors()) {
-            	Long userId = user.getUserId();
-            	User auth = User.read(userId);
-            	Boolean alreadyAdded = authorAlreadyAdded.get(userId);
-            	if (alreadyAdded == null || !alreadyAdded) {
-            		authorsLoaded.add(auth);
-            		authorAlreadyAdded.put(auth .getUserId(), true);
-            	}
+            Contribution existingContribution = Contribution.read(contributionId);
+            for (Field field : existingContribution.getClass().getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+                            || field.isAnnotationPresent(OneToOne.class)) {
+                        continue;
+                    }
+                    field.set(existingContribution, field.get(newContribution));
+                } catch (Exception e) {
+                }
             }
-            
-            newContribution.setAuthors(authorsLoaded);
+            existingContribution.setContextUserId(author.getUserId());
             Ebean.beginTransaction();
             try {
-				Contribution.update(newContribution);
+				Contribution.update(existingContribution);
 				Ebean.commitTransaction();
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
@@ -1679,13 +1678,135 @@ public class Contributions extends Controller {
 
             ResourceSpace rs = Assembly.read(aid).getResources();
             Promise.promise(() -> {
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, newContribution);
+                return NotificationsDelegate.updatedContributionInResourceSpace(rs, existingContribution);
             });
 
-            return ok(Json.toJson(newContribution));
+            return ok(Json.toJson(existingContribution));
         }
     }
 
+    /**
+     * POST      /api/space/:sid/space/:new_sid
+     *
+     * @param sid
+     * @param new_sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Assign a resouce space to other resource space")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result assignResourceSpaceToResourceSpace(
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "new_sid", value = "New Resource Space ID") Long new_sid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        ResourceSpace rsNew = ResourceSpace.read(new_sid);
+
+        ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        try {
+            rs.update();
+        } catch (Exception e) {
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error when assigning Resource Space to Resource Space: " + e.toString())));
+        }
+        return ok();
+    }
+
+    /**
+     * POST      /api/assembly/:aid/contribution/:cid/space/:sid
+     *
+     * @param aid
+     * @param cid
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Assign a contribution to a resource space")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result assignContributionResourceSpace(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid,
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Contribution contribution = Contribution.read(cid);
+        if (contribution == null) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("No contribution found");
+            return notFound(Json.toJson(responseBody));
+        }
+        ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
+        ResourceSpace rs = ResourceSpace.read(sid);
+        ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        try {
+            rs.update();
+            ContributionHistory.createHistoricFromContribution(contribution);
+        } catch (Exception e) {
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error when assigning Contribution to Resource Space: " + e.toString())));
+        }
+
+        // Signal a notification asynchronously
+        Promise.promise(() -> {
+            return NotificationsDelegate.newContributionInResourceSpace(rs,contribution);
+        });
+        return ok(Json.toJson(contribution));
+    }
+
+    /**
+     * DELETE      /api/assembly/:aid/contribution/:cid/space/:sid
+     *
+     * @param aid
+     * @param cid
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete a contribution to a resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result deleteContributionResourceSpace(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid,
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Contribution contribution = Contribution.read(cid);
+
+        if (contribution == null) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("No contribution found");
+            return notFound(Json.toJson(responseBody));
+        }
+        ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
+        ResourceSpace rs = ResourceSpace.read(sid);
+        try {
+            rs.getContributions().remove(contribution);
+            rs.update();
+            ContributionHistory.createHistoricFromContribution(contribution);
+        } catch (Exception e) {
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error when removing Contribution from Resource Space: " + e.toString())));
+        }
+        return ok();
+    }
+
+    /**
+     * PUT       /api/assembly/:aid/contribution/:cid/moderate
+     *
+     * @param aid
+     * @param contributionId
+     * @return
+     */
     @ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Contribution moderation. Soft deletes contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({

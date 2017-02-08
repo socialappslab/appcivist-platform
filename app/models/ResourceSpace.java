@@ -641,6 +641,29 @@ public class ResourceSpace extends AppCivistBaseModel {
 		}
 		return comments;
 	}
+	public static ResourceSpace setResourceSpaceItems(ResourceSpace rs,
+			ResourceSpace rsNew) {
+		if(ResourceSpaceTypes.ASSEMBLY.equals(rsNew.getType())){
+			List<Assembly> assemblyList = rsNew.getAssemblies();
+			rs.getAssemblies().addAll(assemblyList);
+		} else if(ResourceSpaceTypes.CAMPAIGN.equals(rsNew.getType())){
+			List<Campaign> campaignList = rsNew.getCampaigns();
+			rs.getCampaigns().addAll(campaignList);
+		} else if(ResourceSpaceTypes.COMPONENT.equals(rsNew.getType())){
+			List<Component> componentsList = rsNew.getComponents();
+			rs.getComponents().addAll(componentsList);
+		} else if(ResourceSpaceTypes.CONTRIBUTION.equals(rsNew.getType())){
+			List<Contribution> contributionList = rsNew.getContributions();
+			rs.getContributions().addAll(contributionList);
+		} else if(ResourceSpaceTypes.VOTING_BALLOT.equals(rsNew.getType())){
+			List<Ballot>  ballotList = rsNew.getBallots();
+			rs.getBallots().addAll(ballotList);
+		} else if(ResourceSpaceTypes.WORKING_GROUP.equals(rsNew.getType())){
+			List<WorkingGroup> workingGroupList = rsNew.getWorkingGroups();
+			rs.getWorkingGroups().addAll(workingGroupList);
+		}
+		return rs;
+	}
 	
 	public void setContributionsFilteredByType(List<Contribution> contributions, ContributionTypes type) {
 		// 1. Filter the contributions of "type" from the contribution list
