@@ -1,15 +1,12 @@
 package models;
 
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.RawSql;
@@ -20,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
+import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -34,7 +32,11 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Boolean fav = false;
 	private Boolean flag = false;
 	// TODO: Add Priority Matrix score fields: benefit, need, feasibility, elegibility, text feedback
-	private Long contributionId;
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name="contribution_id")
+	private Contribution contribution;
+
 	private Long userId;
 	// TODO: Add a way of making feedback private or limited to a working group
 
@@ -54,6 +56,8 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Boolean officialGroupFeedback = false;
 	private Boolean archived = false;
 
+
+
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 
 	public ContributionFeedback() {
@@ -70,7 +74,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	 */
 	@JsonIgnore
 	public List<ContributionFeedback> getContributionFeedbackHistory(){
-		return find.where().eq("contributionId", this.contributionId).eq("workingGroupId", workingGroupId).
+		return find.where().eq("contribution.contributionId", this.contribution.getContributionId()).eq("workingGroupId", workingGroupId).
 				eq("userId", this.userId).eq("status", this.status == null ? null : this.status).
 				eq("type", this.type == null ? null : this.type).eq("archived", true).
 				orderBy("creation").findList();
@@ -117,11 +121,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public Long getContributionId() {
-		return contributionId;
-	}
-
-	public void setContributionId(Long contribution) {
-		this.contributionId = contribution;
+		return this.contribution.getContributionId();
 	}
 
 	public Long getUserId() {
@@ -229,6 +229,14 @@ public class ContributionFeedback extends AppCivistBaseModel {
 		return object;
 	}
 
+	public Contribution getContribution() {
+		return contribution;
+	}
+
+	public void setContribution(Contribution contribution) {
+		this.contribution = contribution;
+	}
+
 	public static void delete(Long id) {
 		find.ref(id).delete();
 	}
@@ -238,41 +246,41 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static long getUpsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("up", true).findRowCount();
+		return find.where().eq("contribution.contributionId", contributionId).eq("archived", false).eq("up", true).findRowCount();
 	}
 
 	public static long getUpsForGroup(Long workingGroupId, Long contributionId) {
-		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+		return find.where().eq("workingGroupId", workingGroupId).eq("contribution.contributionId", contributionId).
 				eq("archived", false).eq("up", true).
 				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
 	}
 	
 	public static long getDownsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("down", true).findRowCount();
+		return find.where().eq("contribution.contributionId", contributionId).eq("archived", false).eq("down", true).findRowCount();
 	}
 
 	public static long getDownsForGroup(Long workingGroupId, Long contributionId) {
-		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+		return find.where().eq("workingGroupId", workingGroupId).eq("contribution.contributionId", contributionId).
 				eq("archived", false).eq("down", true).
 				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
 	}
 	
 	public static long getFavsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("fav", true).findRowCount();
+		return find.where().eq("contribution.contributionId", contributionId).eq("archived", false).eq("fav", true).findRowCount();
 	}
 
 	public static long getFavsForGroup(Long workingGroupId, Long contributionId) {
-		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+		return find.where().eq("workingGroupId", workingGroupId).eq("contribution.contributionId", contributionId).
 				eq("archived", false).eq("fav", true).
 				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
 	}
 	
 	public static long getFlagsForContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("archived", false).eq("flag", true).findRowCount();
+		return find.where().eq("contribution.contributionId", contributionId).eq("archived", false).eq("flag", true).findRowCount();
 	}
 
 	public static long getFlagsForGroup(Long workingGroupId, Long contributionId) {
-		return find.where().eq("workingGroupId", workingGroupId).eq("contributionId", contributionId).
+		return find.where().eq("workingGroupId", workingGroupId).eq("contribution.contributionId", contributionId).
 				eq("archived", false).eq("flag", true).
 				eq("type", ContributionFeedbackTypes.WORKING_GROUP).findRowCount();
 	}
@@ -286,7 +294,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static ContributionFeedback findByContributionAndUserId(Long cid, Long userId) {
-		return find.where().eq("contributionId", cid).eq("archived", false).eq("userId", userId).findUnique();
+		return find.where().eq("contribution.contributionId", cid).eq("archived", false).eq("userId", userId).findUnique();
 	}
 
 	public static Integer getAverageBenefitForContribution(Long contributionId) {
@@ -393,18 +401,18 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	 */
 	public static List<ContributionFeedback> findPreviousContributionFeedback(Long cid, Long userId, Long workingGroupId,
 												ContributionFeedbackTypes type, ContributionFeedbackStatus status ){
-		return find.where().eq("contributionId", cid).eq("workingGroupId", workingGroupId).
+		return find.where().eq("contribution.contributionId", cid).eq("workingGroupId", workingGroupId).
 				eq("userId", userId).eq("type", type == null ? null : type).
 				eq("status", status == null ? null : status).eq("archived", false).findList();
 
 	}
 
 	public static List<ContributionFeedback> getFeedbacksByContribution(Long contributionId) {
-		return find.where().eq("contributionId", contributionId).eq("archived", false).findList();
+		return find.where().eq("contribution.contributionId", contributionId).eq("archived", false).findList();
 	}
 
 	public static List<ContributionFeedback> getPrivateFeedbacksByContributionTypeAndWGroup(Long contributionId, Long groupId, String type) {
-		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
+		ExpressionList<ContributionFeedback> where = find.where().eq("contribution.contributionId", contributionId)
 				.eq("archived", false)
 				//.eq("status", ContributionFeedbackStatus.PRIVATE)
 				.eq("workingGroupId", groupId);
@@ -414,7 +422,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static List<ContributionFeedback> getPrivateFeedbacksByContributionType(Long contributionId, Long userId, String type) {
-		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
+		ExpressionList<ContributionFeedback> where = find.where().eq("contribution.contributionId", contributionId)
 				.eq("archived", false)
 				//.eq("status", ContributionFeedbackStatus.PRIVATE)
 				.isNull("workingGroupId");
@@ -426,7 +434,7 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static List<ContributionFeedback> getPublicFeedbacksByContributionType(Long contributionId, String type) {
-		ExpressionList<ContributionFeedback> where = find.where().eq("contributionId", contributionId)
+		ExpressionList<ContributionFeedback> where = find.where().eq("contribution.contributionId", contributionId)
 				.eq("archived", false)
 				.eq("status", ContributionFeedbackStatus.PUBLIC);
 		if (type != null)
