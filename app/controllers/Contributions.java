@@ -91,6 +91,8 @@ public class Contributions extends Controller {
     public static final Form<ContributionFeedback> CONTRIBUTION_FEEDBACK_FORM = form(ContributionFeedback.class);
     public static final Form<Resource> ATTACHMENT_FORM = form(Resource.class);
     public static final Form<ThemeListTransfer> THEMES_FORM = form(ThemeListTransfer.class);
+    public static final Form<User> AUTHORS_FORM = form(User.class);
+
 	private static BufferedReader br;
 
     /**
@@ -1821,6 +1823,39 @@ public class Contributions extends Controller {
                 campaign.update();
             });
             return ok(Json.toJson(themes));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
+
+    /**
+     * POST  /api/contribution/:uuid/authors
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Add a author to a contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.User", paramType = "body")})
+    public static Result addAuthorToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
+        Contribution contribution;
+
+        try {
+            User user = AUTHORS_FORM.bindFromRequest().get();
+            User author = User.read(user.getUserId());
+
+            contribution = Contribution.readByUUID(uuid);
+            boolean authorExist = contribution.getAuthors().contains(author);
+            if(!authorExist) {
+                contribution.getAuthors().add(author);
+                contribution.update();
+                return ok(Json.toJson(contribution));
+            }else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Author already in contribution")));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));

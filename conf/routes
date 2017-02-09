@@ -217,6 +217,7 @@ GET       /api/assembly/:aid/contribution/:coid/feedback                  contro
 GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback       controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
 
 POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
+POST      /api/contribution/:uuid/authors                                 controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
 GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
 
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
