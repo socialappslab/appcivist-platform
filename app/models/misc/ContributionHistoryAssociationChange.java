@@ -1,5 +1,7 @@
 package models.misc;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import enums.ResourceSpaceTypes;
 import models.ResourceSpace;
 
@@ -19,8 +21,11 @@ public class ContributionHistoryAssociationChange {
         }
     }
 
+    @JsonView(Views.Public.class)
     private Long resourceSpaceId;
+    @JsonView(Views.Public.class)
     private ResourceSpaceTypes type;
+    @JsonView(Views.Public.class)
     private AssociationChangeType changeType;
 
     public Long getResourceSpaceId() {
