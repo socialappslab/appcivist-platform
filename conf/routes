@@ -224,8 +224,6 @@ POST      /api/assembly/:aid/contribution/:cid/space/:sid                 contro
 POST      /api/space/:sid/space/:new_sid                                  controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
-POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
-POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
 POST      /api/assembly/:aid/group/:gid/contribution                      controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
 POST      /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.createContributionComment(aid: Long, cid: Long)
 POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
