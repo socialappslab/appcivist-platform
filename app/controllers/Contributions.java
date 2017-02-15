@@ -36,6 +36,7 @@ import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
 
+import org.apache.commons.lang3.RandomUtils;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -261,7 +262,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
+            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
+            @ApiParam(name = "random", value = "Boolean") String random) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -298,8 +300,13 @@ public class Contributions extends Controller {
                     : notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         }else{
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+            if(random != null && random.equals("true")){
+                int totalRows = contribs.size();
+                int totalPages = (totalRows+pageSize-1) / pageSize;
+                page = RandomUtils.nextInt(0,totalPages);
+            }
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
             pag.setPage(page);
@@ -732,7 +739,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
+            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
+            @ApiParam(name = "random", value = "Boolean") String random) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -765,8 +773,13 @@ public class Contributions extends Controller {
             if (all != null) {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null);
             } else {
-                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
                 List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+                if(random != null && random.equals("true")){
+                    int totalRows = contribs.size();
+                    int totalPages = (totalRows+pageSize-1) / pageSize;
+                    page = RandomUtils.nextInt(0,totalPages);
+                }
+                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());
                 pag.setPage(page);

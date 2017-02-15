@@ -31,8 +31,12 @@ public class BallotCandidate extends Model {
 	private Long ballotId;
     private UUID uuid = UUID.randomUUID();
     /**
-     * 0 -> EXTERNAL
-     * 1 -> ASSEMBLY
+	 * EXTERNAL = 0
+	 * ASSEMBLY = 1
+	 * CONTRIBUTION = 2
+	 * CAMPAIGN = 3
+	 * USER = 4
+	 * GROUP = 5
      */
     private Integer candidateType;
 	private UUID contributionUuid;
