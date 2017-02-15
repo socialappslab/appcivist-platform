@@ -14,20 +14,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityNotFoundException;
+import javax.persistence.*;
 import javax.ws.rs.PathParam;
 
 import models.*;
@@ -40,6 +36,7 @@ import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
 
+import org.apache.commons.lang3.RandomUtils;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -267,7 +264,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
+            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
+            @ApiParam(name = "random", value = "Boolean") String random) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -304,8 +302,13 @@ public class Contributions extends Controller {
                     : notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         }else{
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+            if(random != null && random.equals("true")){
+                int totalRows = contribs.size();
+                int totalPages = (totalRows+pageSize-1) / pageSize;
+                page = RandomUtils.nextInt(0,totalPages);
+            }
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
             pag.setPage(page);
@@ -738,7 +741,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting) {
+            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
+            @ApiParam(name = "random", value = "Boolean") String random) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -771,8 +775,13 @@ public class Contributions extends Controller {
             if (all != null) {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null);
             } else {
-                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
                 List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+                if(random != null && random.equals("true")){
+                    int totalRows = contribs.size();
+                    int totalPages = (totalRows+pageSize-1) / pageSize;
+                    page = RandomUtils.nextInt(0,totalPages);
+                }
+                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());
                 pag.setPage(page);
@@ -1025,141 +1034,6 @@ public class Contributions extends Controller {
             	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
 
-            return ok(Json.toJson(c));
-        }
-    }
-
-    /**
-     * POST      /api/assembly/:aid/contribution
-     *
-     * @param aid
-     * @param space
-     * @return
-     */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create a Contribution in an Assembly")
-    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createAssemblyContribution(
-            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
-            @ApiParam(name = "space", value = "Resource space name within assembly", allowableValues = "resources,forum", defaultValue = "resources") String space) {
-        // 1. obtaining the user of the requestor
-        User author = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
-
-        // 2. read the new role data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
-                .bindFromRequest();
-
-        if (newContributionForm.hasErrors()) {
-            return contributionCreateError(newContributionForm);
-        } else {
-            Contribution newContribution = newContributionForm.get();
-            ContributionTypes type = newContribution.getType();
-            if (type == null) {
-                type = ContributionTypes.COMMENT;
-            }
-
-            Assembly a = Assembly.read(aid);
-            ResourceSpace rs = space != null && space.equals("forum") ? a
-                    .getForum() : a.getResources();
-
-            ContributionTemplate template = null;
-            if (newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
-                List<ContributionTemplate> templates = rs.getTemplates();
-                if (templates != null && !templates.isEmpty())
-                    template = rs.getTemplates().get(0);
-            }
-
-            newContribution.setContextUserId(author.getUserId());
-            Contribution c;
-            try {
-                c = createContribution(newContribution, author, type, template, rs);
-            } catch (Exception e) {
-                return internalServerError(Json
-                        .toJson(new TransferResponseStatus(
-                                ResponseStatus.SERVERERROR,
-                                "Error when creating Contribution: " + e.toString())));
-            }
-            if (c != null) {
-                rs.addContribution(c);
-                rs.update();
-            }
-
-            // Signal a notification asynchronously
-            Promise.promise(() -> {
-                return NotificationsDelegate.newContributionInAssembly(a, c);
-            });
-            return ok(Json.toJson(c));
-        }
-    }
-
-    /**
-     * POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
-     *
-     * @param aid
-     * @param cid
-     * @param ciid
-     * @return
-     */
-    @ApiOperation(httpMethod = "POST", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Create contribution in a Component of a Campaign")
-    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createCampaignComponentContribution(
-            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
-            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
-            @ApiParam(name = "ciid", value = "Component ID") Long ciid) {
-        // 1. obtaining the user of the requestor
-        User author = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
-
-        // 2. read the new role data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
-                .bindFromRequest();
-
-        if (newContributionForm.hasErrors()) {
-            return contributionCreateError(newContributionForm);
-        } else {
-            Contribution newContribution = newContributionForm.get();
-            ContributionTypes type = newContribution.getType();
-            if (type == null) {
-                type = ContributionTypes.COMMENT;
-            }
-
-            Component ci = Component.read(cid, ciid);
-            ResourceSpace rs = ci.getResourceSpace();
-            ContributionTemplate template = null;
-            if (newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
-                List<ContributionTemplate> templates = rs.getTemplates();
-                if (templates != null && !templates.isEmpty())
-                    template = rs.getTemplates().get(0);
-            }
-            newContribution.setContextUserId(author.getUserId());
-            Contribution c;
-            try {
-                c = createContribution(newContribution, author, type, template, rs);
-            } catch (Exception e) {
-                return internalServerError(Json
-                        .toJson(new TransferResponseStatus(
-                                ResponseStatus.SERVERERROR,
-                                "Error when creating Contribution: " + e.toString())));
-            }
-            if (c != null) {
-                rs.addContribution(c);
-                rs.update();
-            }
-
-            // Signal a notification asynchronously
-            Promise.promise(() -> {
-                return NotificationsDelegate.newContributionInCampaignComponent(ci, c);
-            });
             return ok(Json.toJson(c));
         }
     }
@@ -1666,28 +1540,167 @@ public class Contributions extends Controller {
             }
 
             newContribution.setAuthors(authorsLoaded);
+          
+            Contribution existingContribution = Contribution.read(contributionId);
+            for (Field field : existingContribution.getClass().getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+                            || field.isAnnotationPresent(OneToOne.class)) {
+                        continue;
+                    }
+                    field.set(existingContribution, field.get(newContribution));
+                } catch (Exception e) {
+                }
+            }
+            existingContribution.setContextUserId(author.getUserId());
             Ebean.beginTransaction();
+          
             try {
-				Contribution.update(newContribution);
-				Ebean.commitTransaction();
-			} catch (Exception e) {
-				Ebean.rollbackTransaction();
-				e.printStackTrace();
-				Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
-	            TransferResponseStatus responseBody = new TransferResponseStatus();
-	            responseBody.setStatusMessage(e.getMessage());
-	            return Controller.internalServerError(Json.toJson(responseBody));
-			}
+				        Contribution.update(existingContribution);
+				        Ebean.commitTransaction();
+			      } catch (Exception e) {
+				        Ebean.rollbackTransaction();
+				        e.printStackTrace();
+				        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
+	              TransferResponseStatus responseBody = new TransferResponseStatus();
+	              responseBody.setStatusMessage(e.getMessage());
+	              return Controller.internalServerError(Json.toJson(responseBody));
+			      }
 
             ResourceSpace rs = Assembly.read(aid).getResources();
             Promise.promise(() -> {
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, newContribution);
+                return NotificationsDelegate.updatedContributionInResourceSpace(rs, existingContribution);
             });
 
-            return ok(Json.toJson(newContribution));
+            return ok(Json.toJson(existingContribution));
         }
     }
 
+    /**
+     * POST      /api/space/:sid/space/:new_sid
+     *
+     * @param sid
+     * @param new_sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Assign a resouce space to other resource space")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result assignResourceSpaceToResourceSpace(
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "new_sid", value = "New Resource Space ID") Long new_sid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        ResourceSpace rsNew = ResourceSpace.read(new_sid);
+
+        ResourceSpace rCombined =  ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        try {
+            rCombined.update();
+        } catch (Exception e) {
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error when assigning Resource Space to Resource Space: " + e.toString())));
+        }
+        return ok();
+    }
+
+    /**
+     * POST      /api/assembly/:aid/contribution/:cid/space/:sid
+     *
+     * @param aid
+     * @param cid
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Assign a contribution to a resource space")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result assignContributionResourceSpace(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid,
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Contribution contribution = Contribution.read(cid);
+        if (contribution == null) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("No contribution found");
+            return notFound(Json.toJson(responseBody));
+        }
+        ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
+        ResourceSpace rs = ResourceSpace.read(sid);
+        ResourceSpace rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+
+        try {
+            rCombined.update();
+            ContributionHistory.createHistoricFromContribution(contribution);
+        } catch (Exception e) {
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error when assigning Contribution to Resource Space: " + e.toString())));
+        }
+
+        // Signal a notification asynchronously
+        Promise.promise(() -> {
+            return NotificationsDelegate.newContributionInResourceSpace(rs,contribution);
+        });
+        return ok(Json.toJson(contribution));
+    }
+
+    /**
+     * DELETE      /api/assembly/:aid/contribution/:cid/space/:sid
+     *
+     * @param aid
+     * @param cid
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete a contribution to a resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result deleteContributionResourceSpace(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid,
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Contribution contribution = Contribution.read(cid);
+
+        if (contribution == null) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("No contribution found");
+            return notFound(Json.toJson(responseBody));
+        }
+        ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
+        ResourceSpace rs = ResourceSpace.read(sid);
+        try {
+            rs.getContributions().remove(contribution);
+            rs.update();
+            ContributionHistory.createHistoricFromContribution(contribution);
+        } catch (Exception e) {
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Error when removing Contribution from Resource Space: " + e.toString())));
+        }
+        return ok();
+    }
+
+    /**
+     * PUT       /api/assembly/:aid/contribution/:cid/moderate
+     *
+     * @param aid
+     * @param contributionId
+     * @return
+     */
     @ApiOperation(httpMethod = "PUT", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Contribution moderation. Soft deletes contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({

@@ -7,6 +7,7 @@ import http.Headers;
 
 import java.util.List;
 
+import io.swagger.annotations.*;
 import models.Resource;
 import models.TokenAction;
 import models.TokenAction.Type;
@@ -44,12 +45,6 @@ import views.html.*;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import enums.ResponseStatus;
 /**
  * User Management operations, including authentication of users, 
@@ -63,7 +58,7 @@ public class Users extends Controller {
 	public static final Form<User> USER_FORM = form(User.class);
 	public static final Form<UserProfile> USER_PROFILE_FORM = form(UserProfile.class);
 	private static final Form<Accept> ACCEPT_FORM = form(Accept.class);
-	private static final Form<Users.PasswordChange> PASSWORD_CHANGE_FORM = form(Users.PasswordChange.class);
+	private static final Form<PasswordChange> PASSWORD_CHANGE_FORM = form(PasswordChange.class);
 	private static final Form<PasswordReset> PASSWORD_RESET_FORM = form(PasswordReset.class);
 	private static final Form<MyIdentity> FORGOT_PASSWORD_FORM = form(MyIdentity.class);
 
@@ -84,41 +79,7 @@ public class Users extends Controller {
 		}
 	}
 
-	public static class PasswordChange {
-		@MinLength(5)
-		@Required
-		public String password;
-
-		@MinLength(5)
-		@Required
-		public String repeatPassword;
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-
-		public String getRepeatPassword() {
-			return repeatPassword;
-		}
-
-		public void setRepeatPassword(String repeatPassword) {
-			this.repeatPassword = repeatPassword;
-		}
-
-		public String validate() {
-			if (password == null || !password.equals(repeatPassword)) {
-				return Messages
-						.get("playauthenticate.change_password.error.passwords_not_same");
-			}
-			return null;
-		}
-	}
-
-	public static class PasswordReset extends Users.PasswordChange {
+	public static class PasswordReset extends PasswordChange {
 
 		public PasswordReset() {
 		}
@@ -510,11 +471,11 @@ public class Users extends Controller {
 	@ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-			@ApiImplicitParam(name = "Password Change Object", value = "User's updated password form", dataType = "controllers.Users.PasswordChange", paramType = "body") })
+			@ApiImplicitParam(name = "Password Change Object", value = "User's updated password form", dataType = "controllers.PasswordChange", paramType = "body") })
 	@Restrict(@Group(GlobalData.USER_ROLE))
 	public static Result doChangePassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final Form<Users.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
+		final Form<PasswordChange> filledForm = PASSWORD_CHANGE_FORM
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not select whether to link or not link

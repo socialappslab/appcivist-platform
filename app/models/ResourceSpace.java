@@ -194,7 +194,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
 	@JsonIgnore
 	private Component component;
-	
+
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -640,6 +640,21 @@ public class ResourceSpace extends AppCivistBaseModel {
 			}
 		}
 		return comments;
+	}
+	public static ResourceSpace setResourceSpaceItems(ResourceSpace rs,
+			ResourceSpace rsNew) {
+		if(ResourceSpaceTypes.ASSEMBLY.equals(rsNew.getType())){
+			rs.getAssemblies().add(rsNew.getAssemblyResources());
+		} else if(ResourceSpaceTypes.CAMPAIGN.equals(rsNew.getType())){
+			rs.getCampaigns().add(rsNew.getCampaign());
+		} else if(ResourceSpaceTypes.COMPONENT.equals(rsNew.getType())){
+			rs.getComponents().add(rsNew.getComponent());
+		} else if(ResourceSpaceTypes.CONTRIBUTION.equals(rsNew.getType())){
+			rs.getContributions().add(rsNew.getContribution());
+		} else if(ResourceSpaceTypes.WORKING_GROUP.equals(rsNew.getType())){
+			rs.getWorkingGroups().add(rsNew.getWorkingGroupResources());
+		}
+		return rs;
 	}
 	
 	public void setContributionsFilteredByType(List<Contribution> contributions, ContributionTypes type) {

@@ -100,6 +100,7 @@ public class ContributionHistory extends AppCivistBaseModel {
     private List<ContributionFeedback> contributionFeedbacks = new ArrayList<ContributionFeedback>();
 
     @Transient
+    @JsonView(Views.Public.class)
     ContributionHistoryItem changes;
 
     public static Finder<Long, ContributionHistory> find = new Finder<>(ContributionHistory.class);

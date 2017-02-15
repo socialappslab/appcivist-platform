@@ -1,5 +1,7 @@
 package models.misc;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 
 public class ContributionHistoryExternalChange {
 
@@ -17,8 +19,11 @@ public class ContributionHistoryExternalChange {
         }
     }
 
+    @JsonView(Views.Public.class)
     private String externalRef;
+    @JsonView(Views.Public.class)
     private Long externalRefId;
+    @JsonView(Views.Public.class)
     private ExternalChangeType changeType;
 
     public String getExternalRef() {
