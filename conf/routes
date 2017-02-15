@@ -217,6 +217,9 @@ GET       /api/assembly/:aid/contribution/:coid/feedback                  contro
 GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback       controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
 
 POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
+POST      /api/contribution/:uuid/authors                                 controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
+DELETE    /api/contribution/:uuid/themes/:tid                             controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
+DELETE    /api/contribution/:uuid/authors/:auuid                          controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
 GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
 
 DELETE    /api/assembly/:aid/contribution/:cid/space/:sid                 controllers.Contributions.deleteContributionResourceSpace(aid: Long, cid: Long, sid: Long)

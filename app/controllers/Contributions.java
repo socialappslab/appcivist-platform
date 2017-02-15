@@ -88,6 +88,8 @@ public class Contributions extends Controller {
     public static final Form<ContributionFeedback> CONTRIBUTION_FEEDBACK_FORM = form(ContributionFeedback.class);
     public static final Form<Resource> ATTACHMENT_FORM = form(Resource.class);
     public static final Form<ThemeListTransfer> THEMES_FORM = form(ThemeListTransfer.class);
+    public static final Form<User> AUTHORS_FORM = form(User.class);
+
 	private static BufferedReader br;
 
     /**
@@ -292,7 +294,7 @@ public class Contributions extends Controller {
         if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
         	conditions.put("status",ContributionStatus.PUBLISHED);
         }
-        	
+
         PaginatedContribution pag = new PaginatedContribution();
         if(all != null){
             contributions = ContributionsDelegate.findContributions(conditions, null, null);
@@ -515,7 +517,7 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     //@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.AUTHOR_OF_CONTRIBUTION_FEEDBACK)
-    @Restrict({@Group(GlobalData.USER_ROLE)}) 
+    @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result readContributionFeedbackNoGroupId(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
@@ -938,7 +940,7 @@ public class Contributions extends Controller {
 
 
 
-	/* CREATE ENDPOINTS 
+	/* CREATE ENDPOINTS
      * TODO: reduce complexity by removing uncessary create methods
 	 */
 
@@ -996,7 +998,7 @@ public class Contributions extends Controller {
 
             newContribution.setContextUserId(author.getUserId());
             Contribution c;
-            
+
             Ebean.beginTransaction();
             try {
                 c = createContribution(newContribution, author, type, template, rs);
@@ -1013,7 +1015,7 @@ public class Contributions extends Controller {
                 rs.addContribution(c);
                 rs.update();
             }
-            
+
             Ebean.commitTransaction();
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
@@ -1031,7 +1033,7 @@ public class Contributions extends Controller {
             Promise.promise( () -> {
             	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
-            
+
             return ok(Json.toJson(c));
         }
     }
@@ -1430,12 +1432,12 @@ public class Contributions extends Controller {
 
                 }
 
-                // Make sure ContributionFeedback Type and Status are correct                
+                // Make sure ContributionFeedback Type and Status are correct
                 ContributionFeedback.create(feedback);
 
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
                 NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
-                Promise.promise(() -> {               
+                Promise.promise(() -> {
 	                Contribution c = Contribution.read(feedback.getContributionId());
 	                for (Long campId : c.getCampaignIds()) {
 	                    Campaign campaign = Campaign.read(campId);
@@ -1522,6 +1524,23 @@ public class Contributions extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             Contribution newContribution = newContributionForm.get();
+            newContribution.setContributionId(contributionId);
+            newContribution.setContextUserId(author.getUserId());
+
+            List<User> authorsLoaded = new ArrayList<User>();
+            Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
+            for (User user: newContribution.getAuthors()) {
+            	Long userId = user.getUserId();
+            	User auth = User.read(userId);
+            	Boolean alreadyAdded = authorAlreadyAdded.get(userId);
+            	if (alreadyAdded == null || !alreadyAdded) {
+            		authorsLoaded.add(auth);
+            		authorAlreadyAdded.put(auth .getUserId(), true);
+            	}
+            }
+
+            newContribution.setAuthors(authorsLoaded);
+          
             Contribution existingContribution = Contribution.read(contributionId);
             for (Field field : existingContribution.getClass().getDeclaredFields()) {
                 try {
@@ -1537,17 +1556,18 @@ public class Contributions extends Controller {
             }
             existingContribution.setContextUserId(author.getUserId());
             Ebean.beginTransaction();
+          
             try {
-				Contribution.update(existingContribution);
-				Ebean.commitTransaction();
-			} catch (Exception e) {
-				Ebean.rollbackTransaction();
-				e.printStackTrace();
-				Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
-	            TransferResponseStatus responseBody = new TransferResponseStatus();
-	            responseBody.setStatusMessage(e.getMessage());
-	            return Controller.internalServerError(Json.toJson(responseBody));
-			}
+				        Contribution.update(existingContribution);
+				        Ebean.commitTransaction();
+			      } catch (Exception e) {
+				        Ebean.rollbackTransaction();
+				        e.printStackTrace();
+				        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
+	              TransferResponseStatus responseBody = new TransferResponseStatus();
+	              responseBody.setStatusMessage(e.getMessage());
+	              return Controller.internalServerError(Json.toJson(responseBody));
+			      }
 
             ResourceSpace rs = Assembly.read(aid).getResources();
             Promise.promise(() -> {
@@ -1791,10 +1811,14 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", response = Theme.class, produces = "application/json", value = "Add a theme to a contribution")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Theme objects", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body")})
-    // TODO: add dynamic resource handler to allow only COORDINATORS and AUTHORS to add the thems
+            @ApiImplicitParam(name = "Theme objects", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result addThemeToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
         Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
 
         try {
             // We have to save themes without ID first
@@ -1803,7 +1827,6 @@ public class Contributions extends Controller {
             newThemes.forEach(t -> {
                 t.save();
             });
-            contribution = Contribution.readByUUID(uuid);
             contribution.setThemes(themes);
             contribution.update();
 
@@ -1816,6 +1839,110 @@ public class Contributions extends Controller {
                 campaign.update();
             });
             return ok(Json.toJson(themes));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
+
+    /**
+     * POST  /api/contribution/:uuid/authors
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Add a author to a contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.User", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result addAuthorToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+
+        try {
+            User user = AUTHORS_FORM.bindFromRequest().get();
+            User author = User.read(user.getUserId());
+            boolean authorExist = contribution.getAuthors().contains(author);
+            if(!authorExist) {
+                contribution.getAuthors().add(author);
+                contribution.update();
+                return ok(Json.toJson(contribution));
+            }else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Author already in contribution")));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
+
+    /**
+     * DELETE  /api/contribution/:uuid/themes/:tid
+     *
+     * @param uuid
+     * @param tid
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Add a theme to a contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Theme objects", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result deleteThemeFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
+                                                     @ApiParam(name = "tid", value = "Theme's Id") Long tid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+
+        try {
+            Theme theme = Theme.read(tid);
+            contribution.getThemes().remove(theme);
+            contribution.update();
+            return ok(Json.toJson(contribution));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
+
+    /**
+     * DELETE  /api/contribution/:uuid/authors/:auuid
+     *
+     * @param uuid
+     * @param auuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Add a author to a contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.User", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result deleteAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
+                                                      @ApiParam(name = "auuid", value = "Author's Universal Id (UUID)") UUID auuid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+
+        try {
+            User author = User.findByUUID(auuid);
+            boolean authorExist = contribution.getAuthors().contains(author);
+            if(authorExist) {
+                contribution.getAuthors().remove(author);
+                contribution.update();
+                return ok(Json.toJson(contribution));
+            }else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
@@ -1852,7 +1979,7 @@ public class Contributions extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Problems fetching list of contributions")));
         }
     }
-    
+
 	/*
      * Non-exposed methods: creation methods
 	 */

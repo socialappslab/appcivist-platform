@@ -54,8 +54,9 @@ public class MyDynamicResourceHandler implements DynamicResourceHandler {
 		HANDLERS.put("OnlyMe", Optional.of(new OnlyMeDynamicResourceHandler()));
 		HANDLERS.put("OnlyMeAndAdmin", Optional.of(new OnlyMeAndAdminDynamicResourceHandler())); 
 		HANDLERS.put("MemberOrListed", Optional.of(new AssemblyProfileDynamicResourceHandler())); 
-		HANDLERS.put("AuthorOfContribution", Optional.of(new ContributionDynamicResourceHandler())); 
-	}
+		HANDLERS.put("AuthorOfContribution", Optional.of(new ContributionDynamicResourceHandler()));
+        HANDLERS.put("AuthorOrCoordinator", Optional.of(new CoordinatorOrAuthorDynamicResourceHandler()));
+    }
 
     @Override
     public Promise<Boolean> checkPermission(String permissionValue,
