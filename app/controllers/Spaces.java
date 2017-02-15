@@ -38,14 +38,19 @@ public class Spaces extends Controller {
         json.put("type", rs.getType().toString());
 
         String name = "";
+        Long id = null;
         if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
             name = rs.getAssemblyResources().getName();
+            id = rs.getAssemblyResources().getAssemblyId();
         } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
             name = rs.getWorkingGroupResources().getName();
+            id = rs.getWorkingGroupResources().getGroupId();
         } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
             name = rs.getCampaign().getTitle();
+            id = rs.getCampaign().getCampaignId();
         }
         json.put("name", name);
+        json.put("id", id);
 
         return Results.ok(json);
     }
