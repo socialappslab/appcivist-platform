@@ -119,6 +119,7 @@ public class Contribution extends AppCivistBaseModel {
 
     private Integer popularity = 0;
 
+    @JsonView(Views.Public.class) 
     private Boolean pinned = false;
 
     @Transient
