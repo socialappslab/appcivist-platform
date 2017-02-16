@@ -1,9 +1,11 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.*;
 
@@ -61,6 +63,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 	@Transient
 	private String password;
+
+	@Transient
+	private UUID workingGroupUuid;
 
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 
@@ -240,7 +245,16 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	public UUID getWorkingGroupUuid() {
+		return workingGroupUuid;
+	}
 
+	public void setWorkingGroupUuid(UUID uuid) {
+		this.workingGroupUuid = uuid;
+	}
+
+	
 	public Contribution getContribution() {
 		return contribution;
 	}

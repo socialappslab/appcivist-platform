@@ -212,6 +212,7 @@ public class Contribution extends AppCivistBaseModel {
 
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @OneToOne(cascade = CascadeType.ALL)
+    @JsonView(Views.Public.class)
     private Resource extendedTextPad;
 
     // Fields specific to the type PROPOSAL and ASSESSMENT

@@ -61,6 +61,7 @@ import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
@@ -676,7 +677,33 @@ public class Contributions extends Controller {
             e.printStackTrace();
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with this uuid")));
         }
-        return ok(Json.toJson(contribution));
+        
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+        String result;
+		try {
+			result = mapper.writerWithView(Views.Public.class).writeValueAsString(contribution);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, "Error while mapping the public view of the contribution")));
+		}
+
+        Content ret = new Content() {
+            @Override
+            public String body() {
+                return result;
+            }
+
+            @Override
+            public String contentType() {
+                return "application/json";
+            }
+        };
+
+        return ok(ret);
+        
+        //return ok(Json.toJson(contribution));
     }
 
     /**
