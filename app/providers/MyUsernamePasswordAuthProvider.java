@@ -33,6 +33,7 @@ import play.mvc.Call;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import service.PlayAuthenticateLocal;
+import utils.GlobalData;
 import utils.security.HashGenerationException;
 
 import com.avaje.ebean.Ebean;
@@ -410,25 +411,39 @@ public class MyUsernamePasswordAuthProvider
 	protected Body getPasswordResetMailingBody(final String token,
 			final User user, final Context ctx) {
 
-		// final boolean isSecure = getConfiguration().getBoolean(
-		// SETTING_KEY_PASSWORD_RESET_LINK_SECURE);
-		// TODO find out how to return just json
-		final String url = "";
-		// final String url = routes.Signup.resetPassword(token).absoluteURL(
-		// ctx.request(), isSecure);
-		
+		final boolean isSecure = getConfiguration().getBoolean(
+		 SETTING_KEY_PASSWORD_RESET_LINK_SECURE);
+		final String url = Play.application().configuration().getString(GlobalData.CONFIG_FORGOT_PASSWORD_URL_BASE)+token;
+
 		final String userLangCode = user.getLanguage();
 		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
 		final String langCode = userLangCode !=null ? userLangCode : lang.code();
 		ctx.changeLang(langCode);
+		String locale = langCode;
+
+		if (locale.equals("it_IT") || locale.equals("it-IT")
+				|| locale.equals("it")) {
+			locale = "it";
+		} else if (locale.equals("es_ES") || locale.equals("es-ES")
+				|| locale.equals("es")) {
+			locale = "es";
+		} else if (locale.equals("en_EN") || locale.equals("en-EN")
+				|| locale.equals("en")) {
+			locale = "en";
+		} else if (locale.equals("de_DE") || locale.equals("de-DE")
+				|| locale.equals("de")) {
+			locale = "de";
+		} else if (locale.equals("fr_FR") || locale.equals("fr-FR")
+				|| locale.equals("fr")) {
+			locale = "fr";
+		}
 
 		final String html = getEmailTemplate(
-				"views.html.account.email.password_reset", langCode, url,
+				"views.html.account.email.password_reset", locale, url,
 				token, user.getName(), user.getEmail());
 		final String text = getEmailTemplate(
-				"views.txt.account.email.password_reset", langCode, url, token,
+				"views.txt.account.email.password_reset", locale, url, token,
 				user.getName(), user.getEmail());
-
 		return new Body(text, html);
 	}
 

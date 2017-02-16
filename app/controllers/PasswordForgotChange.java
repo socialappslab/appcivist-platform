@@ -4,12 +4,8 @@ import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 import play.i18n.Messages;
 
-@ApiModel(value="PasswordChange")
-public class PasswordChange {
-
-    @Constraints.MinLength(5)
-    @Constraints.Required
-    public String oldPassword;
+@ApiModel(value="PasswordForgotChange")
+public class PasswordForgotChange {
 
     @Constraints.MinLength(5)
     @Constraints.Required
@@ -19,12 +15,15 @@ public class PasswordChange {
     @Constraints.Required
     public String repeatPassword;
 
-    public String getOldPassword() {
-        return oldPassword;
+    @Constraints.Required
+    public String token;
+
+    public String getToken() {
+        return token;
     }
 
-    public void setOldPassword(String oldPassword) {
-        this.oldPassword = oldPassword;
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getPassword() {
