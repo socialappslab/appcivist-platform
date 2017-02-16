@@ -35,8 +35,8 @@ import models.transfer.ThemeListTransfer;
 import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
-
 import org.apache.commons.lang3.RandomUtils;
+
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -51,6 +51,7 @@ import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.services.EtherpadWrapper;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -469,10 +470,6 @@ public class Contributions extends Controller {
         }
     }
 
-
-
-
-
     /**
      * GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback?type=x
      *
@@ -569,10 +566,6 @@ public class Contributions extends Controller {
                             "Error reading contribution stats: " + e.getMessage())));
         }
     }
-
-
-
-
 
     /**
      * GET       /api/assembly/:aid/contribution/:cid/padid
@@ -937,7 +930,6 @@ public class Contributions extends Controller {
         }
         return ok("ok");
     }
-
 
 
 	/* CREATE ENDPOINTS
@@ -1394,27 +1386,44 @@ public class Contributions extends Controller {
             return contributionFeedbackError(updatedFeedbackForm);
         } else {
             ContributionFeedback feedback = updatedFeedbackForm.get();
-            ConfigDefinition configDefinition = ConfigDefinition.findByKey("campaign.technical-assessment-password");
             Campaign campaignPath = Campaign.read(caid);
             if (campaignPath==null){
                 return notFound(Json.toJson(new TransferResponseStatus(
                         "No campaign with id: " + caid )));
             }
-            List<Config> configs = Config.findByCampaign(campaignPath.getUuid(),configDefinition);
-            boolean authorized = false;
-            for (Config c: configs
-                    ) {
-                if(feedback.getPassword()!=null && feedback.getPassword().equals(c.getValue())){
-                    authorized=true;
-                }
-            }
-            if (!authorized){
-                return unauthorized(Json
-                        .toJson(new TransferResponseStatus(
-                                ResponseStatus.UNAUTHORIZED,
-                                "Password in feedback form is incorrect")));
-            }
-            feedback.setContribution(contribution);
+            
+            // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
+			if (feedback.getType().equals(
+					ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
+				List<Config> configs = Config
+						.findByCampaignAndKey(
+								campaignPath.getUuid(),
+								GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+				// TODO: Leaving the following as example for other cases where
+				// we have to read all the configs at once
+				// Map<String, Config> configMap =
+				// Config.convertConfigsToMap(configs);
+				// Config c =
+				// configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+
+				boolean authorized = false || configs == null
+						|| configs.isEmpty();
+				for (Config config : configs) {
+					if (feedback.getPassword() != null && feedback // there is a
+																	// password
+																	// so verify
+							.getPassword().equals(config.getValue())) {
+						authorized = true;
+					}
+				}
+
+				if (!authorized) {
+					return unauthorized(Json.toJson(new TransferResponseStatus(
+							ResponseStatus.UNAUTHORIZED,
+							"Password in feedback form is incorrect")));
+				}
+			}
+			feedback.setContribution(contribution);
             feedback.setUserId(author.getUserId());
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
@@ -1527,21 +1536,32 @@ public class Contributions extends Controller {
                 return notFound(Json.toJson(new TransferResponseStatus(
                         "No campaign with uuid: " + cuuid )));
             }
-            ConfigDefinition configDefinition = ConfigDefinition.findByKey("campaign.technical-assessment-password");
-            List<Config> configs = Config.findByCampaign(cuuid, configDefinition);
-            boolean authorized = false;
-            for (Config c: configs
-                 ) {
-                if(feedback.getPassword()!=null && feedback.getPassword().equals(c.getValue())){
-                    authorized=true;
-                }
-            }
-            if (!authorized){
-                return unauthorized(Json
-                        .toJson(new TransferResponseStatus(
-                                ResponseStatus.UNAUTHORIZED,
-                                "Password in feedback form is incorrect")));
-            }
+            // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
+			if (feedback.getType().equals(
+					ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
+				List<Config> configs = Config
+						.findByCampaignAndKey(
+								campaignPath.getUuid(),
+								GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+				// TODO: Leaving the following as example for other cases where we have to read all the configs at once
+				// Map<String, Config> configMap = Config.convertConfigsToMap(configs);
+				// Config c = configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+
+				boolean authorized = false || configs == null
+						|| configs.isEmpty();
+				for (Config config : configs) {
+					if (feedback.getPassword() != null && feedback // there is a password so verify
+							.getPassword().equals(config.getValue())) {
+						authorized = true;
+					}
+				}
+
+				if (!authorized) {
+					return unauthorized(Json.toJson(new TransferResponseStatus(
+							ResponseStatus.UNAUTHORIZED,
+							"Password in feedback form is incorrect")));
+				}
+			}
             feedback.setContribution(contribution);
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());

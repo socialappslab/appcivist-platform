@@ -1,6 +1,5 @@
 package models;
 
-import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
@@ -17,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
-import io.swagger.annotations.ApiModelProperty;
 import models.misc.Views;
 
 @Entity
