@@ -1,9 +1,12 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.swagger.annotations.ApiModel;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.*;
@@ -145,6 +148,21 @@ public class Config extends AppCivistBaseModel {
                 .eq("configTarget", ConfigTargets.CAMPAIGN)
                 .eq("definition", configDefinition)
                 .findList();
+    }
+    
+    public static List<Config> findByCampaignAndKey(UUID campaignUUID, String configKey) {
+        return find.where().eq("targetUuid", campaignUUID)
+                .eq("configTarget", ConfigTargets.CAMPAIGN)
+                .eq("key", configKey)
+                .findList();
+    }
+    
+    public static Map<String, Config> convertConfigsToMap(List<Config> configs) {
+    	Map<String, Config> configMap = new HashMap<String, Config>();
+    	for (Config config : configs) {
+			configMap.put(config.getKey(), config);
+		}
+    	return configMap;
     }
     
 	public static Config read(UUID configId) {
