@@ -236,7 +236,7 @@ PUT       /api/assembly/:aid/contribution/:cid                            contro
 PUT       /api/assembly/:aid/contribution/:cid/moderate                   controllers.Contributions.moderateContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/softremoval                controllers.Contributions.softDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/campaign/:caid/contribution/:cid/feedback    controllers.Contributions.updateContributionFeedback(aid: Long, caid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contributions/popularity                     controllers.Contributions.updateContributionsPopularity(aid: Long)
 
@@ -251,6 +251,7 @@ POST      /api/assembly/:uuid/contribution                                contro
 POST      /api/campaign/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
 POST      /api/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWorkingGroup(uuid: String)
 POST      /api/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
+PUT       /api/campaign/:cuuid/contribution/:uuid/feedback                controllers.Contributions.updateContributionFeedbackNonMemberAuthor(cuuid: java.util.UUID, uuid: java.util.UUID)
 
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)

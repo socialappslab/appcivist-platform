@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
+import io.swagger.annotations.ApiModelProperty;
 import models.misc.Views;
 
 @Entity
@@ -56,7 +57,12 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	private Boolean officialGroupFeedback = false;
 	private Boolean archived = false;
 
+	@JsonView(Views.Public.class)
+	@ManyToOne(cascade = CascadeType.ALL)
+	private NonMemberAuthor nonMemberAuthor;
 
+	@Transient
+	private String password;
 
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 
@@ -229,12 +235,28 @@ public class ContributionFeedback extends AppCivistBaseModel {
 		return object;
 	}
 
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	public Contribution getContribution() {
 		return contribution;
 	}
 
 	public void setContribution(Contribution contribution) {
 		this.contribution = contribution;
+	}
+
+	public NonMemberAuthor getNonMemberAuthor() {
+		return nonMemberAuthor;
+	}
+
+	public void setNonMemberAuthor(NonMemberAuthor nonMemberAuthor) {
+		this.nonMemberAuthor = nonMemberAuthor;
 	}
 
 	public static void delete(Long id) {
@@ -400,10 +422,11 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	 * @return
 	 */
 	public static List<ContributionFeedback> findPreviousContributionFeedback(Long cid, Long userId, Long workingGroupId,
-												ContributionFeedbackTypes type, ContributionFeedbackStatus status ){
+												ContributionFeedbackTypes type, ContributionFeedbackStatus status, NonMemberAuthor nonMemberAuthor ){
 		return find.where().eq("contribution.contributionId", cid).eq("workingGroupId", workingGroupId).
 				eq("userId", userId).eq("type", type == null ? null : type).
-				eq("status", status == null ? null : status).eq("archived", false).findList();
+				eq("status", status == null ? null : status).eq("archived", false).
+				eq("nonMemberAuthor",nonMemberAuthor == null ? null : nonMemberAuthor).findList();
 
 	}
 

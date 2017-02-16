@@ -923,7 +923,7 @@ public class Contributions extends Controller {
         for(ContributionFeedback feedback : feedbacks){
             List<ContributionFeedback> relatedFeedbacks = ContributionFeedback.findPreviousContributionFeedback(
                     feedback.getContributionId(), feedback.getUserId(), feedback.getWorkingGroupId(),
-                    feedback.getType(), feedback.getStatus());
+                    feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
             if(relatedFeedbacks != null && relatedFeedbacks.size() > 1){
                 relatedFeedbacks.stream().sorted((feedback1, feedback2) -> feedback1.getCreation().
                         compareTo(feedback2.getCreation()));
@@ -1367,9 +1367,10 @@ public class Contributions extends Controller {
     }
 
     /**
-     * PUT       /api/assembly/:aid/contribution/:cid/feedback
+     * PUT       /api/assembly/:aid/campaign/:caid/contribution/:cid/feedback
      *
      * @param aid
+     * @param caid
      * @param cid
      * @return
      */
@@ -1383,6 +1384,7 @@ public class Contributions extends Controller {
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateContributionFeedback(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "caid", value = "Campaign ID") Long caid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
@@ -1392,10 +1394,30 @@ public class Contributions extends Controller {
             return contributionFeedbackError(updatedFeedbackForm);
         } else {
             ContributionFeedback feedback = updatedFeedbackForm.get();
+            ConfigDefinition configDefinition = ConfigDefinition.findByKey("campaign.technical-assessment-password");
+            Campaign campaignPath = Campaign.read(caid);
+            if (campaignPath==null){
+                return notFound(Json.toJson(new TransferResponseStatus(
+                        "No campaign with id: " + caid )));
+            }
+            List<Config> configs = Config.findByCampaign(campaignPath.getUuid(),configDefinition);
+            boolean authorized = false;
+            for (Config c: configs
+                    ) {
+                if(feedback.getPassword()!=null && feedback.getPassword().equals(c.getValue())){
+                    authorized=true;
+                }
+            }
+            if (!authorized){
+                return unauthorized(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.UNAUTHORIZED,
+                                "Password in feedback form is incorrect")));
+            }
             feedback.setContribution(contribution);
             feedback.setUserId(author.getUserId());
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
-                    feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus());
+                    feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
 
             Ebean.beginTransaction();
             try {
@@ -1464,6 +1486,132 @@ public class Contributions extends Controller {
                     Logger.error(LogActions.exceptionStackTraceToString(e));
                     return true;
             	});
+                Ebean.rollbackTransaction();
+                return contributionFeedbackError(feedback, e.getLocalizedMessage());
+            }
+
+            Ebean.commitTransaction();
+            return ok(Json.toJson(updatedStats));
+        }
+    }
+
+    /**
+     * PUT       /api/campaign/:cuuid/contribution/:uuid/feedback
+     *
+     * @param cuuid
+     * @param uuid
+     * @return
+     */
+    // TODO: REVIEW to evaluate if removing
+    @ApiOperation(httpMethod = "PUT", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json", value = "Update Feedback on a Contribution",
+            notes = "Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution feedback form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Contribution Feedback object", value = "Body of Contribution Feedback in JSON", required = true, dataType = "models.ContributionFeedback", paramType = "body")})
+    public static Result updateContributionFeedbackNonMemberAuthor(
+            @ApiParam(name = "cuuid", value = "Campaign UUID") UUID cuuid,
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid) {
+        final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
+        Contribution contribution = Contribution.readByUUID(uuid);
+        if (contribution==null){
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    "No contributions with uuid: " + uuid )));
+        }
+        ContributionStatistics updatedStats = new ContributionStatistics(contribution.getContributionId());
+        if (updatedFeedbackForm.hasErrors()) {
+            return contributionFeedbackError(updatedFeedbackForm);
+        } else {
+            ContributionFeedback feedback = updatedFeedbackForm.get();
+            Campaign campaignPath = Campaign.readByUUID(cuuid);
+            if (campaignPath==null){
+                return notFound(Json.toJson(new TransferResponseStatus(
+                        "No campaign with uuid: " + cuuid )));
+            }
+            ConfigDefinition configDefinition = ConfigDefinition.findByKey("campaign.technical-assessment-password");
+            List<Config> configs = Config.findByCampaign(cuuid, configDefinition);
+            boolean authorized = false;
+            for (Config c: configs
+                 ) {
+                if(feedback.getPassword()!=null && feedback.getPassword().equals(c.getValue())){
+                    authorized=true;
+                }
+            }
+            if (!authorized){
+                return unauthorized(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.UNAUTHORIZED,
+                                "Password in feedback form is incorrect")));
+            }
+            feedback.setContribution(contribution);
+            List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
+                    feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
+
+            Ebean.beginTransaction();
+            try {
+                feedback.setContribution(contribution);
+
+                //If we found a previous feedback, we set that feedback as archived
+                if (existingFeedbacks != null) {
+                    for (ContributionFeedback existingFeedback : existingFeedbacks) {
+                        existingFeedback.setArchived(true);
+                        existingFeedback.update();
+                    }
+
+
+                }
+
+                // We have to do some authorization control
+                if (feedback.getWorkingGroupId() != null) {
+                    //The user has to be member of working group
+                    Membership m = MembershipGroup.findByUserAndGroupId(feedback.getUserId(), feedback.getWorkingGroupId());
+                    List<SecurityRole> membershipRoles = m!=null ? m.filterByRoleName(MyRoles.MEMBER.getName()) : null;
+
+                    if (feedback.getType().equals(ContributionFeedbackTypes.WORKING_GROUP) && feedback.getOfficialGroupFeedback() != null && feedback.getOfficialGroupFeedback()) {
+                        //The user has to be coordinator of working group
+                        membershipRoles =  m!=null ? m.filterByRoleName(MyRoles.COORDINATOR.getName()) : null;
+                        if (membershipRoles == null || membershipRoles.isEmpty()) {
+                            Logger.error("User has to be coordinator of working group");
+                            return unauthorized(Json
+                                    .toJson(new TransferResponseStatus(
+                                            ResponseStatus.UNAUTHORIZED,
+                                            "User has to be coordinator of working group")));
+                        }
+                    }
+
+                }
+
+                // Make sure ContributionFeedback Type and Status are correct
+                ContributionFeedback.create(feedback);
+
+                //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
+                NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
+                Promise.promise(() -> {
+                    Contribution c = Contribution.read(feedback.getContributionId());
+                    for (Long campId : c.getCampaignIds()) {
+                        Campaign campaign = Campaign.read(campId);
+                        NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
+                    }
+                    return true;
+                });
+
+                feedback.getWorkingGroupId();
+                Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(
+                            ResourceSpaceTypes.WORKING_GROUP,
+                            eventName,
+                            WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
+                            feedback);
+                });
+
+                contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
+                contribution.update();
+                ContributionHistory.createHistoricFromContribution(contribution);
+
+            } catch (Exception e) {
+                Promise.promise(() -> {
+                    Logger.error(LogActions.exceptionStackTraceToString(e));
+                    return true;
+                });
                 Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
             }
