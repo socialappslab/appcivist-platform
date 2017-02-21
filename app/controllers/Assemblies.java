@@ -77,6 +77,7 @@ public class Assemblies extends Controller {
 	public static final Form<AssemblyProfile> PROFILE_FORM = form(AssemblyProfile.class);
 
 	/**
+	 * GET       /api/assembly/listed
 	 * Return the full list of assemblies for non users
 	 * 
 	 */
@@ -112,9 +113,10 @@ public class Assemblies extends Controller {
 	}
 
 	/**
+	 * GET       /api/assembly
 	 * Return the full list of assemblies
 	 * 
-	 * @return models.AssemblyCollection
+	 * @return
 	 */
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of assemblies based on query")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
@@ -164,8 +166,10 @@ public class Assemblies extends Controller {
 	}
 
 	/**
-	 * 
-	 * @return models.AssemblyCollection
+	 * GET       /api/assembly/:aid/linked
+	 *
+	 * @param aid
+	 * @return
 	 */
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, responseContainer = "List", produces = "application/json", value = "Get list of linked assemblies to a single assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
@@ -185,8 +189,10 @@ public class Assemblies extends Controller {
 	}
 	
 	/**
-	 * 
-	 * @return models.AssemblyCollection
+	 * GET       /api/assembly/:aid/public
+	 *
+	 * @param aid
+	 * @return
 	 */
 	@ApiOperation(httpMethod = "GET", response = AssemblySummaryTransfer.class, produces = "application/json", value = "Get assembly profile if it is listed or if it is in the list of linked assemblies")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
@@ -201,8 +207,13 @@ public class Assemblies extends Controller {
 			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' is not available for this user", "")));
 		}
 	}
-	
-	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", httpMethod="POST", notes="The templates will be used to import all the resources from a list of existing assembly to the new")
+
+	/**
+	 * POST      /api/assembly
+	 *
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly", notes="The templates will be used to import all the resources from a list of existing assembly to the new")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
@@ -254,7 +265,13 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly in a principal assembly", httpMethod="POST")
+	/**
+	 * POST      /api/assembly/:id/assembly
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = AssemblyTransfer.class, produces = "application/json", value = "Create a new assembly in a principal assembly")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
@@ -306,7 +323,13 @@ public class Assemblies extends Controller {
 			}
 		}
 	}
-	
+
+	/**
+	 * GET       /api/assembly/:id
+	 *
+	 * @param id
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read Assembly by ID", notes="Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -319,6 +342,12 @@ public class Assemblies extends Controller {
 						"No assembly with ID = " + id)));
 	}
 
+	/**
+	 * GET       /api/assembly/name/:shortname
+	 *
+	 * @param shortname
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read Assembly by Shortname", notes="Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	public static Result findAssemblyByShortname(@ApiParam(name = "shortname", value = "Assembly Shortname") String shortname) {
@@ -343,7 +372,13 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod = "DELETE", response = Assembly.class, produces = "application/json", value = "Delete Assembly by ID", notes = "Only for COORDINATORS")
+	/**
+	 * DELETE    /api/assembly/:id
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "DELETE", response = String.class, produces = "application/json", value = "Delete Assembly by ID", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -353,6 +388,12 @@ public class Assemblies extends Controller {
 		return ok();
 	}
 
+	/**
+	 * PUT       /api/assembly/:id
+	 *
+	 * @param id
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "PUT", response = Assembly.class, produces = "application/json", value = "Update Assembly by ID", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -449,7 +490,8 @@ public class Assemblies extends Controller {
 
 	/**
 	 * Creates memberships in the assembly for a new user
-	 * 
+	 * POST      /api/assembly/:id/membership/:type
+	 *
 	 * @param id
 	 * @param type
 	 * @return
@@ -484,6 +526,13 @@ public class Assemblies extends Controller {
 		}
 	}
 
+	/**
+	 * GET       /api/assembly/:id/membership/:status
+	 *
+	 * @param id
+	 * @param status
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer="List", produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -499,7 +548,14 @@ public class Assemblies extends Controller {
 				"No memberships with status '" + status + "' in Assembly '"
 						+ id + "'")));
 	}
-	
+
+	/**
+	 * GET       /api/assembly/:aid/user/:uid
+	 *
+	 * @param aid
+	 * @param userId
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify if user is member of an assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -514,7 +570,13 @@ public class Assemblies extends Controller {
 		else return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, 
 				"User '" + userId + "' is not a member of Assembly '"+ aid + "'")));
 	}
-	
+
+	/**
+	 * POST      /api/assembly/:id/invitations
+	 *
+	 * @param id
+	 * @return
+	 */
 	// TODO: create a better model for the response in this request
 	@ApiOperation(httpMethod = "POST", response = Pair.class, responseContainer="List", produces = "application/json", value = "Add membership to the assembly by listing AppCivist's users emails", notes = "Only for COORDINATORS")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
@@ -564,7 +626,13 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(httpMethod="GET", response = AssemblyProfile.class, produces = "application/json", value = "Update the profile of the Assembly")
+	/**
+	 * PUT       /api/assembly/:uuid/profile
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod="PUT", response = AssemblyProfile.class, produces = "application/json", value = "Update the profile of the Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "AssemblyProfile object", value = "Body of AssemblyProfile in JSON", required = true, dataType = "models.AssemblyProfile", paramType = "body"),
@@ -599,7 +667,13 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	@ApiOperation(response = AssemblyProfile.class, produces = "application/json", value = "Read the profile of an Assembly")
+	/**
+	 * GET       /api/assembly/:uuid/profile
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod="GET", response = AssemblyProfile.class, produces = "application/json", value = "Read the profile of an Assembly")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -617,7 +691,13 @@ public class Assemblies extends Controller {
 		return ok(Json.toJson(ap));
 	}
 
-	@ApiOperation(response = Theme.class, responseContainer = "List", produces = "application/json", value = "Get themes of an assembly by its UUID")
+	/**
+	 * GET       /api/assembly/:uuid/theme
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod="GET", response = Theme.class, responseContainer = "List", produces = "application/json", value = "Get themes of an assembly by its UUID")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -670,12 +750,13 @@ public class Assemblies extends Controller {
 	}
 
 	/**
-	 * PUT /api/assembly/:aid/contribution/template/:rid
+	 * PUT       /api/assembly/:aid/contribution/template/:rid
 	 * Confirms a Resource CAMPAIGN_TEMPLATE
+	 * @param aid
 	 * @param rid
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "PUT", value = "Confirm Contribution Template")
+	@ApiOperation(httpMethod = "PUT", response = Resource.class, value = "Confirm Contribution Template")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No contribution template found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -688,9 +769,11 @@ public class Assemblies extends Controller {
 	}
 
 	/**
-	 * GET /api/assembly/:aid/contribution/template Get list of available campaign templates in the assembly
+	 * GET       /api/assembly/:aid/contribution/template
+	 * Get list of available campaign templates in the assembly
 	 *
-	 * @return JSON array with the list of campaign templates
+	 * @param aid
+	 * @return
 	 */
 	@ApiOperation(httpMethod = "GET", response = URL.class, responseContainer = "List", produces = "application/json", value = "Get list of available contribution templates in assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No Contribution Template Found", response = TransferResponseStatus.class) })
@@ -712,13 +795,13 @@ public class Assemblies extends Controller {
 	}
 
 	/**
-	 * DELETE /api/assembly/:aid/campaign/template/:rid
+	 * DELETE    /api/assembly/:aid/contribution/template/:rid
 	 * Delete campaign by ID
 	 * @param aid
 	 * @param resourceId
 	 * @return
 	 */
-	@ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Delete contribution template from assembly", notes="Only for COORDINATOS of assembly")
+	@ApiOperation(httpMethod = "DELETE", response = String.class, produces = "application/json", value = "Delete contribution template from assembly", notes="Only for COORDINATOS of assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -730,6 +813,12 @@ public class Assemblies extends Controller {
 		return ok();
 	}
 
+	/**
+	 * GET       /api/assembly/public/:uuid
+	 *
+	 * @param uuid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read assembly by Universal ID")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	public static Result findAssemblyByUUID(@ApiParam(name = "uuid", value = "Assembly Universal ID (UUID)") UUID uuid) {

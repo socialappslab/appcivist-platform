@@ -80,8 +80,10 @@ public class WorkingGroups extends Controller {
 
     /**
      * Return the full list of working groups in an assembly
+     * GET       /api/assembly/:aid/group
      *
-     * @return WorkingGroup list
+     * @param aid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, responseContainer = "List", produces = "application/json", value = "List groups of an assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
@@ -93,6 +95,13 @@ public class WorkingGroups extends Controller {
         return ok(Json.toJson(workingGroups));
     }
 
+    /**
+     * GET       /api/assembly/:aid/campaign/:cid/group
+     *
+     * @param aid
+     * @param cid
+     * @return
+     */
     @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, responseContainer = "List", produces = "application/json", value = "List of groups created in a campaign")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -111,12 +120,20 @@ public class WorkingGroups extends Controller {
         }
     }
 
+    /**
+     * GET       /api/assembly/:aid/group/:gid
+     *
+     * @param aid
+     * @param wGroupId
+     * @return
+     */
     @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, produces = "application/json", value = "Get working group by ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
-    public static Result findWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
+    public static Result findWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                          @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
         WorkingGroup workingGroup = WorkingGroup.read(wGroupId);
         return workingGroup != null ? ok(Json.toJson(workingGroup))
                 : notFound(Json
@@ -125,16 +142,30 @@ public class WorkingGroups extends Controller {
                         + wGroupId)));
     }
 
-    @ApiOperation(httpMethod = "DELETE", response = WorkingGroup.class, produces = "application/json", value = "Delete group by ID")
+    /**
+     * DELETE       /api/assembly/:aid/group/:gid
+     *
+     * @param aid
+     * @param wGroupId
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = String.class, produces = "application/json", value = "Delete group by ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
-    public static Result deleteWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
+    public static Result deleteWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                            @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
         WorkingGroup.delete(wGroupId);
         return ok();
     }
 
+    /**
+     * POST      /api/assembly/:aid/group
+     *
+     * @param aid
+     * @return
+     */
     @ApiOperation(httpMethod = "POST", response = WorkingGroup.class, produces = "application/json",
             value = "Create a new working group",
             notes = "Only for COORDINATORS")
@@ -222,7 +253,14 @@ public class WorkingGroups extends Controller {
         }
     }
 
-    @ApiOperation(httpMethod = "POST", response = Campaign.class, produces = "application/json",
+    /**
+     * POST      /api/assembly/:aid/campaign/:cid/group
+     *
+     * @param aid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = WorkingGroup.class, produces = "application/json",
             value = "Create a Working Group in the Campaign identified by ID",
             notes = "This will also add the Working Gorup to the Assembly organizing this campaign. Only for COORDINATORS")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Group create error", response = TransferResponseStatus.class)})
@@ -230,7 +268,8 @@ public class WorkingGroups extends Controller {
             @ApiImplicitParam(name = "Working Group Object", value = "New Working Group in json", dataType = "models.WorkingGroup", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createWorkingGroupInCampaign(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
+    public static Result createWorkingGroupInCampaign(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                                      @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
         // 1. obtaining the user of the requestor
         User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -315,13 +354,21 @@ public class WorkingGroups extends Controller {
         }
     }
 
-    @ApiOperation(httpMethod = "PUT", response = WorkingGroup.class, produces = "application/json", value = "Update Working Group by ID", notes = "Only for COORDINATORS")
+    /**
+     * PUT       /api/assembly/:aid/group/:gid
+     *
+     * @param aid
+     * @param groupId
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update Working Group by ID", notes = "Only for COORDINATORS")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Group create error", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Working Group Object", value = "New Working Group in json", dataType = "models.WorkingGroup", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result updateWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "aid", value = "Working Group ID") Long groupId) {
+    public static Result updateWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                            @ApiParam(name = "aid", value = "Working Group ID") Long groupId) {
         // 1. read the new group data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<WorkingGroup> newWorkingGroupForm = WORKING_GROUP_FORM
@@ -379,7 +426,15 @@ public class WorkingGroups extends Controller {
         }
     }
 
-    @ApiOperation(httpMethod = "POST", response = MembershipTransfer.class, produces = "application/json", value = "Add membership to the working group",
+    /**
+     * POST      /api/assembly/:aid/group/:id/membership/:type
+     *
+     * @param aid
+     * @param id
+     * @param type
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Membership.class, produces = "application/json", value = "Add membership to the working group",
             notes = "Only for COORDINATORS")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "mebership create error", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -411,6 +466,14 @@ public class WorkingGroups extends Controller {
         }
     }
 
+    /**
+     * GET       /api/assembly/:aid/group/:id/membership/:status
+     *
+     * @param aid
+     * @param gid
+     * @param status
+     * @return
+     */
     @ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Get Working Group Memberships by ID and status")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No membership in this group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -428,6 +491,14 @@ public class WorkingGroups extends Controller {
                         + gid + "'")));
     }
 
+    /**
+     * GET       /api/assembly/:aid/group/:gid/user/:uid
+     *
+     * @param aid
+     * @param gid
+     * @param userId
+     * @return
+     */
     @ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Get Working Group Memberships by user ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "User is not Member of Group", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -445,7 +516,11 @@ public class WorkingGroups extends Controller {
     }
 
     /**
-     * @return models.AssemblyCollection
+     * GET       /api/assembly/:aid/group/:gid/public
+     *
+     * @param aid
+     * @param gid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = WorkingGroupSummaryTransfer.class, produces = "application/json", value = "Get working group profile if it is listed")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
@@ -453,7 +528,8 @@ public class WorkingGroups extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
     @Restrict({@Group(GlobalData.USER_ROLE)})
-    public static Result getListedWorkingGroupProfile(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+    public static Result getListedWorkingGroupProfile(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                                      @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
         User requestor = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         WorkingGroupSummaryTransfer group = WorkingGroupsDelegate.readListedWorkingGroup(gid, requestor);
         if (group != null) {
@@ -463,30 +539,53 @@ public class WorkingGroups extends Controller {
         }
     }
 
-    @ApiOperation(httpMethod = "GET", response = WorkingGroupSummaryTransfer.class, produces = "application/json", value = "Get working group PROPOSALS")
+    /**
+     * GET       /api/assembly/:aid/group/:gid/proposals
+     *
+     * @param aid
+     * @param gid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get working group PROPOSALS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
     @Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
-    public static Result listWorkingGroupProposals(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+    public static Result listWorkingGroupProposals(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                                   @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
         List<Contribution> proposals = WorkingGroup.listWorkingGroupProposals(gid);
         return ok(Json.toJson(proposals));
     }
 
-    @ApiOperation(httpMethod = "GET", response = WorkingGroupSummaryTransfer.class, produces = "application/json", value = "Get working group CONTRIBUTIONS")
+    /**
+     * GET       /api/assembly/:aid/group/:gid/contributions
+     *
+     * @param aid
+     * @param gid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json", value = "Get working group CONTRIBUTIONS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
     @Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
-    public static Result listWorkingGroupContributions(@ApiParam(name = "aid", value = "Assembly ID") Long aid, @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
+    public static Result listWorkingGroupContributions(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                                       @ApiParam(name = "gid", value = "Working Group ID") Long gid) {
         List<Contribution> contributions = WorkingGroup.listWorkingGroupContributions(gid);
         return ok(Json.toJson(contributions));
     }
 
+    /**
+     * GET       /api/assembly/:aid/group/:id/membership
+     *
+     * @param aid
+     * @param id
+     * @return
+     */
     //TODO
-    @ApiOperation(value = "List memberships in group", hidden = true)
+    @ApiOperation(httpMethod = "GET", value = "List memberships in group", hidden = true)
     @SubjectPresent
     public static Result listMemberships(Long aid, Long id) {
         // check the user who is accepting the invitation is
@@ -496,6 +595,13 @@ public class WorkingGroups extends Controller {
         return notFound(Json.toJson(responseBody));
     }
 
+    /**
+     * POST      /api/assembly/:aid/group/:gid/ballot
+     *
+     * @param aid
+     * @param gid
+     * @return
+     */
     @ApiOperation(httpMethod = "POST", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -560,6 +666,13 @@ public class WorkingGroups extends Controller {
         return ok(Json.toJson(newBallot));
     }
 
+    /**
+     * PUT       /api/assembly/:aid/group/:gid/ballot
+     *
+     * @param aid
+     * @param gid
+     * @return
+     */
     @ApiOperation(httpMethod = "PUT", response = Ballot.class, produces = "application/json", value = "Creates new Consensus Ballot from selected/remaining proposals in working group")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -591,7 +704,12 @@ public class WorkingGroups extends Controller {
         return ok(Json.toJson(ballot));
     }
 
-
+    /**
+     * GET       /api/group/:uuid
+     *
+     * @param uuid
+     * @return
+     */
     @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, produces = "application/json", value = "Read working group by Universal ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No working group found", response = TransferResponseStatus.class)})
     public static Result findWorkingGroupByUUID(@ApiParam(name = "uuid", value = "Working Group Universal ID (UUID)") UUID uuid) {
@@ -630,6 +748,14 @@ public class WorkingGroups extends Controller {
 
     }
 
+    /**
+     * POST      /api/assembly/:aid/campaign/:cid/group/:gid/assignments
+     *
+     * @param aid
+     * @param cid
+     * @param gid
+     * @return
+     */
     @ApiOperation(httpMethod = "POST", response = WorkingGroup.class, produces = "application/json", value = "Assigns contributions to the working group")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
@@ -674,7 +800,14 @@ public class WorkingGroups extends Controller {
 
     }
 
-
+    /**
+     * PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish
+     *
+     * @param aid
+     * @param gid
+     * @param pid
+     * @return
+     */
     @ApiOperation(httpMethod = "PUT", response = Integer.class, produces = "application/json", value = "Publishes a Contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({

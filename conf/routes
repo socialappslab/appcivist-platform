@@ -264,7 +264,6 @@ GET       /api/user/link                                                  contro
 GET       /api/user/unverified                                            controllers.Users.unverified()
 GET       /api/user/exists                                                controllers.Users.exists()
 GET       /api/user/login/denied                                          controllers.Users.onLoginUserNotFound()
-GET       /api/user/login                                                 controllers.Users.login()
 GET       /api/user/authenticate/:provider/denied                         controllers.Users.oAuthDenied(provider: String)
 GET       /api/user/authenticated                                         controllers.Restricted.index()
 GET       /api/user/login/:id                                             controllers.Restricted.id(id: String)

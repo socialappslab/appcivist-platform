@@ -138,11 +138,11 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/user/:uid
      * Find membership record for user identified by its ID
      *
-     * @param uid  User's ID
-     * @param type Type of membership filter (assembly, group)
-     * @return User's Membership record
+     * @param uid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer = "List", produces = "application/json", value = "Read user memberships by User ID and Membership TYPE", notes = "This endpoint is only accessible to ADMIN users and to the User identified by the provided UUID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "User or Memberships not found", response = TransferResponseStatus.class)})
@@ -189,6 +189,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/invitation/:targetId/:status
      * Get the list of invitations to the target Group or Assembly
      *
      * @param targetId id of the target group or assembly
@@ -221,6 +222,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/invitation/:token
      * Read and invitation by the Token
      *
      * @param token invitation token
@@ -245,6 +247,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/assembly/:aid/user/:uid
      * Searches for an user membership in an assembly. If no membership exists,
      * searches for a pending invitation.
      *
@@ -294,12 +297,13 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/group/:gid/user/:uid
      * Searches for an user membership in a group. If no membership exists,
      * searches for a pending invitation.
      *
-     * @param aid The assembly id
-     * @param uid The user id
-     * @return the user's assembly or a notFound response
+     * @param gid
+     * @param uid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = Membership.class, produces = "application/json", value = "Read membership record of a user within a group", notes = "Only available to COORDINATORS")
     @ApiImplicitParams({
@@ -343,6 +347,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * POST      /api/membership/assembly/:aid
      * Creates an invitation to join an assembly and sends email to the invited
      * user
      *
@@ -392,7 +397,13 @@ public class Memberships extends Controller {
         }
     }
 
-    @ApiOperation(httpMethod = "PUT", response = InvitationTransfer.class, produces = "application/json", value = "Resend invitation")
+    /**
+     * POST      /api/membership/invitation/:iid/email
+     *
+     * @param iid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = InvitationTransfer.class, produces = "application/json", value = "Resend invitation")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "iid", value = "Invitation id", dataType = "Long", paramType = "path")})
@@ -409,6 +420,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * POST      /api/membership/group/:gid
      * Creates an invitation to join a group and sends email to the invited user
      *
      * @param gid id of the group
@@ -456,13 +468,14 @@ public class Memberships extends Controller {
     }
 
     /**
+     * PUT       /api/membership/invitation/:token/:answer
      * Update invitation status
      *
      * @param token
      * @param answer
      * @return
      */
-    @ApiOperation(httpMethod = "PUT", response = User.class, responseContainer = "List", produces = "application/json", value = "Update invitation status")
+    @ApiOperation(httpMethod = "PUT", response = String.class, produces = "application/json", value = "Update invitation status")
     public static Result answerInvitation(
             @ApiParam(name = "token", value = "Invitation token") UUID token,
             @ApiParam(name = "answer", value = "Answer to the Invitation", allowableValues = "ACCEPT, REJECT") String answer) {
@@ -514,6 +527,13 @@ public class Memberships extends Controller {
         }
     }
 
+    /**
+     * POST      /api/membership/assembly/:id/request
+     * POST      /api/membership/group/:id/request
+     *
+     * @param targetId
+     * @return
+     */
     @ApiOperation(httpMethod = "POST", response = Membership.class, produces = "application/json", value = "Create a membership request for an Assembly or a Group")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
@@ -557,6 +577,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/:id
      * Read a membership by ID
      *
      * @param id
@@ -584,6 +605,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * GET       /api/membership/:id/role
      * Read the roles assigned to a specific membership by ID
      *
      * @param id
@@ -611,6 +633,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * POST      /api/membership/:id/role
      * Add a Role to the membership (only Coordinators of the Assembly/Group)
      * <p>
      * private Long roleId; private String name;
@@ -693,6 +716,7 @@ public class Memberships extends Controller {
     }
 
     /**
+     * DELETE    /api/membership/:id/role/:rid
      * Delete a membership role (only Coordinators of the Assembly/Group)
      * <p>
      * private Long roleId; private String name;
@@ -700,7 +724,7 @@ public class Memberships extends Controller {
      * @param id
      * @return
      */
-    @ApiOperation(httpMethod = "DELETE", response = Membership.class, produces = "application/json", value = "Delete a role from a membership identified by its ID", notes = "Only for COORDINATORS")
+    @ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a role from a membership identified by its ID", notes = "Only for COORDINATORS")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
@@ -758,7 +782,13 @@ public class Memberships extends Controller {
         }
     }
 
-    // PUT /api/membership/:id controllers.Memberships.update(id: Long)
+    /**
+     * PUT       /api/membership/:id/:status
+     *
+     * @param id
+     * @param status
+     * @return
+     */
     @ApiOperation(httpMethod = "PUT", response = Membership.class, produces = "application/json", value = "Update status of a MEMBERSHIP", notes = "Only for COORDINATORS")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
@@ -802,7 +832,12 @@ public class Memberships extends Controller {
         }
     }
 
-    // DELETE /api/membership/:id controllers.Memberships.delete(id: Long)
+    /**
+     * DELETE       /api/membership/:id
+     *
+     * @param id
+     * @return
+     */
     @ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a MEMBERSHIP", notes = "Only for COORDINATORS and the User of the membership")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
@@ -850,9 +885,14 @@ public class Memberships extends Controller {
         }
     }
 
-    // GET /api/membership/verify/:token
-    // controllers.Memberships.verifyMembership(token: String)
-    @ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a MEMBERSHIP", notes = "Only for COORDINATORS and the User of the membership")
+    /**
+     * GET       /api/membership/:id/verify/:token
+     *
+     * @param id
+     * @param token
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify a MEMBERSHIP", notes = "Only for COORDINATORS and the User of the membership")
     // TODO: move authorization logic to a DynamicResourceHandler "CoordinatorOrSelf"
     public static Result verifyMembership(
             @ApiParam(name = "id", value = "Membership ID") Long id,
