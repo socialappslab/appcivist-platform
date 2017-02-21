@@ -3,7 +3,6 @@ package models.misc;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.ResourceSpaceTypes;
-import models.ResourceSpace;
 
 public class ContributionHistoryAssociationChange {
 

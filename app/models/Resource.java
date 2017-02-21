@@ -57,6 +57,7 @@ public class Resource extends AppCivistBaseModel {
 	 */
 	@JsonIgnore
 	private String padId;
+    @JsonView(Views.Public.class)
 	private String readOnlyPadId;
 	private UUID resourceSpaceWithServerConfigs;
 

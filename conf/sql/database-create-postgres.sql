@@ -1431,3 +1431,8 @@ CREATE TABLE contribution_history_contribution_feedback
       REFERENCES contribution_feedback (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+--26.sql
+alter table contribution_feedback add column non_member_author_id bigint;
+alter table contribution_feedback add constraint fk_non_member_author_feedback foreign key (non_member_author_id) references non_member_author(id);
+ALTER TABLE contribution_feedback ALTER COLUMN user_id DROP NOT NULL;

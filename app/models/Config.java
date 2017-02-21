@@ -1,19 +1,15 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.swagger.annotations.ApiModel;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import com.avaje.ebean.ExpressionList;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -45,6 +41,7 @@ public class Config extends AppCivistBaseModel {
     private String targetUuidAsString;
     
     @ManyToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name="definition_uuid")
     private ConfigDefinition definition;
    
     public Config(String key, String value) {
@@ -144,6 +141,28 @@ public class Config extends AppCivistBaseModel {
         return find.where().eq("targetUuid", assemblyUUID)
         		.eq("configTarget", ConfigTargets.ASSEMBLY)
         		.findList();
+    }
+
+    public static List<Config> findByCampaign(UUID campaignUUID, ConfigDefinition configDefinition) {
+        return find.where().eq("targetUuid", campaignUUID)
+                .eq("configTarget", ConfigTargets.CAMPAIGN)
+                .eq("definition", configDefinition)
+                .findList();
+    }
+    
+    public static List<Config> findByCampaignAndKey(UUID campaignUUID, String configKey) {
+        return find.where().eq("targetUuid", campaignUUID)
+                .eq("configTarget", ConfigTargets.CAMPAIGN)
+                .eq("key", configKey)
+                .findList();
+    }
+    
+    public static Map<String, Config> convertConfigsToMap(List<Config> configs) {
+    	Map<String, Config> configMap = new HashMap<String, Config>();
+    	for (Config config : configs) {
+			configMap.put(config.getKey(), config);
+		}
+    	return configMap;
     }
     
 	public static Config read(UUID configId) {

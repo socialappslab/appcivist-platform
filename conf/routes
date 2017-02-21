@@ -197,9 +197,9 @@ GET       /api/assembly/:aid/contribution/:cid/history                    contro
 POST      /api/contribution/clean/history                                 controllers.Contributions.deleteUnchangedContributionHistories()
 POST      /api/contribution/clean/feedback                                controllers.Contributions.cleanUnarchivedContributionFeedbacks()
 POST      /api/contribution/history                                       controllers.Contributions.createHistories()
-GET       /api/space/:sid/contribution                                    controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="")
+GET       /api/space/:sid/contribution                                    controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
 GET       /api/space/:sid/contribution/pinned                             controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
-GET       /api/space/:uuid/contribution/public                            controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="")
+GET       /api/space/:uuid/contribution/public                            controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
 GET       /api/space/:uuid/contribution/public/pinned                     controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")
 #GET       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.readContributionFeedback(aid: Long, cid: Long)
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/stats       controllers.Contributions.readContributionStats(aid: Long, cid: Long, coid: Long)
@@ -217,6 +217,9 @@ GET       /api/assembly/:aid/contribution/:coid/feedback                  contro
 GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback       controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
 
 POST      /api/contribution/:uuid/themes                                  controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
+POST      /api/contribution/:uuid/authors                                 controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
+DELETE    /api/contribution/:uuid/themes/:tid                             controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
+DELETE    /api/contribution/:uuid/authors/:auuid                          controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
 GET       /api/contributions                                              controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
 
 DELETE    /api/assembly/:aid/contribution/:cid/space/:sid                 controllers.Contributions.deleteContributionResourceSpace(aid: Long, cid: Long, sid: Long)
@@ -224,8 +227,6 @@ POST      /api/assembly/:aid/contribution/:cid/space/:sid                 contro
 POST      /api/space/:sid/space/:new_sid                                  controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 
 POST      /api/space/:sid/contribution                                    controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
-POST      /api/assembly/:aid/contribution                                 controllers.Contributions.createAssemblyContribution(aid: Long, space?="forum")
-POST      /api/assembly/:aid/campaign/:cid/component/:ciid/contribution   controllers.Contributions.createCampaignComponentContribution(aid: Long, cid: Long, ciid: Long)
 POST      /api/assembly/:aid/group/:gid/contribution                      controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
 POST      /api/assembly/:aid/contribution/:cid/comment                    controllers.Contributions.createContributionComment(aid: Long, cid: Long)
 POST      /api/assembly/:aid/contribution/:cid/attachment                 controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
@@ -235,7 +236,7 @@ PUT       /api/assembly/:aid/contribution/:cid                            contro
 PUT       /api/assembly/:aid/contribution/:cid/moderate                   controllers.Contributions.moderateContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/softremoval                controllers.Contributions.softDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contribution/:cid/recover                    controllers.Contributions.recoverContribution(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/contribution/:cid/feedback                   controllers.Contributions.updateContributionFeedback(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/campaign/:caid/contribution/:cid/feedback    controllers.Contributions.updateContributionFeedback(aid: Long, caid: Long, cid: Long)
 DELETE    /api/assembly/:aid/contribution/:cid                            controllers.Contributions.forceDeleteContribution(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/contributions/popularity                     controllers.Contributions.updateContributionsPopularity(aid: Long)
 
@@ -250,6 +251,7 @@ POST      /api/assembly/:uuid/contribution                                contro
 POST      /api/campaign/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
 POST      /api/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWorkingGroup(uuid: String)
 POST      /api/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
+PUT       /api/campaign/:cuuid/contribution/:uuid/feedback                controllers.Contributions.updateContributionFeedbackNonMemberAuthor(cuuid: java.util.UUID, uuid: java.util.UUID)
 
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
