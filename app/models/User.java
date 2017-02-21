@@ -224,7 +224,7 @@ public class User extends AppCivistBaseModel implements Subject {
 
 
 	public Boolean isEmailVerified() {
-		return emailVerified;
+		return emailVerified != null ? emailVerified : false;
 	}
 
 
@@ -234,7 +234,7 @@ public class User extends AppCivistBaseModel implements Subject {
 
 
 	public boolean isActive() {
-		return active;
+		return active != null ? active : false;
 	}
 
 
