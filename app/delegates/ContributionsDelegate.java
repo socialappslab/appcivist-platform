@@ -150,10 +150,11 @@ public class ContributionsDelegate {
                 "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, "/*t0.priority,*/+"\n " +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
                 "  t0.source_code, t0.popularity, t0.pinned from contribution t0\n ";
-        String sorting = "pinned desc";
+        String sorting = " order by pinned desc nulls last";
 
         if(conditions != null){
             for(String key : conditions.keySet()){
+                Object value = conditions.get(key);
                 switch (key){
                     case "group":
                         rawQuery += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
@@ -167,9 +168,22 @@ public class ContributionsDelegate {
                     case "theme":
                         rawQuery += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id\n ";
                         break;
+                    case "sorting":
+                        String sortingValue = (String) value;
+                        if (sortingValue.equals("popularity")) {
+                            sorting +=", popularity desc nulls last";
+                        } else if (sortingValue.equals("random")) {
+                            // TODO find a way of producing a a REAL random ordering
+                            sorting +=", uuid desc nulls last"; // create the illusion of random ordering
+                        } else if (sortingValue.equals("date_asc")) {
+                            sorting +=", creation asc nulls last";
+                        } else if (sortingValue.equals("date_desc")) {
+                            sorting +=", creation desc nulls last";
+                        }
+                        break;
                 }
             }
-            //Logger.info("Constructed query: \n" + rawQuery);
+            rawQuery += sorting;
             RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
             where = finder.setRawSql(rawSql).where();
 
@@ -212,18 +226,7 @@ public class ContributionsDelegate {
                         where.add(p);
                         break;
                     case "sorting":
-                    	String sortingValue = (String) value;
-                    	if (sortingValue.equals("popularity")) {
-                    		sorting +=", popularity desc";
-                    	} else if (sortingValue.equals("random")) {
-                    		// TODO find a way of producing a a REAL random ordering
-                    		sorting +=", uuid desc"; // create the illusion of random ordering
-                    	} else if (sortingValue.equals("date_asc")) {
-                    		sorting +=", creation asc";                    		
-                    	} else if (sortingValue.equals("date_desc")) {
-                    		sorting +=", creation desc";
-                    	}
-                    	break;
+                        break;
                     default:
                         if(value instanceof String){
                             where.ilike(key, ("t0."+(String)value).toLowerCase() + "%");
@@ -235,7 +238,6 @@ public class ContributionsDelegate {
             }            
         }
         where.add(Expr.not(Expr.eq("removed",true)));
-        where.orderBy(sorting);
 
         List<Contribution> contributions;
         if(page != null && pageSize != null){
