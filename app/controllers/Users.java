@@ -102,7 +102,14 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * Read-Only Endpoints
 	 ***************************************************************************************************/
-	@ApiOperation(httpMethod = "GET", response = User.class, responseContainer = "List", produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only availabe to ADMINS")
+
+	/**
+	 * GET       /api/user
+	 * Get list of users
+	 *
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = User.class, responseContainer = "List", produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only available to ADMINS")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's auth key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.ADMIN_ROLE) })
@@ -111,7 +118,14 @@ public class Users extends Controller {
 		return ok(Json.toJson(users));
 	}
 
-	@ApiOperation(httpMethod = "GET", response = User.class, produces = "application/json", value = "Get list of users", notes = "Get the full list of users. Only availabe to ADMINS")
+	/**
+	 * GET       /api/user/:uid
+	 * Get user with uid
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = User.class, produces = "application/json", value = "Get a user by id", notes = "Get a user by id. Only available to ADMINS")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's auth key", dataType = "String", paramType = "header") })
@@ -122,6 +136,13 @@ public class Users extends Controller {
 		return ok(Json.toJson(u));
 	}
 
+	/**
+	 * GET       /api/user/:uid/loggedin
+	 * Get session user
+	 *
+	 * @param uid
+	 * @return
+	 */
 	@ApiOperation(nickname = "loggedin", httpMethod = "GET", response = User.class, produces = "application/json", value = "Get session user", notes = "Get session user currently loggedin, as available in HTTP session")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
@@ -137,6 +158,13 @@ public class Users extends Controller {
 					"No user logged in with session in this client", "")));
 	}
 
+	/**
+	 * GET       /api/user/:uid/profile
+	 * Get session user's profile
+	 *
+	 * @param uid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", response = UserProfile.class, produces = "application/json, text/html", value = "Get session user's profile", notes = "Get session user currently loggedin, as available in HTTP session")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -163,6 +191,12 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * AUTHENTICATION Endpoints
 	 ***************************************************************************************************/
+
+	/**
+	 * POST      /api/user/signup
+	 *
+	 * @return
+	 */
 	@ApiOperation(nickname = "signup", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new unverified user with an email and a password. Sends a verification email.")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "signup_form", value = "User's signup form", dataType = "providers.MySignup", paramType = "body") })
@@ -181,12 +215,12 @@ public class Users extends Controller {
 			// Everything was filled correctly
 			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
 	}
-	
-	// TODO return a HTML form
-	public static Result login() {
-		return ok("Not implemented yet");
-	}
 
+	/**
+	 * POST      /api/user/login
+	 *
+	 * @return
+	 */
 	@ApiOperation(nickname = "login", httpMethod = "POST", response = User.class, produces = "application/json", value = "Creates a new session key for the requesting user, if the system authenticates him/her.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class),
@@ -213,6 +247,11 @@ public class Users extends Controller {
 
 	}
 
+	/**
+	 * POST      /api/user/logout
+	 *
+	 * @return
+	 */
 	@ApiOperation(nickname = "logout", httpMethod = "POST", response = User.class, consumes = "application/json", value = "Expires the session key of the requesting user")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
@@ -226,6 +265,14 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * UPDATE Endpoints
 	 ***************************************************************************************************/
+
+	/**
+	 * PUT       /api/user/:uid
+	 * Update user information
+	 *
+	 * @param uid
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -282,7 +329,14 @@ public class Users extends Controller {
 		}
 	}
 
-	@ApiOperation(nickname = "profile", httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user information", notes = "Updates user information")
+	/**
+	 * PUT       /api/user/:uid/profile
+	 * Update user's profile information
+	 *
+	 * @param uid
+	 * @return
+	 */
+	@ApiOperation(nickname = "profile", httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json", value = "Update user's profile information", notes = "Updates user's profile information")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
@@ -315,7 +369,14 @@ public class Users extends Controller {
 		}
 	}
 
-	@ApiOperation(nickname = "profile", httpMethod = "POST", response = TransferResponseStatus.class, produces = "application/json", value = "Create user's profile")
+	/**
+	 * POST      /api/user/:uid/profile
+	 * Create user's profile
+	 *
+	 * @param uid
+	 * @return
+	 */
+	@ApiOperation(nickname = "profile", httpMethod = "POST", response = UserProfile.class, produces = "application/json", value = "Create user's profile")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
@@ -344,6 +405,14 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * DELETE Endpoints
 	 ***************************************************************************************************/
+
+	/**
+	 * DELETE    /api/user/:uid
+	 * Soft delete user
+	 *
+	 * @param id
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Soft delete of an user", notes = "Soft delete of an user by simply deactivating it")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -367,6 +436,13 @@ public class Users extends Controller {
 		}
 	}
 
+	/**
+	 * DELETE    /api/user/:uid/force
+	 * Force delete user
+	 *
+	 * @param id
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "DELETE", response = TransferResponseStatus.class, produces = "application/json", value = "Delete a user", notes = "Delete a user, but not his/her contributions")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
@@ -393,6 +469,14 @@ public class Users extends Controller {
 	/****************************************************************************************************
 	 * USER Accounts management endpoints
 	 ***************************************************************************************************/
+
+	/**
+	 * 	GET       /api/user/verify/:token
+	 * Verify invitation token
+	 *
+	 * @param token
+	 * @return
+	 */
 	@ApiOperation(nickname = "verify", httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify invitation token")
 	@ApiResponses(value = { @ApiResponse(code = 400, message = "Error in Request", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "token", value = "Verification token", dataType = "String", paramType = "path") })
@@ -421,7 +505,9 @@ public class Users extends Controller {
 	}
 
 	/**
-	 * TODO: document with swagger annotations
+	 * 	GET       /api/user/link
+	 *
+	 * @return
 	 */
 	@ApiOperation(nickname = "link", httpMethod = "GET", produces = "text/html", value = "Returns a form to link external auth provider accounts")
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
@@ -430,6 +516,11 @@ public class Users extends Controller {
 		return ok(link.render());
 	}
 
+	/**
+	 * 	GET       /api/user/verify
+	 *
+	 * @return
+	 */
 	@ApiOperation(httpMethod = "GET", value = "Gets page for email verification")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })

@@ -55,7 +55,7 @@ public class Campaigns extends Controller {
      * GET /api/assembly/:aid/campaign
      * List campaigns of an Assembly
      *
-     * @param aid Assembly Id
+     * @param aid
      * @return
      */
     @ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json", value = "List campaigns of an Assembly")
@@ -91,6 +91,12 @@ public class Campaigns extends Controller {
                 .toJson(new TransferResponseStatus("No campaign found")));
     }
 
+    /**
+     * GET       /api/campaign/:uuid
+     *
+     * @param uuid
+     * @return
+     */
     @ApiOperation(httpMethod = "GET", response = Campaign.class, produces = "application/json", value = "Read campaign by Universal ID")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     public static Result findCampaignByUUID(@ApiParam(name = "uuid", value = "Campaign Universal ID (UUID)") UUID uuid) {
@@ -136,13 +142,11 @@ public class Campaigns extends Controller {
 
     }
 
-
     /**
-     * GET /api/ballot/:uuid/campaign
+     * GET       /api/ballot/:uuid/campaign
      * Read campaign by assembly ID and campaign ID
      *
-     * @param aid
-     * @param campaignId
+     * @param uuid
      * @return
      */
     @ApiOperation(httpMethod = "GET", response = CampaignSummaryTransfer.class, responseContainer = "List", produces = "application/json", value = "Read campaign by voting ballot Universal ID")
@@ -161,7 +165,7 @@ public class Campaigns extends Controller {
      * @param campaignId
      * @return
      */
-    @ApiOperation(httpMethod = "DELETE", response = Campaign.class, produces = "application/json", value = "Delete campaign by campaign and assembly IDs", notes = "Only for COORDINATOS of assembly")
+    @ApiOperation(httpMethod = "DELETE", response = String.class, produces = "application/json", value = "Delete campaign by campaign and assembly IDs", notes = "Only for COORDINATOS of assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
@@ -324,6 +328,9 @@ public class Campaigns extends Controller {
     /**
      * GET /api/user/:uid/campaign
      * Given a users local ID (uid), returns an array of campaigns that are organized by that user's assemblies
+     *
+     * @param uid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json",
             value = "Given a users local ID (uid), returns an array of campaigns that are organized by that user's assemblies",
@@ -365,6 +372,9 @@ public class Campaigns extends Controller {
     /**
      * GET /api/user/:uuid/campaign
      * Given a users universal ID (uuid), returns an array of campaigns that are organized by that user's assemblies
+     *
+     * @param uuid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = Campaign.class, responseContainer = "List", produces = "application/json",
             value = "Given a users universal ID (uuid), returns an array of campaigns that are organized by that user's assemblies",
@@ -403,9 +413,12 @@ public class Campaigns extends Controller {
     }
 
     /**
-     * GET /api/assembly/:aid/campaign/:cid/template Get list of available contribution templates in a campaign
+     * GET /api/assembly/:aid/campaign/:cid/template
+     * Get list of available contribution templates in a campaign
      *
-     * @return JSON array with the list of campaign templates
+     * @param aid
+     * @param cid
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No Campaign Template Found", response = TransferResponseStatus.class)})
@@ -428,9 +441,10 @@ public class Campaigns extends Controller {
     }
 
     /**
-     * GET /api/campaign/template Get list of available campaign templates
+     * GET /api/campaign/template
+     * Get list of available campaign templates
      *
-     * @return JSON array with the list of campaign templates
+     * @return
      */
     @ApiOperation(httpMethod = "GET", response = CampaignTemplate.class, responseContainer = "List", produces = "application/json", value = "Get list of available campaign templates", notes = "Get list of available campaign templates")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No Campaign Template Found", response = TransferResponseStatus.class)})
@@ -549,13 +563,15 @@ public class Campaigns extends Controller {
     }
 
     /**
-     * PUT /api/assembly/:aid/campaign/:cid/contribution/template
+     * PUT       /api/assembly/:aid/campaign/:cid/contribution/template/:rid
      * Confirms a Resource CONTRIBUTION_TEMPLATE
      *
+     * @param aid
+     * @param campaignId
      * @param rid
      * @return
      */
-    @ApiOperation(httpMethod = "PUT", value = "Confirm Contribution Template")
+    @ApiOperation(httpMethod = "PUT", response = Resource.class, value = "Confirm Contribution Template")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
@@ -899,7 +915,7 @@ public class Campaigns extends Controller {
      * @param campaignId
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", value = "Lists campaign's working groups", notes = "Only for COORDINATORS")
+    @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, responseContainer = "List", value = "Lists campaign's working groups", notes = "Only for COORDINATORS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
@@ -933,7 +949,7 @@ public class Campaigns extends Controller {
      * @param campaignUUID
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", value = "Lists campaign's working groups", notes = "Public view")
+    @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, responseContainer = "List", value = "Lists campaign's working groups", notes = "Public view")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
