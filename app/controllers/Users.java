@@ -601,6 +601,8 @@ public class Users extends Controller {
 		// TODO return ok(unverified.render());
 	}
 
+	@ApiOperation(httpMethod = "POST", value = "Request a token to change forgot password")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found") })
 	public static Result doForgotPassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final Form<MyIdentity> filledForm = FORGOT_PASSWORD_FORM
