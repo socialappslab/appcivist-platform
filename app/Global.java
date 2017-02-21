@@ -86,7 +86,7 @@ public class Global extends GlobalSettings {
 
 			public Call login() {
 				// Your login page
-				return routes.Users.login();
+				return routes.Users.doLogin();
 			}
 
 			public Call afterAuth() {
