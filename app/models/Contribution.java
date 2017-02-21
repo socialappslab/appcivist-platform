@@ -117,6 +117,7 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(name="authors", value="List of authors when is more then one but not a working group")
     private List<User> authors = new ArrayList<User>();
 
+    @JsonView(Views.Public.class)
     private Integer popularity = 0;
 
     @JsonView(Views.Public.class) 
