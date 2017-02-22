@@ -609,7 +609,7 @@ public class Users extends Controller {
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not fill in his/her email
-			return badRequest();
+			return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
 			// TODO return badRequest(password_forgot.render(filledForm));
 		} else {
 			// The email address given *BY AN UNKNWON PERSON* to the form - we
@@ -677,21 +677,29 @@ public class Users extends Controller {
 		return ret;
 	}
 
+	public static Result resetPassword(final String token) {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final TokenAction ta = tokenIsValid(token, Type.PASSWORD_RESET);
+		if (ta == null) {
+			return badRequest(no_token_or_invalid.render());
+		}
+		return ok(password_reset.render(PASSWORD_RESET_FORM.fill(new PasswordReset(token))));
+	}
+
 	public static Result doResetPassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final Form<PasswordReset> filledForm = PASSWORD_RESET_FORM
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
-			return badRequest();
-			// TODO return badRequest(password_reset.render(filledForm));
+			return badRequest(password_reset.render(filledForm));
 		} else {
 			final String token = filledForm.get().token;
 			final String newPassword = filledForm.get().password;
 
 			final TokenAction ta = tokenIsValid(token, Type.PASSWORD_RESET);
 			if (ta == null) {
-				return badRequest();
-				// TODO return badRequest(no_token_or_invalid.render());
+				//return badRequest();
+				return badRequest(no_token_or_invalid.render());
 			}
 			final User u = ta.targetUser;
 			try {

@@ -411,10 +411,14 @@ public class MyUsernamePasswordAuthProvider
 	protected Body getPasswordResetMailingBody(final String token,
 			final User user, final Context ctx) {
 
-		final boolean isSecure = getConfiguration().getBoolean(
-		 SETTING_KEY_PASSWORD_RESET_LINK_SECURE);
-		final String url = Play.application().configuration().getString(GlobalData.CONFIG_FORGOT_PASSWORD_URL_BASE)+token;
-
+		final boolean isSecure = getConfiguration().getBoolean(SETTING_KEY_PASSWORD_RESET_LINK_SECURE);
+		String url = Play.application().configuration().getString(GlobalData.CONFIG_FORGOT_PASSWORD_URL_BASE);
+		if (url == null) {
+			url = Play.application().configuration().getString("application.baseUrl")+GlobalData.FORGOT_PASSWORD_DEFAULT_URL_BASE;
+		}
+		
+		url += token;
+		
 		final String userLangCode = user.getLanguage();
 		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
 		final String langCode = userLangCode !=null ? userLangCode : lang.code();

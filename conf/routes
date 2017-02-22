@@ -267,6 +267,7 @@ GET       /api/user/authenticate/:provider/denied                         contro
 GET       /api/user/authenticated                                         controllers.Restricted.index()
 GET       /api/user/login/:id                                             controllers.Restricted.id(id: String)
 GET       /api/authenticate/:provider                                     controllers.AuthenticateLocal.authenticate(provider: String)
+GET       /api/user/password/reset/:token                                 controllers.Users.resetPassword(token: String)
 POST      /api/user/password/reset                                        controllers.Users.doResetPassword
 POST      /api/user/password/change                                       controllers.Users.doChangePassword
 GET       /api/user/verify                                                controllers.Users.verifyEmail

@@ -234,7 +234,7 @@ public class User extends AppCivistBaseModel implements Subject {
 
 
 	public boolean isActive() {
-		return active != null ? active : false;
+		return active;
 	}
 
 
