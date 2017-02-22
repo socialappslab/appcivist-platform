@@ -2,6 +2,8 @@ package controllers;
 
 import static play.data.Form.form;
 import static play.libs.Json.toJson;
+
+import com.feth.play.module.pa.user.AuthUserIdentity;
 import enums.ResourceTypes;
 import http.Headers;
 
@@ -61,6 +63,7 @@ public class Users extends Controller {
 	private static final Form<PasswordChange> PASSWORD_CHANGE_FORM = form(PasswordChange.class);
 	private static final Form<PasswordReset> PASSWORD_RESET_FORM = form(PasswordReset.class);
 	private static final Form<MyIdentity> FORGOT_PASSWORD_FORM = form(MyIdentity.class);
+	private static final Form<PasswordForgotChange> PASSWORD_CHANGE_FORGOT_FORM = form(PasswordForgotChange.class);
 
 	/**
 	 * Authentication Auxiliary Classes
@@ -546,19 +549,6 @@ public class Users extends Controller {
 		return redirect(routes.Users.profile(user.getUserId()));
 	}
 
-	@ApiOperation(httpMethod = "GET", produces = "application/html", value = "Gets form to update password")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"), })
-	@Restrict(@Group(GlobalData.USER_ROLE))
-	public static Result changePassword() {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final User u = Users.getLocalUser(session());
-		if (!u.isEmailVerified()) {
-			return ok(unverified.render());
-		} else {
-			return ok(password_change.render(PASSWORD_CHANGE_FORM));
-		}
-	}
-
 	@ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
@@ -570,15 +560,45 @@ public class Users extends Controller {
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not select whether to link or not link
-			return badRequest(password_change.render(filledForm));
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
 		} else {
 			final User user = Users.getLocalUser(session());
 			final String newPassword = filledForm.get().password;
-			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),
-					true);
-			//flash(Application.FLASH_MESSAGE_KEY,
-			//		Messages.get("playauthenticate.change_password.success"));
-			//return redirect(routes.Users.profile(user.getUserId()));
+			final String oldPassword = filledForm.get().oldPassword;
+			MyUsernamePasswordAuthUser passwordOldUser = new MyUsernamePasswordAuthUser(oldPassword);
+ 			if (passwordOldUser.checkPassword(user.getAccountByProvider(MyUsernamePasswordAuthProvider.PROVIDER_KEY).getProviderUserId(),oldPassword)){
+				user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
+				return ok(Json.toJson("ok"));
+			}else{
+				// User old password incorrect
+				return badRequest(Json.toJson(Json
+						.toJson(new TransferResponseStatus("Password provided incorrect"))));
+			}
+		}
+	}
+
+	@ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Password Forgot Change Object", value = "User's updated password form", dataType = "controllers.PasswordForgotChange", paramType = "body") })
+	public static Result doChangeForgotPassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final Form<PasswordForgotChange> filledForm = PASSWORD_CHANGE_FORGOT_FORM
+				.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to link or not link
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		} else {
+			final TokenAction ta = tokenIsValid(filledForm.get().token, Type.PASSWORD_RESET);
+			if (ta == null) {
+				return badRequest(Json.toJson(Json
+						.toJson(new TransferResponseStatus("Invalid token"))));
+			}
+			final User user = Users.getLocalUser(session());
+			final String newPassword = filledForm.get().password;
+			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
+			TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
 			return ok(Json.toJson("ok"));
 		}
 	}
@@ -672,24 +692,15 @@ public class Users extends Controller {
 		// TODO return ok(unverified.render());
 	}
 
-	public static Result forgotPassword(final String email) {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		@SuppressWarnings("unused")
-		Form<MyIdentity> form = FORGOT_PASSWORD_FORM;
-		if (email != null && !email.trim().isEmpty()) {
-			form = FORGOT_PASSWORD_FORM.fill(new MyIdentity(email));
-		}
-		return ok();
-		// TODO return ok(password_forgot.render(form));
-	}
-
+	@ApiOperation(httpMethod = "POST", value = "Request a token to change forgot password")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found") })
 	public static Result doForgotPassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final Form<MyIdentity> filledForm = FORGOT_PASSWORD_FORM
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not fill in his/her email
-			return badRequest();
+			return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
 			// TODO return badRequest(password_forgot.render(filledForm));
 		} else {
 			// The email address given *BY AN UNKNWON PERSON* to the form - we
@@ -761,12 +772,9 @@ public class Users extends Controller {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final TokenAction ta = tokenIsValid(token, Type.PASSWORD_RESET);
 		if (ta == null) {
-			return badRequest();
-			// TODO return badRequest(no_token_or_invalid.render());
+			return badRequest(no_token_or_invalid.render());
 		}
-		return ok();
-		// TODO return ok(password_reset.render(PASSWORD_RESET_FORM
-		// .fill(new PasswordReset(token))));
+		return ok(password_reset.render(PASSWORD_RESET_FORM.fill(new PasswordReset(token))));
 	}
 
 	public static Result doResetPassword() {
@@ -774,16 +782,15 @@ public class Users extends Controller {
 		final Form<PasswordReset> filledForm = PASSWORD_RESET_FORM
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
-			return badRequest();
-			// TODO return badRequest(password_reset.render(filledForm));
+			return badRequest(password_reset.render(filledForm));
 		} else {
 			final String token = filledForm.get().token;
 			final String newPassword = filledForm.get().password;
 
 			final TokenAction ta = tokenIsValid(token, Type.PASSWORD_RESET);
 			if (ta == null) {
-				return badRequest();
-				// TODO return badRequest(no_token_or_invalid.render());
+				//return badRequest();
+				return badRequest(no_token_or_invalid.render());
 			}
 			final User u = ta.targetUser;
 			try {
