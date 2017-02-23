@@ -156,7 +156,14 @@ public class Config extends AppCivistBaseModel {
                 .eq("key", configKey)
                 .findList();
     }
-    
+
+    public static List<Config> findByTypeAndKey(UUID UUID, ConfigTargets configTarget, String configKey) {
+        return find.where().eq("targetUuid", UUID)
+                .eq("configTarget", configTarget)
+                .eq("key", configKey)
+                .findList();
+    }
+
     public static Map<String, Config> convertConfigsToMap(List<Config> configs) {
     	Map<String, Config> configMap = new HashMap<String, Config>();
     	for (Config config : configs) {
