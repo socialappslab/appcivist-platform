@@ -147,6 +147,12 @@ PUT       /api/assembly/:aid/config/:cid                                  contro
 POST      /api/assembly/:aid/config                                       controllers.Configs.createConfig(aid: Long)
 DELETE    /api/assembly/:aid/config/:cid                                  controllers.Configs.deleteConfig(aid: Long, cid: String)
 
+GET       /api/space/:sid/config                                          controllers.Configs.findSpaceConfigs(sid: Long)
+GET       /api/space/:uuid/config/public                                  controllers.Configs.findSpaceConfigsPublic(uuid: java.util.UUID)
+PUT       /api/space/:sid/config                                          controllers.Configs.updateSpaceConfig(sid: Long)
+POST      /api/space/:sid/config                                          controllers.Configs.createSpaceConfig(sid: Long)
+
+
 ##################################################################################################################################################################
 # Campaign Template and Configuration endpoints
 
