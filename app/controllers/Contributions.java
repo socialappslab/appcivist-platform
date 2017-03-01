@@ -1047,9 +1047,6 @@ public class Contributions extends Controller {
 
             Ebean.commitTransaction();
           
-        
-           Logger.info("**************************after the return");  
-
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
                     c.getType().equals(ContributionTypes.PROPOSAL)) {
