@@ -467,6 +467,10 @@ public class Assemblies extends Controller {
 				Logger.debug("=> " + newAssemblyForm.toString());
 				
 				newAssembly.update();
+
+				NotificationsDelegate.createNotificationEventsByType(
+						ResourceSpaceTypes.ASSEMBLY.toString(), newAssembly.getUuid());
+
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
 				Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
