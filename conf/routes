@@ -66,6 +66,7 @@ GET       /api/assembly                                                   contro
 POST      /api/assembly                                                   controllers.Assemblies.createAssembly(templates ?= "")
 GET       /api/assembly/name/:shortname                                   controllers.Assemblies.findAssemblyByShortname(shortname: String)
 GET       /api/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
+GET       /api/assembly/:uuid                                             controllers.Assemblies.findAssemblyByUUID(uuid: java.util.UUID)
 GET       /api/assembly/:uuid/profile                                     controllers.Assemblies.getAssemblyProfile(uuid: java.util.UUID)
 PUT       /api/assembly/:uuid/profile                                     controllers.Assemblies.updateProfile(uuid: java.util.UUID)
 GET       /api/assembly/:uuid/theme                                       controllers.Assemblies.getAssemblyThemes(uuid: java.util.UUID)

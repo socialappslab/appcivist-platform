@@ -42,6 +42,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_DISABLE_PUBLIC_SITE = "appcivist.campaign.disable-public-site"; // if TRUE, the campaign does not have a public site
 	public static final String APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD = "appcivist.campaign.extended-feedback-password"; // if TRUE, extended feedback is disabled 
 	public static final String APPCIVIST_CAMPAIGN_HIDE_TIMELINE = "appcivist.campaign.hide-timeline"; // if TRUE, the timeline of the campaign is hidden and the campaign has only one stage
+	public static final String APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO = "appcivist.campaign.show-assembly-logo"; // if TRUE, show the assembly logo in the campaign dashboard
 	
 	// Component Level Configuration Keys
 	public static final String APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.component.contribution-type-principal"; // what type of contribution is the displayed at the center of the page when this component in the timeline is current (e.g., in Idea Collection, the main contribution type will be IDEAS)
@@ -86,6 +87,7 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_DISABLE_PUBLIC_SITE, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD, "a44@c1v1st");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_HIDE_TIMELINE, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO, "FALSE");
 		
 		// Component Level Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL,"PROPOSAL"); 
