@@ -373,6 +373,37 @@ public class Assemblies extends Controller {
 	}
 
 	/**
+	 * GET       /api/assembly/name/:shortname
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Assembly.class, produces = "application/json", value = "Read Assembly by its Universal ID")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
+	public static Result findAssemblyByUUID(@ApiParam(name = "uuid", value = "Assembly UUID") String uuid) {
+		Assembly a = Assembly.readByUUID(UUID.fromString(uuid));
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+			String result = mapper.writerWithView(Views.Public.class)
+					.writeValueAsString(a);
+			
+			Content ret = new Content() {
+				@Override public String body() { return result; }
+				@Override public String contentType() { return "application/json"; }
+			};
+
+			return a != null ? Results.ok(ret) : notFound(Json.toJson(
+					new TransferResponseStatus(ResponseStatus.NODATA,
+					"No assembly with Shortname = " + uuid)));
+		}catch(Exception e){
+			return badRequest(Json.toJson(Json
+					.toJson(new TransferResponseStatus("Error processing request"))));
+		}
+	}
+
+	
+	/**
 	 * DELETE    /api/assembly/:id
 	 *
 	 * @param id
@@ -467,6 +498,10 @@ public class Assemblies extends Controller {
 				Logger.debug("=> " + newAssemblyForm.toString());
 				
 				newAssembly.update();
+
+				NotificationsDelegate.createNotificationEventsByType(
+						ResourceSpaceTypes.ASSEMBLY.toString(), newAssembly.getUuid());
+
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
 				Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
