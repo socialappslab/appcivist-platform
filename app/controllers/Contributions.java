@@ -92,7 +92,7 @@ public class Contributions extends Controller {
     public static final Form<ThemeListTransfer> THEMES_FORM = form(ThemeListTransfer.class);
     public static final Form<User> AUTHORS_FORM = form(User.class);
 
-	private static BufferedReader br;
+    private static BufferedReader br;
 
     /**
      * GET       /api/assembly/:aid/contribution
@@ -161,7 +161,7 @@ public class Contributions extends Controller {
     }
 
     /**
-     * GET 	     /api/assembly/:aid/campaign/:cid/contribution
+     * GET       /api/assembly/:aid/campaign/:cid/contribution
      *
      * @param aid
      * @param cid
@@ -294,7 +294,7 @@ public class Contributions extends Controller {
             conditions.put("sorting", sorting);
         }
         if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-        	conditions.put("status",ContributionStatus.PUBLISHED);
+            conditions.put("status",ContributionStatus.PUBLISHED);
         }
 
         PaginatedContribution pag = new PaginatedContribution();
@@ -686,13 +686,13 @@ public class Contributions extends Controller {
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
         String result;
-		try {
-			result = mapper.writerWithView(Views.Public.class).writeValueAsString(contribution);
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+        try {
+            result = mapper.writerWithView(Views.Public.class).writeValueAsString(contribution);
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
             return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, "Error while mapping the public view of the contribution")));
-		}
+        }
 
         Content ret = new Content() {
             @Override
@@ -793,7 +793,7 @@ public class Contributions extends Controller {
                 conditions.put("sorting", sorting);
             }
             if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-            	conditions.put("status",ContributionStatus.PUBLISHED);
+                conditions.put("status",ContributionStatus.PUBLISHED);
             }
 
             PaginatedContribution pag = new PaginatedContribution();
@@ -909,8 +909,8 @@ public class Contributions extends Controller {
      */
     @ApiOperation(httpMethod = "POST", produces = "application/json", value = "Delete duplicate contributions change history")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
-	@ApiImplicitParams({
-			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
     @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result deleteUnchangedContributionHistories() throws Exception {
         List<Contribution> contributions = Contribution.findAll();
@@ -967,9 +967,9 @@ public class Contributions extends Controller {
     }
 
 
-	/* CREATE ENDPOINTS
+    /* CREATE ENDPOINTS
      * TODO: reduce complexity by removing uncessary create methods
-	 */
+     */
 
     /**
      * POST       /api/space/:sid/contribution
@@ -1041,9 +1041,12 @@ public class Contributions extends Controller {
             if (c != null) {
                 rs.addContribution(c);
                 rs.update();
+
+   
             }
 
             Ebean.commitTransaction();
+          
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
                     c.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -1058,7 +1061,8 @@ public class Contributions extends Controller {
             }
 
             Promise.promise( () -> {
-            	return NotificationsDelegate.newContributionInResourceSpace(rs, c);
+                ContributionsDelegate.updateCommentCounters(c, "+");
+                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
 
             return ok(Json.toJson(c));
@@ -1363,7 +1367,7 @@ public class Contributions extends Controller {
         }
     }
 
-	/* Update Endpoints */
+    /* Update Endpoints */
 
     /**
      * GET       /api/assembly/:aid/contribution/:cid/feedback
@@ -1429,37 +1433,37 @@ public class Contributions extends Controller {
             }
             
             // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
-			if (feedback.getType().equals(
-					ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
-				List<Config> configs = Config
-						.findByCampaignAndKey(
-								campaignPath.getUuid(),
-								GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
-				// TODO: Leaving the following as example for other cases where
-				// we have to read all the configs at once
-				// Map<String, Config> configMap =
-				// Config.convertConfigsToMap(configs);
-				// Config c =
-				// configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+            if (feedback.getType().equals(
+                    ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
+                List<Config> configs = Config
+                        .findByCampaignAndKey(
+                                campaignPath.getUuid(),
+                                GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+                // TODO: Leaving the following as example for other cases where
+                // we have to read all the configs at once
+                // Map<String, Config> configMap =
+                // Config.convertConfigsToMap(configs);
+                // Config c =
+                // configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
 
-				boolean authorized = false || configs == null
-						|| configs.isEmpty();
-				for (Config config : configs) {
-					if (feedback.getPassword() != null && feedback // there is a
-																	// password
-																	// so verify
-							.getPassword().equals(config.getValue())) {
-						authorized = true;
-					}
-				}
+                boolean authorized = false || configs == null
+                        || configs.isEmpty();
+                for (Config config : configs) {
+                    if (feedback.getPassword() != null && feedback // there is a
+                                                                    // password
+                                                                    // so verify
+                            .getPassword().equals(config.getValue())) {
+                        authorized = true;
+                    }
+                }
 
-				if (!authorized) {
-					return unauthorized(Json.toJson(new TransferResponseStatus(
-							ResponseStatus.UNAUTHORIZED,
-							"Password in feedback form is incorrect")));
-				}
-			}
-			feedback.setContribution(contribution);
+                if (!authorized) {
+                    return unauthorized(Json.toJson(new TransferResponseStatus(
+                            ResponseStatus.UNAUTHORIZED,
+                            "Password in feedback form is incorrect")));
+                }
+            }
+            feedback.setContribution(contribution);
             feedback.setUserId(author.getUserId());
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
@@ -1489,7 +1493,7 @@ public class Contributions extends Controller {
                         //The user has to be coordinator of working group
                         membershipRoles =  m!=null ? m.filterByRoleName(MyRoles.COORDINATOR.getName()) : null;
                         if (membershipRoles == null || membershipRoles.isEmpty()) {
-                        	Logger.error("User has to be coordinator of working group");
+                            Logger.error("User has to be coordinator of working group");
                             return unauthorized(Json
                                     .toJson(new TransferResponseStatus(
                                             ResponseStatus.UNAUTHORIZED,
@@ -1505,12 +1509,12 @@ public class Contributions extends Controller {
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
                 NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
                 Promise.promise(() -> {
-	                Contribution c = Contribution.read(feedback.getContributionId());
-	                for (Long campId : c.getCampaignIds()) {
-	                    Campaign campaign = Campaign.read(campId);
-	                        NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
-	                }
-	                return true;
+                    Contribution c = Contribution.read(feedback.getContributionId());
+                    for (Long campId : c.getCampaignIds()) {
+                        Campaign campaign = Campaign.read(campId);
+                            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
+                    }
+                    return true;
                 });
 
                 feedback.getWorkingGroupId();
@@ -1527,10 +1531,10 @@ public class Contributions extends Controller {
                 ContributionHistory.createHistoricFromContribution(contribution);
 
             } catch (Exception e) {
-            	Promise.promise(() -> {
+                Promise.promise(() -> {
                     Logger.error(LogActions.exceptionStackTraceToString(e));
                     return true;
-            	});
+                });
                 Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
             }
@@ -1573,31 +1577,31 @@ public class Contributions extends Controller {
                         "No campaign with uuid: " + cuuid )));
             }
             // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
-			if (feedback.getType().equals(
-					ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
-				List<Config> configs = Config
-						.findByCampaignAndKey(
-								campaignPath.getUuid(),
-								GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
-				// TODO: Leaving the following as example for other cases where we have to read all the configs at once
-				// Map<String, Config> configMap = Config.convertConfigsToMap(configs);
-				// Config c = configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+            if (feedback.getType().equals(
+                    ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
+                List<Config> configs = Config
+                        .findByCampaignAndKey(
+                                campaignPath.getUuid(),
+                                GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+                // TODO: Leaving the following as example for other cases where we have to read all the configs at once
+                // Map<String, Config> configMap = Config.convertConfigsToMap(configs);
+                // Config c = configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
 
-				boolean authorized = false || configs == null
-						|| configs.isEmpty();
-				for (Config config : configs) {
-					if (feedback.getPassword() != null && feedback // there is a password so verify
-							.getPassword().equals(config.getValue())) {
-						authorized = true;
-					}
-				}
+                boolean authorized = false || configs == null
+                        || configs.isEmpty();
+                for (Config config : configs) {
+                    if (feedback.getPassword() != null && feedback // there is a password so verify
+                            .getPassword().equals(config.getValue())) {
+                        authorized = true;
+                    }
+                }
 
-				if (!authorized) {
-					return unauthorized(Json.toJson(new TransferResponseStatus(
-							ResponseStatus.UNAUTHORIZED,
-							"Password in feedback form is incorrect")));
-				}
-			}
+                if (!authorized) {
+                    return unauthorized(Json.toJson(new TransferResponseStatus(
+                            ResponseStatus.UNAUTHORIZED,
+                            "Password in feedback form is incorrect")));
+                }
+            }
             feedback.setContribution(contribution);
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
@@ -1749,16 +1753,16 @@ public class Contributions extends Controller {
             Ebean.beginTransaction();
           
             try {
-				        Contribution.update(existingContribution);
-				        Ebean.commitTransaction();
-			      } catch (Exception e) {
-				        Ebean.rollbackTransaction();
-				        e.printStackTrace();
-				        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
-	              TransferResponseStatus responseBody = new TransferResponseStatus();
-	              responseBody.setStatusMessage(e.getMessage());
-	              return Controller.internalServerError(Json.toJson(responseBody));
-			      }
+                        Contribution.update(existingContribution);
+                        Ebean.commitTransaction();
+                  } catch (Exception e) {
+                        Ebean.rollbackTransaction();
+                        e.printStackTrace();
+                        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
+                  TransferResponseStatus responseBody = new TransferResponseStatus();
+                  responseBody.setStatusMessage(e.getMessage());
+                  return Controller.internalServerError(Json.toJson(responseBody));
+                  }
 
             ResourceSpace rs = Assembly.read(aid).getResources();
             Promise.promise(() -> {
@@ -1873,9 +1877,14 @@ public class Contributions extends Controller {
         ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
         ResourceSpace rs = ResourceSpace.read(sid);
         try {
+
+
             rs.getContributions().remove(contribution);
             rs.update();
             ContributionHistory.createHistoricFromContribution(contribution);
+
+            
+
         } catch (Exception e) {
             return internalServerError(Json
                     .toJson(new TransferResponseStatus(
@@ -1914,10 +1923,15 @@ public class Contributions extends Controller {
             Contribution contributionFromDatabase = Contribution.read(contributionId);
             Contribution moderated = newContributionForm.get();
             contributionFromDatabase.setModerationComment(moderated.getModerationComment());
+
+            // ContributionsDelegate.updateCommentCounters(contributionFromDatabase, "-");
+
             Contribution.update(contributionFromDatabase);
             Contribution.softDelete(contributionFromDatabase);
+
             ResourceSpace rs = Assembly.read(aid).getResources();
             Promise.promise(() -> {
+                ContributionsDelegate.updateCommentCounters(contributionFromDatabase, "-");
                 return NotificationsDelegate.updatedContributionInResourceSpace(rs, contributionFromDatabase);
             });
             return ok();
@@ -1940,9 +1954,13 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution c = Contribution.read(contributionId);
+
+        // ContributionsDelegate.updateCommentCounters(c, "-");
+
         Contribution.softDelete(contributionId);
         ResourceSpace rs = Assembly.read(aid).getResources();
         Promise.promise(() -> {
+            ContributionsDelegate.updateCommentCounters(c, "-");
             return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
         });
         return ok();
@@ -1988,6 +2006,13 @@ public class Contributions extends Controller {
     public static Result forceDeleteContribution(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
+
+        // NEW PROMISE
+        Contribution contribution = Contribution.read(contributionId);
+        Promise.promise(() -> {
+             ContributionsDelegate.updateCommentCounters(contribution, "-");
+             return ok();
+        });
         Contribution.delete(contributionId);
         return ok();
     }
@@ -2171,9 +2196,9 @@ public class Contributions extends Controller {
         }
     }
 
-	/*
+    /*
      * Non-exposed methods: creation methods
-	 */
+     */
 
     /**
      * This method is reused by all other contribution creation methods to centralize its logic
@@ -2295,13 +2320,13 @@ public class Contributions extends Controller {
         List<User> authorsLoaded = new ArrayList<User>();
         Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
         for (User user: newContrib.getAuthors()) {
-        	Long userId = user.getUserId();
-        	User auth = User.read(userId);
-        	Boolean alreadyAdded = authorAlreadyAdded.get(userId);
-        	if (alreadyAdded == null || !alreadyAdded) {
-        		authorsLoaded.add(auth);
-        		authorAlreadyAdded.put(auth .getUserId(), true);
-        	}
+            Long userId = user.getUserId();
+            User auth = User.read(userId);
+            Boolean alreadyAdded = authorAlreadyAdded.get(userId);
+            if (alreadyAdded == null || !alreadyAdded) {
+                authorsLoaded.add(auth);
+                authorAlreadyAdded.put(auth .getUserId(), true);
+            }
         }
         newContrib.setAuthors(authorsLoaded);
         Contribution.create(newContrib);
@@ -2357,11 +2382,11 @@ public class Contributions extends Controller {
             Ballot b = Ballot.findByUUID(consensus);
 
             if (b!=null) {
-	            BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-	            contributionAssociatedCandidate.setBallotId(b.getId());
-	            contributionAssociatedCandidate.setCandidateType(new Integer(1));
-	            contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
-	            contributionAssociatedCandidate.save();
+                BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+                contributionAssociatedCandidate.setBallotId(b.getId());
+                contributionAssociatedCandidate.setCandidateType(new Integer(1));
+                contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+                contributionAssociatedCandidate.save();
             }
         }
 
@@ -2744,9 +2769,9 @@ public class Contributions extends Controller {
                                 c.setType(ContributionTypes.IDEA);
 
                                 // Supported Format:
-                                // source_code	title	text	working group	categories	author	age	gender	creation_date
+                                // source_code  title   text    working group   categories  author  age gender  creation_date
 
-                                // SET source_code	title	text
+                                // SET source_code  title   text
                                 c.setSourceCode(cell[0]);
                                 c.setTitle(cell[1]);
                                 c.setText(cell[2].replaceAll("\n", ""));
@@ -2764,7 +2789,7 @@ public class Contributions extends Controller {
 
                                 // TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
                                 if (cell.length > 5) {
-                                    // SET author	age	gender	creation_date
+                                    // SET author   age gender  creation_date
                                     // get author name from cell 2
                                     Logger.info("Importing => author => " + cell.length);
                                     String author = cell[5];
@@ -3108,8 +3133,19 @@ public class Contributions extends Controller {
                     if (inContribution.getForum().getContributions() == null) {
                         inContribution.getForum().setContributions(new ArrayList<Contribution>());
                     }
+                    
+                    // Integer forumCommentCount = inContribution.getForumCommentCount();
+                    // inContribution.setForumCommentCount(forumCommentCount+1);
+
+                    
                     inContribution.getForum().getContributions().add(c);
                     inContribution.getForum().update();
+                    // NEW PROMISE
+                    Promise.promise(() -> {
+                        ContributionsDelegate.updateCommentCounters(c, "+");
+                        return ok();
+                    });
+                    
                 } else {
                     inContribution.getResourceSpace().getContributions().add(c);
                     inContribution.getResourceSpace().update();
