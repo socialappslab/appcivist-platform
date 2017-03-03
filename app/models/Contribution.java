@@ -42,8 +42,8 @@ import org.jsoup.safety.Whitelist;
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause = "removed=false")
 @ApiModel(
-		value="Contribution", 
-		description="Generic model for citizen contributions. A contribuiton represents IDEAS, PROPOSALS, DISCUSSION, COMMENTS, NOTES, ISSUES, ETC. ")
+        value="Contribution", 
+        description="Generic model for citizen contributions. A contribuiton represents IDEAS, PROPOSALS, DISCUSSION, COMMENTS, NOTES, ISSUES, ETC. ")
 public class Contribution extends AppCivistBaseModel {
 
     @Id
@@ -120,6 +120,12 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     private Integer popularity = 0;
 
+    @JsonView(Views.Public.class)
+    private Integer commentCount = 0;
+
+    @JsonView(Views.Public.class)
+    private Integer forumCommentCount = 0;
+
     @JsonView(Views.Public.class) 
     private Boolean pinned = false;
 
@@ -130,7 +136,7 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     @ApiModelProperty(value="Read only property displaying the first author name", readOnly=true)
     private String firstAuthorName;
-	
+    
     @Transient
     @ApiModelProperty(value="Read only property displaying the Assembly where this Contribution was created", readOnly=true)
     private Long assemblyId;
@@ -152,10 +158,10 @@ public class Contribution extends AppCivistBaseModel {
     private ResourceSpace resourceSpace = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
     
     @JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
-	@JsonInclude(Include.NON_EMPTY)
-	@JsonView(Views.Public.class)
-	private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
+    @OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+    @JsonInclude(Include.NON_EMPTY)
+    @JsonView(Views.Public.class)
+    private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 
     @JsonView(Views.Public.class)
     @Transient
@@ -195,9 +201,9 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Contribution> associatedContributions;
 
-	/*
+    /*
      * The following fields are specific to each type of contribution
-	 */
+     */
 
     /*
      * Fields specific to the type ACTION_ITEM
@@ -293,18 +299,18 @@ public class Contribution extends AppCivistBaseModel {
         super();
     }
 
-	/*
+    /*
      * Getters and Setters
-	 */
+     */
     public List<ResourceSpace> getContainingSpaces() {
-		return containingSpaces;
-	}
+        return containingSpaces;
+    }
 
-	@Transient
-	public User getFirstAuthor() {
-		return authors != null && authors.size() > 0 ? authors.get(0) : null;
-	}
-	
+    @Transient
+    public User getFirstAuthor() {
+        return authors != null && authors.size() > 0 ? authors.get(0) : null;
+    }
+    
     public Long getContributionId() {
         return contributionId;
     }
@@ -486,7 +492,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public void addAttachment(Resource attach) {
-    	if(resourceSpace != null) this.resourceSpace.addResource(attach);
+        if(resourceSpace != null) this.resourceSpace.addResource(attach);
     }
 
     public Location getLocation() {
@@ -808,8 +814,8 @@ public class Contribution extends AppCivistBaseModel {
         
         // Set plain text if text is HTML
         if (TextUtils.isHtml(c.getText())) {
-        	c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
-        	c.setPlainText(Jsoup.parse(c.getText()).text());
+            c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
+            c.setPlainText(Jsoup.parse(c.getText()).text());
         }
         c.save();
 
@@ -892,7 +898,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public static Contribution update(Contribution c) {
-    	Contribution original = Contribution.read(c.getContributionId());
+        Contribution original = Contribution.read(c.getContributionId());
         // Do not touch things in the resource spaces attached to the contribution
         c.setContainingSpaces(original.getContainingSpaces());
         c.setForum(original.getForum());
@@ -900,8 +906,8 @@ public class Contribution extends AppCivistBaseModel {
         
         // Set plain text if text is HTML
         if (TextUtils.isHtml(c.getText())) {
-        	c.setText(Jsoup.clean(c.getText(), Whitelist.basicWithImages()));
-        	c.setPlainText(Jsoup.parse(c.getText()).text());
+            c.setText(Jsoup.clean(c.getText(), Whitelist.basicWithImages()));
+            c.setPlainText(Jsoup.parse(c.getText()).text());
         }
         
         c.update();
@@ -911,10 +917,10 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
-		this.containingSpaces = containingSpaces2;
-	}
+        this.containingSpaces = containingSpaces2;
+    }
 
-	public List<WorkingGroup> getWorkingGroups() {
+    public List<WorkingGroup> getWorkingGroups() {
         return workingGroups;
     }
 
@@ -924,7 +930,17 @@ public class Contribution extends AppCivistBaseModel {
 
     /*
      * Other Queries
-	 */
+     */
+    public static Contribution findByResourceSpaceId(Long sid) {
+        Contribution c = find.where().eq("resourceSpace.resourceSpaceId", sid).findUnique();
+        return c;
+    }
+
+    public static Contribution findByForumResourceSpaceId(Long sid) {
+        Contribution c = find.where().eq("forum.resourceSpaceId", sid).findUnique();
+        return c;
+    }
+    
 
     public static Contribution readByUUID(UUID contributionUUID) {
         return find.where().eq("uuid", contributionUUID).eq("removed", false).findUnique();
@@ -955,11 +971,11 @@ public class Contribution extends AppCivistBaseModel {
         return contribs;
     }
 
-	public static List<Contribution> findAllByContainingSpaceAndType(
-			ResourceSpace rs, Integer t) {
-		return find.where().eq("containingSpaces", rs).eq("type", t).findList();
-	}
-    		 
+    public static List<Contribution> findAllByContainingSpaceAndType(
+            ResourceSpace rs, Integer t) {
+        return find.where().eq("containingSpaces", rs).eq("type", t).findList();
+    }
+             
     public static List<Contribution> findAllByContainingSpaceAndQuery(Long sid,
                                                                       String query) {
         List<Contribution> contribs = find.where()
@@ -988,7 +1004,7 @@ public class Contribution extends AppCivistBaseModel {
                 .eq("containingSpaces.resourceSpaceId", resourceSpaceId)
                 .findList();
     }
-
+ 
     public static Contribution readByIdAndType(Long resourceSpaceId,
                                                Long contributionId, ContributionTypes type) {
         return find.where()
@@ -1057,7 +1073,7 @@ public class Contribution extends AppCivistBaseModel {
                 .ilike("textIndex", "%" + query + "%").findList();
     }
 
-	/* Single Contribution queries */
+    /* Single Contribution queries */
 
     public static Contribution readIssueOfSpace(Long resourceSpaceId,
                                                 Long contributionId) {
@@ -1083,7 +1099,7 @@ public class Contribution extends AppCivistBaseModel {
                 ContributionTypes.COMMENT);
     }
 
-	/* List Contribution queries */
+    /* List Contribution queries */
 
     public static Contribution readForumPostOfSpace(Long resourceSpaceId,
                                                     Long contributionId) {
@@ -1202,49 +1218,65 @@ public class Contribution extends AppCivistBaseModel {
         this.popularity = popularity;
     }
 
-	public Boolean getPinned() {
-		return pinned;
-	}
+    public Integer getCommentCount() {
+        return commentCount != null ? commentCount : 0;
+    }
 
-	public void setPinned(Boolean pinned) {
-		this.pinned = pinned;
-	}
+    public void setCommentCount(Integer commentCount) {
+        this.commentCount = commentCount;
+    }
 
-	public static List<Contribution> findPinnedInSpace(Long sid, ContributionTypes type) {
-		if (type!=null) {
-			return find.where()
-				.eq("pinned", true)
-				.eq("type", type)
-				.eq("containingSpaces.resourceSpaceId", sid)
+    public Integer getForumCommentCount() {
+        return forumCommentCount != null ? forumCommentCount : 0;
+    }
+
+    public void setForumCommentCount(Integer forumCommentCount) {
+        this.forumCommentCount = forumCommentCount;
+    }
+
+    public Boolean getPinned() {
+        return pinned;
+    }
+
+    public void setPinned(Boolean pinned) {
+        this.pinned = pinned;
+    }
+
+    public static List<Contribution> findPinnedInSpace(Long sid, ContributionTypes type) {
+        if (type!=null) {
+            return find.where()
+                .eq("pinned", true)
+                .eq("type", type)
+                .eq("containingSpaces.resourceSpaceId", sid)
                 .not(Expr.eq("removed",true))
-				.findList();
-		} else {
-			return find.where()
-					.eq("pinned", true)
-					.eq("containingSpaces.resourceSpaceId", sid)
+                .findList();
+        } else {
+            return find.where()
+                    .eq("pinned", true)
+                    .eq("containingSpaces.resourceSpaceId", sid)
                     .not(Expr.eq("removed",true))
-					.findList();			
-		}
-	}
+                    .findList();            
+        }
+    }
 
-	public static List<Contribution> findPinnedInSpace(Long sid,
-			ContributionTypes type, ContributionStatus status) {
-		if (type!=null) {
-			return find.where()
-					.eq("pinned", true)
-					.eq("type", type)
-					.eq("containingSpaces.resourceSpaceId", sid)
-					.eq("status", status)
+    public static List<Contribution> findPinnedInSpace(Long sid,
+            ContributionTypes type, ContributionStatus status) {
+        if (type!=null) {
+            return find.where()
+                    .eq("pinned", true)
+                    .eq("type", type)
+                    .eq("containingSpaces.resourceSpaceId", sid)
+                    .eq("status", status)
                     .not(Expr.eq("removed",true))
-					.findList();	
-		} else {
-			return find.where()
-					.eq("pinned", true)
-					.eq("containingSpaces.resourceSpaceId", sid)
-					.eq("status", status)
+                    .findList();    
+        } else {
+            return find.where()
+                    .eq("pinned", true)
+                    .eq("containingSpaces.resourceSpaceId", sid)
+                    .eq("status", status)
                     .not(Expr.eq("removed",true))
-					.findList();			
-		}
-		
-	}
+                    .findList();            
+        }
+        
+    }
 }

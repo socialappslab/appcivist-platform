@@ -23,4 +23,10 @@ create table resource_space_organization (
 alter table resource_space_organization add constraint fk_resource_space_org_resou_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
 alter table resource_space_organization add constraint fk_resource_space_org_theme_02 foreign key (organization_organization_id) references organization (organization_id);
-# --- Downs
+
+alter table contribution add column comment_count integer;
+alter table contribution add column forum_comment_count integer;
+update contribution set comment_count=0;
+update contribution set forum_comment_count=0;
+
+# --- !Downs

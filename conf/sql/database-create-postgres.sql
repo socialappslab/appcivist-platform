@@ -242,6 +242,8 @@ create table contribution (
   action                    varchar(255),
   assessment_summary        varchar(255),
   extended_text_pad_resource_id bigint,
+  comment_count             integer,
+  forum_comment_count       integer,
   constraint ck_contribution_type check (type in (0,1,2,3,4,5,6,7,8,9,10)),
   constraint uq_contribution_location_locatio unique (location_location_id),
   constraint uq_contribution_resource_space_r unique (resource_space_resource_space_id),

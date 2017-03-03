@@ -394,4 +394,39 @@ public class ContributionsDelegate {
 			
 	}
 
+    public static void updateCommentCounters(Contribution c,  String op){     
+        List<ResourceSpace> containingSpaces = c.getContainingSpaces();
+        for (ResourceSpace rs : containingSpaces) {
+            Contribution parent = Contribution.findByResourceSpaceId(rs.getResourceSpaceId());
+            Integer anonymous = 0;
+            Integer commentCount = 0;
+            if (parent == null){
+                parent = Contribution.findByForumResourceSpaceId(rs.getResourceSpaceId());
+                anonymous = 1;
+            }
+            if (parent != null){
+
+                if (anonymous==0){
+                    commentCount = parent.getCommentCount();
+                    if (op == "+"){
+                        parent.setCommentCount(commentCount + 1);
+                    } else {
+                        parent.setCommentCount(commentCount - 1);
+                    }
+                } else {
+                    commentCount = parent.getForumCommentCount();
+                    if (op == "+"){
+                        parent.setForumCommentCount(commentCount + 1);
+                    } else {
+                        parent.setForumCommentCount(commentCount - 1);
+                    }
+                }
+                parent.update();
+                updateCommentCounters(parent, op);
+            }
+
+        }
+
+    }
+
 }
