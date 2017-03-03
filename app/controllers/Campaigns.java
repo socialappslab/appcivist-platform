@@ -19,11 +19,14 @@ import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
+import models.misc.InitialDataConfig;
 import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
-import play.Logger;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import play.*;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F.Promise;
@@ -37,6 +40,9 @@ import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -452,8 +458,10 @@ public class Campaigns extends Controller {
     @SubjectPresent
     public static Result findCampaignTemplates() {
         List<CampaignTemplate> cts = CampaignTemplate.findAll();
-        if (cts != null && !cts.isEmpty()) {
-            return ok(Json.toJson(cts));
+        InputStream inputStream = Play.application().classloader().getResourceAsStream("initial-data/configs/defaultCampaignTimeline.json");
+
+        if (inputStream != null) {
+            return ok(Json.parse(inputStream));
         } else {
             return notFound(Json.toJson(new TransferResponseStatus(
                     "No campaign templates")));
