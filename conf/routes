@@ -86,6 +86,10 @@ PUT       /api/assembly/:aid/contribution/template/:rid                   contro
 DELETE    /api/assembly/:aid/contribution/template/:rid                   controllers.Assemblies.deleteContributionTemplateInAssembly(aid: Long, rid: Long)
 GET       /api/assembly/public/:uuid                                      controllers.Assemblies.findAssemblyByUUID(uuid: java.util.UUID)
 
+GET       /api/space/:sid/organization                                    controllers.Assemblies.findOrganizationsInSpace(sid: Long)
+PUT       /api/space/:sid/organization                                    controllers.Assemblies.updateOrganizationsInSpace(sid: Long)
+DELETE    /api/space/:sid/organization/:id                                controllers.Assemblies.deleteOrganizationFromSpace(sid: Long, id: Long)
+
 ##################################################################################################################################################################
 # WorkingGroup API
 GET       /api/assembly/:aid/group                                        controllers.WorkingGroups.findWorkingGroups(aid: Long)
