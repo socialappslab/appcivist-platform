@@ -52,16 +52,17 @@ public class ResourceSpace extends AppCivistBaseModel {
 	 * 
 	 * When creating entities with an associated resourceSpace, bare in mind 
 	 * the following rules about what can be contained in the lists below
-	 * configs 		=> new 
+	 * configs 			=> new
 	 * themes 			=> existing and new
-	 * campaigns       => existing  
+	 * organizations 	=> existing and new
+	 * campaigns        => existing
 	 * components 		=> existing and new
 	 * milestones 		=> new
-	 * workingGroups   => existing
-	 * contributions   => existing and new
-	 * assemblies      => existing 
-	 * resources       => new
-	 * hashtags        => existing and new
+	 * workingGroups    => existing
+	 * contributions    => existing and new
+	 * assemblies       => existing
+	 * resources        => new
+	 * hashtags         => existing and new
 	 * 
 	 * The ones marked "existing" means that they will have an special array to
 	 * refer to the existing related entities and therefore issue an upudate on 
@@ -79,6 +80,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Config> configs;
+
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_organization")
+	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
+	private List<Organization> organizations;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
@@ -282,6 +289,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.themes = interests;
 	}
 
+	public List<Organization> getOrganizations() {
+		return organizations!=null ? organizations: new ArrayList<>();
+	}
+
+	public void setOrganizations(List<Organization> organizations) {
+		this.organizations = organizations;
+	}
+
 	public void addTheme(Theme theme) {
 		if(this.themes==null)
 			this.themes = new ArrayList<>();
@@ -299,6 +314,28 @@ public class ResourceSpace extends AppCivistBaseModel {
 		List<Theme> themes = target.getThemes();
 		for (Theme theme : themes) {
 			this.addTheme(theme);
+		}
+		this.save();
+		this.refresh();
+	}
+
+	public void addOrganization(Organization organization) {
+		if(this.organizations==null)
+			this.organizations = new ArrayList<>();
+		if (!this.organizations.contains(organization))
+			this.organizations.add(organization);
+	}
+
+	public void removeOrganization(Organization organization) {
+		if(this.organizations==null)
+			this.organizations = new ArrayList<>();
+		this.organizations.remove(organization);
+	}
+
+	public void copyOrganizationsFrom(ResourceSpace target) {
+		List<Organization> organizations = target.getOrganizations();
+		for (Organization organization : organizations) {
+			this.addOrganization(organization);
 		}
 		this.save();
 		this.refresh();

@@ -18,6 +18,7 @@ public class AssemblyTransfer {
 	private String invitationEmail;
 	private AssemblyProfileTransfer profile;
 	private LocationTransfer location;
+	private List<OrganizationTransfer> organizations;
 	private List<ThemeTransfer> themes;
 	private List<ThemeTransfer> existingThemes;
 	private List<ConfigTransfer> configs;
@@ -116,5 +117,13 @@ public class AssemblyTransfer {
 	}
 	public void setLinkedAssembliesIds(List<Long> linkedAssembliesIds) {
 		this.linkedAssembliesIds = linkedAssembliesIds;
+	}
+
+	public List<OrganizationTransfer> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(List<OrganizationTransfer> organizations) {
+		this.organizations = organizations;
 	}
 }

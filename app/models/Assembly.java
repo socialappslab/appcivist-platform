@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -133,6 +134,9 @@ public class Assembly extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Theme> themes = new ArrayList<>();
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Organization> organizations = new ArrayList<>();
 	@JsonView(Views.Public.class)
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -195,8 +199,7 @@ public class Assembly extends AppCivistBaseModel {
 	/**
 	 * Basic assembly constructor (with the most basic elements of an assembly)
 	 * 
-	 * @param The
-	 *            name of the assembly
+	 * @param
 	 * @param assemblyDescription
 	 * @param assemblyCity
 	 */
@@ -444,6 +447,15 @@ public class Assembly extends AppCivistBaseModel {
 		this.resources.setCampaigns(campaigns);
 	}
 
+	public List<Organization> getOrganizations() {
+		return  resources != null ? resources.getOrganizations() : null;
+	}
+
+	public void setOrganizations(List<Organization> organizations) {
+		this.organizations = organizations;
+		this.resources.setOrganizations(organizations);
+	}
+
 	public List<Contribution> getForumPosts() {
 		return forum.getContributions();
 	}
@@ -553,7 +565,17 @@ public class Assembly extends AppCivistBaseModel {
 		List<Campaign> existingCampaigns = a.getExistingCampaigns();
 		List<Assembly> followedAssemblies = a.getFollowedAssemblies();
 
-		// 2. Create the new campaign
+		List<Organization> organizations = new ArrayList<Organization>();
+		for (Organization organization : a.getOrganizations()) {
+			if (organization.getOrganizationId() != null) {
+				Organization existingOrganization = Organization.read(organization.getOrganizationId());
+				organizations.add(existingOrganization);
+			} else {
+				organizations.add(organization);
+			}
+		}
+		a.setOrganizations(organizations);
+		// 2. Create the new assembly
 		a.save();
 
 		// 3. Add existing entities in relationships to the manytomany resources
@@ -564,6 +586,8 @@ public class Assembly extends AppCivistBaseModel {
 			assemblyResources.getComponents().addAll(existingComponents);
 		if (existingThemes != null && !existingThemes.isEmpty())
 			assemblyResources.getThemes().addAll(existingThemes);
+		if (organizations != null)
+			assemblyResources.setOrganizations(organizations);
 		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
 			assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
 		if (existingCampaigns != null && !existingCampaigns.isEmpty())
