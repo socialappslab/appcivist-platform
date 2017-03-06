@@ -5,8 +5,10 @@ import io.swagger.annotations.ApiModel;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+//import models.AppCivistBaseModel.ConfigOption;
 import enums.ConfigTargets;
 
 import java.util.List;
@@ -26,6 +28,11 @@ public class ConfigDefinition extends AppCivistBaseModel {
     private String defaultValue;
     private ConfigTargets configTarget = ConfigTargets.ASSEMBLY;
     
+//    private String uiType; // type of element to use in the UI to render this configuration option
+//    private List<ConfigOption> options; // list of possible values for this configuration
+//    @Transient private ConfigOption optionValue; // currently selected option value
+//	private String dependsOfKey;
+
     public ConfigDefinition(String key, String valueType, String description, String defaultValue, ConfigTargets configTarget) {
     	super();
     	this.uuid = UUID.randomUUID();
@@ -95,6 +102,14 @@ public class ConfigDefinition extends AppCivistBaseModel {
 	public void setConfigTarget(ConfigTargets configTarget) {
 		this.configTarget = configTarget;
 	}
+
+//	public String getUiType() {
+//		return uiType;
+//	}
+//
+//	public void setUiType(String uiType) {
+//		this.uiType = uiType;
+//	}
 
 	public static ConfigDefinition read(UUID uuid) {
         return find.ref(uuid);
