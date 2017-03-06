@@ -124,8 +124,11 @@ public class Contribution extends AppCivistBaseModel {
     private Integer commentCount = 0;
 
     @JsonView(Views.Public.class)
-    private Integer forumCommentCount = 0;
+    private Integer forumCommentCount = 0;    
 
+    @JsonView(Views.Public.class)
+    private Integer totalComments = 0;     
+    
     @JsonView(Views.Public.class) 
     private Boolean pinned = false;
 
@@ -1234,6 +1237,14 @@ public class Contribution extends AppCivistBaseModel {
         this.forumCommentCount = forumCommentCount;
     }
 
+    public Integer getTotalComments() {
+        return totalComments != null ? totalComments : 0;
+    }
+
+    public void setTotalComments(Integer totalComments) {
+        this.totalComments = totalComments;
+    }    
+    
     public Boolean getPinned() {
         return pinned;
     }
