@@ -1,26 +1,39 @@
 package models;
 
-import com.avaje.ebean.Expr;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PreUpdate;
+import javax.persistence.Transient;
 
 import models.location.Location;
 import models.misc.Views;
+
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
+
 import play.data.validation.Constraints.Required;
 import utils.TextUtils;
 
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -35,9 +48,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import enums.ContributionStatus;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
-
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause = "removed=false")
