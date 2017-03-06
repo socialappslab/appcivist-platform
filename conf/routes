@@ -158,6 +158,7 @@ POST      /api/space/:sid/config                                          contro
 # Campaign Template and Configuration endpoints
 
 GET       /api/campaign/template                                          controllers.Campaigns.findCampaignTemplates()
+GET       /api/campaign/template/default                                  controllers.Campaigns.findCampaignTemplatesDefault()
 GET       /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.findContributionTemplatesInCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/template          controllers.Campaigns.createContributionTemplateInCampaign(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/contribution/template/:rid     controllers.Campaigns.confirmContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)

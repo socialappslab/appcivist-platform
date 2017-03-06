@@ -458,13 +458,32 @@ public class Campaigns extends Controller {
     @SubjectPresent
     public static Result findCampaignTemplates() {
         List<CampaignTemplate> cts = CampaignTemplate.findAll();
+        if (cts != null && !cts.isEmpty()) {
+            return ok(Json.toJson(cts));
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    "No campaign templates")));
+        }
+    }
+
+    /**
+     * GET /api/campaign/template/default
+     * Get list of default campaign templates
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Component.class, produces = "application/json", value = "Get list of default templates", notes = "Get list of default templates")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No Default Template Found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),})
+    @SubjectPresent
+    public static Result findCampaignTemplatesDefault() {
         InputStream inputStream = Play.application().classloader().getResourceAsStream("initial-data/configs/defaultCampaignTimeline.json");
 
         if (inputStream != null) {
             return ok(Json.parse(inputStream));
         } else {
             return notFound(Json.toJson(new TransferResponseStatus(
-                    "No campaign templates")));
+                    "No campaign default templates")));
         }
     }
 
