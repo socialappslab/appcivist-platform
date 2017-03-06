@@ -175,7 +175,8 @@ public class WorkingGroups extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     @SubjectPresent
-    public static Result createWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
+    public static Result createWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                            @ApiParam(name="invitations", value="Send invitations if true") String invitations) {
         // 1. obtaining the user of the requestor
         User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -210,7 +211,7 @@ public class WorkingGroups extends Controller {
                     if (newWorkingGroup.getCreator() == null) {
                         newWorkingGroup.setCreator(groupCreator);
                     }
-                    List<InvitationTransfer> invitations = newWorkingGroup.getInvitations();
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
                     newWorkingGroup = WorkingGroup.create(newWorkingGroup);
 
                     // Add the working group to the assembly
@@ -219,10 +220,8 @@ public class WorkingGroups extends Controller {
                     rs.update();
 
                     // Create and send invitations
-                    // Create and send invitations
-
-                    if (invitations != null) {
-                        for (InvitationTransfer invitation : invitations) {
+                    if (invitations != null  && invitations.equals("true")) {
+                        for (InvitationTransfer invitation : invitationsList) {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
                     }
@@ -269,7 +268,8 @@ public class WorkingGroups extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createWorkingGroupInCampaign(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
-                                                      @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
+                                                      @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+                                                      @ApiParam(name="invitations", value="Send invitations if true") String invitations) {
         // 1. obtaining the user of the requestor
         User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -306,7 +306,7 @@ public class WorkingGroups extends Controller {
                     if (newWorkingGroup.getCreator() == null) {
                         newWorkingGroup.setCreator(groupCreator);
                     }
-                    List<InvitationTransfer> invitations = newWorkingGroup.getInvitations();
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
                     newWorkingGroup = WorkingGroup.create(newWorkingGroup);
                     newWorkingGroup.refresh();
                     // Add the working group to the assembly
@@ -325,8 +325,8 @@ public class WorkingGroups extends Controller {
                     newWorkingGroup.refresh();
 
                     // Create and send invitations
-                    if (invitations != null) {
-                        for (InvitationTransfer invitation : invitations) {
+                    if (invitations != null && invitations.equals("true")) {
+                        for (InvitationTransfer invitation : invitationsList) {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
                     }

@@ -211,7 +211,8 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result createAssembly(@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates) {
+	public static Result createAssembly(@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates,
+										@ApiParam(name="invitations", value="Send invitations if true") String invitations) {
 		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
@@ -229,7 +230,7 @@ public class Assemblies extends Controller {
 			if (a==null) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, null);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, null, invitations);
 					Ebean.commitTransaction();
 					try {
 						NotificationsDelegate.createNotificationEventsByType(
@@ -271,7 +272,8 @@ public class Assemblies extends Controller {
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createAssemblyInAssembly(
 			@ApiParam(name="id", value="Id of the principal assembly under which to create the new") Long id, 
-			@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates) {
+			@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates,
+			@ApiParam(name="invitations", value="Send invitations if true") String invitations) {
 		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
@@ -292,7 +294,7 @@ public class Assemblies extends Controller {
 			if (a!=null && a.getPrincipalAssembly()) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, a);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, a, invitations);
 					Ebean.commitTransaction();
 					try {
 						NotificationsDelegate.createNotificationEventsByType(

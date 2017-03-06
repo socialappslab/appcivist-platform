@@ -568,7 +568,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			AssemblyTransfer newAssemblyTransfer = groupSignupUser.getNewAssembly();
 			if (newAssemblyTransfer!=null) {
 				// create the assembly with user as creator
-				AssembliesDelegate.create(newAssemblyTransfer, user, null, null);
+				AssembliesDelegate.create(newAssemblyTransfer, user, null, null, "true");
 			}
 		}
 		
