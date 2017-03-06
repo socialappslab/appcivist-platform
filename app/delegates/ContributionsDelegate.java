@@ -149,7 +149,7 @@ public class ContributionsDelegate {
                 "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
                 "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, "/*t0.priority,*/+"\n " +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
-                "  t0.source_code, t0.popularity, t0.pinned, t0.total_comments from contribution t0\n ";
+                "  t0.source_code, t0.popularity, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments from contribution t0\n ";
         String sorting = " order by pinned desc nulls last";
 
         if(conditions != null){
@@ -181,6 +181,10 @@ public class ContributionsDelegate {
                             sorting +=", creation desc nulls last";
                         } else if (sortingValue.equals("most_commented")) {
                         	sorting +=", total_comments desc nulls last";
+                        } else if (sortingValue.equals("most_commented_members")) {
+                        	sorting +=", comment_count desc nulls last";
+                        } else if (sortingValue.equals("most_commented_public")) {
+                        	sorting +=", forum_comment_count desc nulls last";
                         }
                         break;
                 }
