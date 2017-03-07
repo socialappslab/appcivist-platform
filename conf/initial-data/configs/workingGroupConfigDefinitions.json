@@ -1,0 +1,56 @@
+[
+    { 
+    "key": "appcivist.assembly.enable-forum", 
+    "description": "Enable Assembly Forum", 
+    "helper": "If TRUE, the assembly homepage will also feature a Forum for general discussions",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.disable-new-memberships", 
+    "description": "Disable New Memberships",
+    "helper": "If TRUE, only coordinators will be able to add new members to the assembly, by uploading users for them.", 
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.membership-invitation-by-members",
+    "description": "Enable invitation from regular members",
+    "helper": "If TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.has-registration-form",
+    "description": "Ask future members to fill a registration form to joim",
+    "helper": "If TRUE, to join the assembly, users must fill in a registration form", 
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.has-registration-form-url", 
+    "description": "URL of the registration form",
+    "dependsOf": "appcivist.assembly.has-registration-form",
+    "dependsOfValue": "TRUE",
+    "valueType": "Boolean",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.enable-moderator-role", 
+    "description": "Enable moderator role",
+    "helper": "If TRUE, members can also have the role MODERATOR, which allows a member to delete content (comments, proposals, ideas, etc.), providing a reason for it",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  }
+]
