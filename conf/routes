@@ -190,6 +190,11 @@ GET       /api/campaign/:uuid/groups                                      contro
 GET       /api/assembly/:aid/campaign/:cid/timeline                       controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
+GET       /api/space/:sid/resources                                       controllers.Campaigns.listSpaceResources(sid: Long)
+GET       /api/space/:uuid/resources                                      controllers.Campaigns.listSpaceResourcesbyUuid(uuid: java.util.UUID)
+POST      /api/space/:sid/resources                                       controllers.Campaigns.addSpaceResources(sid: Long)
+POST      /api/space/:uuid/resources                                      controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
+
 ##################################################################################################################################################################
 # CampaignComponent API
 GET       /api/assembly/:aid/campaign/:cid/component                      controllers.CampaignComponents.findCampaignComponents(aid: Long, cid:Long)
