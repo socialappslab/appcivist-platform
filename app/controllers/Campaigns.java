@@ -1246,7 +1246,6 @@ public class Campaigns extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
     public static Result addSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
-        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
         final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
         if (resourceSpace == null) {
@@ -1261,7 +1260,6 @@ public class Campaigns extends Controller {
             } else {
                 Resource newResource = resourceForm.get();
                 newResource.setConfirmed(true);
-                newResource.setContextUserId(creator.getUserId());
                 newResource = Resource.create(newResource);
                 resourceSpace.getResources().add(newResource);
                 resourceSpace.update();
