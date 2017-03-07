@@ -16,7 +16,8 @@
           "description": "Enable support for multiple authors per idea",
           "valueType": "Boolean",
           "defaultValue": "false",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "IDEAS"
         }
       },
       {
@@ -27,7 +28,8 @@
           "description": "Enable support for attachments on ideas",
           "valueType": "Boolean",
           "defaultValue": "false",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "IDEAS"
         }
       },
       {
@@ -38,7 +40,8 @@
           "description": "Limit of the number of contributions that users can create in this phase",
           "valueType": "Integer",
           "defaultValue": "0",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "IDEAS"
         }
       }
     ],
@@ -78,7 +81,8 @@
           "description": "Disable collaborative editing of proposals",
           "valueType": "Boolean",
           "defaultValue": "false",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
         }
       },
       {
@@ -88,30 +92,33 @@
           "key": "component.proposals.enable-multiple-authors",
           "description": "Enable support for multiple authors per proposal",
           "valueType": "Boolean",
-          "defaultValue": "false",
-          "configTarget": "COMPONENT"
+          "defaultValue": "true",
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
         }
       },
       {
-        "key": "component.ideas.enable-attachments",
+        "key": "component.proposals.enable-attachments",
         "value": "true",
         "definition": {
-          "key": "component.ideas.enable-attachments",
+          "key": "component.proposals.enable-attachments",
           "description": "Enable support for attachments on proposals",
           "valueType": "Boolean",
           "defaultValue": "true",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
         }
       },
       {
-        "key": "component.ideas.contribution-limit",
+        "key": "component.proposals.contribution-limit",
         "value": "0",
         "definition": {
-          "key": "component.ideas.contribution-limit",
-          "description": "Limit of the number of contributions that users can create in this phase",
+          "key": "component.proposals.contribution-limit",
+          "description": "How many contributions can users create in this phase?",
           "valueType": "Integer",
           "defaultValue": "0",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
         }
       }
     ],
@@ -151,7 +158,8 @@
           "description": "Enable technical assessment of proposals",
           "valueType": "Boolean",
           "defaultValue": "true",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION"
         }
       },
       {
@@ -163,6 +171,7 @@
           "valueType": "String",
           "defaultValue": "ASSEMBLY",
           "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION",
           "uiType": "select",
           "options": [
             {
@@ -195,10 +204,13 @@
         "dependsOfValue": "JURY",
         "definition": {
           "key": "component.deliberation.who-deliberates-jury",
+          "dependsOfKey": "component.deliberation.who-deliberates",
+          "dependsOfValue": "JURY",
           "description": "From where are members of the jury randomly selected?",
           "valueType": "String",
           "defaultValue": "ASSEMBLY",
           "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION",
           "uiType": "select",
           "options": [
             {
@@ -267,7 +279,8 @@
           "description": "Ballot Password",
           "valueType": "String",
           "defaultValue": "12345",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -279,6 +292,7 @@
           "valueType": "String",
           "defaultValue": "RANGE",
           "configTarget": "COMPONENT",
+          "configTargetType": "VOTING",
           "uiType": "select",
           "options": [
             {
@@ -316,10 +330,13 @@
         "dependsOfValue": "RANGE",
         "definition": {
           "key": "component.voting.system-range-min-score",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "RANGE",
           "description": "Minimum score for range voting",
           "valueType": "Integer",
           "defaultValue": "0",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -329,10 +346,13 @@
         "dependsOfValue": "RANGE",
         "definition": {
           "key": "component.voting.system-range-max-score",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "RANGE",
           "description": "Maximum score for range voting",
           "valueType": "Integer",
           "defaultValue": "100",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -342,10 +362,13 @@
         "dependsOfValue": "RANKED",
         "definition": {
           "key": "component.voting.system-ranked-number-proposals",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "RANKED",
           "description": "How many proposals can a voter select?",
           "valueType": "Integer",
           "defaultValue": "5",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -355,10 +378,13 @@
         "dependsOfValue": "DISTRIBUTED",
         "definition": {
           "key": "component.voting.system-distributed-points",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "DISTRIBUTED",
           "description": "How many points can a voter distribute?",
           "valueType": "Integer",
           "defaultValue": "30",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -368,10 +394,13 @@
         "dependsOfValue": "PLURALITY",
         "definition": {
           "key": "component.voting.system-plurality-type",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "PLURALITY",
           "description": "Select the type of plurality voting",
           "valueType": "String",
           "defaultValue": "YES/NO",
           "configTarget": "COMPONENT",
+          "configTargetType": "VOTING",
           "uiType": "select",
           "options": [
             {
@@ -409,10 +438,13 @@
         "dependsOfValue": "PLURALITY",
         "definition": {
           "key": "component.voting.system-plurality-block-enforce-justification-of-votes",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "PLURALITY",
           "description": "Require justification for votes",
           "valueType": "Boolean",
           "defaultValue": "false",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -422,10 +454,13 @@
         "dependsOfValue": "YES/NO/MAYBE/BLOCK",
         "definition": {
           "key": "component.voting.system-plurality-block-threshold",
+          "dependsOfKey": "component.voting.system-plurality-type",
+          "dependsOfValue": "YES/NO/MAYBE/BLOCK",
           "description": "Block percentage threshold",
           "valueType": "Percentage",
           "defaultValue": "0.1",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -438,6 +473,7 @@
           "valueType": "String",
           "defaultValue": "FIXED",
           "configTarget": "COMPONENT",
+          "configTargetType": "VOTING",
           "uiType": "radio",
           "options": [
             {
@@ -470,21 +506,25 @@
         "dependsOfValue": "FIXED",
         "definition": {
           "key": "component.voting.system-winners-fixed-number",
+          "dependsOfKey": "component.voting.system-winners",
+          "dependsOfValue": "FIXED",
           "description": "Number of Winners",
           "valueType": "Integer",
           "defaultValue": "3",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
         "key": "component.voting.system-enable-enable-quorum",
         "value": "true",
         "definition": {
-          "key": "component.voting.system-enable-enable-quorum",
+          "key": "component.voting.system-enable-quorum",
           "description": "Enable Quorum threshold",
           "valueType": "Boolean",
           "defaultValue": "true",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       },
       {
@@ -494,10 +534,13 @@
         "dependsOfValue": "true",
         "definition": {
           "key": "component.voting.system.quorum",
+          "dependsOfKey": "component.voting.system-enable-quorum",
+          "dependsOfValue": "true",
           "description": "Quorum percentage",
           "valueType": "Percentage",
           "defaultValue": "0.6",
-          "configTarget": "COMPONENT"
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
         }
       }
     ],
