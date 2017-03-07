@@ -189,8 +189,10 @@ public class Contribution extends AppCivistBaseModel {
      * Transient properties that take their values from the associated resource
      * space
      */
+    @JsonView(Views.Public.class)
     @Transient
     private List<Theme> themes;
+    @JsonView(Views.Public.class)
     @Transient
     private List<Resource> attachments;
     @Transient
