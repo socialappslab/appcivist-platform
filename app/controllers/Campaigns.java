@@ -1184,8 +1184,6 @@ public class Campaigns extends Controller {
      */
     @ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", value = "Lists resource space's resources")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result listSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
         ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
         List<Resource> resources;
@@ -1246,10 +1244,8 @@ public class Campaigns extends Controller {
     @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
     public static Result addSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
-        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
         final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
         if (resourceSpace == null) {
@@ -1264,7 +1260,6 @@ public class Campaigns extends Controller {
             } else {
                 Resource newResource = resourceForm.get();
                 newResource.setConfirmed(true);
-                newResource.setContextUserId(creator.getUserId());
                 newResource = Resource.create(newResource);
                 resourceSpace.getResources().add(newResource);
                 resourceSpace.update();
