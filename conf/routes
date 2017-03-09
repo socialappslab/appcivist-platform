@@ -247,8 +247,8 @@ GET       /api/space/:sid/contribution                                          
 GET       /api/space/:sid/contribution/pinned                                    controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
 POST      /api/space/:sid/space/:new_sid                                         controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
-GET       /api/space/:sid/resources                                              controllers.Campaigns.listSpaceResources(sid: Long)
-POST      /api/space/:sid/resources                                              controllers.Campaigns.addSpaceResources(sid: Long)
+GET       /api/space/:sid/resource                                               controllers.Campaigns.listSpaceResources(sid: Long)
+POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
 
 ##################################################################################################################################################################
 # Public Common API
