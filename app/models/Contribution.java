@@ -294,6 +294,10 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Long> campaignIds;
+    
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<UUID> campaignUuids;
 
     /**
      * This field will help assign contributions to working groups.
@@ -1194,6 +1198,21 @@ public class Contribution extends AppCivistBaseModel {
             ResourceSpace rs = ResourceSpace.read(long1);
             this.containingSpaces.add(rs);
         }
+    }
+
+    public List<UUID> getCampaignUuids() {
+        campaignUuids = new ArrayList<>();
+        List<ResourceSpace> spaces = this.containingSpaces.stream()
+                .filter(p -> p.getType() == ResourceSpaceTypes.CAMPAIGN)
+                .collect(Collectors.toList());
+
+        for (ResourceSpace resourceSpace : spaces) {
+            Campaign a = resourceSpace.getCampaign();
+            if (a != null) {
+                campaignUuids.add(a.getUuid());
+            }
+        }
+        return campaignUuids;
     }
 
     public List<ContributionPublishHistory> getPublicRevisionHistory() {
