@@ -932,16 +932,34 @@ public class Assemblies extends Controller {
 	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@SubjectPresent
 	public static Result findOrganizationsInSpace(
 			@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
-		User author = User.findByAuthUserIdentity(PlayAuthenticate
-				.getUser(session()));
 		ResourceSpace rs = ResourceSpace.read(sid);
 		if(rs==null)
 			return internalServerError(Json
 					.toJson(new TransferResponseStatus(
 							ResponseStatus.SERVERERROR,
 							"No Resource Space found with id: " + sid)));
+		return ok(Json.toJson(rs.getOrganizations()));
+	}
+	
+	/**
+	 * GET      /api/space/:uuid/organization
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Organization.class, responseContainer = "List", produces = "application/json", value = "Get organizations in a resource space by the UUID of the space")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	public static Result findOrganizationsInSpaceByUUID(
+			@ApiParam(name = "uuid", value = "Resource Space UUID") UUID uuid) {
+		ResourceSpace rs = ResourceSpace.readByUUID(uuid);
+		if(rs==null)
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"No Resource Space found with id: " + uuid)));
 		return ok(Json.toJson(rs.getOrganizations()));
 	}
 
