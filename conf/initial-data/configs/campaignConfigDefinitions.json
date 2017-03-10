@@ -91,6 +91,7 @@
   },
   { 
     "key": "appcivist.campaign.disable-new-contributions",
+    "description": "Disable the creation of new contributions",
     "helper": "if TRUE, contributions can only be imported by COORDINATORS, members will not be able to create ideas or proposals",
     "valueType": "String",
     "defaultValue": "PROPOSAL",
