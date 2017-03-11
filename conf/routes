@@ -255,6 +255,7 @@ PUT       /api/assembly/:aid/contributions/popularity                     contro
 POST      /api/contribution/pad                                           controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                           controllers.Contributions.confirmContributionPad(rid: Long)
 
+PUT       /api/space/:sid/contribution/comment/reset                      controllers.Contributions.updateContributionCounters(sid: Long)
 #update state of contribution
 PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 

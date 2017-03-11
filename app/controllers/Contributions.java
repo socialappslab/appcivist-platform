@@ -3338,6 +3338,31 @@ public class Contributions extends Controller {
             return ok(Json.toJson(c));
         }
     }
+
+    /**
+     * PUT       /api/space/:sid/contribution/comment/reset
+     *
+     * @param sid
+     * @return
+     */    
+    public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
+    	ResourceSpace rs = ResourceSpace.read(sid);
+    	Map<String, Object> conditions = new HashMap<>();
+        conditions.put("containingSpaces", rs.getResourceSpaceId());
+        List<Contribution> contributions = ContributionsDelegate.findContributions(conditions, null, null);
+        
+        for (Contribution c: contributions){
+	        Promise.promise( () -> {	
+	    		Logger.info("contribution title: " + c.getTitle() + " Reset Parents");
+	    		//First reset Parents to Zero to ensure not duplicating counters values
+	    		ContributionsDelegate.resetParentCommentCountersToZero(c);	
+	    		ContributionsDelegate.resetChildrenCommentCountersToZero(c); //don't know why this is not executed
+	        	return true;
+	        });
+    	}
+        
+        return ok();
+    }
 }
 
 class PaginatedContribution {
