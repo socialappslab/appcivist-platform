@@ -1,0 +1,139 @@
+[
+ {
+    "key": "appcivist.instance.assembly-network",
+    "description": "Enable network of assemblies",
+    "helper": "If TRUE, it allows COORDINATORS of the principal assembly to create new and manage other assemblies under the principal one.",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.assembly-network-limit",
+    "description": "Limit of Assemblies in the Network",
+    "helper": "Number of Assemblies that can be created in the network.",
+    "valueType": "INTEGER",
+    "defaultValue": "10",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.assembly-network-campaign-limit",
+    "description": "Limite of Ongoing Campaigns",
+    "helper": "Number of ongoing Campaigns per Assembly that can be created in the network",
+    "valueType": "INTEGER",
+    "defaultValue": "5",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.assembly-network-working-group-limit",
+    "description": "Limit of Working Groups",
+    "helper": "Number of Working Groups per Assembly and Campaign that can be created in the network",
+    "valueType": "INTEGER",
+    "defaultValue": "10",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.etherpad-base-url",
+    "description": "Etherpad Base URL",
+    "helper": "Base URL of the Etherpad server in use by this instance",
+    "valueType": "String",
+    "defaultValue": "https://etherpad.appcivist.org/",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.etherpad-api-key",
+    "description": "API key to connect to Etherpad", 
+    "helper": "Configures the Etherpad API key in case the coordinators decide to use their own etherpad server instance",
+    "valueType": "String",
+    "defaultValue": "779ca795340d4b9582e18236e3613a1a6f1891f2482ba64d9494e421276ce889",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.domain",
+    "description": "Domain of the instance",
+    "helper": "When Signing in, the server will determine the principal assembly associated to the user by reading the domain from where the request is coming from",
+    "valueType": "String", 
+    "defaultValue": "",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.api-key",
+    "description": "AppCivist API Key",
+    "helper": "A secret code that can be used by apps to connect to the API and access information of assemblies, campaigns, working groups and contributions available on this instance",
+    "valueType": "String",
+    "defaultValue": "a57328e1-5f53-4d8c-bff2-96e45e52477b",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  {
+    "key": "appcivist.instance.theme",
+    "description": "URL to the CSS used by this Assembly as main theme",
+    "helper": "CSS styles in this file will overwrite styles and colors of the site for anything conatined within this assembly",
+    "valueType": "String",
+    "defaultValue": "",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "PRINCIPAL"
+  },
+  { 
+    "key": "appcivist.assembly.enable-forum", 
+    "description": "Enable Assembly Forum", 
+    "helper": "If TRUE, the assembly homepage will also feature a Forum for general discussions",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.disable-new-memberships", 
+    "description": "Disable New Memberships",
+    "helper": "If TRUE, only coordinators will be able to add new members to the assembly, by uploading users for them.", 
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.membership-invitation-by-members",
+    "description": "Enable invitation from regular members",
+    "helper": "If TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.has-registration-form",
+    "description": "Ask future members to fill a registration form to joim",
+    "helper": "If TRUE, to join the assembly, users must fill in a registration form", 
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.has-registration-form-url", 
+    "description": "URL of the registration form",
+    "helper":"",
+    "dependsOf": "appcivist.assembly.has-registration-form",
+    "dependsOfValue": "TRUE",
+    "valueType": "String",
+    "defaultValue": "",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  },
+  { 
+    "key": "appcivist.assembly.enable-moderator-role", 
+    "description": "Enable moderator role",
+    "helper": "If TRUE, members can also have the role MODERATOR, which allows a member to delete content (comments, proposals, ideas, etc.), providing a reason for it",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "ASSEMBLY",
+    "configTargetType": "REGULAR"
+  }
+]

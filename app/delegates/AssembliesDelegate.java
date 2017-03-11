@@ -66,7 +66,7 @@ public class AssembliesDelegate {
 	}
 
 	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
-			User creator, String templates, Assembly principal) throws MembershipCreationException {
+			User creator, String templates, Assembly principal, String invitations) throws MembershipCreationException {
 
 		Assembly newAssembly = mapper.map(newAssemblyTransfer, Assembly.class);
 
@@ -119,11 +119,13 @@ public class AssembliesDelegate {
 		}
 		
 		// Create and send invitations
-		List<InvitationTransfer> invitations = newAssemblyTransfer
-				.getInvitations();
-		if (invitations != null) {
-			for (InvitationTransfer invitation : invitations) {
-				MembershipInvitation.create(invitation, creator, newAssembly);
+		if(invitations!=null && invitations.equals("true")){
+			List<InvitationTransfer> invitationsList = newAssemblyTransfer
+					.getInvitations();
+			if (invitations != null) {
+				for (InvitationTransfer invitation : invitationsList) {
+					MembershipInvitation.create(invitation, creator, newAssembly);
+				}
 			}
 		}
 		AssemblyTransfer created = mapper.map(newAssembly, AssemblyTransfer.class);

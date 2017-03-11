@@ -16,16 +16,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.AssemblyProfile;
-import models.Campaign;
-import models.Config;
-import models.Membership;
-import models.MembershipAssembly;
-import models.Resource;
-import models.Theme;
-import models.User;
-import models.WorkingGroup;
+import models.*;
 import models.misc.Views;
 import models.transfer.AssemblySummaryTransfer;
 import models.transfer.AssemblyTransfer;
@@ -75,6 +66,7 @@ public class Assemblies extends Controller {
 	public static final Form<MembershipTransfer> MEMBERSHIP_FORM = form(MembershipTransfer.class);
 	public static final Form<MembershipCollectionTransfer> INVITEES_FORM = form(MembershipCollectionTransfer.class);
 	public static final Form<AssemblyProfile> PROFILE_FORM = form(AssemblyProfile.class);
+	public static final Form<Organization> ORGANIZATION_FORM = form(Organization.class);
 
 	/**
 	 * GET       /api/assembly/listed
@@ -219,7 +211,8 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Restrict({ @Group(GlobalData.USER_ROLE) })
-	public static Result createAssembly(@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates) {
+	public static Result createAssembly(@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates,
+										@ApiParam(name="invitations", value="Send invitations if true") String invitations) {
 		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
@@ -237,7 +230,7 @@ public class Assemblies extends Controller {
 			if (a==null) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, null);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, null, invitations);
 					Ebean.commitTransaction();
 					try {
 						NotificationsDelegate.createNotificationEventsByType(
@@ -279,7 +272,8 @@ public class Assemblies extends Controller {
 	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result createAssemblyInAssembly(
 			@ApiParam(name="id", value="Id of the principal assembly under which to create the new") Long id, 
-			@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates) {
+			@ApiParam(name="templates", value="List of assembly ids (separated by comma) to use as template for the current assembly") String templates,
+			@ApiParam(name="invitations", value="Send invitations if true") String invitations) {
 		// Get the user record of the creator
 		User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 		final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
@@ -300,7 +294,7 @@ public class Assemblies extends Controller {
 			if (a!=null && a.getPrincipalAssembly()) {
 				Ebean.beginTransaction();
 				try {
-					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, a);
+					AssemblyTransfer created = AssembliesDelegate.create(newAssembly, creator, templates, a, invitations);
 					Ebean.commitTransaction();
 					try {
 						NotificationsDelegate.createNotificationEventsByType(
@@ -498,6 +492,10 @@ public class Assemblies extends Controller {
 				Logger.debug("=> " + newAssemblyForm.toString());
 				
 				newAssembly.update();
+
+				NotificationsDelegate.createNotificationEventsByType(
+						ResourceSpaceTypes.ASSEMBLY.toString(), newAssembly.getUuid());
+
 			} catch (Exception e) {
 				Ebean.rollbackTransaction();
 				Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
@@ -877,5 +875,131 @@ public class Assemblies extends Controller {
 					.toJson(new TransferResponseStatus("Error processing request"))));
 		}
 
+	}
+
+	/**
+	 * PUT      /api/space/:sid/organization
+	 *
+	 * @param sid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = String.class, produces = "application/json", value = "Update organizations in a resource space")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "Organization object", value = "Body of Organization in JSON", required = true, dataType = "models.Organization", paramType = "body"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	public static Result updateOrganizationsInSpace(
+			@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+		final Form<Organization> updatedForm = ORGANIZATION_FORM.bindFromRequest();
+		if (updatedForm.hasErrors()) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			responseBody.setStatusMessage(Messages.get("Organization data error",
+					updatedForm.errorsAsJson()));
+			return badRequest(Json.toJson(responseBody));
+		} else {
+			User author = User.findByAuthUserIdentity(PlayAuthenticate
+					.getUser(session()));
+			ResourceSpace rs = ResourceSpace.read(sid);
+			if(rs==null)
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"No Resource Space found with id: " + sid)));
+			try {
+				Organization organization = updatedForm.get();
+				if(organization.getOrganizationId()!=null){
+					organization = organization.read(organization.getOrganizationId());
+				}
+				rs.getOrganizations().add(organization);
+				rs.update();
+			} catch (Exception e) {
+				return internalServerError(Json
+						.toJson(new TransferResponseStatus(
+								ResponseStatus.SERVERERROR,
+								"Error when assigning Organizations to Resource Space: " + e.toString())));
+			}
+			return ok("OK");
+		}
+	}
+
+	/**
+	 * GET      /api/space/:sid/organization
+	 *
+	 * @param sid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Organization.class, responseContainer = "List", produces = "application/json", value = "Get organizations in a resource space")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@SubjectPresent
+	public static Result findOrganizationsInSpace(
+			@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
+		ResourceSpace rs = ResourceSpace.read(sid);
+		if(rs==null)
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"No Resource Space found with id: " + sid)));
+		return ok(Json.toJson(rs.getOrganizations()));
+	}
+	
+	/**
+	 * GET      /api/space/:uuid/organization
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Organization.class, responseContainer = "List", produces = "application/json", value = "Get organizations in a resource space by the UUID of the space")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	public static Result findOrganizationsInSpaceByUUID(
+			@ApiParam(name = "uuid", value = "Resource Space UUID") UUID uuid) {
+		ResourceSpace rs = ResourceSpace.readByUUID(uuid);
+		if(rs==null)
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"No Resource Space found with id: " + uuid)));
+		return ok(Json.toJson(rs.getOrganizations()));
+	}
+
+	/**
+	 * DELETE      /api/space/:sid/organization/:id
+	 *
+	 * @param sid
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "DELETE", response = String.class, produces = "application/json", value = "Delete a organization from resource space")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	public static Result deleteOrganizationFromSpace(
+			@ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+			@ApiParam(name = "id", value = "Organization ID") Long id) {
+		User author = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		ResourceSpace rs = ResourceSpace.read(sid);
+		if(rs==null)
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"No Resource Space found with id: " + sid)));
+		Organization org = Organization.read(id);
+		if(org==null)
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"No Organization found with id: " + sid)));
+		rs.getOrganizations().remove(org);
+		try {
+			rs.update();
+		} catch (Exception e) {
+			return internalServerError(Json
+					.toJson(new TransferResponseStatus(
+							ResponseStatus.SERVERERROR,
+							"Error when deleting Organization from Resource Space: " + e.toString())));
+		}
+		return ok("OK");
 	}
 }

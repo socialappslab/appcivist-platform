@@ -1,0 +1,110 @@
+[
+  { 
+    "key": "appcivist.campaign.hide-timeline",
+    "description": "Disable timeline",
+    "helper": "If TRUE, the timeline of the campaign is hidden and the campaign has only one stage",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.contribution-types",
+    "description": "Supported types of contributions",
+    "helper": "And array that contains the list of contribution TYPES collected in this campaign (IDEA, PROPOSAL, NOTE, etc.)",
+    "valueType": "Array",
+    "defaultValue": "[IDEA,PROPOSAL,DISCUSSION,COMMENT,NOTE]",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.contribution-type-principal",
+    "description": "Main type of contribution",
+    "helper": "What type of contribution is displayed at the center of the page if a timeline with components is disabled",
+    "valueType": "String",
+    "defaultValue": "PROPOSAL",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-discussions",
+    "description": "Disable Discussions on Campaign Dashboard",
+    "helper": "If TRUE, the comment sections of the Campaign Dashboard is disabled",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-public-site",
+    "description": "Disable Public Site",
+    "helper": "If TRUE, the campaign does not have a public site",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-public-discussions",
+    "description": "Disable comments on public site",
+    "helper": "If TRUE, the comment sections is hidden on the public site",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-informal-voting",
+    "description": "Disable Informal Voting",
+    "helper": "If TRUE, up and down votes are disabled",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-informal-voting-public",
+    "description": "Disable Informal Voting on Public Site",
+    "helper": "If TRUE, up and down votes are disabled on the public site",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-extended-feedback",
+    "description": "Disable Extended Feedback (technical assessment)",
+    "helper": "If TRUE, extended feedback is disabled",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-extended-feedback-public",
+    "description": "Disable Extended Feedback (technical assessment) on the Public Site",
+    "helper": "If TRUE, extended feedback is disabled in the public site",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"  
+  },
+  { 
+    "key": "appcivist.campaign.disable-new-contributions",
+    "description": "Disable the creation of new contributions",
+    "helper": "if TRUE, contributions can only be imported by COORDINATORS, members will not be able to create ideas or proposals",
+    "valueType": "String",
+    "defaultValue": "PROPOSAL",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.disable-etherpad",
+    "description": "Disable Etherpad",
+    "helper": "If TRUE, proposals do not have an etherpad extended text attached, only a description field",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  }  
+]

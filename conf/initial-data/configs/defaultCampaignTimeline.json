@@ -1,0 +1,621 @@
+[
+  {
+    "title": "Ideas",
+    "type": "IDEAS",
+    "key": "ideas_1",
+    "description": "The 'Ideas' phase is about raising issues and brainstorming ideas",
+    "position": 1,
+    "timeline": 1,
+    "linked": false,
+    "configs": [
+      {
+        "key": "component.ideas.enable-multiple-authors",
+        "value": "true",
+        "definition": {
+          "key": "component.ideas.enable-multiple-authors",
+          "description": "Enable multiple author Ideas",
+          "helper": "If enabled, ideas can be associated to multiple authors",
+          "valueType": "Boolean",
+          "defaultValue": "false",
+          "configTarget": "COMPONENT",
+          "configTargetType": "IDEAS"
+        }
+      },
+      {
+        "key": "component.ideas.enable-attachments",
+        "value": "false",
+        "definition": {
+          "key": "component.ideas.enable-attachments",
+          "description": "Enable attachments on ideas",
+          "helper": "If enabled, ideas can have attachments",
+          "valueType": "Boolean",
+          "defaultValue": "false",
+          "configTarget": "COMPONENT",
+          "configTargetType": "IDEAS"
+        }
+      },
+      {
+        "key": "component.ideas.contribution-limit",
+        "value": "0",
+        "definition": {
+          "key": "component.ideas.contribution-limit",
+          "description": "Maximum number of ideas",
+          "helper": "Maximum number of ideas that can be created in this phase",
+          "valueType": "Integer",
+          "defaultValue": "0",
+          "configTarget": "COMPONENT",
+          "configTargetType": "IDEAS"
+        }
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Beginning",
+        "key": "ideas_milestone_1",
+        "position": 1,
+        "description": "Idea collection begins on this day",
+        "date": "2017-03-01 00:00:00",
+        "type": "START"
+      },
+      {
+        "title": "End",
+        "key": "ideas_milestone_2",
+        "position": 2,
+        "description": "Idea collection ends on this day",
+        "date": "2017-03-14 23:59:59",
+        "type": "END"
+      }
+    ]
+  },
+  {
+    "title": "Proposals",
+    "type": "PROPOSALS",
+    "key": "proposals_1",
+    "description": "The Proposal phase is about forming working groups, analyzing ideas, and developing proposals",
+    "position": 2,
+    "timeline": 1,
+    "linked": false,
+    "configs": [
+      {
+        "key": "component.proposals.disable-collaborative-editor",
+        "value": false,
+        "definition": {
+          "key": "component.proposals.disable-collaborative-editor",
+          "description": "Disable collaborative editing of proposals",
+          "helper": "If disabled, the Proposal Page will not feature collaborative editing functionalities like the multi-user/real-time chat and editing of proposals",
+          "valueType": "Boolean",
+          "defaultValue": "false",
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
+        }
+      },
+      {
+        "key": "component.proposals.enable-multiple-authors",
+        "value": "true",
+        "definition": {
+          "key": "component.proposals.enable-multiple-authors",
+          "description": "Enable multiple author Proposals",
+          "helper": "Enable support for multiple authors per proposal",
+          "valueType": "Boolean",
+          "defaultValue": "true",
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
+        }
+      },
+      {
+        "key": "component.proposals.enable-attachments",
+        "value": "true",
+        "definition": {
+          "key": "component.proposals.enable-attachments",
+          "description": "Enable proposal attachments",
+          "helper": "Enable support for attachments on proposals",
+          "valueType": "Boolean",
+          "defaultValue": "true",
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
+        }
+      },
+      {
+        "key": "component.proposals.contribution-limit",
+        "value": "0",
+        "definition": {
+          "key": "component.proposals.contribution-limit",
+          "description": "Maximum number of proposals",
+          "helper": "The maximum number of proposals that can be created in this phase",
+          "valueType": "Integer",
+          "defaultValue": "0",
+          "configTarget": "COMPONENT",
+          "configTargetType": "PROPOSALS"
+        }
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Beginning",
+        "key": "proposals_milestone_1",
+        "position": 1,
+        "description": "Proposal development begins on this day",
+        "date": "2017-03-15 00:00:00",
+        "type": "START"
+      },
+      {
+        "title": "End",
+        "key": "proposals_milestone_2",
+        "position": 2,
+        "description": "Proposal development ends on this day",
+        "date": "2017-04-14 23:59:59",
+        "type": "END"
+      }
+    ]
+  },
+  {
+    "title": "Deliberation",
+    "type": "DELIBERATION",
+    "key": "deliberation_1",
+    "description": "Deliberation is the careful consideration of proposals through comments and evidence. In this phase, proposals can only be discussed, praised or criticized, but not edited.",
+    "position": 3,
+    "timeline": 1,
+    "linked": false,
+    "configs": [
+      {
+        "key": "component.deliberation.enable-technical-assessment",
+        "value": "true",
+        "definition": {
+          "key": "component.deliberation.enable-technical-assessment",
+          "description": "Enable technical assessment of proposals",
+          "helper": "If enabled, proposals can receive a more detailed technical assessment with more details than a simple comment",
+          "valueType": "Boolean",
+          "defaultValue": "true",
+          "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION"
+        }
+      },
+      {
+        "key": "component.deliberation.who-deliberates",
+        "value": "ASSEMBLY",
+        "definition": {
+          "key": "component.deliberation.who-deliberates",
+          "description": "Who deliberates?",
+          "helper": "",
+          "valueType": "String",
+          "defaultValue": "ASSEMBLY",
+          "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION",
+          "uiType": "select",
+          "options": [
+            {
+              "name": "All assembly members",
+              "value": "ASSEMBLY",
+              "selected": true
+            },
+            {
+              "name": "Only Working Groups of this Campaign",
+              "value": "CAMPAIGN_WORKING_GROUPS",
+              "selected": false
+            },
+            {
+              "name": "Randomly selected jury",
+              "value": "JURY",
+              "selected": false
+            }
+          ],
+          "optionValue": {
+            "name": "All assembly members",
+            "value": "ASSEMBLY",
+            "selected": true
+          }
+        }
+      },
+      {
+        "key": "component.deliberation.who-deliberates-jury",
+        "value": "ASSEMBLY",
+        "dependsOf": 1,
+        "dependsOfValue": "JURY",
+        "definition": {
+          "key": "component.deliberation.who-deliberates-jury",
+          "dependsOfKey": "component.deliberation.who-deliberates",
+          "dependsOfValue": "JURY",
+          "description": "From where are members of the jury randomly selected?",
+          "helper": "",
+          "valueType": "String",
+          "defaultValue": "ASSEMBLY",
+          "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION",
+          "uiType": "select",
+          "options": [
+            {
+              "name": "From all assembly members",
+              "value": "ASSEMBLY",
+              "selected": true
+            },
+            {
+              "name": "From Working Groups of this Campaign",
+              "value": "CAMPAIGN_WORKING_GROUPS",
+              "selected": false
+            }
+          ],
+          "optionValue": {
+            "name": "From all assembly members",
+            "value": "ASSEMBLY",
+            "selected": true
+          }
+        }
+      },
+      {
+        "key": "component.deliberation.who-deliberates-jury-percentage",
+        "value": 0.1,
+        "dependsOf": 1,
+        "dependsOfValue": "JURY",
+        "definition": {
+          "key": "component.deliberation.who-deliberates-jury-percentage",
+          "dependsOfKey": "component.deliberation.who-deliberates",
+          "dependsOfValue": "JURY",
+          "helper": "",
+          "description": "What percentage of people should be on the Jury?",
+          "valueType": "Percentage",
+          "defaultValue": "0.1",
+          "configTarget": "COMPONENT",
+          "configTargetType": "DELIBERATION"
+        }
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Beginning",
+        "key": "deliberation_milestone_1",
+        "position": 1,
+        "description": "Proposal development begins on this day",
+        "date": "2017-04-15 00:00:00",
+        "type": "START"
+      },
+      {
+        "title": "End",
+        "key": "deliberation_milestone_2",
+        "position": 2,
+        "description": "Proposal development ends on this day",
+        "date": "2017-04-30 23:59:59",
+        "type": "END"
+      }
+    ]
+  },
+  {
+    "title": "Voting",
+    "key": "voting_1",
+    "position": 4,
+    "timeline": 1,
+    "linked": false,
+    "configs": [
+      {
+        "key": "component.voting.ballot.password",
+        "value": "123456",
+        "definition": {
+          "key": "component.voting.ballot.password",
+          "helper": "",
+          "description": "Ballot Password",
+          "valueType": "String",
+          "defaultValue": "12345",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system",
+        "value": "RANGE",
+        "definition": {
+          "key": "component.voting.system",
+          "helper": "",
+          "description": "Select the voting system",
+          "valueType": "String",
+          "defaultValue": "RANGE",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING",
+          "uiType": "select",
+          "options": [
+            {
+              "name": "Range",
+              "value": "RANGE",
+              "selected": true
+            },
+            {
+              "name": "Ranked",
+              "value": "RANKED",
+              "selected": false
+            },
+            {
+              "name": "Distribution",
+              "value": "DISTRIBUTION",
+              "selected": false
+            },
+            {
+              "name": "Plurality",
+              "value": "PLURALITY",
+              "selected": false
+            }
+          ],
+          "optionValue": {
+            "name": "Range",
+            "value": "RANGE",
+            "selected": true
+          }
+        }
+      },
+      {
+        "key": "component.voting.system-range-min-score",
+        "value": "0",
+        "dependsOf": 1,
+        "dependsOfValue": "RANGE",
+        "definition": {
+          "key": "component.voting.system-range-min-score",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "RANGE",
+          "helper": "",
+          "description": "Minimum score for range voting",
+          "valueType": "Integer",
+          "defaultValue": "0",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-range-max-score",
+        "value": "100",
+        "dependsOf": 1,
+        "dependsOfValue": "RANGE",
+        "definition": {
+          "key": "component.voting.system-range-max-score",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "RANGE",
+          "helper": "",
+          "description": "Maximum score for range voting",
+          "valueType": "Integer",
+          "defaultValue": "100",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-ranked-number-proposals",
+        "value": "5",
+        "dependsOf": 1,
+        "dependsOfValue": "RANKED",
+        "definition": {
+          "key": "component.voting.system-ranked-number-proposals",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "RANKED",
+          "helper": "",
+          "description": "How many proposals can a voter select?",
+          "valueType": "Integer",
+          "defaultValue": "5",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-distributed-points",
+        "value": "30",
+        "dependsOf": 1,
+        "dependsOfValue": "DISTRIBUTED",
+        "definition": {
+          "key": "component.voting.system-distributed-points",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "DISTRIBUTED",
+          "helper": "",
+          "description": "How many points can a voter distribute?",
+          "valueType": "Integer",
+          "defaultValue": "30",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-plurality-type",
+        "value": "YES/NO",
+        "dependsOf": 1,
+        "dependsOfValue": "PLURALITY",
+        "definition": {
+          "key": "component.voting.system-plurality-type",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "PLURALITY",
+          "helper": "",
+          "description": "Select the type of plurality voting",
+          "valueType": "String",
+          "defaultValue": "YES/NO",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING",
+          "uiType": "select",
+          "options": [
+            {
+              "name": "Only YES votes",
+              "value": "YES",
+              "selected": false
+            },
+            {
+              "name": "YES and NO votes",
+              "value": "YES/NO",
+              "selected": true
+            },
+            {
+              "name": "YES, NO, and MAYBE votes",
+              "value": "YES/NO/MAYBE",
+              "selected": false
+            },
+            {
+              "name": "YES, NO, MAYBE and BLOCK votes",
+              "value": "YES/NO/MAYBE/BLOCK",
+              "selected": false
+            }
+          ],
+          "optionValue": {
+            "name": "YES and NO votes",
+            "value": "YES/NO",
+            "selected": true
+          }
+        }
+      },
+      {
+        "key": "component.voting.system-plurality-block-enforce-justification-of-votes",
+        "value": "false",
+        "dependsOf": 1,
+        "dependsOfValue": "PLURALITY",
+        "definition": {
+          "key": "component.voting.system-plurality-block-enforce-justification-of-votes",
+          "dependsOfKey": "component.voting.system",
+          "dependsOfValue": "PLURALITY",
+          "helper": "",
+          "description": "Require justification for votes",
+          "valueType": "Boolean",
+          "defaultValue": "false",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-plurality-block-threshold",
+        "value": "0.1",
+        "dependsOf": 6,
+        "dependsOfValue": "YES/NO/MAYBE/BLOCK",
+        "definition": {
+          "key": "component.voting.system-plurality-block-threshold",
+          "dependsOfKey": "component.voting.system-plurality-type",
+          "dependsOfValue": "YES/NO/MAYBE/BLOCK",
+          "helper": "",
+          "description": "Block percentage threshold",
+          "valueType": "Percentage",
+          "defaultValue": "0.1",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-winners",
+        "type": "radio",
+        "value": "FIXED",
+        "definition": {
+          "key": "component.voting.system-winners",
+          "helper": "",
+          "description": "Configure number of winners",
+          "valueType": "String",
+          "defaultValue": "FIXED",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING",
+          "uiType": "radio",
+          "options": [
+            {
+              "name": "Fixed regardless of budget",
+              "value": "FIXED",
+              "selected": true
+            },
+            {
+              "name": "Dynamic 1: first N-ranked proposals that can be fully funded by available budget (may result in unspent funds)",
+              "value": "DYNAMIC1",
+              "selected": false
+            },
+            {
+              "name": "Dynamic 2: first N-ranked proposals that can be fully funded by available budget, allocating all the funds (may result in 'leapfrogging')",
+              "value": "DYNAMIC2",
+              "selected": false
+            }
+          ],
+          "optionValue": {
+            "name": "Fixed regardless of budget",
+            "value": "FIXED",
+            "selected": true
+          }
+        }
+      },
+      {
+        "key": "component.voting.system-winners-fixed-number",
+        "value": "3",
+        "dependsOf": 9,
+        "dependsOfValue": "FIXED",
+        "definition": {
+          "key": "component.voting.system-winners-fixed-number",
+          "dependsOfKey": "component.voting.system-winners",
+          "dependsOfValue": "FIXED",
+          "helper": "",
+          "description": "Number of Winners",
+          "valueType": "Integer",
+          "defaultValue": "3",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system-enable-enable-quorum",
+        "value": "true",
+        "definition": {
+          "key": "component.voting.system-enable-quorum",
+          "helper": "",
+          "description": "Enable Quorum threshold",
+          "valueType": "Boolean",
+          "defaultValue": "true",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      },
+      {
+        "key": "component.voting.system.quorum",
+        "value": "0.6",
+        "dependsOf": 11,
+        "dependsOfValue": "true",
+        "definition": {
+          "key": "component.voting.system.quorum",
+          "dependsOfKey": "component.voting.system-enable-quorum",
+          "dependsOfValue": "true",
+          "helper": "",
+          "description": "Quorum percentage",
+          "valueType": "Percentage",
+          "defaultValue": "0.6",
+          "configTarget": "COMPONENT",
+          "configTargetType": "VOTING"
+        }
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Beginning",
+        "key": "voting_milestone_1",
+        "position": 1,
+        "description": "Voting begins on this day",
+        "date": "2017-05-01 00:00:00",
+        "type": "START"
+      },
+      {
+        "title": "End",
+        "key": "voting_milestone_2",
+        "position": 2,
+        "description": "Voting ends on this day",
+        "date": "2017-05-31 23:59:59",
+        "type": "END"
+      }
+    ]
+  },
+  {
+    "title": "Implementation",
+    "type": "IMPLEMENTATION",
+    "key": "implementation_1",
+    "description": "During implementation, winning proposals are realized while assembly members monitor their progress",  
+    "position": 5,
+    "timeline": 1,
+    "linked": false,
+    "configs": [],
+    "milestones": [
+      {
+        "title": "Beginning",
+        "key": "implementation_milestone_1",
+        "position": 1,
+        "description": "Implemtenation begins on this day",
+        "date": "2017-06-01 00:00:00",
+        "type": "START"
+      },
+      {
+        "title": "End",
+        "key": "implementation_milestone_2",
+        "position": 2,
+        "description": "Implementation ends on this day",
+        "date": "2018-06-30 23:59:59",
+        "type": "END"
+      }
+    ]
+  }
+]
