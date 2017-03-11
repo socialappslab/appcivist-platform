@@ -87,6 +87,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private List<Organization> organizations;
 
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_custom_field_definition")
+	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
+	private List<CustomFieldDefinition> customFieldDefinitions;
+
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
@@ -295,6 +301,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public void setOrganizations(List<Organization> organizations) {
 		this.organizations = organizations;
+	}
+
+	public List<CustomFieldDefinition> getCustomFieldDefinitions() {
+		return customFieldDefinitions;
+	}
+
+	public void setCustomFieldDefinitions(List<CustomFieldDefinition> customFieldDefinitions) {
+		this.customFieldDefinitions = customFieldDefinitions;
 	}
 
 	public void addTheme(Theme theme) {

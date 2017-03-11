@@ -4,31 +4,37 @@ package controllers;
 import java.util.List;
 import java.util.UUID;
 
+import be.objectify.deadbolt.java.actions.Dynamic;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.pa.PlayAuthenticate;
 import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
-import models.Assembly;
-import models.Campaign;
-import models.ResourceSpace;
+import io.swagger.annotations.*;
+import models.*;
 import models.location.Location;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
 import models.misc.Views;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.data.Form;
+import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.*;
 import http.Headers;
 import play.twirl.api.Content;
+import security.SecurityModelConstants;
+import utils.GlobalData;
+
+import static play.data.Form.form;
 
 @Api(value="space", hidden=true)
 @With(Headers.class)
 public class Spaces extends Controller {
+
+    public static final Form<CustomFieldDefinition> CUSTOM_FIELD_DEFINITION_FORM = form(CustomFieldDefinition.class);
 
     @ApiOperation(produces="application/json", value="Simple search of resource space", httpMethod="GET")
     public static Result getSpace(Long sid) {
@@ -95,5 +101,115 @@ public class Spaces extends Controller {
                     .toJson(new TransferResponseStatus("Error processing request"))));
         }
 
+    }
+
+    @ApiOperation(httpMethod = "GET", response = CustomFieldDefinition.class, produces = "application/json", responseContainer = "List", value = "List of custom field definition in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result findSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        List<CustomFieldDefinition> customFieldDefinitions;
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
+        }
+        return ok(Json.toJson(customFieldDefinitions));
+    }
+
+    @ApiOperation(httpMethod = "POST", response = Component.class, produces = "application/json", value = "Create a custom field definition in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "CustomFieldDefinition object", value = "Body of CustomFieldDefinition in JSON", required = true, dataType = "models.CustomFieldDefinition", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result createSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid) {
+        final Form<CustomFieldDefinition> newCustomFieldDefinitionForm = CUSTOM_FIELD_DEFINITION_FORM
+                .bindFromRequest();
+        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            if (newCustomFieldDefinitionForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "The form has the following error: "+
+                                newCustomFieldDefinitionForm.errorsAsJson()));
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                CustomFieldDefinition newCustomFieldDefinition = newCustomFieldDefinitionForm.get();
+                newCustomFieldDefinition.setContextUserId(creator.getUserId());
+                newCustomFieldDefinition = CustomFieldDefinition.create(newCustomFieldDefinition);
+                resourceSpace.getCustomFieldDefinitions().add(newCustomFieldDefinition);
+                resourceSpace.update();
+                return ok(Json.toJson(newCustomFieldDefinition));
+            }
+        }
+    }
+
+    @ApiOperation(httpMethod = "DELETE", response = Component.class, produces = "application/json", responseContainer = "List", value = "Delete a custom field definition from a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result deleteSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid,
+                                           @ApiParam(name = "cfid", value = "Custom field definition ID") Long cfid) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        List<CustomFieldDefinition> customFieldDefinitions;
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            CustomFieldDefinition customFieldDefinition = CustomFieldDefinition.read(cfid);
+            if (customFieldDefinition == null) {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No custom field definition found with id "+cfid)));
+            }
+            resourceSpace.getCustomFieldDefinitions().remove(customFieldDefinition);
+            resourceSpace.update();
+            resourceSpace.refresh();
+            customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
+        }
+        return ok(Json.toJson(customFieldDefinitions));
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = Component.class, produces = "application/json", value = "Update a custom field definition in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "CustomFieldDefinition object", value = "Body of CustomFieldDefinition in JSON", required = true, dataType = "models.CustomFieldDefinition", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result updateSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid,
+                                           @ApiParam(name = "cfid", value = "Custom field definition ID") Long cfid) {
+        final Form<CustomFieldDefinition> newCustomFieldDefinitionForm = CUSTOM_FIELD_DEFINITION_FORM
+                .bindFromRequest();
+        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            if (newCustomFieldDefinitionForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "The form has the following error: "+
+                        newCustomFieldDefinitionForm.errorsAsJson()));
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                CustomFieldDefinition customFieldDefinition = CustomFieldDefinition.read(cfid);
+                if (customFieldDefinition == null) {
+                    return notFound(Json
+                            .toJson(new TransferResponseStatus("No custom field definition found with id "+cfid)));
+                }
+                CustomFieldDefinition newCustomFieldDefinition = newCustomFieldDefinitionForm.get();
+                newCustomFieldDefinition.setCustomFieldDefinitionId(customFieldDefinition.getCustomFieldDefinitionId());
+                newCustomFieldDefinition.setContextUserId(creator.getUserId());
+                newCustomFieldDefinition.update();
+                resourceSpace.getCustomFieldDefinitions().add(newCustomFieldDefinition);
+                resourceSpace.update();
+                return ok(Json.toJson(newCustomFieldDefinition));
+            }
+        }
     }
 }
