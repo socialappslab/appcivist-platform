@@ -1433,7 +1433,7 @@ public class Contributions extends Controller {
             }
             
             // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
-            if (feedback.getType().equals(
+            if (feedback.getType() != null && feedback.getType().equals(
                     ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
                 List<Config> configs = Config
                         .findByCampaignAndKey(
