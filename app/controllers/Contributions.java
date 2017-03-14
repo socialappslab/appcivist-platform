@@ -2230,6 +2230,7 @@ public class Contributions extends Controller {
             newContrib.setContextUserId(author.getUserId());
         }
 
+
         if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
             // read etherpad server url from config file
             Logger.info("Etherpad URL was not configured");
@@ -2244,11 +2245,21 @@ public class Contributions extends Controller {
 
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
-
-        if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
-            ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
-        }
-
+        
+        Campaign ca = Campaign.readByResourceSpaceId(containerResourceSpace.getResourceSpaceId());        
+        if (ca != null){
+        	List<Config> campaignConfigs = Config.findByCampaignAndKey(ca.getUuid(), "appcivist.campaign.disable-etherpad");        	
+        	for(Config cc: campaignConfigs){
+        		if (cc.getValue().equalsIgnoreCase("FALSE")){
+        	        if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+        	            ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+        	        }        			
+        		} else {
+        			Logger.info("Not creating associated pad");
+        		}
+        	}        	
+        }        
+        
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
 
