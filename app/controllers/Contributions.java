@@ -2220,9 +2220,9 @@ public class Contributions extends Controller {
 
         newContrib.setType(type);
         // if type is PROPOSAL, then change the default status value
-        if (type.equals(ContributionTypes.PROPOSAL)) {
-            newContrib.setStatus(ContributionStatus.NEW);
-        }
+//        if (type.equals(ContributionTypes.PROPOSAL)) {
+//            newContrib.setStatus(ContributionStatus.NEW);
+//        }
         if (author != null) {
             newContrib.addAuthor(author);
             if (newContrib.getLang() == null)
@@ -2246,19 +2246,34 @@ public class Contributions extends Controller {
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         
-        Campaign ca = Campaign.readByResourceSpaceId(containerResourceSpace.getResourceSpaceId());        
-        if (ca != null){
-        	List<Config> campaignConfigs = Config.findByCampaignAndKey(ca.getUuid(), "appcivist.campaign.disable-etherpad");        	
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+            Campaign c = containerResourceSpace.getCampaign();    	        
+        	List<Config> campaignConfigs = c.getConfigs();
+        	Integer setStatus = 0;        	
         	for(Config cc: campaignConfigs){
-        		if (cc.getValue().equalsIgnoreCase("FALSE")){
-        	        if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+        		if (type != null && type.equals(ContributionTypes.PROPOSAL)) {
+        			if (cc.getKey().equals("appcivist.campaign.proposal-default-status")) {        	
+	        			if (cc.getValue().equalsIgnoreCase("NEW")) {
+	        				newContrib.setStatus(ContributionStatus.NEW);
+	        				setStatus = 1;
+	        			} else if (cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
+	        				setStatus = 1;
+	        			}
+        			}
+        		}
+        		
+        		if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+        			if (cc.getKey().equals("appcivist.campaign.disable-etherpad") && cc.getValue().equalsIgnoreCase("FALSE")) {
         	            ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
         	        }        			
-        		} else {
-        			Logger.info("Not creating associated pad");
-        		}
-        	}        	
-        }        
+        		} 
+        	}
+        	
+        	if (setStatus == 0 && type != null && type.equals(ContributionTypes.PROPOSAL)) {
+        		newContrib.setStatus(ContributionStatus.PUBLISHED);
+        	} 
+        }
         
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
