@@ -195,6 +195,9 @@ GET       /api/assembly/:aid/contribution/:cid/padid                            
 GET       /api/assembly/:aid/contribution/:cid/comment                           controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/contributions                     controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
+PUT       /api/space/:sid/contribution/comment/reset                      controllers.Contributions.updateContributionCounters(sid: Long)
+#update state of contribution
+PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 GET       /api/assembly/:aid/contribution/:coid/feedback                         controllers.Contributions.readContributionFeedbackNoGroupId(aid: Long, coid: Long, type: String ?= null)
 GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback              controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
 GET       /api/contributions                                                     controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
@@ -221,7 +224,6 @@ POST      /api/contribution/:uuid/themes                                        
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
 DELETE    /api/contribution/:uuid/themes/:tid                                    controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
 DELETE    /api/contribution/:uuid/authors/:auuid                                 controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
-
 
 #update state of contribution
 PUT       /api/assembly/:aid/contribution/:cid/:status                           controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
