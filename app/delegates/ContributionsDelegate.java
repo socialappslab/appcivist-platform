@@ -172,8 +172,10 @@ public class ContributionsDelegate {
                         break;
                     case "sorting":
                         String sortingValue = (String) value;
-                        if (sortingValue.equals("popularity")) {
+                        if (sortingValue.equals("popularity") || sortingValue.equals("popularity_desc")) {
                             sorting +=", popularity desc nulls last";
+                        } else if (sortingValue.equals("popularity_asc")) {
+                            sorting +=", popularity asc nulls last";
                         } else if (sortingValue.equals("random")) {
                             // TODO find a way of producing a a REAL random ordering
                             sorting +=", uuid desc nulls last"; // create the illusion of random ordering
@@ -181,12 +183,18 @@ public class ContributionsDelegate {
                             sorting +=", creation asc nulls last";
                         } else if (sortingValue.equals("date_desc")) {
                             sorting +=", creation desc nulls last";
-                        } else if (sortingValue.equals("most_commented")) {
+                        } else if (sortingValue.equals("most_commented") || sortingValue.equals("most_commented_desc")) {
                         	sorting +=", total_comments desc nulls last";
-                        } else if (sortingValue.equals("most_commented_members")) {
+                        } else if (sortingValue.equals("most_commented_asc")) {
+                        	sorting +=", total_comments asc nulls last";
+                        } else if (sortingValue.equals("most_commented_members") || sortingValue.equals("most_commented_members_desc")) {
                         	sorting +=", comment_count desc nulls last";
-                        } else if (sortingValue.equals("most_commented_public")) {
+                        } else if (sortingValue.equals("most_commented_members_asc")) {
+                        	sorting +=", comment_count asc nulls last";
+                        } else if (sortingValue.equals("most_commented_public") || sortingValue.equals("most_commented_public_desc")) {
                         	sorting +=", forum_comment_count desc nulls last";
+                        } else if (sortingValue.equals("most_commented_public_asc")) {
+                        	sorting +=", forum_comment_count asc nulls last";
                         }
                         break;
                 }

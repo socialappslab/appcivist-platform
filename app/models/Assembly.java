@@ -158,6 +158,14 @@ public class Assembly extends AppCivistBaseModel {
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourcesResourceSpaceId;
 	@Transient
+	@JsonView(Views.Public.class)
+	@JsonInclude(Include.NON_EMPTY)
+	private UUID forumResourceSpaceUUID;
+	@Transient
+	@JsonView(Views.Public.class)
+	@JsonInclude(Include.NON_EMPTY)
+	private UUID resourcesResourceSpaceUUID;
+	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonIgnoreProperties({ "configs", "campaigns", "forumPosts", "workingGroups", "components", "followedAssemblies", "followingAssemblies"})
 	private List<Assembly> followedAssemblies = new ArrayList<>();
@@ -485,6 +493,22 @@ public class Assembly extends AppCivistBaseModel {
 		if(this.resources!=null && this.resources.getResourceSpaceId() == null)
 			this.resources.setResourceSpaceId(id);
 	}
+
+	public UUID getForumResourceSpaceUUID() {
+		return forum !=null ? forum.getResourceSpaceUuid(): null;
+	}
+
+	public void setForumResourceSpaceUUID(UUID forumResourceSpaceUUID) {
+		if(this.forum!=null && this.forum.getResourceSpaceUuid() == null)
+			this.resources.setResourceSpaceUuid(forumResourceSpaceUUID);	}
+
+	public UUID getResourcesResourceSpaceUUID() {
+		return resources !=null ? resources.getResourceSpaceUuid() : null;
+	}
+
+	public void setResourcesResourceSpaceUUID(UUID resourcesResourceSpaceUUID) {
+		if(this.resources!=null && this.resources.getResourceSpaceUuid() == null)
+			this.resources.setResourceSpaceUuid(resourcesResourceSpaceUUID);	}
 
 	public List<Assembly> getFollowedAssemblies() {
 		return this.resources.getAssemblies();

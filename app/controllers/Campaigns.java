@@ -4,10 +4,14 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
 import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 
+import com.google.gson.JsonArray;
 import delegates.CampaignDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
@@ -43,9 +47,11 @@ import utils.LogActions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
@@ -308,7 +314,7 @@ public class Campaigns extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
     })
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+//    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.USER_RESOURCE_PATH)
     public static Result findCampaignsByAssemblyUUID(
             @ApiParam(name = "uuid", value = "Assembly's Universal ID") UUID uuid,
             @ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
@@ -480,7 +486,37 @@ public class Campaigns extends Controller {
         InputStream inputStream = Play.application().classloader().getResourceAsStream("initial-data/configs/defaultCampaignTimeline.json");
 
         if (inputStream != null) {
-            return ok(Json.parse(inputStream));
+            JsonNode jsonNodeArray = Json.parse(inputStream);
+            for (JsonNode jsonNode : jsonNodeArray) {
+                JsonNode arrNode = jsonNode.get("milestones");
+                String date = arrNode.get(0).get("date").asText();
+                System.out.println(date);
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+                    Date parsedDate = df.parse(date);
+                    Timestamp timestamp = new Timestamp(parsedDate.getTime());
+                    Timestamp timestampNow = new Timestamp(new Date().getTime());
+                    Long diff = timestampNow.getTime() - timestamp.getTime();
+                    Long days = diff /(1000  * 60 * 60 * 24);
+                    System.out.println("Diff "+days);
+                    if (arrNode.isArray()) {
+                        for (JsonNode objNode : arrNode) {
+                            String dateMilestone = objNode.get("date").asText();
+                            System.out.println(dateMilestone);
+                            Date parsedDateMilestone = df.parse(dateMilestone);
+                            GregorianCalendar cal = new GregorianCalendar();
+                            cal.setTime(parsedDateMilestone);
+                            cal.add(Calendar.DATE, days.intValue());
+                            ((ObjectNode)objNode).put("date", df.format(new Timestamp(cal.getTimeInMillis())));
+                        }
+                    }
+                } catch (ParseException e) {
+                    return notFound(Json.toJson(new TransferResponseStatus(
+                            "Format date error " + e.getMessage())));
+                }
+            }
+
+            return ok(jsonNodeArray);
         } else {
             return notFound(Json.toJson(new TransferResponseStatus(
                     "No campaign default templates")));
@@ -1113,5 +1149,122 @@ public class Campaigns extends Controller {
         }
 
 
+    }
+
+    /**
+     * GET /api/space/:sid/resources
+     * Returns the Resources associated to the resource space
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", value = "Lists resource space's resources")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result listSpaceResources(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        List<Resource> resources;
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            resources = resourceSpace.getResources();
+        }
+        return ok(Json.toJson(resources));
+
+    }
+
+    /**
+     * GET /api/space/:uuid/resources
+     * Returns the Resources associated to the resource space
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Resource.class, responseContainer = "List", value = "Lists resource space's resources")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    public static Result listSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        List<Resource> resources;
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with uuid "+uuid)));
+        } else {
+            resources = resourceSpace.getResources();
+        }
+        return ok(Json.toJson(resources));
+
+    }
+
+    /**
+     * POST /api/space/:sid/resources
+     * Add resources to a resource space
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
+    public static Result addSpaceResources(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
+        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            if (resourceForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error in resource form "+
+                        resourceForm.errorsAsJson());
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Resource newResource = resourceForm.get();
+                newResource.setConfirmed(true);
+                newResource.setContextUserId(creator.getUserId());
+                newResource = Resource.create(newResource);
+                resourceSpace.getResources().add(newResource);
+                resourceSpace.update();
+                return ok(Json.toJson(newResource));
+            }
+        }
+    }
+
+    /**
+     * POST /api/space/:uuid/resources
+     * Add resources to a resource space
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
+    public static Result addSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with uuid "+uuid)));
+        } else {
+            if (resourceForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error in resource form "+
+                        resourceForm.errorsAsJson());
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Resource newResource = resourceForm.get();
+                newResource.setConfirmed(true);
+                newResource = Resource.create(newResource);
+                resourceSpace.getResources().add(newResource);
+                resourceSpace.update();
+                return ok(Json.toJson(newResource));
+            }
+        }
     }
 }
