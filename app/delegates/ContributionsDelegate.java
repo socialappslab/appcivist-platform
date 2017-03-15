@@ -193,6 +193,7 @@ public class ContributionsDelegate {
                         	sorting +=", forum_comment_count desc nulls last";
                         } else if (sortingValue.equals("most_commented_public_asc")) {
                         	sorting +=", forum_comment_count asc nulls last";
+                        }
                         break;
                 }
             }
