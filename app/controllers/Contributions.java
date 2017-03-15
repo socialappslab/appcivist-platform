@@ -3345,20 +3345,21 @@ public class Contributions extends Controller {
      * @param sid
      * @return
      */    
+    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update comment counts on contributions", notes="Only for ADMINS")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
-    	ResourceSpace rs = ResourceSpace.read(sid);
-    	Map<String, Object> conditions = new HashMap<>();
-        conditions.put("containingSpaces", rs.getResourceSpaceId());
-        List<Contribution> contributions = ContributionsDelegate.findContributions(conditions, null, null);
-        
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
         for (Contribution c: contributions){
-	        Promise.promise( () -> {	
-	    		Logger.info("contribution title: " + c.getTitle() + " Reset Parents");
-	    		//First reset Parents to Zero to ensure not duplicating counters values
-	    		ContributionsDelegate.resetParentCommentCountersToZero(c);	
-	    		ContributionsDelegate.resetChildrenCommentCountersToZero(c); //don't know why this is not executed
-	        	return true;
-	        });
+	        Promise.promise( () -> { 
+	        	return ContributionsDelegate.resetParentCommentCountersToZero(c); 
+	        }).fallbackTo(
+	        		Promise.promise( () ->{ 
+	        			return ContributionsDelegate.resetChildrenCommentCountersToZero(c); 
+	        		
+	        }));
     	}
         
         return ok();

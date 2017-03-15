@@ -30,6 +30,7 @@ import play.Play;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
@@ -440,8 +441,8 @@ public class ContributionsDelegate {
 
     }
 
-    public static void resetParentCommentCountersToZero (Contribution c){ 
-    	Logger.info("reset parent");
+    public static Boolean resetParentCommentCountersToZero (Contribution c){ 
+    	Logger.info("Resetting parent of contribution: "+c.getContributionId());
 		List<ResourceSpace> containingSpaces = c.getContainingSpaces();
         for (ResourceSpace rs : containingSpaces) {
             Contribution parent = Contribution.findByResourceSpaceId(rs.getResourceSpaceId());
@@ -455,13 +456,13 @@ public class ContributionsDelegate {
             parent.setTotalComments(0);
             parent.update();
             
-            resetParentCommentCountersToZero(parent);
-                           
+            resetParentCommentCountersToZero(parent);         
         }
+        return true;
     }	
     	
-    public static void resetChildrenCommentCountersToZero (Contribution c){ 
-    	Logger.info("reset children");
+    public static Boolean resetChildrenCommentCountersToZero (Contribution c){ 
+    	Logger.info("Resetting children of contribution: "+c.getContributionId());
     	c.setCommentCount(0);
     	c.setForumCommentCount(0);
     	c.setTotalComments(0);
@@ -489,7 +490,7 @@ public class ContributionsDelegate {
 		for (Contribution cfrs: contributionFRS){		
 			resetChildrenCommentCountersToZero(cfrs);		
 		}
+		return true;
 
 	} 
-    
 }
