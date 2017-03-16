@@ -3357,20 +3357,25 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "rev", value = "Integer", defaultValue = "0") Integer rev,
+            @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.read(coid);
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         if (c != null) {
-            Integer revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
+            Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
             Resource pad = c.getExtendedTextPad();
             String padId = pad.getPadId();
             String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
             if (padId != null) {
-                String url = etherpadServerUrl+"/api/1/get"+finalFormat+"?padID="+padId+"&rev="+revision+"&apikey="+etherpadApiKey;
-
-                return ok(Json.toJson(url));
+                if(finalFormat.equals("TEXT")){
+                    String body = wrapper.getTextRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }else if(finalFormat.equals("HTML")){
+                    String body = wrapper.getHTMLRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }
             } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
             }
@@ -3390,20 +3395,25 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result findContributionPadBody(
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "rev", value = "Integer", defaultValue = "0") Integer rev,
+            @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.read(coid);
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         if (c != null) {
-            Integer revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
+            Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
             Resource pad = c.getExtendedTextPad();
             String padId = pad.getPadId();
             String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
             if (padId != null) {
-                String url = etherpadServerUrl+"/api/1/get"+finalFormat+"?padID="+padId+"&rev="+revision+"&apikey="+etherpadApiKey;
-
-                return ok(Json.toJson(url));
+                if(finalFormat.equals("TEXT")){
+                    String body = wrapper.getTextRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }else if(finalFormat.equals("HTML")){
+                    String body = wrapper.getHTMLRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }
             } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
             }
