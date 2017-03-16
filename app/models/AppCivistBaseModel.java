@@ -38,6 +38,7 @@ public class AppCivistBaseModel extends Model {
 	@ApiModelProperty(name="lastUpdate", value="Date in which this resource was last updated", notes="By default set to NOW")
 	private Date lastUpdate = new Date(); // by Default, the creation is NOW
 	
+	@JsonView(Views.Public.class)
 	@ApiModelProperty(name="lang", value="Language of the content in this resource", notes="By default set to en-US")
 	private String lang = GlobalData.DEFAULT_LANGUAGE; // defaults language to English 
 													 // TODO get the language automatically from 

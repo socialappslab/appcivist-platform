@@ -1433,7 +1433,7 @@ public class Contributions extends Controller {
             }
             
             // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
-            if (feedback.getType().equals(
+            if (feedback.getType() != null && feedback.getType().equals(
                     ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
                 List<Config> configs = Config
                         .findByCampaignAndKey(
@@ -3337,6 +3337,32 @@ public class Contributions extends Controller {
             }
             return ok(Json.toJson(c));
         }
+    }
+
+    /**
+     * PUT       /api/space/:sid/contribution/comment/reset
+     *
+     * @param sid
+     * @return
+     */    
+    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update comment counts on contributions", notes="Only for ADMINS")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
+        for (Contribution c: contributions){
+	        Promise.promise( () -> { 
+	        	return ContributionsDelegate.resetParentCommentCountersToZero(c); 
+	        }).fallbackTo(
+	        		Promise.promise( () ->{ 
+	        			return ContributionsDelegate.resetChildrenCommentCountersToZero(c); 
+	        		
+	        }));
+    	}
+        
+        return ok();
     }
 }
 

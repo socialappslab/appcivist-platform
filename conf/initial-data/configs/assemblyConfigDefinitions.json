@@ -1,5 +1,5 @@
 [
-  {
+ {
     "key": "appcivist.instance.assembly-network",
     "description": "Enable network of assemblies",
     "helper": "If TRUE, it allows COORDINATORS of the principal assembly to create new and manage other assemblies under the principal one.",
@@ -37,7 +37,8 @@
   },
   {
     "key": "appcivist.instance.etherpad-base-url",
-    "description": "Base URL of the Etherpad server in use by this instance",
+    "description": "Etherpad Base URL",
+    "helper": "Base URL of the Etherpad server in use by this instance",
     "valueType": "String",
     "defaultValue": "https://etherpad.appcivist.org/",
     "configTarget": "ASSEMBLY",
@@ -118,6 +119,7 @@
   { 
     "key": "appcivist.assembly.has-registration-form-url", 
     "description": "URL of the registration form",
+    "helper":"",
     "dependsOf": "appcivist.assembly.has-registration-form",
     "dependsOfValue": "TRUE",
     "valueType": "String",
