@@ -2272,14 +2272,16 @@ public class Contributions extends Controller {
     				}    	            
     	        }        			 
         	}
-        	// If the configuration is not defined, set to the defaults values
+        	// If the configuration is not defined, get the defaults values
         	if (hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
         		String status = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
         		newContrib.setStatus(ContributionStatus.valueOf(status));
         	} 
         	
         	if (hasEtherpadConfig == 0) {
-        		ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+        		String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
+        		if (etherpad.equalsIgnoreCase("FALSE"))
+        			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
         	}
         }
         
