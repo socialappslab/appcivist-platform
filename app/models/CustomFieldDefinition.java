@@ -1,10 +1,7 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonView;
 import enums.EntityTypes;
 import enums.LimitTypes;
 import io.swagger.annotations.ApiModel;
@@ -61,6 +58,10 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "customFieldDefinitions")
 	private List<ResourceSpace> containingSpaces;
+
+	@JsonView(Views.Public.class)
+	@OneToOne(mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
+	private CustomFieldValue customFieldValue;
 
 
 	public static Finder<Long, CustomFieldDefinition> find = new Finder<>(CustomFieldDefinition.class);
@@ -190,6 +191,11 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 		find.ref(id).update();
 	}
 
+	public CustomFieldValue getCustomFieldValue() {
+		return customFieldValue;
+	}
 
-
+	public void setCustomFieldValue(CustomFieldValue customFieldValue) {
+		this.customFieldValue = customFieldValue;
+	}
 }

@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -17,6 +18,8 @@ import java.util.UUID;
 public class CustomFieldValue extends AppCivistBaseModel {
 
 	@Id
+	@GeneratedValue
+	private Long customFieldValueId;
 	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
 	@Column(name="entity_target_type")
@@ -28,19 +31,24 @@ public class CustomFieldValue extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private String value;
 
+	@JsonView(Views.Public.class)
+	@Column(name = "custom_field_definition_id")
+	@OneToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	private CustomFieldDefinition customFieldDefinition;
+
 	public CustomFieldValue() {
 		super();
 		this.uuid = UUID.randomUUID();
 	}
 
-	public static Finder<UUID, CustomFieldValue> find = new Finder<>(CustomFieldValue.class);
+	public static Finder<Long, CustomFieldValue> find = new Finder<>(CustomFieldValue.class);
 
 	public static List<CustomFieldValue> findAll() {
 		return find.all();
 	}
 
-	public static CustomFieldValue read(UUID uuid) {
-		return find.ref(uuid);
+	public static CustomFieldValue read(Long id) {
+		return find.ref(id);
 	}
 
 	public static CustomFieldValue read(UUID targetUuid, UUID uuid) {
@@ -79,6 +87,22 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		this.value = value;
 	}
 
+	public Long getCustomFieldValueId() {
+		return customFieldValueId;
+	}
+
+	public void setCustomFieldValueId(Long customFieldValueId) {
+		this.customFieldValueId = customFieldValueId;
+	}
+
+	public CustomFieldDefinition getCustomFieldDefinition() {
+		return customFieldDefinition;
+	}
+
+	public void setCustomFieldDefinition(CustomFieldDefinition customFieldDefinition) {
+		this.customFieldDefinition = customFieldDefinition;
+	}
+
 	/*
      * Basic Data operations
      */
@@ -94,7 +118,7 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		return object;
 	}
 
-	public static void delete(UUID id) {
+	public static void delete(Long id) {
 		find.ref(id).delete();
 	}
 

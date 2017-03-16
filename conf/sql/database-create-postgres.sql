@@ -1504,3 +1504,9 @@ create table resource_space_custom_field_definition (
 alter table resource_space_custom_field_definition add constraint fk_resource_space_org_resou_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
 alter table resource_space_custom_field_definition add constraint fk_resource_space_org_theme_02 foreign key (custom_field_definition_custom_field_definition_id) references custom_field_definition (custom_field_definition_id);
+
+alter table custom_field_value add column custom_field_value_id bigserial not null;
+
+alter table custom_field_value add column custom_field_definition_id bigint;
+
+alter table custom_field_value add constraint pk_custom_field_value primary key (custom_field_value_id);
