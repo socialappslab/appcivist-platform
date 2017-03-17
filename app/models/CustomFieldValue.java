@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModel;
 import models.misc.Views;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class CustomFieldValue extends AppCivistBaseModel {
 	private String entityTargetType;
 	@JsonView(Views.Public.class)
 	@Column(name="entity_target_uuid")
-	private String entityTargetUuid;
+	private UUID entityTargetUuid;
 	@JsonView(Views.Public.class)
 	private String value;
 
@@ -51,8 +52,8 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		return find.ref(id);
 	}
 
-	public static CustomFieldValue read(UUID targetUuid, UUID uuid) {
-		return find.where().eq("entityTargetUuid", targetUuid).eq("uuid",uuid).findUnique();
+	public static CustomFieldValue read(UUID targetUuid, Long id) {
+		return find.where().eq("entityTargetUuid", targetUuid).eq("customFieldDefinition.idCustomFieldDefinition",id).findUnique();
 	}
 
 	public UUID getUuid() {
@@ -71,11 +72,11 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		this.entityTargetType = entityTargetType;
 	}
 
-	public String getEntityTargetUuid() {
+	public UUID getEntityTargetUuid() {
 		return entityTargetUuid;
 	}
 
-	public void setEntityTargetUuid(String entityTargetUuid) {
+	public void setEntityTargetUuid(UUID entityTargetUuid) {
 		this.entityTargetUuid = entityTargetUuid;
 	}
 
@@ -130,5 +131,17 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		object.update();
 		object.refresh();
 		return object;
+	}
+
+	public static List<CustomFieldValue> updateList(List<CustomFieldValue> list) {
+		List<CustomFieldValue> customFieldValues = new ArrayList<>();
+		for (CustomFieldValue c : list) {
+			CustomFieldValue customFieldValue = read(c.getEntityTargetUuid(),c.getCustomFieldDefinition().getCustomFieldDefinitionId());
+			customFieldValue.setValue(c.getValue());
+			customFieldValue.update();
+			customFieldValue.refresh();
+			customFieldValues.add(customFieldValue);
+		}
+		return customFieldValues;
 	}
 }
