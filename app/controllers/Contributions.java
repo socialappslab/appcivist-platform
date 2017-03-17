@@ -2220,15 +2220,16 @@ public class Contributions extends Controller {
 
         newContrib.setType(type);
         // if type is PROPOSAL, then change the default status value
-        if (type.equals(ContributionTypes.PROPOSAL)) {
-            newContrib.setStatus(ContributionStatus.NEW);
-        }
+//        if (type.equals(ContributionTypes.PROPOSAL)) {
+//            newContrib.setStatus(ContributionStatus.NEW);
+//        }
         if (author != null) {
             newContrib.addAuthor(author);
             if (newContrib.getLang() == null)
                 newContrib.setLang(author.getLanguage());
             newContrib.setContextUserId(author.getUserId());
         }
+
 
         if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
             // read etherpad server url from config file
@@ -2244,11 +2245,46 @@ public class Contributions extends Controller {
 
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
-
-        if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
-            ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+        
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+            Campaign c = containerResourceSpace.getCampaign(); 
+            
+        	List<Config> campaignConfigs = c.getConfigs();
+        	Integer hasStatusConfig = 0;     
+        	Integer hasEtherpadConfig = 0;
+        	
+        	for(Config cc: campaignConfigs){
+        		if (type.equals(ContributionTypes.PROPOSAL)) {
+        			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS)) {
+        				hasStatusConfig = 1;
+	        			if (cc.getValue().equalsIgnoreCase("NEW")) {
+	        				newContrib.setStatus(ContributionStatus.NEW);
+	        			} else if (cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
+	        			}
+        			}
+        		}
+    		
+    			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD)){
+    				hasEtherpadConfig = 1;
+    				if (cc.getValue().equalsIgnoreCase("FALSE")) {
+    					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+    				}    	            
+    	        }        			 
+        	}
+        	// If the configuration is not defined, get the defaults values
+        	if (hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
+        		String status = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
+        		newContrib.setStatus(ContributionStatus.valueOf(status));
+        	} 
+        	
+        	if (hasEtherpadConfig == 0) {
+        		String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
+        		if (etherpad.equalsIgnoreCase("FALSE"))
+        			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+        	}
         }
-
+        
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
 
