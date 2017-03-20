@@ -2593,8 +2593,9 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    public static Result importContributionsOld(@ApiParam(value = "Assembly id") @PathParam("nro_nombre_llamado") Long aid,
-                                                @ApiParam(value = "Campaign id") @PathParam("nro_nombre_llamado") Long cid) {
+    public static Result importContributionsOld(
+            @ApiParam(name = "aid", value = "Assembly id") Long aid,
+            @ApiParam(name = "cid", value = "Campaign id") Long cid) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         Campaign campaign = null;
@@ -2719,8 +2720,9 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    public static Result exportContributions(@ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
-                                             @ApiParam(value = "Campaign id") @PathParam("cid") Long cid) {
+    public static Result exportContributions(
+            @ApiParam(name = "aid", value = "Assembly id") Long aid,
+            @ApiParam(name = "cid", value = "Campaign id") Long cid) {
         String csv = "idea title,idea summary,idea author,idea theme, source code, type\n";
         Campaign campaign = null;
         try {
@@ -2782,8 +2784,8 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
-            @ApiParam(value = "Assembly id") @PathParam("aid") Long aid,
-            @ApiParam(value = "Campaign id") @PathParam("cid") Long cid,
+            @ApiParam(name = "aid", value = "Assembly id") Long aid,
+            @ApiParam(name = "cid", value = "Campaign id") Long cid,
             @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
@@ -3376,6 +3378,83 @@ public class Contributions extends Controller {
     }
 
     /**
+     * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/body
+     *
+     * @param aid
+     * @param cid
+     * @param coid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the pad body url of a Contribution in a Assembly")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result findAssemblyContributionPadBody(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
+            @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
+        Contribution c = Contribution.read(coid);
+        String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+        String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+        if (c != null) {
+            Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
+            Resource pad = c.getExtendedTextPad();
+            String padId = pad.getPadId();
+            String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+            if (padId != null) {
+                if(finalFormat.equals("TEXT")){
+                    String body = wrapper.getTextRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }else if(finalFormat.equals("HTML")){
+                    String body = wrapper.getHTMLRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
+            }
+        }
+        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID " + coid + " not found")));
+    }
+
+    /**
+     * GET       /api/contribution/:couuid/body
+     *
+     * @param couuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the pad body url of a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result findContributionPadBody(
+            @ApiParam(name = "couuid", value = "Contribution UUID") UUID couuid,
+            @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
+            @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
+        Contribution c = Contribution.readByUUID(couuid);
+        String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+        if (c != null) {
+            Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
+            Resource pad = c.getExtendedTextPad();
+            String padId = pad.getPadId();
+            String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+            if (padId != null) {
+                if(finalFormat.equals("TEXT")){
+                    String body = wrapper.getTextRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }else if(finalFormat.equals("HTML")){
+                    String body = wrapper.getHTMLRevision(padId,revision);
+                    return ok(Json.toJson(body));
+                }
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
+            }
+        }
+        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with UUID " + couuid.toString() + " not found")));
+    }
+  
+    /** 
      * PUT       /api/space/:sid/contribution/comment/reset
      *
      * @param sid

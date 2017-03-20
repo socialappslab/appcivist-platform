@@ -205,6 +205,9 @@ GET       /api/assembly/:aid/contribution/:coid/feedback                        
 GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback              controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
 GET       /api/contributions                                                     controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
 
+GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/body               controllers.Contributions.findAssemblyContributionPadBody(aid: Long, cid: Long, coid: Long, rev: Long, format: String ?= null)
+GET       /api/contribution/:coid/body                                           controllers.Contributions.findContributionPadBody(coid: java.util.UUID, rev: Long, format: String ?= null)
+
 DELETE    /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.deleteContributionResourceSpace(aid: Long, cid: Long, sid: Long)
 POST      /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.assignContributionResourceSpace(aid: Long, cid: Long, sid: Long)
 POST      /api/assembly/:aid/group/:gid/contribution                             controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
