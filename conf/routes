@@ -329,3 +329,16 @@ POST      /api/upload/data                                                      
 POST      /api/log                                                               controllers.Application.logActivity()
 POST      /api/log/public                                                        controllers.Application.logActivityPublic()
 POST      /api/log/front                                                         controllers.Application.logErrorFrontEnd()
+
+##################################################################################################################################################################
+# Space endpoints
+GET       /api/space/:sid                                                        controllers.Spaces.getSpace(sid: Long)
+GET       /api/space/:uuid/public                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
+GET       /api/space/:sid/field                                                  controllers.Spaces.findSpaceFields(sid: Long)
+POST      /api/space/:sid/field                                                  controllers.Spaces.createSpaceFields(sid: Long)
+PUT       /api/space/:sid/field/:cfid                                            controllers.Spaces.updateSpaceFields(sid: Long, cfid: Long)
+DELETE    /api/space/:sid/field/:cfid                                            controllers.Spaces.deleteSpaceFields(sid: Long, cfid: Long)
+GET       /api/space/:sid/fieldvalue                                             controllers.Spaces.findSpaceFieldsValue(sid: Long)
+POST      /api/space/:sid/fieldvalue                                             controllers.Spaces.createSpaceFieldsValue(sid: Long)
+PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
+DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
