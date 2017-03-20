@@ -3,6 +3,7 @@ package delegates;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import play.Play;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
@@ -170,8 +172,10 @@ public class ContributionsDelegate {
                         break;
                     case "sorting":
                         String sortingValue = (String) value;
-                        if (sortingValue.equals("popularity")) {
+                        if (sortingValue.equals("popularity") || sortingValue.equals("popularity_desc")) {
                             sorting +=", popularity desc nulls last";
+                        } else if (sortingValue.equals("popularity_asc")) {
+                            sorting +=", popularity asc nulls last";
                         } else if (sortingValue.equals("random")) {
                             // TODO find a way of producing a a REAL random ordering
                             sorting +=", uuid desc nulls last"; // create the illusion of random ordering
@@ -179,12 +183,18 @@ public class ContributionsDelegate {
                             sorting +=", creation asc nulls last";
                         } else if (sortingValue.equals("date_desc")) {
                             sorting +=", creation desc nulls last";
-                        } else if (sortingValue.equals("most_commented")) {
+                        } else if (sortingValue.equals("most_commented") || sortingValue.equals("most_commented_desc")) {
                         	sorting +=", total_comments desc nulls last";
-                        } else if (sortingValue.equals("most_commented_members")) {
+                        } else if (sortingValue.equals("most_commented_asc")) {
+                        	sorting +=", total_comments asc nulls last";
+                        } else if (sortingValue.equals("most_commented_members") || sortingValue.equals("most_commented_members_desc")) {
                         	sorting +=", comment_count desc nulls last";
-                        } else if (sortingValue.equals("most_commented_public")) {
+                        } else if (sortingValue.equals("most_commented_members_asc")) {
+                        	sorting +=", comment_count asc nulls last";
+                        } else if (sortingValue.equals("most_commented_public") || sortingValue.equals("most_commented_public_desc")) {
                         	sorting +=", forum_comment_count desc nulls last";
+                        } else if (sortingValue.equals("most_commented_public_asc")) {
+                        	sorting +=", forum_comment_count asc nulls last";
                         }
                         break;
                 }
@@ -439,4 +449,56 @@ public class ContributionsDelegate {
 
     }
 
+    public static Boolean resetParentCommentCountersToZero (Contribution c){ 
+    	Logger.info("Resetting parent of contribution: "+c.getContributionId());
+		List<ResourceSpace> containingSpaces = c.getContainingSpaces();
+        for (ResourceSpace rs : containingSpaces) {
+            Contribution parent = Contribution.findByResourceSpaceId(rs.getResourceSpaceId());
+            
+            if (parent == null){
+                parent = Contribution.findByForumResourceSpaceId(rs.getResourceSpaceId());
+            } 
+            
+            parent.setCommentCount(0);
+            parent.setForumCommentCount(0);
+            parent.setTotalComments(0);
+            parent.update();
+            
+            resetParentCommentCountersToZero(parent);         
+        }
+        return true;
+    }	
+    	
+    public static Boolean resetChildrenCommentCountersToZero (Contribution c){ 
+    	Logger.info("Resetting children of contribution: "+c.getContributionId());
+    	c.setCommentCount(0);
+    	c.setForumCommentCount(0);
+    	c.setTotalComments(0);
+    	c.update();
+    	
+    	if (c.getType().equals(ContributionTypes.COMMENT) || c.getType().equals(ContributionTypes.DISCUSSION)){
+    		Logger.info("It's a comment or a discussion");
+    		updateCommentCounters(c, "+");
+    	}
+	
+    	ResourceSpace rs  = c.getResourceSpace();    		    
+    	Map<String, Object> conditionsRS   = new HashMap<>();
+    	conditionsRS.put("containingSpaces", rs.getResourceSpaceId());    	
+		List<Contribution> contributionRS  = findContributions(conditionsRS, null, null);		
+		
+		for (Contribution crs: contributionRS){		
+			resetChildrenCommentCountersToZero(crs);     		
+		}
+		
+		ResourceSpace frs = c.getForum();
+		Map<String, Object> conditionsFRS  = new HashMap<>();
+    	conditionsFRS.put("containingSpaces", frs.getResourceSpaceId());
+    	List<Contribution> contributionFRS = findContributions(conditionsFRS, null, null);
+    	
+		for (Contribution cfrs: contributionFRS){		
+			resetChildrenCommentCountersToZero(cfrs);		
+		}
+		return true;
+
+	} 
 }

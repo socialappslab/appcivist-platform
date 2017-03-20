@@ -473,7 +473,7 @@ public class Campaigns extends Controller {
     }
 
     /**
-     * GET /api/campaign/template/default
+     * GET /api/template/campaign/default
      * Get list of default campaign templates
      *
      * @return
@@ -523,6 +523,49 @@ public class Campaigns extends Controller {
         }
     }
 
+    /**
+     * GET /api/template/assembly/default
+     * Get list of default campaign templates
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Component.class, produces = "application/json", value = "Get list of default templates", notes = "Get list of default templates")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No Default Template Found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),})
+    @SubjectPresent
+    public static Result findAssemblyTemplatesDefault() {
+        InputStream inputStream = Play.application().classloader().getResourceAsStream("initial-data/configs/assemblyConfigDefinitions.json");
+
+        if (inputStream != null) {
+            JsonNode jsonNodeArray = Json.parse(inputStream);
+            return ok(jsonNodeArray);
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    "No assembly default templates")));
+        }
+    }
+
+    /**
+     * GET /api/template/group/default
+     * Get list of default campaign templates
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Component.class, produces = "application/json", value = "Get list of default templates", notes = "Get list of default templates")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No Default Template Found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),})
+    @SubjectPresent
+    public static Result findGroupTemplatesDefault() {
+        InputStream inputStream = Play.application().classloader().getResourceAsStream("initial-data/configs/workingGroupConfigDefinitions.json");
+
+        if (inputStream != null) {
+            JsonNode jsonNodeArray = Json.parse(inputStream);
+            return ok(jsonNodeArray);
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    "No group default templates")));
+        }
+    }
     // Private not exposed Methods
 
     /**

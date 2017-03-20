@@ -2220,15 +2220,16 @@ public class Contributions extends Controller {
 
         newContrib.setType(type);
         // if type is PROPOSAL, then change the default status value
-        if (type.equals(ContributionTypes.PROPOSAL)) {
-            newContrib.setStatus(ContributionStatus.NEW);
-        }
+//        if (type.equals(ContributionTypes.PROPOSAL)) {
+//            newContrib.setStatus(ContributionStatus.NEW);
+//        }
         if (author != null) {
             newContrib.addAuthor(author);
             if (newContrib.getLang() == null)
                 newContrib.setLang(author.getLanguage());
             newContrib.setContextUserId(author.getUserId());
         }
+
 
         if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
             // read etherpad server url from config file
@@ -2244,11 +2245,46 @@ public class Contributions extends Controller {
 
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
-
-        if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
-            ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+        
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+            Campaign c = containerResourceSpace.getCampaign(); 
+            
+        	List<Config> campaignConfigs = c.getConfigs();
+        	Integer hasStatusConfig = 0;     
+        	Integer hasEtherpadConfig = 0;
+        	
+        	for(Config cc: campaignConfigs){
+        		if (type.equals(ContributionTypes.PROPOSAL)) {
+        			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS)) {
+        				hasStatusConfig = 1;
+	        			if (cc.getValue().equalsIgnoreCase("NEW")) {
+	        				newContrib.setStatus(ContributionStatus.NEW);
+	        			} else if (cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
+	        			}
+        			}
+        		}
+    		
+    			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD)){
+    				hasEtherpadConfig = 1;
+    				if (cc.getValue().equalsIgnoreCase("FALSE")) {
+    					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+    				}    	            
+    	        }        			 
+        	}
+        	// If the configuration is not defined, get the defaults values
+        	if (hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
+        		String status = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
+        		newContrib.setStatus(ContributionStatus.valueOf(status));
+        	} 
+        	
+        	if (hasEtherpadConfig == 0) {
+        		String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
+        		if (etherpad.equalsIgnoreCase("FALSE"))
+        			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+        	}
         }
-
+        
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
 
@@ -3396,7 +3432,6 @@ public class Contributions extends Controller {
             @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.readByUUID(couuid);
-        String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         if (c != null) {
             Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
@@ -3417,6 +3452,32 @@ public class Contributions extends Controller {
             }
         }
         return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with UUID " + couuid.toString() + " not found")));
+    }
+  
+    /** 
+     * PUT       /api/space/:sid/contribution/comment/reset
+     *
+     * @param sid
+     * @return
+     */    
+    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update comment counts on contributions", notes="Only for ADMINS")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
+        for (Contribution c: contributions){
+	        Promise.promise( () -> { 
+	        	return ContributionsDelegate.resetParentCommentCountersToZero(c); 
+	        }).fallbackTo(
+	        		Promise.promise( () ->{ 
+	        			return ContributionsDelegate.resetChildrenCommentCountersToZero(c); 
+	        		
+	        }));
+    	}
+        
+        return ok();
     }
 }
 

@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class GlobalDataConfigKeys {
 
-	private static final Map<String, String> CONFIG_DEFAULTS= new HashMap<String, String>();
+	public static final Map<String, String> CONFIG_DEFAULTS= new HashMap<String, String>();
 
 	// AppCivist Instance Configuration Keys	
 	public static final String APPCIVIST_INSTANCE_API_KEY = "appcivist.instance.api-key"; //:** a generated secret code that can be use by apps to connect to the API and access information of //assemblies, campaigns, working groups and contributions on this instance. 
@@ -43,6 +43,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD = "appcivist.campaign.extended-feedback-password"; // if TRUE, extended feedback is disabled 
 	public static final String APPCIVIST_CAMPAIGN_HIDE_TIMELINE = "appcivist.campaign.hide-timeline"; // if TRUE, the timeline of the campaign is hidden and the campaign has only one stage
 	public static final String APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO = "appcivist.campaign.show-assembly-logo"; // if TRUE, show the assembly logo in the campaign dashboard
+	public static final String APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS = "appcivist.campaign.proposal-default-status"; // NEW or PUBLISHED
 	
 	// Component Level Configuration Keys
 	public static final String APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.component.contribution-type-principal"; // what type of contribution is the displayed at the center of the page when this component in the timeline is current (e.g., in Idea Collection, the main contribution type will be IDEAS)
@@ -88,6 +89,7 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD, "a44@c1v1st");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_HIDE_TIMELINE, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS, "NEW");
 		
 		// Component Level Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL,"PROPOSAL"); 
@@ -99,6 +101,6 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_MEMBERSHIP_TYPE, "INVITATION_AND_REGISTRATION");
 
-    }
-	
+    };
+
 }
