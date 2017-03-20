@@ -3384,20 +3384,18 @@ public class Contributions extends Controller {
     }
 
     /**
-     * GET       /api/contribution/:coid/body
+     * GET       /api/contribution/:couuid/body
      *
-     * @param coid
+     * @param couuid
      * @return
      */
     @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Get the pad body url of a Contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result findContributionPadBody(
-            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "couuid", value = "Contribution UUID") UUID couuid,
             @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
-        Contribution c = Contribution.read(coid);
+        Contribution c = Contribution.readByUUID(couuid);
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         if (c != null) {
@@ -3418,7 +3416,7 @@ public class Contributions extends Controller {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
             }
         }
-        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID " + coid + " not found")));
+        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with UUID " + couuid.toString() + " not found")));
     }
 }
 
