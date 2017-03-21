@@ -3455,31 +3455,28 @@ public class Contributions extends Controller {
         return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with UUID " + couuid.toString() + " not found")));
     }
   
-    /** 
+    /**
      * PUT       /api/space/:sid/contribution/comment/reset
      *
      * @param sid
      * @return
      */    
-    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update comment counts on contributions", notes="Only for ADMINS")
-    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+
     public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
     	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
-        for (Contribution c: contributions){
-	        Promise.promise( () -> { 
-	        	return ContributionsDelegate.resetParentCommentCountersToZero(c); 
-	        }).fallbackTo(
-	        		Promise.promise( () ->{ 
-	        			return ContributionsDelegate.resetChildrenCommentCountersToZero(c); 
+    	
+    	Promise.promise( () -> { 
+	    	for (Contribution c: contributions){
+	        		ContributionsDelegate.resetParentCommentCountersToZero(c);
+	        		ContributionsDelegate.resetChildrenCommentCountersToZero(c);
 	        		
-	        }));
-    	}
-        
+	    	}
+	    	return true;
+    	});
+    	
         return ok();
     }
+
 }
 
 class PaginatedContribution {
