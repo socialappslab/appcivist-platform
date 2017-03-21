@@ -45,11 +45,11 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	private String fieldType;
 	
 	@JsonView(Views.Public.class)
-	@Column(name="position_field")
+	@Column(name="position")
 	private Integer position;
 
 	@JsonView(Views.Public.class)
-	@Column(name="limit_field", columnDefinition="text")
+	@Column(name="limit", columnDefinition="text")
 	private String limit;
 
 	@JsonView(Views.Public.class)
@@ -62,9 +62,9 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "customFieldDefinitions")
 	private List<ResourceSpace> containingSpaces;
 
-	@JsonView(Views.Public.class)
-	@OneToOne(mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
-	private CustomFieldValue customFieldValue;
+	@JsonIgnore
+	@OneToMany(fetch=FetchType.LAZY, mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
+	private List<CustomFieldValue> customFieldValues;
 
 
 	public static Finder<Long, CustomFieldDefinition> find = new Finder<>(CustomFieldDefinition.class);
@@ -203,11 +203,11 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 		find.ref(id).update();
 	}
 
-	public CustomFieldValue getCustomFieldValue() {
-		return customFieldValue;
+	public List<CustomFieldValue> getCustomFieldValues() {
+		return customFieldValues;
 	}
 
-	public void setCustomFieldValue(CustomFieldValue customFieldValue) {
-		this.customFieldValue = customFieldValue;
+	public void setCustomFieldValues(List<CustomFieldValue> customFieldValue) {
+		this.customFieldValues = customFieldValue;
 	}
 }

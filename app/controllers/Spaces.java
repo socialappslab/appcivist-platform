@@ -261,9 +261,8 @@ public class Spaces extends Controller {
                     .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
         } else {
             List<CustomFieldDefinition> customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
-            for (CustomFieldDefinition customFieldDefinition:customFieldDefinitions
-                 ) {
-                customFieldValues.add(customFieldDefinition.getCustomFieldValue());
+            for (CustomFieldDefinition customFieldDefinition:customFieldDefinitions) {
+                customFieldValues.addAll(customFieldDefinition.getCustomFieldValues());
             }
         }
         return ok(Json.toJson(customFieldValues));
@@ -337,7 +336,7 @@ public class Spaces extends Controller {
             List<CustomFieldDefinition> customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
             for (CustomFieldDefinition customFieldDefinition:customFieldDefinitions
                     ) {
-                customFieldValues.add(customFieldDefinition.getCustomFieldValue());
+                customFieldValues.addAll(customFieldDefinition.getCustomFieldValues());
             }
         }
         return ok(Json.toJson(customFieldValues));
