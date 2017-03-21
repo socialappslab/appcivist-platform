@@ -21,7 +21,7 @@ ALTER TABLE "public"."organization" ALTER COLUMN "uuid" SET DEFAULT uuid_generat
 ALTER TABLE "public"."resource" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
 ALTER TABLE "public"."resource_space" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
 ALTER TABLE "public"."s3file" ALTER COLUMN "id" SET DEFAULT uuid_generate_v4();
-ALTER TABLE "public"."token_action" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."token_action" ALTER COLUMN "token" SET DEFAULT uuid_generate_v4();
 ALTER TABLE "public"."user_profile" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
 ALTER TABLE "public"."working_group" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
 
