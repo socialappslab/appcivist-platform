@@ -3431,7 +3431,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "couuid", value = "Contribution UUID") UUID couuid,
             @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
-        Contribution c = Contribution.readByUUID(couuid);
+        Contribution c = Contribution.readByUUID(couuid);        
+        String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         if (c != null) {
             Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();

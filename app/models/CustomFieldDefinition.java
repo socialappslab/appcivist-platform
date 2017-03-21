@@ -32,6 +32,7 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@Enumerated(EnumType.STRING)
 	@Column(name="entity_type")
 	private EntityTypes entityType;
+	
 
 	@JsonView(Views.Public.class)
 	@Column(name="entity_filter_attribute_name", columnDefinition="text")
@@ -41,6 +42,11 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@Column(name="entity_filter", columnDefinition="text")
 	private String entityFilter;
 
+	@JsonView(Views.Public.class)
+	@Enumerated(EnumType.STRING)
+	@Column(name="field_type")
+	private String fieldType;
+	
 	@JsonView(Views.Public.class)
 	@Column(name="position_field")
 	private Integer position;
@@ -128,6 +134,15 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 		this.entityFilter = entityFilter;
 	}
 
+	public String getFieldType() {
+		return fieldType;
+	}
+
+	public void setFieldType(String fieldType) {
+		this.fieldType = fieldType;
+	}
+
+	
 	public Integer getPosition() {
 		return position;
 	}
