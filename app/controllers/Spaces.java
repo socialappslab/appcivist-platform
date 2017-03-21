@@ -31,7 +31,7 @@ import utils.GlobalData;
 
 import static play.data.Form.form;
 
-@Api(value="space", hidden=true)
+@Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
 public class Spaces extends Controller {
 
