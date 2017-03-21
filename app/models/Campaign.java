@@ -855,6 +855,10 @@ String uuidAsString, List<Component> phases) {
 	public static Campaign readByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
+	
+	public static Campaign readByResourceSpaceId (Long rsId) {
+		return find.where().eq("resources_resource_space_id", rsId).findUnique();
+	}
 
 	public static List<Campaign> findByBindingBallotUUID(UUID uuid) {
 		return find.where().eq("bindingBallot",uuid).findList();

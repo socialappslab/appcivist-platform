@@ -50,6 +50,7 @@ import exceptions.MembershipCreationException;
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="Assembly", description="An Assembly is an a space owned by a group of people to organize democratic actions")
 public class Assembly extends AppCivistBaseModel {
+	@JsonView(Views.Public.class)
 	@Id @GeneratedValue @Column(name="assembly_id")
 	private Long assemblyId;
 	@Index

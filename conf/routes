@@ -147,11 +147,14 @@ DELETE    /api/role/:rid                                                        
 ##################################################################################################################################################################
 # Campaign Template and Configuration endpoints
 GET       /api/campaign/template                                                 controllers.Campaigns.findCampaignTemplates()
-GET       /api/campaign/template/default                                         controllers.Campaigns.findCampaignTemplatesDefault()
 GET       /api/assembly/:aid/campaign/:cid/contribution/template                 controllers.Campaigns.findContributionTemplatesInCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/template                 controllers.Campaigns.createContributionTemplateInCampaign(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/contribution/template/:rid            controllers.Campaigns.confirmContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
 DELETE    /api/assembly/:aid/campaign/:cid/contribution/template/:rid            controllers.Campaigns.deleteContributionTemplateInCampaign(aid: Long, cid: Long, rid: Long)
+
+GET       /api/template/campaign/default                                         controllers.Campaigns.findCampaignTemplatesDefault()
+GET       /api/template/group/default                                            controllers.Campaigns.findGroupTemplatesDefault()
+GET       /api/template/assembly/default                                         controllers.Campaigns.findAssemblyTemplatesDefault()
 
 ##################################################################################################################################################################
 # Campaign API
@@ -195,9 +198,15 @@ GET       /api/assembly/:aid/contribution/:cid/padid                            
 GET       /api/assembly/:aid/contribution/:cid/comment                           controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/contributions                     controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
+PUT       /api/space/:sid/contribution/comment/reset                      controllers.Contributions.updateContributionCounters(sid: Long)
+#update state of contribution
+PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 GET       /api/assembly/:aid/contribution/:coid/feedback                         controllers.Contributions.readContributionFeedbackNoGroupId(aid: Long, coid: Long, type: String ?= null)
 GET       /api/assembly/:aid/group/:gid/contribution/:coid/feedback              controllers.Contributions.readContributionFeedbackPrivate(aid: Long, gid: Long, coid: Long, type: String ?= null)
 GET       /api/contributions                                                     controllers.Contributions.all(page?="1", by_uuid?="", by_theme_id?="")
+
+GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/body               controllers.Contributions.findAssemblyContributionPadBody(aid: Long, cid: Long, coid: Long, rev: Long, format: String ?= null)
+GET       /api/contribution/:coid/body                                           controllers.Contributions.findContributionPadBody(coid: java.util.UUID, rev: Long, format: String ?= null)
 
 DELETE    /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.deleteContributionResourceSpace(aid: Long, cid: Long, sid: Long)
 POST      /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.assignContributionResourceSpace(aid: Long, cid: Long, sid: Long)
@@ -221,7 +230,6 @@ POST      /api/contribution/:uuid/themes                                        
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
 DELETE    /api/contribution/:uuid/themes/:tid                                    controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
 DELETE    /api/contribution/:uuid/authors/:auuid                                 controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
-
 
 #update state of contribution
 PUT       /api/assembly/:aid/contribution/:cid/:status                           controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
@@ -324,3 +332,16 @@ POST      /api/upload/data                                                      
 POST      /api/log                                                               controllers.Application.logActivity()
 POST      /api/log/public                                                        controllers.Application.logActivityPublic()
 POST      /api/log/front                                                         controllers.Application.logErrorFrontEnd()
+
+##################################################################################################################################################################
+# Space endpoints
+GET       /api/space/:sid                                                        controllers.Spaces.getSpace(sid: Long)
+GET       /api/space/:uuid/public                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
+GET       /api/space/:sid/field                                                  controllers.Spaces.findSpaceFields(sid: Long)
+POST      /api/space/:sid/field                                                  controllers.Spaces.createSpaceFields(sid: Long)
+PUT       /api/space/:sid/field/:cfid                                            controllers.Spaces.updateSpaceFields(sid: Long, cfid: Long)
+DELETE    /api/space/:sid/field/:cfid                                            controllers.Spaces.deleteSpaceFields(sid: Long, cfid: Long)
+GET       /api/space/:sid/fieldvalue                                             controllers.Spaces.findSpaceFieldsValue(sid: Long)
+POST      /api/space/:sid/fieldvalue                                             controllers.Spaces.createSpaceFieldsValue(sid: Long)
+PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
+DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
