@@ -6,7 +6,6 @@ import enums.EntityTypes;
 import enums.LimitTypes;
 import io.swagger.annotations.ApiModel;
 import models.misc.Views;
-import play.data.validation.Constraints.Required;
 
 import javax.persistence.*;
 import java.util.List;
@@ -33,7 +32,6 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@Column(name="entity_type")
 	private EntityTypes entityType;
 	
-
 	@JsonView(Views.Public.class)
 	@Column(name="entity_filter_attribute_name", columnDefinition="text")
 	private String entityFilterAttributeName;
@@ -43,7 +41,6 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	private String entityFilter;
 
 	@JsonView(Views.Public.class)
-	@Enumerated(EnumType.STRING)
 	@Column(name="field_type")
 	private String fieldType;
 	
