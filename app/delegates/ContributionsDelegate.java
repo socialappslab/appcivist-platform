@@ -3,6 +3,7 @@ package delegates;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import play.Play;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
@@ -447,4 +449,48 @@ public class ContributionsDelegate {
 
     }
 
+    public static void resetParentCommentCountersToZero (Contribution c){ 
+        Logger.info("Resetting parent of contribution: "+c.getContributionId());
+        List<ResourceSpace> containingSpaces = c.getContainingSpaces();
+        for (ResourceSpace rs : containingSpaces) {
+            Contribution parent = Contribution.findByResourceSpaceId(rs.getResourceSpaceId());
+            
+            if (parent == null) {
+                parent = Contribution.findByForumResourceSpaceId(rs.getResourceSpaceId());
+            } 
+            if (parent != null) {
+                parent.setCommentCount(0);
+                parent.setForumCommentCount(0);
+                parent.setTotalComments(0);
+                parent.update();                  
+                resetParentCommentCountersToZero(parent);
+            }
+        }
+    }   
+        
+    public static void resetChildrenCommentCountersToZero (Contribution c){ 
+        Logger.info("Resetting children of contribution: "+c.getContributionId());
+        c.setCommentCount(0);
+        c.setForumCommentCount(0);
+        c.setTotalComments(0);
+        c.update();
+        
+        if (c.getType().equals(ContributionTypes.COMMENT) || c.getType().equals(ContributionTypes.DISCUSSION)){
+            updateCommentCounters(c, "+");
+        }
+    
+        ResourceSpace rs  = c.getResourceSpace();   
+        List<Contribution> contributionRS = Contribution.findAllByContainingSpace(rs.getResourceSpaceId());    
+        
+        for (Contribution crs: contributionRS){     
+            resetChildrenCommentCountersToZero(crs);            
+        }
+        
+        ResourceSpace frs = c.getForum();
+        List<Contribution> contributionFRS = Contribution.findAllByContainingSpace(frs.getResourceSpaceId());
+      
+        for (Contribution cfrs: contributionFRS){       
+            resetChildrenCommentCountersToZero(cfrs);       
+        }
+    }
 }

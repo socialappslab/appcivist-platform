@@ -7,7 +7,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Transient;
+
+import models.misc.Views;
 
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -22,8 +34,6 @@ import enums.CampaignTemplatesEnum;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
-import models.transfer.NotificationSignalTransfer;
-import models.misc.Views;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -87,6 +97,18 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private List<Organization> organizations;
 
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_custom_field_definition")
+	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
+	private List<CustomFieldDefinition> customFieldDefinitions;
+
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_custom_field_value")
+	@Where(clause="${ta}.removed=false")
+	@JsonView(Views.Public.class)
+	private List<CustomFieldValue> customFieldValues;
+	
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
 	@JsonIgnoreProperties({ "categoryId" })
@@ -297,6 +319,22 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.organizations = organizations;
 	}
 
+	public List<CustomFieldDefinition> getCustomFieldDefinitions() {
+		return customFieldDefinitions;
+	}
+
+	public void setCustomFieldDefinitions(List<CustomFieldDefinition> customFieldDefinitions) {
+		this.customFieldDefinitions = customFieldDefinitions;
+	}
+
+	public List<CustomFieldValue> getCustomFieldValues() {
+		return customFieldValues;
+	}
+
+	public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
+		this.customFieldValues = customFieldValues;
+	}
+	
 	public void addTheme(Theme theme) {
 		if(this.themes==null)
 			this.themes = new ArrayList<>();

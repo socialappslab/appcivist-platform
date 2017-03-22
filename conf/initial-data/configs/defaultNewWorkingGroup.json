@@ -1,0 +1,123 @@
+{
+  "name": "e.g., Urban Infrastucture Interest Group",
+  "description": "e.g., Group developing Urban Infrastucture proposals for Parc de Belleville",
+  "location": {
+    "placeName": "The name of a Place, an Address, City or Country associated to your assembly"
+  },
+  "listed": true,
+  "profile": {
+    "targetAudience": "RESIDENTS",
+    "targetAudienceOptions": [
+      "RESIDENTS",
+      "ANYONE"
+    ],
+    "supportedMembership": "REGISTRATION",
+    "membershipOptions": [
+      "OPEN",
+      "REGISTRATION"
+    ],
+    "registration": {
+      "invitation": true,
+      "request": true
+    },
+    "moderators": false,
+    "coordinators": true,
+    "principal": false,
+    "managementType": "COORDINATED",
+    "managementTypeOptions": [
+      "COORDINATED",
+      "MODERATED",
+      "COORDINATED_AND_MODERATED"
+    ],
+    "icon": "https://pb.appcivist.org/public/images/barefootdoctor-140.png",
+    "cover": "https://pb.appcivist.org/assets/images/bg-hands-collaborating.jpg",
+    "primaryContactName": "",
+    "primaryContactPhone": "",
+    "primaryContactEmail": ""
+  },
+  "themes": [],
+  "existingThemes": [],
+  "lang": "en-US",
+  "invitations": [],
+  "configs": [
+    {
+      "key": "appcivist.assembly.enable-forum",
+      "value": "FALSE",
+      "definition": {
+        "key": "appcivist.assembly.enable-forum",
+        "description": "Enable Assembly Forum",
+        "helper": "If TRUE, the assembly homepage will also feature a Forum for general discussions",
+        "valueType": "Boolean",
+        "defaultValue": "FALSE",
+        "configTarget": "ASSEMBLY",
+        "configTargetType": "REGULAR"
+      }
+    },
+    {
+      "key": "appcivist.assembly.disable-new-memberships",
+      "value": "FALSE",
+      "definition": {
+        "key": "appcivist.assembly.disable-new-memberships",
+        "description": "Disable New Memberships",
+        "helper": "If TRUE, only coordinators will be able to add new members to the assembly, by uploading users for them.",
+        "valueType": "Boolean",
+        "defaultValue": "FALSE",
+        "configTarget": "ASSEMBLY",
+        "configTargetType": "REGULAR"
+      }
+    },
+    {
+      "key": "appcivist.assembly.membership-invitation-by-members",
+      "value": "FALSE",
+      "definition": {
+        "key": "appcivist.assembly.membership-invitation-by-members",
+        "description": "Enable invitation from regular members",
+        "helper": "If TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right",
+        "valueType": "Boolean",
+        "defaultValue": "FALSE",
+        "configTarget": "ASSEMBLY",
+        "configTargetType": "REGULAR"
+      }
+    },
+    {
+      "key": "appcivist.assembly.has-registration-form",
+      "value": "FALSE",
+      "definition": {
+        "key": "appcivist.assembly.has-registration-form",
+        "description": "Ask future members to fill a registration form to joim",
+        "helper": "If TRUE, to join the assembly, users must fill in a registration form",
+        "valueType": "Boolean",
+        "defaultValue": "FALSE",
+        "configTarget": "ASSEMBLY",
+        "configTargetType": "REGULAR"
+      }
+    },
+    {
+      "key": "appcivist.assembly.has-registration-form-url",
+      "value": "",
+      "definition": {
+        "key": "appcivist.assembly.has-registration-form-url",
+        "description": "URL of the registration form",
+        "dependsOf": "appcivist.assembly.has-registration-form",
+        "dependsOfValue": "TRUE",
+        "valueType": "Boolean",
+        "defaultValue": "",
+        "configTarget": "ASSEMBLY",
+        "configTargetType": "REGULAR"
+      }
+    },
+    {
+      "key": "appcivist.assembly.enable-moderator-role",
+      "value": "FALSE",
+      "definition": {
+        "key": "appcivist.assembly.enable-moderator-role",
+        "description": "Enable moderator role",
+        "helper": "If TRUE, members can also have the role MODERATOR, which allows a member to delete content (comments, proposals, ideas, etc.), providing a reason for it",
+        "valueType": "Boolean",
+        "defaultValue": "FALSE",
+        "configTarget": "ASSEMBLY",
+        "configTargetType": "REGULAR"
+      }
+    }
+  ]
+}

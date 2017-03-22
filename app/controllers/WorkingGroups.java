@@ -830,21 +830,31 @@ public class WorkingGroups extends Controller {
                     .getString("appcivist.services.etherpad.default.apiKey");
             EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
 
-            //Let's save the revision with no number, so etherpad can generate one by itself
-            wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());
-            Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
-
-            JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
             Integer newRevision = null;
-            if (savedRevisions != null && !savedRevisions.isEmpty()) {
-                newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
-                proposal.addRevisionToContributionPublishHistory(newRevision);
+            try {
+	            //Let's save the revision with no number, so etherpad can generate one by itself	       
+	            wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());            		      
+	            Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
+	            JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
+	            //Integer newRevision = null;
+	            if (savedRevisions != null && !savedRevisions.isEmpty()) {
+	                newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
+	                proposal.addRevisionToContributionPublishHistory(newRevision);
+	            }
+            } catch (Exception e) {
+            	newRevision = 0;
             }
+
             proposal.setStatus(ContributionStatus.PUBLISHED);
             proposal.update();
+
             Promise.promise(() -> {
                 ResourceSpace wg = WorkingGroup.read(gid).getResources();
-                return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
+                if (wg != null){
+                	return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
+                } else {
+                	return true;
+                }
             });
 
             return ok(Json.toJson(newRevision));

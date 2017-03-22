@@ -1464,3 +1464,89 @@ create table resource_space_organization (
 alter table resource_space_organization add constraint fk_resource_space_org_resou_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
 
 alter table resource_space_organization add constraint fk_resource_space_org_theme_02 foreign key (organization_organization_id) references organization (organization_id);
+
+--29.sql
+create table custom_field_definition (
+  custom_field_definition_id                  bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  name                      varchar(255),
+  description               text,
+  entity_type               varchar(40),
+  entity_filter_attribute_name text,
+  entity_filter             text,
+  position_field            integer,
+  limit_field               text,
+  limit_type                varchar(40),
+  constraint pk_custom_field_definition primary key (custom_field_definition_id))
+;
+create table custom_field_value (
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  value                     varchar(255),
+  entity_target_type        varchar(40),
+  entity_target_uuid        varchar(40));
+
+create table resource_space_custom_field_definition (
+  resource_space_resource_space_id                                   bigint not null,
+  custom_field_definition_custom_field_definition_id                 bigint not null,
+  constraint pk_resource_space_custom_field_definition primary key (resource_space_resource_space_id, custom_field_definition_custom_field_definition_id))
+;
+
+alter table resource_space_custom_field_definition add constraint fk_resource_space_org_resou_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
+
+alter table resource_space_custom_field_definition add constraint fk_resource_space_org_theme_02 foreign key (custom_field_definition_custom_field_definition_id) references custom_field_definition (custom_field_definition_id);
+
+alter table custom_field_value add column custom_field_value_id bigserial not null;
+
+alter table custom_field_value add column custom_field_definition_id bigint;
+
+alter table custom_field_value add constraint pk_custom_field_value primary key (custom_field_value_id);
+
+-- 30.sql
+-- Extending field definitions to include also the type of the field value
+alter table custom_field_definition add column field_type varchar(40) default 'TEXT';
+
+-- Adding some default values that are useful
+ALTER TABLE "public"."appcivist_user" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."assembly" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."ballot" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."ballot_paper" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."campaign" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."candidate" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."component" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."component_definition" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."config" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."config_definition" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."contribution" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."custom_field_definition" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."custom_field_value" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."notification_event_signal" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."organization" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."resource" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."resource_space" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."s3file" ALTER COLUMN "id" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."token_action" ALTER COLUMN "token" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."user_profile" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+ALTER TABLE "public"."working_group" ALTER COLUMN "uuid" SET DEFAULT uuid_generate_v4();
+
+-- 31.sql
+create table resource_space_custom_field_value (
+  resource_space_resource_space_id                                                 bigint not null,
+  custom_field_value_custom_field_value_id                                         bigint not null,
+  constraint pk_resource_space_custom_field_value primary key (resource_space_resource_space_id, custom_field_value_custom_field_value_id))
+;
+
+alter table resource_space_custom_field_value add constraint fk_resource_space_custom_value_01 foreign key (resource_space_resource_space_id) references resource_space (resource_space_id);
+
+alter table resource_space_custom_field_value add constraint fk_resource_space_custom_value_02 foreign key (custom_field_value_custom_field_value_id) references custom_field_value (custom_field_value_id);
+
+ALTER TABLE "public"."custom_field_value" ADD CONSTRAINT "fk_custom_field_definition_01" FOREIGN KEY ("custom_field_definition_id") REFERENCES "public"."custom_field_definition"("custom_field_definition_id");
