@@ -4,11 +4,15 @@ import be.objectify.deadbolt.java.DeadboltModule;
 import be.objectify.deadbolt.java.cache.HandlerCache;
 import ch.qos.logback.core.net.SyslogOutputStream;
 import com.amazonaws.util.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Test;
 import play.Application;
+import play.Logger;
 import play.Mode;
 import play.api.cache.CacheApi;
 import play.inject.guice.GuiceApplicationBuilder;
+import play.libs.Json;
 import play.test.FakeApplication;
 import play.test.WithApplication;
 
@@ -18,16 +22,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.sql.Timestamp;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ContributionsTest extends WithApplication {
 	
-	@Test
+//	@Test
     public void testUpdateContribution() {
 		Contribution c = Contribution.read(new Long(1));
 		System.out.println("Contribution: "+c.getTitle());
@@ -47,25 +50,37 @@ public class ContributionsTest extends WithApplication {
 	private static final String BASE_URL = "http://localhost:9000";
 
 	@Test
-	public void testAddThemeToContribution() {
-		Contribution c = Contribution.read(new Long(1));
+	public void testAddAndDeleteThemeInContribution() {
 		Theme t = new Theme();
 		t.setTitle("THEME1");
 		t.setDescription("THEME TEST");
 		List<Theme> themes = new ArrayList<Theme>();
 		themes.add(t);
-		JSONObject obj = null;
+		JsonNode jsonNodeArray = Json.newObject();
+		((ObjectNode)jsonNodeArray).put("themes", Json.toJson(themes));
+		Logger.info("json+++++"+jsonNodeArray.toString());
 		try {
-			obj = new JSONObject(makeRequest(
-                    BASE_URL, "POST", new JSONObject(themes)));
-			//assertTrue(obj.getBoolean("isSuccessfull"));
+			JsonNode obj = Json.parse(makeRequest(
+                    BASE_URL+"/api/contribution/05ac4be4-9960-4975-a8b7-6de893c384f4/themes", "POST", jsonNodeArray));
+			String themeId = "";
+			if (obj.isArray()) {
+				for (JsonNode objNode : obj) {
+					String title =  objNode.get("title").asText();
+					String description=objNode.get("description").asText();
+					themeId = objNode.get("themeId").asText();
+					Logger.info("jsontitle+++++"+title);
+					Logger.info("jsondescription+++++"+description);
+					assertTrue(t.getTitle().equals(title));
+					assertTrue(t.getDescription().equals(description));
+				}
+			}
 
-			JSONObject body = obj.getJSONObject("body");
-			System.out.println("OBJ" + body);
-//
-//			assertEquals(student.getAge(), body.getInt("age"));
-//			assertEquals(student.getFirstName(), body.getString("firstName"));
-//			assertEquals(student.getLastName(), body.getString("lastName"));
+			JsonNode objDelete = Json.parse(makeRequest(
+					BASE_URL+"/api/contribution/05ac4be4-9960-4975-a8b7-6de893c384f4/themes/"+themeId, "DELETE", null));
+			Object themesStr =  objDelete.get("themes");
+			Logger.info("jsonthemes+++++"+themesStr);
+			assertTrue(themesStr==null);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -74,13 +89,14 @@ public class ContributionsTest extends WithApplication {
 	}
 
 	public static String makeRequest(String myUrl,
-									 String httpMethod, JSONObject parameters) throws Exception {
+									 String httpMethod, JsonNode parameters) throws Exception {
 		URL url = null;
 		url = new URL(myUrl);
 		HttpURLConnection conn = null;
 		conn = (HttpURLConnection) url.openConnection();
 		conn.setDoInput(true);
 		conn.setRequestProperty("Content-Type", "application/json");
+		conn.setRequestProperty("SESSION_KEY", "89284ca8f53d8c4cc2f144e241e19aeab1cdf769-pa.u.exp=1487873601777&pa.p.id=password&pa.u.id=carmen%40example.com");
 		DataOutputStream dos = null;
 		conn.setRequestMethod(httpMethod);
 
@@ -99,7 +115,6 @@ public class ContributionsTest extends WithApplication {
 			return error;
 		}
 		String inputString = inputStreamToString(conn.getInputStream());
-
 		return inputString;
 	}
 	public static String inputStreamToString(InputStream is) throws Exception {
