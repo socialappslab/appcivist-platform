@@ -264,17 +264,13 @@ public class Spaces extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
     public static Result findSpaceFieldsValue(@ApiParam(name = "sid", value = "Space ID") Long sid) {
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
-        List<CustomFieldValue> customFieldValues = new ArrayList<CustomFieldValue>();
         if (resourceSpace == null) {
             return notFound(Json
                     .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
         } else {
-            List<CustomFieldDefinition> customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
-            for (CustomFieldDefinition customFieldDefinition:customFieldDefinitions) {
-                customFieldValues.addAll(customFieldDefinition.getCustomFieldValues());
-            }
+            List<CustomFieldValue> customFieldValues = resourceSpace.getCustomFieldValues();
+            return ok(Json.toJson(customFieldValues));   
         }
-        return ok(Json.toJson(customFieldValues));
     }
 
     /**
@@ -438,13 +434,8 @@ public class Spaces extends Controller {
             resourceSpace.update();
             resourceSpace.refresh();
             customFieldValue.softRemove();
-            List<CustomFieldDefinition> customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
-            for (CustomFieldDefinition customFieldDefinition:customFieldDefinitions
-                    ) {
-                customFieldValues.addAll(customFieldDefinition.getCustomFieldValues());
-            }
+            return ok(Json.toJson(customFieldValues));            
         }
-        return ok(Json.toJson(customFieldValues));
     }
 
     /**
