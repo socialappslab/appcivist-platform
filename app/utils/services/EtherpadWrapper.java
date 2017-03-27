@@ -87,9 +87,17 @@ public class EtherpadWrapper {
 	public String getHTML(String padId) {
 		return getHtmlFromResponse(this.client.getHTML(padId));
 	}
-	
+
+	public String getHTMLRevision(String padId, Long rev) {
+		return getHtmlFromResponse(this.client.getHTML(padId, rev));
+	}
+
 	public String getText(String padId) {
 		return getTextFromResponse(this.client.getText(padId));
+	}
+
+	public String getTextRevision(String padId, Long rev) {
+		return getTextFromResponse(this.client.getText(padId,rev));
 	}
 
 	public void setHTML(String padId, String html) {
