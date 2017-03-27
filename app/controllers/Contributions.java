@@ -3481,6 +3481,32 @@ public class Contributions extends Controller {
         return ok();
     }
 
+    /**
+     * GET       /api/space/:sid/contribution/word/frequency
+     *
+     * @param sid
+     * @return
+     */   
+    @ApiOperation(httpMethod = "GET", response = HashMap.class, responseContainer = "List", produces = "application/json",
+			value = "List of words in proposals with its frequency")
+	@ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> wordsCloud (@ApiParam(name = "sid", value = "Resource Space ID")Long sid) {
+    	List<Contribution> contributions   = Contribution.findAllByContainingSpace(sid);
+    	Map<String, Integer> wordFrequency = new HashMap<String, Integer>();
+    	
+    	Promise<Result> resultPromise = Promise.promise( () -> { 
+	    	for (Contribution c: contributions){
+	    		ContributionsDelegate.wordsWithFrequencies(c, wordFrequency);	        		
+	    	}
+	    	//return true;
+	    	return ok(Json.toJson(wordFrequency));
+    	});
+    	
+    	return resultPromise;
+        //return ok(Json.toJson(wordFrequency));
+    }    	
 }
 
 class PaginatedContribution {

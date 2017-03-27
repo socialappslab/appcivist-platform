@@ -198,7 +198,8 @@ GET       /api/assembly/:aid/contribution/:cid/padid                            
 GET       /api/assembly/:aid/contribution/:cid/comment                           controllers.Contributions.findContributionComments(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/contributions                     controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
-PUT       /api/space/:sid/contribution/comment/reset                      controllers.Contributions.updateContributionCounters(sid: Long)
+PUT       /api/space/:sid/contribution/comment/reset                      		 controllers.Contributions.updateContributionCounters(sid: Long)
+GET		  /api/space/:sid/contribution/word/frequency							 controllers.Contributions.wordsCloud(sid: Long)
 #update state of contribution
 PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 GET       /api/assembly/:aid/contribution/:coid/feedback                         controllers.Contributions.readContributionFeedbackNoGroupId(aid: Long, coid: Long, type: String ?= null)

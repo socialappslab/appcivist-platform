@@ -27,6 +27,7 @@ import org.jsoup.safety.Whitelist;
 
 import play.Logger;
 import play.Play;
+import scala.collection.generic.BitOperations.Int;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
@@ -492,5 +493,45 @@ public class ContributionsDelegate {
         for (Contribution cfrs: contributionFRS){       
             resetChildrenCommentCountersToZero(cfrs);       
         }
+    }
+    
+    public static Map<String, Integer> wordsWithFrequencies (Contribution c, Map<String, Integer> wordFrequency) {
+    	String[] title = c.getTitle().toLowerCase().split(" ");
+    	String[] text  = c.getText().toLowerCase().split(" ");
+    	
+    	for (String word: title) {
+    		if (word.length() > 4) {
+	    		if (wordFrequency.containsKey(word)) {
+	    			wordFrequency.put(word, wordFrequency.get(word) + 1);
+	    		} else {
+	    			wordFrequency.put(word, 1);
+	    		}
+    		}
+    	}
+    	
+    	for (String word: text) {
+    		if (wordFrequency.containsKey(word)) {
+    			wordFrequency.put(word, wordFrequency.get(word) + 1);
+    		} else {
+    			wordFrequency.put(word, 1);
+    		}
+    		Logger.info(wordFrequency.toString());
+    	}
+
+        ResourceSpace rs  = c.getResourceSpace();   
+        List<Contribution> contributionRS = Contribution.findAllByContainingSpace(rs.getResourceSpaceId());    
+        
+        for (Contribution crs: contributionRS){     
+        	wordsWithFrequencies(crs, wordFrequency);            
+        }
+        
+        ResourceSpace frs = c.getForum();
+        List<Contribution> contributionFRS = Contribution.findAllByContainingSpace(frs.getResourceSpaceId());
+      
+        for (Contribution cfrs: contributionFRS){       
+        	wordsWithFrequencies(cfrs, wordFrequency);       
+        }
+        
+    	return wordFrequency;
     }
 }
