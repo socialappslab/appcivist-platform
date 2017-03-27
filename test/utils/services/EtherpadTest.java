@@ -11,7 +11,7 @@ import org.junit.Test;
 public class EtherpadTest {
 
 
-	@Test
+//	@Test
 	public void createPad() throws MalformedURLException {
 		EtherpadWrapper eth = new EtherpadWrapper("http://etherpad.littlemacondo.com","779ca795340d4b9582e18236e3613a1a6f1891f2482ba64d9494e421276ce889");
 		String padId = UUID.randomUUID().toString();
@@ -29,7 +29,7 @@ public class EtherpadTest {
 	}
 		
 	
-	@Test
+//	@Test
 	public void createPadWithHTML() {
 		EtherpadWrapper eth = new EtherpadWrapper("http://etherpad.littlemacondo.com","779ca795340d4b9582e18236e3613a1a6f1891f2482ba64d9494e421276ce889");
 		String padId = UUID.randomUUID().toString();
