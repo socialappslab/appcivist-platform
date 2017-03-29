@@ -1732,44 +1732,45 @@ public class Contributions extends Controller {
                     newContributionForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
         } else {
-            Contribution newContribution = newContributionForm.get();
-            newContribution.setContributionId(contributionId);
-            newContribution.setContextUserId(author.getUserId());
-          
-            Contribution existingContribution = Contribution.read(contributionId);
-            for (Field field : existingContribution.getClass().getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
-                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
-                            || field.isAnnotationPresent(OneToOne.class)) {
-                        continue;
-                    }
-                    field.set(existingContribution, field.get(newContribution));
-                } catch (Exception e) {
-                }
-            }
-            existingContribution.setContextUserId(author.getUserId());
-            Ebean.beginTransaction();
-          
-            try {
-                        Contribution.update(existingContribution);
-                        Ebean.commitTransaction();
-                  } catch (Exception e) {
-                        Ebean.rollbackTransaction();
-                        e.printStackTrace();
-                        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
-                  TransferResponseStatus responseBody = new TransferResponseStatus();
-                  responseBody.setStatusMessage(e.getMessage());
-                  return Controller.internalServerError(Json.toJson(responseBody));
-                  }
+			try {
+				Ebean.beginTransaction();
+	            Contribution newContribution = newContributionForm.get();
+	            newContribution.setContributionId(contributionId);
+	            newContribution.setContextUserId(author.getUserId());
+	          
+//	            Contribution existingContribution = Contribution.read(contributionId);
+//	            for (Field field : existingContribution.getClass().getDeclaredFields()) {
+//                    field.setAccessible(true);
+//                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+//                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+//                            || field.isAnnotationPresent(OneToOne.class)) {
+//                        continue;
+//                    }
+//                    field.set(existingContribution, field.get(newContribution));
+//	            }
+//				existingContribution.setContextUserId(author.getUserId());
+//				
+//				Contribution.update(existingContribution);
+	            Contribution updatedContribution = Contribution.readAndUpdate(newContribution, contributionId, author.getUserId());
+				ResourceSpace rs = Assembly.read(aid).getResources();
+				Promise.promise(() -> {
+					return NotificationsDelegate
+							.updatedContributionInResourceSpace(rs,
+									updatedContribution);
+				});
 
-            ResourceSpace rs = Assembly.read(aid).getResources();
-            Promise.promise(() -> {
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, existingContribution);
-            });
-
-            return ok(Json.toJson(existingContribution));
+				Ebean.commitTransaction();
+	            return ok(Json.toJson(updatedContribution));
+			} catch (Exception e) {
+				Ebean.rollbackTransaction();
+				e.printStackTrace();
+				Logger.error("Error while updating contribution => ",
+						LogActions.exceptionStackTraceToString(e));
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(e.getMessage());
+				return Controller
+						.internalServerError(Json.toJson(responseBody));
+			}
         }
     }
 
