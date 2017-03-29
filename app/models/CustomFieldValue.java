@@ -45,7 +45,7 @@ public class CustomFieldValue extends AppCivistBaseModel {
 
 	@JsonView(Views.Public.class)
 	@JoinColumn(name = "custom_field_definition_id")
-	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH)
 	private CustomFieldDefinition customFieldDefinition;
 
 	@JsonIgnore
