@@ -951,18 +951,39 @@ public class Contribution extends AppCivistBaseModel {
 		}
 		Contribution existingContribution = Contribution.read(contributionId);
 		
-		for (Field field : existingContribution.getClass().getDeclaredFields()) {
-			field.setAccessible(true);
-			if (field.getName().toLowerCase().contains("ebean")
-					|| field.isAnnotationPresent(ManyToMany.class)
-					|| field.isAnnotationPresent(ManyToOne.class)
-					|| field.isAnnotationPresent(OneToMany.class)
-					|| field.isAnnotationPresent(OneToOne.class)) {
-				continue;
-			}
-			field.set(existingContribution, field.get(newContribution));
-		}
+// TODO: find a way for reflections to work with Ebean updates in Play
+// See		http://stackoverflow.com/questions/38655024/playframework-2-5-ebean-update-using-reflection
+// Option: use java.beans.Statement http://stackoverflow.com/questions/10009052/invoking-setter-method-using-java-reflection/10009255#10009255
+// In order for Ebean to know that the entity is updated, we have to use the setters/getters in play
+//		for (Field field : existingContribution.getClass().getDeclaredFields()) {
+//			field.setAccessible(true);
+//			if (field.getName().toLowerCase().contains("ebean")
+//					|| field.isAnnotationPresent(ManyToMany.class)
+//					|| field.isAnnotationPresent(ManyToOne.class)
+//					|| field.isAnnotationPresent(OneToMany.class)
+//					|| field.isAnnotationPresent(OneToOne.class)) {
+//				continue;
+//			}
+//			field.set(existingContribution, field.get(newContribution));
+//		}
+		
+		existingContribution.setAction(newContribution.getAction());
+		existingContribution.setActionDone(newContribution.getActionDone());
+		existingContribution.setActionDueDate(newContribution.getActionDueDate());
+		existingContribution.setAssessmentSummary(newContribution.getAssessmentSummary());
+		existingContribution.setBudget(newContribution.getBudget());
+		existingContribution.setLang(newContribution.getLang());
+		existingContribution.setLastUpdate(new Date());
+		existingContribution.setLocation(newContribution.getLocation());
+		existingContribution.setModerationComment(newContribution.getModerationComment());
+		existingContribution.setPinned(newContribution.getPinned());
+		existingContribution.setSourceCode(newContribution.getSourceCode());
+		existingContribution.setStatus(newContribution.getStatus());
+		existingContribution.setText(newContribution.getText());
+		existingContribution.setTitle(newContribution.getTitle());
+		existingContribution.setType(newContribution.getType());
 		existingContribution.setContextUserId(authorId);
+		existingContribution.setAttachments(newContribution.getAttachments());
 
 		return Contribution.update(existingContribution);
 	}

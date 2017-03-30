@@ -1732,8 +1732,8 @@ public class Contributions extends Controller {
                     newContributionForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
         } else {
+			Ebean.beginTransaction();
 			try {
-				Ebean.beginTransaction();
 	            Contribution newContribution = newContributionForm.get();
 	            newContribution.setContributionId(contributionId);
 	            newContribution.setContextUserId(author.getUserId());
@@ -1762,7 +1762,7 @@ public class Contributions extends Controller {
 				Ebean.commitTransaction();
 	            return ok(Json.toJson(updatedContribution));
 			} catch (Exception e) {
-				Ebean.rollbackTransaction();
+				Ebean.endTransaction();
 				e.printStackTrace();
 				Logger.error("Error while updating contribution => ",
 						LogActions.exceptionStackTraceToString(e));
