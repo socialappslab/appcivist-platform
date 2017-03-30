@@ -15,21 +15,21 @@ import providers.MyLoginUsernamePasswordAuthUser;
  */
 public class ApplicationTest {
 
-	@Test
+//	@Test
 	public void simpleCheck() {
 		int a = 1 + 1;
 		assertThat(a, equalTo(2));
 		
 	}
 
-	@Test
+//	@Test
 	public void renderTemplate() {
 		Content html = views.html.index.render();
 		assertThat(html.contentType(),equalTo("text/html"));
 		
 	}
 
-	@Test
+//	@Test
 	public void testPasswords() {
 		MyLoginUsernamePasswordAuthUser authUser = 
 				new MyLoginUsernamePasswordAuthUser("appcivist@sage.2016", "bob@example.com");

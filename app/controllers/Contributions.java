@@ -1732,44 +1732,45 @@ public class Contributions extends Controller {
                     newContributionForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
         } else {
-            Contribution newContribution = newContributionForm.get();
-            newContribution.setContributionId(contributionId);
-            newContribution.setContextUserId(author.getUserId());
-          
-            Contribution existingContribution = Contribution.read(contributionId);
-            for (Field field : existingContribution.getClass().getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
-                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
-                            || field.isAnnotationPresent(OneToOne.class)) {
-                        continue;
-                    }
-                    field.set(existingContribution, field.get(newContribution));
-                } catch (Exception e) {
-                }
-            }
-            existingContribution.setContextUserId(author.getUserId());
-            Ebean.beginTransaction();
-          
-            try {
-                        Contribution.update(existingContribution);
-                        Ebean.commitTransaction();
-                  } catch (Exception e) {
-                        Ebean.rollbackTransaction();
-                        e.printStackTrace();
-                        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
-                  TransferResponseStatus responseBody = new TransferResponseStatus();
-                  responseBody.setStatusMessage(e.getMessage());
-                  return Controller.internalServerError(Json.toJson(responseBody));
-                  }
+			Ebean.beginTransaction();
+			try {
+	            Contribution newContribution = newContributionForm.get();
+	            newContribution.setContributionId(contributionId);
+	            newContribution.setContextUserId(author.getUserId());
+	          
+//	            Contribution existingContribution = Contribution.read(contributionId);
+//	            for (Field field : existingContribution.getClass().getDeclaredFields()) {
+//                    field.setAccessible(true);
+//                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+//                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+//                            || field.isAnnotationPresent(OneToOne.class)) {
+//                        continue;
+//                    }
+//                    field.set(existingContribution, field.get(newContribution));
+//	            }
+//				existingContribution.setContextUserId(author.getUserId());
+//				
+//				Contribution.update(existingContribution);
+	            Contribution updatedContribution = Contribution.readAndUpdate(newContribution, contributionId, author.getUserId());
+				ResourceSpace rs = Assembly.read(aid).getResources();
+				Promise.promise(() -> {
+					return NotificationsDelegate
+							.updatedContributionInResourceSpace(rs,
+									updatedContribution);
+				});
 
-            ResourceSpace rs = Assembly.read(aid).getResources();
-            Promise.promise(() -> {
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, existingContribution);
-            });
-
-            return ok(Json.toJson(existingContribution));
+				Ebean.commitTransaction();
+	            return ok(Json.toJson(updatedContribution));
+			} catch (Exception e) {
+				Ebean.endTransaction();
+				e.printStackTrace();
+				Logger.error("Error while updating contribution => ",
+						LogActions.exceptionStackTraceToString(e));
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(e.getMessage());
+				return Controller
+						.internalServerError(Json.toJson(responseBody));
+			}
         }
     }
 
@@ -3455,7 +3456,7 @@ public class Contributions extends Controller {
         return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with UUID " + couuid.toString() + " not found")));
     }
   
-    /** 
+    /**
      * PUT       /api/space/:sid/contribution/comment/reset
      *
      * @param sid
@@ -3468,18 +3469,19 @@ public class Contributions extends Controller {
     @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
     	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
-        for (Contribution c: contributions){
-	        Promise.promise( () -> { 
-	        	return ContributionsDelegate.resetParentCommentCountersToZero(c); 
-	        }).fallbackTo(
-	        		Promise.promise( () ->{ 
-	        			return ContributionsDelegate.resetChildrenCommentCountersToZero(c); 
+    	
+    	Promise.promise( () -> { 
+	    	for (Contribution c: contributions){
+	        		ContributionsDelegate.resetParentCommentCountersToZero(c);
+	        		ContributionsDelegate.resetChildrenCommentCountersToZero(c);
 	        		
-	        }));
-    	}
-        
+	    	}
+	    	return true;
+    	});
+    	
         return ok();
     }
+
 }
 
 class PaginatedContribution {

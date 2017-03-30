@@ -1,16 +1,27 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
-import models.misc.Views;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+
+import models.misc.Views;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonView;
 
 
 @Entity
@@ -33,10 +44,14 @@ public class CustomFieldValue extends AppCivistBaseModel {
 	private String value;
 
 	@JsonView(Views.Public.class)
-	@Column(name = "custom_field_definition_id")
-	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
+	@JoinColumn(name = "custom_field_definition_id")
+	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH)
 	private CustomFieldDefinition customFieldDefinition;
 
+	@JsonIgnore
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "customFieldValues")
+	private List<ResourceSpace> containingSpaces;
+	
 	public CustomFieldValue() {
 		super();
 		this.uuid = UUID.randomUUID();

@@ -45,18 +45,17 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	private String fieldType;
 	
 	@JsonView(Views.Public.class)
-	@Column(name="position")
+	@Column(name="field_position")
 	private Integer position;
 
 	@JsonView(Views.Public.class)
-	@Column(name="limit", columnDefinition="text")
+	@Column(name="field_limit", columnDefinition="text")
 	private String limit;
 
 	@JsonView(Views.Public.class)
 	@Column(name="limit_type")
 	@Enumerated(EnumType.STRING)
 	private LimitTypes limitType;
-
 
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "customFieldDefinitions")
