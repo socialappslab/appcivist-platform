@@ -12,6 +12,10 @@ alter table resource_space_custom_field_value add constraint fk_resource_space_c
 ALTER TABLE "public"."custom_field_value" ADD CONSTRAINT "fk_custom_field_definition_01" FOREIGN KEY ("custom_field_definition_id") REFERENCES "public"."custom_field_definition"("custom_field_definition_id");
 ALTER TABLE "public"."custom_field_definition" RENAME COLUMN "position" TO "field_position";
 ALTER TABLE "public"."custom_field_definition" RENAME COLUMN "limit" TO "field_limit";
+ALTER TABLE "public"."custom_field_value" ALTER COLUMN "value" SET DATA TYPE text;
+
+alter table working_group add column is_topic boolean;
+update working_group set is_topic=false;
 
 
 # --- !Downs
