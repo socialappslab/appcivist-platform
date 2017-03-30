@@ -1,6 +1,7 @@
 package models;
 
 import enums.BallotStatus;
+import enums.ResourceSpaceTypes;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Calendar;
@@ -54,6 +55,8 @@ public class Ballot extends Model {
 	private Boolean requireRegistration = true;
     private Boolean userUuidAsSignature = false;
     private String decisionType = "BINDING";
+	@Column(name = "entity_type")
+	private String entityType;
     @ManyToOne
     @JoinColumn(name="component")
     @JsonIgnore 
@@ -256,6 +259,14 @@ public class Ballot extends Model {
 		this.status = status;
 	}
 
+	public String getEntityType() {
+		return entityType;
+	}
+
+	public void setEntityType(String entityType) {
+		this.entityType = entityType;
+	}
+
 	public static Ballot findByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
@@ -323,6 +334,45 @@ public class Ballot extends Model {
 			ballotConfig.save();
 		} else {
 			ballotConfig.setValue("YES/NO/ABSTAIN");
+			ballotConfig.save();
+		}
+
+		return consensusBallot;
+
+	}
+
+	public static Ballot createConsensusBallotForResourceSpace(ResourceSpace resourceSpace,List<BallotConfiguration> ballotConfigs){
+		Ballot consensusBallot = new Ballot();
+		Date startBallot = Calendar.getInstance().getTime();
+		// TODO: add the due date for reaching consensus in the WG creation form
+		//       by default, the groups gets 30 days for reaching consensus
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startBallot);
+		cal.add(Calendar.DATE, 30);
+		Date endBallot = cal.getTime();
+
+		Logger.info("Creating consensus ballot for Resource Space: " + resourceSpace.getName());
+		consensusBallot.setStartsAt(startBallot);
+		consensusBallot.setEndsAt(endBallot);
+		consensusBallot.setPassword(resourceSpace.getUuid().toString());
+		consensusBallot.setVotingSystemType(VotingSystemTypes.PLURALITY);
+		consensusBallot.setRequireRegistration(false);
+		consensusBallot.setUserUuidAsSignature(true);
+		consensusBallot.setDecisionType("BINDING");
+		consensusBallot.save();
+		consensusBallot.refresh();
+
+		resourceSpace.addBallot(consensusBallot);
+
+		// TODO: figure out why updates trigger inserts in the resource space
+		// for resources that already exist
+		resourceSpace.setConsensusBallot(consensusBallot.getUuid());
+		resourceSpace.update();
+
+		// Add Ballot configurations
+		for (BallotConfiguration ballotConfig: ballotConfigs
+			 ) {
+			ballotConfig.setBallotId(consensusBallot.getId());
 			ballotConfig.save();
 		}
 

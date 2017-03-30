@@ -1321,4 +1321,14 @@ public class Contribution extends AppCivistBaseModel {
         }
         
     }
+
+    public static List<Contribution> findContributionsInSpaceByTypeStatus(Long sid,
+                                                       ContributionTypes type, ContributionStatus status) {
+            return find.where()
+                    .eq("type", type)
+                    .eq("containingSpaces.resourceSpaceId", sid)
+                    .eq("status", status)
+                    .not(Expr.eq("removed",true))
+                    .findList();
+    }
 }

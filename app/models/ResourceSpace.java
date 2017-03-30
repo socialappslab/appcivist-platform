@@ -1,8 +1,10 @@
 package models;
 
+import enums.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,11 +31,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
-
-import enums.CampaignTemplatesEnum;
-import enums.ContributionTypes;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -108,6 +105,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<CustomFieldValue> customFieldValues;
+
+	@JsonIgnore
+	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@JoinTable(name = "resource_space_ballot_history")
+	@Where(clause="${ta}.removed=false")
+	private List<Ballot> ballotHistories;
 	
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_theme")
@@ -224,7 +227,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@JsonIgnore
 	private Component component;
 
-	
+	@JsonView(Views.Public.class)
+	private UUID consensusBallot;
+	@Transient
+	private String consensusBallotAsString;
+
 	/**
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -286,6 +293,24 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.uuidAsString = uuidAsString;
 		this.uuid = UUID.fromString(uuidAsString);
 	}
+
+	public UUID getConsensusBallot() {
+		return consensusBallot;
+	}
+
+	public void setConsensusBallot(UUID consensusBallot) {
+		this.consensusBallot = consensusBallot;
+	}
+
+	public String getConsensusBallotAsString() {
+		return consensusBallot!=null ? consensusBallot.toString() : null;
+	}
+
+	public void setConsensusBallotAsString(String consensusBallotAsString) {
+		this.consensusBallotAsString = consensusBallotAsString;
+		this.consensusBallot = UUID.fromString(consensusBallotAsString);
+	}
+
 
 	public ResourceSpaceTypes getType() {
 		return type;
@@ -771,6 +796,20 @@ public class ResourceSpace extends AppCivistBaseModel {
 		}
 		return this.campaigns;
 	}
+
+	public List<Ballot> getBallotsFilteredByStatusDate(BallotStatus status, Date startsAt, Date endsAt) {
+		List<Ballot> filtered = this.ballots;
+		if (status!=null) {
+			filtered = filtered.stream().filter(p -> p.getStatus() == status).collect(Collectors.toList());
+		}
+		if (startsAt!=null) {
+			filtered = filtered.stream().filter(p -> p.getStartsAt().after(startsAt)).collect(Collectors.toList());
+		}
+		if (endsAt!=null) {
+			filtered = filtered.stream().filter(p -> p.getEndsAt().before(endsAt)).collect(Collectors.toList());
+		}
+		return filtered;
+	}
 	
 	public Config getConfigByKey(String key) {
 		List<Config> matchingConfigs = this.configs.stream().filter(p -> p.getKey().equals(key)).collect(Collectors.toList());
@@ -786,5 +825,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public List<Ballot> getBallotHistories() {
+		return ballotHistories;
+	}
+
+	public void setBallotHistories(List<Ballot> ballotHistories) {
+		this.ballotHistories = ballotHistories;
 	}
 }
