@@ -14,8 +14,6 @@ ALTER TABLE "public"."custom_field_definition" RENAME COLUMN "position" TO "fiel
 ALTER TABLE "public"."custom_field_definition" RENAME COLUMN "limit" TO "field_limit";
 ALTER TABLE "public"."custom_field_value" ALTER COLUMN "value" SET DATA TYPE text;
 
-alter table working_group add column is_topic boolean;
-update working_group set is_topic=false;
-
+alter table working_group add column is_topic boolean default false;
 
 # --- !Downs
