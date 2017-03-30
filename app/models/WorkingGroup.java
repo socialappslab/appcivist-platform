@@ -49,7 +49,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
     private Boolean listed = true;
     @JsonView(Views.Public.class)
-    private Boolean isTopic = true;
+    private Boolean isTopic = false;
 	@JsonView(Views.Public.class)
     private String majorityThreshold;
 	@JsonView(Views.Public.class)
