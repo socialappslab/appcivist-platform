@@ -274,6 +274,25 @@ public class Spaces extends Controller {
     }
 
     /**
+     * GET       /api/space/:uuid/fieldvalue/public
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CustomFieldValue.class, produces = "application/json", responseContainer = "List", value = "List of custom field value in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    public static Result findSpaceFieldsValuePublic(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with uuid "+uuid)));
+        } else {
+            List<CustomFieldValue> customFieldValues = resourceSpace.getCustomFieldValues();
+            return ok(Json.toJson(customFieldValues));
+        }
+    }
+
+    /**
      * POST       /api/space/:sid/fieldvalue
      *
      * @param sid
