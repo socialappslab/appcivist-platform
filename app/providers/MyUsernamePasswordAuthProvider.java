@@ -409,14 +409,17 @@ public class MyUsernamePasswordAuthProvider
 	}
 
 	protected Body getPasswordResetMailingBody(final String token,
-			final User user, final Context ctx) {
+			final User user, final Context ctx, String configUrl) {
 
 		final boolean isSecure = getConfiguration().getBoolean(SETTING_KEY_PASSWORD_RESET_LINK_SECURE);
 		String url = Play.application().configuration().getString(GlobalData.CONFIG_FORGOT_PASSWORD_URL_BASE);
-		if (url == null) {
-			url = Play.application().configuration().getString("application.baseUrl")+GlobalData.FORGOT_PASSWORD_DEFAULT_URL_BASE;
+		if (configUrl != null && !configUrl.equals("")) {
+			url= configUrl;
+		}else{
+			if (url == null) {
+				url = Play.application().configuration().getString("application.baseUrl")+GlobalData.FORGOT_PASSWORD_DEFAULT_URL_BASE;
+			}
 		}
-		
 		url += token;
 		
 		final String userLangCode = user.getLanguage();
@@ -451,10 +454,10 @@ public class MyUsernamePasswordAuthProvider
 		return new Body(text, html);
 	}
 
-	public void sendPasswordResetMailing(final User user, final Context ctx) {
+	public void sendPasswordResetMailing(final User user, final Context ctx, final String configUrl) {
 		final String token = generatePasswordResetRecord(user);
 		final String subject = getPasswordResetMailingSubject(user, ctx);
-		final Body body = getPasswordResetMailingBody(token, user, ctx);
+		final Body body = getPasswordResetMailingBody(token, user, ctx, configUrl);
 		mailer.sendMail(subject, body, getEmailName(user));
 	}
 

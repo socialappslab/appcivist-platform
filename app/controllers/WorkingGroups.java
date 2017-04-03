@@ -1,6 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -64,11 +66,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 
 import delegates.NotificationsDelegate;
 import delegates.WorkingGroupsDelegate;
-import enums.BallotStatus;
-import enums.ContributionStatus;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResponseStatus;
 import exceptions.ConfigurationException;
 
 @Api(value = "02 group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
@@ -635,7 +632,7 @@ public class WorkingGroups extends Controller {
             newCandidates = selectedProposals.stream().map(c -> {
                 BallotCandidate filtered = null;
                 for (BallotCandidate bc : currentCandidates) {
-                    if (bc.getContributionUuid().equals(c)) {
+                    if (bc.getCandidateUuid().equals(c)) {
                         filtered = bc;
                         break;
                     }
@@ -648,8 +645,8 @@ public class WorkingGroups extends Controller {
         for (BallotCandidate candidate : newCandidates) {
             BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
             contributionAssociatedCandidate.setBallotId(newBallot.getId());
-            contributionAssociatedCandidate.setCandidateType(new Integer(1));
-            contributionAssociatedCandidate.setContributionUuid(candidate.getContribution().getUuid());
+            contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
+            contributionAssociatedCandidate.setCandidateUuid(candidate.getContribution().getUuid());
             contributionAssociatedCandidate.save();
         }
         //Send the current ballot to a historic
