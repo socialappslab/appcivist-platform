@@ -1,6 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -69,16 +71,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionFeedbackTypes;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.MyRoles;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
-import enums.SupportedMembershipRegistration;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 
@@ -2405,8 +2397,8 @@ public class Contributions extends Controller {
                         || (ballot.getDecisionType().equals("CONSULTIVE") && ballot.getUuid().equals(consultive))) {
                     BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
                     contributionAssociatedCandidate.setBallotId(ballot.getId());
-                    contributionAssociatedCandidate.setCandidateType(new Integer(1));
-                    contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+                    contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
+                    contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
                     contributionAssociatedCandidate.save();
                 }
             }
@@ -2421,8 +2413,8 @@ public class Contributions extends Controller {
             if (b!=null) {
                 BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
                 contributionAssociatedCandidate.setBallotId(b.getId());
-                contributionAssociatedCandidate.setCandidateType(new Integer(1));
-                contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+                contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
+                contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
                 contributionAssociatedCandidate.save();
             }
         }

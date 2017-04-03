@@ -2,6 +2,9 @@ package controllers;
 
 
 import static play.data.Form.form;
+
+import delegates.NotificationsDelegate;
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -11,19 +14,23 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import models.CustomFieldDefinition;
-import models.CustomFieldValue;
-import models.ResourceSpace;
-import models.User;
+import models.*;
 import models.misc.Views;
+import models.transfer.BallotTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -36,8 +43,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 
-import enums.ResourceSpaceTypes;
-
 @Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
 public class Spaces extends Controller {
@@ -45,6 +50,10 @@ public class Spaces extends Controller {
     public static final Form<CustomFieldDefinition> CUSTOM_FIELD_DEFINITION_FORM = form(CustomFieldDefinition.class);
 
     public static final Form<CustomFieldValue> CUSTOM_FIELD_VALUE_FORM = form(CustomFieldValue.class);
+
+    public static final Form<BallotTransfer> BALLOT_TRANSFER_FORM = form(BallotTransfer.class);
+
+    public static final Form<Ballot> BALLOT_FORM = form(Ballot.class);
 
     public static final Form<ResourceSpace> RESOURCE_SPACE_FORM = form(ResourceSpace.class);
 
@@ -511,6 +520,176 @@ public class Spaces extends Controller {
                 newCustomFieldValue.setCustomFieldDefinition(customFieldValue.getCustomFieldDefinition());
                 newCustomFieldValue.update();
                 return ok(Json.toJson(newCustomFieldValue));
+            }
+        }
+    }
+
+    /**
+     * PUT       /api/space/:sid/ballot
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = Ballot.class, produces = "application/json", value = "Update a ballot in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Ballot object", value = "Body of Ballot in JSON", required = true, dataType = "models.Ballot", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result updateSpaceBallot(@ApiParam(name = "sid", value = "Space ID") Long sid) {
+
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            final Form<Ballot> newBallotForm = BALLOT_FORM
+                    .bindFromRequest();
+            if (newBallotForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "The form has the following error: "+
+                                newBallotForm.errorsAsJson()));
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Ballot ballot = newBallotForm.get();
+                if (ballot.getId()==null) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage("The id of the ballot is not found in request");
+                    return badRequest(Json.toJson(responseBody));
+                }
+                ballot.update();
+                F.Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(
+                            resourceSpace.getType(),
+                            NotificationEventName.UPDATED_VOTING_BALLOT,
+                            resourceSpace,
+                            resourceSpace);
+                });
+                return ok(Json.toJson(ballot));
+            }
+        }
+    }
+
+    /**
+     * GET       /api/space/:sid/ballot
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Ballot.class, produces = "application/json", responseContainer = "List", value = "List of ballots in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result findSpaceBallot(@ApiParam(name = "sid", value = "Space ID") Long sid,
+                                         @ApiParam(name = "status", value = "Status of ballots", allowableValues = "active,archived", defaultValue = "") String status,
+                                         @ApiParam(name = "starts_at", value = "String Date with format ddMMyyyy") String starts_at,
+                                         @ApiParam(name = "ends_at", value = "String Date with format ddMMyyyy") String ends_at) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            BallotStatus mappedType = null;
+            Date startsAt = null;
+            Date endsAt = null;
+            if (status != null && !status.isEmpty()) {
+                try{
+                    mappedType = BallotStatus.valueOf(status.toUpperCase());
+                }catch (Exception e) {
+                    return notFound(Json.toJson(new TransferResponseStatus(
+                            "Format status error " + e.getMessage())));
+                }
+            }
+            DateFormat df = new SimpleDateFormat("ddMMyyyy");
+            if (starts_at != null && !starts_at.isEmpty()) {
+                try {
+                    startsAt = df.parse(starts_at);
+                } catch (ParseException e) {
+                    return notFound(Json.toJson(new TransferResponseStatus(
+                        "Format date error " + e.getMessage())));
+                }
+            }
+            if (ends_at != null && !ends_at.isEmpty()) {
+                try {
+                    endsAt = df.parse(ends_at);
+                } catch (ParseException e) {
+                    return notFound(Json.toJson(new TransferResponseStatus(
+                            "Format date error " + e.getMessage())));
+                }
+            }
+            List<Ballot> resourceSpaceBallots = resourceSpace.getBallotsFilteredByStatusDate(mappedType,startsAt,endsAt);
+            return ok(Json.toJson(resourceSpaceBallots));
+        }
+    }
+
+    /**
+     * POST       /api/space/:sid/ballot
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Ballot.class, produces = "application/json", value = "Create a ballot in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "BallotTransfer object", value = "Body of BallotTransfer in JSON", required = true, dataType = "models.transfer.BallotTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result createSpaceBallot(@ApiParam(name = "sid", value = "Space ID") Long sid) {
+
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            final Form<BallotTransfer> newBallotForm = BALLOT_TRANSFER_FORM
+                    .bindFromRequest();
+            if (newBallotForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "The form has the following error: "+
+                                newBallotForm.errorsAsJson()));
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                BallotTransfer ballotTransfer = newBallotForm.get();
+                UUID consensus = resourceSpace.getConsensusBallot();
+                Ballot currentBallot = Ballot.findByUUID(consensus);
+                List<BallotCandidate> newCandidates = new ArrayList<>();
+
+                //Creates new candidates
+                if (ballotTransfer.getCandidateType() == null || ballotTransfer.getBallotCandidates() == null || ballotTransfer.getBallotCandidates().isEmpty()) {
+                    //Include all contributions of type PROPOSAL with status PUBLISHED
+                    List<Contribution> contributionList = Contribution.findContributionsInSpaceByTypeStatus(resourceSpace.getResourceSpaceId(), ContributionTypes.PROPOSAL,ContributionStatus.PUBLISHED);
+                    for (Contribution c:contributionList
+                         ) {
+                        BallotCandidate ballotCandidate = new BallotCandidate();
+                        ballotCandidate.setCandidateUuid(c.getUuid());
+                    }
+                    ballotTransfer.setCandidateType(BallotCandidateTypes.CONTRIBUTION);
+                } else {
+                    newCandidates = ballotTransfer.getBallotCandidates();
+                }
+                Ballot newBallot = Ballot.createConsensusBallotForResourceSpace(resourceSpace, ballotTransfer.getBallotConfigs());
+
+                for (BallotCandidate candidate : newCandidates) {
+                    BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
+                    contributionAssociatedCandidate.setBallotId(newBallot.getId());
+                    contributionAssociatedCandidate.setCandidateType(ballotTransfer.getCandidateType());
+                    contributionAssociatedCandidate.setCandidateUuid(candidate.getCandidateUuid());
+                    contributionAssociatedCandidate.save();
+                }
+                //Send the current ballot to a historic
+                if(currentBallot != null){
+                    resourceSpace.getBallotHistories().add(currentBallot);
+                    resourceSpace.save();
+                    //Archive previous ballot
+                    currentBallot.setStatus(BallotStatus.ARCHIVED);
+                    currentBallot.update();
+                }
+
+                F.Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(resourceSpace.getType(), NotificationEventName.NEW_VOTING_BALLOT, resourceSpace, resourceSpace);
+                });
+
+                return ok(Json.toJson(newBallot));
             }
         }
     }
