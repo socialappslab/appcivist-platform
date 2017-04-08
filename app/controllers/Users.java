@@ -591,7 +591,7 @@ public class Users extends Controller {
 			return badRequest(Json.toJson(Json
 					.toJson(new TransferResponseStatus("Error processing request"))));
 		} else {
-			final TokenAction ta = tokenIsValid(filledForm.get().token, Type.EMAIL_VERIFICATION);
+			final TokenAction ta = tokenIsValid(filledForm.get().token, Type.PASSWORD_RESET);
 			if (ta == null) {
 				return badRequest(Json.toJson(Json
 						.toJson(new TransferResponseStatus("Invalid token"))));
