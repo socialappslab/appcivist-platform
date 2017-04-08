@@ -2250,9 +2250,11 @@ public class Contributions extends Controller {
         		if (type.equals(ContributionTypes.PROPOSAL)) {
         			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS)) {
         				hasStatusConfig = 1;
-	        			if (cc.getValue().equalsIgnoreCase("NEW")) {
+	        			if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("NEW")) {
 	        				newContrib.setStatus(ContributionStatus.NEW);
-	        			} else if (cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        			} else if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
+	        			} else if (newContrib.getStatus() == null) {
 	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
 	        			}
         			}
@@ -2266,7 +2268,7 @@ public class Contributions extends Controller {
     	        }        			 
         	}
         	// If the configuration is not defined, get the defaults values
-        	if (hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
+        	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
         		String status = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
         		newContrib.setStatus(ContributionStatus.valueOf(status));
         	} 
