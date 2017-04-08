@@ -3,6 +3,8 @@ package controllers;
 
 import static play.data.Form.form;
 
+import be.objectify.deadbolt.java.actions.Dynamic;
+import com.fasterxml.jackson.databind.JsonNode;
 import delegates.NotificationsDelegate;
 import enums.*;
 import http.Headers;
@@ -17,10 +19,7 @@ import io.swagger.annotations.ApiResponses;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import models.*;
@@ -42,6 +41,8 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
+import security.SecurityModelConstants;
+import utils.GlobalData;
 
 @Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
@@ -56,6 +57,12 @@ public class Spaces extends Controller {
     public static final Form<Ballot> BALLOT_FORM = form(Ballot.class);
 
     public static final Form<ResourceSpace> RESOURCE_SPACE_FORM = form(ResourceSpace.class);
+
+    public static final Form<Config> CONFIG_FORM = form(Config.class);
+
+    public static final Form<ComponentMilestone> COMPONENT_MILESTONE_FORM = form(ComponentMilestone.class);
+
+    public static final Form<Component> COMPONENT_FORM = form(Component.class);
 
     @ApiOperation(produces="application/json", value="Simple search of resource space", httpMethod="GET")
     public static Result getSpace(Long sid) {
@@ -691,6 +698,120 @@ public class Spaces extends Controller {
 
                 return ok(Json.toJson(newBallot));
             }
+        }
+    }
+
+    /**
+     * PUT /api/space/:sid/config/:uuid
+     *
+     * @param sid
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = Config.class, produces = "application/json", value = "Update a config description by its ID and the space ID", notes = "Only for COORDINATORS")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No config found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Config object", value = "Config in json", dataType = "models.Config", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result updateSpaceCampaignConfig(
+            @ApiParam(name = "sid", value = "Space ID") Long sid,
+            @ApiParam(name = "uuid", value = "Config UUID") UUID uuid) {
+        // 1. read the campaign data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Config> newConfigForm = CONFIG_FORM.bindFromRequest();
+        if (newConfigForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("Error updating config");
+            return badRequest(Json.toJson(responseBody));
+        } else {
+            Config updatedConfig = newConfigForm.get();
+            ResourceSpace resourceSpace = ResourceSpace.read(sid);
+            if (resourceSpace == null) {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+            }
+            updatedConfig.setUuid(uuid);
+            updatedConfig.update();
+            resourceSpace.getConfigs().add(updatedConfig);
+            resourceSpace.update();
+            Logger.info("Updating Config");
+            return ok(Json.toJson(updatedConfig));
+        }
+    }
+
+    /**
+     * PUT /api/space/:sid/milestone/:mid
+     *
+     * @param sid
+     * @param mid
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = ComponentMilestone.class, produces = "application/json", value = "Update a ComponentMilestone description by its ID and the space ID", notes = "Only for COORDINATORS")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No ComponentMilestone found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "ComponentMilestone object", value = "ComponentMilestone in json", dataType = "models.ComponentMilestone", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result updateSpaceComponentMilestone(
+            @ApiParam(name = "sid", value = "Space ID") Long sid,
+            @ApiParam(name = "mid", value = "ComponentMilestone ID") Long mid) {
+        // 1. read the campaign data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<ComponentMilestone> newComponentMilestoneForm = COMPONENT_MILESTONE_FORM.bindFromRequest();
+        if (newComponentMilestoneForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("Error updating ComponentMilestone");
+            return badRequest(Json.toJson(responseBody));
+        } else {
+            ComponentMilestone updatedComponentMilestone = newComponentMilestoneForm.get();
+            ResourceSpace resourceSpace = ResourceSpace.read(sid);
+            if (resourceSpace == null) {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+            }
+            updatedComponentMilestone.setComponentMilestoneId(mid);
+            updatedComponentMilestone.update();
+            resourceSpace.getComponent().getMilestones().add(updatedComponentMilestone);
+            resourceSpace.update();
+            Logger.info("Updating ComponentMilestone");
+            return ok(Json.toJson(updatedComponentMilestone));
+        }
+    }
+
+    /**
+     * PUT /api/space/:sid/component/:cid
+     *
+     * @param sid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = Component.class, produces = "application/json", value = "Update a Component description by its ID and the space ID", notes = "Only for COORDINATORS")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No Component found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Component object", value = "Component in json", dataType = "models.Component", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result updateSpaceCampaignComponent(
+            @ApiParam(name = "sid", value = "Space ID") Long sid,
+            @ApiParam(name = "cid", value = "Component ID") Long cid) {
+        // 1. read the campaign data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Component> newComponentForm = COMPONENT_FORM.bindFromRequest();
+        if (newComponentForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("Error updating Component");
+            return badRequest(Json.toJson(responseBody));
+        } else {
+            Component updatedComponent = newComponentForm.get();
+            ResourceSpace resourceSpace = ResourceSpace.read(sid);
+            if (resourceSpace == null) {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+            }
+            updatedComponent.setComponentId(cid);
+            updatedComponent.update();
+            resourceSpace.getComponents().add(updatedComponent);
+            resourceSpace.update();
+            Logger.info("Updating Component");
+            return ok(Json.toJson(updatedComponent));
         }
     }
 }
