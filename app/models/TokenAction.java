@@ -110,4 +110,12 @@ public class TokenAction extends Model {
 		ua.save();
 		return ua;
 	}
+
+	public User getTargetUser() {
+		return targetUser;
+	}
+
+	public void setTargetUser(User targetUser) {
+		this.targetUser = targetUser;
+	}
 }
