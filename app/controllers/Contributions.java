@@ -2343,6 +2343,9 @@ public class Contributions extends Controller {
                 ResourceSpace aRs = a.getResources();
                 aRs.addWorkingGroup(newWorkingGroup);
                 aRs.update();
+                ResourceSpace cRS = c.getResources();
+                cRS.addWorkingGroup(newWorkingGroup);
+                cRS.update();
             }
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
