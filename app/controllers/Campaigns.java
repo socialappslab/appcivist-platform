@@ -1376,7 +1376,7 @@ public class Campaigns extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Group object", value = "Group in json", dataType = "models.WorkingGroup", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
     public static Result updateCampaignGroupDescription(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
