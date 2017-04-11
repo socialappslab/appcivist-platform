@@ -3461,9 +3461,9 @@ public class Contributions extends Controller {
      */    
     @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update comment counts on contributions", notes="Only for ADMINS")
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
-//    @ApiImplicitParams({
-//        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-//    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result updateContributionCounters (@ApiParam(name = "sid", value = "Resource Space ID") Long sid){
     	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
     	
