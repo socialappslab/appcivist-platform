@@ -146,6 +146,37 @@ public class Spaces extends Controller {
         return ok(Json.toJson(customFieldDefinitions));
     }
 
+
+    /**
+     * GET       /api/space/:sid/commentcount
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CustomFieldDefinition.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    // @ApiImplicitParams({
+    //         @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result getCommentCount(@ApiParam(name = "sid", value = "Space ID") Long sid) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        Integer commentCount = 0;
+        List<Contribution> discussionList = resourceSpace.getContributionsFilteredByType(ContributionTypes.DISCUSSION);
+        List<Contribution> commentList = resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
+        commentCount = discussionList.size() + commentList.size();
+
+        // List<CustomFieldDefinition> customFieldDefinitions;
+        // if (resourceSpace == null) {
+        //     return notFound(Json
+        //             .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        // } else {
+        //     customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
+        // }
+        ObjectNode result = Json.newObject();
+        result.put("resource id", sid);
+        result.put("counter", commentCount);
+        return ok(result);
+    }
+
     /**
      * POST       /api/space/:sid/field
      *

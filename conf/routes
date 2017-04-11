@@ -338,6 +338,7 @@ POST      /api/log/front                                                        
 GET       /api/space/:sid                                                        controllers.Spaces.getSpace(sid: Long)
 GET       /api/space/:uuid/public                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
 GET       /api/space/:sid/field                                                  controllers.Spaces.findSpaceFields(sid: Long)
+GET       /api/space/:sid/commentcount											 controllers.Spaces.getCommentCount(sid: Long)
 POST      /api/space/:sid/field                                                  controllers.Spaces.createSpaceFields(sid: Long)
 PUT       /api/space/:sid/field/:cfid                                            controllers.Spaces.updateSpaceFields(sid: Long, cfid: Long)
 DELETE    /api/space/:sid/field/:cfid                                            controllers.Spaces.deleteSpaceFields(sid: Long, cfid: Long)
