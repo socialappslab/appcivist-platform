@@ -262,7 +262,7 @@ GET       /api/space/:sid/resource                                              
 POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
 
 PUT       /api/space/:sid/component/:cid                                         controllers.Spaces.updateSpaceCampaignComponent(sid: Long, cid: Long)
-PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: UUID)
+PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: java.util.UUID)
 PUT       /api/space/:sid/milestone/:mid                                         controllers.Spaces.updateSpaceComponentMilestone(sid: Long, mid: Long)
 
 
