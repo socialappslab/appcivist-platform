@@ -15,6 +15,7 @@ import models.ContributionTemplate;
 import models.ContributionTemplateSection;
 import models.Resource;
 import models.ResourceSpace;
+import models.WordsEntity;
 import net.gjerull.etherpad.client.EPLiteException;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -36,8 +37,11 @@ import com.avaje.ebean.Expr;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSqlBuilder;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
 
 import enums.ContributionStatus;
 import enums.ContributionTypes;
@@ -495,43 +499,63 @@ public class ContributionsDelegate {
         }
     }
     
-    public static Map<String, Integer> wordsWithFrequencies (Contribution c, Map<String, Integer> wordFrequency) {
-    	String[] title = c.getTitle().toLowerCase().split(" ");
-    	String[] text  = c.getText().toLowerCase().split(" ");
-    	
-    	for (String word: title) {
-    		if (word.length() > 4) {
-	    		if (wordFrequency.containsKey(word)) {
-	    			wordFrequency.put(word, wordFrequency.get(word) + 1);
-	    		} else {
-	    			wordFrequency.put(word, 1);
-	    		}
-    		}
-    	}
-    	
-    	for (String word: text) {
-    		if (wordFrequency.containsKey(word)) {
-    			wordFrequency.put(word, wordFrequency.get(word) + 1);
-    		} else {
-    			wordFrequency.put(word, 1);
-    		}
-    		Logger.info(wordFrequency.toString());
-    	}
+    public static Map<String,Integer> wordsWithFrequencies (List<Long> ids) {
 
-        ResourceSpace rs  = c.getResourceSpace();   
-        List<Contribution> contributionRS = Contribution.findAllByContainingSpace(rs.getResourceSpaceId());    
-        
-        for (Contribution crs: contributionRS){     
-        	wordsWithFrequencies(crs, wordFrequency);            
-        }
-        
-        ResourceSpace frs = c.getForum();
-        List<Contribution> contributionFRS = Contribution.findAllByContainingSpace(frs.getResourceSpaceId());
-      
-        for (Contribution cfrs: contributionFRS){       
-        	wordsWithFrequencies(cfrs, wordFrequency);       
-        }
-        
+    	ContributionTypes idea_type 	= ContributionTypes.valueOf("idea".toUpperCase());
+    	ContributionTypes proposal_type = ContributionTypes.valueOf("proposal".toUpperCase());
+    	Map<String,Integer> wordFrequency = new HashMap<>();
+
+    	
+    	String rawQuery = "select t1.word, t1.nentry from ts_stat( \n " + 
+    					  "'select t0.document from contribution t0 \n " +
+//    					  "where (t0.type = ? or t0.type = ? ) \n" + 
+//    					  "and t0.contribution_id in (?)') t1 \n " ;
+    					  "') t1 \n";
+    	
+    	RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+    	Query<WordsEntity> query = Ebean.find(WordsEntity.class)
+    		.setRawSql(rawSql)
+//			.setParameter(1, idea_type)
+//			.setParameter(2, proposal_type)
+//			.setParameter(3, ids)
+  	 		.order().desc("nentry");
+    	List<WordsEntity> wordsStat = query.findList();
+    			
+      	for (WordsEntity row: wordsStat){
+    		wordFrequency.put(row.getWord(), row.getNentry());
+    	}
+      	
     	return wordFrequency;
+    }
+    
+    //Find the ideas or proposals that contain the given words
+    public static List<Contribution> findContributionsByText (List<Long> ids, String byText){
+    	//Remove all useless with spaces and replace the others by the logical operator '&'
+    	String words = byText.replaceAll("\\s*$", "").replaceAll("^\\s*", "").replaceAll("\\s+", " ").replaceAll("\\s", " & ");
+    	ContributionTypes idea_type 	= ContributionTypes.valueOf("idea".toUpperCase());
+    	ContributionTypes proposal_type = ContributionTypes.valueOf("proposal".toUpperCase());
+    	
+    	ExpressionList<Contribution> where = null;
+        String rawQuery = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal,\n " +
+                "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
+                "  t0.moderation_comment, t0.budget, \n " +
+                "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, \n" +
+                "  t0.source_code, t0.popularity, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments, t0.document from contribution t0\n ";
+        
+        RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+        where = finder.setRawSql(rawSql).where();   
+        Expression full_text = Expr.raw("t0.document @@ to_tsquery(t0.lang::regconfig,'" + words + "')");        
+        where.add(full_text);
+        Expression type = Expr.or(Expr.eq("t0.type", idea_type), Expr.eq("t0.type", proposal_type));
+		where.add(type);
+		if (ids != null){
+			Expression contribution_id = Expr.in("t0.contribution_id", ids);
+			where.add(contribution_id);
+		}
+        
+        List<Contribution> contributions = where.findList();
+
+        return contributions;
+        
     }
 }

@@ -199,7 +199,7 @@ GET       /api/assembly/:aid/contribution/:cid/comment                          
 GET       /api/assembly/:aid/contribution/:cid/contributions                     controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
 PUT       /api/space/:sid/contribution/comment/reset                      		 controllers.Contributions.updateContributionCounters(sid: Long)
-GET		  /api/space/:sid/contribution/word/frequency							 controllers.Contributions.wordsCloud(sid: Long)
+#GET		  /api/space/:sid/contribution/word/frequency							 controllers.Contributions.wordsCloud(sid: Long)
 #update state of contribution
 PUT       /api/assembly/:aid/contribution/:cid/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 GET       /api/assembly/:aid/contribution/:coid/feedback                         controllers.Contributions.readContributionFeedbackNoGroupId(aid: Long, coid: Long, type: String ?= null)
@@ -252,6 +252,8 @@ GET       /api/space/:sid/config                                                
 PUT       /api/space/:sid/config                                                 controllers.Configs.updateSpaceConfig(sid: Long)
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
 GET       /api/space/:sid/contribution                                           controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
+GET		  /api/space/:sid/contribution/words/frecuency							 controllers.Contributions.wordsFrecuency(sid:Long)
+GET       /api/space/:sid/contribution/search									 controllers.Contributions.searchContributionsByText(sid: Long, by_text?="")
 GET       /api/space/:sid/contribution/pinned                                    controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
 POST      /api/space/:sid/space/:new_sid                                         controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
