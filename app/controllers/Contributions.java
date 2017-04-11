@@ -1,6 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -69,16 +71,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionFeedbackTypes;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.MyRoles;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
-import enums.SupportedMembershipRegistration;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 
@@ -1732,44 +1724,45 @@ public class Contributions extends Controller {
                     newContributionForm.errorsAsJson()));
             return badRequest(Json.toJson(responseBody));
         } else {
-            Contribution newContribution = newContributionForm.get();
-            newContribution.setContributionId(contributionId);
-            newContribution.setContextUserId(author.getUserId());
-          
-            Contribution existingContribution = Contribution.read(contributionId);
-            for (Field field : existingContribution.getClass().getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
-                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
-                            || field.isAnnotationPresent(OneToOne.class)) {
-                        continue;
-                    }
-                    field.set(existingContribution, field.get(newContribution));
-                } catch (Exception e) {
-                }
-            }
-            existingContribution.setContextUserId(author.getUserId());
-            Ebean.beginTransaction();
-          
-            try {
-                        Contribution.update(existingContribution);
-                        Ebean.commitTransaction();
-                  } catch (Exception e) {
-                        Ebean.rollbackTransaction();
-                        e.printStackTrace();
-                        Logger.error("Error while updating contribution => ", LogActions.exceptionStackTraceToString(e));
-                  TransferResponseStatus responseBody = new TransferResponseStatus();
-                  responseBody.setStatusMessage(e.getMessage());
-                  return Controller.internalServerError(Json.toJson(responseBody));
-                  }
+			Ebean.beginTransaction();
+			try {
+	            Contribution newContribution = newContributionForm.get();
+	            newContribution.setContributionId(contributionId);
+	            newContribution.setContextUserId(author.getUserId());
+	          
+//	            Contribution existingContribution = Contribution.read(contributionId);
+//	            for (Field field : existingContribution.getClass().getDeclaredFields()) {
+//                    field.setAccessible(true);
+//                    if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+//                            || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+//                            || field.isAnnotationPresent(OneToOne.class)) {
+//                        continue;
+//                    }
+//                    field.set(existingContribution, field.get(newContribution));
+//	            }
+//				existingContribution.setContextUserId(author.getUserId());
+//				
+//				Contribution.update(existingContribution);
+	            Contribution updatedContribution = Contribution.readAndUpdate(newContribution, contributionId, author.getUserId());
+				ResourceSpace rs = Assembly.read(aid).getResources();
+				Promise.promise(() -> {
+					return NotificationsDelegate
+							.updatedContributionInResourceSpace(rs,
+									updatedContribution);
+				});
 
-            ResourceSpace rs = Assembly.read(aid).getResources();
-            Promise.promise(() -> {
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, existingContribution);
-            });
-
-            return ok(Json.toJson(existingContribution));
+				Ebean.commitTransaction();
+	            return ok(Json.toJson(updatedContribution));
+			} catch (Exception e) {
+				Ebean.endTransaction();
+				e.printStackTrace();
+				Logger.error("Error while updating contribution => ",
+						LogActions.exceptionStackTraceToString(e));
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage(e.getMessage());
+				return Controller
+						.internalServerError(Json.toJson(responseBody));
+			}
         }
     }
 
@@ -2257,9 +2250,11 @@ public class Contributions extends Controller {
         		if (type.equals(ContributionTypes.PROPOSAL)) {
         			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS)) {
         				hasStatusConfig = 1;
-	        			if (cc.getValue().equalsIgnoreCase("NEW")) {
+	        			if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("NEW")) {
 	        				newContrib.setStatus(ContributionStatus.NEW);
-	        			} else if (cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        			} else if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("PUBLISHED")) {
+	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
+	        			} else if (newContrib.getStatus() == null) {
 	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
 	        			}
         			}
@@ -2273,7 +2268,7 @@ public class Contributions extends Controller {
     	        }        			 
         	}
         	// If the configuration is not defined, get the defaults values
-        	if (hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
+        	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
         		String status = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
         		newContrib.setStatus(ContributionStatus.valueOf(status));
         	} 
@@ -2348,6 +2343,9 @@ public class Contributions extends Controller {
                 ResourceSpace aRs = a.getResources();
                 aRs.addWorkingGroup(newWorkingGroup);
                 aRs.update();
+                ResourceSpace cRS = c.getResources();
+                cRS.addWorkingGroup(newWorkingGroup);
+                cRS.update();
             }
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
@@ -2404,8 +2402,8 @@ public class Contributions extends Controller {
                         || (ballot.getDecisionType().equals("CONSULTIVE") && ballot.getUuid().equals(consultive))) {
                     BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
                     contributionAssociatedCandidate.setBallotId(ballot.getId());
-                    contributionAssociatedCandidate.setCandidateType(new Integer(1));
-                    contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+                    contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
+                    contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
                     contributionAssociatedCandidate.save();
                 }
             }
@@ -2420,8 +2418,8 @@ public class Contributions extends Controller {
             if (b!=null) {
                 BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
                 contributionAssociatedCandidate.setBallotId(b.getId());
-                contributionAssociatedCandidate.setCandidateType(new Integer(1));
-                contributionAssociatedCandidate.setContributionUuid(newContrib.getUuid());
+                contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
+                contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
                 contributionAssociatedCandidate.save();
             }
         }

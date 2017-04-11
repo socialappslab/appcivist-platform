@@ -170,6 +170,8 @@ GET       /api/assembly/:aid/campaign/:cid/themes                               
 GET       /api/assembly/:aid/campaign/:cid/groups                                controllers.Campaigns.listCampaignGroups(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/timeline                              controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 
+PUT       /api/assembly/:aid/campaign/:cid/description                           controllers.Campaigns.updateCampaignDescription(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/campaign/:cid/group/:gid/description                controllers.Campaigns.updateCampaignGroupDescription(aid: Long, cid: Long, gid: Long)
 ##################################################################################################################################################################
 # CampaignComponent API
 GET       /api/assembly/:aid/campaign/:cid/component                             controllers.CampaignComponents.findCampaignComponents(aid: Long, cid:Long)
@@ -260,6 +262,11 @@ POST      /api/space/:sid/contribution                                          
 GET       /api/space/:sid/resource                                               controllers.Campaigns.listSpaceResources(sid: Long)
 POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
 
+PUT       /api/space/:sid/component/:cid                                         controllers.Spaces.updateSpaceCampaignComponent(sid: Long, cid: Long)
+PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: UUID)
+PUT       /api/space/:sid/milestone/:mid                                         controllers.Spaces.updateSpaceComponentMilestone(sid: Long, mid: Long)
+
+
 ##################################################################################################################################################################
 # Public Common API
 # Endpoints that are available to Non-Members
@@ -345,8 +352,12 @@ POST      /api/space/:sid/field                                                 
 PUT       /api/space/:sid/field/:cfid                                            controllers.Spaces.updateSpaceFields(sid: Long, cfid: Long)
 DELETE    /api/space/:sid/field/:cfid                                            controllers.Spaces.deleteSpaceFields(sid: Long, cfid: Long)
 GET       /api/space/:sid/fieldvalue                                             controllers.Spaces.findSpaceFieldsValue(sid: Long)
+GET       /api/space/:uuid/fieldvalue/public                                     controllers.Spaces.findSpaceFieldsValuePublic(uuid: java.util.UUID)
 POST      /api/space/:sid/fieldvalue                                             controllers.Spaces.createSpaceFieldsValue(sid: Long)
 POST      /api/space/:sid/fieldvalues                                            controllers.Spaces.createSpaceFieldValues(sid: Long)
 PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
-PUT      /api/space/:sid/fieldvalues                                             controllers.Spaces.updateSpaceFieldValues(sid: Long)
+PUT       /api/space/:sid/fieldvalues                                            controllers.Spaces.updateSpaceFieldValues(sid: Long)
 DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
+GET       /api/space/:sid/ballot                                                 controllers.Spaces.findSpaceBallot(sid: Long, status?="", starts_at?="" , ends_at?="")
+POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
+PUT       /api/space/:sid/ballot                                                 controllers.Spaces.updateSpaceBallot(sid: Long)

@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import enums.BallotCandidateTypes;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Calendar;
@@ -8,12 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.Index;
@@ -38,10 +34,11 @@ public class BallotCandidate extends Model {
 	 * USER = 4
 	 * GROUP = 5
      */
-    private Integer candidateType;
-	private UUID contributionUuid;
+	@Enumerated(EnumType.ORDINAL)
+    private BallotCandidateTypes candidateType;
+	private UUID candidateUuid;
 	@Transient
-	private String contributionUuidAsString;
+	private String candidateUuidAsString;
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date createdAt = Calendar.getInstance().getTime();	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
@@ -109,27 +106,31 @@ public class BallotCandidate extends Model {
 		this.uuid = uuid;
 	}
 
-	public Integer getCandidateType() {
+	public BallotCandidateTypes getCandidateType() {
 		return candidateType;
 	}
 
-	public void setCandidateType(Integer candidateType) {
+	public void setCandidateType(BallotCandidateTypes candidateType) {
 		this.candidateType = candidateType;
 	}
 
-	public UUID getContributionUuid() {
-		return contributionUuid;
+	public UUID getCandidateUuid() {
+		return candidateUuid;
 	}
 
-	public void setContributionUuid(UUID contributionUuid) {
-		this.contributionUuid = contributionUuid;
+	public void setCandidateUuid(UUID candidateUuid) {
+		this.candidateUuid = candidateUuid;
 	}
 
-	public void setContributionUuidAsString(String uuid) {
-		this.contributionUuidAsString = uuid;
-		this.contributionUuid = UUID.fromString(uuid);
+	public void setCandidateUuidAsString(String uuid) {
+		this.candidateUuidAsString = uuid;
+		this.candidateUuid = UUID.fromString(uuid);
 	}
-		
+
+	public String getCandidateUuidAsString() {
+		return candidateUuidAsString;
+	}
+
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -162,14 +163,14 @@ public class BallotCandidate extends Model {
 		this.removedAt = removedAt;
 	}
 
-	public static BallotCandidate findByContributionUuid(Long ballotId, UUID uuid) {
+	public static BallotCandidate findByCandidateUuid(Long ballotId, UUID uuid) {
 		return find.where()
 				.eq("ballotId",ballotId)
-				.eq("contributionUuid",uuid).findUnique();
+				.eq("candidateUuid",uuid).findUnique();
 	}
 
 	@JsonIgnore
 	public Contribution getContribution(){
-		return Contribution.find.where().eq("uuid", this.contributionUuid).findUnique();
+		return Contribution.find.where().eq("uuid", this.candidateUuid).findUnique();
 	}
 }

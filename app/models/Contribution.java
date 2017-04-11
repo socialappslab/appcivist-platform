@@ -3,6 +3,7 @@ package models;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,12 +49,11 @@ import com.fasterxml.jackson.annotation.JsonView;
 import enums.ContributionStatus;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
+
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Where(clause = "removed=false")
-@ApiModel(
-        value="Contribution", 
-        description="Generic model for citizen contributions. A contribuiton represents IDEAS, PROPOSALS, DISCUSSION, COMMENTS, NOTES, ISSUES, ETC. ")
+@ApiModel(value = "Contribution", description = "Generic model for citizen contributions. A contribuiton represents IDEAS, PROPOSALS, DISCUSSION, COMMENTS, NOTES, ISSUES, ETC. ")
 public class Contribution extends AppCivistBaseModel {
 
     @Id
@@ -96,7 +96,7 @@ public class Contribution extends AppCivistBaseModel {
     @Enumerated(EnumType.STRING)
     @Required
     @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
-    private ContributionStatus status = ContributionStatus.PUBLISHED;
+    private ContributionStatus status;
 
     @JsonIgnore
     @Index
@@ -920,22 +920,59 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public static Contribution update(Contribution c) {
-        Contribution original = Contribution.read(c.getContributionId());
-        // Do not touch things in the resource spaces attached to the contribution
-        c.setContainingSpaces(original.getContainingSpaces());
-        c.setForum(original.getForum());
-        c.setResourceSpace(original.getResourceSpace());
-        
-        // Set plain text if text is HTML
-        if (TextUtils.isHtml(c.getText())) {
-            c.setText(Jsoup.clean(c.getText(), Whitelist.basicWithImages()));
-            c.setPlainText(Jsoup.parse(c.getText()).text());
-        }
-        
         c.update();
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
         return c;
+    }
+
+    public static Contribution readAndUpdate(Contribution newContribution,
+            Long contributionId, Long authorId) throws IllegalArgumentException, IllegalAccessException {
+
+        // Set plain text if text is HTML
+        if (TextUtils.isHtml(newContribution.getText())) {
+            newContribution.setText(Jsoup.clean(newContribution.getText(),
+                    Whitelist.basicWithImages()));
+            newContribution.setPlainText(Jsoup.parse(newContribution.getText())
+                    .text());
+        }
+        Contribution existingContribution = Contribution.read(contributionId);
+        
+// TODO: find a way for reflections to work with Ebean updates in Play
+// See        http://stackoverflow.com/questions/38655024/playframework-2-5-ebean-update-using-reflection
+// Option: use java.beans.Statement http://stackoverflow.com/questions/10009052/invoking-setter-method-using-java-reflection/10009255#10009255
+// In order for Ebean to know that the entity is updated, we have to use the setters/getters in play
+//        for (Field field : existingContribution.getClass().getDeclaredFields()) {
+//            field.setAccessible(true);
+//            if (field.getName().toLowerCase().contains("ebean")
+//                    || field.isAnnotationPresent(ManyToMany.class)
+//                    || field.isAnnotationPresent(ManyToOne.class)
+//                    || field.isAnnotationPresent(OneToMany.class)
+//                    || field.isAnnotationPresent(OneToOne.class)) {
+//                continue;
+//            }
+//            field.set(existingContribution, field.get(newContribution));
+//        }
+        
+        existingContribution.setAction(newContribution.getAction());
+        existingContribution.setActionDone(newContribution.getActionDone());
+        existingContribution.setActionDueDate(newContribution.getActionDueDate());
+        existingContribution.setAssessmentSummary(newContribution.getAssessmentSummary());
+        existingContribution.setBudget(newContribution.getBudget());
+        existingContribution.setLang(newContribution.getLang());
+        existingContribution.setLastUpdate(new Date());
+        existingContribution.setLocation(newContribution.getLocation());
+        existingContribution.setModerationComment(newContribution.getModerationComment());
+        existingContribution.setPinned(newContribution.getPinned());
+        existingContribution.setSourceCode(newContribution.getSourceCode());
+        existingContribution.setStatus(newContribution.getStatus());
+        existingContribution.setText(newContribution.getText());
+        existingContribution.setTitle(newContribution.getTitle());
+        existingContribution.setType(newContribution.getType());
+        existingContribution.setContextUserId(authorId);
+        existingContribution.setAttachments(newContribution.getAttachments());
+
+        return Contribution.update(existingContribution);
     }
 
     private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
@@ -1325,11 +1362,21 @@ public class Contribution extends AppCivistBaseModel {
         
     }
 
-	public String getDocument() {
-		return document;
-	}
+    public String getDocument() {
+        return document;
+    }
 
-	public void setDocument(String document) {
-		this.document = document;
-	}
+    public void setDocument(String document) {
+        this.document = document;
+    }
+
+    public static List<Contribution> findContributionsInSpaceByTypeStatus(Long sid,
+                                                       ContributionTypes type, ContributionStatus status) {
+            return find.where()
+                    .eq("type", type)
+                    .eq("containingSpaces.resourceSpaceId", sid)
+                    .eq("status", status)
+                    .not(Expr.eq("removed",true))
+                    .findList();
+    }
 }

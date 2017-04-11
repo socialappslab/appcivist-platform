@@ -63,6 +63,7 @@ public class Users extends Controller {
 	private static final Form<PasswordChange> PASSWORD_CHANGE_FORM = form(PasswordChange.class);
 	private static final Form<PasswordReset> PASSWORD_RESET_FORM = form(PasswordReset.class);
 	private static final Form<MyIdentity> FORGOT_PASSWORD_FORM = form(MyIdentity.class);
+	private static final Form<ResetConfig> FORGOT_CONFIG_PASSWORD_FORM = form(ResetConfig.class);
 	private static final Form<PasswordForgotChange> PASSWORD_CHANGE_FORGOT_FORM = form(PasswordForgotChange.class);
 
 	/**
@@ -595,10 +596,10 @@ public class Users extends Controller {
 				return badRequest(Json.toJson(Json
 						.toJson(new TransferResponseStatus("Invalid token"))));
 			}
-			final User user = Users.getLocalUser(session());
+			final User user = ta.getTargetUser();
 			final String newPassword = filledForm.get().password;
 			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
-			TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
+			TokenAction.deleteByUser(user, Type.EMAIL_VERIFICATION);
 			return ok(Json.toJson("ok"));
 		}
 	}
@@ -696,7 +697,7 @@ public class Users extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "User not found") })
 	public static Result doForgotPassword() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final Form<MyIdentity> filledForm = FORGOT_PASSWORD_FORM
+		final Form<ResetConfig> filledForm = FORGOT_CONFIG_PASSWORD_FORM
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not fill in his/her email
@@ -708,6 +709,7 @@ public class Users extends Controller {
 			// address and whether password login is enabled for him/her. Also
 			// only send if the email address of the user has been verified.
 			final String email = filledForm.get().email;
+			final String configUrl = filledForm.get().configUrl;
 
 			// We don't want to expose whether a given email address is signed
 			// up, so just say an email has been sent, even though it might not
@@ -726,7 +728,7 @@ public class Users extends Controller {
 						.getProvider();
 				// User exists
 				if (user.isEmailVerified()) {
-					provider.sendPasswordResetMailing(user, ctx());
+					provider.sendPasswordResetMailing(user, ctx(),configUrl);
 					// In case you actually want to let (the unknown person)
 					// know whether a user was found/an email was sent, use,
 					// change the flash message
@@ -742,9 +744,13 @@ public class Users extends Controller {
 					// You might want to re-send the verification email here...
 					provider.sendVerifyEmailMailingAfterSignup(user, ctx());
 				}
+				return ok(Json.toJson("ok"));
 			}
 
-			return redirect(routes.Application.index());
+			TransferResponseStatus response = new TransferResponseStatus();
+			response.setResponseStatus(ResponseStatus.NODATA);
+			response.setStatusMessage("User not found with email: "+email);
+			return notFound(Json.toJson(response));
 		}
 	}
 

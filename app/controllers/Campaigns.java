@@ -61,6 +61,7 @@ import static play.data.Form.form;
 public class Campaigns extends Controller {
 
     public static final Form<Campaign> CAMPAIGN_FORM = form(Campaign.class);
+    public static final Form<WorkingGroup> GROUP_FORM = form(WorkingGroup.class);
     public static final Form<CampaignTransfer> CAMPAIGN_TRANSFER_FORM = form(CampaignTransfer.class);
 
     /**
@@ -1308,6 +1309,101 @@ public class Campaigns extends Controller {
                 resourceSpace.update();
                 return ok(Json.toJson(newResource));
             }
+        }
+    }
+
+    /**
+     * PUT /api/assembly/:aid/campaign/:cid/description
+     * Update campaign description by ID
+     *
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update a campaign description by its ID and the assembly ID", notes = "Only for COORDINATORS")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result updateCampaignDescription(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        // 1. read the campaign data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
+        if (newCampaignForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                    newCampaignForm.errorsAsJson()));
+            Logger.info("Error updating campaign");
+            Logger.debug("=> " + newCampaignForm.errorsAsJson());
+            return badRequest(Json.toJson(responseBody));
+        } else {
+            Campaign updatedCampaign = newCampaignForm.get();
+            Campaign loadedCampaign = Campaign.read(campaignId);
+            if(loadedCampaign==null){
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Campaign not found with id: "+ campaignId);
+                return badRequest(Json.toJson(responseBody));
+            }
+            loadedCampaign.setTitle(updatedCampaign.getTitle());
+            loadedCampaign.update();
+            Logger.info("Updating campaign");
+            Logger.debug("=> " + newCampaignForm.toString());
+            Assembly rs = Assembly.read(aid);
+            Campaign c = Campaign.read(loadedCampaign.getCampaignId());
+            Promise.promise(() -> {
+                return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, c);
+            });
+
+            return ok(Json.toJson(loadedCampaign));
+        }
+    }
+
+    /**
+     * PUT /api/assembly/:aid/campaign/:cid/group/:gid/description
+     * Update campaign description by ID
+     *
+     * @param aid
+     * @param cid
+     * @param gid
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = WorkingGroup.class, produces = "application/json", value = "Update a group description by its ID", notes = "Only for COORDINATORS")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Group object", value = "Group in json", dataType = "models.WorkingGroup", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+    public static Result updateCampaignGroupDescription(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "gid", value = "Group ID") Long gid) {
+        // 1. read the campaign data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<WorkingGroup> newWorkingGroupForm = GROUP_FORM.bindFromRequest();
+        if (newWorkingGroupForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.GROUP_CREATE_MSG_ERROR,
+                    newWorkingGroupForm.errorsAsJson()));
+            Logger.info("Error updating group");
+            Logger.debug("=> " + newWorkingGroupForm.errorsAsJson());
+            return badRequest(Json.toJson(responseBody));
+        } else {
+            WorkingGroup updatedGroup = newWorkingGroupForm.get();
+            WorkingGroup loadedWorkingGroup = WorkingGroup.read(gid);
+            if(loadedWorkingGroup==null){
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("WorkingGroup not found with id: "+ gid);
+                return badRequest(Json.toJson(responseBody));
+            }
+            loadedWorkingGroup.setName(updatedGroup.getName());
+            loadedWorkingGroup.update();
+
+            return ok(Json.toJson(loadedWorkingGroup));
         }
     }
 }

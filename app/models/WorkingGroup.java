@@ -48,6 +48,8 @@ public class WorkingGroup extends AppCivistBaseModel {
     private String text;
 	@JsonView(Views.Public.class)
     private Boolean listed = true;
+    @JsonView(Views.Public.class)
+    private Boolean isTopic = false;
 	@JsonView(Views.Public.class)
     private String majorityThreshold;
 	@JsonView(Views.Public.class)
@@ -406,6 +408,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     public void setListed(Boolean isPublic) {
         this.listed = isPublic;
+    }
+
+   public Boolean getIsTopic() {
+        return isTopic;
+    }
+
+    public void setIsTopic(Boolean isTopic) {
+        this.isTopic = isTopic;
     }
 
     public String getMajorityThreshold() {
