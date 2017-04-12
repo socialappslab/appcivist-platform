@@ -521,7 +521,7 @@ public class MyUsernamePasswordAuthProvider
 	}
 
 	protected Body getVerifyEmailMailingBodyAfterSignup(final String token,
-			final User user, final Context ctx) {
+			final User user, final Context ctx, boolean isFromForgot) {
 
 		// final boolean isSecure = getConfiguration().getBoolean(
 		// SETTING_KEY_VERIFICATION_LINK_SECURE);
@@ -558,24 +558,29 @@ public class MyUsernamePasswordAuthProvider
 
 		String name = user.getName() + " " + user.getName();
 		String email = user.getEmail();
-		
-		final String html = getEmailTemplate(
-				"views.html.account.email.verify_email", locale, url, token,
+		String templateHtml = "views.html.account.email.verify_email";
+		String templateTxt = "views.txt.account.email.verify_email";
+		if(isFromForgot){
+			templateHtml = "views.html.account.email.verify_email_forgot";
+			templateTxt = "views.txt.account.email.verify_email_forgot";
+		}
+		System.out.println("template++++++++++++"+templateHtml);
+		final String html = getEmailTemplate(templateHtml, locale, url, token,
 				name, email);
 		final String text = getEmailTemplate(
-				"views.txt.account.email.verify_email", locale, url, token,
+				templateTxt, locale, url, token,
 				name, email);
 
 		return new Body(text, html);
 	}
 
 	public void sendVerifyEmailMailingAfterSignup(final User user,
-			final Context ctx) {
+			final Context ctx, boolean isFromForgot) {
 
 		final String subject = getVerifyEmailMailingSubjectAfterSignup(user,
 				ctx);
 		final String token = generateVerificationRecord(user);
-		final Body body = getVerifyEmailMailingBodyAfterSignup(token, user, ctx);
+		final Body body = getVerifyEmailMailingBodyAfterSignup(token, user, ctx,isFromForgot);
 		mailer.sendMail(subject, body, getEmailName(user));
 	}
 

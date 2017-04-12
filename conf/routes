@@ -42,10 +42,32 @@ DELETE    /api/user/:uid                                                        
 DELETE    /api/user/:uid/force                                                   controllers.Users.deleteUserForce(uid: Long) 
 POST      /api/user/signup                                                       controllers.Users.doSignup() 
 POST      /api/user/login                                                        controllers.Users.doLogin() 
-POST      /api/user/logout                                                       controllers.Users.doLogout() 
+POST      /api/user/logout                                                       controllers.Users.doLogout()
+GET       /api/user/verify                                                       controllers.Users.verifyEmail
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
 GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
 GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
+##################################################################################################################################################################
+# TODO Play Authenticate endpoints to check if we need/validate/integrate better
+GET       /api/user/link                                                         controllers.Users.link
+GET       /api/user/unverified                                                   controllers.Users.unverified()
+GET       /api/user/exists                                                       controllers.Users.exists()
+GET       /api/user/login/denied                                                 controllers.Users.onLoginUserNotFound()
+GET       /api/user/authenticate/:provider/denied                                controllers.Users.oAuthDenied(provider: String)
+GET       /api/user/authenticated                                                controllers.Restricted.index()
+GET       /api/user/login/:id                                                    controllers.Restricted.id(id: String)
+GET       /api/authenticate/:provider                                            controllers.AuthenticateLocal.authenticate(provider: String)
+GET       /api/user/password/reset/:token                                        controllers.Users.resetPassword(token: String)
+POST      /api/user/password/reset                                               controllers.Users.doResetPassword
+POST      /api/user/password/change                                              controllers.Users.doChangePassword
+GET       /api/user/account                                                      controllers.Users.askLink
+POST      /api/user/account                                                      controllers.Users.doLink
+GET       /api/user/merge                                                        controllers.Users.askMerge
+POST      /api/user/merge                                                        controllers.Users.doMerge
+POST      /api/user/password/forgot                                              controllers.Users.doForgotPassword
+POST      /api/user/password/forgot/change                                       controllers.Users.doChangeForgotPassword
+GET       /api/user/logout/redirect                                              controllers.Users.redirectAfterLogout
+POST      /api/site/verify                                                       controllers.Secured.verifyRecaptcha(k: String)
 
 ##################################################################################################################################################################
 # Notifications Service Proxy
@@ -309,28 +331,6 @@ POST      /api/public/contribution/:uuid/contribution                           
 GET       /api/public/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
 GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 
-##################################################################################################################################################################
-# TODO Play Authenticate endpoints to check if we need/validate/integrate better
-GET       /api/user/link                                                         controllers.Users.link
-GET       /api/user/unverified                                                   controllers.Users.unverified()
-GET       /api/user/exists                                                       controllers.Users.exists()
-GET       /api/user/login/denied                                                 controllers.Users.onLoginUserNotFound()
-GET       /api/user/authenticate/:provider/denied                                controllers.Users.oAuthDenied(provider: String)
-GET       /api/user/authenticated                                                controllers.Restricted.index()
-GET       /api/user/login/:id                                                    controllers.Restricted.id(id: String)
-GET       /api/authenticate/:provider                                            controllers.AuthenticateLocal.authenticate(provider: String)
-GET       /api/user/password/reset/:token                                        controllers.Users.resetPassword(token: String)
-POST      /api/user/password/reset                                               controllers.Users.doResetPassword
-POST      /api/user/password/change                                              controllers.Users.doChangePassword
-GET       /api/user/verify                                                       controllers.Users.verifyEmail
-GET       /api/user/account                                                      controllers.Users.askLink
-POST      /api/user/account                                                      controllers.Users.doLink
-GET       /api/user/merge                                                        controllers.Users.askMerge
-POST      /api/user/merge                                                        controllers.Users.doMerge
-POST      /api/user/password/forgot                                              controllers.Users.doForgotPassword
-POST      /api/user/password/forgot/change                                       controllers.Users.doChangeForgotPassword
-GET       /api/user/logout/redirect                                              controllers.Users.redirectAfterLogout
-POST      /api/site/verify                                                       controllers.Secured.verifyRecaptcha(k: String)
 ##################################################################################################################################################################
 # Location endpoints
 GET       /api/location/:query                                                   controllers.Locations.findLocations(query: String)
