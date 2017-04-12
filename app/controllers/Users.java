@@ -599,7 +599,7 @@ public class Users extends Controller {
 			final User user = ta.getTargetUser();
 			final String newPassword = filledForm.get().password;
 			user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
-			TokenAction.deleteByUser(user, Type.EMAIL_VERIFICATION);
+			TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
 			return ok(Json.toJson("ok"));
 		}
 	}
