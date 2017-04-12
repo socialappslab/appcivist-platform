@@ -20,6 +20,8 @@ libraryDependencies ++= Seq(
   cache,
   javaWs withSources(), 
   "javax.xml.bind" % "jaxb-api" % "2.2.12",           // library to support objects-to/from-xml mapping
+  "com.lowagie" % "itext" % "2.1.7",                  // pdf and rtf
+  "com.lowagie" % "itext-rtf" % "2.1.7",                  // pdf and rtf
   "org.webjars" % "bootstrap" % "3.3.1", 			        // jar-packaged version of twitter bootstrap  
   "org.webjars" % "angularjs" % "1.3.14",			        // jar-packaged version of twitter angularjs
   "org.webjars" % "angular-ui-bootstrap" % "0.12.0",  // jar-packaged version of twitter angularjs-ui-bootstrap

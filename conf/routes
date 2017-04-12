@@ -242,6 +242,8 @@ PUT       /api/assembly/:aid/contribution/:cid/:status                          
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
 
+GET       /api/space/:sid/export/contribution/:cid                                   controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
+
 
 ##################################################################################################################################################################
 # Resource Space Common API
