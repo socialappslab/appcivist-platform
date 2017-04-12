@@ -235,7 +235,7 @@ DELETE    /api/contribution/:uuid/themes/:tid                                   
 DELETE    /api/contribution/:uuid/authors/:auuid                                 controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
 
 #update state of contribution
-PUT       /api/assembly/:aid/contribution/:cid/:status                           controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
+PUT       /api/assembly/:aid/contribution/:cid/status/:status                    controllers.Contributions.updateContributionStatus(aid: Long, cid: Long, status: String)
 
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
