@@ -1465,6 +1465,10 @@ alter table resource_space_organization add constraint fk_resource_space_org_res
 
 alter table resource_space_organization add constraint fk_resource_space_org_theme_02 foreign key (organization_organization_id) references organization (organization_id);
 
+-- 28.sql
+alter table contribution add column total_comments integer;
+update contribution set total_comments=0;
+
 --29.sql
 create table custom_field_definition (
   custom_field_definition_id                  bigserial not null,
@@ -1599,7 +1603,7 @@ CREATE INDEX textsearch_idx ON contribution USING gin(document);
 
 CREATE OR REPLACE FUNCTION contribution_trigger() RETURNS trigger AS $$
 begin
-  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));
+  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
   return new;
 end
 $$ LANGUAGE plpgsql;

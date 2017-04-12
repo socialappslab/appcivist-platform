@@ -22,7 +22,7 @@ ALTER TABLE contribution
 ADD COLUMN document tsvector;
 
 UPDATE contribution 
-SET document = to_tsvector(contribution.lang::regconfig, unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));
+SET document = to_tsvector(contribution.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
 
 CREATE INDEX textsearch_idx ON contribution USING gin(document);
 
