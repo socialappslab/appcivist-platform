@@ -278,6 +278,9 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Theme> addedThemes;
+    
+    @JsonView(Views.Public.class)
+    private String document;
 
     /**
      * The find property is an static property that facilitates database query
@@ -1357,6 +1360,14 @@ public class Contribution extends AppCivistBaseModel {
                     .findList();            
         }
         
+    }
+
+    public String getDocument() {
+        return document;
+    }
+
+    public void setDocument(String document) {
+        this.document = document;
     }
 
     public static List<Contribution> findContributionsInSpaceByTypeStatus(Long sid,

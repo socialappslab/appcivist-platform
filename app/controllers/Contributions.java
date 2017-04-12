@@ -3485,6 +3485,69 @@ public class Contributions extends Controller {
     }
 
     /**
+     * GET       /api/space/:sid/contribution/word/frequency
+     *
+     * @param sid
+     * @return
+     */   
+    @ApiOperation(httpMethod = "GET", response = HashMap.class, responseContainer = "List", produces = "application/json",
+			value = "List of words in proposals or ideas from a given resource space with its frequency")
+	  @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> wordsFrecuency (@ApiParam(name = "sid", value = "Resource Space ID")Long sid) {
+    	
+    	List<Contribution> contributions   = Contribution.findAllByContainingSpace(sid);
+    	
+    	Promise<Result> resultPromise = Promise.promise( () -> { 
+    		List<Long> ids = new ArrayList<Long>();
+
+	    	for (Contribution c: contributions){
+	    		Logger.info("Contribution ID: " + c.getContributionId());
+	    		ids.add(c.getContributionId());
+	    	}
+	    	
+	    	Map<String,Integer> wordFrequency = ContributionsDelegate.wordsWithFrequencies(ids);
+	    	return ok(Json.toJson(wordFrequency));
+    	});
+    	
+    	return resultPromise;
+
+    }    	
+
+   
+    /**
+     * GET       /api/space/:sid/contribution/search
+     *
+     * @param sid
+     * @return
+     */  
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json",
+			value = "Contribution containing the given word")
+	  @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})    
+    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid, 
+    														 @ApiParam(name = "byText", value = "Text to be search in the title or text of contributions")String byText) {
+    	
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);    	
+    	    	
+    	Promise<Result> resultPromise = Promise.promise( () -> { 
+    		List<Long> ids = new ArrayList<Long>();
+
+	    	for (Contribution c: contributions){
+	    		Logger.info("Contribution ID: " + c.getContributionId());
+	    		ids.add(c.getContributionId());
+	    	}
+	    	
+	    	List<Contribution> c = ContributionsDelegate.findContributionsByText(ids, byText);
+	    	return ok(Json.toJson(c));
+    	});
+    	
+    	return resultPromise;    	
+    }
+
+    /**
      * GET       /api/space/:sid/export/contribution/:cid
      *
      * @param sid
@@ -3605,7 +3668,7 @@ public class Contributions extends Controller {
                     } catch (Exception de) {
                         return internalServerError();
                     }
-                }else if(format!=null && format.equals("CSV")){
+                } else if(format!=null && format.equals("CSV")) {
                     String csvHead = "";
                     String csvDetail = "";
                     Iterator it = contributionMap.entrySet().iterator();
@@ -3639,7 +3702,6 @@ public class Contributions extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Contribution with id: "+cid)));
         }
     }
-
 }
 
 class PaginatedContribution {
