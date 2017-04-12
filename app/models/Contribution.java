@@ -94,7 +94,6 @@ public class Contribution extends AppCivistBaseModel {
 
     @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
-    @Required
     @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
     private ContributionStatus status;
 
