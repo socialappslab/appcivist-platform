@@ -160,7 +160,7 @@ public class Spaces extends Controller {
      * @param sid
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = CustomFieldDefinition.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
+    @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
     // @ApiImplicitParams({
     //         @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
@@ -170,16 +170,30 @@ public class Spaces extends Controller {
         List<Contribution> discussionList = resourceSpace.getContributionsFilteredByType(ContributionTypes.DISCUSSION);
         List<Contribution> commentList = resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
         commentCount = discussionList.size() + commentList.size();
-
-        // List<CustomFieldDefinition> customFieldDefinitions;
-        // if (resourceSpace == null) {
-        //     return notFound(Json
-        //             .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
-        // } else {
-        //     customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
-        // }
         ObjectNode result = Json.newObject();
-        result.put("resource id", sid);
+        result.put("resourceId", sid);
+        result.put("counter", commentCount);
+        return ok(result);
+    }
+    
+    /**
+     * GET       /api/space/:uuid/commentcount
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    // @ApiImplicitParams({
+    //         @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    public static Result getCommentCountPublic(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        Integer commentCount = 0;
+        List<Contribution> discussionList = resourceSpace.getContributionsFilteredByType(ContributionTypes.DISCUSSION);
+        List<Contribution> commentList = resourceSpace.getContributionsFilteredByType(ContributionTypes.COMMENT);
+        commentCount = discussionList.size() + commentList.size();
+        ObjectNode result = Json.newObject();
+        result.put("resourceUUID", uuid.toString());
         result.put("counter", commentCount);
         return ok(result);
     }

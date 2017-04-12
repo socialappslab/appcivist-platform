@@ -296,6 +296,8 @@ GET       /api/public/space/:uuid/contribution/pinned                           
 GET       /api/public/space/:uuid/resource                                       controllers.Campaigns.listSpaceResourcesbyUuid(uuid: java.util.UUID)
 POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
+
 
 # Support for non-member author contributions
 POST      /api/public/assembly/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
