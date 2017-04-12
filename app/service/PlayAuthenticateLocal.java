@@ -110,7 +110,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			Logger.debug("--> provider: " + loginUser.getProvider());
 			MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
 					.getProvider();
-			provider.sendVerifyEmailMailingAfterSignup(user, context);
+			provider.sendVerifyEmailMailingAfterSignup(user, context,false);
 
 		}
 		user.setSessionKey(signed + "-" + encoded);
