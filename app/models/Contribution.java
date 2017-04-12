@@ -280,6 +280,7 @@ public class Contribution extends AppCivistBaseModel {
     private List<Theme> addedThemes;
     
     @JsonView(Views.Public.class)
+    @Transient
     private String document;
 
     /**
