@@ -28,7 +28,7 @@ CREATE INDEX textsearch_idx ON contribution USING gin(document);
 
 CREATE OR REPLACE FUNCTION contribution_trigger() RETURNS trigger AS $$
 begin
-  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));
+  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
   return new;
 end
 $$ LANGUAGE plpgsql;
