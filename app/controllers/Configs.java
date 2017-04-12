@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
 import enums.ResourceSpaceTypes;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -30,6 +31,7 @@ import static play.data.Form.form;
 
 import java.util.*;
 
+@Api(value = "10 configuration: configuration management", description = "Configurations management")
 @With(Headers.class)
 public class Configs extends Controller {
 
