@@ -1,0 +1,9 @@
+@(verificationUrl: String, token: String, name: String, email: String)
+Hola @name, 
+
+Para validar su email siga el siguiente enlace:
+@verificationUrl
+After you have verified your email, you can try to reset your password again.
+
+Le saluda,
+AppCivist

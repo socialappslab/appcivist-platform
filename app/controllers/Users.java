@@ -215,9 +215,10 @@ public class Users extends Controller {
 			return badRequest(Json.toJson(TransferResponseStatus.badMessage(
 					Messages.get("playauthenticate.signup.form-has-errors"),
 					filledForm.errorsAsJson().toString())));
-		} else
+		} else{
 			// Everything was filled correctly
 			return MyUsernamePasswordAuthProvider.handleSignup(ctx());
+		}
 	}
 
 	/**
@@ -502,10 +503,10 @@ public class Users extends Controller {
 		// } else {
 		// return ok();
 		// }
+		TokenAction.deleteByUser(ta.targetUser, Type.EMAIL_VERIFICATION);
 		return ok(toJson(TransferResponseStatus.okMessage(
 				Messages.get("playauthenticate.verify_email.success", email),
 				"")));
-		// TODO return redirect(routes.Application.login());
 	}
 
 	/**
@@ -541,7 +542,7 @@ public class Users extends Controller {
 					"playauthenticate.verify_email.message.instructions_sent",
 					user.getEmail()));
 			MyUsernamePasswordAuthProvider.getProvider()
-					.sendVerifyEmailMailingAfterSignup(user, ctx());
+					.sendVerifyEmailMailingAfterSignup(user, ctx(),false);
 		} else {
 			flash(Application.FLASH_MESSAGE_KEY, Messages.get(
 					"playauthenticate.verify_email.error.set_email_first",
@@ -742,7 +743,7 @@ public class Users extends Controller {
 							Messages.get("playauthenticate.reset_password.message.email_not_verified"));
 
 					// You might want to re-send the verification email here...
-					provider.sendVerifyEmailMailingAfterSignup(user, ctx());
+					provider.sendVerifyEmailMailingAfterSignup(user, ctx(),true);
 				}
 				return ok(Json.toJson("ok"));
 			}

@@ -3,7 +3,6 @@ package models;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -94,7 +93,6 @@ public class Contribution extends AppCivistBaseModel {
 
     @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
-    @Required
     @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
     private ContributionStatus status;
 
@@ -280,6 +278,7 @@ public class Contribution extends AppCivistBaseModel {
     private List<Theme> addedThemes;
     
     @JsonView(Views.Public.class)
+    @Transient
     private String document;
 
     /**
@@ -838,6 +837,11 @@ public class Contribution extends AppCivistBaseModel {
         if (TextUtils.isHtml(c.getText())) {
             c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
             c.setPlainText(Jsoup.parse(c.getText()).text());
+        }
+        
+        // Make sure there is an status
+        if (c.getStatus()==null) {
+        	c.setStatus(ContributionStatus.PUBLISHED);
         }
         c.save();
 
