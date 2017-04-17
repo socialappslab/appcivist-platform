@@ -209,7 +209,7 @@ public class Campaigns extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-   // @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateCampaign(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
