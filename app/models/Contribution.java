@@ -1206,12 +1206,24 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public static boolean isUserAuthor(User u, Long contributionId) {
-        return find.where().eq("contributionId", contributionId)
-                .eq("authors.userId", u.getUserId()).findUnique() != null
-                || find.where()
-                .eq("contributionId", contributionId)
-                .eq("workingGroupAuthors.members.user.userId",
-                        u.getUserId()).findUnique() != null;
+        Contribution contribution = read(contributionId);
+        Boolean isAuthor = false;
+        isAuthor = find.where().eq("contributionId", contributionId)
+                .eq("authors.userId", u.getUserId()).findUnique() != null;
+        if(!isAuthor) {
+            List<WorkingGroup> wgs = contribution.getWorkingGroupAuthors();
+            for (WorkingGroup wg:wgs
+                 ) {
+                List<MembershipGroup> members= wg.getMembers();
+                for (MembershipGroup member:members
+                     ) {
+                    if(member.getUser().getUserId().equals(u.getUserId())){
+                        isAuthor =true;
+                    }
+                }
+            }
+        }
+        return isAuthor;
     }
 
     public static List<WorkingGroup> listWorkingGroupAuthors(Long contributionId) {

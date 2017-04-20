@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import enums.BallotStatus;
 import enums.ResourceSpaceTypes;
 import io.swagger.annotations.ApiModel;
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.VotingSystemTypes;
+import models.misc.Views;
 import play.Logger;
 import utils.GlobalData;
 
@@ -40,21 +42,28 @@ public class Ballot extends Model {
 	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="ballots_id_seq")
 	@Index
     private Long id;
+	@JsonView(Views.Public.class)
     private UUID uuid = UUID.randomUUID();
     @Transient
     private String uuidAsString;
 	private String password;
+	@JsonView(Views.Public.class)
 	@Column(name = "instructions", columnDefinition = "text")
 	private String instructions;
+	@JsonView(Views.Public.class)
 	@Column(name = "notes", columnDefinition = "text")
 	private String notes;
+	@JsonView(Views.Public.class)
 	@Enumerated(EnumType.STRING)
 	private VotingSystemTypes votingSystemType;
+	@JsonView(Views.Public.class)
 	@Enumerated(EnumType.ORDINAL)
 	private BallotStatus status = BallotStatus.ACTIVE;
 	private Boolean requireRegistration = true;
     private Boolean userUuidAsSignature = false;
+	@JsonView(Views.Public.class)
     private String decisionType = "BINDING";
+	@JsonView(Views.Public.class)
 	@Column(name = "entity_type")
 	private String entityType;
     @ManyToOne
@@ -63,10 +72,13 @@ public class Ballot extends Model {
     private Component component;
     @Transient
     private Long componenId;
+	@JsonView(Views.Public.class)
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date startsAt = Calendar.getInstance().getTime();	
+	private Date startsAt = Calendar.getInstance().getTime();
+	@JsonView(Views.Public.class)
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
-	private Date endsAt = Calendar.getInstance().getTime();	
+	private Date endsAt = Calendar.getInstance().getTime();
+	@JsonView(Views.Public.class)
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date createdAt = Calendar.getInstance().getTime();	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
@@ -83,23 +95,27 @@ public class Ballot extends Model {
     /*
 	 * Basic Data operations
 	 */
-    public static Ballot read(Long themeId) {
-        return find.ref(themeId);
+    public static Ballot read(Long ballotId) {
+        return find.ref(ballotId);
     }
+
+	public static Ballot findBySpace(Long ballotId) {
+		return find.ref(ballotId);
+	}
 
     public static List<Ballot> findAll() {
         return find.all();
     }
 
-    public static Ballot create(Ballot theme) {
-        theme.save();
-        theme.refresh();
-        return theme;
+    public static Ballot create(Ballot ballot) {
+        ballot.save();
+        ballot.refresh();
+        return ballot;
     }
 
-    public static Ballot createObject(Ballot theme) {
-        theme.save();
-        return theme;
+    public static Ballot createObject(Ballot ballot) {
+		ballot.save();
+        return ballot;
     }
 
     public static void delete(Long id) {
