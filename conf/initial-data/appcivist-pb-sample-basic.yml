@@ -1955,7 +1955,7 @@
     roles: 
       - *r3
       - *r4
-  - &gm1 !!models.MembershipGroup
+  - &gm8 !!models.MembershipGroup
     workingGroup: *wg4    
     user: *u3
     creator: *u1
@@ -1963,7 +1963,7 @@
     roles: 
       - *r3
       - *r4
-  - &gm1 !!models.MembershipGroup
+  - &gm9 !!models.MembershipGroup
     workingGroup: *wg3    
     user: *u1
     creator: *u1
