@@ -1555,6 +1555,8 @@ alter table resource_space_custom_field_value add constraint fk_resource_space_c
 
 ALTER TABLE "public"."custom_field_value" ADD CONSTRAINT "fk_custom_field_definition_01" FOREIGN KEY ("custom_field_definition_id") REFERENCES "public"."custom_field_definition"("custom_field_definition_id");
 
+alter table working_group add column is_topic boolean default false;
+
 -- 32.sql
 alter table ballot add column entity_type varchar(40);
 
