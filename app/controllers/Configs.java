@@ -234,9 +234,9 @@ public class Configs extends Controller {
 	@ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "config_map", value = "configuration key value json map", dataType = "String", paramType = "body", required = true)})
-//			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-//	@SubjectPresent
+			@ApiImplicitParam(name = "config_map", value = "configuration key value json map", dataType = "String", paramType = "body", required = true),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@SubjectPresent
 	public static Result updateSpaceConfig(Long sid) {
 			JsonNode requestBody = request().body().asJson();
 			ObjectMapper mapper = new ObjectMapper();
@@ -259,17 +259,32 @@ public class Configs extends Controller {
 			for(String key : updatedConfig.getConfigs().keySet()) {
 				Object value = updatedConfig.getConfigs().get(key);
 				List<Config> updateConfigs = new ArrayList<Config>();
+				ConfigTargets configTargets = null;
+				UUID uuid = null;
 				if (ResourceSpaceTypes.ASSEMBLY.equals(resourceSpace.getType())) {
-					updateConfigs = Config.findByTypeAndKey(resourceSpace.getAssemblyResources().getUuid(),ConfigTargets.ASSEMBLY,key);
+					configTargets = ConfigTargets.ASSEMBLY;
+					uuid = resourceSpace.getAssemblyResources()==null?null:resourceSpace.getAssemblyResources().getUuid();
 				} else if (ResourceSpaceTypes.CAMPAIGN.equals(resourceSpace.getType())) {
-					updateConfigs = Config.findByTypeAndKey(resourceSpace.getCampaign().getUuid(),ConfigTargets.CAMPAIGN,key);
+					configTargets = ConfigTargets.CAMPAIGN;
+					uuid = resourceSpace.getCampaign()==null?null:resourceSpace.getCampaign().getUuid();
 				} else if (ResourceSpaceTypes.COMPONENT.equals(resourceSpace.getType())) {
-					updateConfigs = Config.findByTypeAndKey(resourceSpace.getComponent().getUuid(),ConfigTargets.COMPONENT,key);
+					configTargets = ConfigTargets.COMPONENT;
+					uuid = resourceSpace.getComponent()==null?null:resourceSpace.getComponent().getUuid();
 				} else if (ResourceSpaceTypes.CONTRIBUTION.equals(resourceSpace.getType())) {
-					updateConfigs = Config.findByTypeAndKey(resourceSpace.getContribution().getUuid(),ConfigTargets.CONTRIBUTION,key);
+					configTargets = ConfigTargets.CONTRIBUTION;
+					uuid = resourceSpace.getContribution()==null?null:resourceSpace.getContribution().getUuid();
 				} else if (ResourceSpaceTypes.WORKING_GROUP.equals(resourceSpace.getType())) {
-					updateConfigs = Config.findByTypeAndKey(resourceSpace.getWorkingGroupResources().getUuid(),ConfigTargets.WORKING_GROUP,key);
+					configTargets = ConfigTargets.WORKING_GROUP;
+					uuid = resourceSpace.getWorkingGroupResources()==null?null:resourceSpace.getWorkingGroupResources().getUuid();
 				}
+				if(configTargets==null || uuid ==null){
+					responseBody = new TransferResponseStatus();
+					responseBody.setStatusMessage(Messages.get(
+							GlobalData.CONFIG_CREATE_MSG_ERROR, "\nEntity of type "+resourceSpace.getType()+" does not exists"));
+					return badRequest(Json.toJson(responseBody));
+				}
+        
+				updateConfigs = Config.findByTypeAndKey(uuid,configTargets,key);
 				if (updateConfigs ==null || updateConfigs.size()==0) {
 					responseBody = new TransferResponseStatus();
 					responseBody.setStatusMessage(Messages.get(
