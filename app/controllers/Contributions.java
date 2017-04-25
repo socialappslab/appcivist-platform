@@ -319,6 +319,33 @@ public class Contributions extends Controller {
 
     }
 
+    /**
+     * GET       /api/space/:sid/contribution/:cid
+     *
+     * @param sid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json",
+            value = "Get contribution by id in a specific Resource Space",
+            notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
+    public static Result findResourceSpaceContributionById(
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
+        ResourceSpace rs = ResourceSpace.findByContribution(sid,cid);
+        if (rs == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No contribution found with id "+cid+ "in space "+sid)));
+        }else{
+            Contribution contribution = Contribution.read(cid);
+            return ok(Json.toJson(contribution));
+        }
+
+    }
 
     /**
      * GET       /api/space/:sid/contribution

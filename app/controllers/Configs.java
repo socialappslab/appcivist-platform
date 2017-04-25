@@ -158,9 +158,9 @@ public class Configs extends Controller {
 	@ApiOperation(httpMethod = "GET", response = HashMap.class, responseContainer = "List", produces = "application/json",
 			value = "Get configs in a Resource Space")
 	@ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
-//	@ApiImplicitParams({
-//			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-//	@SubjectPresent
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@SubjectPresent
 	public static Result findSpaceConfigs(Long sid) {
 		ResourceSpace resourceSpace = ResourceSpace.read(sid);
 		List<Config> configs = resourceSpace.getConfigs();
@@ -172,6 +172,30 @@ public class Configs extends Controller {
 			map.put(key,value);
 		}
 		return ok(Json.toJson(map));
+	}
+
+	/**
+	 * GET       /api/space/:sid/config/:uuid
+	 *
+	 * @param sid
+	 * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Config.class, produces = "application/json",
+			value = "Get config by id in a Resource Space")
+	@ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@SubjectPresent
+	public static Result findSpaceConfigById(Long sid, UUID uuid) {
+		ResourceSpace resourceSpace = ResourceSpace.findByConfig(sid, uuid);
+		if (resourceSpace == null) {
+			return notFound(Json
+					.toJson(new TransferResponseStatus("No config found with uuid "+uuid+ " in space with id "+sid)));
+		} else {
+			Config resourceSpaceConfig = Config.read(uuid);
+			return ok(Json.toJson(resourceSpaceConfig));
+		}
 	}
 
 	/**
@@ -259,8 +283,9 @@ public class Configs extends Controller {
 							GlobalData.CONFIG_CREATE_MSG_ERROR, "\nEntity of type "+resourceSpace.getType()+" does not exists"));
 					return badRequest(Json.toJson(responseBody));
 				}
+        
 				updateConfigs = Config.findByTypeAndKey(uuid,configTargets,key);
-				if (updateConfigs.size()==0) {
+				if (updateConfigs ==null || updateConfigs.size()==0) {
 					responseBody = new TransferResponseStatus();
 					responseBody.setStatusMessage(Messages.get(
 							GlobalData.CONFIG_CREATE_MSG_ERROR, "\nConfiguration Key '" + key + "' does not exists"));
