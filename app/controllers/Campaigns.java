@@ -15,10 +15,7 @@ import com.google.gson.JsonArray;
 import delegates.CampaignDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
+import enums.*;
 import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.*;
@@ -44,8 +41,13 @@ import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
 
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -216,22 +218,39 @@ public class Campaigns extends Controller {
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
                     newCampaignForm.errorsAsJson()));
-            Logger.info("Error pdating campaign");
+            Logger.info("Error updating campaign");
             Logger.debug("=> " + newCampaignForm.errorsAsJson());
             return badRequest(Json.toJson(responseBody));
         } else {
-            Campaign updatedCampaign = newCampaignForm.get();
-            updatedCampaign.setCampaignId(campaignId);
-            updatedCampaign.update();
-            Logger.info("Updating campaign");
-            Logger.debug("=> " + newCampaignForm.toString());
-            Assembly rs = Assembly.read(aid);
-            Campaign c = Campaign.read(updatedCampaign.getCampaignId());
-            Promise.promise(() -> {
-                return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, c);
-            });
+            try {
+                Campaign campaignOld = Campaign.read(campaignId);
+                Campaign updatedCampaign = newCampaignForm.get();
+                updatedCampaign.setCampaignId(campaignId);
+                updatedCampaign.setBallots(campaignOld.getBallots());
+                updatedCampaign.setResources(campaignOld.getResources());
+                updatedCampaign.setForum(campaignOld.getForum());
+                updatedCampaign.setTimelineEdges(campaignOld.getTimelineEdges());
+                updatedCampaign.setTemplate(campaignOld.getTemplate());
+                List<Component> componentList = new ArrayList<Component>();
+                for (Component component:updatedCampaign.getComponents()
+                     ) {
+                    component.update();
+                    componentList.add(component);
+                }
+                updatedCampaign.setComponents(componentList);
+                updatedCampaign.update();
+                Logger.info("Updating campaign");
+                Logger.debug("=> " + newCampaignForm.toString());
+                Assembly rs = Assembly.read(aid);
 
-            return ok(Json.toJson(updatedCampaign));
+                Promise.promise(() -> {
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, updatedCampaign);
+                });
+
+                return ok(Json.toJson(updatedCampaign));
+            } catch (Exception e) {
+                return badRequest(Json.toJson("Invalid fields"));
+            }
         }
     }
 
@@ -1206,6 +1225,7 @@ public class Campaigns extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
     public static Result listSpaceResources(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
         List<Resource> resources;
@@ -1217,6 +1237,30 @@ public class Campaigns extends Controller {
         }
         return ok(Json.toJson(resources));
 
+    }
+
+    /**
+     * GET /api/space/:sid/resources/:rid
+     *
+     * @param sid
+     * @param rid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Resource.class, value = "Resource in a resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
+    public static Result listSpaceResourcesById(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid,
+                                                @ApiParam(name = "rid", value = "Resource ID") Long rid) {
+        ResourceSpace resourceSpace = ResourceSpace.findByResource(sid,rid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            Resource resource = Resource.read(rid);
+            return ok(Json.toJson(resource));
+        }
     }
 
     /**
@@ -1236,9 +1280,29 @@ public class Campaigns extends Controller {
                     .toJson(new TransferResponseStatus("No resource space found with uuid "+uuid)));
         } else {
             resources = resourceSpace.getResources();
-        }
-        return ok(Json.toJson(resources));
+            String result;
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+                result  = mapper.writerWithView(Views.Public.class)
+                        .writeValueAsString(resources);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No resources with this space uuid")));
+            }
+            Content ret = new Content() {
+                @Override
+                public String body() {
+                    return result;
+                }
 
+                @Override
+                public String contentType() {
+                    return "application/json";
+                }
+            };
+            return ok(ret);
+        }
     }
 
     /**

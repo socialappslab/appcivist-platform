@@ -798,4 +798,47 @@ public class Assembly extends AppCivistBaseModel {
 	public void setPrincipalAssembly(Boolean principalAssembly) {
 		this.principalAssembly = principalAssembly;
 	}
+
+	public static Assembly readAndUpdate(Assembly newAssembly, Long id) {
+		Assembly oldAssembly = Assembly.findById(id);
+		newAssembly.setAssemblyId(id);
+		newAssembly.setForumPosts(oldAssembly.getForumPosts());
+		newAssembly.setFollowedAssemblies(oldAssembly.getFollowedAssemblies());
+		newAssembly.setFollowingAssemblies(oldAssembly.getFollowingAssemblies());
+		List<Theme> themes = newAssembly.getThemes();
+		List<Theme> themesLoaded = new ArrayList<Theme>();
+		for (Theme theme: themes) {
+			Theme t = Theme.read(theme.getThemeId());
+			themesLoaded.add(t);
+		}
+		newAssembly.setThemes(themesLoaded);
+		List<Config> configs = newAssembly.getConfigs();
+		List<Config> configsLoaded = new ArrayList<Config>();
+		for (Config conf: configs) {
+			Config c = Config.read(conf.getUuid());
+			if (c==null) {
+				conf.setConfigTarget(ConfigTargets.ASSEMBLY);
+				conf.setTargetUuid(newAssembly.getUuid());
+				Config.create(conf);
+			}
+			configsLoaded.add(conf);
+		}
+		newAssembly.setConfigs(configsLoaded);
+		List<Campaign> campaigns = newAssembly.getCampaigns();
+		List<Campaign> campaignsLoaded = new ArrayList<Campaign>();
+		for (Campaign camp: campaigns) {
+			Campaign c = Campaign.read(camp.getCampaignId());
+			campaignsLoaded.add(c);
+		}
+		newAssembly.setCampaigns(campaignsLoaded);
+		List<WorkingGroup> wg = newAssembly.getWorkingGroups();
+		List<WorkingGroup> wgLoaded = new ArrayList<WorkingGroup>();
+		for (WorkingGroup wgroup: wg
+				) {
+			WorkingGroup workingGroup = WorkingGroup.read(wgroup.getGroupId());
+			wgLoaded.add(workingGroup);
+		}
+		newAssembly.setWorkingGroups(wgLoaded);
+		return newAssembly;
+	}
 }
