@@ -228,31 +228,76 @@ public class Campaigns extends Controller {
             try {
                 Campaign campaignOld = Campaign.read(campaignId);
                 Campaign updatedCampaign = newCampaignForm.get();
-                updatedCampaign.setCampaignId(campaignId);
-                updatedCampaign.setBallots(campaignOld.getBallots());
-                updatedCampaign.setResources(campaignOld.getResources());
-                updatedCampaign.setForum(campaignOld.getForum());
-                updatedCampaign.setTimelineEdges(campaignOld.getTimelineEdges());
-                updatedCampaign.setTemplate(campaignOld.getTemplate());
+                List<Component> componentLoaded = updatedCampaign.getTransientComponents();
+                campaignOld.setCampaignId(campaignId);
+                campaignOld.setGoal(updatedCampaign.getGoal());
+                campaignOld.setTitle(updatedCampaign.getTitle());
+                campaignOld.setShortname(updatedCampaign.getShortname());
+                campaignOld.setUrl(updatedCampaign.getUrl());
+                campaignOld.setListed(updatedCampaign.getListed());
                 List<Component> componentList = new ArrayList<Component>();
-                for (Component component:updatedCampaign.getComponents()
-                     ) {
-                    component.update();
-                    componentList.add(component);
+                for (Component component:componentLoaded
+                        ) {
+                    Component componentOld = Component.read(component.getComponentId());
+                    componentOld.setTitle(component.getTitle());
+                    componentOld.setDescription(component.getDescription());
+                    componentOld.setEndDate(component.getEndDate());
+                    componentOld.setStartDate(component.getStartDate());
+                    componentOld.setKey(component.getKey());
+                    componentOld.setPosition(component.getPosition());
+                    componentOld.setTimeline(component.getTimeline());
+                    componentOld.update();
+                    componentOld.refresh();
+                    componentList.add(componentOld);
                 }
-                updatedCampaign.setComponents(componentList);
-                updatedCampaign.update();
+                List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
+                int edges =0;
+                for (Component component:componentList
+                        ) {
+                    CampaignTimelineEdge edge = new CampaignTimelineEdge();
+                    edge.setCampaign(campaignOld);
+                    if (edges == 0) {
+                        edge.setFromComponent(component);
+                        edge.setStart(true);
+                        timelineEdges.add(edge);
+                        edges++;
+                    } else {
+                        if (edges < componentList.size() - 1) {
+                            edge.setFromComponent(component);
+                            timelineEdges.add(edge);
+                        }
+                        CampaignTimelineEdge prevEdge = timelineEdges.get(edges - 1);
+                        prevEdge.setToComponent(component);
+                        edges++;
+                    }
+                }
+                for (CampaignTimelineEdge edge:campaignOld.getTimelineEdges()
+                        ) {
+                    edge.delete();
+                }
+                List<CampaignTimelineEdge> timelineEdgesLoaded = new ArrayList<>();
+                for (CampaignTimelineEdge edge:timelineEdges
+                     ) {
+                    edge.save();
+                    edge.refresh();
+                    timelineEdgesLoaded.add(edge);
+                }
+                campaignOld.setComponents(componentList);
+                campaignOld.setTimelineEdges(timelineEdgesLoaded);
+                campaignOld.update();
+                campaignOld.refresh();
                 Logger.info("Updating campaign");
                 Logger.debug("=> " + newCampaignForm.toString());
-                Assembly rs = Assembly.read(aid);
+                ResourceSpace rs = Assembly.read(aid).getResources();
 
                 Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, updatedCampaign);
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, campaignOld);
                 });
 
-                return ok(Json.toJson(updatedCampaign));
+                return ok(Json.toJson(campaignOld));
             } catch (Exception e) {
-                return badRequest(Json.toJson("Invalid fields"));
+                e.printStackTrace();
+                return badRequest(Json.toJson("Error updating fields"));
             }
         }
     }
@@ -887,7 +932,7 @@ public class Campaigns extends Controller {
         Campaign campaign = Campaign.read(campaignId);
         List<Component> components;
         if (all != null) {
-            components = campaign.getComponents();
+            components = campaign.getComponentsByTimeline();
         } else {
             components = campaign.getPagedComponents(page, pageSize);
         }
@@ -919,7 +964,7 @@ public class Campaigns extends Controller {
             Campaign campaign = Campaign.readByUUID(campaignUUID);
             List<Component> components;
             if (all != null) {
-                components = campaign.getComponents();
+                components = campaign.getComponentsByTimeline();
             } else {
                 components = campaign.getPagedComponents(page, pageSize);
             }
