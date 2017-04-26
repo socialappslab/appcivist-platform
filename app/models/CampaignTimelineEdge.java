@@ -27,7 +27,7 @@ public class CampaignTimelineEdge extends AppCivistBaseModel {
 	@GeneratedValue
 	private Long edgeId;
 	
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne
 	@JsonBackReference
 	private Campaign campaign;
 
