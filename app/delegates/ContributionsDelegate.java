@@ -172,8 +172,11 @@ public class ContributionsDelegate {
                         rawQuery += "join resource_space_contributions rsc on rsc.contribution_contribution_id = t0.contribution_id \n " +
                                 "join resource_space rs on rs.resource_space_id = rsc.resource_space_resource_space_id\n ";
                         break;
+                    case "by_author":
+                        rawQuery += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
+                        break;
                     case "theme":
-                        rawQuery += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id\n ";
+                        rawQuery += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         break;
                     case "sorting":
                         String sortingValue = (String) value;
@@ -227,6 +230,9 @@ public class ContributionsDelegate {
                         break;
                     case "containingSpaces":
                         where.add(Expr.eq("rs.resource_space_id", value));
+                        break;
+                    case "by_author":
+                        where.add(Expr.eq("auth.appcivist_user_user_id", value));
                         break;
                     case "by_text":
                         Expression expression = Expr.or(Expr.ilike("t0.title", "%" + ((String)value).toLowerCase() + "%"),
