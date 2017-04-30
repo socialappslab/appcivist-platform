@@ -261,6 +261,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "groups", value = "List") List<Integer> byGroup,
             @ApiParam(name = "themes", value = "List") List<Integer> byTheme,
             @ApiParam(name = "all", value = "Boolean") String all,
+            @ApiParam(name = "by_author", value = "Author ID") Integer authorId,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
@@ -280,6 +281,9 @@ public class Contributions extends Controller {
         }
         if (byText != null && !byText.isEmpty()) {
             conditions.put("by_text", byText);
+        }
+        if (authorId != null && authorId!=0) {
+            conditions.put("by_author", authorId);
         }
         if (byGroup != null && !byGroup.isEmpty()) {
             conditions.put("group", byGroup);
@@ -319,6 +323,33 @@ public class Contributions extends Controller {
 
     }
 
+    /**
+     * GET       /api/space/:sid/contribution/:cid
+     *
+     * @param sid
+     * @param cid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, produces = "application/json",
+            value = "Get contribution by id in a specific Resource Space",
+            notes = "Every entity in AppCivist has a Resource Space to associate itself to other entities")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
+    public static Result findResourceSpaceContributionById(
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
+        ResourceSpace rs = ResourceSpace.findByContribution(sid,cid);
+        if (rs == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No contribution found with id "+cid+ "in space "+sid)));
+        }else{
+            Contribution contribution = Contribution.read(cid);
+            return ok(Json.toJson(contribution));
+        }
+
+    }
 
     /**
      * GET       /api/space/:sid/contribution

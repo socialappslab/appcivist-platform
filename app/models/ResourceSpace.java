@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
+import play.Logger;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -198,7 +199,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
 	@JsonIgnore
 	private Assembly assemblyResources;
-		
+
+	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
+	@JsonIgnore
+	private ResourceSpaceAssociationHistory associationHistoryResources;
+
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
 	@JsonIgnore
 	private Assembly assemblyForum;
@@ -629,6 +634,14 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.assemblyResources = assemblyResources;
 	}
 
+	public ResourceSpaceAssociationHistory getAssociationHistoryResources() {
+		return associationHistoryResources;
+	}
+
+	public void setAssociationHistoryResources(ResourceSpaceAssociationHistory associationHistoryResources) {
+		this.associationHistoryResources = associationHistoryResources;
+	}
+
 	public Assembly getAssemblyForum() {
 		return assemblyForum;
 	}
@@ -691,6 +704,50 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public static ResourceSpace readByUUID(UUID resourceSetUuid) {
 		return find.where().eq("uuid", resourceSetUuid).findUnique();
+	}
+
+	public static ResourceSpace findByContribution(Long resourceSpaceId, Long contributionId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("contributions.contributionId",contributionId).findUnique();
+	}
+
+	public static ResourceSpace findByContributionUuid(UUID resourceSpaceUuid, UUID contributionUuid) {
+		return find.where().eq("uuid", resourceSpaceUuid).eq("contributions.uuid",contributionUuid).findUnique();
+	}
+
+	public static ResourceSpace findByAssembly(Long resourceSpaceId, Long assemblyId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("assemblies.assemblyId",assemblyId).findUnique();
+	}
+
+	public static ResourceSpace findByConfig(Long resourceSpaceId, UUID configUuid) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("configs.uuid",configUuid).findUnique();
+	}
+
+	public static ResourceSpace findByBallot(Long resourceSpaceId, Long ballotId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("ballots.id",ballotId).findUnique();
+	}
+
+	public static ResourceSpace findByCampaign(Long resourceSpaceId, Long campaignId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("campaigns.campaignId",campaignId).findUnique();
+	}
+
+	public static ResourceSpace findByComponent(Long resourceSpaceId, Long componentId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("components.componentId",componentId).findUnique();
+	}
+
+	public static ResourceSpace findByTheme(Long resourceSpaceId, Long themeId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("themes.themeId",themeId).findUnique();
+	}
+
+	public static ResourceSpace findByResource(Long resourceSpaceId, Long resourceId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("resources.resourceId",resourceId).findUnique();
+	}
+
+	public static ResourceSpace findByGroup(Long resourceSpaceId, Long groupId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("workingGroups.groupId",groupId).findUnique();
+	}
+
+	public static ResourceSpace findByMilestone(Long resourceSpaceId, Long milestoneId) {
+		return find.where().eq("resourceSpaceId", resourceSpaceId).eq("milestones.componentMilestoneId",milestoneId).findUnique();
 	}
 
 	public static ResourceSpace createObject(ResourceSpace resourceSet) {
@@ -756,6 +813,91 @@ public class ResourceSpace extends AppCivistBaseModel {
 		}
 		return rs;
 	}
+
+	public static Boolean isCoordinatorResourceSpace(User u, ResourceSpace rs) {
+		Boolean allowed = false;
+		if(ResourceSpaceTypes.ASSEMBLY.equals(rs.getType())){
+			AssemblyProfile ap = null;
+			Membership m = null;
+			Assembly a = rs.getAssemblyResources();
+			if (a!=null) {
+				m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), a.getAssemblyId());
+				ap = a.getProfile();
+				Boolean assemblyNotOpen = true;
+				if (ap!=null) {
+					assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+
+				}
+				if (m!=null && assemblyNotOpen) {
+					List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+					allowed = membershipRoles != null && !membershipRoles.isEmpty();
+				}
+			}
+		} else if(ResourceSpaceTypes.CONTRIBUTION.equals(rs.getType())){
+			Contribution contribution = rs.getContribution();
+			if(contribution!=null){
+				allowed = Contribution.isUserAuthor(u,contribution.getContributionId());
+			}
+		} else if(ResourceSpaceTypes.WORKING_GROUP.equals(rs.getType())){
+			WorkingGroup group =  rs.getWorkingGroupResources();
+			if(group!=null){
+				Membership m = MembershipGroup.findByUserAndGroupId(u.getUserId(), group.getGroupId());
+				WorkingGroup wg = WorkingGroup.read(group.getGroupId());
+				Boolean groupNotOpen = !wg.getProfile().getManagementType().equals(ManagementTypes.OPEN);
+				if(wg.getIsTopic()){
+					groupNotOpen = false;
+				}
+				if (m!=null && groupNotOpen) {
+					List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+					allowed = membershipRoles != null && !membershipRoles.isEmpty();
+				}
+			}
+		}else{
+			allowed=true;
+		}
+		return allowed;
+	}
+
+	public static Boolean isMemberResourceSpace(User u, ResourceSpace rs, Contribution c) {
+		Boolean allowed = false;
+		if(ResourceSpaceTypes.ASSEMBLY.equals(rs.getType())){
+			AssemblyProfile ap = null;
+			Membership m = null;
+			Assembly a = rs.getAssemblyResources();
+			if (a!=null) {
+				m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), a.getAssemblyId());
+				ap = a.getProfile();
+				Boolean assemblyNotOpen = true;
+				if (ap!=null) {
+					assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+
+				}
+				allowed = m!=null;
+				if(!allowed) {
+					// Check if the user has been invited. In which case, it will be considered a member
+					MembershipInvitation mi = MembershipInvitation.findByUserIdTargetIdAndType(u.getUserId(), a.getAssemblyId(), MembershipTypes.ASSEMBLY);
+					allowed =  mi!=null;
+				}
+			}
+		} else if(!(ContributionTypes.COMMENT.equals(c.getType()) || ContributionTypes.DISCUSSION.equals(c.getType())) && ResourceSpaceTypes.WORKING_GROUP.equals(rs.getType())){
+			WorkingGroup group =  rs.getWorkingGroupResources();
+			if(group!=null){
+				Membership m = MembershipGroup.findByUserAndGroupId(u.getUserId(),group.getGroupId());
+				WorkingGroup wg = WorkingGroup.read(group.getGroupId());
+				Boolean groupNotOpen = !wg.getProfile().getManagementType().equals(ManagementTypes.OPEN);
+				if(wg.getIsTopic()){
+					groupNotOpen = false;
+				}
+				allowed = m!=null;
+				if(!allowed) {
+					// Check if the user has been invited. In which case, it will be considered a member
+					MembershipInvitation mi = MembershipInvitation.findByUserIdTargetIdAndType(u.getUserId(), wg.getGroupId(), MembershipTypes.GROUP);
+					allowed =  mi!=null;
+				}
+			}
+		}
+		return allowed;
+	}
 	
 	public void setContributionsFilteredByType(List<Contribution> contributions, ContributionTypes type) {
 		// 1. Filter the contributions of "type" from the contribution list
@@ -810,7 +952,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 		}
 		return filtered;
 	}
-	
+
+	public List<WorkingGroup> getGroupsFilteredByTopic() {
+		return this.workingGroups.stream().filter(p -> p.getIsTopic()).collect(Collectors.toList());
+	}
+
 	public Config getConfigByKey(String key) {
 		List<Config> matchingConfigs = this.configs.stream().filter(p -> p.getKey().equals(key)).collect(Collectors.toList());
 		if (matchingConfigs != null && !matchingConfigs.isEmpty()) {

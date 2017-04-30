@@ -70,11 +70,11 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	private int timeline;
 	@Transient 
 	private Boolean linked;
-	
+
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="fromComponent", fetch=FetchType.LAZY)
 	@JsonBackReference
 	private List<CampaignTimelineEdge> fromEdges = new ArrayList<>();
-	
+
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="toComponent", fetch=FetchType.LAZY)
 	@JsonBackReference
 	private List<CampaignTimelineEdge> toEdges = new ArrayList<>();
@@ -233,6 +233,8 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	public Boolean getLinked() {
 		return linked;
 	}
+
+
 
 	public void setLinked(Boolean linked) {
 		this.linked = linked;

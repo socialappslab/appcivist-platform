@@ -90,7 +90,7 @@ public class Campaign extends AppCivistBaseModel {
 
 	@Transient
 	//@JsonView(Views.Public.class)
-	@JsonIgnore
+	//@JsonIgnore
 	private List<Component> components = new ArrayList<>();
 	@Transient
 	private List<Config> configs = new ArrayList<>();
@@ -335,7 +335,7 @@ String uuidAsString, List<Component> phases) {
 		return forum != null ? forum.getResourceSpaceUuid().toString() : null;
 	}
 
-	public List<Component> getComponents() {
+	public List<Component> getComponentsByTimeline() {
 		List<Component> components = new ArrayList<>();
 		Map<Long, Component> edges = new HashMap<>();
 
@@ -365,6 +365,10 @@ String uuidAsString, List<Component> phases) {
 				findPagedList(page, pageSize).getList();
 	}
 
+	public List<Component> getComponents() {
+		return components;
+	}
+
 	public void setComponents(List<Component> components) {
 		this.components = components;
 		this.resources.setComponents(components);
@@ -375,7 +379,7 @@ String uuidAsString, List<Component> phases) {
 		this.resources.getComponents().add(componentIsntance);
 	}
 
-	private List<Component> getTransientComponents() {
+	public List<Component> getTransientComponents() {
 		return this.components;
 	}
 

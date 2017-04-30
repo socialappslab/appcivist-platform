@@ -42,10 +42,32 @@ DELETE    /api/user/:uid                                                        
 DELETE    /api/user/:uid/force                                                   controllers.Users.deleteUserForce(uid: Long) 
 POST      /api/user/signup                                                       controllers.Users.doSignup() 
 POST      /api/user/login                                                        controllers.Users.doLogin() 
-POST      /api/user/logout                                                       controllers.Users.doLogout() 
+POST      /api/user/logout                                                       controllers.Users.doLogout()
+GET       /api/user/verify                                                       controllers.Users.verifyEmail
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
 GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
 GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
+##################################################################################################################################################################
+# TODO Play Authenticate endpoints to check if we need/validate/integrate better
+GET       /api/user/link                                                         controllers.Users.link
+GET       /api/user/unverified                                                   controllers.Users.unverified()
+GET       /api/user/exists                                                       controllers.Users.exists()
+GET       /api/user/login/denied                                                 controllers.Users.onLoginUserNotFound()
+GET       /api/user/authenticate/:provider/denied                                controllers.Users.oAuthDenied(provider: String)
+GET       /api/user/authenticated                                                controllers.Restricted.index()
+GET       /api/user/login/:id                                                    controllers.Restricted.id(id: String)
+GET       /api/authenticate/:provider                                            controllers.AuthenticateLocal.authenticate(provider: String)
+GET       /api/user/password/reset/:token                                        controllers.Users.resetPassword(token: String)
+POST      /api/user/password/reset                                               controllers.Users.doResetPassword
+POST      /api/user/password/change                                              controllers.Users.doChangePassword
+GET       /api/user/account                                                      controllers.Users.askLink
+POST      /api/user/account                                                      controllers.Users.doLink
+GET       /api/user/merge                                                        controllers.Users.askMerge
+POST      /api/user/merge                                                        controllers.Users.doMerge
+POST      /api/user/password/forgot                                              controllers.Users.doForgotPassword
+POST      /api/user/password/forgot/change                                       controllers.Users.doChangeForgotPassword
+GET       /api/user/logout/redirect                                              controllers.Users.redirectAfterLogout
+POST      /api/site/verify                                                       controllers.Secured.verifyRecaptcha(k: String)
 
 ##################################################################################################################################################################
 # Notifications Service Proxy
@@ -242,31 +264,6 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/export                  
 
 GET       /api/space/:sid/export/contribution/:cid                               controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
 
-
-##################################################################################################################################################################
-# Resource Space Common API
-# Operations that add or delete entities from the resource spaces that are connected to the main entities in AppCivist 
-GET       /api/space/:sid                                                        controllers.Spaces.getSpace(sid: Long)
-GET       /api/space/:sid/organization                                           controllers.Assemblies.findOrganizationsInSpace(sid: Long)
-PUT       /api/space/:sid/organization                                           controllers.Assemblies.updateOrganizationsInSpace(sid: Long)
-DELETE    /api/space/:sid/organization/:id                                       controllers.Assemblies.deleteOrganizationFromSpace(sid: Long, id: Long)
-GET       /api/space/:sid/config                                                 controllers.Configs.findSpaceConfigs(sid: Long)
-PUT       /api/space/:sid/config                                                 controllers.Configs.updateSpaceConfig(sid: Long)
-POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
-GET       /api/space/:sid/contribution                                           controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
-GET       /api/space/:sid/contribution/words/frecuency                           controllers.Contributions.wordsFrecuency(sid:Long)
-GET       /api/space/:sid/contribution/search                                    controllers.Contributions.searchContributionsByText(sid: Long, by_text?="")
-GET       /api/space/:sid/contribution/pinned                                    controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
-POST      /api/space/:sid/space/:new_sid                                         controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
-POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
-GET       /api/space/:sid/resource                                               controllers.Campaigns.listSpaceResources(sid: Long)
-POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
-
-PUT       /api/space/:sid/component/:cid                                         controllers.Spaces.updateSpaceCampaignComponent(sid: Long, cid: Long)
-PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: java.util.UUID)
-PUT       /api/space/:sid/milestone/:mid                                         controllers.Spaces.updateSpaceComponentMilestone(sid: Long, mid: Long)
-
-
 ##################################################################################################################################################################
 # Public Common API
 # Endpoints that are available to Non-Members
@@ -288,13 +285,10 @@ GET       /api/public/campaign/:uuid/groups                                     
 GET       /api/public/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/public/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
 GET       /api/public/space/:uuid                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
-GET       /api/public/space/:uuid/config                                         controllers.Configs.findSpaceConfigsPublic(uuid: java.util.UUID)
-GET       /api/public/space/:uuid/contribution                                   controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
 GET       /api/public/space/:uuid/contribution/pinned                            controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")
-GET       /api/public/space/:uuid/resource                                       controllers.Campaigns.listSpaceResourcesbyUuid(uuid: java.util.UUID)
-POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
+POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
 
 
 # Support for non-member author contributions
@@ -310,28 +304,6 @@ GET       /api/public/assembly/listed                                           
 GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
 
 ##################################################################################################################################################################
-# TODO Play Authenticate endpoints to check if we need/validate/integrate better
-GET       /api/user/link                                                         controllers.Users.link
-GET       /api/user/unverified                                                   controllers.Users.unverified()
-GET       /api/user/exists                                                       controllers.Users.exists()
-GET       /api/user/login/denied                                                 controllers.Users.onLoginUserNotFound()
-GET       /api/user/authenticate/:provider/denied                                controllers.Users.oAuthDenied(provider: String)
-GET       /api/user/authenticated                                                controllers.Restricted.index()
-GET       /api/user/login/:id                                                    controllers.Restricted.id(id: String)
-GET       /api/authenticate/:provider                                            controllers.AuthenticateLocal.authenticate(provider: String)
-GET       /api/user/password/reset/:token                                        controllers.Users.resetPassword(token: String)
-POST      /api/user/password/reset                                               controllers.Users.doResetPassword
-POST      /api/user/password/change                                              controllers.Users.doChangePassword
-GET       /api/user/verify                                                       controllers.Users.verifyEmail
-GET       /api/user/account                                                      controllers.Users.askLink
-POST      /api/user/account                                                      controllers.Users.doLink
-GET       /api/user/merge                                                        controllers.Users.askMerge
-POST      /api/user/merge                                                        controllers.Users.doMerge
-POST      /api/user/password/forgot                                              controllers.Users.doForgotPassword
-POST      /api/user/password/forgot/change                                       controllers.Users.doChangeForgotPassword
-GET       /api/user/logout/redirect                                              controllers.Users.redirectAfterLogout
-POST      /api/site/verify                                                       controllers.Secured.verifyRecaptcha(k: String)
-##################################################################################################################################################################
 # Location endpoints
 GET       /api/location/:query                                                   controllers.Locations.findLocations(query: String)
 
@@ -346,8 +318,16 @@ POST      /api/log/public                                                       
 POST      /api/log/front                                                         controllers.Application.logErrorFrontEnd()
 
 ##################################################################################################################################################################
-# Space endpoints
+# Resource Space Common API
+# Operations that add or delete entities from the resource spaces that are connected to the main entities in AppCivist
 GET       /api/space/:sid                                                        controllers.Spaces.getSpace(sid: Long)
+GET       /api/space/:sid/organization                                           controllers.Assemblies.findOrganizationsInSpace(sid: Long)
+PUT       /api/space/:sid/organization                                           controllers.Assemblies.updateOrganizationsInSpace(sid: Long)
+DELETE    /api/space/:sid/organization/:id                                       controllers.Assemblies.deleteOrganizationFromSpace(sid: Long, id: Long)
+GET       /api/space/:sid/contribution/words/frecuency                           controllers.Contributions.wordsFrecuency(sid:Long)
+GET       /api/space/:sid/contribution/search                                    controllers.Contributions.searchContributionsByText(sid: Long, by_text?="")
+GET       /api/space/:sid/contribution/pinned                                    controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
+POST      /api/space/:sid/space/:new_sid                                         controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 GET       /api/space/:uuid/public                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
 GET       /api/space/:sid/field                                                  controllers.Spaces.findSpaceFields(sid: Long)
 GET       /api/space/:sid/commentcount                                           controllers.Spaces.getCommentCount(sid: Long)
@@ -361,6 +341,68 @@ POST      /api/space/:sid/fieldvalues                                           
 PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
 PUT       /api/space/:sid/fieldvalues                                            controllers.Spaces.updateSpaceFieldValues(sid: Long)
 DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
-GET       /api/space/:sid/ballot                                                 controllers.Spaces.findSpaceBallot(sid: Long, status?="", starts_at?="" , ends_at?="")
 POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
+POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
+POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
+POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
+
+
+GET       /api/space/:sid/ballot/:bid                                            controllers.Spaces.findSpaceBallotById(sid: Long, bid: Long)
+GET       /api/space/:sid/ballot                                                 controllers.Spaces.findSpaceBallot(sid: Long, status?="", starts_at?="" , ends_at?="")
 PUT       /api/space/:sid/ballot                                                 controllers.Spaces.updateSpaceBallot(sid: Long)
+GET       /api/space/:sid/config/:uuid                                           controllers.Configs.findSpaceConfigById(sid: Long, uuid: java.util.UUID)
+GET       /api/space/:sid/config                                                 controllers.Configs.findSpaceConfigs(sid: Long)
+PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: java.util.UUID)
+PUT       /api/space/:sid/config                                                 controllers.Configs.updateSpaceConfig(sid: Long)
+GET       /api/space/:sid/contribution/:cid                                      controllers.Contributions.findResourceSpaceContributionById(sid: Long, cid: Long)
+GET       /api/space/:sid/contribution                                           controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, by_author:Integer?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
+GET       /api/space/:sid/resource/:rid                                          controllers.Campaigns.listSpaceResourcesById(sid: Long, rid: Long)
+GET       /api/space/:sid/resource                                               controllers.Campaigns.listSpaceResources(sid: Long)
+GET       /api/space/:sid/component/:cid                                         controllers.Spaces.listSpaceComponentById(sid: Long, cid: Long)
+GET       /api/space/:sid/component                                              controllers.Spaces.listSpaceComponent(sid: Long)
+GET       /api/space/:sid/milestone/:mid                                         controllers.Spaces.listSpaceMilestoneById(sid: Long, mid: Long)
+GET       /api/space/:sid/milestone                                              controllers.Spaces.listSpaceMilestone(sid: Long)
+GET       /api/space/:sid/assembly/:aid                                          controllers.Spaces.listSpaceAssemblyById(sid: Long, aid: Long)
+GET       /api/space/:sid/assembly                                               controllers.Spaces.listSpaceAssembly(sid: Long)
+GET       /api/space/:sid/campaign/:cid                                          controllers.Spaces.listSpaceCampaignById(sid: Long, cid: Long)
+GET       /api/space/:sid/campaign                                               controllers.Spaces.listSpaceCampaign(sid: Long)
+GET       /api/space/:sid/theme/:tid                                             controllers.Spaces.listSpaceThemeById(sid: Long, tid: Long)
+GET       /api/space/:sid/theme                                                  controllers.Spaces.listSpaceTheme(sid: Long)
+GET       /api/space/:sid/group/:gid                                             controllers.Spaces.listSpaceGroupById(sid: Long, gid: Long)
+GET       /api/space/:sid/group                                                  controllers.Spaces.listSpaceGroup(sid: Long, is_topic?="true")
+
+PUT       /api/space/:sid/component/:cid                                         controllers.Spaces.updateSpaceCampaignComponent(sid: Long, cid: Long)
+PUT       /api/space/:sid/milestone/:mid                                         controllers.Spaces.updateSpaceComponentMilestone(sid: Long, mid: Long)
+PUT       /api/space/:sid/contribution/:cid                                      controllers.Spaces.updateSpaceContribution(sid: Long, cid: Long)
+PUT       /api/space/:sid/assembly/:aid                                          controllers.Spaces.updateSpaceAssembly(sid: Long, aid: Long)
+PUT       /api/space/:sid/group/:gid                                             controllers.Spaces.updateSpaceGroup(sid: Long, gid: Long)
+PUT       /api/space/:sid/campaign/:cid                                          controllers.Spaces.updateSpaceCampaign(sid: Long, cid: Long)
+PUT       /api/space/:sid/resource/:rid                                          controllers.Spaces.updateSpaceResource(sid: Long, rid: Long)
+PUT       /api/space/:sid/theme/:tid                                             controllers.Spaces.updateSpaceTheme(sid: Long, tid: Long)
+
+DELETE    /api/space/:sid/config/:uuid                                           controllers.Spaces.deleteSpaceConfig(sid: Long, uuid: java.util.UUID)
+DELETE    /api/space/:sid/ballot/:bid                                            controllers.Spaces.deleteSpaceBallot(sid: Long, bid: Long)
+DELETE    /api/space/:sid/component/:cid                                         controllers.Spaces.deleteSpaceComponent(sid: Long, cid: Long)
+DELETE    /api/space/:sid/milestone/:mid                                         controllers.Spaces.deleteSpaceMilestone(sid: Long, mid: Long)
+DELETE    /api/space/:sid/contribution/:cid                                      controllers.Spaces.deleteSpaceContribution(sid: Long, cid: Long)
+DELETE    /api/space/:sid/assembly/:aid                                          controllers.Spaces.deleteSpaceAssembly(sid: Long, aid: Long)
+DELETE    /api/space/:sid/group/:gid                                             controllers.Spaces.deleteSpaceGroup(sid: Long, gid: Long)
+DELETE    /api/space/:sid/campaign/:cid                                          controllers.Spaces.deleteSpaceCampaign(sid: Long, cid: Long)
+DELETE    /api/space/:sid/resource/:rid                                          controllers.Spaces.deleteSpaceResource(sid: Long, rid: Long)
+DELETE    /api/space/:sid/theme/:tid                                             controllers.Spaces.deleteSpaceTheme(sid: Long, tid: Long)
+
+
+#Public endpoints
+
+GET       /api/public/space/:uuid/contribution                                   controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
+GET       /api/public/space/:uuid/config                                         controllers.Configs.findSpaceConfigsPublic(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/ballot                                         controllers.Spaces.findSpaceBallotPublic(uuid: java.util.UUID, status?="", starts_at?="" , ends_at?="")
+GET       /api/public/space/:uuid/resource                                       controllers.Campaigns.listSpaceResourcesbyUuid(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/component                                      controllers.Spaces.findSpaceComponentPublic(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/milestone                                      controllers.Spaces.findSpaceMilestonePublic(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/assembly                                       controllers.Spaces.findSpaceAssemblyPublic(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/campaign                                       controllers.Spaces.findSpaceCampaignPublic(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/theme                                          controllers.Spaces.findSpaceThemePublic(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/group                                          controllers.Spaces.findSpaceGroupPublic(uuid: java.util.UUID)
+DELETE    /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.deleteSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
+PUT       /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.updateSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
