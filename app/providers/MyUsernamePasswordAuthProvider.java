@@ -128,6 +128,7 @@ public class MyUsernamePasswordAuthProvider
 		public String name;		
 		public String lang; 
 		public AssemblyTransfer newAssembly;
+		public AssemblyTransfer existingAssembly;
 		private UUID invitationToken;
 		
 		public String validate() {
@@ -180,6 +181,14 @@ public class MyUsernamePasswordAuthProvider
 		
 		public void setInvitationToken(UUID t) {
 			this.invitationToken = t;
+		}
+
+		public AssemblyTransfer getExistingAssembly() {
+			return existingAssembly;
+		}
+
+		public void setExistingAssembly(AssemblyTransfer existingAssembly) {
+			this.existingAssembly = existingAssembly;
 		}
 	}
 
