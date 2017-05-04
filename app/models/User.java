@@ -1,5 +1,6 @@
 package models;
 
+import enums.MembershipStatus;
 import io.swagger.annotations.ApiModel;
 
 import java.net.MalformedURLException;
@@ -33,6 +34,7 @@ import play.Play;
 import play.db.ebean.Transactional;
 import play.i18n.Lang;
 import play.mvc.Http.Context;
+import providers.ExistingGroupSignupIdentity;
 import providers.GroupSignupIdentity;
 import providers.InvitationSignupIdentity;
 import providers.LanguageSignupIdentity;
@@ -569,6 +571,38 @@ public class User extends AppCivistBaseModel implements Subject {
 			if (newAssemblyTransfer!=null) {
 				// create the assembly with user as creator
 				AssembliesDelegate.create(newAssemblyTransfer, user, null, null, "true");
+			}
+		}
+		/*
+		 * 11. If the new user have an existing assembly, create membership for the assembly
+		 */
+		if (authUser instanceof ExistingGroupSignupIdentity) {
+			ExistingGroupSignupIdentity groupSignupUser = (ExistingGroupSignupIdentity) authUser;
+			AssemblyTransfer newAssemblyTransfer = groupSignupUser.getExistingAssembly();
+			if (newAssemblyTransfer!=null) {
+				Assembly assembly = null;
+				if(newAssemblyTransfer.getAssemblyId()!=null && newAssemblyTransfer.getAssemblyId()!=0){
+					assembly = Assembly.read(newAssemblyTransfer.getAssemblyId());
+				}else if(newAssemblyTransfer.getShortname()!=null && !newAssemblyTransfer.getShortname().equals("")){
+					assembly = Assembly.findByShortName(newAssemblyTransfer.getShortname());
+				}else if(newAssemblyTransfer.getUuid()!=null && !newAssemblyTransfer.getUuid().equals("")){
+					assembly = Assembly.readByUUID(newAssemblyTransfer.getUuid());
+				}
+				if (assembly!=null){
+					// Add the user as a members with roles MEMBER
+					MembershipAssembly ma = new MembershipAssembly();
+					ma.setAssembly(assembly);
+					ma.setCreator(assembly.getCreator());
+					ma.setUser(assembly.getCreator());
+					ma.setStatus(MembershipStatus.ACCEPTED);
+					ma.setLang(assembly.getLang());
+					System.out.println("Entro");
+					List<SecurityRole> roles = new ArrayList<SecurityRole>();
+					roles.add(SecurityRole.findByName("MEMBER"));
+					ma.setRoles(roles);
+
+					MembershipAssembly.create(ma);
+				}
 			}
 		}
 		

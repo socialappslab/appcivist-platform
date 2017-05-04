@@ -11,7 +11,7 @@ import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.PicturedIdentity;
 
 public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
-		implements NameIdentity, PicturedIdentity, GroupSignupIdentity, InvitationSignupIdentity, LanguageSignupIdentity {
+		implements NameIdentity, PicturedIdentity, ExistingGroupSignupIdentity, GroupSignupIdentity, InvitationSignupIdentity, LanguageSignupIdentity {
 
 	/**
 	 * 
@@ -30,6 +30,10 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	 */
 	private AssemblyTransfer newAssembly;
 	/*
+	 * Added to support ExistingGroupSignup
+	 */
+	private AssemblyTransfer existingAssembly;
+	/*
 	 * Added to support Signup with Invitation
 	 */
 	private UUID invitationToken;
@@ -39,6 +43,7 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 		this.name = signup.name;
 		this.lang = signup.lang;
 		this.newAssembly = signup.getNewAssembly();
+		this.existingAssembly = signup.getExistingAssembly();
 		this.invitationToken = signup.getInvitationToken();
 	}
 
@@ -111,5 +116,12 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 	public void setLanguage(String l) {
 		this.lang = l;
 	}
-	
+
+	public AssemblyTransfer getExistingAssembly() {
+		return existingAssembly;
+	}
+
+	public void setExistingAssembly(AssemblyTransfer existingAssembly) {
+		this.existingAssembly = existingAssembly;
+	}
 }
