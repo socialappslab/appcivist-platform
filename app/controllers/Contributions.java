@@ -30,6 +30,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.persistence.*;
 import javax.ws.rs.PathParam;
@@ -60,6 +62,7 @@ import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.LogActions;
+import utils.Packager;
 import utils.services.EtherpadWrapper;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
@@ -3652,7 +3655,7 @@ public class Contributions extends Controller {
                         response().setHeader("Content-disposition", "attachment; filename=proposal.pdf");
                         return ok(tempFile);
                     } catch (Exception de) {
-                        return internalServerError();
+                        return internalServerError(de.getMessage());
                     }
                 }else if(format!=null && format.equals("RTF")){
                     try {
@@ -3697,7 +3700,7 @@ public class Contributions extends Controller {
                         response().setHeader("Content-disposition", "attachment; filename=proposal.rtf");
                         return ok(tempFile);
                     } catch (Exception de) {
-                        return internalServerError();
+                        return internalServerError(de.getMessage());
                     }
                 } else if(format!=null && format.equals("CSV")) {
                     String csvHead = "";
@@ -3723,14 +3726,199 @@ public class Contributions extends Controller {
                         FileUtils.writeStringToFile(tempFile, csv);
                         return ok(tempFile);
                     } catch (IOException e) {
-                        return internalServerError();
+                        return internalServerError(e.getMessage());
                     }
                 }else{
-                    return internalServerError();
+                    return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Format not valid: "+format)));
                 }
             }
         } else {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Contribution with id: "+cid)));
+        }
+    }
+
+    /**
+     * GET       /api/space/:sid/export/contribution
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", value = "Export proposal list from a resource space to a CSV/RTF/PDF file")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result exportSpaceContributionProposal(
+            @ApiParam(name = "sid", value = "Space id") Long sid,
+            @ApiParam(name = "format", value = "Export format", allowableValues = "PDF,RTF,CSV") String format,
+            @ApiParam(name = "include", value = "Contribution fields to include") String include) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if(resourceSpace!=null && resourceSpace.getResourceSpaceId()==sid){
+            List<HashMap<String,String>> hashMapList = new ArrayList<HashMap<String,String>>();
+            if(include==null || include.equals("")){
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Contribution fields specified")));
+            }else{
+                String [] includeFields = include.split(",");
+                List<Contribution> contributionList = resourceSpace.getContributions();
+                for (Contribution contribution: contributionList){
+                    Contribution newContribution = new Contribution();
+                    HashMap<String, String> contributionMap = new HashMap<String, String>();
+                    for (String includeField : includeFields
+                            ) {
+                        for (Field field : contribution.getClass().getDeclaredFields()) {
+                            field.setAccessible(true);
+                            if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+                                    || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+                                    || field.isAnnotationPresent(OneToOne.class)) {
+                                continue;
+                            }
+                            if (field.getName().equals(includeField)) {
+                                try {
+                                    contributionMap.put(field.getName(), field.get(contribution) + "");
+                                } catch (IllegalAccessException e) {
+                                    return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Fields specified are not valid")));
+                                }
+                            }
+                        }
+                    }
+                    hashMapList.add(contributionMap);
+                }
+                if(format!=null && format.equals("CSV")) {
+                    String csvHead = "";
+                    String csvDetail = "";
+                    Boolean head = false;
+                    for (HashMap<String,String> contributionMap: hashMapList) {
+                        Iterator it = contributionMap.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry pair = (Map.Entry)it.next();
+                            it.remove();
+                            if(it.hasNext()) {
+                                if(!head){
+                                    csvHead = csvHead + pair.getKey() + ",";
+                                }
+                                csvDetail = csvDetail + pair.getValue() + ",";
+                            }else{
+                                if(!head){
+                                    csvHead = csvHead + pair.getKey() + "\n";
+                                }
+                                csvDetail = csvDetail + pair.getValue() + "\n";
+                            }
+                        }
+                        head = true;
+                    }
+                    String csv = csvHead + csvDetail;
+                    response().setContentType("application/csv");
+                    response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
+                    File tempFile;
+                    try {
+                        tempFile = File.createTempFile("proposal.csv", ".tmp");
+                        FileUtils.writeStringToFile(tempFile, csv);
+                        return ok(tempFile);
+                    } catch (IOException e) {
+                        return internalServerError(e.getMessage());
+                    }
+                }else{
+                    List<File> files = new ArrayList<File>();
+                    if(format!=null && format.equals("PDF")){
+                        try {
+                            int i=0;
+                            for (HashMap<String,String> contributionMap: hashMapList) {
+                                i++;
+                                File tempFile = File.createTempFile("proposal"+i+".pdf", ".tmp");
+                                FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+                                Document document = new Document();
+                                PdfWriter.getInstance(document, fileOutputStream);
+                                document.open();
+                                String head = "";
+                                String detail = "";
+                                Iterator it = contributionMap.entrySet().iterator();
+                                PdfPTable table = new PdfPTable(contributionMap.size());
+                                table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+                                table.getDefaultCell().setPadding(5f);
+                                List<String> values = new ArrayList<>();
+                                while (it.hasNext()) {
+                                    Map.Entry pair = (Map.Entry) it.next();
+                                    it.remove();
+                                    table.addCell(pair.getKey().toString());
+                                    values.add(pair.getValue().toString());
+                                }
+                                for (String value : values
+                                        ) {
+                                    table.addCell(new Paragraph(value));
+                                }
+                                document.add(table);
+                                document.close();
+                                files.add(tempFile);
+                            }
+                        } catch (Exception de) {
+                            return internalServerError(de.getMessage());
+                        }
+                    }else if(format!=null && format.equals("RTF")){
+                        try {
+                            int i=0;
+                            for (HashMap<String,String> contributionMap: hashMapList) {
+                                i++;
+                                File tempFile = File.createTempFile("proposal"+i+".rtf", ".tmp");
+                                FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+                                Document document = new Document();
+                                RtfWriter2.getInstance(document, fileOutputStream);
+                                document.open();
+                                // Create a new Paragraph for the footer
+                                Paragraph par = new Paragraph("Page ");
+                                par.setAlignment(Element.ALIGN_RIGHT);
+
+                                // Add the RtfPageNumber to the Paragraph
+                                par.add(new RtfPageNumber());
+
+                                // Create an RtfHeaderFooter with the Paragraph and set it
+                                // as a footer for the document
+                                RtfHeaderFooter footer = new RtfHeaderFooter(par);
+                                document.setFooter(footer);
+
+                                String head = "";
+                                String detail = "";
+                                Iterator it = contributionMap.entrySet().iterator();
+                                while (it.hasNext()) {
+                                    Map.Entry pair = (Map.Entry) it.next();
+                                    it.remove();
+                                    if (it.hasNext()) {
+                                        head = head + pair.getKey() + "\t";
+                                        detail = detail + pair.getValue() + "\t";
+                                    } else {
+                                        head = head + pair.getKey() + "\n";
+                                        detail = detail + pair.getValue();
+                                    }
+                                }
+                                String text = head + detail;
+                                document.add(new Paragraph(text));
+                                document.close();
+                                files.add(tempFile);
+                            }
+                        } catch (Exception de) {
+                            return internalServerError(de.getMessage());
+                        }
+                    } else {
+                        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Format not valid: "+format)));
+                    }
+                    //prepare zip file
+                    try {
+                        File f = File.createTempFile("proposal.zip", ".tmp");
+                        if(format!=null && format.equals("RTF")){
+                            Packager.packZip(f, files, ".rtf");
+                        }else if(format!=null && format.equals("PDF")){
+                            Packager.packZip(f, files, ".pdf");
+                        }else {
+                            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Format not valid: "+format)));
+                        }
+                        response().setContentType("application/zip");
+                        response().setHeader("Content-disposition", "attachment; filename=proposal.zip");
+                        return ok(f);
+                    } catch (Exception e) {
+                        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Zip file error: "+e.getMessage())));
+                    }
+                }
+            }
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Resource Space with id: "+sid)));
         }
     }
 }
