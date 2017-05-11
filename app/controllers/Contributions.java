@@ -2402,6 +2402,12 @@ public class Contributions extends Controller {
             }
         }
         newContrib.setAuthors(authorsLoaded);
+
+        if (newContrib.getCover()!=null && newContrib.getCover().getResourceId()!=null){
+            Resource cover = Resource.read(newContrib.getCover().getResourceId());
+            newContrib.setCover(cover);
+        }
+
         Contribution.create(newContrib);
         newContrib.refresh();
 
