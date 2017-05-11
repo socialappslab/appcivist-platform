@@ -2350,22 +2350,23 @@ public class Spaces extends Controller {
             return notFound(Json
                     .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
         }
-        List<Contribution> contributions;
-
-        Map<String, Object> conditions = new HashMap<>();
-        conditions.put("containingSpaces", rs.getResourceSpaceId());
-        contributions = ContributionsDelegate.findContributions(conditions, null, null);
+        List<Contribution> contributions = Contribution.findAllByContainingSpaceOrTypes(rs, ContributionTypes.PROPOSAL, ContributionTypes.IDEA);
 
         if (contributions == null) {
             return notFound(Json.toJson(new TransferResponseStatus(
-                    "No contributions for {resource space}: " + sid + ", type=" + type)));
+                    "No contributions for {resource space}: " + sid )));
         }
         ThemeTypes themeType = null;
         if (type != null && !type.isEmpty() && !type.equals("ALL")) {
             themeType = ThemeTypes.valueOf(type.toUpperCase());
         }
         HashMap<Long,ThemeStats> themesHash = new HashMap<Long,ThemeStats>();
+        List<Contribution> contributionsFinal = new ArrayList<Contribution>();
+        contributionsFinal.addAll(contributions);
         for (Contribution contribution: contributions) {
+            contributionsFinal.addAll(Contribution.findAllByContainingSpaceOrTypes(contribution.getResourceSpace(), ContributionTypes.COMMENT, ContributionTypes.DISCUSSION));
+        }
+        for (Contribution contribution: contributionsFinal) {
             List<Theme> themeList = contribution.getThemes();
             for (Theme theme:themeList) {
                 Theme themeLoaded = Theme.read(theme.getThemeId());
