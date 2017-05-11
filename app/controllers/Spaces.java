@@ -7,6 +7,7 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
+import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import enums.*;
 import http.Headers;
@@ -25,9 +26,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import models.*;
+import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.BallotTransfer;
 import models.transfer.TransferResponseStatus;
+import org.apache.commons.lang3.RandomUtils;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -2325,5 +2328,77 @@ public class Spaces extends Controller {
                         .internalServerError(Json.toJson(responseBody));
             }
         }
+    }
+    /**
+     * GET       /api/space/:sid/insights/themes
+     *
+     * @param sid
+     * @param type
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Theme.class, responseContainer = "List", produces = "application/json",
+            value = "Get themes stats in a specific Resource Space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @SubjectPresent
+    public static Result exportSpaceThemeStats(
+            @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
+            @ApiParam(name = "type", value = "String", allowableValues = "OFFICIAL_PRE_DEFINED,EMERGENT,ALL") String type) {
+        ResourceSpace rs = ResourceSpace.read(sid);
+        if (rs == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        }
+        List<Contribution> contributions;
+
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("containingSpaces", rs.getResourceSpaceId());
+        contributions = ContributionsDelegate.findContributions(conditions, null, null);
+
+        if (contributions == null) {
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    "No contributions for {resource space}: " + sid + ", type=" + type)));
+        }
+        ThemeTypes themeType = null;
+        if (type != null && !type.isEmpty() && !type.equals("ALL")) {
+            themeType = ThemeTypes.valueOf(type.toUpperCase());
+        }
+        HashMap<Long,ThemeStats> themesHash = new HashMap<Long,ThemeStats>();
+        for (Contribution contribution: contributions) {
+            List<Theme> themeList = contribution.getThemes();
+            for (Theme theme:themeList) {
+                Theme themeLoaded = Theme.read(theme.getThemeId());
+                if (themeType==null || themeLoaded.getType().equals(themeType)){
+                    ThemeStats themeStats = new ThemeStats();
+                    Integer proposals = themesHash.get(themeLoaded.getThemeId()) == null ? 0
+                            : themesHash.get(themeLoaded.getThemeId()).getProposals();
+                    Integer ideas = themesHash.get(themeLoaded.getThemeId()) == null ? 0
+                            : themesHash.get(themeLoaded.getThemeId()).getIdeas();
+                    Integer discussion = themesHash.get(themeLoaded.getThemeId()) == null ? 0
+                            : themesHash.get(themeLoaded.getThemeId()).getDiscussion();
+                    if(contribution.getType().equals(ContributionTypes.PROPOSAL)){
+                        proposals++;
+                    } else if(contribution.getType().equals(ContributionTypes.IDEA)){
+                        ideas++;
+                    } else if(contribution.getType().equals(ContributionTypes.DISCUSSION) || contribution.getType().equals(ContributionTypes.COMMENT)){
+                        discussion++;
+                    }
+                    Integer total = proposals + ideas + discussion;
+                    Integer totalProposalsIdeas = proposals + ideas;
+                    String title = themeLoaded.getTitle();
+                    String themeIdType = themeLoaded.getType().name();
+                    themeStats.setDiscussion(discussion);
+                    themeStats.setIdeas(ideas);
+                    themeStats.setProposals(proposals);
+                    themeStats.setTotal(total);
+                    themeStats.setTotalProposalsIdeas(totalProposalsIdeas);
+                    themeStats.setTitle(title);
+                    themeStats.setType(themeIdType);
+                    themesHash.put(themeLoaded.getThemeId(), themeStats);
+                }
+            }
+        }
+        return ok(Json.toJson(themesHash));
     }
 }
