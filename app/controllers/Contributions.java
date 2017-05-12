@@ -2255,6 +2255,16 @@ public class Contributions extends Controller {
 //        if (type.equals(ContributionTypes.PROPOSAL)) {
 //            newContrib.setStatus(ContributionStatus.NEW);
 //        }
+        if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
+            List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
+            for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
+                nonMemberAuthor.save();
+                nonMemberAuthor.refresh();
+                nonMemberAuthors.add(nonMemberAuthor);
+            }
+            newContrib.setNonMemberAuthors(nonMemberAuthors);
+            newContrib.setNonMemberAuthor(nonMemberAuthors.get(0));
+        }
         if (author != null) {
             newContrib.addAuthor(author);
             if (newContrib.getLang() == null)

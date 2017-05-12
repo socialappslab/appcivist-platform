@@ -1,5 +1,5 @@
 package enums;
 
-public enum EntityTypes {
+public enum  EntityTypes {
 	ASSEMBLY, CAMPAIGN, WORKING_GROUP, COMPONENT, MILESTONE, CONTRIBUTION, CONTRIBUTION_FEEDBACK, BALLOT
 }
