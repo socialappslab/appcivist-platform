@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModel;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.*;
 
@@ -25,6 +26,9 @@ public class NonMemberAuthor extends Model {
     private Long id;
 
     @JsonView(Views.Public.class)
+    private UUID uuid = UUID.randomUUID();
+
+    @JsonView(Views.Public.class)
     private String name;
 
     @JsonView(Views.Public.class)
@@ -39,17 +43,14 @@ public class NonMemberAuthor extends Model {
     @JsonView(Views.Public.class)
     private Integer age;
 
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "nonMemberAuthors")
-    private List<Contribution> contributions;
-
-    @Transient
-    @JsonView(Views.Public.class)
-    private List<CustomFieldDefinition> customFieldDefinitions;
-
     @Transient
     @JsonView(Views.Public.class)
     private List<CustomFieldValue> customFieldValues;
+
+    public NonMemberAuthor() {
+        super();
+        this.uuid = UUID.randomUUID();
+    }
 
     /**
      * The find property is an static property that facilitates database query creation
@@ -134,32 +135,16 @@ public class NonMemberAuthor extends Model {
 		this.age = age;
 	}
 
-    public List<Contribution> getContributions() {
-        return contributions;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setContributions(List<Contribution> contributions) {
-        this.contributions = contributions;
-    }
-
-    public List<CustomFieldDefinition> getCustomFieldDefinitions() {
-        List<CustomFieldDefinition> customFieldDefinitionsList = new ArrayList<CustomFieldDefinition>();
-        for (Contribution c: contributions) {
-            customFieldDefinitionsList.addAll(c.getResourceSpace().getCustomFieldDefinitions());
-        }
-        return customFieldDefinitionsList;
-    }
-
-    public void setCustomFieldDefinitions(List<CustomFieldDefinition> customFieldDefinitions) {
-        this.customFieldDefinitions = customFieldDefinitions;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public List<CustomFieldValue> getCustomFieldValues() {
-        List<CustomFieldValue> customFieldValuesList = new ArrayList<CustomFieldValue>();
-        for (Contribution c: contributions) {
-            customFieldValuesList.addAll(c.getResourceSpace().getCustomFieldValues());
-        }
-        return customFieldValuesList;
+        return CustomFieldValue.readByTarget(this.uuid);
     }
 
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
