@@ -225,7 +225,7 @@ String uuidAsString, List<Component> phases) {
 		if (start!=null) {
 			Boolean campaignStarted = start.before(Calendar.getInstance().getTime());
 			Boolean campaignStartsToday = start.equals(Calendar.getInstance().getTime());
-			return campaignStarted || campaignStartsToday;
+			return (campaignStarted || campaignStartsToday) && !this.getRemoved();
 		}
 		return false;
 	}
