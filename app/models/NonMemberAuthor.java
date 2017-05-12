@@ -1,14 +1,14 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -37,7 +37,19 @@ public class NonMemberAuthor extends Model {
     private String gender;
 
     @JsonView(Views.Public.class)
-    private Integer age; 
+    private Integer age;
+
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "nonMemberAuthors")
+    private List<Contribution> contributions;
+
+    @Transient
+    @JsonView(Views.Public.class)
+    private List<CustomFieldDefinition> customFieldDefinitions;
+
+    @Transient
+    @JsonView(Views.Public.class)
+    private List<CustomFieldValue> customFieldValues;
 
     /**
      * The find property is an static property that facilitates database query creation
@@ -74,7 +86,15 @@ public class NonMemberAuthor extends Model {
         find.ref(id).update();
     }
 
-	public String getName() {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
 		return name;
 	}
 
@@ -113,4 +133,36 @@ public class NonMemberAuthor extends Model {
 	public void setAge(Integer age) {
 		this.age = age;
 	}
+
+    public List<Contribution> getContributions() {
+        return contributions;
+    }
+
+    public void setContributions(List<Contribution> contributions) {
+        this.contributions = contributions;
+    }
+
+    public List<CustomFieldDefinition> getCustomFieldDefinitions() {
+        List<CustomFieldDefinition> customFieldDefinitionsList = new ArrayList<CustomFieldDefinition>();
+        for (Contribution c: contributions) {
+            customFieldDefinitionsList.addAll(c.getResourceSpace().getCustomFieldDefinitions());
+        }
+        return customFieldDefinitionsList;
+    }
+
+    public void setCustomFieldDefinitions(List<CustomFieldDefinition> customFieldDefinitions) {
+        this.customFieldDefinitions = customFieldDefinitions;
+    }
+
+    public List<CustomFieldValue> getCustomFieldValues() {
+        List<CustomFieldValue> customFieldValuesList = new ArrayList<CustomFieldValue>();
+        for (Contribution c: contributions) {
+            customFieldValuesList.addAll(c.getResourceSpace().getCustomFieldValues());
+        }
+        return customFieldValuesList;
+    }
+
+    public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
+        this.customFieldValues = customFieldValues;
+    }
 }
