@@ -207,6 +207,9 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Contribution> associatedContributions;
 
+    @Transient
+    private List<Long> assignToContributions;
+
     /*
      * The following fields are specific to each type of contribution
      */
@@ -620,6 +623,14 @@ public class Contribution extends AppCivistBaseModel {
 //        this.inspirations = inspirations;
 //        this.getResourceSpace().getContributions().addAll(inspirations);
 //    }
+
+    public List<Long> getAssignToContributions() {
+        return assignToContributions;
+    }
+
+    public void setAssignToContributions(List<Long> assignToContributions) {
+        this.assignToContributions = assignToContributions;
+    }
 
     public List<Contribution> getAssociatedContributions(){
         return resourceSpace != null ? resourceSpace.getContributions() : null;

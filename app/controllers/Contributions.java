@@ -2287,13 +2287,14 @@ public class Contributions extends Controller {
 
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
-        
+        Boolean addIdeaToProposals = false;
         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
             Campaign c = containerResourceSpace.getCampaign(); 
             
         	List<Config> campaignConfigs = c.getConfigs();
-        	Integer hasStatusConfig = 0;     
-        	Integer hasEtherpadConfig = 0;
+        	Integer hasStatusConfig = 0;
+            Integer hasEtherpadConfig = 0;
+            Integer hasIdeasDuringProposal = 0;
         	
         	for(Config cc: campaignConfigs){
         		if (type.equals(ContributionTypes.PROPOSAL)) {
@@ -2314,7 +2315,15 @@ public class Contributions extends Controller {
     				if (cc.getValue().equalsIgnoreCase("FALSE")) {
     					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
     				}    	            
-    	        }        			 
+    	        }
+                if (type.equals(ContributionTypes.IDEA)) {
+                    if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
+                        hasIdeasDuringProposal = 1;
+                        if (cc.getValue().equals("TRUE")) {
+                            addIdeaToProposals=true;
+                        }
+                    }
+    			}
         	}
         	// If the configuration is not defined, get the defaults values
         	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
@@ -2327,6 +2336,13 @@ public class Contributions extends Controller {
         		if (etherpad.equalsIgnoreCase("FALSE"))
         			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
         	}
+
+            if (hasIdeasDuringProposal == 0 && type.equals(ContributionTypes.IDEA)) {
+                String ideasDuringProposal = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS);
+                if (ideasDuringProposal.equals("TRUE")){
+                    addIdeaToProposals=true;
+                }
+            }
         }
         
         Logger.info("Creating new contribution");
@@ -2439,6 +2455,20 @@ public class Contributions extends Controller {
                 inviteCommentersInInspirationList(inspirations, newContrib,
                         newWorkingGroup);
             }
+        }
+
+        if(addIdeaToProposals){
+            List<Long> assignToContributions = newContrib.getAssignToContributions();
+            List<Contribution> contributionList = new ArrayList<Contribution>();
+            for (Long cid : assignToContributions) {
+                Contribution contribution = Contribution.read(cid);
+                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+                    contributionList.add(contribution);
+                }
+            }
+            newContrib.setAssociatedContributions(contributionList);
+            newContrib.getResourceSpace().update();
+            newContrib.getResourceSpace().refresh();
         }
 
         // If contribution is a proposal and the resource space where it is added is a Campaign

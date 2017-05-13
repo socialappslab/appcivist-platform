@@ -44,7 +44,11 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_HIDE_TIMELINE = "appcivist.campaign.hide-timeline"; // if TRUE, the timeline of the campaign is hidden and the campaign has only one stage
 	public static final String APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO = "appcivist.campaign.show-assembly-logo"; // if TRUE, show the assembly logo in the campaign dashboard
 	public static final String APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS = "appcivist.campaign.proposal-default-status"; // NEW or PUBLISHED
-	
+	public static final String APPCIVIST_CAMPAIGN_FEEDBACK_HIDDEN_FIELDS = "appcivist.campaign.feedback.hidden-fields"; // EMPTY DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS = "appcivist.campaign.contribution.hidden-fields"; // EMPTY DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS = "appcivist.campaign.enable-ideas-during-proposals"; // FALSE DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT= "appcivist.campaign.open-idea-section-default"; // FALSE DEFAULT
+
 	// Component Level Configuration Keys
 	public static final String APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.component.contribution-type-principal"; // what type of contribution is the displayed at the center of the page when this component in the timeline is current (e.g., in Idea Collection, the main contribution type will be IDEAS)
 	
@@ -90,6 +94,10 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_HIDE_TIMELINE, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS, "NEW");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_FEEDBACK_HIDDEN_FIELDS, "");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS, "");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT, "FALSE");
 		
 		// Component Level Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL,"PROPOSAL"); 
