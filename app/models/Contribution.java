@@ -236,6 +236,10 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     private Resource extendedTextPad;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonView(Views.Public.class)
+    private Resource cover;
+
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @Transient
     @JsonIgnore
@@ -640,6 +644,14 @@ public class Contribution extends AppCivistBaseModel {
     public String getReadOnlyPadUrl() {
         return extendedTextPad != null ? extendedTextPad.getUrlAsString()
                 : null;
+    }
+
+    public Resource getCover() {
+        return cover;
+    }
+
+    public void setCover(Resource cover) {
+        this.cover = cover;
     }
 
     // TODO see if setting contributions on resource space is better through
