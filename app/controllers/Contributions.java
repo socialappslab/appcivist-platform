@@ -1981,6 +1981,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "PUT", response = String.class, produces = "application/json", value = "Logical removal of contribution in Assembly")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     //@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result softDeleteContribution(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,

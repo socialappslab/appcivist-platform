@@ -1513,6 +1513,7 @@ public class Spaces extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Contribution in json", dataType = "models.Contribution", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result updateSpaceContribution(
             @ApiParam(name = "sid", value = "Space ID") Long sid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
