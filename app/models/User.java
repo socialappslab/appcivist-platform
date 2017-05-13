@@ -101,6 +101,15 @@ public class User extends AppCivistBaseModel implements Subject {
 	@Transient
 	private String sessionKey;
 
+	@JsonView(Views.Public.class)
+	private String facebookUserId;
+
+	@JsonView(Views.Public.class)
+	private String userAccessToken;
+
+	@JsonView(Views.Public.class)
+	private String tokenExpiresIn;
+
 	/*
 	 * Relationships
 	 */
@@ -319,6 +328,29 @@ public class User extends AppCivistBaseModel implements Subject {
 		return this.username;
 	}
 		
+  	public String getFacebookUserId () {
+  		return this.facebookUserId;
+  	}
+
+  	public void setFacebookUserId (String facebookUserId) {
+  		this.facebookUserId = facebookUserId;
+  	}
+
+  	public String getUserAccessToken () {
+  		return this.userAccessToken;
+  	}
+
+  	public void setUserAccessToken (String userAccessToken) {
+  		this.userAccessToken = userAccessToken;
+  	}
+
+  	public String getTokenExpiresIn () {
+  		return this.tokenExpiresIn;
+  	}
+
+  	public void setTokenExpiresIn (String tokenExpiresIn){
+  		this.tokenExpiresIn = tokenExpiresIn;
+  	}
 	/************************************************************************************************
 	 * Basic Persistence queries
 	 ************************************************************************************************/
