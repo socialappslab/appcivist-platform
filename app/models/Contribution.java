@@ -229,6 +229,10 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     private Resource extendedTextPad;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonView(Views.Public.class)
+    private Resource cover;
+
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @Transient
     @JsonIgnore
@@ -642,6 +646,14 @@ public class Contribution extends AppCivistBaseModel {
                 : null;
     }
 
+    public Resource getCover() {
+        return cover;
+    }
+
+    public void setCover(Resource cover) {
+        this.cover = cover;
+    }
+
     // TODO see if setting contributions on resource space is better through
     // updating the space directly
     public void setComments(List<Contribution> comments) {
@@ -1037,6 +1049,11 @@ public class Contribution extends AppCivistBaseModel {
     public static List<Contribution> findAllByContainingSpaceAndType(
             ResourceSpace rs, Integer t) {
         return find.where().eq("containingSpaces", rs).eq("type", t).findList();
+    }
+
+    public static List<Contribution> findAllByContainingSpaceOrTypes(
+            ResourceSpace rs, ContributionTypes t, ContributionTypes t2) {
+        return find.where().eq("containingSpaces", rs).or(Expr.eq("type", t),Expr.eq("type", t2)).findList();
     }
              
     public static List<Contribution> findAllByContainingSpaceAndQuery(Long sid,

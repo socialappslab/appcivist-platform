@@ -1564,7 +1564,7 @@ ALTER TABLE "public"."candidate" RENAME COLUMN "contribution_uuid" TO "candidate
 
 alter table resource_space add column consensus_ballot character varying(40);
 
-
+-- 34.sql
 create table resource_space_ballot_history (
   resource_space_resource_space_id                                                 bigint not null,
   ballot_ballot_id                                                                 bigint not null,
@@ -1612,6 +1612,11 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
     ON contribution FOR EACH ROW EXECUTE PROCEDURE contribution_trigger();
+
+-- 35.sql
+alter table contribution add column cover_resource_id bigint;
+alter table contribution add constraint fk_contribution_resource_cover foreign key (cover_resource_id) references resource (resource_id);
+
 -- 36.sql
 create table contribution_non_member_author (
   contribution_id                                                 bigint not null,
