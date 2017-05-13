@@ -8,10 +8,13 @@ import enums.ResourceTypes;
 import http.Headers;
 
 import java.util.List;
+import java.util.Date;
+import java.util.Calendar;
 
 import io.swagger.annotations.*;
 import models.Resource;
 import models.TokenAction;
+import models.LinkedAccount;
 import models.TokenAction.Type;
 import models.User;
 import models.UserProfile;
@@ -19,6 +22,7 @@ import models.misc.S3File;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
+import play.data.DynamicForm;
 import play.data.format.Formats.NonEmpty;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
@@ -189,6 +193,33 @@ public class Users extends Controller {
 		}
 	}
 
+
+	/**
+	 * GET 	  /api/user/:uid/fbtoken/
+	 * che
+	 *
+	 * @param uid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = LinkedAccount.class, produces = "application/json", value = "check if user has a Facebook access token", notes = " user with id :id")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Facebook Token not found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's auth key", dataType = "String", paramType = "header") })
+	@SubjectPresent
+	public static Result checkFbToken(Long uid) {
+		User user = User.findByUserId(uid);
+		LinkedAccount linkedAccount = LinkedAccount.findByProviderKey(user, "social_ideation_facebook");
+		if (linkedAccount != null) {
+			return ok();
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
+					"No linkedAccount for user: " + uid, "")));
+		}
+	}
+    
+
+
 	/****************************************************************************************************
 	 * CREATE Endpoints
 	 ***************************************************************************************************/
@@ -265,6 +296,49 @@ public class Users extends Controller {
 	public static Result doLogout() {
 		// TODO: modify to return HTML or JSON instead of redirect
 		return com.feth.play.module.pa.controllers.Authenticate.logout();
+	}
+
+	/**
+	 * POST	  /api/user/:uid/account/
+	 * Stores a new facebook access token for user
+	 *
+	 * @param uid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = LinkedAccount.class, produces = "application/json", value = "Stores a new facebook access token for user", notes = " user with id :id")
+	@ApiResponses(value = { @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's auth key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "userId", value = "Facebook user's id", dataType = "String", paramType = "body"),
+			@ApiImplicitParam(name = "accessToken", value = "New access token from facebook", dataType = "String", paramType = "body"),
+			@ApiImplicitParam(name = "expiration", value = "Expiration (in seconds) of the token", dataType = "String", paramType = "body") })
+	@SubjectPresent
+	public static Result createFbToken(Long uid) {
+		User user = User.findByUserId(uid);
+		LinkedAccount linkedAccount = new LinkedAccount();
+		linkedAccount.setUser(user);
+		DynamicForm form = Form.form().bindFromRequest();
+		linkedAccount.setProviderUserId(form.get("userId"));
+		linkedAccount.setProviderKey("social_ideation_facebook");
+		linkedAccount.save();
+		TokenAction tokenAction = TokenAction.create(TokenAction.Type.FACEBOOK_TOKEN, form.get("accessToken"), user);
+
+		Calendar cal = Calendar.getInstance();
+        Date created = cal.getTime();
+        tokenAction.setCreated(created);
+        cal.add(Calendar.SECOND, Integer.parseInt(form.get("expiration")));
+        Date expires = cal.getTime();
+        tokenAction.setExpires(expires);
+		
+		tokenAction.save();
+
+		if (linkedAccount != null) {
+			return ok();
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
+					"No linkedAccount for user: " + uid, "")));
+		}
 	}
 
 	/****************************************************************************************************
@@ -407,6 +481,48 @@ public class Users extends Controller {
 		}
 	}
 	
+	/**
+	 * POST	  /api/user/:uid/fbtoken/
+	 * Update user's facebook access token
+	 *
+	 * @param uid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = LinkedAccount.class, produces = "application/json", value = "Update user's facebook access token", notes = " user with id :id")
+	@ApiResponses(value = { @ApiResponse(code = 404, message = "Linked Account not found", response = TransferResponseStatus.class) })
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's auth key", dataType = "String", paramType = "header"),
+			@ApiImplicitParam(name = "userId", value = "Facebook user's id", dataType = "String", paramType = "body"),
+			@ApiImplicitParam(name = "accessToken", value = "New access token from facebook", dataType = "String", paramType = "body"),
+			@ApiImplicitParam(name = "expiration", value = "Expiration (in seconds) of the token", dataType = "String", paramType = "body") })
+	@SubjectPresent
+	public static Result updateFbToken(Long uid) {
+		User user = User.findByUserId(uid);
+		LinkedAccount linkedAccount = LinkedAccount.findByProviderKey(user, "social_ideation_facebook");
+		DynamicForm form = Form.form().bindFromRequest();
+		linkedAccount.setProviderUserId(form.get("userId"));
+		linkedAccount.update();
+		TokenAction tokenAction = TokenAction.findByUserAndType(user, TokenAction.Type.FACEBOOK_TOKEN);
+		tokenAction.setToken(form.get("accessToken"));
+
+		Calendar cal = Calendar.getInstance();
+        Date created = cal.getTime();
+        tokenAction.setCreated(created);
+        cal.add(Calendar.SECOND, Integer.parseInt(form.get("expiration")));
+        Date expires = cal.getTime();
+        tokenAction.setExpires(expires);
+
+		tokenAction.update();
+
+		if (linkedAccount != null) {
+			return ok();
+		} else {
+			return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
+					"No linkedAccount for user: " + uid, "")));
+		}
+	}
+
 	/****************************************************************************************************
 	 * DELETE Endpoints
 	 ***************************************************************************************************/

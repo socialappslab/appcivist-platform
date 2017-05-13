@@ -36,7 +36,10 @@ public class TokenAction extends Model {
 		MEMBERSHIP_INVITATION, 
 
 		@EnumValue("MR")
-		MEMBERSHIP_REQUEST
+		MEMBERSHIP_REQUEST, 
+
+		@EnumValue("FT")
+		FACEBOOK_TOKEN
 	}
 
 	/**
@@ -74,6 +77,11 @@ public class TokenAction extends Model {
 
 	public static TokenAction findByToken(final String token, final Type type) {
 		return find.where().eq("token", token).eq("type", type).findUnique();
+	}
+    
+    public static TokenAction findByUserAndType(final User u, final Type type) {
+		return find.where().eq("targetUser.userId", u.getUserId())
+				.eq("type", type).findUnique();
 	}
 
 	public static void deleteByUser(final User u, final Type type) {
@@ -117,5 +125,17 @@ public class TokenAction extends Model {
 
 	public void setTargetUser(User targetUser) {
 		this.targetUser = targetUser;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public void setExpires(Date expires){
+		this.expires = expires;
+	}
+
+	public void setCreated(Date created){
+		this.created = created;
 	}
 }
