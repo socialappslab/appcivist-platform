@@ -349,6 +349,7 @@ POST      /api/space/:sid/resource                                              
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 GET       /api/space/:sid/export/contribution/:cid                               controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
 GET       /api/space/:sid/export/contribution                                    controllers.Contributions.exportSpaceContributionProposal(sid: Long, format?="", include?="")
+GET       /api/space/:sid/insights/themes                                        controllers.Spaces.exportSpaceThemeStats(sid: Long, type?="")
 
 GET       /api/space/:sid/ballot/:bid                                            controllers.Spaces.findSpaceBallotById(sid: Long, bid: Long)
 GET       /api/space/:sid/ballot                                                 controllers.Spaces.findSpaceBallot(sid: Long, status?="", starts_at?="" , ends_at?="")

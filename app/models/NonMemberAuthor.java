@@ -1,14 +1,15 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -25,6 +26,9 @@ public class NonMemberAuthor extends Model {
     private Long id;
 
     @JsonView(Views.Public.class)
+    private UUID uuid = UUID.randomUUID();
+
+    @JsonView(Views.Public.class)
     private String name;
 
     @JsonView(Views.Public.class)
@@ -37,7 +41,16 @@ public class NonMemberAuthor extends Model {
     private String gender;
 
     @JsonView(Views.Public.class)
-    private Integer age; 
+    private Integer age;
+
+    @Transient
+    @JsonView(Views.Public.class)
+    private List<CustomFieldValue> customFieldValues;
+
+    public NonMemberAuthor() {
+        super();
+        this.uuid = UUID.randomUUID();
+    }
 
     /**
      * The find property is an static property that facilitates database query creation
@@ -74,7 +87,15 @@ public class NonMemberAuthor extends Model {
         find.ref(id).update();
     }
 
-	public String getName() {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
 		return name;
 	}
 
@@ -113,4 +134,20 @@ public class NonMemberAuthor extends Model {
 	public void setAge(Integer age) {
 		this.age = age;
 	}
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public List<CustomFieldValue> getCustomFieldValues() {
+        return CustomFieldValue.readByTarget(this.uuid);
+    }
+
+    public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
+        this.customFieldValues = customFieldValues;
+    }
 }

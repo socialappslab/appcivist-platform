@@ -9,20 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PreUpdate;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.location.Location;
 import models.misc.Views;
@@ -115,6 +102,12 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "contribution_non_member_author",
+            joinColumns = { @JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id", updatable = true, insertable = true) },
+            inverseJoinColumns = { @JoinColumn(name = "non_member_author_id", referencedColumnName = "id", updatable = true, insertable = true) }
+    )
+    private List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
     // TODO: Needed? 
     private String budget;
 
@@ -214,6 +207,9 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Contribution> associatedContributions;
 
+    @Transient
+    private List<Long> assignToContributions;
+
     /*
      * The following fields are specific to each type of contribution
      */
@@ -235,6 +231,10 @@ public class Contribution extends AppCivistBaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     @JsonView(Views.Public.class)
     private Resource extendedTextPad;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonView(Views.Public.class)
+    private Resource cover;
 
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @Transient
@@ -416,6 +416,13 @@ public class Contribution extends AppCivistBaseModel {
         this.sourceCode = sourceCode;
     }
 
+    public List<NonMemberAuthor> getNonMemberAuthors() {
+        return nonMemberAuthors;
+    }
+
+    public void setNonMemberAuthors(List<NonMemberAuthor> nonMemberAuthors) {
+        this.nonMemberAuthors = nonMemberAuthors;
+    }
 
     public List<ContributionFeedback> getContributionFeedbacks() {
         return contributionFeedbacks;
@@ -617,6 +624,14 @@ public class Contribution extends AppCivistBaseModel {
 //        this.getResourceSpace().getContributions().addAll(inspirations);
 //    }
 
+    public List<Long> getAssignToContributions() {
+        return assignToContributions;
+    }
+
+    public void setAssignToContributions(List<Long> assignToContributions) {
+        this.assignToContributions = assignToContributions;
+    }
+
     public List<Contribution> getAssociatedContributions(){
         return resourceSpace != null ? resourceSpace.getContributions() : null;
     }
@@ -640,6 +655,14 @@ public class Contribution extends AppCivistBaseModel {
     public String getReadOnlyPadUrl() {
         return extendedTextPad != null ? extendedTextPad.getUrlAsString()
                 : null;
+    }
+
+    public Resource getCover() {
+        return cover;
+    }
+
+    public void setCover(Resource cover) {
+        this.cover = cover;
     }
 
     // TODO see if setting contributions on resource space is better through
@@ -1037,6 +1060,11 @@ public class Contribution extends AppCivistBaseModel {
     public static List<Contribution> findAllByContainingSpaceAndType(
             ResourceSpace rs, Integer t) {
         return find.where().eq("containingSpaces", rs).eq("type", t).findList();
+    }
+
+    public static List<Contribution> findAllByContainingSpaceOrTypes(
+            ResourceSpace rs, ContributionTypes t, ContributionTypes t2) {
+        return find.where().eq("containingSpaces", rs).or(Expr.eq("type", t),Expr.eq("type", t2)).findList();
     }
              
     public static List<Contribution> findAllByContainingSpaceAndQuery(Long sid,

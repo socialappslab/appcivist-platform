@@ -1981,6 +1981,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "PUT", response = String.class, produces = "application/json", value = "Logical removal of contribution in Assembly")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     //@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result softDeleteContribution(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
@@ -2255,6 +2256,16 @@ public class Contributions extends Controller {
 //        if (type.equals(ContributionTypes.PROPOSAL)) {
 //            newContrib.setStatus(ContributionStatus.NEW);
 //        }
+        if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
+            List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
+            for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
+                nonMemberAuthor.save();
+                nonMemberAuthor.refresh();
+                nonMemberAuthors.add(nonMemberAuthor);
+            }
+            newContrib.setNonMemberAuthors(nonMemberAuthors);
+            newContrib.setNonMemberAuthor(nonMemberAuthors.get(0));
+        }
         if (author != null) {
             newContrib.addAuthor(author);
             if (newContrib.getLang() == null)
@@ -2277,13 +2288,14 @@ public class Contributions extends Controller {
 
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
-        
+        Boolean addIdeaToProposals = false;
         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
             Campaign c = containerResourceSpace.getCampaign(); 
             
         	List<Config> campaignConfigs = c.getConfigs();
-        	Integer hasStatusConfig = 0;     
-        	Integer hasEtherpadConfig = 0;
+        	Integer hasStatusConfig = 0;
+            Integer hasEtherpadConfig = 0;
+            Integer hasIdeasDuringProposal = 0;
         	
         	for(Config cc: campaignConfigs){
         		if (type.equals(ContributionTypes.PROPOSAL)) {
@@ -2304,7 +2316,15 @@ public class Contributions extends Controller {
     				if (cc.getValue().equalsIgnoreCase("FALSE")) {
     					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
     				}    	            
-    	        }        			 
+    	        }
+                if (type.equals(ContributionTypes.IDEA)) {
+                    if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
+                        hasIdeasDuringProposal = 1;
+                        if (cc.getValue().equals("TRUE")) {
+                            addIdeaToProposals=true;
+                        }
+                    }
+    			}
         	}
         	// If the configuration is not defined, get the defaults values
         	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
@@ -2317,6 +2337,13 @@ public class Contributions extends Controller {
         		if (etherpad.equalsIgnoreCase("FALSE"))
         			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
         	}
+
+            if (hasIdeasDuringProposal == 0 && type.equals(ContributionTypes.IDEA)) {
+                String ideasDuringProposal = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS);
+                if (ideasDuringProposal.equals("TRUE")){
+                    addIdeaToProposals=true;
+                }
+            }
         }
         
         Logger.info("Creating new contribution");
@@ -2402,6 +2429,12 @@ public class Contributions extends Controller {
             }
         }
         newContrib.setAuthors(authorsLoaded);
+
+        if (newContrib.getCover()!=null && newContrib.getCover().getResourceId()!=null){
+            Resource cover = Resource.read(newContrib.getCover().getResourceId());
+            newContrib.setCover(cover);
+        }
+
         Contribution.create(newContrib);
         newContrib.refresh();
 
@@ -2423,6 +2456,20 @@ public class Contributions extends Controller {
                 inviteCommentersInInspirationList(inspirations, newContrib,
                         newWorkingGroup);
             }
+        }
+
+        if(addIdeaToProposals){
+            List<Long> assignToContributions = newContrib.getAssignToContributions();
+            List<Contribution> contributionList = new ArrayList<Contribution>();
+            for (Long cid : assignToContributions) {
+                Contribution contribution = Contribution.read(cid);
+                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+                    contributionList.add(contribution);
+                }
+            }
+            newContrib.setAssociatedContributions(contributionList);
+            newContrib.getResourceSpace().update();
+            newContrib.getResourceSpace().refresh();
         }
 
         // If contribution is a proposal and the resource space where it is added is a Campaign
