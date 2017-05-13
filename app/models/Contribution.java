@@ -9,20 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PreUpdate;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.location.Location;
 import models.misc.Views;
@@ -115,6 +102,12 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "contribution_non_member_author",
+            joinColumns = { @JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id", updatable = true, insertable = true) },
+            inverseJoinColumns = { @JoinColumn(name = "non_member_author_id", referencedColumnName = "id", updatable = true, insertable = true) }
+    )
+    private List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
     // TODO: Needed? 
     private String budget;
 
@@ -420,6 +413,13 @@ public class Contribution extends AppCivistBaseModel {
         this.sourceCode = sourceCode;
     }
 
+    public List<NonMemberAuthor> getNonMemberAuthors() {
+        return nonMemberAuthors;
+    }
+
+    public void setNonMemberAuthors(List<NonMemberAuthor> nonMemberAuthors) {
+        this.nonMemberAuthors = nonMemberAuthors;
+    }
 
     public List<ContributionFeedback> getContributionFeedbacks() {
         return contributionFeedbacks;

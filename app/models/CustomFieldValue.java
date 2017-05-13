@@ -71,6 +71,10 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		return find.where().eq("entityTargetUuid", targetUuid).eq("customFieldDefinition.idCustomFieldDefinition",id).findUnique();
 	}
 
+	public static List<CustomFieldValue> readByTarget(UUID targetUuid) {
+		return find.where().eq("entityTargetUuid", targetUuid).findList();
+	}
+
 	public UUID getUuid() {
 		return uuid;
 	}
