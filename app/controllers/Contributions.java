@@ -3602,30 +3602,85 @@ public class Contributions extends Controller {
      *
      * @param sid
      * @return
-     */  
+     */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json",
 			value = "Contribution containing the given word")
 	  @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})    
-    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid, 
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
     														 @ApiParam(name = "byText", value = "Text to be search in the title or text of contributions")String byText) {
-    	
-    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);    	
-    	    	
-    	Promise<Result> resultPromise = Promise.promise( () -> { 
+
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
+
+    	Promise<Result> resultPromise = Promise.promise( () -> {
     		List<Long> ids = new ArrayList<Long>();
 
 	    	for (Contribution c: contributions){
 	    		Logger.info("Contribution ID: " + c.getContributionId());
 	    		ids.add(c.getContributionId());
 	    	}
-	    	
+
 	    	List<Contribution> c = ContributionsDelegate.findContributionsByText(ids, byText);
 	    	return ok(Json.toJson(c));
     	});
-    	
-    	return resultPromise;    	
+
+    	return resultPromise;
+    }
+
+    /**
+     * GET       /api/space/:sid/words
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = HashMap.class, responseContainer = "List", produces = "application/json",
+            value = "List of words in contributions from a given resource space with its frequency")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> wordsFrecuencyByType (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
+                                                        @ApiParam(name = "type", value = "Type of contributions",
+                                                                allowableValues = "PROPOSAL, IDEA, DISCUSSION, PROPOSAL_AND_IDEAS, ALL") String type) {
+        if(type==null || type.isEmpty()){
+            type="ALL";
+        }
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            Promise<Result> resultPromise = Promise.promise(() -> {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No resource space found with id " + sid)));
+            });
+            return resultPromise;
+        }
+        List<Contribution> contributions = Contribution.findAllByContainingSpace(resourceSpace.getResourceSpaceId());
+        if(type.equals("PROPOSAL")){
+            contributions = Contribution.readListByContainingSpaceAndType(resourceSpace.getResourceSpaceId(),ContributionTypes.PROPOSAL);
+        } else if(type.equals("IDEA")){
+            contributions = Contribution.readListByContainingSpaceAndType(resourceSpace.getResourceSpaceId(),ContributionTypes.IDEA);
+        } else if(type.equals("DISCUSSION")){
+            contributions = Contribution.findAllByContainingSpaceOrTypes(resourceSpace,ContributionTypes.DISCUSSION,ContributionTypes.COMMENT);
+        } else if(type.equals("PROPOSAL_AND_IDEAS")){
+            contributions = Contribution.findAllByContainingSpaceOrTypes(resourceSpace,ContributionTypes.PROPOSAL,ContributionTypes.IDEA);
+        }else {
+
+        }
+        List<Contribution> contributionsFiltered = new ArrayList<Contribution>(contributions);
+
+        Promise<Result> resultPromise = Promise.promise( () -> {
+            List<Long> ids = new ArrayList<Long>();
+
+            for (Contribution c: contributionsFiltered){
+                Logger.info("Contribution ID: " + c.getContributionId());
+                ids.add(c.getContributionId());
+            }
+
+            Map<String,Integer> wordFrequency = ContributionsDelegate.wordsWithFrequenciesInContributions(ids);
+            return ok(Json.toJson(wordFrequency));
+        });
+
+        return resultPromise;
+
     }
 
     /**
