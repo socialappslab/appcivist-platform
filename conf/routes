@@ -343,6 +343,8 @@ POST      /api/space/:sid/fieldvalues                                           
 PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
 PUT       /api/space/:sid/fieldvalues                                            controllers.Spaces.updateSpaceFieldValues(sid: Long)
 DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
+GET       /api/space/:sid/field/:fid/value/:etype                                controllers.Spaces.searchCustomFieldsByValue(sid: Long,fid: Long, etype: String, value?="")
+
 POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
 POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
