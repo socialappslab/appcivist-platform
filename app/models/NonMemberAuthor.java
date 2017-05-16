@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModel;
 import java.net.URL;
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -37,7 +38,13 @@ public class NonMemberAuthor extends Model {
     private String gender;
 
     @JsonView(Views.Public.class)
-    private Integer age; 
+    private Integer age;
+
+    @Column(name = "source")
+    private String source;
+
+    @Column(name = "source_url", columnDefinition = "text")
+    private String sourceUrl;
 
     /**
      * The find property is an static property that facilitates database query creation
@@ -113,4 +120,20 @@ public class NonMemberAuthor extends Model {
 	public void setAge(Integer age) {
 		this.age = age;
 	}
+
+    public String getSource(){
+        return source;
+    }
+
+    public void setSource(String source){
+        this.source = source;
+    }
+
+    public String getSourceUrl(){
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl){
+        this.sourceUrl = sourceUrl;
+    }
 }
