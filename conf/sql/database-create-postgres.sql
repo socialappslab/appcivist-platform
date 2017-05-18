@@ -1612,4 +1612,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
     ON contribution FOR EACH ROW EXECUTE PROCEDURE contribution_trigger();
-    
+-- 33.sql
+ALTER TABLE non_member_author ADD COLUMN publishContact BOOLEAN DEFAULT FALSE;
+ALTER TABLE non_member_author ADD COLUMN subscribed BOOLEAN DEFAULT FALSE;
+ALTER TABLE non_member_author ADD COLUMN Phone varchar(30) DEFAULT '';
