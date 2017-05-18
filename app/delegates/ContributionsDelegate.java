@@ -2,11 +2,7 @@ package delegates;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import models.Assembly;
 import models.Campaign;
@@ -533,7 +529,7 @@ public class ContributionsDelegate {
       	
     	return wordFrequency;
     }
-    
+
     //Find the ideas or proposals that contain the given words
     public static List<Contribution> findContributionsByText (List<Long> ids, String byText){
     	//Remove all useless with spaces and replace the others by the logical operator '&'
@@ -563,5 +559,31 @@ public class ContributionsDelegate {
 
         return contributions;
         
+    }
+
+    public static Map<String,Integer> wordsWithFrequenciesInContributions (List<Long> ids) {
+        //contributions already filtered by type
+        Map<String,Integer> wordFrequency = new HashMap<>();
+        String idsByComma="') t1 \n";
+        if (ids != null && ids.size()!=0){
+            String array = Arrays.toString(ids.toArray());
+            idsByComma = " where t0.contribution_id in ("+array.replaceAll("\\[","").replaceAll("\\]","")+")') t1 \n ";
+        }
+        String rawQuery = "select t1.word, t1.nentry from ts_stat( \n " +
+                "'select t0.document from contribution t0 \n " + idsByComma;
+
+        RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+
+        Query<WordsEntity> query = Ebean.find(WordsEntity.class)
+                .setRawSql(rawSql)
+                .order().desc("nentry");
+        if (ids != null && ids.size()!=0){
+            List<WordsEntity> wordsStat = query.findList();
+
+            for (WordsEntity row: wordsStat){
+                wordFrequency.put(row.getWord(), row.getNentry());
+            }
+        }
+        return wordFrequency;
     }
 }
