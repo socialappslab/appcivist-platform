@@ -2289,7 +2289,8 @@ public class Contributions extends Controller {
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         Boolean addIdeaToProposals = false;
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+        Boolean allowEmergent = false;
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign(); 
             
         	List<Config> campaignConfigs = c.getConfigs();
@@ -2317,6 +2318,11 @@ public class Contributions extends Controller {
     					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
     				}    	            
     	        }
+                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
+                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+                        allowEmergent = true;
+                    }
+                }
                 if (type.equals(ContributionTypes.IDEA)) {
                     if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
                         hasIdeasDuringProposal = 1;
@@ -2345,7 +2351,17 @@ public class Contributions extends Controller {
                 }
             }
         }
-        
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)){
+            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            List<Config> groupConfigs = wg.getConfigs();
+            for(Config cc: groupConfigs){
+                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_WG_ALLOW_EMERGENT_THEMES)){
+                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+                        allowEmergent = true;
+                    }
+                }
+            }
+        }
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
 
@@ -2434,11 +2450,36 @@ public class Contributions extends Controller {
             Resource cover = Resource.read(newContrib.getCover().getResourceId());
             newContrib.setCover(cover);
         }
+        List<Theme> themeListEmergent = new ArrayList<Theme>();
+        newContrib.setExistingThemes(newContrib.getOfficialThemes()==null?new ArrayList<Theme>():newContrib.getOfficialThemes());
+        if(newContrib.getEmergentThemes()!=null && newContrib.getEmergentThemes().size()>0){
+            List<Theme> themeList = new ArrayList<Theme>();
+            for (Theme theme:newContrib.getEmergentThemes()) {
+                if (theme.getThemeId()==null && allowEmergent){
+                    theme.save();
+                    theme.refresh();
+                    themeListEmergent.add(theme);
+                }
+                themeList.add(theme);
+            }
+            newContrib.getExistingThemes().addAll(themeList);
+            //emergent themes in themeListEmergent to associate to campaign or wg
+        }
 
         Contribution.create(newContrib);
         newContrib.refresh();
 
-        //Previously we also asked the associated contribution to be PROPOSAL,
+        //associate themes created to space
+        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+            Campaign c = containerResourceSpace.getCampaign();
+            c.getThemes().addAll(themeListEmergent);
+            c.update();
+        } else if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            wg.getThemes().addAll(themeListEmergent);
+            wg.update();
+        }
+            //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
             ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());

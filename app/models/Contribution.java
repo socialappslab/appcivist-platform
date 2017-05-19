@@ -1,5 +1,6 @@
 package models;
 
+import enums.ThemeTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -276,6 +277,14 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Theme> addedThemes;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<Theme> officialThemes;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<Theme> emergentThemes;
     
     @JsonView(Views.Public.class)
     @Transient
@@ -504,6 +513,42 @@ public class Contribution extends AppCivistBaseModel {
     public void setThemes(List<Theme> themes) {
         this.themes = themes;
         if (resourceSpace != null ) this.resourceSpace.setThemes(themes);
+    }
+
+    public List<Theme> getOfficialThemes() {
+        if(this.getContributionId()!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : null;
+            List<Theme> officialThemes = new ArrayList<Theme>();
+            for (Theme theme: allThemes) {
+                if(theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED)){
+                    officialThemes.add(theme);
+                }
+            }
+            return officialThemes;
+        }
+        return officialThemes;
+    }
+
+    public void setOfficialThemes(List<Theme> officialThemes) {
+        this.officialThemes = officialThemes;
+    }
+
+    public List<Theme> getEmergentThemes() {
+        if(this.getContributionId()!=null) {
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : null;
+            List<Theme> emergentThemes = new ArrayList<Theme>();
+            for (Theme theme : allThemes) {
+                if (theme.getType().equals(ThemeTypes.EMERGENT)) {
+                    emergentThemes.add(theme);
+                }
+            }
+            return emergentThemes;
+        }
+        return emergentThemes;
+    }
+
+    public void setEmergentThemes(List<Theme> emergentThemes) {
+        this.emergentThemes = emergentThemes;
     }
 
     public void addTheme(Theme t) {
@@ -837,8 +882,7 @@ public class Contribution extends AppCivistBaseModel {
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
         // List<User> authors = c.getAuthors();
-        List<Theme> themes = c.getThemes(); // new themes are never created from
-        // contributions
+        List<Theme> themes = c.getThemes();
         c.setThemes(new ArrayList<>());
         List<ComponentMilestone> associatedMilestones = c
                 .getAssociatedMilestones(); // new milestones are never created
