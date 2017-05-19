@@ -16,10 +16,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import models.misc.Views;
 
+import javax.persistence.Column;
+
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="NonMemberAuthor", description="Author of contributions who are not users of the platform")
 public class NonMemberAuthor extends Model {
+
+	@Column(name = "publishContact", columnDefinition = "boolean")
+	private Boolean publishContact=false;
+	@Column(name = "subscribed", columnDefinition = "boolean")
+	private Boolean subscribed=false;
+	@Column(name = "phone", columnDefinition = "text")
+	private String phone;
 
     @Id
     @GeneratedValue
