@@ -321,7 +321,6 @@ public class Configs extends Controller {
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
 	public static Result createSpaceConfig(Long sid) {
-		System.out.println("entro");
 		User configCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
 		JsonNode requestBody = request().body().asJson();
