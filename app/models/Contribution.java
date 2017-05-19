@@ -281,6 +281,10 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private String document;
 
+    @JsonIgnore
+    @Transient
+    private String documentSimple;
+
     /**
      * The find property is an static property that facilitates database query
      * creation
@@ -1414,8 +1418,16 @@ public class Contribution extends AppCivistBaseModel {
         this.document = document;
     }
 
+    public String getDocumentSimple() {
+        return documentSimple;
+    }
+
+    public void setDocumentSimple(String documentSimple) {
+        this.documentSimple = documentSimple;
+    }
+
     public static List<Contribution> findContributionsInSpaceByTypeStatus(Long sid,
-                                                       ContributionTypes type, ContributionStatus status) {
+                                                                          ContributionTypes type, ContributionStatus status) {
             return find.where()
                     .eq("type", type)
                     .eq("containingSpaces.resourceSpaceId", sid)
