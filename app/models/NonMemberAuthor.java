@@ -19,7 +19,7 @@ import models.misc.Views;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="NonMemberAuthor", description="Author of contributions who are not users of the platform")
-public class NonMemberAuthor extends Model {
+public class NonMemberAuthor extends AppCivistBaseModel {
 
     @Id
     @GeneratedValue

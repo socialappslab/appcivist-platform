@@ -303,7 +303,11 @@ POST      /api/public/contribution/:uuid/contribution                           
 
 # ToDo: Public Endoints to review
 GET       /api/public/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
-GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
+GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long)
+
+# Update Language
+POST       /api/contribution/language                                            controllers.Contributions.updateAllContributionLanguages()
+
 
 ##################################################################################################################################################################
 # Location endpoints
