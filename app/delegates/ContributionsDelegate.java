@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
+import models.Config;
 import models.Contribution;
 import models.ContributionTemplate;
 import models.ContributionTemplateSection;
@@ -28,6 +29,7 @@ import org.jsoup.safety.Whitelist;
 
 import play.Logger;
 import play.Play;
+import play.mvc.Http;
 import scala.collection.generic.BitOperations.Int;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
@@ -43,8 +45,10 @@ import com.avaje.ebean.RawSqlBuilder;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 
+import enums.ConfigTargets;
 import enums.ContributionStatus;
 import enums.ContributionTypes;
+import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
 
 public class ContributionsDelegate {
@@ -563,5 +567,57 @@ public class ContributionsDelegate {
 
         return contributions;
         
+    }
+    
+    public static Boolean assemblyHasSocialIdeationIntegrated (Long aid) {
+    	Assembly assembly = Assembly.read(aid);
+    	List<Config> assemblyConfig = Config.findByTypeAndKey(assembly.getUuid(), ConfigTargets.ASSEMBLY, "appcivist.assembly.social-ideation-integration-enabled");
+		for (Config aConfig: assemblyConfig) {
+			if (aConfig.getValue().equalsIgnoreCase("TRUE")) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return true;
+    }
+    
+    public static HashMap<String,String> getSocialIdeationHeaders () {    	
+    	Http.Request req = Http.Context.current().request();
+    	HashMap<String,String> headerMap = new HashMap<String,String>();
+    	
+    	headerMap.put("ASSEMBLY_ID", req.getHeader("ASSEMBLY_ID"));
+    	headerMap.put("SOCIAL_IDEATION_SOURCE", req.getHeader("SOCIAL_IDEATION_SOURCE"));
+    	headerMap.put("SOCIAL_IDEATION_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_SOURCE_URL"));
+    	headerMap.put("SOCIAL_IDEATION_USER_SOURCE_ID", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_ID"));
+    	headerMap.put("SOCIAL_IDEATION_USER_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_URL"));
+    	headerMap.put("IGNORE_ADMIN_USER", req.getHeader("IGNORE_ADMIN_USER"));
+    	
+    	return headerMap;
+    }
+    
+    public static Boolean checkSocialIdeationHeaders() {
+    	HashMap<String,String> headerMap = getSocialIdeationHeaders ();
+    	Integer headersCount = 0;
+    	for (String headerKey : headerMap.keySet()) {
+    	    Logger.info("===========> Key: " + headerKey + " - Value: " + headerMap.get(headerKey));
+    	    if (headerMap.get(headerKey) != null) {    	    	
+    	    	headersCount += 1;
+    	    }
+    	}
+
+    	if (headersCount == 6) {
+    		String assemblyID = headerMap.get("ASSEMBLY_ID");
+        	Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
+        	if (assemblyConfig == true)
+        		return true;
+        	else 
+        		return false;
+    	} else if (headersCount == 0){
+    		return true;
+    	} else {
+    		return false;
+    	}
+    	
     }
 }
