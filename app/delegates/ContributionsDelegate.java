@@ -575,11 +575,9 @@ public class ContributionsDelegate {
 		for (Config aConfig: assemblyConfig) {
 			if (aConfig.getValue().equalsIgnoreCase("TRUE")) {
 				return true;
-			} else {
-				return false;
 			}
 		}
-		return true;
+		return false;
     }
     
     public static HashMap<String,String> getSocialIdeationHeaders () {    	
