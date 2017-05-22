@@ -3497,7 +3497,23 @@ public class Contributions extends Controller {
                 if (nonMemberAuthor != null && nonMemberAuthor.getLang()!=null) {
                     contribution.setLang(nonMemberAuthor.getLang());
                 }else{
-                    contribution.setLang(GlobalData.DEFAULT_LANGUAGE);
+                    List<ResourceSpace> resourceSpaces = contribution.getContainingSpaces();
+                    if(resourceSpaces!=null && resourceSpaces.size()!=0) {
+                        ResourceSpace containerResourceSpace = resourceSpaces.get(0);
+                        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                            Campaign c = containerResourceSpace.getCampaign();
+                            contribution.setLang(c.getLang());
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                            contribution.setLang(wg.getLang());
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                            Assembly a = containerResourceSpace.getAssemblyResources();
+                            contribution.setLang(a.getLang());
+                        }
+                    }
+                    if(contribution.getLang()==null){
+                        contribution.setLang(GlobalData.DEFAULT_LANGUAGE);
+                    }
                 }
             }
             contribution.update();
