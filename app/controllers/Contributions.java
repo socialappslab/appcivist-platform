@@ -11,6 +11,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.rtf.RtfWriter2;
 import com.lowagie.text.rtf.field.RtfPageNumber;
 import com.lowagie.text.rtf.headerfooter.RtfHeaderFooter;
+
 import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
@@ -35,7 +36,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.persistence.*;
 import javax.ws.rs.PathParam;
+
 import models.*;
+import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
@@ -45,6 +48,7 @@ import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.core.IsNull;
 
 import play.Logger;
 import play.Play;
@@ -1012,10 +1016,16 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "ASSEMBLY_ID", value = "The real author of the post", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE", value = "Indicates the name of the providerId", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE_URL", value = "Source to the original post", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @SubjectPresent
-    public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
-        // 1. obtaining the user of the requestor
+    public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {         
+    	// 1. obtaining the user of the request
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
 
@@ -1033,7 +1043,17 @@ public class Contributions extends Controller {
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
-
+            //Check headers if the request come from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            if (newContribution.getType().equals(ContributionTypes.IDEA) 
+			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
+			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
+			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
+            	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
+            	if (result == false){ 
+            		return badRequest("Missing headers");
+            	}
+            }
+        	
             ResourceSpace rs = ResourceSpace.read(sid);
             ContributionTemplate template = null;
 
