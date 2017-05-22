@@ -2,11 +2,7 @@ package delegates;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import models.Assembly;
 import models.Campaign;
@@ -517,7 +513,7 @@ public class ContributionsDelegate {
 
     	
     	String rawQuery = "select t1.word, t1.nentry from ts_stat( \n " + 
-    					  "'select t0.document from contribution t0 \n " +
+    					  "'select t0.document_simple from contribution t0 \n " +
 //    					  "where (t0.type = ? or t0.type = ? ) \n" + 
 //    					  "and t0.contribution_id in (?)') t1 \n " ;
     					  "') t1 \n";
@@ -537,7 +533,7 @@ public class ContributionsDelegate {
       	
     	return wordFrequency;
     }
-    
+
     //Find the ideas or proposals that contain the given words
     public static List<Contribution> findContributionsByText (List<Long> ids, String byText){
     	//Remove all useless with spaces and replace the others by the logical operator '&'
@@ -570,52 +566,80 @@ public class ContributionsDelegate {
     }
     
     public static Boolean assemblyHasSocialIdeationIntegrated (Long aid) {
-    	Assembly assembly = Assembly.read(aid);
-    	List<Config> assemblyConfig = Config.findByTypeAndKey(assembly.getUuid(), ConfigTargets.ASSEMBLY, "appcivist.assembly.social-ideation-integration-enabled");
-		for (Config aConfig: assemblyConfig) {
-			if (aConfig.getValue().equalsIgnoreCase("TRUE")) {
-				return true;
-			}
-		}
-		return false;
+    	  Assembly assembly = Assembly.read(aid);
+    	  List<Config> assemblyConfig = Config.findByTypeAndKey(
+                                          assembly.getUuid(), 
+                                          ConfigTargets.ASSEMBLY, 
+                                          "appcivist.assembly.social-ideation-integration-enabled");
+		    for (Config aConfig: assemblyConfig) {
+            if (aConfig.getValue().equalsIgnoreCase("TRUE")) {
+				      return true;
+			      }
+		    }
+		    return false;
     }
     
     public static HashMap<String,String> getSocialIdeationHeaders () {    	
-    	Http.Request req = Http.Context.current().request();
-    	HashMap<String,String> headerMap = new HashMap<String,String>();
-    	
-    	headerMap.put("ASSEMBLY_ID", req.getHeader("ASSEMBLY_ID"));
-    	headerMap.put("SOCIAL_IDEATION_SOURCE", req.getHeader("SOCIAL_IDEATION_SOURCE"));
-    	headerMap.put("SOCIAL_IDEATION_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_SOURCE_URL"));
-    	headerMap.put("SOCIAL_IDEATION_USER_SOURCE_ID", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_ID"));
-    	headerMap.put("SOCIAL_IDEATION_USER_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_URL"));
-    	headerMap.put("IGNORE_ADMIN_USER", req.getHeader("IGNORE_ADMIN_USER"));
-    	
-    	return headerMap;
+        Http.Request req = Http.Context.current().request();
+        HashMap<String,String> headerMap = new HashMap<String,String>();
+
+        headerMap.put("ASSEMBLY_ID", req.getHeader("ASSEMBLY_ID"));
+        headerMap.put("SOCIAL_IDEATION_SOURCE", req.getHeader("SOCIAL_IDEATION_SOURCE"));
+        headerMap.put("SOCIAL_IDEATION_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_SOURCE_URL"));
+        headerMap.put("SOCIAL_IDEATION_USER_SOURCE_ID", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_ID"));
+        headerMap.put("SOCIAL_IDEATION_USER_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_URL"));
+        headerMap.put("IGNORE_ADMIN_USER", req.getHeader("IGNORE_ADMIN_USER"));
+
+        return headerMap;
     }
     
     public static Boolean checkSocialIdeationHeaders() {
-    	HashMap<String,String> headerMap = getSocialIdeationHeaders ();
-    	Integer headersCount = 0;
-    	for (String headerKey : headerMap.keySet()) {
-    	    Logger.info("===========> Key: " + headerKey + " - Value: " + headerMap.get(headerKey));
-    	    if (headerMap.get(headerKey) != null) {    	    	
-    	    	headersCount += 1;
-    	    }
-    	}
+        HashMap<String,String> headerMap = getSocialIdeationHeaders ();
+        Integer headersCount = 0;
+        for (String headerKey : headerMap.keySet()) {
+            Logger.info("===========> Key: " + headerKey + " - Value: " + headerMap.get(headerKey));
+            if (headerMap.get(headerKey) != null) {    	    	
+                headersCount += 1;
+            }
+        }
 
-    	if (headersCount == 6) {
-    		String assemblyID = headerMap.get("ASSEMBLY_ID");
-        	Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
-        	if (assemblyConfig == true)
-        		return true;
-        	else 
-        		return false;
-    	} else if (headersCount == 0){
-    		return true;
-    	} else {
-    		return false;
-    	}
-    	
+        if (headersCount == 6) {
+            String assemblyID = headerMap.get("ASSEMBLY_ID");
+            Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
+            if (assemblyConfig == true)
+                return true;
+            else 
+                return false;
+        } else if (headersCount == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+  
+    public static Map<String,Integer> wordsWithFrequenciesInContributions (List<Long> ids) {
+        //contributions already filtered by type
+        Map<String,Integer> wordFrequency = new HashMap<>();
+        String idsByComma="') t1 \n";
+        if (ids != null && ids.size()!=0){
+            String array = Arrays.toString(ids.toArray());
+            idsByComma = " where t0.contribution_id in ("+array.replaceAll("\\[","").replaceAll("\\]","")+")') t1 \n ";
+        }
+        String rawQuery = "select t1.word, t1.nentry from ts_stat( \n " +
+                "'select t0.document_simple from contribution t0 \n " + idsByComma;
+
+        RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+
+        Query<WordsEntity> query = Ebean.find(WordsEntity.class)
+                .setRawSql(rawSql)
+                .order().desc("nentry");
+        if (ids != null && ids.size()!=0){
+            List<WordsEntity> wordsStat = query.findList();
+
+            for (WordsEntity row: wordsStat){
+                wordFrequency.put(row.getWord(), row.getNentry());
+            }
+        }
+        return wordFrequency;
     }
 }

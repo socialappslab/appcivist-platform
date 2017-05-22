@@ -2403,4 +2403,56 @@ public class Spaces extends Controller {
         }
         return ok(Json.toJson(themesHash));
     }
+
+    /**
+     * GET       /api/space/:sid/field/:fid/value/:etype
+     *
+     * @param sid
+     * @param fid
+     * @param etype
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CustomFieldValue.class, responseContainer = "List", produces = "application/json",
+            value = "CustomFieldValue containing the given word")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static F.Promise<Result> searchCustomFieldsByValue (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
+                                                               @ApiParam(name = "fid", value = "Custom Field Definition ID")Long fid,
+                                                               @ApiParam(name = "etype", value = "Entity Target Type") String etype,
+                                                               @ApiParam(name = "value", value = "Text to be search in the value of custom field values")String value) {
+        ResourceSpace rs = ResourceSpace.read(sid);
+        if (rs == null) {
+            F.Promise<Result> resultPromise = F.Promise.promise( () -> {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+            });
+            return resultPromise;
+        }
+
+        CustomFieldDefinition customFieldDefinition = CustomFieldDefinition.read(fid);
+        if (customFieldDefinition == null) {
+            F.Promise<Result> resultPromise = F.Promise.promise( () -> {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No customFieldDefinition found with id "+fid)));
+            });
+            return resultPromise;
+        }
+
+        List<CustomFieldValue> customFieldValues = CustomFieldValue.findAllByContainingSpace(sid);
+
+        F.Promise<Result> resultPromise = F.Promise.promise( () -> {
+            List<Long> ids = new ArrayList<Long>();
+
+            for (CustomFieldValue c: customFieldValues){
+                Logger.info("CustomFieldValue ID: " + c.getCustomFieldValueId());
+                ids.add(c.getCustomFieldValueId());
+            }
+
+            List<CustomFieldValue> c = CustomFieldValue.findCustomValuesByText(ids,value,etype,customFieldDefinition);
+            return ok(Json.toJson(c));
+        });
+
+        return resultPromise;
+    }
 }

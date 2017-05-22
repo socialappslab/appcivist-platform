@@ -2288,9 +2288,25 @@ public class Contributions extends Controller {
         }
         if (author != null) {
             newContrib.addAuthor(author);
-            if (newContrib.getLang() == null)
-                newContrib.setLang(author.getLanguage());
             newContrib.setContextUserId(author.getUserId());
+            newContrib.setLang(author.getLanguage());
+        }
+        if (newContrib.getLang() == null){
+            if (newContrib.getNonMemberAuthor() != null && newContrib.getNonMemberAuthor().getLang()!=null) {
+                newContrib.setLang(newContrib.getNonMemberAuthor().getLang());
+            }
+            if (newContrib.getLang() == null){
+                if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    Campaign c = containerResourceSpace.getCampaign();
+                    newContrib.setLang(c.getLang());
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                    newContrib.setLang(wg.getLang());
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                    Assembly a = containerResourceSpace.getAssemblyResources();
+                    newContrib.setLang(a.getLang());
+                }
+            }
         }
 
 
@@ -2309,7 +2325,9 @@ public class Contributions extends Controller {
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         Boolean addIdeaToProposals = false;
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+        String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
+        Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign(); 
             
         	List<Config> campaignConfigs = c.getConfigs();
@@ -2337,6 +2355,11 @@ public class Contributions extends Controller {
     					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
     				}    	            
     	        }
+                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
+                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+                        allowEmergent = true;
+                    }
+                }
                 if (type.equals(ContributionTypes.IDEA)) {
                     if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
                         hasIdeasDuringProposal = 1;
@@ -2365,7 +2388,17 @@ public class Contributions extends Controller {
                 }
             }
         }
-        
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)){
+            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            List<Config> groupConfigs = wg.getConfigs();
+            for(Config cc: groupConfigs){
+                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_WG_ALLOW_EMERGENT_THEMES)){
+                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+                        allowEmergent = true;
+                    }
+                }
+            }
+        }
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
 
@@ -2454,11 +2487,36 @@ public class Contributions extends Controller {
             Resource cover = Resource.read(newContrib.getCover().getResourceId());
             newContrib.setCover(cover);
         }
+        List<Theme> themeListEmergent = new ArrayList<Theme>();
+        newContrib.setExistingThemes(newContrib.getOfficialThemes()==null?new ArrayList<Theme>():newContrib.getOfficialThemes());
+        if(newContrib.getEmergentThemes()!=null && newContrib.getEmergentThemes().size()>0){
+            List<Theme> themeList = new ArrayList<Theme>();
+            for (Theme theme:newContrib.getEmergentThemes()) {
+                if (theme.getThemeId()==null && allowEmergent){
+                    theme.save();
+                    theme.refresh();
+                    themeListEmergent.add(theme);
+                }
+                themeList.add(theme);
+            }
+            newContrib.getExistingThemes().addAll(themeList);
+            //emergent themes in themeListEmergent to associate to campaign or wg
+        }
 
         Contribution.create(newContrib);
         newContrib.refresh();
 
-        //Previously we also asked the associated contribution to be PROPOSAL,
+        //associate themes created to space
+        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+            Campaign c = containerResourceSpace.getCampaign();
+            c.getThemes().addAll(themeListEmergent);
+            c.update();
+        } else if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            wg.getThemes().addAll(themeListEmergent);
+            wg.update();
+        }
+            //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
             ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());
@@ -3482,6 +3540,51 @@ public class Contributions extends Controller {
     }
 
     /**
+     * POST       /api/contribution/language
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Update all contribution languages")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updateAllContributionLanguages() {
+        List<Contribution> contributionList = Contribution.findAll();
+        for (Contribution contribution: contributionList) {
+            User author = contribution.getFirstAuthor();
+            contribution.setLang(null);
+            if (author != null) {
+                contribution.setLang(author.getLanguage());
+            }
+            if(contribution.getLang()==null){
+                NonMemberAuthor nonMemberAuthor = contribution.getNonMemberAuthor();
+                if (nonMemberAuthor != null && nonMemberAuthor.getLang()!=null) {
+                    contribution.setLang(nonMemberAuthor.getLang());
+                }else{
+                    List<ResourceSpace> resourceSpaces = contribution.getContainingSpaces();
+                    if(resourceSpaces!=null && resourceSpaces.size()!=0) {
+                        ResourceSpace containerResourceSpace = resourceSpaces.get(0);
+                        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                            Campaign c = containerResourceSpace.getCampaign();
+                            contribution.setLang(c.getLang());
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                            contribution.setLang(wg.getLang());
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                            Assembly a = containerResourceSpace.getAssemblyResources();
+                            contribution.setLang(a.getLang());
+                        }
+                    }
+                    if(contribution.getLang()==null){
+                        contribution.setLang(GlobalData.DEFAULT_LANGUAGE);
+                    }
+                }
+            }
+            contribution.update();
+        }
+        return ok(Json.toJson("OK"));
+    }
+
+    /**
      * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/body
      *
      * @param aid
@@ -3622,30 +3725,85 @@ public class Contributions extends Controller {
      *
      * @param sid
      * @return
-     */  
+     */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json",
 			value = "Contribution containing the given word")
 	  @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})    
-    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid, 
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
     														 @ApiParam(name = "byText", value = "Text to be search in the title or text of contributions")String byText) {
-    	
-    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);    	
-    	    	
-    	Promise<Result> resultPromise = Promise.promise( () -> { 
+
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
+
+    	Promise<Result> resultPromise = Promise.promise( () -> {
     		List<Long> ids = new ArrayList<Long>();
 
 	    	for (Contribution c: contributions){
 	    		Logger.info("Contribution ID: " + c.getContributionId());
 	    		ids.add(c.getContributionId());
 	    	}
-	    	
+
 	    	List<Contribution> c = ContributionsDelegate.findContributionsByText(ids, byText);
 	    	return ok(Json.toJson(c));
     	});
-    	
-    	return resultPromise;    	
+
+    	return resultPromise;
+    }
+
+    /**
+     * GET       /api/space/:sid/words
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = HashMap.class, responseContainer = "List", produces = "application/json",
+            value = "List of words in contributions from a given resource space with its frequency")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> wordsFrecuencyByType (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
+                                                        @ApiParam(name = "type", value = "Type of contributions",
+                                                                allowableValues = "PROPOSAL, IDEA, DISCUSSION, PROPOSAL_AND_IDEAS, ALL") String type) {
+        if(type==null || type.isEmpty()){
+            type="ALL";
+        }
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            Promise<Result> resultPromise = Promise.promise(() -> {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No resource space found with id " + sid)));
+            });
+            return resultPromise;
+        }
+        List<Contribution> contributions = Contribution.findAllByContainingSpace(resourceSpace.getResourceSpaceId());
+        if(type.equals("PROPOSAL")){
+            contributions = Contribution.readListByContainingSpaceAndType(resourceSpace.getResourceSpaceId(),ContributionTypes.PROPOSAL);
+        } else if(type.equals("IDEA")){
+            contributions = Contribution.readListByContainingSpaceAndType(resourceSpace.getResourceSpaceId(),ContributionTypes.IDEA);
+        } else if(type.equals("DISCUSSION")){
+            contributions = Contribution.findAllByContainingSpaceOrTypes(resourceSpace,ContributionTypes.DISCUSSION,ContributionTypes.COMMENT);
+        } else if(type.equals("PROPOSAL_AND_IDEAS")){
+            contributions = Contribution.findAllByContainingSpaceOrTypes(resourceSpace,ContributionTypes.PROPOSAL,ContributionTypes.IDEA);
+        }else {
+
+        }
+        List<Contribution> contributionsFiltered = new ArrayList<Contribution>(contributions);
+
+        Promise<Result> resultPromise = Promise.promise( () -> {
+            List<Long> ids = new ArrayList<Long>();
+
+            for (Contribution c: contributionsFiltered){
+                Logger.info("Contribution ID: " + c.getContributionId());
+                ids.add(c.getContributionId());
+            }
+
+            Map<String,Integer> wordFrequency = ContributionsDelegate.wordsWithFrequenciesInContributions(ids);
+            return ok(Json.toJson(wordFrequency));
+        });
+
+        return resultPromise;
+
     }
 
     /**

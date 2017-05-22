@@ -1,5 +1,7 @@
 package models;
 
+import com.avaje.ebean.*;
+import enums.ContributionTypes;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -119,6 +121,14 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		return customFieldDefinition;
 	}
 
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
+
+	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
+		this.containingSpaces = containingSpaces;
+	}
+
 	public void setCustomFieldDefinition(CustomFieldDefinition customFieldDefinition) {
 		this.customFieldDefinition = customFieldDefinition;
 	}
@@ -162,5 +172,39 @@ public class CustomFieldValue extends AppCivistBaseModel {
 			customFieldValues.add(customFieldValue);
 		}
 		return customFieldValues;
+	}
+
+	public static List<CustomFieldValue> findAllByContainingSpace(Long sid) {
+		List<CustomFieldValue> customFieldValues = find.where()
+				.eq("containingSpaces.resourceSpaceId", sid).findList();
+		return customFieldValues;
+	}
+
+	public static List<CustomFieldValue> findCustomValuesByText (List<Long> ids, String byText, String entityTargetType, CustomFieldDefinition customFieldDefiniton){
+		//Remove all useless with spaces and replace the others by the logical operator '&'
+		String words = byText.replaceAll("\\s*$", "").replaceAll("^\\s*", "").replaceAll("\\s+", " ").replaceAll("\\s", " & ");
+
+		ExpressionList<CustomFieldValue> where = null;
+		String rawQuery = "select distinct t0.custom_field_value_id, t0.creation, t0.last_update, t0.lang, t0.removal, t0.removed, t0.uuid, t0.value, t0.entity_target_type, \n" +
+				" t0.entity_target_uuid " +
+				" from custom_field_value t0\n ";
+
+		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+		where = find.setRawSql(rawSql).where();
+		Expression full_text = Expr.raw("to_tsvector(SUBSTRING(t0.lang,0,3)::regconfig,t0.value) @@ to_tsquery(SUBSTRING(t0.lang,0,3)::regconfig,'" + words + "')");
+		where.add(full_text);
+		Expression type =Expr.eq("t0.entity_target_type", entityTargetType);
+		where.add(type);
+		Expression definition =Expr.eq("t0.custom_field_definition_id", customFieldDefiniton.getCustomFieldDefinitionId());
+		where.add(definition);
+		if (ids != null){
+			Expression valueId = Expr.in("t0.custom_field_value_id", ids);
+			where.add(valueId);
+		}
+
+		List<CustomFieldValue> customFieldValues = where.findList();
+
+		return customFieldValues;
+
 	}
 }
