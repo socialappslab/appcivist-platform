@@ -491,7 +491,7 @@ create table Token_Action (
   type                      varchar(2),
   created                   timestamp,
   expires                   timestamp,
-  constraint ck_Token_Action_type check (type in ('PR','MR','MI','EV')),
+  constraint ck_Token_Action_type check (type in ('PR','MR','MI','EV', 'FT')),
   constraint uq_Token_Action_token unique (token),
   constraint uq_Token_Action_membership_invit unique (membership_invitation_id),
   constraint pk_Token_Action primary key (token_id))
@@ -1564,7 +1564,7 @@ ALTER TABLE "public"."candidate" RENAME COLUMN "contribution_uuid" TO "candidate
 
 alter table resource_space add column consensus_ballot character varying(40);
 
-
+-- 34.sql
 create table resource_space_ballot_history (
   resource_space_resource_space_id                                                 bigint not null,
   ballot_ballot_id                                                                 bigint not null,
@@ -1612,4 +1612,75 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
     ON contribution FOR EACH ROW EXECUTE PROCEDURE contribution_trigger();
-    
+
+-- 35.sql
+alter table contribution add column cover_resource_id bigint;
+alter table contribution add constraint fk_contribution_resource_cover foreign key (cover_resource_id) references resource (resource_id);
+
+-- 36.sql
+create table contribution_non_member_author (
+  contribution_id                                                 bigint not null,
+  non_member_author_id                                            bigint not null,
+  constraint pk_contribution_non_member_author primary key (contribution_id, non_member_author_id))
+;
+
+alter table contribution_non_member_author add constraint fk_contribution_non_member_author_01 foreign key (contribution_id) references contribution (contribution_id);
+
+alter table contribution_non_member_author add constraint fk_contribution_non_member_author_02 foreign key (non_member_author_id) references non_member_author (id);
+
+insert into contribution_non_member_author select contribution_id, non_member_author_id from contribution where non_member_author_id is not null;
+
+alter table non_member_author add column uuid varchar(40);
+
+ALTER TABLE non_member_author ALTER COLUMN uuid SET DEFAULT uuid_generate_v4();
+
+-- 37.sql
+ALTER TABLE contribution
+ADD COLUMN document_simple tsvector;
+
+UPDATE contribution
+SET document_simple = to_tsvector('simple', unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));
+
+CREATE INDEX textsearchwords_idx ON contribution USING gin(document_simple);
+
+CREATE OR REPLACE FUNCTION contribution_trigger() RETURNS trigger AS $$
+begin
+  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
+  new.document_simple := to_tsvector('simple', unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
+  return new;
+end
+$$ LANGUAGE plpgsql;
+
+ALTER TABLE non_member_author ADD COLUMN publishContact BOOLEAN DEFAULT FALSE;
+ALTER TABLE non_member_author ADD COLUMN subscribed BOOLEAN DEFAULT FALSE;
+ALTER TABLE non_member_author ADD COLUMN Phone varchar(30) DEFAULT '';
+
+-- 38.sql
+CREATE TEXT SEARCH CONFIGURATION "en-us" ( COPY = english );
+ALTER TEXT SEARCH CONFIGURATION "en-us" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, english_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "es-es" ( COPY = spanish );
+ALTER TEXT SEARCH CONFIGURATION "es-es" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, spanish_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "it-it" ( COPY = italian );
+ALTER TEXT SEARCH CONFIGURATION "it-it" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, italian_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "fr-fr" ( COPY = french );
+ALTER TEXT SEARCH CONFIGURATION "fr-fr" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, french_stem;
+
+alter table non_member_author add column lang varchar(255);
+alter table non_member_author add column creation timestamp;
+alter table non_member_author add column last_update timestamp;
+alter table non_member_author add column removal timestamp;
+alter table non_member_author add column removed boolean;
+
+-- 39.sql
+-- Execute endpoint first
+-- POST       /api/contribution/language
+
+UPDATE contribution
+SET document = to_tsvector(contribution.lang::regconfig, unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));

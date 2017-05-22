@@ -47,6 +47,10 @@ GET       /api/user/verify                                                      
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
 GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
 GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
+GET 	  /api/user/:uid/fbtoken                                                 controllers.Users.checkFbToken(uid: Long)
+POST      /api/user/:uid/fbtoken                                                 controllers.Users.createFbToken(uid: Long)
+PUT       /api/user/:uid/fbtoken                                                 controllers.Users.updateFbToken(uid: Long)
+
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better
 GET       /api/user/link                                                         controllers.Users.link
@@ -299,7 +303,11 @@ POST      /api/public/contribution/:uuid/contribution                           
 
 # ToDo: Public Endoints to review
 GET       /api/public/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
-GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
+GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long)
+
+# Update Language
+POST       /api/contribution/language                                            controllers.Contributions.updateAllContributionLanguages()
+
 
 ##################################################################################################################################################################
 # Location endpoints
@@ -324,6 +332,7 @@ PUT       /api/space/:sid/organization                                          
 DELETE    /api/space/:sid/organization/:id                                       controllers.Assemblies.deleteOrganizationFromSpace(sid: Long, id: Long)
 GET       /api/space/:sid/contribution/words/frecuency                           controllers.Contributions.wordsFrecuency(sid:Long)
 GET       /api/space/:sid/contribution/search                                    controllers.Contributions.searchContributionsByText(sid: Long, by_text?="")
+GET       /api/space/:sid/words                                                  controllers.Contributions.wordsFrecuencyByType(sid: Long, type?="")
 GET       /api/space/:sid/contribution/pinned                                    controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
 POST      /api/space/:sid/space/:new_sid                                         controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 GET       /api/space/:uuid/public                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
@@ -339,12 +348,15 @@ POST      /api/space/:sid/fieldvalues                                           
 PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
 PUT       /api/space/:sid/fieldvalues                                            controllers.Spaces.updateSpaceFieldValues(sid: Long)
 DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
+GET       /api/space/:sid/field/:fid/value/:etype                                controllers.Spaces.searchCustomFieldsByValue(sid: Long,fid: Long, etype: String, value?="")
+
 POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
 POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 GET       /api/space/:sid/export/contribution/:cid                               controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
 GET       /api/space/:sid/export/contribution                                    controllers.Contributions.exportSpaceContributionProposal(sid: Long, format?="", include?="")
+GET       /api/space/:sid/insights/themes                                        controllers.Spaces.exportSpaceThemeStats(sid: Long, type?="")
 
 GET       /api/space/:sid/ballot/:bid                                            controllers.Spaces.findSpaceBallotById(sid: Long, bid: Long)
 GET       /api/space/:sid/ballot                                                 controllers.Spaces.findSpaceBallot(sid: Long, status?="", starts_at?="" , ends_at?="")
