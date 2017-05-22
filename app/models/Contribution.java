@@ -94,6 +94,12 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Comment explaining why a contribution is moderated (e.g., deleted, changed status, etc.)", position=6)
     private String moderationComment;
 
+    @Column(name = "source")
+    private String source;
+
+    @Column(name = "source_url", columnDefinition = "text")
+    private String sourceUrl;    
+
     @OneToOne(cascade = CascadeType.ALL)
     @Index
     private Location location;
@@ -1478,5 +1484,21 @@ public class Contribution extends AppCivistBaseModel {
                     .eq("status", status)
                     .not(Expr.eq("removed",true))
                     .findList();
+    }
+
+    public String getSource(){
+        return source;
+    }
+
+    public void setSource(String source){
+        this.source = source;
+    }
+
+    public String getSourceUrl(){
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl){
+        this.sourceUrl = sourceUrl;
     }
 }
