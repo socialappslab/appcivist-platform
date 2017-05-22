@@ -48,6 +48,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS = "appcivist.campaign.contribution.hidden-fields"; // EMPTY DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS = "appcivist.campaign.enable-ideas-during-proposals"; // FALSE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT= "appcivist.campaign.open-idea-section-default"; // FALSE DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES = "appcivsit.campaign.allow-emergent-themes"; // TRUE DEFAULT
 
 	// Component Level Configuration Keys
 	public static final String APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.component.contribution-type-principal"; // what type of contribution is the displayed at the center of the page when this component in the timeline is current (e.g., in Idea Collection, the main contribution type will be IDEAS)
@@ -60,7 +61,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_WG_HAS_REGISTRATION_FORM_URL = "appcivist.wg.has-registration-form-url"; // a URL to an external registration form
 	public static final String APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS = "appcivist.wg.membership-invitation-by-members"; // if TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right
 	public static final String APPCIVIST_WG_MEMBERSHIP_TYPE = "appcivist.wg.membership-type"; // REGISTRATION (other users ask to join), INVITATION (members invite other users) or INVITATION_AND_REGISTRATION. 
-	
+	public static final String APPCIVIST_WG_ALLOW_EMERGENT_THEMES = "appcivsit.wg.allow-emergent-themes"; // TRUE DEFAULT
+
 	static {
 		// AppCivist Instance Configuration Default Values		
 		CONFIG_DEFAULTS.put(APPCIVIST_INSTANCE_ASSEMBLY_NETWORK, "FALSE");
@@ -98,6 +100,7 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS, "");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES, "TRUE");
 		
 		// Component Level Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL,"PROPOSAL"); 
@@ -108,7 +111,8 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_HAS_REGISTRATION_FORM, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_MEMBERSHIP_TYPE, "INVITATION_AND_REGISTRATION");
+		CONFIG_DEFAULTS.put(APPCIVIST_WG_ALLOW_EMERGENT_THEMES, "TRUE");
 
-    };
+	};
 
 }

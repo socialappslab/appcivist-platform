@@ -1633,6 +1633,7 @@ insert into contribution_non_member_author select contribution_id, non_member_au
 alter table non_member_author add column uuid varchar(40);
 
 ALTER TABLE non_member_author ALTER COLUMN uuid SET DEFAULT uuid_generate_v4();
+
 -- 37.sql
 ALTER TABLE contribution
 ADD COLUMN document_simple tsvector;
@@ -1649,3 +1650,7 @@ begin
   return new;
 end
 $$ LANGUAGE plpgsql;
+
+ALTER TABLE non_member_author ADD COLUMN publishContact BOOLEAN DEFAULT FALSE;
+ALTER TABLE non_member_author ADD COLUMN subscribed BOOLEAN DEFAULT FALSE;
+ALTER TABLE non_member_author ADD COLUMN Phone varchar(30) DEFAULT '';
