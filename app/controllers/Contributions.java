@@ -3484,6 +3484,7 @@ public class Contributions extends Controller {
      */
     @ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Update all contribution languages")
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result updateAllContributionLanguages() {
         List<Contribution> contributionList = Contribution.findAll();
         for (Contribution contribution: contributionList) {
