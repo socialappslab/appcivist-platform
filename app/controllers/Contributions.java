@@ -2268,9 +2268,25 @@ public class Contributions extends Controller {
         }
         if (author != null) {
             newContrib.addAuthor(author);
-            if (newContrib.getLang() == null)
-                newContrib.setLang(author.getLanguage());
             newContrib.setContextUserId(author.getUserId());
+            newContrib.setLang(author.getLanguage());
+        }
+        if (newContrib.getLang() == null){
+            if (newContrib.getNonMemberAuthor() != null && newContrib.getNonMemberAuthor().getLang()!=null) {
+                newContrib.setLang(newContrib.getNonMemberAuthor().getLang());
+            }
+            if (newContrib.getLang() == null){
+                if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    Campaign c = containerResourceSpace.getCampaign();
+                    newContrib.setLang(c.getLang());
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                    newContrib.setLang(wg.getLang());
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                    Assembly a = containerResourceSpace.getAssemblyResources();
+                    newContrib.setLang(a.getLang());
+                }
+            }
         }
 
 
@@ -3501,6 +3517,51 @@ public class Contributions extends Controller {
             }
             return ok(Json.toJson(c));
         }
+    }
+
+    /**
+     * POST       /api/contribution/language
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Update all contribution languages")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updateAllContributionLanguages() {
+        List<Contribution> contributionList = Contribution.findAll();
+        for (Contribution contribution: contributionList) {
+            User author = contribution.getFirstAuthor();
+            contribution.setLang(null);
+            if (author != null) {
+                contribution.setLang(author.getLanguage());
+            }
+            if(contribution.getLang()==null){
+                NonMemberAuthor nonMemberAuthor = contribution.getNonMemberAuthor();
+                if (nonMemberAuthor != null && nonMemberAuthor.getLang()!=null) {
+                    contribution.setLang(nonMemberAuthor.getLang());
+                }else{
+                    List<ResourceSpace> resourceSpaces = contribution.getContainingSpaces();
+                    if(resourceSpaces!=null && resourceSpaces.size()!=0) {
+                        ResourceSpace containerResourceSpace = resourceSpaces.get(0);
+                        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                            Campaign c = containerResourceSpace.getCampaign();
+                            contribution.setLang(c.getLang());
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                            contribution.setLang(wg.getLang());
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                            Assembly a = containerResourceSpace.getAssemblyResources();
+                            contribution.setLang(a.getLang());
+                        }
+                    }
+                    if(contribution.getLang()==null){
+                        contribution.setLang(GlobalData.DEFAULT_LANGUAGE);
+                    }
+                }
+            }
+            contribution.update();
+        }
+        return ok(Json.toJson("OK"));
     }
 
     /**

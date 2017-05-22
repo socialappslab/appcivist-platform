@@ -21,7 +21,7 @@ import javax.persistence.Column;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="NonMemberAuthor", description="Author of contributions who are not users of the platform")
-public class NonMemberAuthor extends Model {
+public class NonMemberAuthor extends AppCivistBaseModel {
 
 	@Column(name = "publishContact", columnDefinition = "boolean")
 	private Boolean publishContact=false;
