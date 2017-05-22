@@ -1043,8 +1043,11 @@ public class Contributions extends Controller {
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
-            //Check headers if the request come from SocialIdeation. Only Contributions of type PROPOSAL, DISCUSSION and COMMENT will be created from SI
-            if (newContribution.getType().equals(ContributionTypes.PROPOSAL) || newContribution.getType().equals(ContributionTypes.DISCUSSION) || newContribution.getType().equals(ContributionTypes.COMMENT)) {
+            //Check headers if the request come from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            if (newContribution.getType().equals(ContributionTypes.IDEA) 
+			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
+			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
+			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
             	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
             	if (result == false){ 
             		return badRequest("Missing headers");
