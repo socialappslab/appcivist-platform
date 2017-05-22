@@ -236,7 +236,7 @@ public class Configs extends Controller {
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
 			@ApiImplicitParam(name = "config_map", value = "configuration key value json map", dataType = "String", paramType = "body", required = true),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-	@SubjectPresent
+	@Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
 	public static Result updateSpaceConfig(Long sid) {
 			JsonNode requestBody = request().body().asJson();
 			ObjectMapper mapper = new ObjectMapper();
@@ -317,9 +317,9 @@ public class Configs extends Controller {
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "config_map", value = "configuration key value json map", dataType = "String", paramType = "body", required = true)})
-//			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-//	@SubjectPresent
+			@ApiImplicitParam(name = "config_map", value = "configuration key value json map", dataType = "String", paramType = "body", required = true),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+	@Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
 	public static Result createSpaceConfig(Long sid) {
 		User configCreator = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));

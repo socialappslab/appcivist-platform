@@ -509,7 +509,7 @@ public class ContributionsDelegate {
 
     	
     	String rawQuery = "select t1.word, t1.nentry from ts_stat( \n " + 
-    					  "'select t0.document from contribution t0 \n " +
+    					  "'select t0.document_simple from contribution t0 \n " +
 //    					  "where (t0.type = ? or t0.type = ? ) \n" + 
 //    					  "and t0.contribution_id in (?)') t1 \n " ;
     					  "') t1 \n";
@@ -570,7 +570,7 @@ public class ContributionsDelegate {
             idsByComma = " where t0.contribution_id in ("+array.replaceAll("\\[","").replaceAll("\\]","")+")') t1 \n ";
         }
         String rawQuery = "select t1.word, t1.nentry from ts_stat( \n " +
-                "'select t0.document from contribution t0 \n " + idsByComma;
+                "'select t0.document_simple from contribution t0 \n " + idsByComma;
 
         RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 
