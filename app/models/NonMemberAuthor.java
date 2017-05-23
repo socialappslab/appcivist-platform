@@ -198,7 +198,7 @@ public class NonMemberAuthor extends AppCivistBaseModel {
         return this.phone;
     }
   
-    public void setSubscribed(String phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }  
   
