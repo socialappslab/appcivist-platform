@@ -1056,7 +1056,7 @@ public class Contribution extends AppCivistBaseModel {
         return Contribution.update(existingContribution);
     }
 
-    private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
+    public void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
         this.containingSpaces = containingSpaces2;
     }
 
