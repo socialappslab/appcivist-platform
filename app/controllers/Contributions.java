@@ -3565,13 +3565,29 @@ public class Contributions extends Controller {
                         ResourceSpace containerResourceSpace = resourceSpaces.get(0);
                         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                             Campaign c = containerResourceSpace.getCampaign();
-                            contribution.setLang(c.getLang());
+                            if (c!=null) 
+                            	contribution.setLang(c.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". Campaign associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
                             WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
-                            contribution.setLang(wg.getLang());
+
+                            if (wg!=null) 
+                            	contribution.setLang(wg.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". WG associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
                             Assembly a = containerResourceSpace.getAssemblyResources();
-                            contribution.setLang(a.getLang());
+                            if (a!=null) 
+                            	contribution.setLang(a.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". Assembly associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         }
                     }
                     if(contribution.getLang()==null){
