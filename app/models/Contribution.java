@@ -526,11 +526,11 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Theme> getOfficialThemes() {
-        if(this.getContributionId()!=null){
-            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : null;
-            List<Theme> officialThemes = new ArrayList<Theme>();
+    	officialThemes = new ArrayList<Theme>();        
+    	if(contributionId!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
             for (Theme theme: allThemes) {
-                if(theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED)){
+                if(theme.getType() !=null && theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED)){
                     officialThemes.add(theme);
                 }
             }
@@ -544,12 +544,12 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Theme> getEmergentThemes() {
-        if(this.getContributionId()!=null) {
-            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : null;
-            List<Theme> emergentThemes = new ArrayList<Theme>();
-            for (Theme theme : allThemes) {
-                if (theme.getType().equals(ThemeTypes.EMERGENT)) {
-                    emergentThemes.add(theme);
+    	emergentThemes = new ArrayList<Theme>();        
+    	if(contributionId!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
+            for (Theme theme: allThemes) {
+                if(theme.getType() !=null && theme.getType().equals(ThemeTypes.EMERGENT)){
+                	emergentThemes.add(theme);
                 }
             }
             return emergentThemes;
@@ -1056,7 +1056,7 @@ public class Contribution extends AppCivistBaseModel {
         return Contribution.update(existingContribution);
     }
 
-    private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
+    public void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
         this.containingSpaces = containingSpaces2;
     }
 

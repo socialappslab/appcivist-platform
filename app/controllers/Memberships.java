@@ -4,8 +4,10 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
+
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import delegates.MembershipsDelegate;
 import delegates.NotificationsDelegate;
 import enums.*;
@@ -30,6 +32,8 @@ import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.Pair;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -910,6 +914,83 @@ public class Memberships extends Controller {
         return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, Messages.get("playauthenticate.verify_email.success", email))));
     }
 
+    
+    /**
+     * This is an endpoint developed exclusively to support integration with Participa Project Social Ideation component
+     * @param uid
+     * @param type
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Config.class, produces = "application/json", value = "Get configs of assemblies or wgs to which the user belongs")
+	@ApiResponses(
+			value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "uid", value = "User ID", dataType = "Long", paramType = "path"),        
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@SubjectPresent
+    public static Result userConfigs(
+            @ApiParam(name = "uid", value = "User ID") Long uid,
+            @ApiParam(name = "type", value = "Type of memberships to read", allowableValues = "assembly,group") String type) {
+        
+    	// 1. Read user record
+    	User u = User.findByUserId(uid);
+        if (u == null)
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    ResponseStatus.NODATA, "User with ID = " + uid + " not found")));
+     
+        // 2. Read list of assemblies of the user
+        String membershipType = "ASSEMBLY";
+        if (type != null && !type.isEmpty()) {
+            switch (type.toLowerCase()) {
+                case "assembly":
+                    membershipType = "ASSEMBLY";
+                    break;
+                case "group":
+                    membershipType = "GROUP";
+                    break;
+            }
+        }
+
+        List<Membership> memberships;
+        memberships = Membership.findByUser(u, membershipType);
+        if (memberships == null || memberships.isEmpty())
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    ResponseStatus.NODATA, "No memberships for user with ID = "
+                    + uid)));
+        
+        // 3. Read the configs for each assembly and put them into a map
+        HashMap<String,List<String>> configMap = new HashMap<String,List<String>>();
+        for (Membership membership : memberships) {
+        	if (membership.getStatus().equals(MembershipStatus.ACCEPTED)) {
+				Assembly a = membershipType.equals("ASSEMBLY") ? ((MembershipAssembly) membership).getAssembly(): null;
+				WorkingGroup wg = membershipType.equals("GROUP") ? ((MembershipGroup) membership).getWorkingGroup() : null;
+				
+				Long resourceSpaceID = 
+						a != null ? a.getResourcesResourceSpaceId()
+								: wg != null ? wg.getResourcesResourceSpaceId() : null;
+				
+				if (resourceSpaceID!=null) {
+			    	ResourceSpace resourceSpace = ResourceSpace.read(resourceSpaceID);
+			    	List<Config> configs = resourceSpace.getConfigs();
+					for (Config c:configs) {
+						String key= c.getKey();
+						String value = c.getValue();
+						List<String> values = configMap.get(key);
+						if (values==null) {
+							values = new ArrayList<String>();
+						} 
+						values.add(value);
+						configMap.put(key,values);
+					}
+				}
+        	}
+		}
+    	
+		return ok(Json.toJson(configMap));
+    }
+    
+    
+    
     /****************************************************************************************************************
      * Not exposed methods
      ****************************************************************************************************************/

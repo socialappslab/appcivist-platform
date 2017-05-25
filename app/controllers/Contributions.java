@@ -3546,6 +3546,8 @@ public class Contributions extends Controller {
      */
     @ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Update all contribution languages")
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.ADMIN_ROLE)})
     public static Result updateAllContributionLanguages() {
         List<Contribution> contributionList = Contribution.findAll();
@@ -3565,13 +3567,29 @@ public class Contributions extends Controller {
                         ResourceSpace containerResourceSpace = resourceSpaces.get(0);
                         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                             Campaign c = containerResourceSpace.getCampaign();
-                            contribution.setLang(c.getLang());
+                            if (c!=null) 
+                            	contribution.setLang(c.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". Campaign associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
                             WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
-                            contribution.setLang(wg.getLang());
+
+                            if (wg!=null) 
+                            	contribution.setLang(wg.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". WG associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
                             Assembly a = containerResourceSpace.getAssemblyResources();
-                            contribution.setLang(a.getLang());
+                            if (a!=null) 
+                            	contribution.setLang(a.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". Assembly associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         }
                     }
                     if(contribution.getLang()==null){

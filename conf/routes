@@ -47,7 +47,7 @@ GET       /api/user/verify                                                      
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
 GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
 GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
-GET 	  /api/user/:uid/fbtoken                                                 controllers.Users.checkFbToken(uid: Long)
+GET       /api/user/:uid/fbtoken                                                 controllers.Users.checkFbToken(uid: Long)
 POST      /api/user/:uid/fbtoken                                                 controllers.Users.createFbToken(uid: Long)
 PUT       /api/user/:uid/fbtoken                                                 controllers.Users.updateFbToken(uid: Long)
 
@@ -143,6 +143,7 @@ PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish                  
 POST      /api/membership                                                        controllers.Memberships.createMembership() 
 # TODO: change and use users numerical id instead of UUID
 GET       /api/membership/user/:uid                                              controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly: Integer ?=null)
+GET       /api/membership/user/:uid/config                                       controllers.Memberships.userConfigs(uid: Long, type ?="ASSEMBLY")
 POST      /api/membership/invitation/:iid/email                                  controllers.Memberships.reSendInvitation(iid: Long)
 GET       /api/membership/invitation/:targetId/:status                           controllers.Memberships.listInvitations(targetId: Long, status: String)
 GET       /api/membership/invitation/:token                                      controllers.Memberships.readInvitation(token: java.util.UUID) 
@@ -306,7 +307,7 @@ GET       /api/public/assembly/listed                                           
 GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long)
 
 # Update Language
-POST       /api/contribution/language                                            controllers.Contributions.updateAllContributionLanguages()
+POST      /api/contribution/language                                             controllers.Contributions.updateAllContributionLanguages()
 
 
 ##################################################################################################################################################################
