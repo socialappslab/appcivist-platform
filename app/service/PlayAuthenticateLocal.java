@@ -97,25 +97,30 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			Logger.debug("session generated: " + PlayAuthenticateLocal.SESSION_KEY_STRING+"=" + signed + "-"
 					+ encoded);
 		}
+		if(loginUser.getProvider().equals("password")){
+			models.User user = models.User.findByEmail(loginUser.getId());
 
-		models.User user = models.User.findByEmail(loginUser.getId());
+			if (payload != null && payload.toString().equals("SIGNUP")) {
+				// send verification email
+				// added to support login after signup
+				Logger.debug("signing up a new user:");
+				Logger.debug("--> id: " + loginUser.getId());
+				Logger.debug("--> provider: " + loginUser.getProvider());
+				Logger.debug("sending verification email:");
+				Logger.debug("--> provider: " + loginUser.getProvider());
+				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
+						.getProvider();
+				provider.sendVerifyEmailMailingAfterSignup(user, context,false);
 
-		if (payload != null && payload.toString().equals("SIGNUP")) {
-			// send verification email
-			// added to support login after signup
-			Logger.debug("signing up a new user:");
-			Logger.debug("--> id: " + loginUser.getId());
-			Logger.debug("--> provider: " + loginUser.getProvider());
-			Logger.debug("sending verification email:");
-			Logger.debug("--> provider: " + loginUser.getProvider());
-			MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
-					.getProvider();
-			provider.sendVerifyEmailMailingAfterSignup(user, context,false);
-
+			}
+			user.setSessionKey(signed + "-" + encoded);
+			return Controller.ok(toJson(user));
+		}else{
+			storeUser(context.session(), loginUser);
+			models.User user = models.User.findByProviderAndKey(loginUser.getProvider(),loginUser.getId());
+			user.setSessionKey(signed + "-" + encoded);
+			return Controller.ok(toJson(user));
 		}
-		user.setSessionKey(signed + "-" + encoded);
-//		return Controller.ok(toJson("SESSION_KEY=" + signed + "-" + encoded));
-		return Controller.ok(toJson(user));
 	}
 
 	public static Result handleAuthentication(final String provider, final Context context, final Object payload) {
@@ -154,13 +159,10 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 							.get("playauthenticate.user.exists.message"));
 					return Controller.unauthorized(toJson(response));
 				} else {
-					// return Controller.redirect((String) o);
-					TransferResponseStatus response = new TransferResponseStatus();
-					response.setResponseStatus(ResponseStatus.SERVERERROR);
-					response.setStatusMessage("not implemented when the authenticate response is: "
-							+ o);
-					return Controller.internalServerError(toJson(response));
+					return Controller.redirect((String) o);
 				}
+			} else if (o instanceof Result) {
+				return (Result) o;
 			} else if (o instanceof AuthUser) {
 
 				final AuthUser newUser = (AuthUser) o;
