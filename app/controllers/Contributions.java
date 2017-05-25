@@ -3567,6 +3567,7 @@ public class Contributions extends Controller {
                         ResourceSpace containerResourceSpace = resourceSpaces.get(0);
                         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                             Campaign c = containerResourceSpace.getCampaign();
+                            c = c==null ? containerResourceSpace.getCampaignForum() : c;
                             if (c!=null) 
                             	contribution.setLang(c.getLang());
                             else 
@@ -3575,7 +3576,7 @@ public class Contributions extends Controller {
                             					+". Campaign associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
                             WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
-
+                            wg = wg==null ? containerResourceSpace.getWorkingGroupForum() : wg;
                             if (wg!=null) 
                             	contribution.setLang(wg.getLang());
                             else 
@@ -3584,6 +3585,7 @@ public class Contributions extends Controller {
                             					+". WG associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
                         } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
                             Assembly a = containerResourceSpace.getAssemblyResources();
+                            a = a==null ? containerResourceSpace.getAssemblyForum() : a;
                             if (a!=null) 
                             	contribution.setLang(a.getLang());
                             else 
