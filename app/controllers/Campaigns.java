@@ -261,6 +261,19 @@ public class Campaigns extends Controller {
                 campaignOld.setShortname(updatedCampaign.getShortname());
                 campaignOld.setUrl(updatedCampaign.getUrl());
                 campaignOld.setListed(updatedCampaign.getListed());
+                if (updatedCampaign.getCover()!=null ){
+                    if(updatedCampaign.getCover().getResourceId()!=null){
+                        Resource cover = updatedCampaign.getCover();
+                        cover.update();
+                        cover.refresh();
+                        campaignOld.setCover(cover);
+                    }else{
+                        Resource cover = updatedCampaign.getCover();
+                        cover.save();
+                        cover.refresh();
+                        campaignOld.setCover(cover);
+                    }
+                }
                 List<Component> componentList = new ArrayList<Component>();
                 for (Component component:componentLoaded
                         ) {
@@ -738,7 +751,7 @@ public class Campaigns extends Controller {
     /**
      * Get campaigns that are ongoing given an Assembly's Universal ID (uuid)
      *
-     * @param uuid
+     * @param
      * @return
      */
     private static Result ongoingCampaignsByAssemblyId(Long aid) {
