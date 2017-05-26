@@ -1,33 +1,46 @@
 package controllers;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import com.google.gson.JsonArray;
-import delegates.CampaignDelegate;
-import delegates.NotificationsDelegate;
-import delegates.ResourcesDelegate;
-import enums.*;
-import exceptions.ConfigurationException;
+import static play.data.Form.form;
 import http.Headers;
-import io.swagger.annotations.*;
-import models.*;
-import models.misc.InitialDataConfig;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+import java.io.InputStream;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import models.Assembly;
+import models.Campaign;
+import models.CampaignTemplate;
+import models.CampaignTimelineEdge;
+import models.Component;
+import models.Membership;
+import models.MembershipAssembly;
+import models.Resource;
+import models.ResourceSpace;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
 import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import play.*;
+import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F.Promise;
@@ -40,23 +53,25 @@ import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.nio.charset.Charset;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.pa.PlayAuthenticate;
 
-import static play.data.Form.form;
+import delegates.CampaignDelegate;
+import delegates.NotificationsDelegate;
+import delegates.ResourcesDelegate;
+import enums.ContributionTypes;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
+import exceptions.ConfigurationException;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
