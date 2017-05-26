@@ -1,15 +1,21 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import play.Logger;
+
+import com.avaje.ebean.Expr;
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.RawSql;
+import com.avaje.ebean.RawSqlBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -118,7 +124,58 @@ public class MembershipGroup extends Membership {
 		return m==null ? false : true;
 	}
 	
-	public static Boolean hasUserRequestedMembershipToAssembly(Long userId, Long assemblyId) {
+	public static List<Membership> findUserGroupMembershipsUnderAssembly(User u, Long assemblyId) {
+		/* Raw Query
+		 * 
+		 * select rswg.* from assembly a, resource_space_campaign rsc, campaign c, resource_space_working_groups rswg, membership m
+		 * where
+		 *     a.assembly_id = 100
+		 *     and rsc.resource_space_resource_space_id = a.resources_resource_space_id
+		 *     and c.campaign_id = rsc.campaign_campaign_id
+		 *     and rswg.resource_space_resource_space_id = c.resources_resource_space_id
+		 *     and m.working_group_group_id = rswg.working_group_group_id
+		 *     and m.user_user_id = 534;
+		 */
+		String rawQuery = 
+				  " select distinct m.membership_type, m.membership_id, m.creation, m.last_update, m.lang, \n"
+				+ "        m.removal, m.removed, m.expiration, m.status, m.target_uuid \n"
+				+ " from assembly a, resource_space_campaign rsc, campaign c, \n"
+				+ " 		resource_space_working_groups rswg, membership m, working_group \n"
+				+ " where \n"
+				+ "    a.assembly_id = "+assemblyId+" \n"
+				+ "    and rsc.resource_space_resource_space_id = a.resources_resource_space_id \n"
+				+ "    and c.campaign_id = rsc.campaign_campaign_id \n"
+				+ "    and rswg.resource_space_resource_space_id = c.resources_resource_space_id \n"
+				+ "    and m.working_group_group_id = rswg.working_group_group_id \n"
+				+ "    and m.user_user_id = "+u.getUserId();
+        RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+        ExpressionList<Membership> where = find.setRawSql(rawSql).where();
+        where.add(Expr.eq("status",MembershipStatus.ACCEPTED));
+		List<Membership> membs = where.findList();		
+		return membs;
+	}
+
+	public static List<Membership> findUserGroupMembershipsUnderAssemblyByUUID(User u, UUID assemblyUuid) {
+		String rawQuery = 
+				  " select distinct m.membership_type, m.membership_id, m.creation, m.last_update, m.lang, \n"
+				+ "        m.removal, m.removed, m.expiration, m.status, m.target_uuid \n"
+				+ " from assembly a, resource_space_campaign rsc, campaign c, \n"
+				+ " 		resource_space_working_groups rswg, membership m, working_group \n"
+				+ " where \n"
+				+ "    a.uuid = "+assemblyUuid+" \n"
+				+ "    and rsc.resource_space_resource_space_id = a.resources_resource_space_id \n"
+				+ "    and c.campaign_id = rsc.campaign_campaign_id \n"
+				+ "    and rswg.resource_space_resource_space_id = c.resources_resource_space_id \n"
+				+ "    and m.working_group_group_id = rswg.working_group_group_id \n"
+				+ "    and m.user_user_id = "+u.getUserId();
+        RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
+        ExpressionList<Membership> where = find.setRawSql(rawSql).where();
+        where.add(Expr.eq("status",MembershipStatus.ACCEPTED));
+		List<Membership> membs = where.findList();		
+		return membs;
+	}
+	
+	public static Boolean hasUserRequestedMembershipToGroup(Long userId, Long assemblyId) {
 		Membership m = find.where().eq("user.userId", userId)
 				.eq("workingGroup.groupId", assemblyId)
 				.eq("status",MembershipStatus.REQUESTED)
@@ -144,4 +201,6 @@ public class MembershipGroup extends Membership {
 			return false;
 		}
 	}
+	
+	
 }
