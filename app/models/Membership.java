@@ -1,6 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -26,17 +25,19 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import models.TokenAction.Type;
+import models.misc.Views;
 
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.ManagementTypes;
 import enums.MembershipStatus;
 import enums.MembershipTypes;
 import exceptions.MembershipCreationException;
-import models.misc.Views;
-import play.Logger;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -352,12 +353,12 @@ public class Membership extends AppCivistBaseModel {
 		return membs;
 	}
 
-	public static List<Membership> findByUserAndAssembly(User u, Integer assemblyId) {
+	public static List<Membership> findByUserAndAssembly(User u, Long assemblyId) {
 		Query<Membership> q = find.where().eq("user",u).eq("assembly.assemblyId", assemblyId).query();
 		List<Membership> membs = q.findList();
 		return membs;
 	}
-
+	
 	public static List<Membership> findByUserAndTargetUuid(User u, UUID targetUuid) {
 		return find.where().eq("user",u).eq("targetUuid", targetUuid).findList();
 	}

@@ -45,8 +45,8 @@ POST      /api/user/login                                                       
 POST      /api/user/logout                                                       controllers.Users.doLogout()
 GET       /api/user/verify                                                       controllers.Users.verifyEmail
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
-GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
-GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
+GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing", assembly:java.util.UUID?=null)
+GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing", assembly:Long?=-1)
 GET       /api/user/:uid/fbtoken                                                 controllers.Users.checkFbToken(uid: Long)
 POST      /api/user/:uid/fbtoken                                                 controllers.Users.createFbToken(uid: Long)
 PUT       /api/user/:uid/fbtoken                                                 controllers.Users.updateFbToken(uid: Long)
@@ -76,7 +76,7 @@ POST      /api/site/verify                                                      
 ##################################################################################################################################################################
 # Notifications Service Proxy
 # TODO: integrate a proper message queue manager like rabbitmq
-GET       /api/notification/inbox/:sid                                           controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/notification/inbox/:sid                                           controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?=-1)
 GET       /api/notification/user/:uuid                                           controllers.Notifications.userInbox(uuid: java.util.UUID)
 GET       /api/notification/subscription                                         controllers.Notifications.subscriptions()
 POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
@@ -142,7 +142,7 @@ PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish                  
 # TODO: mark for review and removal if not needed
 POST      /api/membership                                                        controllers.Memberships.createMembership() 
 # TODO: change and use users numerical id instead of UUID
-GET       /api/membership/user/:uid                                              controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly: Integer ?=null)
+GET       /api/membership/user/:uid                                              controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly:Long?= -1)
 GET       /api/membership/user/:uid/config                                       controllers.Memberships.userConfigs(uid: Long, type ?="ASSEMBLY")
 POST      /api/membership/invitation/:iid/email                                  controllers.Memberships.reSendInvitation(iid: Long)
 GET       /api/membership/invitation/:targetId/:status                           controllers.Memberships.listInvitations(targetId: Long, status: String)
@@ -185,7 +185,7 @@ GET       /api/template/assembly/default                                        
 
 ##################################################################################################################################################################
 # Campaign API
-GET       /api/assembly/:aid/campaign                                            controllers.Campaigns.findCampaignsByAssemblyId(aid: Long)
+GET       /api/assembly/:aid/campaign                                            controllers.Campaigns.findCampaignsByAssemblyId(aid: Long, filter ?="ongoing")
 GET       /api/assembly/:aid/campaign/:cid                                       controllers.Campaigns.findCampaignByAssemblyId(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid                                       controllers.Campaigns.updateCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign                                            controllers.Campaigns.createCampaignInAssembly(aid: Long, templates?="")

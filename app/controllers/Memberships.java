@@ -157,7 +157,7 @@ public class Memberships extends Controller {
     public static Result findMembershipByUser(
             @ApiParam(name = "uid", value = "User's ID") Long uid,
             @ApiParam(name = "type", value = "Type of memberships to read", allowableValues = "assembly,group") String type,
-            @ApiParam(name = "by_assembly", value = "AssemblyId") Integer assemblyId) {
+            @ApiParam(name = "by_assembly", value = "AssemblyId") Long assemblyId) {
         User u = User.findByUserId(uid);
         if (u == null)
             return notFound(Json.toJson(new TransferResponseStatus(
@@ -179,11 +179,23 @@ public class Memberships extends Controller {
 
 
         List<Membership> memberships;
-        if (assemblyId == null) {
-            memberships = Membership.findByUser(u, membershipType);
+        
+    	// if an assemblyId was provided, filter memberships that belong under that assembly
+        // - the assembly itself
+        // - the working groups under campaigns of the assembly
+        if (assemblyId != null && assemblyId > 0) {
+        	List<Membership> assemblyMemberships = Membership.findByUserAndAssembly(u, assemblyId);
+            memberships = MembershipGroup.findUserGroupMembershipsUnderAssembly(u, assemblyId);
+            if (memberships==null) {
+            	memberships = new ArrayList<Membership>();
+            }
+            
+            memberships.addAll(assemblyMemberships);
         } else {
-            memberships = Membership.findByUserAndAssembly(u, assemblyId);
+
+            memberships = Membership.findByUser(u, membershipType);
         }
+        
         if (memberships == null || memberships.isEmpty())
             return notFound(Json.toJson(new TransferResponseStatus(
                     ResponseStatus.NODATA, "No memberships for user with ID = "
