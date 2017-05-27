@@ -413,3 +413,7 @@ GET       /api/public/space/:uuid/theme                                         
 GET       /api/public/space/:uuid/group                                          controllers.Spaces.findSpaceGroupPublic(uuid: java.util.UUID)
 DELETE    /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.deleteSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
 PUT       /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.updateSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
+##################################################################################################################################################################
+# Resource Space Common API
+GET       /api/event controllers.Spaces.listEvents(date1: Date, date2: Date)
+POST      /api/event controllers.Spaces.createEvent()
