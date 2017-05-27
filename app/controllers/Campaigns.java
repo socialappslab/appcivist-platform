@@ -675,8 +675,8 @@ public class Campaigns extends Controller {
      */
     private static Result ongoingCampaignsByUserUuid(UUID uuid, UUID assemblyUuid) {
         User u = User.findByUUID(uuid);
-        Assembly a = Assembly.readByUUID(assemblyUuid);
-        return ongoingCampaignsByUser(u, a.getAssemblyId());
+        Assembly a = assemblyUuid !=null ? Assembly.readByUUID(assemblyUuid) : null;
+        return ongoingCampaignsByUser(u, a !=null ? a.getAssemblyId() : null);
     }
 
     /**
