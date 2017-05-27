@@ -123,6 +123,9 @@ public class Campaign extends AppCivistBaseModel {
 	private List<ResourceSpace> containingSpaces;
 	@ManyToOne
 	private CampaignTemplate template;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	private Resource cover;
 	/** 
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -419,7 +422,15 @@ String uuidAsString, List<Component> phases) {
 		this.themes.add(t);
 		this.resources.addTheme(t);
 	}
-	
+
+	public Resource getCover() {
+		return cover;
+	}
+
+	public void setCover(Resource cover) {
+		this.cover = cover;
+	}
+
 	public List<WorkingGroup> getWorkingGroups() {
 		return this.resources.getWorkingGroups();
 	}
@@ -609,6 +620,18 @@ String uuidAsString, List<Component> phases) {
 	public static void create(Campaign campaign) {
 		// 1. Check first for existing entities in ManyToMany relationships. 
 		//    Save them for later update
+		if (campaign.getCover()!=null){
+			if(campaign.getCover().getResourceId()!=null){
+				Resource cover = Resource.read(campaign.getCover().getResourceId());
+				campaign.setCover(cover);
+			}else{
+				Resource cover =campaign.getCover();
+				cover.save();
+				cover.refresh();
+				campaign.setCover(cover);
+			}
+		}
+
 		List<Theme> existingThemes = campaign.getExistingThemes();
 		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
 
