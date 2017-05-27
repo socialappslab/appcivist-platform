@@ -1704,3 +1704,6 @@ create table custom_field_value_option (
 alter table custom_field_value_option add column custom_field_definition_id bigint;
 
 ALTER TABLE custom_field_value_option ADD CONSTRAINT fk_custom_field_value_option_01 FOREIGN KEY ("custom_field_definition_id") REFERENCES custom_field_definition(custom_field_definition_id);
+-- 41.sql
+alter table campaign add column cover_resource_id bigint;
+alter table campaign add constraint fk_contribution_resource_cover foreign key (cover_resource_id) references resource (resource_id);
