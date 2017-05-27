@@ -1707,3 +1707,7 @@ ALTER TABLE custom_field_value_option ADD CONSTRAINT fk_custom_field_value_optio
 -- 41.sql
 alter table campaign add column cover_resource_id bigint;
 alter table campaign add constraint fk_contribution_resource_cover foreign key (cover_resource_id) references resource (resource_id);
+
+-- 42.sql
+alter table campaign add column logo_resource_id bigint;
+alter table campaign add constraint fk_campaign_resource_logo foreign key (logo_resource_id) references resource (resource_id);
