@@ -7,6 +7,7 @@ public class GlobalData {
 	public static final String APPCIVIST_ASSEMBLY_BASE_URL = APPCIVIST_BASE_URL+"/assembly";
 	public static final String APPCIVIST_ASSEMBLY_DEFAULT_ICON = "/assets/images/justicia-140.png"; 
 	public static final String APPCIVIST_ASSEMBLY_DEFAULT_COVER = "/assets/images/covers/2015_GoldenGateFromPointBonita-1920.JPG";
+	public static final String APPCIVIST_WG_DEFAULT_COLOR = "#9877";
 	/**
 	 * Internationalization Messages Bindings
 	 */
