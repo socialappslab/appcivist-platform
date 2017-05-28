@@ -126,6 +126,9 @@ public class Campaign extends AppCivistBaseModel {
 
 	@OneToOne(cascade = CascadeType.ALL)
 	private Resource cover;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	private Resource logo;
 	/** 
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -537,6 +540,14 @@ String uuidAsString, List<Component> phases) {
 
 	public List<WorkingGroup> getExistingWorkingGroups() {
 		return existingWorkingGroups;
+	}
+
+	public Resource getLogo() {
+		return logo;
+	}
+
+	public void setLogo(Resource logo) {
+		this.logo = logo;
 	}
 
 	public void setExistingWorkingGroups(List<WorkingGroup> newWorkingGroups) {
