@@ -45,7 +45,9 @@ libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.8" % "test->default", 
   "com.amazonaws" % "aws-java-sdk" % "1.10.42", 
   "com.zaxxer" % "HikariCP" % "2.4.6", 
-  "org.jsoup" % "jsoup" % "1.10.2"
+  "org.jsoup" % "jsoup" % "1.10.2",
+  "com.typesafe.akka" %% "akka-actor" % "2.3.11",
+  "com.typesafe.akka" %% "akka-testkit" % "2.3.11" % "test"
 )
 
 libraryDependencies += evolutions

@@ -1711,3 +1711,6 @@ alter table campaign add constraint fk_contribution_resource_cover foreign key (
 -- 42.sql
 alter table campaign add column logo_resource_id bigint;
 alter table campaign add constraint fk_campaign_resource_logo foreign key (logo_resource_id) references resource (resource_id);
+
+-- 43.sql
+alter table working_group_profile add column color character varying(255);
