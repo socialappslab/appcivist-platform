@@ -2539,11 +2539,13 @@ public class Contributions extends Controller {
         if(addIdeaToProposals){
             List<Long> assignToContributions = newContrib.getAssignToContributions();
             List<Contribution> contributionList = new ArrayList<Contribution>();
-            for (Long cid : assignToContributions) {
-                Contribution contribution = Contribution.read(cid);
-                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
-                    contributionList.add(contribution);
-                }
+            if (assignToContributions != null) {
+	            for (Long cid : assignToContributions) {
+	                Contribution contribution = Contribution.read(cid);
+	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+	                    contributionList.add(contribution);
+	                }
+	            }
             }
             newContrib.setAssociatedContributions(contributionList);
             newContrib.getResourceSpace().update();
