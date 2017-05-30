@@ -124,9 +124,11 @@ public class Campaign extends AppCivistBaseModel {
 	@ManyToOne
 	private CampaignTemplate template;
 
+	@JsonView(Views.Public.class)
 	@OneToOne(cascade = CascadeType.ALL)
 	private Resource cover;
-
+	
+	@JsonView(Views.Public.class)
 	@OneToOne(cascade = CascadeType.ALL)
 	private Resource logo;
 	/** 
