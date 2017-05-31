@@ -399,6 +399,7 @@ POST      /api/public/campaign/:uuid/contribution                               
 PUT       /api/public/campaign/:cuuid/contribution/:uuid/feedback                controllers.Contributions.updateContributionFeedbackNonMemberAuthor(cuuid: java.util.UUID, uuid: java.util.UUID)
 POST      /api/public/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWorkingGroup(uuid: String)
 POST      /api/public/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
+POST      /api/public/space/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionInSpacePublic(uuid: String)
 
 GET       /api/public/space/:uuid/contribution                                   controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
 GET       /api/public/space/:uuid/config                                         controllers.Configs.findSpaceConfigsPublic(uuid: java.util.UUID)
