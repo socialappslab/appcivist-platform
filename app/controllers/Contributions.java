@@ -1051,7 +1051,11 @@ public class Contributions extends Controller {
             	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
             	if (result == false){ 
             		return badRequest("Missing headers");
-            	}
+            	} else {
+                    HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
+                    newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+                    newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
+                }
             }
         	
             ResourceSpace rs = ResourceSpace.read(sid);
