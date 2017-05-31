@@ -3335,6 +3335,9 @@ public class Contributions extends Controller {
             try {
                 c = createContribution(newContribution, null, type, template, resourceSpace);
 
+                resourceSpace.addContribution(c);
+                resourceSpace.update();
+                
                 Promise.promise(() -> {
                     return NotificationsDelegate.newContributionInResourceSpace(resourceSpace,c);
                 });
