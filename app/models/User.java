@@ -375,7 +375,12 @@ public class User extends AppCivistBaseModel implements Subject {
 		return findByEmailList(identity.getEmail()).eq(
 				"linkedAccounts.providerKey", identity.getProvider());
 	}
-	
+
+	public static User findByProviderAndKey(String providerKey, String providerUserId) {
+		return find.where().eq("linkedAccounts.providerKey", providerKey)
+				.eq("linkedAccounts.providerUserId", providerUserId).eq("active",true).findUnique();
+	}
+
 	/************************************************************************************************
 	 * Password and User Management operations
 	 ************************************************************************************************/

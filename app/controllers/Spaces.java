@@ -323,6 +323,17 @@ public class Spaces extends Controller {
                 CustomFieldDefinition newCustomFieldDefinition = newCustomFieldDefinitionForm.get();
                 newCustomFieldDefinition.setCustomFieldDefinitionId(customFieldDefinition.getCustomFieldDefinitionId());
                 newCustomFieldDefinition.setContextUserId(creator.getUserId());
+                if(newCustomFieldDefinition.getCustomFieldValueOptions()!=null && newCustomFieldDefinition.getCustomFieldValueOptions().size()!=0){
+                    for (CustomFieldValueOption customFieldValueOptionOld: customFieldDefinition.getCustomFieldValueOptions() ) {
+                        customFieldValueOptionOld.softRemove();
+                    }
+                    for (CustomFieldValueOption customFieldValueOption:newCustomFieldDefinition.getCustomFieldValueOptions()) {
+                        customFieldValueOption.setCustomFieldDefinition(newCustomFieldDefinition);
+                        customFieldValueOption.save();
+                        customFieldValueOption.refresh();
+                    }
+
+                }
                 newCustomFieldDefinition.update();
                 resourceSpace.getCustomFieldDefinitions().add(newCustomFieldDefinition);
                 resourceSpace.update();

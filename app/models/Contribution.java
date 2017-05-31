@@ -1,5 +1,6 @@
 package models;
 
+import enums.ThemeTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -92,6 +93,12 @@ public class Contribution extends AppCivistBaseModel {
     @Column(name = "moderation_comment", columnDefinition = "text")
     @ApiModelProperty(value="Comment explaining why a contribution is moderated (e.g., deleted, changed status, etc.)", position=6)
     private String moderationComment;
+
+    @Column(name = "source")
+    private String source;
+
+    @Column(name = "source_url", columnDefinition = "text")
+    private String sourceUrl;    
 
     @OneToOne(cascade = CascadeType.ALL)
     @Index
@@ -276,10 +283,22 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Theme> addedThemes;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<Theme> officialThemes;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<Theme> emergentThemes;
     
     @JsonView(Views.Public.class)
     @Transient
     private String document;
+
+    @JsonIgnore
+    @Transient
+    private String documentSimple;
 
     /**
      * The find property is an static property that facilitates database query
@@ -504,6 +523,42 @@ public class Contribution extends AppCivistBaseModel {
     public void setThemes(List<Theme> themes) {
         this.themes = themes;
         if (resourceSpace != null ) this.resourceSpace.setThemes(themes);
+    }
+
+    public List<Theme> getOfficialThemes() {
+    	officialThemes = new ArrayList<Theme>();        
+    	if(contributionId!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
+            for (Theme theme: allThemes) {
+                if(theme.getType() !=null && theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED)){
+                    officialThemes.add(theme);
+                }
+            }
+            return officialThemes;
+        }
+        return officialThemes;
+    }
+
+    public void setOfficialThemes(List<Theme> officialThemes) {
+        this.officialThemes = officialThemes;
+    }
+
+    public List<Theme> getEmergentThemes() {
+    	emergentThemes = new ArrayList<Theme>();        
+    	if(contributionId!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
+            for (Theme theme: allThemes) {
+                if(theme.getType() !=null && theme.getType().equals(ThemeTypes.EMERGENT)){
+                	emergentThemes.add(theme);
+                }
+            }
+            return emergentThemes;
+        }
+        return emergentThemes;
+    }
+
+    public void setEmergentThemes(List<Theme> emergentThemes) {
+        this.emergentThemes = emergentThemes;
     }
 
     public void addTheme(Theme t) {
@@ -837,8 +892,7 @@ public class Contribution extends AppCivistBaseModel {
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
         // List<User> authors = c.getAuthors();
-        List<Theme> themes = c.getThemes(); // new themes are never created from
-        // contributions
+        List<Theme> themes = c.getThemes();
         c.setThemes(new ArrayList<>());
         List<ComponentMilestone> associatedMilestones = c
                 .getAssociatedMilestones(); // new milestones are never created
@@ -1002,7 +1056,7 @@ public class Contribution extends AppCivistBaseModel {
         return Contribution.update(existingContribution);
     }
 
-    private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
+    public void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
         this.containingSpaces = containingSpaces2;
     }
 
@@ -1414,13 +1468,37 @@ public class Contribution extends AppCivistBaseModel {
         this.document = document;
     }
 
+    public String getDocumentSimple() {
+        return documentSimple;
+    }
+
+    public void setDocumentSimple(String documentSimple) {
+        this.documentSimple = documentSimple;
+    }
+
     public static List<Contribution> findContributionsInSpaceByTypeStatus(Long sid,
-                                                       ContributionTypes type, ContributionStatus status) {
+                                                                          ContributionTypes type, ContributionStatus status) {
             return find.where()
                     .eq("type", type)
                     .eq("containingSpaces.resourceSpaceId", sid)
                     .eq("status", status)
                     .not(Expr.eq("removed",true))
                     .findList();
+    }
+
+    public String getSource(){
+        return source;
+    }
+
+    public void setSource(String source){
+        this.source = source;
+    }
+
+    public String getSourceUrl(){
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl){
+        this.sourceUrl = sourceUrl;
     }
 }

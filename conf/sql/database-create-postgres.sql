@@ -1633,7 +1633,84 @@ insert into contribution_non_member_author select contribution_id, non_member_au
 alter table non_member_author add column uuid varchar(40);
 
 ALTER TABLE non_member_author ALTER COLUMN uuid SET DEFAULT uuid_generate_v4();
--- 36.sql
+
+-- 37.sql
+ALTER TABLE contribution
+ADD COLUMN document_simple tsvector;
+
+UPDATE contribution
+SET document_simple = to_tsvector('simple', unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));
+
+CREATE INDEX textsearchwords_idx ON contribution USING gin(document_simple);
+
+CREATE OR REPLACE FUNCTION contribution_trigger() RETURNS trigger AS $$
+begin
+  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
+  new.document_simple := to_tsvector('simple', unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
+  return new;
+end
+$$ LANGUAGE plpgsql;
+
 ALTER TABLE non_member_author ADD COLUMN publishContact BOOLEAN DEFAULT FALSE;
 ALTER TABLE non_member_author ADD COLUMN subscribed BOOLEAN DEFAULT FALSE;
 ALTER TABLE non_member_author ADD COLUMN Phone varchar(30) DEFAULT '';
+
+-- 38.sql
+CREATE TEXT SEARCH CONFIGURATION "en-us" ( COPY = english );
+ALTER TEXT SEARCH CONFIGURATION "en-us" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, english_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "es-es" ( COPY = spanish );
+ALTER TEXT SEARCH CONFIGURATION "es-es" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, spanish_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "it-it" ( COPY = italian );
+ALTER TEXT SEARCH CONFIGURATION "it-it" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, italian_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "fr-fr" ( COPY = french );
+ALTER TEXT SEARCH CONFIGURATION "fr-fr" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, french_stem;
+
+alter table non_member_author add column lang varchar(255);
+alter table non_member_author add column creation timestamp;
+alter table non_member_author add column last_update timestamp;
+alter table non_member_author add column removal timestamp;
+alter table non_member_author add column removed boolean;
+
+-- 39.sql
+-- Execute endpoint first
+-- POST       /api/contribution/language
+
+UPDATE contribution
+SET document = to_tsvector(contribution.lang::regconfig, unaccent(coalesce(title,'')) || ' ' || unaccent(coalesce(text,'')));
+
+-- 40.sql
+
+create table custom_field_value_option (
+  custom_field_value_option_id                  bigserial not null,
+  creation                  timestamp,
+  last_update               timestamp,
+  lang                      varchar(255),
+  removal                   timestamp,
+  removed                   boolean,
+  uuid                      varchar(40),
+  name                      varchar(255),
+  value                     varchar(255),
+  value_type                varchar(40),
+  "position"                integer,
+  constraint pk_custom_field_value_option primary key (custom_field_value_option_id));
+
+alter table custom_field_value_option add column custom_field_definition_id bigint;
+
+ALTER TABLE custom_field_value_option ADD CONSTRAINT fk_custom_field_value_option_01 FOREIGN KEY ("custom_field_definition_id") REFERENCES custom_field_definition(custom_field_definition_id);
+-- 41.sql
+alter table campaign add column cover_resource_id bigint;
+alter table campaign add constraint fk_contribution_resource_cover foreign key (cover_resource_id) references resource (resource_id);
+
+-- 42.sql
+alter table campaign add column logo_resource_id bigint;
+alter table campaign add constraint fk_campaign_resource_logo foreign key (logo_resource_id) references resource (resource_id);
+
+-- 43.sql
+alter table working_group_profile add column color character varying(255);

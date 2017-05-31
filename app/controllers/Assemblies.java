@@ -396,7 +396,6 @@ public class Assemblies extends Controller {
 		}
 	}
 
-	
 	/**
 	 * DELETE    /api/assembly/:id
 	 *
@@ -839,6 +838,8 @@ public class Assemblies extends Controller {
 
 	}
 
+	// TODO: move the following endpoints to the Resource Space Controller
+	
 	/**
 	 * PUT      /api/space/:sid/organization
 	 *

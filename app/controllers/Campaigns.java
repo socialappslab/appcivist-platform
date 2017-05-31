@@ -1,33 +1,46 @@
 package controllers;
 
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import com.google.gson.JsonArray;
-import delegates.CampaignDelegate;
-import delegates.NotificationsDelegate;
-import delegates.ResourcesDelegate;
-import enums.*;
-import exceptions.ConfigurationException;
+import static play.data.Form.form;
 import http.Headers;
-import io.swagger.annotations.*;
-import models.*;
-import models.misc.InitialDataConfig;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+import java.io.InputStream;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import models.Assembly;
+import models.Campaign;
+import models.CampaignTemplate;
+import models.CampaignTimelineEdge;
+import models.Component;
+import models.Membership;
+import models.MembershipAssembly;
+import models.Resource;
+import models.ResourceSpace;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
 import models.misc.Views;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import play.*;
+import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F.Promise;
@@ -40,23 +53,25 @@ import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.nio.charset.Charset;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.pa.PlayAuthenticate;
 
-import static play.data.Form.form;
+import delegates.CampaignDelegate;
+import delegates.NotificationsDelegate;
+import delegates.ResourcesDelegate;
+import enums.ContributionTypes;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
+import exceptions.ConfigurationException;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -78,11 +93,25 @@ public class Campaigns extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result findCampaignsByAssemblyId(@ApiParam(name = "aid", value = "Assembly ID") Long aid) {
-        List<Campaign> campaigns = Assembly.findCampaigns(aid);
-        return campaigns != null && !campaigns.isEmpty() ? ok(Json
-                .toJson(campaigns)) : ok(Json
-                .toJson(new TransferResponseStatus("No campaign found")));
+    public static Result findCampaignsByAssemblyId(
+    		@ApiParam(name = "aid", value = "Assembly ID") Long aid, 
+    		@ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
+        if (filter == null || filter.equals("ongoing")) {
+            return ongoingCampaignsByAssemblyId(aid);
+        } else if (filter.equals("past")) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(
+                    "Not implemented")));
+        } else if (filter.equals("future")) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(
+                    "Not implemented")));
+        } else {
+        	List<Campaign> campaigns = Assembly.findCampaigns(aid);
+            if (!campaigns.isEmpty())
+                return ok(Json.toJson(campaigns));
+            else
+                return notFound(Json.toJson(new TransferResponseStatus(
+                        "No ongoing campaigns")));
+        }
     }
 
     /**
@@ -232,6 +261,19 @@ public class Campaigns extends Controller {
                 campaignOld.setShortname(updatedCampaign.getShortname());
                 campaignOld.setUrl(updatedCampaign.getUrl());
                 campaignOld.setListed(updatedCampaign.getListed());
+                if (updatedCampaign.getCover()!=null ){
+                    if(updatedCampaign.getCover().getResourceId()!=null){
+                        Resource cover = updatedCampaign.getCover();
+                        cover.update();
+                        cover.refresh();
+                        campaignOld.setCover(cover);
+                    }else{
+                        Resource cover = updatedCampaign.getCover();
+                        cover.save();
+                        cover.refresh();
+                        campaignOld.setCover(cover);
+                    }
+                }
                 List<Component> componentList = new ArrayList<Component>();
                 for (Component component:componentLoaded
                         ) {
@@ -420,9 +462,10 @@ public class Campaigns extends Controller {
     @Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
     public static Result campaignsByUserId(
             @ApiParam(name = "uid", value = "User's ID") Long uid,
-            @ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
+            @ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter,
+            @ApiParam(name = "assembly", value = "Assembly ID") Long aid) {
         if (filter == null || filter.equals("ongoing")) {
-            return ongoingCampaignsByUserId(uid);
+            return ongoingCampaignsByUserId(uid, aid!=null && aid>0 ? aid : null);
         } else if (filter.equals("past")) {
             return internalServerError(Json.toJson(new TransferResponseStatus(
                     "Not implemented")));
@@ -431,8 +474,9 @@ public class Campaigns extends Controller {
                     "Not implemented")));
         } else {
             User u = User.read(uid);
-            List<Membership> assemblyMemberships = Membership.findByUser(u,
-                    "ASSEMBLY");
+            List<Membership> assemblyMemberships = aid != null && aid > 0?  
+            				Membership.findByUserAndAssembly(u, aid)
+            				: Membership.findByUser(u, "ASSEMBLY");
             List<Campaign> campaigns = new ArrayList<Campaign>();
             for (Membership membership : assemblyMemberships) {
                 Assembly a = ((MembershipAssembly) membership).getAssembly();
@@ -463,9 +507,10 @@ public class Campaigns extends Controller {
     @Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
     public static Result campaignsByUserUuid(
             @ApiParam(name = "uuid", value = "User's Universal ID") UUID uuid,
-            @ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter) {
+            @ApiParam(name = "filter", value = "Filter campaign by status (ongoing, past, upcoming, all)", allowableValues = "ongoing,past,future,all", defaultValue = "ongoing") String filter,
+            @ApiParam(name = "assembly", value = "Assembly UUID") UUID auuid) {
         if (filter == null || filter.equals("ongoing")) {
-            return ongoingCampaignsByUserUuid(uuid);
+            return ongoingCampaignsByUserUuid(uuid, auuid!=null ? auuid : null);
         } else if (filter.equals("past")) {
             return internalServerError(Json.toJson(new TransferResponseStatus(
                     "Not implemented")));
@@ -474,8 +519,10 @@ public class Campaigns extends Controller {
                     "Not implemented")));
         } else {
             User u = User.findByUUID(uuid);
-            List<Membership> assemblyMemberships = Membership.findByUser(u,
-                    "ASSEMBLY");
+            Assembly target = Assembly.readByUUID(auuid);
+            List<Membership> assemblyMemberships = auuid != null ?  
+    				Membership.findByUserAndAssembly(u, target.getAssemblyId())
+    				: Membership.findByUser(u, "ASSEMBLY");
             List<Campaign> campaigns = new ArrayList<Campaign>();
             for (Membership membership : assemblyMemberships) {
                 Assembly a = ((MembershipAssembly) membership).getAssembly();
@@ -639,9 +686,10 @@ public class Campaigns extends Controller {
      * @param uuid User's Universal ID (uuid)
      * @return
      */
-    private static Result ongoingCampaignsByUserUuid(UUID uuid) {
+    private static Result ongoingCampaignsByUserUuid(UUID uuid, UUID assemblyUuid) {
         User u = User.findByUUID(uuid);
-        return ongoingCampaignsByUser(u);
+        Assembly a = assemblyUuid !=null ? Assembly.readByUUID(assemblyUuid) : null;
+        return ongoingCampaignsByUser(u, a !=null ? a.getAssemblyId() : null);
     }
 
     /**
@@ -650,10 +698,9 @@ public class Campaigns extends Controller {
      * @param uid User's Local Id
      * @return
      */
-    private static Result ongoingCampaignsByUserId(
-            @ApiParam(name = "id", value = "User ID") Long uid) {
+    private static Result ongoingCampaignsByUserId(Long uid, Long assemblyId) {
         User u = User.read(uid);
-        return ongoingCampaignsByUser(u);
+        return ongoingCampaignsByUser(u, assemblyId);
     }
 
     /**
@@ -662,9 +709,10 @@ public class Campaigns extends Controller {
      * @param u User's object
      * @return
      */
-    private static Result ongoingCampaignsByUser(User u) {
-        List<Membership> assemblyMemberships = Membership.findByUser(u,
-                "ASSEMBLY");
+    private static Result ongoingCampaignsByUser(User u, Long assemblyId) {
+        List<Membership> assemblyMemberships = assemblyId != null ? 
+        		Membership.findByUserAndAssembly(u, assemblyId) 
+        		: Membership.findByUser(u,"ASSEMBLY");
         List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
 
         for (Membership membership : assemblyMemberships) {
@@ -700,6 +748,25 @@ public class Campaigns extends Controller {
                     "No ongoing campaigns")));
     }
 
+    /**
+     * Get campaigns that are ongoing given an Assembly's Universal ID (uuid)
+     *
+     * @param
+     * @return
+     */
+    private static Result ongoingCampaignsByAssemblyId(Long aid) {
+        Assembly a = Assembly.read(aid);
+        List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+        ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        if (!ongoingCampaigns.isEmpty())
+            return ok(Json.toJson(ongoingCampaigns));
+        else
+            return notFound(Json.toJson(new TransferResponseStatus(
+                    "No ongoing campaigns")));
+    }
+
+
+    
     /** TODO For templates and contribution, the resources (and related pad) not confirmed after x time must be eliminated **/
 
     /**
