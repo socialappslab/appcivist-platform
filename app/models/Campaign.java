@@ -77,7 +77,7 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
-	private Long resourceSpaceUUId;
+	private Long resourceSpaceUUID;
 
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -86,7 +86,7 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
-	private Long forumResourceSpaceUUId;
+	private Long forumResourceSpaceUUID;
 
 	@Transient
 	//@JsonView(Views.Public.class)
@@ -317,7 +317,7 @@ String uuidAsString, List<Component> phases) {
 			this.resources.setResourceSpaceId(id);
 	}
 
-	public String getResourceSpaceUUId() {
+	public String getResourceSpaceUUID() {
 		return resources != null ? resources.getResourceSpaceUuid().toString() : null;
 	}
 
@@ -339,7 +339,7 @@ String uuidAsString, List<Component> phases) {
 			this.forum.setResourceSpaceId(id);
 	}
 
-	public String getForumResourceSpaceUUId() {
+	public String getForumResourceSpaceUUID() {
 		return forum != null ? forum.getResourceSpaceUuid().toString() : null;
 	}
 
@@ -369,8 +369,10 @@ String uuidAsString, List<Component> phases) {
 
 	public List<Component> getPagedComponents(Integer page, Integer pageSize) {
 		Finder<Long, Component> find = new Finder<>(Component.class);
-		return find.where().eq("containingSpaces", this.resources).
-				findPagedList(page, pageSize).getList();
+		return find.where()
+				.eq("containingSpaces", this.resources)
+				.orderBy("position")
+				.findPagedList(page, pageSize).getList();
 	}
 
 	public List<Component> getComponents() {
