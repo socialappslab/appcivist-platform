@@ -105,6 +105,8 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	private List<Long> assemblies = new ArrayList<>();
 	@Transient
+	private List<String> assemblyShortname = new ArrayList<>();
+	@Transient
 	@JsonIgnore
 	private List<Contribution> contributions = new ArrayList<>();
 	@Transient
@@ -480,6 +482,15 @@ String uuidAsString, List<Component> phases) {
 		abstract int getAssembliesObjects();
 
 	}
+	
+	public static abstract class AssemblyShortnameVisibleMixin {
+
+		@JsonView(Views.Public.class)
+		@JsonProperty("assemblyShortname")
+		@JsonIgnore(false)
+		abstract int getAssemblyShortnameObjects();
+
+	}
 
 	@JsonView(Views.Public.class)
 	@JsonProperty("assemblies")
@@ -497,6 +508,24 @@ String uuidAsString, List<Component> phases) {
 		}
 		List<UUID> uuids = assemblies.stream().map(assembly -> assembly.getUuid()).collect(Collectors.toList());
 		return uuids;
+	}
+	
+	@JsonView(Views.Public.class)
+	@JsonProperty("assemblyShortname")
+	@JsonIgnore
+	public List<String> getAssemblyShortnameObjects() {
+		List <Assembly> assemblies = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
+				.collect(Collectors.toList());
+
+		for (ResourceSpace resourceSpace : spaces) {
+			Assembly a = resourceSpace.getAssemblyResources();
+			if(a!=null) {
+				assemblies.add(a);
+			}
+		}
+		List<String> assemblyShorts = assemblies.stream().map(assembly -> assembly.getShortname()).collect(Collectors.toList());
+		return assemblyShorts;
 	}
 
 	public List<Contribution> getContributions() {

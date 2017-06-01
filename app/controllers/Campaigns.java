@@ -163,6 +163,7 @@ public class Campaigns extends Controller {
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
             mapper.addMixIn(Campaign.class, Campaign.AssembliesVisibleMixin.class);
+            mapper.addMixIn(Campaign.class, Campaign.AssemblyShortnameVisibleMixin.class);
             String result = mapper.writerWithView(Views.Public.class)
                     .writeValueAsString(summary);
 

@@ -2329,7 +2329,7 @@ public class Contributions extends Controller {
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         Boolean addIdeaToProposals = false;
-        String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS);
+        String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
         Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign(); 
@@ -2492,6 +2492,7 @@ public class Contributions extends Controller {
             newContrib.setCover(cover);
         }
         List<Theme> themeListEmergent = new ArrayList<Theme>();
+        List<Theme> themeListOfficial = newContrib.getOfficialThemes();
         newContrib.setExistingThemes(newContrib.getOfficialThemes()==null?new ArrayList<Theme>():newContrib.getOfficialThemes());
         if(newContrib.getEmergentThemes()!=null && newContrib.getEmergentThemes().size()>0){
             List<Theme> themeList = new ArrayList<Theme>();
