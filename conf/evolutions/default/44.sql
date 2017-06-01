@@ -18,6 +18,7 @@ begin
   return result;
 end;
 $$ language plpgsql;
+ALTER FUNCTION random_string(length integer) OWNER TO appcivist;
 
 ALTER TABLE "public"."campaign" ALTER COLUMN "shortname" SET DEFAULT random_string(8);
 ALTER TABLE "public"."campaign" ADD UNIQUE ("shortname");
@@ -37,10 +38,10 @@ CREATE SEQUENCE public.component_component_id_seq
     MAXVALUE 9223372036854775807
     START WITH 1
     CACHE 1
-    NO CYCLE
-    OWNED BY NONE;
+    NO CYCLE;
 
 ALTER TABLE "public"."component" ALTER COLUMN "component_id" SET DEFAULT nextval('component_component_id_seq'::regclass);
+
 alter sequence component_component_id_seq OWNED BY component.component_id;
 
 -- Create a new campaign under an assembly
@@ -113,6 +114,7 @@ BEGIN
 END
 
 $$;
+ALTER FUNCTION create_new_campaign( assemblyid BIGINT, title VARCHAR,  shortname VARCHAR, goal VARCHAR,  logo TEXT, cover TEXT, lng VARCHAR) OWNER TO appcivist;
 
 -- Create a new theme and add it to a campaign
 CREATE OR REPLACE FUNCTION public.create_theme_and_add_to_campaign (campaign_shortname VARCHAR, theme_title VARCHAR,  theme_description VARCHAR, theme_type VARCHAR, theme_lang VARCHAR)
@@ -150,6 +152,7 @@ BEGIN
 
 END
 $$;
+ALTER FUNCTION create_theme_and_add_to_campaign (campaign_shortname VARCHAR, theme_title VARCHAR,  theme_description VARCHAR, theme_type VARCHAR, theme_lang VARCHAR) OWNER TO appcivist;
 
 -- Read a campaign list of components, ordered by position, and create a timeline graph
 CREATE OR REPLACE FUNCTION public.generate_timeline_edges (target_campaign_shortname VARCHAR)
@@ -214,6 +217,7 @@ BEGIN
 END
 
 $$;
+ALTER FUNCTION generate_timeline_edges(target_campaign_shortname VARCHAR) OWNER TO appcivist;
 
 -- Copy components and milestones from one campaign to the other, shifting dates from a starting point
 CREATE OR REPLACE FUNCTION public.copy_components_and_milestones_from_campaign
@@ -343,6 +347,7 @@ BEGIN
 END
 
 $$;
+ALTER FUNCTION copy_components_and_milestones_from_campaign(   source_campaign_shortname VARCHAR, target_campaign_shortname VARCHAR, new_start_date TIMESTAMP) OWNER TO appcivist;
 
 -- Copy configs from one campaign to the other
 CREATE OR REPLACE FUNCTION public.copy_configs_from_campaign (source_campaign_shortname VARCHAR, target_campaign_shortname VARCHAR)
@@ -405,6 +410,7 @@ BEGIN
 END
 
 $$;
+ALTER FUNCTION copy_configs_from_campaign(source_campaign_shortname VARCHAR, target_campaign_shortname VARCHAR) OWNER TO appcivist;
 
 -- Copy components and milestones from one campaign to the other, shifting dates from a starting point
 CREATE OR REPLACE FUNCTION public.create_add_config_to_campaign (config_key VARCHAR, config_value VARCHAR, target_campaign_shortname VARCHAR)
@@ -471,6 +477,7 @@ BEGIN
 END
 
 $$;
+ALTER FUNCTION create_add_config_to_campaign (config_key VARCHAR, config_value VARCHAR, target_campaign_shortname VARCHAR) OWNER TO appcivist;
 
 -- Create custom field and add to campaign resource space
 CREATE OR REPLACE FUNCTION public.create_add_custom_field_option_value_to_field_definition
@@ -517,9 +524,9 @@ BEGIN
 END
 
 $$;
+ALTER FUNCTION create_add_custom_field_option_value_to_field_definition ( target_campaign_shortname VARCHAR, field_name VARCHAR, field_entity_type VARCHAR, new_option VARCHAR, new_option_type VARCHAR, new_option_position INTEGER) OWNER TO appcivist;
 
 
-$$;
 
 
 
