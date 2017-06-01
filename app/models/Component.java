@@ -66,7 +66,9 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	private Date endDate;
 	@JsonView(Views.Public.class)
 	private UUID uuid = UUID.randomUUID();
+	@JsonView(Views.Public.class)
 	private int position;
+	@JsonView(Views.Public.class)
 	private int timeline;
 	@Transient 
 	private Boolean linked;
@@ -91,6 +93,12 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private Long resourceSpaceId;
+	
+
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonView(Views.Public.class)
+	private Long resourceSpaceUUID;
 
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -352,6 +360,11 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 				&& this.resourceSpace.getResourceSpaceId() == null)
 			this.resourceSpace.setResourceSpaceId(id);
 	}
+
+	public String getResourceSpaceUUID() {
+		return resourceSpace != null ? resourceSpace.getResourceSpaceUuid().toString() : null;
+	}
+
 	
 	public List<Config> getConfigs() {
 		return this.resourceSpace.getConfigs();

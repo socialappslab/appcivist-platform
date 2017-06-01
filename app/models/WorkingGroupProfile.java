@@ -42,7 +42,10 @@ public class WorkingGroupProfile extends AppCivistBaseModel {
 	private String icon = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_ICON; // a small icon to represent the assembly
 	@JsonView(Views.Public.class)
 	private String cover = GlobalData.APPCIVIST_ASSEMBLY_DEFAULT_COVER;	// cover picture of the assembly, to appear on the top of its page
-	
+
+	@JsonView(Views.Public.class)
+	private String color = GlobalData.APPCIVIST_WG_DEFAULT_COLOR;
+
 	// TODO: 
 	/**
 	 * The find property is an static property that facilitates database query creation
@@ -104,7 +107,15 @@ public class WorkingGroupProfile extends AppCivistBaseModel {
 	public void setCover(String cover) {
 		this.cover = cover;
 	}
-	
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+
 	/*
 	 * Basic Data Queries
 	 */

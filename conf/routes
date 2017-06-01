@@ -45,8 +45,12 @@ POST      /api/user/login                                                       
 POST      /api/user/logout                                                       controllers.Users.doLogout()
 GET       /api/user/verify                                                       controllers.Users.verifyEmail
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
-GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing")
-GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing")
+GET       /api/user/:uuid/campaign                                               controllers.Campaigns.campaignsByUserUuid(uuid: java.util.UUID, filter ?="ongoing", assembly:java.util.UUID?=null)
+GET       /api/user/:uid/campaign                                                controllers.Campaigns.campaignsByUserId(uid: Long, filter ?="ongoing", assembly:Long?=-1)
+GET       /api/user/:uid/fbtoken                                                 controllers.Users.checkFbToken(uid: Long)
+POST      /api/user/:uid/fbtoken                                                 controllers.Users.createFbToken(uid: Long)
+PUT       /api/user/:uid/fbtoken                                                 controllers.Users.updateFbToken(uid: Long)
+
 ##################################################################################################################################################################
 # TODO Play Authenticate endpoints to check if we need/validate/integrate better
 GET       /api/user/link                                                         controllers.Users.link
@@ -72,7 +76,7 @@ POST      /api/site/verify                                                      
 ##################################################################################################################################################################
 # Notifications Service Proxy
 # TODO: integrate a proper message queue manager like rabbitmq
-GET       /api/notification/inbox/:sid                                           controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/notification/inbox/:sid                                           controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?=-1)
 GET       /api/notification/user/:uuid                                           controllers.Notifications.userInbox(uuid: java.util.UUID)
 GET       /api/notification/subscription                                         controllers.Notifications.subscriptions()
 POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
@@ -138,7 +142,8 @@ PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish                  
 # TODO: mark for review and removal if not needed
 POST      /api/membership                                                        controllers.Memberships.createMembership() 
 # TODO: change and use users numerical id instead of UUID
-GET       /api/membership/user/:uid                                              controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly: Integer ?=null)
+GET       /api/membership/user/:uid                                              controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly:Long?= -1)
+GET       /api/membership/user/:uid/config                                       controllers.Memberships.userConfigs(uid: Long, type ?="ASSEMBLY")
 POST      /api/membership/invitation/:iid/email                                  controllers.Memberships.reSendInvitation(iid: Long)
 GET       /api/membership/invitation/:targetId/:status                           controllers.Memberships.listInvitations(targetId: Long, status: String)
 GET       /api/membership/invitation/:token                                      controllers.Memberships.readInvitation(token: java.util.UUID) 
@@ -180,7 +185,7 @@ GET       /api/template/assembly/default                                        
 
 ##################################################################################################################################################################
 # Campaign API
-GET       /api/assembly/:aid/campaign                                            controllers.Campaigns.findCampaignsByAssemblyId(aid: Long)
+GET       /api/assembly/:aid/campaign                                            controllers.Campaigns.findCampaignsByAssemblyId(aid: Long, filter ?="ongoing")
 GET       /api/assembly/:aid/campaign/:cid                                       controllers.Campaigns.findCampaignByAssemblyId(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid                                       controllers.Campaigns.updateCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign                                            controllers.Campaigns.createCampaignInAssembly(aid: Long, templates?="")
@@ -263,45 +268,6 @@ POST      /api/assembly/:aid/campaign/:cid/contribution/import                  
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
-# Public Common API
-# Endpoints that are available to Non-Members
-GET       /api/public/assembly/:uuid                                             controllers.Assemblies.findAssemblyByUUID(uuid: java.util.UUID)
-GET       /api/public/assembly/:uuid/profile                                     controllers.Assemblies.getAssemblyProfile(uuid: java.util.UUID)
-PUT       /api/public/assembly/:uuid/profile                                     controllers.Assemblies.updateProfile(uuid: java.util.UUID)
-GET       /api/public/assembly/:uuid/theme                                       controllers.Assemblies.getAssemblyThemes(uuid: java.util.UUID)
-GET       /api/public/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
-GET       /api/public/assembly/name/:shortname                                   controllers.Assemblies.findAssemblyByShortname(shortname: String)
-GET       /api/public/group/:uuid                                                controllers.WorkingGroups.findWorkingGroupByUUID(uuid: java.util.UUID)
-GET       /api/public/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
-GET       /api/public/contribution/:uuid/history                                 controllers.Contributions.findContributionHistoryByUUID(uuid: java.util.UUID)
-GET       /api/public/contribution/:couuid/feedback                              controllers.Contributions.readContributionFeedbackPublic(couuid: String, type: String ?= null)
-GET       /api/public/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
-GET       /api/public/campaign/:uuid/resources                                   controllers.Campaigns.listPublicCampaignResources(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/components                                  controllers.Campaigns.listPublicCampaignComponents(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/themes                                      controllers.Campaigns.listPublicCampaignThemes(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/groups                                      controllers.Campaigns.listPublicCampaignGroups(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
-GET       /api/public/space/:uuid                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
-GET       /api/public/space/:uuid/contribution/pinned                            controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")
-GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
-GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
-POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
-
-
-# Support for non-member author contributions
-POST      /api/public/assembly/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
-POST      /api/public/campaign/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
-PUT       /api/public/campaign/:cuuid/contribution/:uuid/feedback                controllers.Contributions.updateContributionFeedbackNonMemberAuthor(cuuid: java.util.UUID, uuid: java.util.UUID)
-POST      /api/public/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWorkingGroup(uuid: String)
-POST      /api/public/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
-
-
-# ToDo: Public Endoints to review
-GET       /api/public/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
-GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long) 
-
-##################################################################################################################################################################
 # Location endpoints
 GET       /api/location/:query                                                   controllers.Locations.findLocations(query: String)
 
@@ -324,6 +290,7 @@ PUT       /api/space/:sid/organization                                          
 DELETE    /api/space/:sid/organization/:id                                       controllers.Assemblies.deleteOrganizationFromSpace(sid: Long, id: Long)
 GET       /api/space/:sid/contribution/words/frecuency                           controllers.Contributions.wordsFrecuency(sid:Long)
 GET       /api/space/:sid/contribution/search                                    controllers.Contributions.searchContributionsByText(sid: Long, by_text?="")
+GET       /api/space/:sid/words                                                  controllers.Contributions.wordsFrecuencyByType(sid: Long, type?="")
 GET       /api/space/:sid/contribution/pinned                                    controllers.Contributions.findResourceSpacePinnedContributions(sid: Long, type?="")
 POST      /api/space/:sid/space/:new_sid                                         controllers.Contributions.assignResourceSpaceToResourceSpace(sid: Long, new_sid: Long)
 GET       /api/space/:uuid/public                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
@@ -339,12 +306,15 @@ POST      /api/space/:sid/fieldvalues                                           
 PUT       /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.updateSpaceFieldsValue(sid: Long, cfid: Long)
 PUT       /api/space/:sid/fieldvalues                                            controllers.Spaces.updateSpaceFieldValues(sid: Long)
 DELETE    /api/space/:sid/fieldvalue/:cfid                                       controllers.Spaces.deleteSpaceFieldsValue(sid: Long, cfid: Long)
+GET       /api/space/:sid/field/:fid/value/:etype                                controllers.Spaces.searchCustomFieldsByValue(sid: Long,fid: Long, etype: String, value?="")
+
 POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
 POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 GET       /api/space/:sid/export/contribution/:cid                               controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
 GET       /api/space/:sid/export/contribution                                    controllers.Contributions.exportSpaceContributionProposal(sid: Long, format?="", include?="")
+GET       /api/space/:sid/insights/themes                                        controllers.Spaces.exportSpaceThemeStats(sid: Long, type?="")
 
 GET       /api/space/:sid/ballot/:bid                                            controllers.Spaces.findSpaceBallotById(sid: Long, bid: Long)
 GET       /api/space/:sid/ballot                                                 controllers.Spaces.findSpaceBallot(sid: Long, status?="", starts_at?="" , ends_at?="")
@@ -390,8 +360,46 @@ DELETE    /api/space/:sid/campaign/:cid                                         
 DELETE    /api/space/:sid/resource/:rid                                          controllers.Spaces.deleteSpaceResource(sid: Long, rid: Long)
 DELETE    /api/space/:sid/theme/:tid                                             controllers.Spaces.deleteSpaceTheme(sid: Long, tid: Long)
 
+##################################################################################################################################################################
+# Public Common API
+# Endpoints that are available to Non-Members
+GET       /api/public/assembly/:uuid                                             controllers.Assemblies.findAssemblyByUUID(uuid: java.util.UUID)
+GET       /api/public/assembly/:uuid/profile                                     controllers.Assemblies.getAssemblyProfile(uuid: java.util.UUID)
+PUT       /api/public/assembly/:uuid/profile                                     controllers.Assemblies.updateProfile(uuid: java.util.UUID)
+GET       /api/public/assembly/:uuid/theme                                       controllers.Assemblies.getAssemblyThemes(uuid: java.util.UUID)
+GET       /api/public/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
+GET       /api/public/assembly/name/:shortname                                   controllers.Assemblies.findAssemblyByShortname(shortname: String)
+GET       /api/public/group/:uuid                                                controllers.WorkingGroups.findWorkingGroupByUUID(uuid: java.util.UUID)
+GET       /api/public/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
+GET       /api/public/contribution/:uuid/history                                 controllers.Contributions.findContributionHistoryByUUID(uuid: java.util.UUID)
+GET       /api/public/contribution/:couuid/feedback                              controllers.Contributions.readContributionFeedbackPublic(couuid: String, type: String ?= null)
+GET       /api/public/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
+GET       /api/public/campaign/:uuid/resources                                   controllers.Campaigns.listPublicCampaignResources(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/campaign/:uuid/components                                  controllers.Campaigns.listPublicCampaignComponents(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/campaign/:uuid/themes                                      controllers.Campaigns.listPublicCampaignThemes(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/campaign/:uuid/groups                                      controllers.Campaigns.listPublicCampaignGroups(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
+GET       /api/public/space/:uuid                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/contribution/pinned                            controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")
+GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
+POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
 
-#Public endpoints
+# Public custom field endpoints
+GET       /api/public/space/:uuid/field                                          controllers.Spaces.findSpaceFieldsByUUID(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/fieldvalue                                     controllers.Spaces.findSpaceFieldsValuePublic(uuid: java.util.UUID)
+POST      /api/public/space/:uuid/fieldvalue                                     controllers.Spaces.createSpaceFieldsValueByUUID(uuid: java.util.UUID)
+POST      /api/public/space/:uuid/fieldvalues                                    controllers.Spaces.createSpaceFieldValuesByUUID(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/field/:fid/value/:etype                        controllers.Spaces.searchCustomFieldsByValueByUUID(uuid: java.util.UUID,fid: Long, etype: String, value?="")
+
+# Support for non-member author contributions
+POST      /api/public/assembly/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnAssembly(uuid: String)
+POST      /api/public/campaign/:uuid/contribution                                controllers.Contributions.createAnonymousContributionOnCampaign(uuid: String)
+PUT       /api/public/campaign/:cuuid/contribution/:uuid/feedback                controllers.Contributions.updateContributionFeedbackNonMemberAuthor(cuuid: java.util.UUID, uuid: java.util.UUID)
+POST      /api/public/group/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionOnWorkingGroup(uuid: String)
+POST      /api/public/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
+POST      /api/public/space/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionInSpacePublic(uuid: String)
 
 GET       /api/public/space/:uuid/contribution                                   controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null)
 GET       /api/public/space/:uuid/config                                         controllers.Configs.findSpaceConfigsPublic(uuid: java.util.UUID)
@@ -405,3 +413,12 @@ GET       /api/public/space/:uuid/theme                                         
 GET       /api/public/space/:uuid/group                                          controllers.Spaces.findSpaceGroupPublic(uuid: java.util.UUID)
 DELETE    /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.deleteSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
 PUT       /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.updateSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
+
+
+
+# ToDo: Public Endoints to review
+GET       /api/public/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
+GET       /api/public/assembly/:aid/group/:gid                                   controllers.WorkingGroups.getListedWorkingGroupProfile(aid: Long, gid: Long)
+
+# Update Language
+POST      /api/contribution/language                                             controllers.Contributions.updateAllContributionLanguages()

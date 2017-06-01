@@ -77,7 +77,7 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
-	private Long resourceSpaceUUId;
+	private Long resourceSpaceUUID;
 
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
@@ -86,7 +86,7 @@ public class Campaign extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonView(Views.Public.class)
-	private Long forumResourceSpaceUUId;
+	private Long forumResourceSpaceUUID;
 
 	@Transient
 	//@JsonView(Views.Public.class)
@@ -104,6 +104,8 @@ public class Campaign extends AppCivistBaseModel {
 	private List<WorkingGroup> workingGroups = new ArrayList<>();
 	@Transient
 	private List<Long> assemblies = new ArrayList<>();
+	@Transient
+	private List<String> assemblyShortname = new ArrayList<>();
 	@Transient
 	@JsonIgnore
 	private List<Contribution> contributions = new ArrayList<>();
@@ -123,6 +125,14 @@ public class Campaign extends AppCivistBaseModel {
 	private List<ResourceSpace> containingSpaces;
 	@ManyToOne
 	private CampaignTemplate template;
+
+	@JsonView(Views.Public.class)
+	@OneToOne(cascade = CascadeType.ALL)
+	private Resource cover;
+	
+	@JsonView(Views.Public.class)
+	@OneToOne(cascade = CascadeType.ALL)
+	private Resource logo;
 	/** 
 	 * The find property is an static property that facilitates database query
 	 * creation
@@ -225,7 +235,7 @@ String uuidAsString, List<Component> phases) {
 		if (start!=null) {
 			Boolean campaignStarted = start.before(Calendar.getInstance().getTime());
 			Boolean campaignStartsToday = start.equals(Calendar.getInstance().getTime());
-			return campaignStarted || campaignStartsToday;
+			return (campaignStarted || campaignStartsToday) && !this.getRemoved();
 		}
 		return false;
 	}
@@ -309,7 +319,7 @@ String uuidAsString, List<Component> phases) {
 			this.resources.setResourceSpaceId(id);
 	}
 
-	public String getResourceSpaceUUId() {
+	public String getResourceSpaceUUID() {
 		return resources != null ? resources.getResourceSpaceUuid().toString() : null;
 	}
 
@@ -331,7 +341,7 @@ String uuidAsString, List<Component> phases) {
 			this.forum.setResourceSpaceId(id);
 	}
 
-	public String getForumResourceSpaceUUId() {
+	public String getForumResourceSpaceUUID() {
 		return forum != null ? forum.getResourceSpaceUuid().toString() : null;
 	}
 
@@ -361,8 +371,10 @@ String uuidAsString, List<Component> phases) {
 
 	public List<Component> getPagedComponents(Integer page, Integer pageSize) {
 		Finder<Long, Component> find = new Finder<>(Component.class);
-		return find.where().eq("containingSpaces", this.resources).
-				findPagedList(page, pageSize).getList();
+		return find.where()
+				.eq("containingSpaces", this.resources)
+				.orderBy("position")
+				.findPagedList(page, pageSize).getList();
 	}
 
 	public List<Component> getComponents() {
@@ -419,7 +431,15 @@ String uuidAsString, List<Component> phases) {
 		this.themes.add(t);
 		this.resources.addTheme(t);
 	}
-	
+
+	public Resource getCover() {
+		return cover;
+	}
+
+	public void setCover(Resource cover) {
+		this.cover = cover;
+	}
+
 	public List<WorkingGroup> getWorkingGroups() {
 		return this.resources.getWorkingGroups();
 	}
@@ -462,6 +482,15 @@ String uuidAsString, List<Component> phases) {
 		abstract int getAssembliesObjects();
 
 	}
+	
+	public static abstract class AssemblyShortnameVisibleMixin {
+
+		@JsonView(Views.Public.class)
+		@JsonProperty("assemblyShortname")
+		@JsonIgnore(false)
+		abstract int getAssemblyShortnameObjects();
+
+	}
 
 	@JsonView(Views.Public.class)
 	@JsonProperty("assemblies")
@@ -479,6 +508,24 @@ String uuidAsString, List<Component> phases) {
 		}
 		List<UUID> uuids = assemblies.stream().map(assembly -> assembly.getUuid()).collect(Collectors.toList());
 		return uuids;
+	}
+	
+	@JsonView(Views.Public.class)
+	@JsonProperty("assemblyShortname")
+	@JsonIgnore
+	public List<String> getAssemblyShortnameObjects() {
+		List <Assembly> assemblies = new ArrayList<>();
+		List<ResourceSpace> spaces = this.containingSpaces.stream().filter(p -> p.getType() == ResourceSpaceTypes.ASSEMBLY)
+				.collect(Collectors.toList());
+
+		for (ResourceSpace resourceSpace : spaces) {
+			Assembly a = resourceSpace.getAssemblyResources();
+			if(a!=null) {
+				assemblies.add(a);
+			}
+		}
+		List<String> assemblyShorts = assemblies.stream().map(assembly -> assembly.getShortname()).collect(Collectors.toList());
+		return assemblyShorts;
 	}
 
 	public List<Contribution> getContributions() {
@@ -526,6 +573,14 @@ String uuidAsString, List<Component> phases) {
 
 	public List<WorkingGroup> getExistingWorkingGroups() {
 		return existingWorkingGroups;
+	}
+
+	public Resource getLogo() {
+		return logo;
+	}
+
+	public void setLogo(Resource logo) {
+		this.logo = logo;
 	}
 
 	public void setExistingWorkingGroups(List<WorkingGroup> newWorkingGroups) {
@@ -609,6 +664,18 @@ String uuidAsString, List<Component> phases) {
 	public static void create(Campaign campaign) {
 		// 1. Check first for existing entities in ManyToMany relationships. 
 		//    Save them for later update
+		if (campaign.getCover()!=null){
+			if(campaign.getCover().getResourceId()!=null){
+				Resource cover = Resource.read(campaign.getCover().getResourceId());
+				campaign.setCover(cover);
+			}else{
+				Resource cover =campaign.getCover();
+				cover.save();
+				cover.refresh();
+				campaign.setCover(cover);
+			}
+		}
+
 		List<Theme> existingThemes = campaign.getExistingThemes();
 		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
 

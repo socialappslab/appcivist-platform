@@ -17,7 +17,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_INSTANCE_ETHERPAD_BASE_URL = "appcivist.instance.etherpad-base-url"; 	//:** Base URL of the Etherpad server in use by this instance
 	public static final String APPCIVIST_INSTANCE_INSTANCE_DOMAIN = "appcivist.instance.domain"; 	//:** domain registered to the instance (when Signing in, the server will determine the principal //assembly associated to the user by reading the domain from where the request is coming from)
 	public static final String APPCIVIST_INSTANCE_INSTANCE_THEME = "appcivist.instance.theme";	//:** a URL that points to a CSS files that will overwrite the color scheme of the site for this assembly
-	
+
 	// Assembly Level Configuration Keys
 	public static final String APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS = "appcivist.assembly.disable-new-memberships"; // only coordinators can add new members to the assembly, by uploading users for them.   
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_FORUM = "appcivist.assembly.enable-forum"; // if TRUE, an assembly page will be the home page after signing in (this assembly page has not been designed yet)
@@ -27,6 +27,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_HAS_REGISTRATION_FORM_URL = "appcivist.assembly.has-registration-form-url"; // a URL to an external registration form
 	public static final String APPCIVIST_ASSEMBLY_MEMBERSHIP_INVITATION_BY_MEMBERS = "appcivist.assembly.membership-invitation-by-members"; // if TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right
 	public static final String APPCIVIST_ASSEMBLY_MEMBERSHIP_TYPE = "appcivist.assembly.membership-type"; // REGISTRATION (other users ask to join), INVITATION (members invite other users) or INVITATION_AND_REGISTRATION. 
+	public static final String APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION = "appcivist.assembly.enable-social-ideation"; // FALSE DEFAULT
+
 	
 	// Campaign Level Configuration Keys
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.campaign.contribution-type-principal"; // what type of contribution is the displayed at the center of the page if a timeline with components is disabled (e.g., these campaigns is centered around PROPOSALS or IDEAS)    
@@ -44,6 +46,14 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_HIDE_TIMELINE = "appcivist.campaign.hide-timeline"; // if TRUE, the timeline of the campaign is hidden and the campaign has only one stage
 	public static final String APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO = "appcivist.campaign.show-assembly-logo"; // if TRUE, show the assembly logo in the campaign dashboard
 	public static final String APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS = "appcivist.campaign.proposal-default-status"; // NEW or PUBLISHED
+	public static final String APPCIVIST_CAMPAIGN_FEEDBACK_HIDDEN_FIELDS = "appcivist.campaign.feedback.hidden-fields"; // EMPTY DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS = "appcivist.campaign.contribution.hidden-fields"; // EMPTY DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS = "appcivist.campaign.enable-ideas-during-proposals"; // FALSE DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT= "appcivist.campaign.open-idea-section-default"; // FALSE DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES = "appcivsit.campaign.allow-emergent-themes"; // TRUE DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS = "appcivist.campaign.allow-anonymous-ideas"; // FALSE DEFAULT
+	
+	//Add the configuration to the default templates for creating campaigns
 	
 	// Component Level Configuration Keys
 	public static final String APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.component.contribution-type-principal"; // what type of contribution is the displayed at the center of the page when this component in the timeline is current (e.g., in Idea Collection, the main contribution type will be IDEAS)
@@ -56,7 +66,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_WG_HAS_REGISTRATION_FORM_URL = "appcivist.wg.has-registration-form-url"; // a URL to an external registration form
 	public static final String APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS = "appcivist.wg.membership-invitation-by-members"; // if TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right
 	public static final String APPCIVIST_WG_MEMBERSHIP_TYPE = "appcivist.wg.membership-type"; // REGISTRATION (other users ask to join), INVITATION (members invite other users) or INVITATION_AND_REGISTRATION. 
-	
+	public static final String APPCIVIST_WG_ALLOW_EMERGENT_THEMES = "appcivsit.wg.allow-emergent-themes"; // TRUE DEFAULT
+
 	static {
 		// AppCivist Instance Configuration Default Values		
 		CONFIG_DEFAULTS.put(APPCIVIST_INSTANCE_ASSEMBLY_NETWORK, "FALSE");
@@ -73,6 +84,7 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_ASSEMBLY_HAS_REGISTRATION_FORM, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_ASSEMBLY_MEMBERSHIP_INVITATION_BY_MEMBERS, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_ASSEMBLY_MEMBERSHIP_TYPE, "INVITATION_AND_REGISTRATION");
+		CONFIG_DEFAULTS.put(APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION, "FALSE");
 		
 		// Campaign Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL, "PROPOSAL");
@@ -90,6 +102,12 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_HIDE_TIMELINE, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS, "NEW");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_FEEDBACK_HIDDEN_FIELDS, "");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS, "");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES, "TRUE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS, "FALSE");
 		
 		// Component Level Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL,"PROPOSAL"); 
@@ -100,7 +118,8 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_HAS_REGISTRATION_FORM, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_WG_MEMBERSHIP_TYPE, "INVITATION_AND_REGISTRATION");
+		CONFIG_DEFAULTS.put(APPCIVIST_WG_ALLOW_EMERGENT_THEMES, "TRUE");
 
-    };
+	};
 
 }

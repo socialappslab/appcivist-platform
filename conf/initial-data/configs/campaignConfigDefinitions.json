@@ -106,5 +106,68 @@
     "defaultValue": "FALSE",
     "configTarget": "CAMPAIGN",
     "configTargetType": "PROPOSAL_MAKING"
-  }  
+  },
+  { 
+    "key": "appcivist.campaign.proposal-default-status",
+    "description": "Default Status of Proposals",
+    "helper": "Proposals Status can be: DRAFT, PUBLISHED, EXCLUDED. The default when we create a proposal is DRAFT, but this configuration can override this default",
+    "valueType": "String",
+    "defaultValue": "DRAFT",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.feedback.hidden-fields",
+    "description": "List of fields that you would like to hid in the feedback form",
+    "helper": "",
+    "valueType": "Array",
+    "defaultValue": "[]",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.contribution.hidden-fields",
+    "description": "List of fields that you would like to hid in the feedback form",
+    "helper": "",
+    "valueType": "Array",
+    "defaultValue": "[]",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.enable-ideas-during-proposals",
+    "description": "Allow new ideas during proposal development",
+    "helper": "New ideas are allowed during a stageof proposal development",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.open-idea-section-default",
+    "description": "Open ideas section by default",
+    "helper": "The ideas section should be open by default in the UI",
+    "valueType": "BOOLEAN",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivsit.campaign.allow-emergent-themes",
+    "description": "Enable keywords",
+    "helper": "Idea or proposal creators can add an open ended list of keywords to their contributions",
+    "valueType": "Boolean",
+    "defaultValue": "TRUE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  },
+  { 
+    "key": "appcivist.campaign.allow-anonymous-ideas",
+    "description": "Allow Ideas from without Login",
+    "helper": "",
+    "valueType": "Boolean",
+    "defaultValue": "FALSE",
+    "configTarget": "CAMPAIGN",
+    "configTargetType": "PROPOSAL_MAKING"
+  }
 ]

@@ -1,5 +1,6 @@
 package models;
 
+import enums.ThemeTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -9,20 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PreUpdate;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.location.Location;
 import models.misc.Views;
@@ -106,6 +94,12 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Comment explaining why a contribution is moderated (e.g., deleted, changed status, etc.)", position=6)
     private String moderationComment;
 
+    @Column(name = "source")
+    private String source;
+
+    @Column(name = "source_url", columnDefinition = "text")
+    private String sourceUrl;    
+
     @OneToOne(cascade = CascadeType.ALL)
     @Index
     private Location location;
@@ -115,6 +109,12 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "contribution_non_member_author",
+            joinColumns = { @JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id", updatable = true, insertable = true) },
+            inverseJoinColumns = { @JoinColumn(name = "non_member_author_id", referencedColumnName = "id", updatable = true, insertable = true) }
+    )
+    private List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
     // TODO: Needed? 
     private String budget;
 
@@ -214,6 +214,9 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Contribution> associatedContributions;
 
+    @Transient
+    private List<Long> assignToContributions;
+
     /*
      * The following fields are specific to each type of contribution
      */
@@ -235,6 +238,10 @@ public class Contribution extends AppCivistBaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     @JsonView(Views.Public.class)
     private Resource extendedTextPad;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JsonView(Views.Public.class)
+    private Resource cover;
 
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @Transient
@@ -276,10 +283,22 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Theme> addedThemes;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<Theme> officialThemes;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private List<Theme> emergentThemes;
     
     @JsonView(Views.Public.class)
     @Transient
     private String document;
+
+    @JsonIgnore
+    @Transient
+    private String documentSimple;
 
     /**
      * The find property is an static property that facilitates database query
@@ -416,6 +435,13 @@ public class Contribution extends AppCivistBaseModel {
         this.sourceCode = sourceCode;
     }
 
+    public List<NonMemberAuthor> getNonMemberAuthors() {
+        return nonMemberAuthors;
+    }
+
+    public void setNonMemberAuthors(List<NonMemberAuthor> nonMemberAuthors) {
+        this.nonMemberAuthors = nonMemberAuthors;
+    }
 
     public List<ContributionFeedback> getContributionFeedbacks() {
         return contributionFeedbacks;
@@ -497,6 +523,42 @@ public class Contribution extends AppCivistBaseModel {
     public void setThemes(List<Theme> themes) {
         this.themes = themes;
         if (resourceSpace != null ) this.resourceSpace.setThemes(themes);
+    }
+
+    public List<Theme> getOfficialThemes() {
+    	officialThemes = officialThemes !=null ? officialThemes : new ArrayList<Theme>();        
+    	if(contributionId!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
+            for (Theme theme: allThemes) {
+                if(theme.getType() !=null && theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED)){
+                    officialThemes.add(theme);
+                }
+            }
+            return officialThemes;
+        }
+        return officialThemes;
+    }
+
+    public void setOfficialThemes(List<Theme> officialThemes) {
+        this.officialThemes = officialThemes;
+    }
+
+    public List<Theme> getEmergentThemes() {
+    	emergentThemes = emergentThemes !=null ? emergentThemes : new ArrayList<Theme>();        
+    	if(contributionId!=null){
+            List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
+            for (Theme theme: allThemes) {
+                if(theme.getType() !=null && theme.getType().equals(ThemeTypes.EMERGENT)){
+                	emergentThemes.add(theme);
+                }
+            }
+            return emergentThemes;
+        }
+        return emergentThemes;
+    }
+
+    public void setEmergentThemes(List<Theme> emergentThemes) {
+        this.emergentThemes = emergentThemes;
     }
 
     public void addTheme(Theme t) {
@@ -617,6 +679,14 @@ public class Contribution extends AppCivistBaseModel {
 //        this.getResourceSpace().getContributions().addAll(inspirations);
 //    }
 
+    public List<Long> getAssignToContributions() {
+        return assignToContributions;
+    }
+
+    public void setAssignToContributions(List<Long> assignToContributions) {
+        this.assignToContributions = assignToContributions;
+    }
+
     public List<Contribution> getAssociatedContributions(){
         return resourceSpace != null ? resourceSpace.getContributions() : null;
     }
@@ -640,6 +710,14 @@ public class Contribution extends AppCivistBaseModel {
     public String getReadOnlyPadUrl() {
         return extendedTextPad != null ? extendedTextPad.getUrlAsString()
                 : null;
+    }
+
+    public Resource getCover() {
+        return cover;
+    }
+
+    public void setCover(Resource cover) {
+        this.cover = cover;
     }
 
     // TODO see if setting contributions on resource space is better through
@@ -814,8 +892,7 @@ public class Contribution extends AppCivistBaseModel {
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
         // List<User> authors = c.getAuthors();
-        List<Theme> themes = c.getThemes(); // new themes are never created from
-        // contributions
+        List<Theme> themes = c.getThemes();
         c.setThemes(new ArrayList<>());
         List<ComponentMilestone> associatedMilestones = c
                 .getAssociatedMilestones(); // new milestones are never created
@@ -979,7 +1056,7 @@ public class Contribution extends AppCivistBaseModel {
         return Contribution.update(existingContribution);
     }
 
-    private void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
+    public void setContainingSpaces(List<ResourceSpace> containingSpaces2) {
         this.containingSpaces = containingSpaces2;
     }
 
@@ -1037,6 +1114,11 @@ public class Contribution extends AppCivistBaseModel {
     public static List<Contribution> findAllByContainingSpaceAndType(
             ResourceSpace rs, Integer t) {
         return find.where().eq("containingSpaces", rs).eq("type", t).findList();
+    }
+
+    public static List<Contribution> findAllByContainingSpaceOrTypes(
+            ResourceSpace rs, ContributionTypes t, ContributionTypes t2) {
+        return find.where().eq("containingSpaces", rs).or(Expr.eq("type", t),Expr.eq("type", t2)).findList();
     }
              
     public static List<Contribution> findAllByContainingSpaceAndQuery(Long sid,
@@ -1386,13 +1468,37 @@ public class Contribution extends AppCivistBaseModel {
         this.document = document;
     }
 
+    public String getDocumentSimple() {
+        return documentSimple;
+    }
+
+    public void setDocumentSimple(String documentSimple) {
+        this.documentSimple = documentSimple;
+    }
+
     public static List<Contribution> findContributionsInSpaceByTypeStatus(Long sid,
-                                                       ContributionTypes type, ContributionStatus status) {
+                                                                          ContributionTypes type, ContributionStatus status) {
             return find.where()
                     .eq("type", type)
                     .eq("containingSpaces.resourceSpaceId", sid)
                     .eq("status", status)
                     .not(Expr.eq("removed",true))
                     .findList();
+    }
+
+    public String getSource(){
+        return source;
+    }
+
+    public void setSource(String source){
+        this.source = source;
+    }
+
+    public String getSourceUrl(){
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl){
+        this.sourceUrl = sourceUrl;
     }
 }

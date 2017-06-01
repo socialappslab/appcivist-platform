@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModel;
 import models.misc.Views;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,6 +65,9 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@JsonIgnore
 	@OneToMany(fetch=FetchType.LAZY, mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
 	private List<CustomFieldValue> customFieldValues;
+
+	@OneToMany(fetch=FetchType.LAZY, mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
+	private List<CustomFieldValueOption> customFieldValueOptions;
 
 
 	public static Finder<Long, CustomFieldDefinition> find = new Finder<>(CustomFieldDefinition.class);
@@ -186,6 +190,12 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	public static CustomFieldDefinition create(CustomFieldDefinition object) {
 		object.save();
 		object.refresh();
+		if(object.getCustomFieldValueOptions()!=null && object.getCustomFieldValueOptions().size()!=0){
+			for (CustomFieldValueOption customFieldValueOption:object.getCustomFieldValueOptions()) {
+				customFieldValueOption.setCustomFieldDefinition(object);
+				customFieldValueOption.save();
+			}
+		}
 		return object;
 	}
 
@@ -208,5 +218,13 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 
 	public void setCustomFieldValues(List<CustomFieldValue> customFieldValue) {
 		this.customFieldValues = customFieldValue;
+	}
+
+	public List<CustomFieldValueOption> getCustomFieldValueOptions() {
+		return customFieldValueOptions;
+	}
+
+	public void setCustomFieldValueOptions(List<CustomFieldValueOption> customFieldValueOptions) {
+		this.customFieldValueOptions = customFieldValueOptions;
 	}
 }

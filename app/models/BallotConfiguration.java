@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @ApiModel(value="BallotConfiguration", description="key,value configurations for a voting ballot")
 public class BallotConfiguration extends Model {
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="ballot_papers_id_seq")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="ballot_configurations_id_seq")
 	@Index
     private Long id;
 	private Long ballotId;

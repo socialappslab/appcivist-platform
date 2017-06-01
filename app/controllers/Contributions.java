@@ -11,6 +11,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.rtf.RtfWriter2;
 import com.lowagie.text.rtf.field.RtfPageNumber;
 import com.lowagie.text.rtf.headerfooter.RtfHeaderFooter;
+
 import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
@@ -35,7 +36,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.persistence.*;
 import javax.ws.rs.PathParam;
+
 import models.*;
+import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
@@ -45,6 +48,7 @@ import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.hamcrest.core.IsNull;
 
 import play.Logger;
 import play.Play;
@@ -1012,10 +1016,16 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "ASSEMBLY_ID", value = "The real author of the post", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE", value = "Indicates the name of the providerId", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE_URL", value = "Source to the original post", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @SubjectPresent
-    public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
-        // 1. obtaining the user of the requestor
+    public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {         
+    	// 1. obtaining the user of the request
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
 
@@ -1033,7 +1043,21 @@ public class Contributions extends Controller {
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
-
+            //Check headers if the request come from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            if (newContribution.getType().equals(ContributionTypes.IDEA) 
+			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
+			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
+			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
+            	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
+            	if (result == false){ 
+            		return badRequest("Missing headers");
+            	} else {
+                    HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
+                    newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+                    newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
+                }
+            }
+        	
             ResourceSpace rs = ResourceSpace.read(sid);
             ContributionTemplate template = null;
 
@@ -1981,6 +2005,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "PUT", response = String.class, produces = "application/json", value = "Logical removal of contribution in Assembly")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     //@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result softDeleteContribution(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
@@ -2255,11 +2280,37 @@ public class Contributions extends Controller {
 //        if (type.equals(ContributionTypes.PROPOSAL)) {
 //            newContrib.setStatus(ContributionStatus.NEW);
 //        }
+        if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
+            List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
+            for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
+                nonMemberAuthor.save();
+                nonMemberAuthor.refresh();
+                nonMemberAuthors.add(nonMemberAuthor);
+            }
+            newContrib.setNonMemberAuthors(nonMemberAuthors);
+            newContrib.setNonMemberAuthor(nonMemberAuthors.get(0));
+        }
         if (author != null) {
             newContrib.addAuthor(author);
-            if (newContrib.getLang() == null)
-                newContrib.setLang(author.getLanguage());
             newContrib.setContextUserId(author.getUserId());
+            newContrib.setLang(author.getLanguage());
+        }
+        if (newContrib.getLang() == null){
+            if (newContrib.getNonMemberAuthor() != null && newContrib.getNonMemberAuthor().getLang()!=null) {
+                newContrib.setLang(newContrib.getNonMemberAuthor().getLang());
+            }
+            if (newContrib.getLang() == null){
+                if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    Campaign c = containerResourceSpace.getCampaign();
+                    newContrib.setLang(c.getLang());
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                    newContrib.setLang(wg.getLang());
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                    Assembly a = containerResourceSpace.getAssemblyResources();
+                    newContrib.setLang(a.getLang());
+                }
+            }
         }
 
 
@@ -2277,13 +2328,16 @@ public class Contributions extends Controller {
 
         Logger.info("Using Etherpad server at: " + etherpadServerUrl);
         Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
-        
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+        Boolean addIdeaToProposals = false;
+        String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
+        Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign(); 
             
         	List<Config> campaignConfigs = c.getConfigs();
-        	Integer hasStatusConfig = 0;     
-        	Integer hasEtherpadConfig = 0;
+        	Integer hasStatusConfig = 0;
+            Integer hasEtherpadConfig = 0;
+            Integer hasIdeasDuringProposal = 0;
         	
         	for(Config cc: campaignConfigs){
         		if (type.equals(ContributionTypes.PROPOSAL)) {
@@ -2304,7 +2358,20 @@ public class Contributions extends Controller {
     				if (cc.getValue().equalsIgnoreCase("FALSE")) {
     					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
     				}    	            
-    	        }        			 
+    	        }
+                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
+                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+                        allowEmergent = true;
+                    }
+                }
+                if (type.equals(ContributionTypes.IDEA)) {
+                    if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
+                        hasIdeasDuringProposal = 1;
+                        if (cc.getValue().equals("TRUE")) {
+                            addIdeaToProposals=true;
+                        }
+                    }
+    			}
         	}
         	// If the configuration is not defined, get the defaults values
         	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
@@ -2317,8 +2384,25 @@ public class Contributions extends Controller {
         		if (etherpad.equalsIgnoreCase("FALSE"))
         			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
         	}
+
+            if (hasIdeasDuringProposal == 0 && type.equals(ContributionTypes.IDEA)) {
+                String ideasDuringProposal = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS);
+                if (ideasDuringProposal.equals("TRUE")){
+                    addIdeaToProposals=true;
+                }
+            }
         }
-        
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)){
+            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            List<Config> groupConfigs = wg.getConfigs();
+            for(Config cc: groupConfigs){
+                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_WG_ALLOW_EMERGENT_THEMES)){
+                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+                        allowEmergent = true;
+                    }
+                }
+            }
+        }
         Logger.info("Creating new contribution");
         Logger.debug("=> " + newContrib.toString());
 
@@ -2402,10 +2486,42 @@ public class Contributions extends Controller {
             }
         }
         newContrib.setAuthors(authorsLoaded);
+
+        if (newContrib.getCover()!=null && newContrib.getCover().getResourceId()!=null){
+            Resource cover = Resource.read(newContrib.getCover().getResourceId());
+            newContrib.setCover(cover);
+        }
+        List<Theme> themeListEmergent = new ArrayList<Theme>();
+        List<Theme> themeListOfficial = newContrib.getOfficialThemes();
+        newContrib.setExistingThemes(newContrib.getOfficialThemes()==null?new ArrayList<Theme>():newContrib.getOfficialThemes());
+        if(newContrib.getEmergentThemes()!=null && newContrib.getEmergentThemes().size()>0){
+            List<Theme> themeList = new ArrayList<Theme>();
+            for (Theme theme:newContrib.getEmergentThemes()) {
+                if (theme.getThemeId()==null && allowEmergent){
+                    theme.save();
+                    theme.refresh();
+                    themeListEmergent.add(theme);
+                }
+                themeList.add(theme);
+            }
+            newContrib.getExistingThemes().addAll(themeList);
+            //emergent themes in themeListEmergent to associate to campaign or wg
+        }
+
         Contribution.create(newContrib);
         newContrib.refresh();
 
-        //Previously we also asked the associated contribution to be PROPOSAL,
+        //associate themes created to space
+        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+            Campaign c = containerResourceSpace.getCampaign();
+            c.getThemes().addAll(themeListEmergent);
+            c.update();
+        } else if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            wg.getThemes().addAll(themeListEmergent);
+            wg.update();
+        }
+            //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
             ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());
@@ -2423,6 +2539,22 @@ public class Contributions extends Controller {
                 inviteCommentersInInspirationList(inspirations, newContrib,
                         newWorkingGroup);
             }
+        }
+
+        if(addIdeaToProposals){
+            List<Long> assignToContributions = newContrib.getAssignToContributions();
+            List<Contribution> contributionList = new ArrayList<Contribution>();
+            if (assignToContributions != null) {
+	            for (Long cid : assignToContributions) {
+	                Contribution contribution = Contribution.read(cid);
+	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+	                    contributionList.add(contribution);
+	                }
+	            }
+            }
+            newContrib.setAssociatedContributions(contributionList);
+            newContrib.getResourceSpace().update();
+            newContrib.getResourceSpace().refresh();
         }
 
         // If contribution is a proposal and the resource space where it is added is a Campaign
@@ -3171,6 +3303,61 @@ public class Contributions extends Controller {
         }
     }
 
+   
+    /**
+     * 
+     */
+    /**
+     * POST      /api/public/space/:uuid/contribution  
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Create an anonymous contribution in a campaign")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContributionInSpacePublic(@ApiParam(name = "uuid", value = "Universal ID of the target campaign") String uuid) {
+        // 1. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
+            ContributionTypes type = newContribution.getType();
+            if (type == null) {
+                type = ContributionTypes.COMMENT;
+            }
+
+            ResourceSpace resourceSpace = ResourceSpace.readByUUID(UUID.fromString(uuid));
+
+            ContributionTemplate template = null;
+            Contribution c;
+            try {
+                c = createContribution(newContribution, null, type, template, resourceSpace);
+
+                resourceSpace.addContribution(c);
+                resourceSpace.update();
+                
+                Promise.promise(() -> {
+                    return NotificationsDelegate.newContributionInResourceSpace(resourceSpace,c);
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error when creating Contribution: " + e.toString())));
+            }
+            return ok(Json.toJson(c));
+        }
+    }
+    
     /**
      * POST       /api/contribution/:uuid
      *
@@ -3415,6 +3602,71 @@ public class Contributions extends Controller {
     }
 
     /**
+     * POST       /api/contribution/language
+     *
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Update all contribution languages")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updateAllContributionLanguages() {
+        List<Contribution> contributionList = Contribution.findAll();
+        for (Contribution contribution: contributionList) {
+            User author = contribution.getFirstAuthor();
+            contribution.setLang(null);
+            if (author != null) {
+                contribution.setLang(author.getLanguage());
+            }
+            if(contribution.getLang()==null){
+                NonMemberAuthor nonMemberAuthor = contribution.getNonMemberAuthor();
+                if (nonMemberAuthor != null && nonMemberAuthor.getLang()!=null) {
+                    contribution.setLang(nonMemberAuthor.getLang());
+                }else{
+                    List<ResourceSpace> resourceSpaces = contribution.getContainingSpaces();
+                    if(resourceSpaces!=null && resourceSpaces.size()!=0) {
+                        ResourceSpace containerResourceSpace = resourceSpaces.get(0);
+                        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                            Campaign c = containerResourceSpace.getCampaign();
+                            c = c==null ? containerResourceSpace.getCampaignForum() : c;
+                            if (c!=null) 
+                            	contribution.setLang(c.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". Campaign associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+                            wg = wg==null ? containerResourceSpace.getWorkingGroupForum() : wg;
+                            if (wg!=null) 
+                            	contribution.setLang(wg.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". WG associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
+                        } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                            Assembly a = containerResourceSpace.getAssemblyResources();
+                            a = a==null ? containerResourceSpace.getAssemblyForum() : a;
+                            if (a!=null) 
+                            	contribution.setLang(a.getLang());
+                            else 
+                            	Logger.debug("Contribution Language update Failed for Contribution "
+                            					+contribution.getContributionId()
+                            					+". Assembly associated to container RS "+containerResourceSpace.getResourceSpaceId()+" was null");	
+                        }
+                    }
+                    if(contribution.getLang()==null){
+                        contribution.setLang(GlobalData.DEFAULT_LANGUAGE);
+                    }
+                }
+            }
+            contribution.update();
+        }
+        return ok(Json.toJson("OK"));
+    }
+
+    /**
      * GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/body
      *
      * @param aid
@@ -3555,30 +3807,85 @@ public class Contributions extends Controller {
      *
      * @param sid
      * @return
-     */  
+     */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List", produces = "application/json",
 			value = "Contribution containing the given word")
 	  @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})    
-    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid, 
+        @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> searchContributionsByText (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
     														 @ApiParam(name = "byText", value = "Text to be search in the title or text of contributions")String byText) {
-    	
-    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);    	
-    	    	
-    	Promise<Result> resultPromise = Promise.promise( () -> { 
+
+    	List<Contribution> contributions = Contribution.findAllByContainingSpace(sid);
+
+    	Promise<Result> resultPromise = Promise.promise( () -> {
     		List<Long> ids = new ArrayList<Long>();
 
 	    	for (Contribution c: contributions){
 	    		Logger.info("Contribution ID: " + c.getContributionId());
 	    		ids.add(c.getContributionId());
 	    	}
-	    	
+
 	    	List<Contribution> c = ContributionsDelegate.findContributionsByText(ids, byText);
 	    	return ok(Json.toJson(c));
     	});
-    	
-    	return resultPromise;    	
+
+    	return resultPromise;
+    }
+
+    /**
+     * GET       /api/space/:sid/words
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = HashMap.class, responseContainer = "List", produces = "application/json",
+            value = "List of words in contributions from a given resource space with its frequency")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Promise<Result> wordsFrecuencyByType (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
+                                                        @ApiParam(name = "type", value = "Type of contributions",
+                                                                allowableValues = "PROPOSAL, IDEA, DISCUSSION, PROPOSAL_AND_IDEAS, ALL") String type) {
+        if(type==null || type.isEmpty()){
+            type="ALL";
+        }
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            Promise<Result> resultPromise = Promise.promise(() -> {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No resource space found with id " + sid)));
+            });
+            return resultPromise;
+        }
+        List<Contribution> contributions = Contribution.findAllByContainingSpace(resourceSpace.getResourceSpaceId());
+        if(type.equals("PROPOSAL")){
+            contributions = Contribution.readListByContainingSpaceAndType(resourceSpace.getResourceSpaceId(),ContributionTypes.PROPOSAL);
+        } else if(type.equals("IDEA")){
+            contributions = Contribution.readListByContainingSpaceAndType(resourceSpace.getResourceSpaceId(),ContributionTypes.IDEA);
+        } else if(type.equals("DISCUSSION")){
+            contributions = Contribution.findAllByContainingSpaceOrTypes(resourceSpace,ContributionTypes.DISCUSSION,ContributionTypes.COMMENT);
+        } else if(type.equals("PROPOSAL_AND_IDEAS")){
+            contributions = Contribution.findAllByContainingSpaceOrTypes(resourceSpace,ContributionTypes.PROPOSAL,ContributionTypes.IDEA);
+        }else {
+
+        }
+        List<Contribution> contributionsFiltered = new ArrayList<Contribution>(contributions);
+
+        Promise<Result> resultPromise = Promise.promise( () -> {
+            List<Long> ids = new ArrayList<Long>();
+
+            for (Contribution c: contributionsFiltered){
+                Logger.info("Contribution ID: " + c.getContributionId());
+                ids.add(c.getContributionId());
+            }
+
+            Map<String,Integer> wordFrequency = ContributionsDelegate.wordsWithFrequenciesInContributions(ids);
+            return ok(Json.toJson(wordFrequency));
+        });
+
+        return resultPromise;
+
     }
 
     /**

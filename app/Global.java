@@ -12,6 +12,8 @@ import models.misc.InitialDataConfig;
 
 import org.apache.commons.io.FileUtils;
 
+import org.joda.time.DateTime;
+import org.joda.time.Seconds;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
@@ -246,12 +248,14 @@ public class Global extends GlobalSettings {
 	}
 
 	private Cancellable scheduler;
+	private Cancellable schedulerNotifications;
 
 	private void initializeScheduler() {
-		Logger.info("Initialize Scheduler...");
+		Logger.info("Initialize Schedulers...");
 		int timeDelayFromAppStartToLogFirstLogInMs = 0;
 		int timeGapBetweenMemoryLogsInMinutes = 1440; // 1 day
-		scheduler = Akka.system().scheduler().schedule(Duration.create(timeDelayFromAppStartToLogFirstLogInMs, TimeUnit.MILLISECONDS),
+		scheduler = Akka.system().scheduler().schedule(
+				Duration.create(timeDelayFromAppStartToLogFirstLogInMs, TimeUnit.MILLISECONDS),
 				Duration.create(timeGapBetweenMemoryLogsInMinutes, TimeUnit.MINUTES),
 				new Runnable() {
 					@Override
@@ -259,6 +263,17 @@ public class Global extends GlobalSettings {
 						System.out.println("Cron Job");
 						// Call a function (to print JVM stats)
 						ResourcesDelegate.deleteUnconfirmedContributionTemplates();
+					}
+				},
+				Akka.system().dispatcher());
+		schedulerNotifications = Akka.system().scheduler().schedule(
+				Duration.create(timeDelayFromAppStartToLogFirstLogInMs, TimeUnit.MILLISECONDS),
+				Duration.create(timeGapBetweenMemoryLogsInMinutes, TimeUnit.MINUTES),
+				new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("Daily Newsletter Job");
+						//TODO add notification service control to send not sent signals
 					}
 				},
 				Akka.system().dispatcher());

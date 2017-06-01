@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Ballot;
+import models.Resource;
 
 public class CampaignTransfer {
 	private Long campaignId;
@@ -15,7 +16,9 @@ public class CampaignTransfer {
 	private UUID uuid;
 	private Boolean listed = true;
 	private UUID bindingBallot;
-	private UUID consultiveBallot; 
+	private UUID consultiveBallot;
+	private ResourceTransfer cover;
+
 	private List<ComponentTransfer> components = new ArrayList<>();
 	private List<ConfigTransfer> configs = new ArrayList<>();
 	private List<ThemeTransfer> themes = new ArrayList<>();
@@ -157,5 +160,13 @@ public class CampaignTransfer {
 	}
 	public void setTimelineEdges(CampaignTimelineEdgeTransfer timelineEdges) {
 		this.timelineEdges = timelineEdges;
+	}
+
+	public ResourceTransfer getCover() {
+		return cover;
+	}
+
+	public void setCover(ResourceTransfer cover) {
+		this.cover = cover;
 	}
 }
