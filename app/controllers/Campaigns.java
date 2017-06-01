@@ -181,8 +181,10 @@ public class Campaigns extends Controller {
 
             return Results.ok(ret);
         } catch (Exception e) {
+        	Logger.debug(e.getMessage());
+        	e.printStackTrace();
             return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
+                    .toJson(new TransferResponseStatus("Error processing request"+e.getMessage()))));
         }
 
     }
