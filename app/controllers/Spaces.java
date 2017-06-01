@@ -159,6 +159,7 @@ public class Spaces extends Controller {
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    // TODO: add authorization only to assembly members
     public static Result findSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid) {
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
         List<CustomFieldDefinition> customFieldDefinitions;
@@ -170,8 +171,24 @@ public class Spaces extends Controller {
         }
         return ok(Json.toJson(customFieldDefinitions));
     }
-
-
+    
+    /**
+     * 	GET       /api/public/space/:uuid/field                                          
+     */
+    @ApiOperation(httpMethod = "GET", response = CustomFieldDefinition.class, produces = "application/json", responseContainer = "List", value = "List of custom field definition in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    public static Result findSpaceFieldsByUUID(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        List<CustomFieldDefinition> customFieldDefinitions;
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+uuid)));
+        } else {
+            customFieldDefinitions = resourceSpace.getCustomFieldDefinitions();
+        }
+        return ok(Json.toJson(customFieldDefinitions));
+    }
+    
     /**
      * GET       /api/space/:sid/commentcount
      *
@@ -180,8 +197,9 @@ public class Spaces extends Controller {
      */
     @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
-    // @ApiImplicitParams({
-    //         @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @ApiImplicitParams({
+             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    // TODO add authorization to member of assembly
     public static Result getCommentCount(@ApiParam(name = "sid", value = "Space ID") Long sid) {
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
         Integer commentCount = 0;
@@ -202,8 +220,6 @@ public class Spaces extends Controller {
      */
     @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
-    // @ApiImplicitParams({
-    //         @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
     public static Result getCommentCountPublic(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
         ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
         Integer commentCount = 0;
@@ -227,7 +243,8 @@ public class Spaces extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "CustomFieldDefinition object", value = "Body of CustomFieldDefinition in JSON", required = true, dataType = "models.CustomFieldDefinition", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-    public static Result createSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid) {
+    // TODO add authorization to member of assembly
+      public static Result createSpaceFields(@ApiParam(name = "sid", value = "Space ID") Long sid) {
         final Form<CustomFieldDefinition> newCustomFieldDefinitionForm = CUSTOM_FIELD_DEFINITION_FORM
                 .bindFromRequest();
         User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
@@ -364,7 +381,7 @@ public class Spaces extends Controller {
     }
 
     /**
-     * GET       /api/space/:uuid/fieldvalue/public
+     * GET       /api/public/space/:uuid/fieldvalue
      *
      * @param uuid
      * @return
@@ -409,20 +426,51 @@ public class Spaces extends Controller {
                 return badRequest(Json.toJson(responseBody));
 			} else {
 				CustomFieldValue newCustomFieldValue = newCustomFieldValueForm.get();
-
 				Long definitionId = newCustomFieldValue
 						.getCustomFieldDefinition() != null ? 
 								newCustomFieldValue.getCustomFieldDefinition().getCustomFieldDefinitionId() : null;
 				if (definitionId != null) {
-					newCustomFieldValue.setCustomFieldDefinition(CustomFieldDefinition.read(definitionId));
-					newCustomFieldValue = CustomFieldValue.create(newCustomFieldValue);
-	               Logger.info("Adding custom field value to resource space: "+sid);
-	               if (resourceSpace.getCustomFieldValues() == null) {
-	                   Logger.info("Creating array of custom field value in resource space: "+sid);
-	            	   resourceSpace.setCustomFieldValues(new ArrayList<>());
-	               } 
-	               resourceSpace.getCustomFieldValues().add(newCustomFieldValue);
-	               resourceSpace.update();
+					newCustomFieldValue = createCustomFieldValueAndAddToResourceSpace(newCustomFieldValue, resourceSpace, definitionId);
+				} else {
+					TransferResponseStatus responseBody = new TransferResponseStatus();
+					responseBody.setStatusMessage(Messages
+							.get("The value does not specify a defition"));
+					return badRequest(Json.toJson(responseBody));
+				}
+
+				return ok(Json.toJson(newCustomFieldValue));
+			}
+		}
+    }
+ 
+    /**
+     *	POST      /api/public/space/:uuid/fieldvalue                                     controllers.Spaces.createSpaceFieldsValueByUUID(uuid: java.util.UUID)
+     */
+    @ApiOperation(httpMethod = "POST", response = CustomFieldValue.class, produces = "application/json", value = "Create a custom field value in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "CustomFieldValue object", value = "Body of CustomFieldValue in JSON", required = true, dataType = "models.CustomFieldValue", paramType = "body")})
+    public static Result createSpaceFieldsValueByUUID(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
+        final Form<CustomFieldValue> newCustomFieldValueForm = CUSTOM_FIELD_VALUE_FORM
+                .bindFromRequest();
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+uuid)));
+        } else {
+            if (newCustomFieldValueForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "The form has the following error: "+
+                                newCustomFieldValueForm.errorsAsJson()));
+                return badRequest(Json.toJson(responseBody));
+			} else {
+				CustomFieldValue newCustomFieldValue = newCustomFieldValueForm.get();
+				Long definitionId = newCustomFieldValue
+						.getCustomFieldDefinition() != null ? 
+								newCustomFieldValue.getCustomFieldDefinition().getCustomFieldDefinitionId() : null;
+				if (definitionId != null) {
+					newCustomFieldValue = createCustomFieldValueAndAddToResourceSpace(newCustomFieldValue, resourceSpace, definitionId);
 				} else {
 					TransferResponseStatus responseBody = new TransferResponseStatus();
 					responseBody.setStatusMessage(Messages
@@ -436,6 +484,25 @@ public class Spaces extends Controller {
     }
     
     
+	public static CustomFieldValue createCustomFieldValueAndAddToResourceSpace(
+			CustomFieldValue newCustomFieldValue, ResourceSpace resourceSpace,
+			Long definitionId) {
+		newCustomFieldValue.setCustomFieldDefinition(CustomFieldDefinition
+				.read(definitionId));
+		newCustomFieldValue = CustomFieldValue.create(newCustomFieldValue);
+		Logger.info("Adding custom field value to resource space: "
+				+ resourceSpace.getResourceSpaceId());
+		if (resourceSpace.getCustomFieldValues() == null) {
+			Logger.info("Creating array of custom field value in resource space: "
+					+ resourceSpace.getResourceSpaceId());
+			resourceSpace.setCustomFieldValues(new ArrayList<>());
+		}
+		resourceSpace.getCustomFieldValues().add(newCustomFieldValue);
+		resourceSpace.update();
+		return newCustomFieldValue;
+	}
+    
+    
    /** 
     * POST       /api/space/:sid/fieldvalue
     *
@@ -447,6 +514,7 @@ public class Spaces extends Controller {
    @ApiImplicitParams({
            @ApiImplicitParam(name = "List of CustomFieldValue objects within a ResourceSpace", value = "Body of ResourceSpace with CustomFieldValues in JSON", required = true, dataType = "models.ResourceSpace", paramType = "body"),
            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+   // TODO add authorization
    public static Result createSpaceFieldValues(@ApiParam(name = "sid", value = "Space ID") Long sid) {
        final Form<ResourceSpace> newCustomFieldValuesForm = RESOURCE_SPACE_FORM.bindFromRequest();
        ResourceSpace resourceSpace = ResourceSpace.read(sid);
@@ -486,6 +554,51 @@ public class Spaces extends Controller {
        }
    }
    
+   /**
+	 *	POST      /api/public/space/:uuid/fieldvalues                                    controllers.Spaces.createSpaceFieldValuesByUUID(uuid: java.util.UUID)
+	 */
+   @ApiOperation(httpMethod = "POST", response = CustomFieldValue.class, produces = "application/json", value = "Create a list of custom field values in a resource space")
+   @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+   @ApiImplicitParams({
+           @ApiImplicitParam(name = "List of CustomFieldValue objects within a ResourceSpace", value = "Body of ResourceSpace with CustomFieldValues in JSON", required = true, dataType = "models.ResourceSpace", paramType = "body")})
+   public static Result createSpaceFieldValuesByUUID(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
+       final Form<ResourceSpace> newCustomFieldValuesForm = RESOURCE_SPACE_FORM.bindFromRequest();
+       ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+       if (resourceSpace == null) {
+           return notFound(Json
+                   .toJson(new TransferResponseStatus("No resource space found with id "+uuid)));
+       } else {
+           if (newCustomFieldValuesForm.hasErrors()) {
+               TransferResponseStatus responseBody = new TransferResponseStatus();
+               responseBody.setStatusMessage(Messages.get("The form has the following error: "+newCustomFieldValuesForm.errorsAsJson()));
+               return badRequest(Json.toJson(responseBody));
+           } else {
+        	   ResourceSpace newCustomFieldValuesSpace = newCustomFieldValuesForm.get(); 
+               List<CustomFieldValue> newCustomFieldValues = newCustomFieldValuesSpace.getCustomFieldValues();
+               for (CustomFieldValue customFieldValue : newCustomFieldValues) {
+            	   // create the value only if appropriate target UUID and field value definition ID are included
+            	   Long definitionId = customFieldValue.getCustomFieldDefinition() != null ? customFieldValue.getCustomFieldDefinition().getCustomFieldDefinitionId() : null;
+            	   if (definitionId != null) {
+            		   CustomFieldDefinition def = CustomFieldDefinition.read(definitionId);
+            		   customFieldValue.setCustomFieldDefinition(def);
+            		   customFieldValue = CustomFieldValue.create(customFieldValue);
+            	   } else {
+                       TransferResponseStatus responseBody = new TransferResponseStatus();
+                       responseBody.setStatusMessage(Messages.get("The value does not specify a defition"));
+                       return badRequest(Json.toJson(responseBody));
+            	   }
+               }
+               Logger.info("Adding custom field values to resource space: "+uuid);
+               if (resourceSpace.getCustomFieldValues() == null) {
+                   Logger.info("Creating array of custom field values in resource space: "+uuid);
+            	   resourceSpace.setCustomFieldValues(new ArrayList<>());
+               } 
+               resourceSpace.getCustomFieldValues().addAll(newCustomFieldValues);
+               resourceSpace.update();
+               return ok(Json.toJson(newCustomFieldValues));
+           }
+       }
+   }
    
    @ApiOperation(httpMethod = "PUT", response = CustomFieldValue.class, produces = "application/json", value = "Update a list of custom field values in a resource space")
    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
@@ -2428,6 +2541,7 @@ public class Spaces extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    // TODO add authorization assembly member
     public static F.Promise<Result> searchCustomFieldsByValue (@ApiParam(name = "sid", value = "Resource Space ID")Long sid,
                                                                @ApiParam(name = "fid", value = "Custom Field Definition ID")Long fid,
                                                                @ApiParam(name = "etype", value = "Entity Target Type") String etype,
@@ -2451,6 +2565,51 @@ public class Spaces extends Controller {
         }
 
         List<CustomFieldValue> customFieldValues = CustomFieldValue.findAllByContainingSpace(sid);
+
+        F.Promise<Result> resultPromise = F.Promise.promise( () -> {
+            List<Long> ids = new ArrayList<Long>();
+
+            for (CustomFieldValue c: customFieldValues){
+                Logger.info("CustomFieldValue ID: " + c.getCustomFieldValueId());
+                ids.add(c.getCustomFieldValueId());
+            }
+
+            List<CustomFieldValue> c = CustomFieldValue.findCustomValuesByText(ids,value,etype,customFieldDefinition);
+            return ok(Json.toJson(c));
+        });
+
+        return resultPromise;
+    }
+    
+    /**
+ 	 *	GET       /api/public/space/:uuid/field/:fid/value/:etype                        controllers.Spaces.searchCustomFieldsByValueByUUID(uuid: java.util.UUID,fid: Long, etype: String, value?="")
+     */
+    @ApiOperation(httpMethod = "GET", response = CustomFieldValue.class, responseContainer = "List", produces = "application/json",
+            value = "CustomFieldValue containing the given word")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    public static F.Promise<Result> searchCustomFieldsByValueByUUID (
+    									@ApiParam(name = "uuid", value = "Resource Space UUID") UUID uuid,
+                                        @ApiParam(name = "fid", value = "Custom Field Definition ID") Long fid,
+                                        @ApiParam(name = "etype", value = "Entity Target Type") String etype,
+                                        @ApiParam(name = "value", value = "Text to be search in the value of custom field values") String value) {
+        ResourceSpace rs = ResourceSpace.readByUUID(uuid);
+        if (rs == null) {
+            F.Promise<Result> resultPromise = F.Promise.promise( () -> {
+            	return notFound(Json.toJson(new TransferResponseStatus("No resource space found with id "+uuid)));
+            });
+            return resultPromise;
+        }
+
+        CustomFieldDefinition customFieldDefinition = CustomFieldDefinition.read(fid);
+        if (customFieldDefinition == null) {
+            F.Promise<Result> resultPromise = F.Promise.promise( () -> {
+                return notFound(Json
+                        .toJson(new TransferResponseStatus("No customFieldDefinition found with id "+fid)));
+            });
+            return resultPromise;
+        }
+
+        List<CustomFieldValue> customFieldValues = CustomFieldValue.findAllByContainingSpace(rs.getResourceSpaceId());
 
         F.Promise<Result> resultPromise = F.Promise.promise( () -> {
             List<Long> ids = new ArrayList<Long>();

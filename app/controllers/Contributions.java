@@ -2543,11 +2543,13 @@ public class Contributions extends Controller {
         if(addIdeaToProposals){
             List<Long> assignToContributions = newContrib.getAssignToContributions();
             List<Contribution> contributionList = new ArrayList<Contribution>();
-            for (Long cid : assignToContributions) {
-                Contribution contribution = Contribution.read(cid);
-                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
-                    contributionList.add(contribution);
-                }
+            if (assignToContributions != null) {
+	            for (Long cid : assignToContributions) {
+	                Contribution contribution = Contribution.read(cid);
+	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+	                    contributionList.add(contribution);
+	                }
+	            }
             }
             newContrib.setAssociatedContributions(contributionList);
             newContrib.getResourceSpace().update();
@@ -3300,6 +3302,61 @@ public class Contributions extends Controller {
         }
     }
 
+   
+    /**
+     * 
+     */
+    /**
+     * POST      /api/public/space/:uuid/contribution  
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Create an anonymous contribution in a campaign")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Contribution Object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body")})
+    public static Result createAnonymousContributionInSpacePublic(@ApiParam(name = "uuid", value = "Universal ID of the target campaign") String uuid) {
+        // 1. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
+            ContributionTypes type = newContribution.getType();
+            if (type == null) {
+                type = ContributionTypes.COMMENT;
+            }
+
+            ResourceSpace resourceSpace = ResourceSpace.readByUUID(UUID.fromString(uuid));
+
+            ContributionTemplate template = null;
+            Contribution c;
+            try {
+                c = createContribution(newContribution, null, type, template, resourceSpace);
+
+                resourceSpace.addContribution(c);
+                resourceSpace.update();
+                
+                Promise.promise(() -> {
+                    return NotificationsDelegate.newContributionInResourceSpace(resourceSpace,c);
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error when creating Contribution: " + e.toString())));
+            }
+            return ok(Json.toJson(c));
+        }
+    }
+    
     /**
      * POST       /api/contribution/:uuid
      *

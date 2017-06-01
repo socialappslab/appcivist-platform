@@ -30,7 +30,8 @@ import java.util.List;
 public class Theme extends AppCivistBaseModel {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue    
+    @JsonView(Views.Public.class)
     private Long themeId;
 
     @JsonView(Views.Public.class)
