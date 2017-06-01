@@ -526,7 +526,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Theme> getOfficialThemes() {
-    	officialThemes = new ArrayList<Theme>();        
+    	officialThemes = officialThemes !=null ? officialThemes : new ArrayList<Theme>();        
     	if(contributionId!=null){
             List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
             for (Theme theme: allThemes) {
@@ -544,7 +544,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<Theme> getEmergentThemes() {
-    	emergentThemes = new ArrayList<Theme>();        
+    	emergentThemes = emergentThemes !=null ? emergentThemes : new ArrayList<Theme>();        
     	if(contributionId!=null){
             List<Theme> allThemes = resourceSpace != null ? resourceSpace.getThemes() : new ArrayList<Theme>();
             for (Theme theme: allThemes) {
