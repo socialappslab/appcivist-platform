@@ -1,12 +1,17 @@
 # Testing UNit
 
+
 ## Test Commands
 
- **To run all tests, run ```test```
- **To run only one test class, run testOnly followed by the name of the class i.e. ```testOnly my.namespace.MyTest```
- **To run only the tests that have failed, run ```testQuick```
- **To run tests continually, run a command with a tilde in front, i.e. ```~testQuick```
- **To access test helpers such as FakeApplication in console, run ```test:console```
+ -To run all tests, run ```test```
+ 
+ -To run only one test class, run testOnly followed by the name of the class i.e. ```testOnly my.namespace.MyTest```
+ 
+ -To run only the tests that have failed, run ```testQuick```
+ 
+ -To run tests continually, run a command with a tilde in front, i.e. ```~testQuick```
+ 
+ -To access test helpers such as FakeApplication in console, run ```test:console```
 
 -----
 
@@ -72,7 +77,7 @@ assertThat(savedC).isNotNull;
 And then we check if the values saved in the database are equal to the ones we have:
 
 ```
-    		assertThat(savedC.title).isEqualTo(title);
+assertThat(savedC.title).isEqualTo(title);
 ```
 
 
