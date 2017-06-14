@@ -1,7 +1,7 @@
 package enums;
 
 public enum ContributionStatus {
-	NEW,
+	DRAFT,
 	PUBLISHED,
 	EXCLUDED,
 	ARCHIVED, 

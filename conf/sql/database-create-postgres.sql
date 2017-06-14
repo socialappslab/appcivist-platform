@@ -1714,3 +1714,11 @@ alter table campaign add constraint fk_campaign_resource_logo foreign key (logo_
 
 -- 43.sql
 alter table working_group_profile add column color character varying(255);
+-- 45.sql
+alter table contribution drop constraint ck_contrinution_contrinbutoin_status;
+
+update contribution set status = 'DRAFT' where status = 'NEW';
+
+ALTER TABLE contribution
+  ADD CONSTRAINT ck_contrinution_contrinbutoin_status CHECK (status::text = ANY (ARRAY['DRAFT'::character varying, 'PUBLISHED'::character varying,
+  'ARCHIVED'::character varying, 'EXCLUDED'::character varying]::text[]));
