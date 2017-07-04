@@ -2501,6 +2501,8 @@ public class Contributions extends Controller {
                     theme.save();
                     theme.refresh();
                     themeListEmergent.add(theme);
+                }else if (allowEmergent){
+                    themeListEmergent.add(theme);
                 }
                 themeList.add(theme);
             }
@@ -2511,16 +2513,6 @@ public class Contributions extends Controller {
         Contribution.create(newContrib);
         newContrib.refresh();
 
-        //associate themes created to space
-        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-            Campaign c = containerResourceSpace.getCampaign();
-            c.getThemes().addAll(themeListEmergent);
-            c.update();
-        } else if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-            WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
-            wg.getThemes().addAll(themeListEmergent);
-            wg.update();
-        }
             //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
@@ -2539,6 +2531,21 @@ public class Contributions extends Controller {
                 inviteCommentersInInspirationList(inspirations, newContrib,
                         newWorkingGroup);
             }
+        }
+
+        //associate themes created to space
+        if (containerResourceSpace != null && (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)
+                || containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP))) {
+            List<Theme> themeListEmergentCpWg = new ArrayList<Theme>();
+            for (Theme theme: themeListEmergent
+                 ) {
+                if(theme.getType().equals(ThemeTypes.EMERGENT)){
+                    themeListEmergentCpWg.add(theme);
+                }
+            }
+            containerResourceSpace.getThemes().addAll(themeListEmergentCpWg);
+            containerResourceSpace.update();
+            containerResourceSpace.refresh();
         }
 
         if(addIdeaToProposals){

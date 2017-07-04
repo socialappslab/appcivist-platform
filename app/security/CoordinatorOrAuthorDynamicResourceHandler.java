@@ -40,8 +40,16 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 				 			   Logger.debug("--> userName = " + u.getUsername());
 				 			   String path = context.request().path();
 				 			   UUID contributionUuid = MyDynamicResourceHandler.getUUIDFromPath(path, meta);
-				 			   Logger.debug("--> contributionUuid = " + contributionUuid);
-				 			   Contribution contribution = Contribution.readByUUID(contributionUuid);
+				 			   Contribution contribution = null;
+				 			   if (contributionUuid != null) {
+					 			   Logger.debug("--> contributionUuid = " + contributionUuid);
+					 			   contribution = Contribution.readByUUID(contributionUuid);				 				   
+				 			   } else {
+				 				   Long contributionId = MyDynamicResourceHandler.getIdFromPath(path, meta);
+					 			   Logger.debug("--> contributionId = " + contributionId);
+					 			   contribution = Contribution.read(contributionId);
+				 			   }
+				 			   
 							   if (contribution!=null) {
 								   Long contributionId = contribution.getContributionId();
 								   allowed[0] = Contribution.isUserAuthor(u,contributionId);
