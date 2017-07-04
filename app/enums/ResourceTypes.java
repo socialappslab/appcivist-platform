@@ -19,5 +19,6 @@ public enum ResourceTypes {
 	WEBPAGE, 
 	FILE, 
 	AUDIO,
-	CONTRIBUTION_TEMPLATE
+	CONTRIBUTION_TEMPLATE, 
+	GDOC
 }
