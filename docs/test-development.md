@@ -23,7 +23,6 @@ The libraries you have to import are:
 ```
 import static play.test.*;
 import static play.test.Helpers.*; // to create a fake app with in memory db
-import static org.fest.assertions.Assertions.*; // additional asserts than JUnit defaults
 ```
 
 After that we have to run the fakeapplication with an inmemory database with the following:
