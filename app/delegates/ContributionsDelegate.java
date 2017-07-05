@@ -1,5 +1,6 @@
 package delegates;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -297,7 +298,7 @@ public class ContributionsDelegate {
         return null;
     }
 
-    public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException {
+	public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException, UnsupportedEncodingException {
         EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
         // Create pad and set text
         String padId = UUID.randomUUID().toString();

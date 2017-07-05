@@ -2273,7 +2273,7 @@ public class Contributions extends Controller {
      */
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey,
-                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
+                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
 
         newContrib.setType(type);
         // if type is PROPOSAL, then change the default status value
@@ -2656,7 +2656,7 @@ public class Contributions extends Controller {
 
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, ContributionTemplate t,
-                                                  ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
+                                                  ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
         // TODO: dynamically obtain etherpad server URL and Key from component configuration
         return createContribution(newContrib, author, type, null, null, t, containerResourceSpace);
     }

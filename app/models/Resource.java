@@ -1,8 +1,10 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
 import io.swagger.annotations.ApiModel;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -305,7 +307,7 @@ public class Resource extends AppCivistBaseModel {
 		this.url = new URL(urlAsString);
 	}
 	
-	public void createHtmlPad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException {
+	public void createHtmlPad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException, UnsupportedEncodingException {
 		EtherpadWrapper eth = new EtherpadWrapper(etherpadServerUrl,etherpadApiKey);
 		eth.createPad(this.padId);
 		eth.setHTML(this.padId, text);
@@ -322,7 +324,7 @@ public class Resource extends AppCivistBaseModel {
 		
 	}
 
-	public void createReadablePad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException {
+	public void createReadablePad(String etherpadServerUrl, String etherpadApiKey, String text) throws MalformedURLException, UnsupportedEncodingException {
 		EtherpadWrapper eth = new EtherpadWrapper(etherpadServerUrl,etherpadApiKey);
 		eth.createPad(this.padId);
 		eth.setHTML(this.padId, text);
