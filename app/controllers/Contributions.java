@@ -2273,12 +2273,12 @@ public class Contributions extends Controller {
      */
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey,
-                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
+                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
 
         newContrib.setType(type);
         // if type is PROPOSAL, then change the default status value
 //        if (type.equals(ContributionTypes.PROPOSAL)) {
-//            newContrib.setStatus(ContributionStatus.NEW);
+//            newContrib.setStatus(ContributionStatus.DRAFT);
 //        }
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
             List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
@@ -2343,8 +2343,8 @@ public class Contributions extends Controller {
         		if (type.equals(ContributionTypes.PROPOSAL)) {
         			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS)) {
         				hasStatusConfig = 1;
-	        			if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("NEW")) {
-	        				newContrib.setStatus(ContributionStatus.NEW);
+	        			if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("DRAFT")) {
+	        				newContrib.setStatus(ContributionStatus.DRAFT);
 	        			} else if (newContrib.getStatus() == null && cc.getValue().equalsIgnoreCase("PUBLISHED")) {
 	        				newContrib.setStatus(ContributionStatus.PUBLISHED);
 	        			} else if (newContrib.getStatus() == null) {
@@ -2656,7 +2656,7 @@ public class Contributions extends Controller {
 
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, ContributionTemplate t,
-                                                  ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException {
+                                                  ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
         // TODO: dynamically obtain etherpad server URL and Key from component configuration
         return createContribution(newContrib, author, type, null, null, t, containerResourceSpace);
     }

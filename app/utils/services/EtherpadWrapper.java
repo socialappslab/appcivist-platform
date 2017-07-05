@@ -1,5 +1,7 @@
 package utils.services;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 import play.Play;
@@ -100,8 +102,9 @@ public class EtherpadWrapper {
 		return getTextFromResponse(this.client.getText(padId,rev));
 	}
 
-	public void setHTML(String padId, String html) {
-		this.client.setHTML(padId, html);
+	public void setHTML(String padId, String html) throws UnsupportedEncodingException {
+		String encodedText = URLEncoder.encode(html, "UTF-8");
+		this.client.setHTML(padId, encodedText);
 	}
 
 	public void setText(String padId, String text) {
