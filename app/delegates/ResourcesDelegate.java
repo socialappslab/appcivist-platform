@@ -8,6 +8,7 @@ import play.Logger;
 import play.Play;
 import utils.GlobalData;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.UUID;
@@ -47,6 +48,9 @@ public class ResourcesDelegate {
             return null;
         } catch (EPLiteException e2) {
             System.out.println("EPLiteException");
+            return null;
+        } catch (UnsupportedEncodingException e2) {
+            System.out.println("UnsupportedEncodingException");
             return null;
         }
         Resource.create(res);
