@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import enums.ContributionTypes;
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
 import models.misc.Views;
@@ -66,6 +67,10 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 	@Transient
 	private UUID workingGroupUuid;
+
+	@Transient
+	@Enumerated(EnumType.STRING)
+	private ContributionTypes parentType;
 
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 
@@ -187,6 +192,11 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 	public void setType(ContributionFeedbackTypes type) {
 		this.type = type;
+	}
+	
+	public ContributionTypes getParentType() {
+		parentType = this.contribution.getType();
+		return parentType;
 	}
 
 	public ContributionFeedbackStatus getStatus() {
