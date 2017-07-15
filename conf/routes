@@ -414,7 +414,7 @@ GET       /api/public/space/:uuid/group                                         
 DELETE    /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.deleteSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
 PUT       /api/public/space/:suuid/contribution/:cuuid                           controllers.Spaces.updateSpaceContributionPublic(suuid: java.util.UUID, cuuid: java.util.UUID)
 
-
+GET       /api/space/:sid/authors                                                controllers.Spaces.exportNonMemberAuthors(sid: Long, format?="")
 
 # ToDo: Public Endoints to review
 GET       /api/public/assembly/listed                                            controllers.Assemblies.findAssembliesPublic(query ?="", filter ?= "")
