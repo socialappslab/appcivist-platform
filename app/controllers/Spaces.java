@@ -19,6 +19,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +33,7 @@ import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.BallotTransfer;
 import models.transfer.TransferResponseStatus;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
 import play.Logger;
 import play.data.Form;
@@ -49,6 +53,8 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
+
+import javax.persistence.*;
 
 @Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
@@ -2624,5 +2630,104 @@ public class Spaces extends Controller {
         });
 
         return resultPromise;
+    }
+
+    /**
+     * GET       /api/space/:sid/authors
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", produces = "application/csv", value = "Export non-member-authors connected to contributions of a campaign, with all their custom fields to a CSV file")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
+    public static Result exportNonMemberAuthors(
+            @ApiParam(name = "sid", value = "Space id") Long sid,
+            @ApiParam(name = "format", value = "Export format", allowableValues = "CSV") String format) {
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if(resourceSpace!=null && resourceSpace.getResourceSpaceId()==sid) {
+            List<HashMap<String, String>> hashMapList = new ArrayList<HashMap<String, String>>();
+            List<CustomFieldDefinition> definitions = resourceSpace.getCustomFieldDefinitions();
+            List<Contribution> contributionList = resourceSpace.getContributions();
+            HashMap<String, Long> nonMemberIds = new HashMap<String, Long>();
+            for (Contribution contribution : contributionList) {
+                for (NonMemberAuthor author : contribution.getNonMemberAuthors()
+                        ) {
+                    nonMemberIds.put("id",author.getId());
+                }
+            }
+            HashMap<String, String> nonMemberAuthorsMap = new HashMap<String, String>();
+            Iterator iterator = nonMemberIds.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) iterator.next();
+                iterator.remove();
+                Long authorId = Long.parseLong(pair.getValue()+"");
+                NonMemberAuthor author = NonMemberAuthor.read(authorId);
+                nonMemberAuthorsMap.put("name", author.getName() == null ? "" : author.getName());
+                nonMemberAuthorsMap.put("email", author.getEmail() == null ? "" : author.getEmail());
+                nonMemberAuthorsMap.put("phone", author.getPhone() == null ? "" : author.getPhone());
+                for (CustomFieldDefinition definition : definitions
+                        ) {
+                    if (definition.getEntityType().equals(EntityTypes.NON_MEMBER_AUTHOR)) {
+                        int b = 0;
+                        if (author.getCustomFieldValues() != null) {
+                            for (CustomFieldValue value : author.getCustomFieldValues()
+                                    ) {
+                                if (definition.getName().equals(value.getCustomFieldDefinition().getName())) {
+                                    nonMemberAuthorsMap.put(definition.getName(), value.getValue() == null ? "" : value.getValue());
+                                    b = 1;
+                                }
+                            }
+                        }
+                        if (b == 0) {
+                            nonMemberAuthorsMap.put(definition.getName(), "");
+                        }
+                    }
+                }
+                hashMapList.add(nonMemberAuthorsMap);
+            }
+            if (format != null && format.equals("CSV")) {
+                String csvHead = "";
+                String csvDetail = "";
+                Boolean head = false;
+                for (HashMap<String, String> contributionMap : hashMapList) {
+                    Iterator it = contributionMap.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry pair = (Map.Entry) it.next();
+                        it.remove();
+                        if (it.hasNext()) {
+                            if (!head) {
+                                csvHead = csvHead +"\""+ pair.getKey() +"\""+ ",";
+                            }
+                            csvDetail = csvDetail +"\"" + pair.getValue()+"\"" + ",";
+                        } else {
+                            if (!head) {
+                                csvHead = csvHead +"\""+pair.getKey()+"\""+ "\n";
+                            }
+                            csvDetail = csvDetail +"\""+ pair.getValue() +"\""+ "\n";
+                        }
+                    }
+                    head = true;
+                }
+                String csv = csvHead + csvDetail;
+                response().setContentType("application/csv");
+                response().setHeader("Content-disposition", "attachment; filename=nonMemberAuthors.csv");
+                File tempFile;
+                try {
+                    tempFile = File.createTempFile("nonMemberAuthors.csv", ".tmp");
+                    FileUtils.writeStringToFile(tempFile, csv);
+                    return ok(tempFile);
+                } catch (IOException e) {
+                    return internalServerError(e.getMessage());
+                }
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Format not implemented")));
+            }
+
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Resource Space with id: "+sid)));
+        }
     }
 }
