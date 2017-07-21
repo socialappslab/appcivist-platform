@@ -315,6 +315,9 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     private List<Long> campaignIds;
+
+    @Transient
+    private List<Long> containingContributionsIds;
     
     @JsonView(Views.Public.class)
     @Transient
@@ -1336,6 +1339,17 @@ public class Contribution extends AppCivistBaseModel {
             ResourceSpace rs = ResourceSpace.read(long1);
             this.containingSpaces.add(rs);
         }
+    }
+
+    public List<Long> getcontainingContributionsIds() {
+        containingContributionsIds = new ArrayList<>();
+        for (ResourceSpace resourceSpace : this.containingSpaces) {
+            if(resourceSpace.getType() == ResourceSpaceTypes.CONTRIBUTION){
+                Contribution c = this.findByResourceSpaceId(resourceSpace.getResourceSpaceId());
+                containingContributionsIds.add(c.getContributionId());
+            }
+        }
+        return containingContributionsIds;
     }
 
     public List<UUID> getCampaignUuids() {
