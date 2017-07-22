@@ -117,8 +117,8 @@ POST      /api/assembly/:aid/config                                             
 DELETE    /api/assembly/:aid/config/:cid                                         controllers.Configs.deleteConfig(aid: Long, cid: String)
 
 # Assembly: upload users
-POST      /api/assembly/:aid/member                                                  controllers.Assemblies.addAssemblyUploadUsers(aid: Long, send_invitations ?= "false")
-POST      /api/assembly/:aid/campaign/:cid/group/:gid/member                         controllers.Assemblies.addCampaignGroupUploadUsers(aid: Long, cid: Long, gid: Long, send_invitations ?= "false")
+POST      /api/assembly/:aid/member                                                  controllers.Assemblies.uploadAssemblyUsers(aid: Long, send_invitations ?= "false")
+POST      /api/assembly/:aid/campaign/:cid/group/:gid/member                         controllers.Assemblies.uploadGroupUsers(aid: Long, cid: Long, gid: Long, send_invitations ?= "false")
 
 ##################################################################################################################################################################
 # WorkingGroup API

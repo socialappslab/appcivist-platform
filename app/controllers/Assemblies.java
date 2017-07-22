@@ -990,7 +990,7 @@ public class Assemblies extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-	public static Result addAssemblyUploadUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+	public static Result uploadAssemblyUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
 												@ApiParam(name = "send_invitations", value = "Send invitations if true") String sendInvitations) {
 
 		Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -1026,7 +1026,6 @@ public class Assemblies extends Controller {
 									new MyLoginUsernamePasswordAuthUser(pass, u.getEmail());
 							// Hash a password for the first time
 							String hashed = authUser.getHashedPassword();
-//							System.out.println(u.getEmail()+", clear=" + pass+", hashed="+hashed);
 							u.save();
 
 							LinkedAccount la = new LinkedAccount();
@@ -1045,25 +1044,39 @@ public class Assemblies extends Controller {
 							on.put("password", pass);
 							an.add(on);
 						}
-						// Create membership (with the assembly aid)
-						MembershipAssembly m = new MembershipAssembly();
-						m.setUser(u);
-						m.setMembershipType(cell[4].toUpperCase());
-						m.setTargetAssembly(assembly);
-						m.setAssembly(assembly);
-						m.setStatus(MembershipStatus.REQUESTED);
-//						m.save();
 
 						// If send_invitations==TRUE, send an invitation email to the corresponding email.
+						// Else create membership
 						if (sendInvitations.equals("true")) {
-							InvitationTransfer invitation = new InvitationTransfer();
-							invitation.setEmail(u.getEmail());
-							invitation.setInvitationEmail(m.getUser().getEmail()); // change
-							invitation.setTargetId(m.getTargetAssemblyId());
-							invitation.setTargetType("ASSEMBLY");
-							invitation.setCoordinator(false);
-							invitation.setModerator(false);
-							MembershipInvitation.create(invitation, assembly.getCreator(), assembly);
+							if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
+								InvitationTransfer invitation = new InvitationTransfer();
+								invitation.setEmail(u.getEmail());
+								invitation.setInvitationEmail(u.getEmail()); // change
+								invitation.setTargetId(assembly.getAssemblyId());
+								invitation.setTargetType("ASSEMBLY");
+								if (cell[4].toUpperCase().equals("COORDINATOR")) {
+									invitation.setCoordinator(true);
+									invitation.setModerator(false);
+								} else if (cell[4].toUpperCase().equals("MODERATOR")) {
+									invitation.setCoordinator(false);
+									invitation.setModerator(true);
+								} else {
+									invitation.setCoordinator(false);
+									invitation.setModerator(false);
+								}
+
+								MembershipInvitation.create(invitation, assembly.getCreator(), assembly);
+							}
+						} else {
+							// Create membership (with the assembly aid)
+							MembershipAssembly m = new MembershipAssembly();
+							m.setUser(u);
+							m.setMembershipType(cell[4].toUpperCase());
+							m.setTargetAssembly(assembly);
+							m.setAssembly(assembly);
+							m.setStatus(MembershipStatus.ACCEPTED);
+							m.save();
+
 						}
 					}
 
@@ -1092,7 +1105,7 @@ public class Assemblies extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-	public static Result addCampaignGroupUploadUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+	public static Result uploadGroupUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
 													 @ApiParam(name = "cid", value = "Campaign ID") Long cid,
 													 @ApiParam(name = "gid", value = "Working Group ID") Long gid,
 													 @ApiParam(name = "send_invitations", value = "Send invitations if true") String sendInvitations) {
@@ -1133,7 +1146,6 @@ public class Assemblies extends Controller {
 									new MyLoginUsernamePasswordAuthUser(pass, u.getEmail());
 							// Hash a password for the first time
 							String hashed = authUser.getHashedPassword();
-//							System.out.println(u.getEmail() + ", clear=" + pass + ", hashed=" + hashed);
 							u.save();
 
 							LinkedAccount la = new LinkedAccount();
@@ -1152,34 +1164,48 @@ public class Assemblies extends Controller {
 							on.put("password", pass);
 							an.add(on);
 						}
-						// Create membership (with the group gid)
-						MembershipGroup mG = new MembershipGroup();
-						mG.setUser(u);
-						mG.setMembershipType(cell[4].toUpperCase());
-						mG.setTargetAssembly(assembly);
-						mG.setWorkingGroup(wg);
-						mG.setStatus(MembershipStatus.REQUESTED);
-						mG.save();
-
-						// Also with the assembly aid
-						MembershipAssembly m = new MembershipAssembly();
-						m.setUser(u);
-						m.setMembershipType(cell[4].toUpperCase());
-						m.setTargetAssembly(assembly);
-						m.setAssembly(assembly);
-						m.setStatus(MembershipStatus.REQUESTED);
-						m.save();
 
 						// If send_invitations==TRUE, send an invitation email to the corresponding email.
+						// Else create membership
 						if (sendInvitations.equals("true")) {
-							InvitationTransfer invitation = new InvitationTransfer();
-							invitation.setEmail(u.getEmail());
-							invitation.setInvitationEmail(m.getUser().getEmail()); // change
-							invitation.setTargetId(mG.getWorkingGroup().getGroupId());
-							invitation.setTargetType("WORKING_GROUP");
-							invitation.setCoordinator(false);
-							invitation.setModerator(false);
-							MembershipInvitation.create(invitation, wg.getCreator(), wg);
+							if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), wg.getGroupId(), MembershipTypes.GROUP)) {
+								InvitationTransfer invitation = new InvitationTransfer();
+								invitation.setEmail(u.getEmail());
+								invitation.setInvitationEmail(u.getEmail()); // change
+								invitation.setTargetId(wg.getGroupId());
+								invitation.setTargetType("WORKING_GROUP");
+
+								if (cell[4].toUpperCase().equals("COORDINATOR")) {
+									invitation.setCoordinator(true);
+									invitation.setModerator(false);
+								} else if (cell[4].toUpperCase().equals("MODERATOR")) {
+									invitation.setCoordinator(false);
+									invitation.setModerator(true);
+								} else {
+									invitation.setCoordinator(false);
+									invitation.setModerator(false);
+								}
+
+								MembershipInvitation.create(invitation, wg.getCreator(), wg);
+							}
+						} else {
+							// Create membership (with the group gid)
+							MembershipGroup mG = new MembershipGroup();
+							mG.setUser(u);
+							mG.setMembershipType(cell[4].toUpperCase());
+							mG.setTargetAssembly(assembly);
+							mG.setWorkingGroup(wg);
+							mG.setStatus(MembershipStatus.ACCEPTED);
+							mG.save();
+
+							// Also with the assembly aid
+							MembershipAssembly m = new MembershipAssembly();
+							m.setUser(u);
+							m.setMembershipType(cell[4].toUpperCase());
+							m.setTargetAssembly(assembly);
+							m.setAssembly(assembly);
+							m.setStatus(MembershipStatus.ACCEPTED);
+							m.save();
 						}
 					}
 				}
