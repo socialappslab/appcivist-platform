@@ -1346,11 +1346,14 @@ public class Contribution extends AppCivistBaseModel {
         for (ResourceSpace resourceSpace : this.containingSpaces) {
             if(resourceSpace.getType() == ResourceSpaceTypes.CONTRIBUTION){
                 Contribution c = this.findByResourceSpaceId(resourceSpace.getResourceSpaceId());
-                containingContributionsIds.add(c.getContributionId());
+                if (c != null) {
+                    containingContributionsIds.add(c.getContributionId());
+                }
             }
         }
         return containingContributionsIds;
     }
+
 
     public List<UUID> getCampaignUuids() {
         campaignUuids = new ArrayList<>();
