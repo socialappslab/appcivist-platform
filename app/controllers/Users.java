@@ -361,7 +361,7 @@ public class Users extends Controller {
       @ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
       @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
       @ApiImplicitParam(name = "user", value = "User's updated information", dataType = "models.User", paramType = "body") })
-  //@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+  @Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
   public static Result updateUser(Long uid) {
     final Form<User> updatedUserForm = USER_FORM.bindFromRequest();
     if (updatedUserForm.hasErrors())
