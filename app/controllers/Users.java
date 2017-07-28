@@ -7,18 +7,11 @@ import com.feth.play.module.pa.user.AuthUserIdentity;
 import enums.ResourceTypes;
 import http.Headers;
 
-import java.util.List;
-import java.util.Date;
-import java.util.Calendar;
-import java.util.UUID;
+import java.util.*;
+
 import io.swagger.annotations.*;
-import models.Resource;
-import models.TokenAction;
-import models.LinkedAccount;
+import models.*;
 import models.TokenAction.Type;
-import models.User;
-import models.UserProfile;
-import models.Config;
 import models.misc.S3File;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -368,7 +361,7 @@ public class Users extends Controller {
       @ApiImplicitParam(name = "uid", value = "User's ID", dataType = "Long", paramType = "path"),
       @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
       @ApiImplicitParam(name = "user", value = "User's updated information", dataType = "models.User", paramType = "body") })
-  @Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+  //@Dynamic(value = "OnlyMe", meta = SecurityModelConstants.USER_RESOURCE_PATH)
   public static Result updateUser(Long uid) {
     final Form<User> updatedUserForm = USER_FORM.bindFromRequest();
     if (updatedUserForm.hasErrors())
@@ -377,7 +370,16 @@ public class Users extends Controller {
               .errorsAsJson().toString())));
     else {
       User updatedUser = updatedUserForm.get();
+      User oldUser = User.read(uid);
       updatedUser.setUserId(uid);
+      if(updatedUser.getRoles()==null || (updatedUser.getRoles()!=null && updatedUser.getRoles().size()==0)){
+        List<SecurityRole> roles = new ArrayList<SecurityRole>();
+        for (SecurityRole role : oldUser.getRoles()) {
+          SecurityRole roleLoaded = SecurityRole.read(role.getRoleId());
+          roles.add(roleLoaded);
+        }
+        updatedUser.setRoles(roles);
+      }
       updatedUser.update();
       Logger.info("Updating User");
       Logger.debug("=> " + updatedUserForm.toString());
