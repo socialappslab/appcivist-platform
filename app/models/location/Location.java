@@ -2,14 +2,18 @@ package models.location;
 
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
+import javax.persistence.*;
 
+import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import models.AppCivistBaseModel;
+import models.WorkingGroup;
 import models.misc.Views;
+import play.Play;
+import utils.GlobalData;
 import utils.services.MapBoxWrapper;
 
 import com.avaje.ebean.Model.Finder;
@@ -17,10 +21,11 @@ import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import utils.services.NominatimWrapper;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
-public class Location {
+public class Location extends Model {
 	
 	@Id
 	@GeneratedValue
@@ -40,9 +45,23 @@ public class Location {
 	@JsonIgnore
 	@Index
 	private String serializedLocation;
+
 	@Column(columnDefinition="TEXT")
 	@JsonView(Views.Public.class)
-	private String geoJson; 
+	private String geoJson;
+
+	@Column
+	@JsonView(Views.Public.class)
+	private Integer bestCoordinates = 0;
+
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinTable(name = "working_group_location")
+	@JsonIgnore
+	public List<WorkingGroup> workingGroups;
+
+	// Additional information from openstreetmap
+	@Column(name="additional_info")
+	public String additionInfo;
 
 	/**
 	 * The find property is an static property that facilitates database query creation
@@ -158,14 +177,86 @@ public class Location {
 		this.serializedLocation += this.state!=null && !this.state.isEmpty() ? " " + this.state : "";
 		this.serializedLocation += this.zip!=null && !this.zip.isEmpty() ? " " + this.zip: "";
 		this.serializedLocation += this.country!=null && !this.country.isEmpty() ? " " + this.country : "";
-		if (this.geoJson == null || this.geoJson.isEmpty()) {
-			String query = this.serializedLocation;
-			this.geoJson = MapBoxWrapper.geoCode(query);
+		String query = this.serializedLocation;
+		// only store geoJson if geocoding service is nominatim
+		String geocodingService = Play.application().configuration().getString(GlobalData.GEOCODING_SERVICE);
+		if ((this.geoJson == null || this.geoJson.isEmpty()) && geocodingService.equals("nominatim")) {
+
+			if (this.getPlaceName() != null) {
+				JsonNode resultLocation = NominatimWrapper.geoCode(this.getPlaceName());
+
+				ArrayNode geojsonArr;
+				ArrayNode additionalInfoArr;
+
+				if (resultLocation.isArray()) {
+					// split additional info and geojson for each result
+					ArrayNode arr = (ArrayNode) resultLocation;
+					geojsonArr = new ObjectMapper().createArrayNode();
+					additionalInfoArr = new ObjectMapper().createArrayNode();
+					for (int a = 0; a < arr.size(); a++) {
+						JsonNode json = arr.get(a);
+						geojsonArr.add(json.get("geojson"));
+//							ObjectNode additionalInfo = null;
+//							try {
+//								additionalInfo = (ObjectNode) new ObjectMapper().readTree(json.asText());
+//								additionalInfo.remove("geojson");
+//								additionalInfoArr.add(additionalInfo);
+//							} catch (IOException e) {
+//								e.printStackTrace();
+//							}
+					}
+
+				} else {
+					// split additional info and geojson
+					geojsonArr = new ObjectMapper().createArrayNode();
+					additionalInfoArr = new ObjectMapper().createArrayNode();
+					JsonNode json = resultLocation;
+					geojsonArr.add(json.get("geojson"));
+//						ObjectNode additionalInfo = null;
+//						try {
+//							additionalInfo = (ObjectNode) new ObjectMapper().readTree(json.asText());
+//							additionalInfo.remove("geojson");
+//							additionalInfoArr.add(additionalInfo);
+//						} catch (IOException e) {
+//							e.printStackTrace();
+//						}
+				}
+				this.setGeoJson(geojsonArr.toString());
+				this.setAdditionInfo(additionalInfoArr.toString());
+				this.update();
+			}
+
+			this.geoJson = NominatimWrapper.geoCode(query).toString();
+		} else if (geocodingService.equals("mapbox")) {
+			this.geoJson = MapBoxWrapper.geoCode(query); // don't persist
 		}
 	}
 	
 	public static List<Location> findByQuery(String query) {
 		return find.where().ilike("serializedLocation", query).findList();
 	}
-	
+
+	public List<WorkingGroup> getWorkingGroups() {
+		return workingGroups;
+	}
+
+	public void setWorkingGroups(List<WorkingGroup> workingGroups) {
+		this.workingGroups = workingGroups;
+	}
+
+	public String getAdditionInfo() {
+		return additionInfo;
+	}
+
+	public void setAdditionInfo(String additionInfo) {
+		this.additionInfo = additionInfo;
+	}
+
+	public Integer getBestCoordinates() {
+		return bestCoordinates;
+	}
+
+	public void setBestCoordinates(Integer bestCoordinates) {
+		this.bestCoordinates = bestCoordinates;
+	}
 }
