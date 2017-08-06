@@ -86,14 +86,8 @@ public class Locations extends Controller {
 						for (int a = 0; a < arr.size(); a++) {
 							JsonNode json = arr.get(a);
 							geojsonArr.add(json.get("geojson"));
-//							ObjectNode additionalInfo = null;
-//							try {
-//								additionalInfo = (ObjectNode) new ObjectMapper().readTree(json.asText());
-//								additionalInfo.remove("geojson");
-//								additionalInfoArr.add(additionalInfo);
-//							} catch (IOException e) {
-//								e.printStackTrace();
-//							}
+
+							Location.createAdditionalInfo(additionalInfoArr, json);
 						}
 
 					} else {
@@ -102,14 +96,8 @@ public class Locations extends Controller {
 						additionalInfoArr = new ObjectMapper().createArrayNode();
 						JsonNode json = resultLocation;
 						geojsonArr.add(json.get("geojson"));
-//						ObjectNode additionalInfo = null;
-//						try {
-//							additionalInfo = (ObjectNode) new ObjectMapper().readTree(json.asText());
-//							additionalInfo.remove("geojson");
-//							additionalInfoArr.add(additionalInfo);
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
+
+						Location.createAdditionalInfo(additionalInfoArr, json);
 					}
 					location.setGeoJson(geojsonArr.toString());
 					location.setAdditionInfo(additionalInfoArr.toString());

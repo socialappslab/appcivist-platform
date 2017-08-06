@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.AppCivistBaseModel;
 import models.WorkingGroup;
 import models.misc.Views;
@@ -196,14 +197,7 @@ public class Location extends Model {
 					for (int a = 0; a < arr.size(); a++) {
 						JsonNode json = arr.get(a);
 						geojsonArr.add(json.get("geojson"));
-//							ObjectNode additionalInfo = null;
-//							try {
-//								additionalInfo = (ObjectNode) new ObjectMapper().readTree(json.asText());
-//								additionalInfo.remove("geojson");
-//								additionalInfoArr.add(additionalInfo);
-//							} catch (IOException e) {
-//								e.printStackTrace();
-//							}
+						createAdditionalInfo(additionalInfoArr, json);
 					}
 
 				} else {
@@ -211,15 +205,8 @@ public class Location extends Model {
 					geojsonArr = new ObjectMapper().createArrayNode();
 					additionalInfoArr = new ObjectMapper().createArrayNode();
 					JsonNode json = resultLocation;
-					geojsonArr.add(json.get("geojson"));
-//						ObjectNode additionalInfo = null;
-//						try {
-//							additionalInfo = (ObjectNode) new ObjectMapper().readTree(json.asText());
-//							additionalInfo.remove("geojson");
-//							additionalInfoArr.add(additionalInfo);
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
+
+					createAdditionalInfo(additionalInfoArr, json);
 				}
 				this.setGeoJson(geojsonArr.toString());
 				this.setAdditionInfo(additionalInfoArr.toString());
@@ -231,7 +218,24 @@ public class Location extends Model {
 			this.geoJson = MapBoxWrapper.geoCode(query); // don't persist
 		}
 	}
-	
+
+	public static void createAdditionalInfo(ArrayNode additionalInfoArr, JsonNode json) {
+		ObjectNode additionalInfo = new ObjectMapper().createObjectNode();
+		additionalInfo.put("place_id", json.get("place_id").asText());
+		additionalInfo.put("licence", json.get("licence").asText());
+		additionalInfo.put("osm_type", json.get("osm_type").asText());
+		additionalInfo.put("osm_id", json.get("osm_id").asText());
+		additionalInfo.put("boundingbox", json.get("boundingbox").asText());
+		additionalInfo.put("lat", json.get("lat").asText());
+		additionalInfo.put("lon", json.get("lon").asText());
+		additionalInfo.put("display_name", json.get("display_name").asText());
+		additionalInfo.put("class", json.get("class").asText());
+		additionalInfo.put("type", json.get("type").asText());
+		additionalInfo.put("importance", json.get("importance").asDouble());
+		additionalInfo.put("icon", json.get("icon").asText());
+		additionalInfoArr.add(additionalInfo);
+	}
+
 	public static List<Location> findByQuery(String query) {
 		return find.where().ilike("serializedLocation", query).findList();
 	}
