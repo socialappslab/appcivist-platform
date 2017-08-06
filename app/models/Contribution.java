@@ -351,7 +351,27 @@ public class Contribution extends AppCivistBaseModel {
 
     @Transient
     public User getFirstAuthor() {
-        return authors != null && authors.size() > 0 ? authors.get(0) : null;
+        if (authors!=null && authors.size() > 0){
+            return authors.get(0);
+        }
+        // If the author is a Working Group, the coordinator of that group will be sent as
+        // firstAuthor (if exists)
+        List<WorkingGroup> groups = this.getWorkingGroupAuthors();
+        if (groups.size() > 0){
+            List<MembershipGroup> members = groups.get(0).getMembers();
+            if (members.size() > 0){
+                for (MembershipGroup member : members){
+                    User user_member = member.getUser();
+                    List<SecurityRole> roles = user_member.getRoles();
+                    for (SecurityRole role : roles){
+                        if(role.getName().equals(MyRoles.COORDINATOR.getName())){
+                            return user_member;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     public Long getContributionId() {
