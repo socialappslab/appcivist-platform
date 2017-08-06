@@ -1353,6 +1353,7 @@ public class Contribution extends AppCivistBaseModel {
         return containingContributionsIds;
     }
 
+
     public List<UUID> getCampaignUuids() {
         campaignUuids = new ArrayList<>();
         List<ResourceSpace> spaces = this.containingSpaces.stream()
