@@ -1341,14 +1341,13 @@ public class Contribution extends AppCivistBaseModel {
         }
     }
 
-    public List<Long> getcontainingContributionsIds() {
+    public List<Long> getContainingContributionsIds() {
         containingContributionsIds = new ArrayList<>();
         for (ResourceSpace resourceSpace : this.containingSpaces) {
             if(resourceSpace.getType() == ResourceSpaceTypes.CONTRIBUTION){
-                Contribution c = this.findByResourceSpaceId(resourceSpace.getResourceSpaceId());
-                if (c != null) {
-                    containingContributionsIds.add(c.getContributionId());
-                }
+                Contribution c = Contribution.findByResourceSpaceId(resourceSpace.getResourceSpaceId());
+                if (c!=null)
+                	containingContributionsIds.add(c.getContributionId());
             }
         }
         return containingContributionsIds;
