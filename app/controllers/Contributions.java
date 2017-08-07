@@ -1028,7 +1028,7 @@ public class Contributions extends Controller {
     	// 1. obtaining the user of the request
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
-
+        User social_ideation_author = null;
         // 2. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
@@ -1050,11 +1050,19 @@ public class Contributions extends Controller {
 			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
             	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
             	if (result == false){ 
-            		return badRequest("Missing headers");
+                    Logger.info("Missing Social Ideation Headers");
+            		return badRequest("Missing Social Ideation Headers");
             	} else {
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
+                    try {
+                        social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    } catch (Exception e) {
+                        Logger.error("Social Ideation Author not found");
+                        Logger.error(e.getStackTrace().toString());
+                        return badRequest("Social Ideation Author not found");
+                    }
                 }
             }
         	
@@ -1077,13 +1085,19 @@ public class Contributions extends Controller {
                     }
                 }
             }
-
             newContribution.setContextUserId(author.getUserId());
+            if (social_ideation_author != null){
+                newContribution.setContextUserId(social_ideation_author.getUserId());
+            }
             Contribution c;
 
             Ebean.beginTransaction();
             try {
-                c = createContribution(newContribution, author, type, template, rs);
+                if(social_ideation_author != null){
+                    c = createContribution(newContribution, social_ideation_author, type, template, rs);
+                } else {
+                    c = createContribution(newContribution, author, type, template, rs);
+                }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
                 e.printStackTrace();
