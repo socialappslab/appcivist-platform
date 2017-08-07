@@ -1048,11 +1048,11 @@ public class Contributions extends Controller {
 			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
 			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
 			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
-            	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
-            	if (result == false){ 
+            	Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
+            	if (result == -1){ 
                     Logger.info("Missing Social Ideation Headers");
             		return badRequest("Missing Social Ideation Headers");
-            	} else {
+            	} else if (result == 1){
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));

@@ -594,7 +594,10 @@ public class ContributionsDelegate {
         return headerMap;
     }
     
-    public static Boolean checkSocialIdeationHeaders() {
+    public static Integer checkSocialIdeationHeaders() {
+        // returns 1 if all headers are present and the sync is enabled
+        // returns 0 if all headers are present and sync is disabled or if no header is present
+        // returns -1 if some headers are missing
         HashMap<String,String> headerMap = getSocialIdeationHeaders ();
         Integer headersCount = 0;
         for (String headerKey : headerMap.keySet()) {
@@ -608,13 +611,13 @@ public class ContributionsDelegate {
             String assemblyID = headerMap.get("ASSEMBLY_ID");
             Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
             if (assemblyConfig == true)
-                return true;
+                return 1;
             else 
-                return false;
+                return 0;
         } else if (headersCount == 0) {
-            return true;
+            return 0;
         } else {
-            return false;
+            return -1;
         }
     }
   
