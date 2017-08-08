@@ -1029,6 +1029,7 @@ public class Contributions extends Controller {
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
         User social_ideation_author = null;
+        NonMemberAuthor non_member_author = null;
         // 2. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
@@ -1056,12 +1057,15 @@ public class Contributions extends Controller {
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
-                    try {
-                        social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
-                    } catch (Exception e) {
-                        Logger.error("Social Ideation Author not found");
-                        Logger.error(e.getStackTrace().toString());
-                        return badRequest("Social Ideation Author not found");
+                    social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    if (social_ideation_author == null){
+                        non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
+                        if (non_member_author == null){
+                            non_member_author = new NonMemberAuthor();
+                            non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
+                            non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+                        }     
+                        newContribution.setNonMemberAuthor(non_member_author);
                     }
                 }
             }
@@ -1095,8 +1099,10 @@ public class Contributions extends Controller {
             try {
                 if(social_ideation_author != null){
                     c = createContribution(newContribution, social_ideation_author, type, template, rs);
+                } else if (non_member_author != null) {
+                    c = createContribution(newContribution, null, type, template, rs);
                 } else {
-                    c = createContribution(newContribution, author, type, template, rs);
+                    c = createContribution(newContribution, author, type, template, rs);                    
                 }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
@@ -1495,6 +1501,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         User social_ideation_author = null;
+        NonMemberAuthor non_member_author = null;
         final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
         ContributionStatistics updatedStats = new ContributionStatistics(cid);
         Contribution contribution = Contribution.read(cid);
@@ -1514,12 +1521,14 @@ public class Contributions extends Controller {
                 return badRequest("Missing Social Ideation Headers");
             } else if (result == 1){
                 HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
-                try {
-                    social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
-                } catch (Exception e) {
-                    Logger.error("Social Ideation Author not found");
-                    Logger.error(e.getStackTrace().toString());
-                    return badRequest("Social Ideation Author not found");
+                social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                if (social_ideation_author == null){
+                    non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
+                    if (non_member_author == null){
+                        non_member_author = new NonMemberAuthor();
+                        non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
+                        non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+                    }     
                 }
             }
 
@@ -1557,6 +1566,8 @@ public class Contributions extends Controller {
             feedback.setContribution(contribution);
             if (social_ideation_author != null){
                 feedback.setUserId(social_ideation_author.getUserId());
+            } else if (non_member_author != null){
+                feedback.setNonMemberAuthor(non_member_author);
             } else {
                 feedback.setUserId(author.getUserId());
             }
@@ -1568,6 +1579,8 @@ public class Contributions extends Controller {
                 feedback.setContribution(contribution);
                 if (social_ideation_author != null){
                     feedback.setUserId(social_ideation_author.getUserId());
+                } else if (non_member_author != null){
+                    feedback.setNonMemberAuthor(non_member_author);
                 } else {
                     feedback.setUserId(author.getUserId());
                 }
