@@ -62,15 +62,8 @@ public class Locations extends Controller {
 		String geocodingService = Play.application().configuration().getString(GlobalData.GEOCODING_SERVICE);
 		if (geocodingService.equals("nominatim")) {
 			List<Location> locationList = Location.find.all();
-			List<Location> locationListTest = locationList.subList(0, 1);
-			for (Location location : locationListTest) {
-//				String serializedLocation = "";
-//				serializedLocation += location.getPlaceName() != null && !location.getPlaceName().isEmpty() ? location.getPlaceName() : "";
-//				serializedLocation += location.getStreet() != null && !location.getStreet().isEmpty() ? " " + location.getStreet() : "";
-//				serializedLocation += location.getCity() != null && !location.getCity().isEmpty() ? " " + location.getCity() : "";
-//				serializedLocation += location.getState() != null && !location.getState().isEmpty() ? " " + location.getState() : "";
-//				serializedLocation += location.getZip() != null && !location.getZip().isEmpty() ? " " + location.getZip() : "";
-//				serializedLocation += location.getCountry() != null && !location.getCountry().isEmpty() ? " " + location.getCountry() : "";
+//			List<Location> locationListTest = locationList.subList(0, 1);
+			for (Location location : locationList) {
 
 				if (location.getPlaceName() != null) {
 					JsonNode resultLocation = NominatimWrapper.geoCode(location.getPlaceName());
