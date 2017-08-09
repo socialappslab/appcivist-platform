@@ -30,7 +30,11 @@ public class NominatimWrapper {
 			String encodedQuery = URLEncoder.encode(query, "UTF-8");
 			WSRequest holder = WS.url(BASE_URL);
 			holder.setQueryParameter("format", FORMAT);
-			holder.setQueryParameter("q", encodedQuery);
+			
+			// TODO: Investigate why the following URL (which uses the query encoded) works in the browser but gets nothing through this wrapper
+			// http://nominatim.openstreetmap.org/search/?format=json&q=Mburicao+Asuncion+Paraguay&polygon_geojson=1
+			// Not using encoded query until we know this
+			holder.setQueryParameter("q", query); 
 			holder.setQueryParameter("polygon_geojson", GEOJSON);
 			holder.setMethod("GET");
 

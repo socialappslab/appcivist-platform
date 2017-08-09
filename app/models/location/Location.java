@@ -54,6 +54,12 @@ public class Location extends Model {
 	@Column
 	@JsonView(Views.Public.class)
 	private Integer bestCoordinates = 0;
+	
+	@JsonView(Views.Public.class)
+	private String source;
+
+	@JsonView(Views.Public.class)
+	private Boolean markedForReview;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "working_group_location")
@@ -221,23 +227,37 @@ public class Location extends Model {
 
 	public static void createAdditionalInfo(ArrayNode additionalInfoArr, JsonNode json) {
 		ObjectNode additionalInfo = new ObjectMapper().createObjectNode();
-		additionalInfo.put("place_id", json.get("place_id").asText());
-		additionalInfo.put("licence", json.get("licence").asText());
-		additionalInfo.put("osm_type", json.get("osm_type").asText());
-		additionalInfo.put("osm_id", json.get("osm_id").asText());
-		additionalInfo.put("boundingbox", json.get("boundingbox").asText());
-		additionalInfo.put("lat", json.get("lat").asText());
-		additionalInfo.put("lon", json.get("lon").asText());
-		additionalInfo.put("display_name", json.get("display_name").asText());
-		additionalInfo.put("class", json.get("class").asText());
-		additionalInfo.put("type", json.get("type").asText());
-		additionalInfo.put("importance", json.get("importance").asDouble());
-		additionalInfo.put("icon", json.get("icon").asText());
+		additionalInfo.put("place_id", jsonNodeAsText(json,"place_id"));
+		additionalInfo.put("licence", jsonNodeAsText(json,"licence"));
+		additionalInfo.put("osm_type", jsonNodeAsText(json,"osm_type"));
+		additionalInfo.put("osm_id", jsonNodeAsText(json,"osm_id"));
+		additionalInfo.put("boundingbox", jsonNodeAsText(json,"boundingbox"));
+		additionalInfo.put("lat", jsonNodeAsText(json,"lat"));
+		additionalInfo.put("lon", jsonNodeAsText(json,"lon"));
+		additionalInfo.put("display_name", jsonNodeAsText(json,"display_name"));
+		additionalInfo.put("class", jsonNodeAsText(json,"class"));
+		additionalInfo.put("type", jsonNodeAsText(json,"type"));
+		additionalInfo.put("importance", jsonNodeAsDouble(json,"importance"));
+		additionalInfo.put("icon", jsonNodeAsText(json,"icon"));
 		additionalInfoArr.add(additionalInfo);
 	}
 
+	private static String jsonNodeAsText(JsonNode json, String attribute) {
+		JsonNode node = json.get(attribute);
+		return node != null ? node.asText() : "";
+	}
+	
+	private static Double jsonNodeAsDouble(JsonNode json, String attribute) {
+		JsonNode node = json.get(attribute);
+		return node != null ? node.asDouble() : null;
+	}
+	
 	public static List<Location> findByQuery(String query) {
 		return find.where().ilike("serializedLocation", query).findList();
+	}
+	
+	public static List<Location> findMarkedForReview() {
+		return find.where().eq("markedForReview", true).findList();
 	}
 
 	public List<WorkingGroup> getWorkingGroups() {
@@ -262,5 +282,21 @@ public class Location extends Model {
 
 	public void setBestCoordinates(Integer bestCoordinates) {
 		this.bestCoordinates = bestCoordinates;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public Boolean getMarkedForReview() {
+		return markedForReview;
+	}
+
+	public void setMarkedForReview(Boolean markForReview) {
+		this.markedForReview = markForReview;
 	}
 }

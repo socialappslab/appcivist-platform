@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonArray;
-import models.location.Location;
 
+import models.location.Location;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
+import play.Logger;
 import play.Play;
 import play.libs.Json;
 import play.mvc.*;
@@ -58,16 +58,20 @@ public class Locations extends Controller {
 	 */
 	@ApiOperation(produces="application/json", value="Update geojson of existing locations", httpMethod="GET")
 	public static Result updateLocationGeojson() {
-		System.out.println("updateLocationGeojson");
+		Logger.info("Updating geoJson of locations marked for review");
 		String geocodingService = Play.application().configuration().getString(GlobalData.GEOCODING_SERVICE);
+		String source = geocodingService.equals("nominatim") ? "Open Street Map" : geocodingService.equals("mapbox") ? "MapBox" : geocodingService.equals("esri") ? "ESRI" : "Open Street Maps";
 		if (geocodingService.equals("nominatim")) {
-			List<Location> locationList = Location.find.all();
-//			List<Location> locationListTest = locationList.subList(0, 1);
+			List<Location> locationList = Location.findMarkedForReview();
 			for (Location location : locationList) {
 
 				if (location.getPlaceName() != null) {
+					long startTime = System.nanoTime();    
+					Logger.info("Contacting "+geocodingService);
 					JsonNode resultLocation = NominatimWrapper.geoCode(location.getPlaceName());
-
+					long estimatedTime = System.nanoTime() - startTime;
+					double seconds = (double) estimatedTime  / 1000000000.0;
+					Logger.info("Location received! ("+seconds+" seconds)");
 					ArrayNode geojsonArr;
 					ArrayNode additionalInfoArr;
 
@@ -79,7 +83,6 @@ public class Locations extends Controller {
 						for (int a = 0; a < arr.size(); a++) {
 							JsonNode json = arr.get(a);
 							geojsonArr.add(json.get("geojson"));
-
 							Location.createAdditionalInfo(additionalInfoArr, json);
 						}
 
@@ -94,6 +97,7 @@ public class Locations extends Controller {
 					}
 					location.setGeoJson(geojsonArr.toString());
 					location.setAdditionInfo(additionalInfoArr.toString());
+					location.setMarkedForReview(false);
 					location.update();
 				}
 			}
