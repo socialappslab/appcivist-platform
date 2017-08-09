@@ -863,4 +863,25 @@ public class WorkingGroups extends Controller {
 
 
     }
+
+    /**
+     * Return the full list of working groups in an assembly
+     * GET       /api/group/:location_name
+     *
+     * @param locationName
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = WorkingGroup.class, responseContainer = "List", produces = "application/json", value = "List groups with specific location name")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+    public static Result findWorkingGroupsByLocationName(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "location_name", value = "Location Name") String locationName) {
+        System.out.println("findWorkingGroupsByLocationName");
+        List<WorkingGroup> workingGroups = WorkingGroup.findByLocationName(locationName);
+        return ok(Json.toJson(workingGroups));
+    }
+
 }

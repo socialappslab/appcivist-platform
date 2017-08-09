@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.*;
 
+import models.location.Location;
 import models.misc.Views;
 import play.Logger;
 import utils.GlobalData;
@@ -150,6 +151,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 	@JsonIgnore
 	@Transient
 	private List<Contribution> assignedContributions;
+
+	// Locations
+	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "workingGroups")
+	private List<Location> locations;
 	
 	
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
@@ -189,7 +194,10 @@ public class WorkingGroup extends AppCivistBaseModel {
         return wGroups.findList() != null ? wGroups.findList().size() : 0;
     }
 
-    
+	public static List<WorkingGroup> findByLocationName(String name){
+		return find.where().ilike("locations.placeName", name).findList();
+	}
+
     public static WorkingGroup create(WorkingGroup workingGroup) throws MembershipCreationException {
 		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
 		List<Theme> existingThemes = workingGroup.getExistingThemes();
@@ -675,5 +683,13 @@ public class WorkingGroup extends AppCivistBaseModel {
 	public void setAssignedContributions(List<Contribution> contributions){
 		this.assignedContributions = contributions;
 		this.resources.getContributions().addAll(assignedContributions);
+	}
+
+	public List<Location> getLocations() {
+		return locations;
+	}
+
+	public void setLocations(List<Location> locations) {
+		this.locations = locations;
 	}
 }
