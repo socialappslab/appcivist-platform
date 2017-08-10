@@ -139,6 +139,8 @@ POST      /api/assembly/:aid/group/:gid/ballot                                  
 PUT       /api/assembly/:aid/group/:gid/ballot                                   controllers.WorkingGroups.archiveWorkingGroupsBallot(aid: Long, gid: Long)
 POST      /api/assembly/:aid/campaign/:cid/group/:gid/assignments                controllers.WorkingGroups.assignContributionsToGroup(aid: Long, cid: Long, gid: Long)
 PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish                   controllers.WorkingGroups.publishProposal(aid: Long, gid: Long, pid: Long)
+GET       /api/assembly/:aid/group/location/:location_name                       controllers.WorkingGroups.findWorkingGroupsByLocationName(aid: Long, location_name: String)
+
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
@@ -273,6 +275,8 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/export                  
 ##################################################################################################################################################################
 # Location endpoints
 GET       /api/location/:query                                                   controllers.Locations.findLocations(query: String)
+GET       /api/location/geojson/:query                                           controllers.Locations.getGeojson(query: String)
+GET       /api/location/update/geojson                                           controllers.Locations.updateLocationGeojson()
 
 ##################################################################################################################################################################
 # Utilities endpoints

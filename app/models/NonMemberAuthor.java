@@ -209,4 +209,8 @@ public class NonMemberAuthor extends AppCivistBaseModel {
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
         this.customFieldValues = customFieldValues;
     }
+
+    public static NonMemberAuthor findBySourceAndUrl(String source, String sourceUrl){
+        return find.where().eq("source", source).eq("sourceUrl", sourceUrl).findUnique();
+    }
 }

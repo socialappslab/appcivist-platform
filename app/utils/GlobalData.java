@@ -99,4 +99,6 @@ public class GlobalData {
 	public static final String FORGOT_PASSWORD_DEFAULT_URL_BASE = "/user/password/reset/";
 
 	public static final Integer DEFAULT_PAGE_SIZE = 16;
+
+	public static final String GEOCODING_SERVICE = "appcivist.services.geocoding.service";
 }
