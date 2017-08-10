@@ -26,6 +26,8 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -38,6 +40,7 @@ import javax.persistence.*;
 import javax.ws.rs.PathParam;
 
 import models.*;
+import models.location.Location;
 import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.ApiResponseTransfer;
@@ -2943,6 +2946,27 @@ public class Contributions extends Controller {
 
     }
 
+    /**
+     * Date Parser
+     * @param dateString
+     * @return
+     */
+    public static LocalDate parseCreationDate(String dateString){
+        List<String> formatStrings = Arrays.asList("MM/dd/yyyy", "yyyy-MM-dd");
+
+        for (String formatString : formatStrings)
+        {
+            try
+            {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatString);
+                return LocalDate.parse(dateString,formatter );
+            }
+            catch (Exception e) {}
+        }
+
+        return null;
+
+    }
 
     /**
      * POST      /api/assembly/:aid/campaign/:cid/contribution/import
@@ -2967,263 +2991,332 @@ public class Contributions extends Controller {
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         Campaign campaign = Campaign.read(cid);
 
-        if (uploadFilePart != null && campaign != null) {
-            try {
-                br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
-                String cvsSplitBy = "\\t";
-                String line = br.readLine();
-                Logger.debug("Importing record => " + line);
-                switch (type) {
-                    case "IDEA":
-                        try {
-                            Ebean.beginTransaction();
-                            while ((line = br.readLine()) != null) {
-                                String[] cell = line.split(cvsSplitBy);
-                                Contribution c = new Contribution();
-                                c.setType(ContributionTypes.IDEA);
+        if (uploadFilePart != null && campaign != null) try {
+            br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+            String cvsSplitBy = "\\t";
+            //skip header
+            String line = br.readLine();
+            Logger.debug("Importing record => " + line);
+            switch (type) {
+                case "IDEA":
+                    try {
+                        Ebean.beginTransaction();
+                        while ((line = br.readLine()) != null) {
+                            String[] cell = line.split(cvsSplitBy);
+                            Contribution c = new Contribution();
+                            c.setType(ContributionTypes.IDEA);
 
-                                // Supported Format:
-                                // source_code  title   text    working group   categories  author  age gender  creation_date
+                            // Supported Format:
+                            // source_code  title   text    working group   categories  author  age gender  creation_date
 
-                                // SET source_code  title   text
-                                c.setSourceCode(cell[0]);
-                                c.setTitle(cell[1]);
-                                c.setText(cell[2].replaceAll("\n", ""));
-                                Logger.info("Importing => Contribution => " + cell[0]);
-                                if (cell.length > 8) {
-                                    String creationDate = cell[8];
-                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                                    Logger.info("Importing => date => " + creationDate);
+                            // SET source_code  title   text
+                            Logger.info("Importing => Contribution => " + cell[0]);
+                            c.setSourceCode((cell[0]!=null) ? cell[0] : "");
+                            c.setSource((cell[1]!=null) ? cell[1] : "");
+                            c.setTitle((cell[2]!=null) ? cell[2] : "");
 
-                                    LocalDate ldt = LocalDate.parse(creationDate, formatter);
-                                    c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                                    Logger.info("Importing => creating...");
+                            c.setText((cell[3]!=null) ?cell[3].replaceAll("\n", "") : "");
+
+                            // SET existingThemes and emergen themes
+                            // TODO: use some kind of string buffer to make this more efficient as strings are immutable
+                            if (cell.length > 4) {
+                                String categoriesLine = cell[4];
+                                String emergenThemesLine = cell[5];
+                                String[] categories = categoriesLine.split(",");
+                                String[] emergenThemes = emergenThemesLine.split(",");
+
+                                List<Theme> existing = new ArrayList<>();
+                                for (String category : categories) {
+                                    Logger.info("Importing => Category => " + category);
+                                    List<Theme> themes = campaign.filterThemesByTitle(category.trim());
+                                    Logger.info(themes.size() + " themes found thath match category " + category);
+                                    existing.addAll(themes);
+                                }
+                                c.setThemes(existing);
+                            }
+
+                            //emergen themes
+                            if (cell.length > 5) {
+                                String emergenThemesLine = cell[5];
+                                String[] emergenThemes = emergenThemesLine.split(",");
+
+                                List<Theme> existing = new ArrayList<>();
+                                for (String category : emergenThemes) {
+                                    Logger.info("Importing => emergenTheme => " + category);
+                                    List<Theme> themes = campaign.filterThemesByTitle(category.trim());
+
+                                    if (themes.size()==0){
+                                        //create new theme
+                                        Theme t = new Theme();
+                                        t.setDescription(category);
+                                        t.setTitle(category);
+                                        t.setType(ThemeTypes.EMERGENT);
+
+                                        //add theme to contribution
+                                        if(c.getThemes()==null){
+                                            c.setThemes(new ArrayList<>());
+                                        }
+                                        c.getThemes().add(t);
+
+                                        //add theme to campaing
+                                        campaign.addTheme(t);
+
+                                    }else{
+                                        //reuse theme
+                                        Logger.info(themes.size() + " themes found thath match category " + category);
+                                        for(Theme match : themes){
+                                            c.addTheme(match);
+                                        }
+                                    }
+
                                 }
 
+                            }
 
-                                // TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
-                                if (cell.length > 5) {
-                                    // SET author   age gender  creation_date
-                                    // get author name from cell 2
-                                    Logger.info("Importing => author => " + cell.length);
-                                    String author = cell[5];
-                                    Logger.info("Importing => author => " + author);
-                                    boolean createNonMember = false;
+
+                            if (cell.length > 6) {
+                                String creationDate = cell[6];
+                                if (!creationDate.isEmpty()) {
+
+
+                                    // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy hh:mm");
+                                    Logger.info("Importing => date => " + creationDate);
+
+                                    // LocalDate ldt = LocalDate.parse(creationDate, formatter);
+                                    LocalDate ldt = parseCreationDate(creationDate);
+                                    if (ldt != null) {
+                                        c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                                        Logger.info("Importing => creating...");
+                                    }
+                                }
+                            }
+
+                            if (cell.length > 7) {
+                                String placeName = cell[7];
+                                if(placeName!=null && ! placeName.isEmpty()){
+                                    //Create new location
+                                    Location l = new Location();
+                                    l.setPlaceName(placeName);
+                                    c.setLocation(l);
+                                }
+
+                            }
+
+                            if (cell.length > 8) {
+                                // Add IDEA to Working Group
+                                String wgName = cell[8];
+                                Logger.info("Importing => wg => " + wgName);
+                                WorkingGroup wg = WorkingGroup.readByName(wgName);
+                                if (wg != null) {
+                                    Logger.info("Addng contribution to WG => " + wgName);
+                                    wg.addContribution(c);
+                                    wg.update();
+                                }
+                            }
+
+                            // TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
+                            if (cell.length > 9) {
+                                // SET author   age gender  creation_date
+                                // get author name from cell 2
+                                for( int index=9; index < cell.length ; index+=3){
+                                    String author = cell[index];
+                                    boolean createNewMember = false;
                                     if (author != null && !author.equals("")) {
                                         c.setFirstAuthorName(author);
-                                        List<User> authors = User.findByName(c.getFirstAuthorName());
+                                        List<User> authors = User.findByName(author);
                                         // If more than one user matches the name
                                         // criteria, we'll skip the author set up
                                         if (authors != null && authors.size() == 1) {
                                             c.getAuthors().add(authors.get(0));
                                             Logger.info("The author was FOUND!");
                                         } else {
-                                            createNonMember = true;
+                                            createNewMember = true;
                                         }
                                     }
 
-                                    if (createNonMember) {
+                                    if (createNewMember) {
                                         Logger.info("Importing => non member author => " + author);
                                         // Create a non member author
                                         NonMemberAuthor nma = new NonMemberAuthor();
-                                        nma.setName(c.getFirstAuthorName());
-                                        if (cell.length > 6) nma.setAge(new Integer(cell[6]));
-                                        if (cell.length > 7) nma.setGender(cell[7]);
+                                        nma.setName(author);
+                                        nma.setPhone((cell.length > index+1) ? cell[index+1]:"");
+                                        nma.setEmail((cell.length > index+2) ? cell[index+2]:"");
                                         nma.save();
-                                        c.setNonMemberAuthor(nma);
-                                    }
-                                }
 
-                                // SET categories
-                                // TODO: use some kind of string buffer to make this more efficient as strings are immutable
-                                if (cell.length > 4) {
-                                    String categoriesLine = cell[4];
-                                    String[] categories = categoriesLine.split(",");
-                                    List<Theme> existing = new ArrayList<>();
-                                    for (String category : categories) {
-                                        Logger.info("Importing => Category => " + category);
-                                        List<Theme> themes = campaign.filterThemesByTitle(category.trim());
-                                        Logger.info(themes.size() + " themes found thath match category " + category);
-                                        existing.addAll(themes);
+                                        c.getNonMemberAuthors().add(nma);
                                     }
-                                    c.setExistingThemes(existing);
+
                                 }
-                                // Create the contribution
-                                Contribution.create(c);
-                                if (cell.length > 3) {
-                                    // Add IDEA to Working Group
-                                    String wgName = cell[3];
-                                    Logger.info("Importing => wg => " + wgName);
-                                    WorkingGroup wg = WorkingGroup.readByName(wgName);
-                                    if (wg != null) {
-                                        Logger.info("Addng contribution to WG => " + wgName);
-                                        wg.addContribution(c);
-                                        wg.update();
-                                    }
-                                }
-                                Logger.info("Adding contribution to campaign...");
-                                campaign.getResources().addContribution(c);
-                                campaign.update();
-                                ContributionHistory.createHistoricFromContribution(c);
 
                             }
-                        } catch (Exception e) {
-                            Ebean.rollbackTransaction();
-                            Logger.info(e.getLocalizedMessage());
-                            e.printStackTrace();
-                            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+
+
+                            // Create the contribution
+                            Contribution.create(c);
+
+                            Logger.info("Adding contribution to campaign...");
+                            campaign.getResources().addContribution(c);
+                            campaign.update();
+                            ContributionHistory.createHistoricFromContribution(c);
+
                         }
-                        Ebean.commitTransaction();
-                        break;
-                    case "PROPOSAL":
-                        Ebean.beginTransaction();
-                        Logger.info("Beginning import transaction...");
-                        try {
-                            while ((line = br.readLine()) != null) {
-                                String[] cell = line.split(cvsSplitBy);
-                                Contribution c = new Contribution();
-                                c.setType(ContributionTypes.PROPOSAL);
-                                // get source code from cell 1
-                                c.setSourceCode(cell[0]);
-                                // get title from cell 2
-                                c.setTitle(cell[1]);
+                    } catch (Exception e) {
+                        Ebean.rollbackTransaction();
+                        Logger.info(e.getLocalizedMessage());
+                        e.printStackTrace();
+                        return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+                    }
+                    Ebean.commitTransaction();
+                    break;
+                case "PROPOSAL":
+                    Ebean.beginTransaction();
+                    Logger.info("Beginning import transaction...");
+                    //cvsSplitBy = ";";
+                    try {
+                        while ((line = br.readLine()) != null) {
+                            String[] cell = line.split(cvsSplitBy);
+                            Contribution c = new Contribution();
+                            c.setType(ContributionTypes.PROPOSAL);
+                            // get source code from cell 1
+                            c.setSourceCode(cell[0]);
+                            // get title from cell 2
+                            c.setTitle(cell[1]);
 
-                                Logger.info("Importing " + cell[1] + "...");
-                                // get summary from cell 3 for ehterpad support we need aid & cid
-                                String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
-                                String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+                            Logger.info("Importing " + cell[1] + "...");
+                            // get summary from cell 3 for ehterpad support we need aid & cid
+                            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+                            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 
-                                Resource res = new Resource();
-                                if (cell[2] != null) {
-                                    Logger.info("Creating etherpad...");
-                                    // set text, only first paragraph
-                                    String fullText = cell[2];
-                                    String[] paragraphs = fullText.split("\\.");
-                                    if (paragraphs != null) {
-                                        Logger.info("Copying first paragraph..." + paragraphs.length);
-                                        Logger.info("Text: " + paragraphs[0]);
-                                        String text = paragraphs[0];
-                                        c.setText(text);
-                                        res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true, false);
-                                    }
-                                } else {
-                                    Logger.info("Creating etherpad from template...");
-                                    // use generic template
-                                    List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
-
-                                    if (templates != null) {
-                                        // if there are more than one, then use the last
-                                        String padId = templates.get(templates.size() - 1).getPadId();
-                                        EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
-                                        String templateHtml = wrapper.getHTML(padId);
-                                        // save the etherpad
-                                        res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true, false);
-                                    }
+                            Resource res = new Resource();
+                            if (cell[2] != null) {
+                                Logger.info("Creating etherpad...");
+                                // set text, only first paragraph
+                                String fullText = cell[2];
+                                String[] paragraphs = fullText.split("\\.");
+                                if (paragraphs != null) {
+                                    Logger.info("Copying first paragraph..." + paragraphs.length);
+                                    Logger.info("Text: " + paragraphs[0]);
+                                    String text = paragraphs[0];
+                                    c.setText(text);
+                                    res = ResourcesDelegate.createResource(null, cell[2], ResourceTypes.PROPOSAL, true, false);
                                 }
+                            } else {
+                                Logger.info("Creating etherpad from template...");
+                                // use generic template
+                                List<Resource> templates = ContributionsDelegate.getTemplates(null, null);
 
-                                if (res != null) {
-                                    Logger.info("Adding etherpad to contribution...");
-                                    c.setExtendedTextPad(res);
-                                }
-
-                                // get wgroup from cell 4 & get resource space from wgroup
-                                WorkingGroup wg = WorkingGroup.readByName(cell[3]);
-                                if (wg != null) {
-                                    Logger.info("Adding contribution to working group...");
-                                    wg.getResources().getContributions().add(c);
-                                } else {
-                                    Logger.info("working group with name '" + cell[3] + "' not found");
-                                }
-
-                                // email authors
-                                if (cell.length > 4 && cell[4] != null) {
-                                    Logger.info("Adding authors...");
-                                    String[] emails = cell[4].split(",");
-                                    for (String email : emails) {
-                                        User u = User.findByEmail(email);
-                                        if (u != null) {
-                                            c.getAuthors().add(u);
-                                        }
-                                    }
-
-                                }
-
-                                Logger.info("Creating contribution...");
-                                Contribution.create(c);
-                                c.refresh();
-
-                                // get & create atachments from cells 5,6
-                                List<Resource> resources = new ArrayList<>();
-                                if (cell.length > 5 && cell[5] != null) {
-                                    Logger.info("Adding attachments to contribution...");
-                                    String[] attachmentNames = cell[5].split(",");
-                                    String[] attachmentUrls = cell[6].split(",");
-                                    for (int i = 0; i < attachmentUrls.length; i++) {
-                                        String name = attachmentNames[i];
-                                        String url = attachmentUrls[i];
-
-                                        if (name != null && !name.equals("")) {
-                                            Logger.info("Adding attachment" + name + "...");
-                                            Resource resource = new Resource();
-                                            resource.setName(name);
-                                            Logger.info(name + " => " + url);
-                                            resource.setUrl(new URL(url));
-                                            resource.setResourceType(ResourceTypes.FILE);
-                                            resources.add(resource);
-                                        }
-                                    }
-                                }
-
-                                Logger.info("URL Resources size: " + resources.size());
-                                c.getAttachments().addAll(resources);
-                                c.update();
-
-                                // get related contributions by source_code
-                                List<Contribution> inspirations = new ArrayList<>();
-                                if (cell.length > 7 && cell[7] != null) {
-                                    Logger.info("Adding inspirations...");
-                                    for (String sourceCode : cell[7].split(",")) {
-                                        Logger.info("Adding inspiration " + sourceCode + "...");
-                                        // get source code from cell i
-                                        Contribution contrib = Contribution.readBySourceCode(sourceCode);
-                                        if (contrib != null) {
-                                            inspirations.add(contrib);
-                                        }
-                                    }
-                                    c.getAssociatedContributions().addAll(inspirations);
-                                }
-                                c.update();
-
-                                if (wg != null) {
-                                    wg.update();
-                                }
-
-                                Logger.info("Adding contribution to campaign...");
-                                campaign.getResources().addContribution(c);
-                                campaign.update();
-
-                                // TODO: is this correct?
-                                Logger.info("Updating history of contribution...");
-                                ContributionHistory.createHistoricFromContribution(c);
-                                for (Contribution inspiration : inspirations) {
-                                    ContributionHistory.createHistoricFromContribution(inspiration);
+                                if (templates != null) {
+                                    // if there are more than one, then use the last
+                                    String padId = templates.get(templates.size() - 1).getPadId();
+                                    EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+                                    String templateHtml = wrapper.getHTML(padId);
+                                    // save the etherpad
+                                    res = ResourcesDelegate.createResource(null, templateHtml, ResourceTypes.PROPOSAL, true, false);
                                 }
                             }
-                        } catch (Exception e) {
-                            Ebean.rollbackTransaction();
-                            Logger.info(e.getLocalizedMessage());
-                            e.printStackTrace();
-                            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+
+                            if (res != null) {
+                                Logger.info("Adding etherpad to contribution...");
+                                c.setExtendedTextPad(res);
+                            }
+
+                            // get wgroup from cell 4 & get resource space from wgroup
+                            WorkingGroup wg = WorkingGroup.readByName(cell[3]);
+                            if (wg != null) {
+                                Logger.info("Adding contribution to working group...");
+                                wg.getResources().getContributions().add(c);
+                            } else {
+                                Logger.info("working group with name '" + cell[3] + "' not found");
+                            }
+
+                            // email authors
+                            if (cell.length > 4 && cell[4] != null) {
+                                Logger.info("Adding authors...");
+                                String[] emails = cell[4].split(",");
+                                for (String email : emails) {
+                                    User u = User.findByEmail(email);
+                                    if (u != null) {
+                                        c.getAuthors().add(u);
+                                    }
+                                }
+
+                            }
+
+                            Logger.info("Creating contribution...");
+                            Contribution.create(c);
+                            c.refresh();
+
+                            // get & create atachments from cells 5,6
+                            List<Resource> resources = new ArrayList<>();
+                            if (cell.length > 5 && cell[5] != null) {
+                                Logger.info("Adding attachments to contribution...");
+                                String[] attachmentNames = cell[5].split(",");
+                                String[] attachmentUrls = cell[6].split(",");
+                                for (int i = 0; i < attachmentUrls.length; i++) {
+                                    String name = attachmentNames[i];
+                                    String url = attachmentUrls[i];
+
+                                    if (name != null && !name.equals("")) {
+                                        Logger.info("Adding attachment" + name + "...");
+                                        Resource resource = new Resource();
+                                        resource.setName(name);
+                                        Logger.info(name + " => " + url);
+                                        resource.setUrl(new URL(url));
+                                        resource.setResourceType(ResourceTypes.FILE);
+                                        resources.add(resource);
+                                    }
+                                }
+                            }
+
+                            Logger.info("URL Resources size: " + resources.size());
+                            c.getAttachments().addAll(resources);
+                            c.update();
+
+                            // get related contributions by source_code
+                            List<Contribution> inspirations = new ArrayList<>();
+                            if (cell.length > 7 && cell[7] != null) {
+                                Logger.info("Adding inspirations...");
+                                for (String sourceCode : cell[7].split(",")) {
+                                    Logger.info("Adding inspiration " + sourceCode + "...");
+                                    // get source code from cell i
+                                    Contribution contrib = Contribution.readBySourceCode(sourceCode);
+                                    if (contrib != null) {
+                                        inspirations.add(contrib);
+                                    }
+                                }
+                                c.getAssociatedContributions().addAll(inspirations);
+                            }
+                            c.update();
+
+                            if (wg != null) {
+                                wg.update();
+                            }
+
+                            Logger.info("Adding contribution to campaign...");
+                            campaign.getResources().addContribution(c);
+                            campaign.update();
+
+                            // TODO: is this correct?
+                            Logger.info("Updating history of contribution...");
+                            ContributionHistory.createHistoricFromContribution(c);
+                            for (Contribution inspiration : inspirations) {
+                                ContributionHistory.createHistoricFromContribution(inspiration);
+                            }
                         }
-                        Ebean.commitTransaction();
-                        break;
-                    default:
-                        break;
-                }
-            } catch (Exception e) {
-                Logger.info(e.getLocalizedMessage());
-                return contributionFeedbackError(null, e.getLocalizedMessage());
+                    } catch (Exception e) {
+                        Ebean.rollbackTransaction();
+                        Logger.info(e.getLocalizedMessage());
+                        e.printStackTrace();
+                        return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR, e.getLocalizedMessage())));
+                    }
+                    Ebean.commitTransaction();
+                    break;
+                default:
+                    break;
             }
+        } catch (Exception e) {
+            Logger.info(e.getLocalizedMessage());
+            return contributionFeedbackError(null, e.getLocalizedMessage());
         }
         return ok();
     }
