@@ -85,6 +85,7 @@ import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
+import enums.MyRoles;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -1028,7 +1029,7 @@ public class Contributions extends Controller {
     	// 1. obtaining the user of the request
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
-
+        User social_ideation_author = null;
         // 2. read the new role data from the body
         // another way of getting the body content => request().body().asJson()
         final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
@@ -1043,18 +1044,26 @@ public class Contributions extends Controller {
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
-            //Check headers if the request come from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
             if (newContribution.getType().equals(ContributionTypes.IDEA) 
 			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
 			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
 			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
-            	Boolean result = ContributionsDelegate.checkSocialIdeationHeaders();
-            	if (result == false){ 
-            		return badRequest("Missing headers");
-            	} else {
+            	Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
+            	if (result == -1){ 
+                    Logger.info("Missing Social Ideation Headers");
+            		return badRequest("Missing Social Ideation Headers");
+            	} else if (result == 1){
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
+                    try {
+                        social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    } catch (Exception e) {
+                        Logger.error("Social Ideation Author not found");
+                        Logger.error(e.getStackTrace().toString());
+                        return badRequest("Social Ideation Author not found");
+                    }
                 }
             }
         	
@@ -1077,13 +1086,19 @@ public class Contributions extends Controller {
                     }
                 }
             }
-
             newContribution.setContextUserId(author.getUserId());
+            if (social_ideation_author != null){
+                newContribution.setContextUserId(social_ideation_author.getUserId());
+            }
             Contribution c;
 
             Ebean.beginTransaction();
             try {
-                c = createContribution(newContribution, author, type, template, rs);
+                if(social_ideation_author != null){
+                    c = createContribution(newContribution, social_ideation_author, type, template, rs);
+                } else {
+                    c = createContribution(newContribution, author, type, template, rs);
+                }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
                 e.printStackTrace();
@@ -1467,13 +1482,20 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution Statistics object", value = "Body of Contribution Statistics in JSON", required = true, dataType = "models.ContributionStatistics", paramType = "body"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "ASSEMBLY_ID", value = "The real author of the post", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE", value = "Indicates the name of the providerId", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE_URL", value = "Source to the original post", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateContributionFeedback(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "caid", value = "Campaign ID") Long caid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        User social_ideation_author = null;
         final Form<ContributionFeedback> updatedFeedbackForm = CONTRIBUTION_FEEDBACK_FORM.bindFromRequest();
         ContributionStatistics updatedStats = new ContributionStatistics(cid);
         Contribution contribution = Contribution.read(cid);
@@ -1487,6 +1509,21 @@ public class Contributions extends Controller {
                         "No campaign with id: " + caid )));
             }
             
+            Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
+            if (result == -1){ 
+                Logger.info("Missing Social Ideation Headers");
+                return badRequest("Missing Social Ideation Headers");
+            } else if (result == 1){
+                HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
+                try {
+                    social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                } catch (Exception e) {
+                    Logger.error("Social Ideation Author not found");
+                    Logger.error(e.getStackTrace().toString());
+                    return badRequest("Social Ideation Author not found");
+                }
+            }
+
             // Feedback of tpye TECHNICAL ASSESSMENT, check the password for technical assessment
             if (feedback.getType() != null && feedback.getType().equals(
                     ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
@@ -1519,14 +1556,22 @@ public class Contributions extends Controller {
                 }
             }
             feedback.setContribution(contribution);
-            feedback.setUserId(author.getUserId());
+            if (social_ideation_author != null){
+                feedback.setUserId(social_ideation_author.getUserId());
+            } else {
+                feedback.setUserId(author.getUserId());
+            }
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
 
             Ebean.beginTransaction();
             try {
                 feedback.setContribution(contribution);
-                feedback.setUserId(author.getUserId());
+                if (social_ideation_author != null){
+                    feedback.setUserId(social_ideation_author.getUserId());
+                } else {
+                    feedback.setUserId(author.getUserId());
+                }
 
                 //If we found a previous feedback, we set that feedback as archived
                 if (existingFeedbacks != null) {
