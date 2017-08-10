@@ -46,7 +46,6 @@ import enums.ContributionStatus;
 import enums.ContributionTypes;
 import enums.ResourceTypes;
 
-
 public class ContributionsDelegate {
 
     public static DozerBeanMapper mapper;
@@ -593,15 +592,10 @@ public class ContributionsDelegate {
         return headerMap;
     }
     
-    /**
-     * Check headers from Social Ideation. If all headers are provided, we check if the assembly has 
-     * Social Ideation App enabled. If it is not enabled, return -1 to stop the contribution from processing 
-     * (requests with these headers are not allowed). If no social header is provided, then ignore Social Ideation App
-     * If some headers, but not all are provided, return a bad request. 
-     *
-     * @return
-     */
     public static Integer checkSocialIdeationHeaders() {
+        // returns 1 if all headers are present and the sync is enabled
+        // returns 0 if all headers are present and sync is disabled or if no header is present
+        // returns -1 if some headers are missing
         HashMap<String,String> headerMap = getSocialIdeationHeaders ();
         Integer headersCount = 0;
         for (String headerKey : headerMap.keySet()) {
@@ -617,7 +611,7 @@ public class ContributionsDelegate {
             if (assemblyConfig == true)
                 return 1;
             else 
-                return -1;
+                return 0;
         } else if (headersCount == 0) {
             return 0;
         } else {
