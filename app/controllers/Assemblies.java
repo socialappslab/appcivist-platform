@@ -1,6 +1,12 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.mail.Mailer;
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -10,28 +16,27 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.security.SecureRandom;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import models.*;
 import models.misc.Views;
-import models.transfer.AssemblySummaryTransfer;
-import models.transfer.AssemblyTransfer;
-import models.transfer.MembershipCollectionTransfer;
-import models.transfer.MembershipTransfer;
-import models.transfer.TransferResponseStatus;
+import models.transfer.*;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Results;
-import play.mvc.With;
+import play.mvc.*;
 import play.twirl.api.Content;
+import providers.MyLoginUsernamePasswordAuthUser;
+import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
@@ -50,12 +55,10 @@ import delegates.AssembliesDelegate;
 import delegates.MembershipsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ConfigTargets;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
+
+import javax.persistence.EntityNotFoundException;
 
 @Api(value = "01 assembly: Assembly Making", position=1, description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
 @With(Headers.class)
@@ -964,5 +967,257 @@ public class Assemblies extends Controller {
 							"Error when deleting Organization from Resource Space: " + e.toString())));
 		}
 		return ok("OK");
+	}
+
+	private static BufferedReader br;
+	private static Random random = new Random();
+	private static SecureRandom secureRandom = new SecureRandom();
+
+	private static String[] seedPasswords = { "sip", "hop", "vouch", "value", "walk",
+			"act", "stray", "call", "curl", "stay", "yell", "tack",
+			"sing", "yawn", "open", "read", "edit",
+			"spell", "fix", "love", "knit", "like",
+			"praise", "hide", "clip" };
+
+	/**
+	 * POST      /assembly/:aid/member
+	 *
+	 * @param aid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Upload users to assembly")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	public static Result uploadAssemblyUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+												@ApiParam(name = "send_invitations", value = "Send invitations if true") String sendInvitations) {
+
+		Http.MultipartFormData body = request().body().asMultipartFormData();
+		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		Assembly assembly = null;
+		ObjectMapper om = new ObjectMapper();
+		ArrayNode an = om.createArrayNode();
+
+		if (uploadFilePart != null) {
+			try {
+				assembly = Assembly.read(aid);
+				// Read CSV with list of users
+				br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+				String cvsSplitBy = ",";
+				String line = "";
+				while ((line = br.readLine()) != null) {
+					String[] cell = line.split(cvsSplitBy);
+					if (!line.contains("WebKitFormBoundary") && cell.length == 5) {
+						User u = User.findByEmail(cell[0]);
+						String pass = "";					// Create account if not exists
+						if (u == null) {
+							u = new User();
+							u.setEmail(cell[0]);
+							u.setName(cell[1] + " " + cell[2]);
+							u.setUsername(u.getEmail()); // email
+							u.setLanguage(cell[3]);
+							// For users without account: generate pass (see the test to generate passwords) and return this in the response
+							Integer passIndex = random.nextInt(25);
+							pass = seedPasswords[passIndex] + new BigInteger(20, secureRandom).toString(32);
+							MyLoginUsernamePasswordAuthUser authUser =
+									new MyLoginUsernamePasswordAuthUser(pass, u.getEmail());
+							// Hash a password for the first time
+							String hashed = authUser.getHashedPassword();
+							u.save();
+
+							LinkedAccount la = new LinkedAccount();
+							la.setUser(u);
+							la.setProviderUserId(hashed);
+							la.setProviderKey("password");
+							la.save();
+
+							UserProfile up = new UserProfile(null, null, cell[1], null, cell[2],
+									null, null);
+							up.setUser(u);
+							up.save();
+
+							ObjectNode on = om.createObjectNode();
+							on.put("username", u.getEmail());
+							on.put("password", pass);
+							an.add(on);
+						}
+
+						// If send_invitations==TRUE, send an invitation email to the corresponding email.
+						// Else create membership
+						if (sendInvitations.equals("true")) {
+							if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
+								InvitationTransfer invitation = new InvitationTransfer();
+								invitation.setEmail(u.getEmail());
+								invitation.setInvitationEmail(u.getEmail()); // change
+								invitation.setTargetId(assembly.getAssemblyId());
+								invitation.setTargetType("ASSEMBLY");
+								if (cell[4].toUpperCase().equals("COORDINATOR")) {
+									invitation.setCoordinator(true);
+									invitation.setModerator(false);
+								} else if (cell[4].toUpperCase().equals("MODERATOR")) {
+									invitation.setCoordinator(false);
+									invitation.setModerator(true);
+								} else {
+									invitation.setCoordinator(false);
+									invitation.setModerator(false);
+								}
+
+								MembershipInvitation.create(invitation, assembly.getCreator(), assembly);
+							}
+						} else {
+							// Create membership (with the assembly aid)
+							MembershipAssembly m = new MembershipAssembly();
+							m.setUser(u);
+							m.setMembershipType(cell[4].toUpperCase());
+							m.setTargetAssembly(assembly);
+							m.setAssembly(assembly);
+							m.setStatus(MembershipStatus.ACCEPTED);
+							m.save();
+
+						}
+					}
+
+				}
+			} catch(EntityNotFoundException e){
+				e.printStackTrace();
+				return internalServerError("The assembly doesn't exist");
+			} catch(Exception e){
+				e.printStackTrace();
+				return internalServerError("Error reading the CSV file");
+			}
+		}
+
+		return ok(Json.toJson(an));
+	}
+
+
+	/**
+	 * POST      /assembly/:aid/campaign/:cid/group/:gid/member
+	 *
+	 * @param aid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "POST", response = String.class, produces = "application/json", value = "Upload users to assembly")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	public static Result uploadGroupUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+													 @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+													 @ApiParam(name = "gid", value = "Working Group ID") Long gid,
+													 @ApiParam(name = "send_invitations", value = "Send invitations if true") String sendInvitations) {
+
+		Http.MultipartFormData body = request().body().asMultipartFormData();
+		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+		User requestor = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
+		WorkingGroup wg = null;
+		Assembly assembly = null;
+		ObjectMapper om = new ObjectMapper();
+		ArrayNode an = om.createArrayNode();
+
+		if (uploadFilePart != null) {
+			try {
+				wg = WorkingGroup.read(gid);
+				assembly = Assembly.read(aid);
+				// Read CSV with list of users
+				br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+				String cvsSplitBy = ",";
+				String line = "";
+				while ((line = br.readLine()) != null) {
+					String[] cell = line.split(cvsSplitBy);
+					if (!line.contains("WebKitFormBoundary") && cell.length == 5) {
+						User u = User.findByEmail(cell[0]);
+						String pass = "";                    // Create account if not exists
+						if (u == null) {
+							u = new User();
+							u.setEmail(cell[0]);
+							u.setName(cell[1] + " " + cell[2]);
+							u.setUsername(u.getEmail()); // email
+							u.setLanguage(cell[3]);
+							// For users without account: generate pass (see the test to generate passwords) and return this in the response
+
+							Integer passIndex = random.nextInt(25);
+							pass = seedPasswords[passIndex] + new BigInteger(20, secureRandom).toString(32);
+							MyLoginUsernamePasswordAuthUser authUser =
+									new MyLoginUsernamePasswordAuthUser(pass, u.getEmail());
+							// Hash a password for the first time
+							String hashed = authUser.getHashedPassword();
+							u.save();
+
+							LinkedAccount la = new LinkedAccount();
+							la.setUser(u);
+							la.setProviderUserId(hashed);
+							la.setProviderKey("password");
+							la.save();
+
+							UserProfile up = new UserProfile(null, null, cell[1], null, cell[2],
+									null, null);
+							up.setUser(u);
+							up.save();
+
+							ObjectNode on = om.createObjectNode();
+							on.put("username", u.getEmail());
+							on.put("password", pass);
+							an.add(on);
+						}
+
+						// If send_invitations==TRUE, send an invitation email to the corresponding email.
+						// Else create membership
+						if (sendInvitations.equals("true")) {
+							if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), wg.getGroupId(), MembershipTypes.GROUP)) {
+								InvitationTransfer invitation = new InvitationTransfer();
+								invitation.setEmail(u.getEmail());
+								invitation.setInvitationEmail(u.getEmail()); // change
+								invitation.setTargetId(wg.getGroupId());
+								invitation.setTargetType("WORKING_GROUP");
+
+								if (cell[4].toUpperCase().equals("COORDINATOR")) {
+									invitation.setCoordinator(true);
+									invitation.setModerator(false);
+								} else if (cell[4].toUpperCase().equals("MODERATOR")) {
+									invitation.setCoordinator(false);
+									invitation.setModerator(true);
+								} else {
+									invitation.setCoordinator(false);
+									invitation.setModerator(false);
+								}
+
+								MembershipInvitation.create(invitation, wg.getCreator(), wg);
+							}
+						} else {
+							// Create membership (with the group gid)
+							MembershipGroup mG = new MembershipGroup();
+							mG.setUser(u);
+							mG.setMembershipType(cell[4].toUpperCase());
+							mG.setTargetAssembly(assembly);
+							mG.setWorkingGroup(wg);
+							mG.setStatus(MembershipStatus.ACCEPTED);
+							mG.save();
+
+							// Also with the assembly aid
+							MembershipAssembly m = new MembershipAssembly();
+							m.setUser(u);
+							m.setMembershipType(cell[4].toUpperCase());
+							m.setTargetAssembly(assembly);
+							m.setAssembly(assembly);
+							m.setStatus(MembershipStatus.ACCEPTED);
+							m.save();
+						}
+					}
+				}
+			} catch(EntityNotFoundException e){
+				e.printStackTrace();
+				return internalServerError("The working group doesn't exist");
+			} catch(Exception e){
+				e.printStackTrace();
+				return internalServerError("Error reading the CSV file");
+			}
+		}
+
+		return ok(Json.toJson(an));
 	}
 }
