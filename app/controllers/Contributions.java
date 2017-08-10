@@ -85,6 +85,7 @@ import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
+import enums.MyRoles;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -1044,7 +1045,7 @@ public class Contributions extends Controller {
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
-            //Check headers if the request come from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
             if (newContribution.getType().equals(ContributionTypes.IDEA) 
 			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
 			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 

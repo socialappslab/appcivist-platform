@@ -3,7 +3,12 @@ package delegates;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import models.Assembly;
 import models.Campaign;
@@ -20,14 +25,10 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.dozer.DozerBeanMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Document.OutputSettings;
-import org.jsoup.nodes.Entities.EscapeMode;
-import org.jsoup.safety.Whitelist;
 
 import play.Logger;
 import play.Play;
 import play.mvc.Http;
-import scala.collection.generic.BitOperations.Int;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
@@ -39,14 +40,12 @@ import com.avaje.ebean.Model;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.RawSql;
 import com.avaje.ebean.RawSqlBuilder;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.SqlRow;
 
 import enums.ConfigTargets;
 import enums.ContributionStatus;
 import enums.ContributionTypes;
-import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
+
 
 public class ContributionsDelegate {
 
@@ -594,7 +593,15 @@ public class ContributionsDelegate {
         return headerMap;
     }
     
-    public static Boolean checkSocialIdeationHeaders() {
+    /**
+     * Check headers from Social Ideation. If all headers are provided, we check if the assembly has 
+     * Social Ideation App enabled. If it is not enabled, return -1 to stop the contribution from processing 
+     * (requests with these headers are not allowed). If no social header is provided, then ignore Social Ideation App
+     * If some headers, but not all are provided, return a bad request. 
+     *
+     * @return
+     */
+    public static Integer checkSocialIdeationHeaders() {
         HashMap<String,String> headerMap = getSocialIdeationHeaders ();
         Integer headersCount = 0;
         for (String headerKey : headerMap.keySet()) {
@@ -608,13 +615,13 @@ public class ContributionsDelegate {
             String assemblyID = headerMap.get("ASSEMBLY_ID");
             Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
             if (assemblyConfig == true)
-                return true;
+                return 1;
             else 
-                return false;
+                return -1;
         } else if (headersCount == 0) {
-            return true;
+            return 0;
         } else {
-            return false;
+            return -1;
         }
     }
   
