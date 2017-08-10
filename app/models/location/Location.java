@@ -220,8 +220,9 @@ public class Location extends Model {
 			}
 
 			this.geoJson = NominatimWrapper.geoCode(query).toString();
-		} else if (geocodingService.equals("mapbox")) {
-			this.geoJson = MapBoxWrapper.geoCode(query); // don't persist
+//		MapBox will be used only for live geocoding. Can't store as per ToS. 
+//		} else if (geocodingService.equals("mapbox")) {
+//			this.geoJson = MapBoxWrapper.geoCode(query);
 		}
 	}
 
