@@ -3,6 +3,7 @@ package controllers;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.NotificationsDelegate;
 import enums.AppcivistNotificationTypes;
@@ -61,6 +62,8 @@ public class Notifications extends Controller {
     final private static String NOTIFICATION_DESCRIPTION_UPCOMING_MILESTONE = "notification.description.campaign.upcoming.milestone";
 
     public static final Form<NotificationSubscriptionTransfer> SUBSCRIPTION_FORM = form(NotificationSubscriptionTransfer.class);
+    public static final Form<Subscription>  SUBSCRIPTION_FORM_NEW = form(Subscription.class);
+
 
     /**
      * userInbox is the method called by the route GET /user/{uuid}/inbox
@@ -114,6 +117,7 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.transfer.NotificationSubscriptionTransfer", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5','eventName':'NEW_CONTRIBUTION_IDEA'}"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
+    @Deprecated
     public static Result subscribe() {
         // Get the user record of the creator
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
@@ -136,6 +140,33 @@ public class Notifications extends Controller {
                 return internalServerError(Json.toJson(responseBody));
             }
         }
+    }
+
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result subscriptionSubscribe() {
+        // Get the user record of the creator
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+
+        JsonNode json = request().body().asJson();
+        Subscription sub = Json.fromJson(json, Subscription.class);
+
+        sub.setUser(subscriber);
+        Logger.info("Ignored Events " + sub.getIgnoredEvents());
+        if(sub.getIgnoredEvents()==null || sub.getIgnoredEvents().isEmpty()){
+            Logger.info("Ignored Events null or empty. Setting default value");
+            HashMap ignoredEvents = new HashMap<String, Boolean>();
+            ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
+            sub.setIgnoredEvents(ignoredEvents);
+        }
+        Logger.info("Ignored Events " + sub.getIgnoredEvents());
+        sub.insert();
+
+        return ok();
     }
 
     @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Unsubscribe to stop receiving notifications for eventName on origin", httpMethod = "DELETE")
