@@ -115,6 +115,7 @@ GET       /api/assembly/:aid/config/:cid                                        
 PUT       /api/assembly/:aid/config/:cid                                         controllers.Configs.updateConfig(aid: Long, cid: String)
 POST      /api/assembly/:aid/config                                              controllers.Configs.createConfig(aid: Long)
 DELETE    /api/assembly/:aid/config/:cid                                         controllers.Configs.deleteConfig(aid: Long, cid: String)
+PUT       /api/user/:aid/config/                                                 controllers.Configs.updateUserConfig(aid: Long)
 
 # Assembly: upload users
 POST      /api/assembly/:aid/member                                                  controllers.Assemblies.uploadAssemblyUsers(aid: Long, send_invitations ?= "false")

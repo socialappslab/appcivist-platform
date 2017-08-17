@@ -3,10 +3,12 @@ package controllers;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
+import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
 import enums.ResourceSpaceTypes;
+import enums.UserProfileConfigsTypes;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -384,6 +386,68 @@ public class Configs extends Controller {
 		}
 		responseBody.setStatusMessage("OK");
 		return ok(Json.toJson(responseBody));
+
+	}
+
+	/**
+	 * PUT       /api/space/:sid/config
+	 *
+	 * @param sid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class, produces = "application/json",
+			value = "Update user configs")
+	@ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "sid", value = "Resource Space id", dataType = "Long", paramType = "path"),
+			@ApiImplicitParam(name = "config_map", value = "configuration key value json map", dataType = "String", paramType = "body", required = true),
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
+	public static Result updateUserConfig(Long id) {
+		// Get the user record of the creator
+		User subscriber = User.findByUserId(id);
+
+		if(subscriber == null){
+			return badRequest(" User with id : " + id+ " doesn't exists");
+		}
+
+		JsonNode json = request().body().asJson();
+		HashMap<String,Object> configs = Json.fromJson(json, HashMap.class);
+		List<Config> actualUserConfigs = Config.findByUser(subscriber.getUuid());
+
+		Ebean.beginTransaction();
+		for ( String key : configs.keySet()) {
+			String value = configs.get(key).getClass().equals(Boolean.class) ? String.valueOf(configs.get(key)) : (String)configs.get(key);
+			if(UserProfileConfigsTypes.list.contains(key)){
+				Boolean updated = false;
+				for(Config actual : actualUserConfigs){
+					if(actual.getKey().equals(key)){
+						//Update config
+						actual.setValue(value);
+						actual.update();
+						updated = true;
+						break;
+					}
+				}
+				if(!updated) {
+					//Save a new config
+					Config config = new Config();
+					config.setTargetUuid(subscriber.getUuid());
+					config.setValue(value);
+					config.setConfigTarget(ConfigTargets.USER);
+					config.setKey(key);
+					config.save();
+				}
+
+			}else{
+				// return bad request
+				return badRequest(" Config type: " + key + " not allowed");
+			}
+		}
+		Ebean.commitTransaction();
+
+
+		return ok();
 
 	}
 }
