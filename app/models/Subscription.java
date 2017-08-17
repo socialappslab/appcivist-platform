@@ -1,6 +1,6 @@
 package models;
 
-import com.avaje.ebean.Model;
+import com.avaje.ebean.*;
 import com.avaje.ebean.annotation.DbJson;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModel;
 
 import javax.persistence.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -63,6 +64,8 @@ public class Subscription extends Model {
 
     @Column(name = "default_identity")
     private Integer defaultIdentity = null;
+
+    public static Finder<Long, Subscription> find = new Finder<>(Subscription.class);
 
     public Subscription() {
         super();
@@ -155,6 +158,12 @@ public class Subscription extends Model {
 
     public void setDefaultIdentity(Integer defaultIdentity) {
         this.defaultIdentity = defaultIdentity;
+    }
+
+    public static List<Subscription> findByUserId(User u) {
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUserId()).query();
+        List<Subscription> membs = q.findList();
+        return membs;
     }
 
 

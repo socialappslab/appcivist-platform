@@ -80,7 +80,6 @@ GET       /api/notification/inbox/:sid                                          
 GET       /api/notification/user/:uuid                                           controllers.Notifications.userInbox(uuid: java.util.UUID)
 GET       /api/notification/subscription                                         controllers.Notifications.subscriptions()
 POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
-POST      /api/notification/subscription/subscribe                               controllers.Notifications.subscriptionSubscribe()
 DELETE    /api/notification/subscription/:origin/:eventName                      controllers.Notifications.unsubscribe(origin: java.util.UUID, eventName: String)
 GET       /api/notification/subscription/:sid                                    controllers.Notifications.subscribeToResourceSpace(sid: Long)
 DELETE    /api/notification/subscription/:sid                                    controllers.Notifications.unsubscribeToResourceSpace(sid: Long)

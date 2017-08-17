@@ -24,6 +24,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
+import scala.tools.nsc.backend.icode.Primitives;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 
@@ -83,35 +84,16 @@ public class Notifications extends Controller {
     public static Result userInbox(UUID userUUID) {
         // 0. Obtain User
         User u = User.findByUUID(userUUID);
-        // 1. Get a list of Assemblies to which the User belongs
-        List<Membership> myAssemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
-        // 2. Get a list of Working Groups to which the User belongs
-        List<Membership> myGroupMemberships = Membership.findByUser(u, "GROUP");
-        // 3. Get a list of Contributions by the user
-        List<Contribution> myContribs = Contribution.readByCreator(u);
 
-        List<UpdateTransfer> updates = new ArrayList<UpdateTransfer>();
+        List<Subscription> subscriptions = Subscription.findByUserId(u);
 
-        // 4. Process AssemblyMemberships to get
-        // 4.1. New Assembly Forum Posts
-        // 4.2. Current Ongoing Campaigns Upcoming Milestones
-        // 4.3. Current Ongoing Campaigns Latest Contribution
-        updates = processMyAssemblies(u, updates, myAssemblyMemberships);
-
-        // 5. Process GroupMemberships to get
-        // 5.1. New Group Forum Posts
-        // 5.2. New comments related to Group Contributions
-        //TODO: updates = processMyGroups(u, updates, myGroupMemberships);
-
-        // 6. Process Contributions to get comments on them
-        //TODO: updates = processMyContributions(u, updates, myContribs);
-        if (!updates.isEmpty()) return ok(Json.toJson(updates));
+        if (!subscriptions.isEmpty()) return ok(Json.toJson(subscriptions));
         else
             return notFound(Json.toJson(new TransferResponseStatus("No updates")));
     }
 
 
-    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
+   /* @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.transfer.NotificationSubscriptionTransfer", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5','eventName':'NEW_CONTRIBUTION_IDEA'}"),
@@ -140,7 +122,7 @@ public class Notifications extends Controller {
                 return internalServerError(Json.toJson(responseBody));
             }
         }
-    }
+    }*/
 
     @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
@@ -148,7 +130,7 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
-    public static Result subscriptionSubscribe() {
+    public static Result subscribe() {
         // Get the user record of the creator
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
