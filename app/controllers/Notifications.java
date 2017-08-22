@@ -3,8 +3,10 @@ package controllers;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import delegates.NotificationsDelegate;
 import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
@@ -141,12 +143,28 @@ public class Notifications extends Controller {
         Logger.info("Ignored Events " + sub.getIgnoredEvents());
         if(sub.getIgnoredEvents()==null || sub.getIgnoredEvents().isEmpty()){
             Logger.info("Ignored Events null or empty. Setting default value");
-            HashMap ignoredEvents = new HashMap<String, Boolean>();
+            HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
             ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
             sub.setIgnoredEvents(ignoredEvents);
         }
         Logger.info("Ignored Events " + sub.getIgnoredEvents());
-        sub.insert();
+        try {
+			sub.insert();
+		} catch (Exception e) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			String error = e.getMessage();
+			Boolean uniqueConstraintError = error.contains("unique constraint");
+			if (uniqueConstraintError) {
+				error = "User is already subscribed to this space";
+	            responseBody.setStatusMessage("Error creating subscription: "+error);
+	            Logger.info("Subscription already exists");
+	            return ok(Json.toJson(responseBody));
+			} else {
+	            responseBody.setStatusMessage("Error creating subscription: "+error);
+	            Logger.error("Configuration error: ", e);
+	            return internalServerError(Json.toJson(responseBody));
+			}
+		}
 
         return ok();
     }
