@@ -13,6 +13,7 @@ import enums.UserProfileConfigsTypes;
 import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
+import models.transfer.PreferenceTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.Form;
@@ -457,12 +458,15 @@ public class Configs extends Controller {
         JsonNode json = request().body().asJson();
         HashMap<String, Object> configs = Json.fromJson(json, HashMap.class);
         List<Config> actualUserConfigs = Config.findByUser(subscriber.getUuid());
+        PreferenceTransfer preferenceUpdate = null;
 
         Ebean.beginTransaction();
         try {
             for (String key : configs.keySet()) {
                 String value = configs.get(key).getClass().equals(Boolean.class) ? String.valueOf(configs.get(key)) : (String) configs.get(key);
-                if (UserProfileConfigsTypes.list.contains(key)) {
+                if (UserProfileConfigsTypes.entities.contains(key) ||
+                        UserProfileConfigsTypes.otherPreferences.contains(key) ||
+                        UserProfileConfigsTypes.preferencesNewsletter.keySet().contains(key)) {
                     Boolean updated = false;
                     for (Config actual : actualUserConfigs) {
                         if (actual.getKey().equals(key)) {
@@ -484,7 +488,18 @@ public class Configs extends Controller {
                     }
 
                     //Update email configuration in entity manager
-                    updateIdentities(key,value,subscriber);
+                    if (UserProfileConfigsTypes.entities.contains(key)) {
+                        updateIdentities(key, value, subscriber);
+                    }
+
+                    if(UserProfileConfigsTypes.preferencesNewsletter.keySet().contains(key)){
+                        if(preferenceUpdate == null){
+                            preferenceUpdate = new PreferenceTransfer(subscriber.getUuidAsString());
+
+                        }
+                        //TODO create 
+
+                    }
 
                 } else {
                     // return bad request
@@ -507,94 +522,70 @@ public class Configs extends Controller {
 
     }
 
-    private  static void updateIdentities(String key, String value, User subscriber) throws Exception{
+    private static void updateIdentities(String key, String value, User subscriber) throws Exception {
         EntityManagerWrapper wrapper = new EntityManagerWrapper();
 
-        if (key.equals("notifications.service.email.identity") || key.equals("notifications.service.email")) {
-            String email = subscriber.getEmail();
-            Boolean serviceEmailConfig = false;
 
-
-
-            if(key.equals("notifications.service.email.identity")){
-                email = value;
-                Config valueConfig = Config.findByUser(subscriber.getUuid(),"notifications.service.email");
-                if(valueConfig != null) {
-                    serviceEmailConfig = Boolean.valueOf(valueConfig.getValue());
-                }
-
+        if (key.equals("notifications.service.email.identity")) {
+            String email = value;
+            if (email == null || email.isEmpty()) {
+                email = subscriber.getEmail();
             }
-
-            if(key.equals("notifications.service.email")){
-                serviceEmailConfig = Boolean.valueOf(value);
-                Config valueConfig = Config.findByUser(subscriber.getUuid(),"notifications.service.email.identity");
-                if(valueConfig != null ){
-                    email = valueConfig.getValue();
-                }
-
-            }
-
             wrapper.updateIdentities(subscriber,
                     "email",
                     email,
+                    null);
+        }
+
+        if (key.equals("notifications.service.email")) {
+            Boolean serviceEmailConfig = Boolean.valueOf(value);
+            wrapper.updateIdentities(subscriber,
+                    "email",
+                    null,
                     serviceEmailConfig);
 
         }
-        if (key.equals("notifications.service.facebook-messenger.identity")|| key.equals("notifications.service.facebook-messenger")) {
-            String facebookIdentity ="";
-            Boolean configValue = false;
 
-            if (key.equals("notifications.service.facebook-messenger.identity")) {
-                facebookIdentity = value;
-                Config valueConfig = Config.findByUser(subscriber.getUuid(),"notifications.service.facebook-messenger");
-                if(valueConfig!=null){
-                    configValue = Boolean.valueOf(valueConfig.getValue());
-                }
 
-            }
-
-            if(key.equals("notifications.service.facebook-messenger")){
-                configValue = Boolean.valueOf(value);
-                Config valueConfig = Config.findByUser(subscriber.getUuid(),"notifications.service.facebook-messenger.identity");
-                if(valueConfig!=null){
-                    facebookIdentity = valueConfig.getValue();
-                }
-
-            }
-
+        if (key.equals("notifications.service.facebook-messenger.identity")) {
+            String facebookIdentity = value;
             wrapper.updateIdentities(subscriber,
                     "facebookmessenger",
                     facebookIdentity,
+                    null);
+
+        }
+
+        if (key.equals("notifications.service.facebook-messenger")) {
+            Boolean configValue = Boolean.valueOf(value);
+            wrapper.updateIdentities(subscriber,
+                    "facebookmessenger",
+                    null,
                     configValue);
 
         }
-        if (key.equals("notifications.service.twitter.identity") || key.equals("notifications.service.twitter-messenger")) {
-            String identity ="";
-            Boolean configValue = false;
 
-            if (key.equals("notifications.service.twitter.identity")) {
-                identity = value;
-                Config valueConfig = Config.findByUser(subscriber.getUuid(),"notifications.service.twitter-messenger");
-                if(valueConfig!=null){
-                    configValue = Boolean.valueOf(valueConfig.getValue());
-                }
 
-            }
-
-            if(key.equals("notifications.service.twitter-messenger")){
-                configValue = Boolean.valueOf(value);
-                Config valueConfig = Config.findByUser(subscriber.getUuid(),"notifications.service.twitter.identity");
-                if(valueConfig!=null){
-                    identity = valueConfig.getValue();
-                }
-
-            }
-
+        if (key.equals("notifications.service.twitter.identity")) {
+            String identity = value;
             wrapper.updateIdentities(subscriber,
                     "twitter",
                     identity,
-                    configValue);
+                    null);
+
+
         }
+
+        if (key.equals("notifications.service.twitter-messenger")) {
+            Boolean configValue = Boolean.valueOf(value);
+            wrapper.updateIdentities(subscriber,
+                    "twitter",
+                    null,
+                    configValue);
+
+        }
+
+
     }
 
     /**

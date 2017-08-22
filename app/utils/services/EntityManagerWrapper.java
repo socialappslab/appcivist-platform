@@ -1,8 +1,6 @@
 package utils.services;
 
 import models.User;
-import models.transfer.NotificationSubscriptionTransfer;
-import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -10,7 +8,6 @@ import play.libs.Json;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
-import play.mvc.Controller;
 import utils.GlobalData;
 
 import java.util.HashMap;
@@ -34,7 +31,7 @@ public class EntityManagerWrapper {
             F.Promise<WSResponse> promise = wsSend(holder);
             WSResponse response = promise.get(DEFAULT_TIMEOUT);
             return response;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -42,12 +39,12 @@ public class EntityManagerWrapper {
 
     /**
      * Creates a user
-     * @param user
-     * {
-     *   "userId": "<value of appcivistUserUUID>",
-     *   "name": "<value of appcivist User's Name and Lastname",
-     *   "lang": "<value of appcivist User Lang"
-     *  }
+     *
+     * @param user {
+     *             "userId": "<value of appcivistUserUUID>",
+     *             "name": "<value of appcivist User's Name and Lastname",
+     *             "lang": "<value of appcivist User Lang"
+     *             }
      * @return
      */
     public void createUser(User user) throws Exception {
@@ -68,18 +65,23 @@ public class EntityManagerWrapper {
         } else {
             throw new Exception(
                     "Error while creating user at entity manager " +
-                    response.asJson().toString());
+                            response.asJson().toString());
         }
 
     }
 
-    public void updateIdentities (User user,String serviceName, String identity, Boolean value) throws Exception {
+    public void updateIdentities(User user, String serviceName, String identity, Boolean value) throws Exception {
 
         HashMap<String, Object> u = new HashMap<>();
+
         u.put("serviceId", serviceName);
         u.put("userId", user.getUuidAsString());
-        u.put("identity",identity);
-        u.put("enabled", value);
+        if (identity != null) {
+            u.put("identity", identity);
+        }
+        if (value != null) {
+            u.put("enabled", value);
+        }
 
         WSRequest holder = getWSHolder(IDENTITIES, "PUT", u);
         Logger.info("ENTITY MANAGER: Updating identities: " + holder.getUrl());
@@ -89,7 +91,7 @@ public class EntityManagerWrapper {
         Logger.info("ENTITY MANAGER: Identity: " + u);
 
         if (response.getStatus() == 200) {
-            Logger.info("ENTITY MANAGER: "+serviceName +  " created successfully");
+            Logger.info("ENTITY MANAGER: " + serviceName + " created successfully");
 
         } else {
 
