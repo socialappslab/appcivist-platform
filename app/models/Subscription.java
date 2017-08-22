@@ -18,6 +18,7 @@ import javax.persistence.Transient;
 
 import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.DbJson;
+import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -56,12 +57,12 @@ public class Subscription extends Model {
     @Column(name = "newsletter_frecuency")
     private Integer newsletterFrecuency = 7;
 
-    @DbJson
+    @DbJsonB
     @Column(name = "ignored_events")
     @JsonInclude(Include.NON_EMPTY)
     private Map<String, Boolean> ignoredEvents;
 
-    @DbJson
+    @DbJsonB
     @JsonInclude(Include.NON_EMPTY)
     @Column(name = "disabled_services")
     private Map<String, Boolean> disabledServices;
@@ -177,6 +178,4 @@ public class Subscription extends Model {
         List<Subscription> membs = q.findList();
         return membs;
     }
-
-
 }
