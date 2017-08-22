@@ -314,7 +314,7 @@ public class Users extends Controller {
       @ApiImplicitParam(name = "userId", value = "Facebook user's id", dataType = "String", paramType = "body"),
       @ApiImplicitParam(name = "accessToken", value = "New access token from facebook", dataType = "String", paramType = "body"),
       @ApiImplicitParam(name = "expiration", value = "Expiration (in seconds) of the token", dataType = "String", paramType = "body"),
-      @ApiImplicitParam(name = "auuid", value = "UUID of the assembly which", dataType = "UUID", paramType = "body") })
+      @ApiImplicitParam(name = "auuid", value = "UUID of the assembly which", dataType = "java.util.UUID", paramType = "body") })
   @SubjectPresent
   public static Result createFbToken(Long uid) {
     User user = User.findByUserId(uid);
@@ -508,7 +508,7 @@ public class Users extends Controller {
       @ApiImplicitParam(name = "userId", value = "Facebook user's id", dataType = "String", paramType = "body"),
       @ApiImplicitParam(name = "accessToken", value = "New access token from facebook", dataType = "String", paramType = "body"),
       @ApiImplicitParam(name = "expiration", value = "Expiration (in seconds) of the token", dataType = "String", paramType = "body"),
-        @ApiImplicitParam(name = "auuid", value = "UUID of the assembly which", dataType = "UUID", paramType = "body") })
+        @ApiImplicitParam(name = "auuid", value = "UUID of the assembly which", dataType = "java.util.UUID", paramType = "body") })
   @SubjectPresent
   public static Result updateFbToken(Long uid) {
     User user = User.findByUserId(uid);
