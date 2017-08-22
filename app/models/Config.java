@@ -149,6 +149,13 @@ public class Config extends AppCivistBaseModel {
                 .findList();
     }
 
+    public static Config findByUser(UUID userUUID, String configKey) {
+        return find.where().eq("targetUuid", userUUID)
+                .eq("configTarget", ConfigTargets.USER)
+                .eq("key", configKey)
+                .findUnique();
+    }
+
     public static List<Config> findByCampaign(UUID campaignUUID, ConfigDefinition configDefinition) {
         return find.where().eq("targetUuid", campaignUUID)
                 .eq("configTarget", ConfigTargets.CAMPAIGN)

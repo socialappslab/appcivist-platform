@@ -1,6 +1,7 @@
 package enums;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -21,5 +22,6 @@ public class UserProfileConfigsTypes {
             "notifications.preference.contributed-contributions.auto-subscription",
             "notifications.preference.my-working-group.auto-subscription",
             "notifications.preference.working-groups-contributed.signal.auto-subscription");
+
 
 }
