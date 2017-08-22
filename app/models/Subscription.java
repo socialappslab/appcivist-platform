@@ -1,19 +1,29 @@
 package models;
 
-import com.avaje.ebean.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
+
+import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.DbJson;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import enums.ContributionTypes;
+
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
-import io.swagger.annotations.ApiModel;
-
-import javax.persistence.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 @Entity
@@ -22,9 +32,11 @@ import java.util.Map;
 public class Subscription extends Model {
     @Id
     @GeneratedValue
+    @ApiModelProperty(hidden=true)
     private Long id;
 
     @Transient
+    @ApiModelProperty(hidden=true)
     private Long userId;
 
     @JsonInclude(Include.NON_EMPTY)
@@ -42,7 +54,7 @@ public class Subscription extends Model {
     private SubscriptionTypes subscriptionType;
 
     @Column(name = "newsletter_frecuency")
-    private Integer newsletterFrecuency;
+    private Integer newsletterFrecuency = 7;
 
     @DbJson
     @Column(name = "ignored_events")
