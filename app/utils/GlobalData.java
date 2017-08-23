@@ -94,6 +94,8 @@ public class GlobalData {
 	public static final String MISSING_CONFIGURATION = "appcivist.configuration.missing";
 	public static final String CONFIG_RECAPTCHA_SERVER_URL = "appcivist.services.recaptcha.serverURL";
 	public static final String CONFIG_RECAPTCHA_SECRET = "appcivist.services.recaptcha.secret";
+	public static final String CONFIG_URI_ENTITY_MANAGER = "appcivist.services.entityManager.serverURL";
+
 
 	public static final String CONFIG_FORGOT_PASSWORD_URL_BASE = "appcivist.services.password.forgotBaseUrl";
 	public static final String FORGOT_PASSWORD_DEFAULT_URL_BASE = "/user/password/reset/";

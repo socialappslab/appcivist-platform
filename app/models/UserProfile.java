@@ -2,19 +2,17 @@ package models;
 
 import io.swagger.annotations.ApiModel;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import models.location.Geometry;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -40,13 +38,18 @@ public class UserProfile extends AppCivistBaseModel {
 	@Column(name="gender")
 	private String gender;
 
+
 	// TODO add contact information
 	@JsonIgnore
 	@OneToOne
 	private User user;
 
+	@Transient
+	@JsonInclude(Include.NON_EMPTY)
+	private List<Config> configs;
+
 	public UserProfile(User creator, UUID uuid, String name, String middleName, String lastName,
-			Date birthdate, String address) {
+					   Date birthdate, String address) {
 		this.uuid = uuid;
 		this.user = creator;
 		this.name = name;
@@ -55,6 +58,24 @@ public class UserProfile extends AppCivistBaseModel {
 		this.birthdate = birthdate;
 		this.address = address;
 	}
+
+	public List<Config> getConfigs() {
+		return configs;
+	}
+
+	public void setConfigs(List<Config> configs) {
+		this.configs = configs;
+	}
+
+	public static Finder<Long, UserProfile> getFind() {
+		return find;
+	}
+
+	public static void setFind(Finder<Long, UserProfile> find) {
+		UserProfile.find = find;
+	}
+
+
 
 	public static Finder<Long, UserProfile> find = new Finder<>(UserProfile.class);
 
