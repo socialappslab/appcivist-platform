@@ -13,6 +13,7 @@ import enums.UserProfileConfigsTypes;
 import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
+import models.transfer.AutoSuscriptionTransfer;
 import models.transfer.PreferenceTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
@@ -27,6 +28,7 @@ import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.services.EntityManagerWrapper;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -459,6 +461,7 @@ public class Configs extends Controller {
         HashMap<String, Object> configs = Json.fromJson(json, HashMap.class);
         List<Config> actualUserConfigs = Config.findByUser(subscriber.getUuid());
         PreferenceTransfer preferenceUpdate = null;
+        AutoSuscriptionTransfer subcription = null;
 
         Ebean.beginTransaction();
         try {
@@ -492,14 +495,39 @@ public class Configs extends Controller {
                         updateIdentities(key, value, subscriber);
                     }
 
-                    if(UserProfileConfigsTypes.preferencesNewsletter.keySet().contains(key)){
-                        if(preferenceUpdate == null){
+                    if (UserProfileConfigsTypes.preferencesNewsletter.keySet().contains(key)) {
+                        Logger.info(" --- FOUND: " + key);
+                        if (preferenceUpdate == null) {
                             preferenceUpdate = new PreferenceTransfer(subscriber.getUuidAsString());
 
                         }
-                        //TODO create 
+                        if (key.equals("notifications.default.service")) {
+                            preferenceUpdate.setDefaultService(value);
+                        } else {
+                            if (subcription == null) {
+                                subcription = new AutoSuscriptionTransfer( "campaign-newsletter");
+                                subcription.setIdentity(subscriber.getEmail());
+                                preferenceUpdate.getAutoSusbcriptions().add(subcription);
+                            }
+                            Class clazz = subcription.getClass();
 
+
+                            for (Field f : clazz.getDeclaredFields()) {
+                                f.setAccessible(true);
+                                if (f.getName().equals(UserProfileConfigsTypes.preferencesNewsletter.get(key))) {
+                                    try {
+                                        f.set(subcription, value);
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+
+
+                        }
                     }
+
 
                 } else {
                     // return bad request
@@ -509,7 +537,14 @@ public class Configs extends Controller {
                                     " Config type: " + key + " not allowed")));
                 }
             }
+            Logger.info(" --- Update PReferences: " + preferenceUpdate);
+            if (preferenceUpdate != null && !preferenceUpdate.getAutoSusbcriptions().isEmpty()) {
+                //update preferences
+                Logger.info(" --- creating auto subscription: " + preferenceUpdate);
+                wrapper.updateAutoSubcriptions(preferenceUpdate, subscriber);
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             return internalServerError(Json
                     .toJson(new TransferResponseStatus(
                             ResponseStatus.SERVERERROR,
@@ -521,6 +556,7 @@ public class Configs extends Controller {
         return ok();
 
     }
+
 
     private static void updateIdentities(String key, String value, User subscriber) throws Exception {
         EntityManagerWrapper wrapper = new EntityManagerWrapper();

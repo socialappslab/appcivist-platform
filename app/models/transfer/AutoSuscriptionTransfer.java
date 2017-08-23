@@ -8,6 +8,10 @@ public class AutoSuscriptionTransfer {
     String enabled;
     String identity;
 
+    public AutoSuscriptionTransfer(String key){
+        this.key = key;
+    }
+
     public String getKey() {
         return key;
     }

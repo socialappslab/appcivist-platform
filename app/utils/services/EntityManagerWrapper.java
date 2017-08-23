@@ -1,6 +1,7 @@
 package utils.services;
 
 import models.User;
+import models.transfer.PreferenceTransfer;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -19,6 +20,8 @@ public class EntityManagerWrapper {
 
     private final String USERS = "users/";
     private final String IDENTITIES = "identities/";
+    private final String PREFERENCES = "preferences/";
+
     private static final long DEFAULT_TIMEOUT = 20000;
 
 
@@ -141,4 +144,22 @@ public class EntityManagerWrapper {
         return holder;
     }
 
+    public void updateAutoSubcriptions(PreferenceTransfer preferenceUpdate, User subscriber) throws Exception{
+
+
+        WSRequest holder = getWSHolder(PREFERENCES + subscriber.getUuidAsString(), "PUT", preferenceUpdate);
+        Logger.info("ENTITY MANAGER: Updating preferences: " + holder.getUrl());
+        F.Promise<WSResponse> promise = wsSend(holder);
+        WSResponse response = promise.get(DEFAULT_TIMEOUT);
+
+
+        if (response.getStatus() == 200) {
+            Logger.info("ENTITY MANAGER: " + PREFERENCES + " created successfully");
+
+        } else {
+
+            throw new Exception("Error while updating user preferences at entity manager: " +
+                    response.asJson().toString());
+        }
+    }
 }

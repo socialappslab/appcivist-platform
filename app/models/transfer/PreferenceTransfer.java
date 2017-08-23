@@ -14,6 +14,7 @@ public class PreferenceTransfer {
     public PreferenceTransfer(String uuid){
         super();
         this.userId = uuid;
+        this.autoSusbcriptions = new ArrayList<>();
     }
 
     public String getUserId() {
