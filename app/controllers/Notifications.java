@@ -3,7 +3,10 @@ package controllers;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
+
 import delegates.NotificationsDelegate;
 import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
@@ -23,6 +26,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
+import scala.tools.nsc.backend.icode.Primitives;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 
@@ -61,6 +65,8 @@ public class Notifications extends Controller {
     final private static String NOTIFICATION_DESCRIPTION_UPCOMING_MILESTONE = "notification.description.campaign.upcoming.milestone";
 
     public static final Form<NotificationSubscriptionTransfer> SUBSCRIPTION_FORM = form(NotificationSubscriptionTransfer.class);
+    public static final Form<Subscription>  SUBSCRIPTION_FORM_NEW = form(Subscription.class);
+
 
     /**
      * userInbox is the method called by the route GET /user/{uuid}/inbox
@@ -80,40 +86,22 @@ public class Notifications extends Controller {
     public static Result userInbox(UUID userUUID) {
         // 0. Obtain User
         User u = User.findByUUID(userUUID);
-        // 1. Get a list of Assemblies to which the User belongs
-        List<Membership> myAssemblyMemberships = Membership.findByUser(u, "ASSEMBLY");
-        // 2. Get a list of Working Groups to which the User belongs
-        List<Membership> myGroupMemberships = Membership.findByUser(u, "GROUP");
-        // 3. Get a list of Contributions by the user
-        List<Contribution> myContribs = Contribution.readByCreator(u);
 
-        List<UpdateTransfer> updates = new ArrayList<UpdateTransfer>();
+        List<Subscription> subscriptions = Subscription.findByUserId(u);
 
-        // 4. Process AssemblyMemberships to get
-        // 4.1. New Assembly Forum Posts
-        // 4.2. Current Ongoing Campaigns Upcoming Milestones
-        // 4.3. Current Ongoing Campaigns Latest Contribution
-        updates = processMyAssemblies(u, updates, myAssemblyMemberships);
-
-        // 5. Process GroupMemberships to get
-        // 5.1. New Group Forum Posts
-        // 5.2. New comments related to Group Contributions
-        //TODO: updates = processMyGroups(u, updates, myGroupMemberships);
-
-        // 6. Process Contributions to get comments on them
-        //TODO: updates = processMyContributions(u, updates, myContribs);
-        if (!updates.isEmpty()) return ok(Json.toJson(updates));
+        if (!subscriptions.isEmpty()) return ok(Json.toJson(subscriptions));
         else
             return notFound(Json.toJson(new TransferResponseStatus("No updates")));
     }
 
 
-    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
+   /* @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.transfer.NotificationSubscriptionTransfer", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5','eventName':'NEW_CONTRIBUTION_IDEA'}"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
+    @Deprecated
     public static Result subscribe() {
         // Get the user record of the creator
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
@@ -136,6 +124,49 @@ public class Notifications extends Controller {
                 return internalServerError(Json.toJson(responseBody));
             }
         }
+    }*/
+
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result subscribe() {
+        // Get the user record of the creator
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+
+        JsonNode json = request().body().asJson();
+        Subscription sub = Json.fromJson(json, Subscription.class);
+
+        sub.setUser(subscriber);
+        Logger.info("Ignored Events " + sub.getIgnoredEvents());
+        if(sub.getIgnoredEvents()==null || sub.getIgnoredEvents().isEmpty()){
+            Logger.info("Ignored Events null or empty. Setting default value");
+            HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
+            ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
+            sub.setIgnoredEvents(ignoredEvents);
+        }
+        Logger.info("Ignored Events " + sub.getIgnoredEvents());
+        try {
+			sub.insert();
+		} catch (Exception e) {
+			TransferResponseStatus responseBody = new TransferResponseStatus();
+			String error = e.getMessage();
+			Boolean uniqueConstraintError = error.contains("unique constraint");
+			if (uniqueConstraintError) {
+				error = "User is already subscribed to this space";
+	            responseBody.setStatusMessage("Error creating subscription: "+error);
+	            Logger.info("Subscription already exists");
+	            return ok(Json.toJson(responseBody));
+			} else {
+	            responseBody.setStatusMessage("Error creating subscription: "+error);
+	            Logger.error("Configuration error: ", e);
+	            return internalServerError(Json.toJson(responseBody));
+			}
+		}
+
+        return ok();
     }
 
     @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Unsubscribe to stop receiving notifications for eventName on origin", httpMethod = "DELETE")

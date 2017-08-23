@@ -1823,8 +1823,6 @@ update location set marked_for_review = true;
 -- 48.sql 
 ALTER TABLE "public"."contribution" ALTER COLUMN "source" SET DEFAULT 'AppCivist Online';
 UPDATE contribution SET source = 'AppCivist Oline';
-UPDATE contribution SET source = 'AppCivist Oline';
-
 
 -- 49.sql
 
@@ -1859,6 +1857,8 @@ CREATE TABLE public.subscription
 WITH (
   OIDS=FALSE
 );
+
+CREATE UNIQUE INDEX unique_subscription_of_user_in_space ON subscription (user_user_id, space_id, subscription_type);
 
 -- 50. SQL
 ALTER TABLE public.config DROP CONSTRAINT ck_config_config_target;
