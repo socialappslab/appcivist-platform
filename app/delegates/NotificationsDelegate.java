@@ -12,17 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import models.AppCivistBaseModel;
-import models.Assembly;
-import models.Ballot;
-import models.Campaign;
-import models.Component;
-import models.ComponentMilestone;
-import models.Contribution;
-import models.NotificationEventSignal;
-import models.ResourceSpace;
-import models.User;
-import models.WorkingGroup;
+import models.*;
 import models.transfer.NotificationEventTransfer;
 import models.transfer.NotificationSignalTransfer;
 import models.transfer.NotificationSubscriptionTransfer;
@@ -624,7 +614,22 @@ public class NotificationsDelegate {
     }
 
     /* Subscriptions */
+    @Deprecated
     public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) throws ConfigurationException {
+        NotificationServiceWrapper ns = new NotificationServiceWrapper();
+        WSResponse response = ns.createNotificationSubscription(subscription);
+        // Relay response to requestor
+        if (response.getStatus() == 200) {
+            Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
+            return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
+        } else {
+            Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
+            return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
+        }
+    }
+
+    /* Subscriptions */
+    public static Result subscribeToEvent(Subscription subscription) throws ConfigurationException {
         NotificationServiceWrapper ns = new NotificationServiceWrapper();
         WSResponse response = ns.createNotificationSubscription(subscription);
         // Relay response to requestor
