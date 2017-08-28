@@ -546,7 +546,7 @@ public class NotificationsDelegate {
         // TODO: after updating notification service, use title for something different
         newNotificationSignal.setTitle(notificationEvent.getTitle());
 
-        newNotificationSignal.setSpaceId((String) notificationEvent.getData().get("resourceUUID"));
+        newNotificationSignal.setSpaceId((String) notificationEvent.getData().get("origin"));
         newNotificationSignal.setSignalType(notificationEvent.getSignalType().toString());
         newNotificationSignal.setSpaceType((String) notificationEvent.getData().get("resourceType"));
 
