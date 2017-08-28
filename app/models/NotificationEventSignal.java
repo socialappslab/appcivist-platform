@@ -1,16 +1,16 @@
 package models;
 
+import com.avaje.ebean.annotation.DbJsonB;
+import enums.SpaceTypes;
+import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,20 +23,47 @@ import enums.ResourceSpaceTypes;
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(value="NotificationEventSignal", description="A notification event signal is a single notification that is signaled (i.e., sent) to users who have subscribed to the event name in the resource space")
 public class NotificationEventSignal extends AppCivistBaseModel {
+
+	/*{
+    [Other fields liek origin, originType, etc.],
+		"spaceType" : "CAMPAIGN",
+			"spaceId": "[UUID of the CAMPAIGN resourceSpace",
+			"signalType": "[REGULAR|NEWSLETTER]",
+			"eventId": "NEW_CONTRIBUTION_IDEA",
+			"title" : "notification.new.contribution.idea.in.campaign",
+			"text" : "notification.description.general.resource_new",
+			"data" : "{"creation":"2017-08-27 17:11 PM GMT","lastUpdate":"2017-08-27 17:11 PM GMT","lang":"en","removed":false,"origin":"e1998630-4079-11e5-a151-feff819cdc9f","originType":"CAMPAIGN","eventName":"NEW_CONTRIBUTION_IDEA","originName":"Belleville - Paris PB 2016","title":"[AppCivist] New IDEA in Belleville - Paris PB 2016","resourceType":"IDEA","resourceUUID":"bd08f16f-ab4a-427e-b3aa-22823cb698bb","resourceTitle":"Testing idea","resourceText":"<p>this is my idea</p>","notificationDate":"2017-08-27 17:11 PM GMT","associatedUser":"Cristhian Parra","signaled":false}"
+	}*/
+
 	@Id
 	@GeneratedValue
 	private Long id;
-	private UUID uuid;
-	
+
+	@Enumerated(EnumType.STRING)
+	private ResourceSpaceTypes spaceType;
+
+	@Enumerated(EnumType.STRING)
+	private SubscriptionTypes signalType = SubscriptionTypes.REGULAR;
+
+	@Enumerated(EnumType.STRING)
+	private NotificationEventName eventId;
+
+	private String title;
+	private String text;
+
+	@DbJsonB
+	@Column(name = "data")
+	@JsonInclude(Include.NON_EMPTY)
+	private Map<String, Object> data;
+
 	// Information about the space where the event happened
-	private UUID origin;
+	/*private UUID origin;
 	@Enumerated(EnumType.STRING)
 	private ResourceSpaceTypes originType;
 	@Enumerated(EnumType.STRING)
 	private NotificationEventName eventName;
 	private String originName;
-	private String title; // TODO: needed?
-	private String text; // TODO: needed?
+
 
 	// Information about the resource related to this event
 	private String resourceType;
@@ -46,61 +73,39 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date notificationDate = new Date();
 	private String associatedUser;
-	private Boolean signaled = false;
+	private Boolean signaled = false;*/
 
-	public static Finder<Long, NotificationEventSignal> find = new Finder<>(
-			NotificationEventSignal.class);
 
-	public NotificationEventSignal() {
-		super();
+	public Long getId() {
+		return id;
 	}
 
-	public UUID getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(UUID uuid) {
-		this.uuid = uuid;
-	}
-
-	public Long getId () {
-		return this.id;
-	}
-	
 	public void setId(Long id) {
-		this.id = id; 
-	}
-	
-	public UUID getOrigin() {
-		return origin;
+		this.id = id;
 	}
 
-	public void setOrigin(UUID origin) {
-		this.origin = origin;
+	public ResourceSpaceTypes getSpaceType() {
+		return spaceType;
 	}
 
-	public ResourceSpaceTypes getOriginType() {
-		return originType;
+	public void setSpaceType(ResourceSpaceTypes spaceType) {
+		this.spaceType = spaceType;
 	}
 
-	public void setOriginType(ResourceSpaceTypes originType) {
-		this.originType = originType;
+	public SubscriptionTypes getSignalType() {
+		return signalType;
 	}
 
-	public NotificationEventName getEventName() {
-		return eventName;
+	public void setSignalType(SubscriptionTypes signalType) {
+		this.signalType = signalType;
 	}
 
-	public void setEventName(NotificationEventName eventName) {
-		this.eventName = eventName;
+	public NotificationEventName getEventId() {
+		return eventId;
 	}
 
-	public String getOriginName() {
-		return originName;
-	}
-
-	public void setOriginName(String originName) {
-		this.originName = originName;
+	public void setEventId(NotificationEventName eventId) {
+		this.eventId = eventId;
 	}
 
 	public String getTitle() {
@@ -119,61 +124,21 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 		this.text = text;
 	}
 
-	public String getResourceType() {
-		return resourceType;
+	public Map<String, Object> getData() {
+		return data;
 	}
 
-	public void setResourceType(String resourceType) {
-		this.resourceType = resourceType;
+	public void setData(Map<String, Object> data) {
+		this.data = data;
 	}
 
-	public UUID getResourceUUID() {
-		return resourceUUID;
+	public static Finder<Long, NotificationEventSignal> find = new Finder<>(
+			NotificationEventSignal.class);
+
+	public NotificationEventSignal() {
+		super();
 	}
 
-	public void setResourceUUID(UUID resourceUUID) {
-		this.resourceUUID = resourceUUID;
-	}
-
-	public String getResourceTitle() {
-		return resourceTitle;
-	}
-
-	public void setResourceTitle(String resourceTitle) {
-		this.resourceTitle = resourceTitle;
-	}
-
-	public String getResourceText() {
-		return resourceText;
-	}
-
-	public void setResourceText(String resourceText) {
-		this.resourceText = resourceText;
-	}
-
-	public Date getNotificationDate() {
-		return notificationDate;
-	}
-
-	public void setNotificationDate(Date date) {
-		this.notificationDate = date;
-	}
-
-	public String getAssociatedUser() {
-		return associatedUser;
-	}
-
-	public void setAssociatedUser(String associatedUser) {
-		this.associatedUser = associatedUser;
-	}
-
-	public Boolean getSignaled() {
-		return signaled;
-	}
-
-	public void setSignaled(Boolean signaled) {
-		this.signaled = signaled;
-	}
 
 	public static NotificationEventSignal read(Long id) {
 		return find.ref(id);

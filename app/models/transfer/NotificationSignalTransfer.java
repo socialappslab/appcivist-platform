@@ -8,13 +8,15 @@ import io.swagger.annotations.ApiModel;
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import java.util.HashMap;
+import java.util.Map;
 
 @ApiModel(value="NotificationSignalTransfer", description="Basic Notification Signals")
 public class NotificationSignalTransfer {
 	private String eventId;
 	private String title;
 	private String text;
-	private String data;
+	private Map<String,Object> data;
 
 	private String spaceId;
 	private String spaceType;
@@ -76,11 +78,11 @@ public class NotificationSignalTransfer {
 		this.text = text;
 	}
 
-	public String getData() {
+	public Map<String,Object> getData() {
 		return data;
 	}
 
-	public void setData(String data) {
+	public void setData(Map<String, Object> data) {
 		this.data = data;
 	}	
 }
