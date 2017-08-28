@@ -36,8 +36,7 @@ public class Subscription extends Model {
     @ApiModelProperty(hidden=true)
     private Long id;
 
-    @Transient
-    @ApiModelProperty(hidden=true)
+    @Column(name = "user_id")
     private String userId;
 
     @JsonInclude(Include.NON_EMPTY)
@@ -161,7 +160,7 @@ public class Subscription extends Model {
     }
 
     public static List<Subscription> findByUserId(User u) {
-        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUserId()).query();
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString()).query();
         List<Subscription> membs = q.findList();
         return membs;
     }
