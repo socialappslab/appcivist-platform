@@ -139,7 +139,7 @@ public class Notifications extends Controller {
         JsonNode json = request().body().asJson();
         Subscription sub = Json.fromJson(json, Subscription.class);
 
-        sub.setUser(subscriber);
+        sub.setUserId(subscriber.getUuidAsString());
         Logger.info("Ignored Events " + sub.getIgnoredEvents());
         if(sub.getIgnoredEvents()==null || sub.getIgnoredEvents().isEmpty()){
             Logger.info("Ignored Events null or empty. Setting default value");
@@ -149,8 +149,8 @@ public class Notifications extends Controller {
         }
         Logger.info("Ignored Events " + sub.getIgnoredEvents());
         try {
-			sub.insert();
             NotificationsDelegate.subscribeToEvent(sub);
+            sub.insert();
 		} catch (Exception e) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			String error = e.getMessage();

@@ -527,6 +527,10 @@ public class NotificationsDelegate {
         // TODO: after updating notification service, use title for something different
         newNotificationSignal.setTitle(notificationEvent.getTitle());
 
+        newNotificationSignal.setSpaceId(notificationEvent.getResourceUUID().toString());
+        newNotificationSignal.setSignalType(notificationEvent.getResourceType());
+        newNotificationSignal.setSpaceType(notificationEvent.getResourceType());
+
         // parts of the notification text
         //  There are news related to a {0} in {1} '{2}' / {3} / {4}
         String text = "";

@@ -1,14 +1,53 @@
 package models.transfer;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import enums.ResourceSpaceTypes;
+import enums.SpaceTypes;
 import io.swagger.annotations.ApiModel;
+
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 @ApiModel(value="NotificationSignalTransfer", description="Basic Notification Signals")
 public class NotificationSignalTransfer {
 	private String eventId;
 	private String title;
 	private String text;
-	private String data; 
-	
+	private String data;
+
+	private String spaceId;
+	private String spaceType;
+	private String signalType;
+
+
+	public String getSpaceType() {
+		return spaceType;
+	}
+
+	public void setSpaceType(String spaceType) {
+		this.spaceType = spaceType;
+	}
+
+	public String getSignalType() {
+		return signalType;
+	}
+
+	public void setSignalType(String signalType) {
+		this.signalType = signalType;
+	}
+
+
+
+	public String getSpaceId() {
+		return spaceId;
+	}
+
+	public void setSpaceId(String spaceId) {
+		this.spaceId = spaceId;
+	}
+
+
 	public NotificationSignalTransfer() {
 		super();
 	}

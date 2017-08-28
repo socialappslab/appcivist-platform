@@ -1863,3 +1863,9 @@ CREATE UNIQUE INDEX unique_subscription_of_user_in_space ON subscription (user_u
 -- 50. SQL
 ALTER TABLE public.config DROP CONSTRAINT ck_config_config_target;
 ALTER TABLE public.config ADD CONSTRAINT ck_config_config_target CHECK (config_target::text = ANY (ARRAY['ASSEMBLY'::character varying::text, 'CAMPAIGN'::character varying::text, 'COMPONENT'::character varying::text, 'WORKING_GROUP'::character varying::text, 'MODULE'::character varying::text, 'PROPOSAL'::character varying::text, 'CONTRIBUTION'::character varying::text,'USER'::character varying::text]))
+
+-- 51. SQL
+alter table subscription drop column user_user_id;
+alter table subscription add column user_id character varying(40);
+alter table subscription drop column space_id;
+alter table subscription add column space_id character varying(40);
