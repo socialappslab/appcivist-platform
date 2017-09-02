@@ -40,31 +40,31 @@ public class NotificationsDelegate {
     public static HashMap<NotificationEventName, String> eventsTitleByType = new HashMap<>();
 
     static {
-        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "New Campaign");
-        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "New Working Group");
-        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "New Voting Ballot");
-        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "New Milestone");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "New Contribution Idea");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "New Contribution Proposal");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "New Contribution Discussion");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "New Contribution Comment");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "New Contribution note");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "New Contribution Post in Forum");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "New Contribution Feedback");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "Updated Campaign");
-        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "Updated Working Group");
-        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "Updated Voting ballot");
-        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "Updated Milestone");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "Updated Contribution Idea");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "Updated Contribution Proposal");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "Updated Contribution Discussion");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "Updated Contribution Comment");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "Updated Contribution Note");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "Updated Contribution Post");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "Updated Contribution Feedback");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "Updated Contribution History");
-        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "Milestone Passed!");
-        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "Upcoming Milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "notifications.{{resourceType}}.new.campaign");
+        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "notifications.{{resourceType}}.new.working.group");
+        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "notifications.{{resourceType}}.new.voting.ballot");
+        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "notifications.{{resourceType}}.new.milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "notifications.{{resourceType}}.new.contribution.idea");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.new.contribution.proposal");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.new.contribution.discussion");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.new.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.new.contribution.note");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.new.contribution.post.in.forum");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.new.contribution.feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "notifications.{{resourceType}}.updated.campaign");
+        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "notifications.{{resourceType}}.updated.working.group");
+        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "notifications.{{resourceType}}.updated.voting.ballot");
+        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "notifications.{{resourceType}}.updated.milestone");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "notifications.{{resourceType}}.updated.contribution.idea");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.updated.contribution.proposal");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.updated.contribution.discussion");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.updated.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.updated.contribution.note");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.updated.contribution.post");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.updated.contribution.feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "notifications.{{resourceType}}.updated.contribution.history");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "notifications.{{resourceType}}.milestone.passed");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "notifications.{{resourceType}}.upcoming.milestone");
     }
 
     public static NotificationEventName assemblyEvents[] = {
@@ -699,7 +699,8 @@ public class NotificationsDelegate {
         NotificationServiceWrapper wrapper = new NotificationServiceWrapper();
         NotificationEventTransfer net = new NotificationEventTransfer();
         net.setEventId(uuid + "_" + eventName);
-        net.setTitle(title);
+        net.setTitle(title.replace("{{resourceType}}",eventName.toString().toLowerCase()));
+        System.out.println("== title == " + net.getTitle());
         wrapper.createNotificationEvent(net);
     }
 
@@ -741,6 +742,7 @@ public class NotificationsDelegate {
 
     public static void createNotificationEvents(NotificationEventName[] events, UUID uuid) throws ConfigurationException {
         for (NotificationEventName e : events) {
+
             createNotificationEvent(uuid, e, eventsTitleByType.get(e));
         }
     }
