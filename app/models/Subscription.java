@@ -164,4 +164,16 @@ public class Subscription extends Model {
         List<Subscription> membs = q.findList();
         return membs;
     }
+
+    public static List<Subscription> findBySignal(NotificationEventSignal signal) {
+        /*
+            * subscription.spaceType === signal.spaceType
+    * subscription.spaceId === signal.spaceId
+    * subscription.subscriptionType === signal.signalType
+    * subscription.ignoredEventsList[signal.eventName] === null OR false
+         */
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.spaceType",signal.get).query();
+        List<Subscription> membs = q.findList();
+        return membs;
+    }
 }
