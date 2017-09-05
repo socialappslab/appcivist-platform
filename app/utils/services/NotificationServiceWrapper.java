@@ -52,7 +52,7 @@ public class NotificationServiceWrapper {
      */
     public WSResponse createNotificationEvent(NotificationEventTransfer notificationEvent) {
         WSRequest holder = getWSHolder(EVENTS, "POST", notificationEvent);
-        Logger.info("NOTIFICATION: Creating notification EVENT  in notification service: " + holder.getUrl());
+        Logger.info("NOTIFICATION: Creating notification EVENT  in notification service: " + holder.getUrl() + "---" +notificationEvent.getTitle() );
         Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
         return response;
