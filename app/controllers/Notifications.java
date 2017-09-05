@@ -150,6 +150,7 @@ public class Notifications extends Controller {
         Logger.info("Ignored Events " + sub.getIgnoredEvents());
         try {
 			sub.insert();
+            NotificationsDelegate.subscribeToEvent(sub);
 		} catch (Exception e) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			String error = e.getMessage();
