@@ -139,7 +139,7 @@ public class Notifications extends Controller {
         JsonNode json = request().body().asJson();
         Subscription sub = Json.fromJson(json, Subscription.class);
 
-        sub.setUser(subscriber);
+        sub.setUserId(subscriber.getUuid().toString());
         Logger.info("Ignored Events " + sub.getIgnoredEvents());
         if(sub.getIgnoredEvents()==null || sub.getIgnoredEvents().isEmpty()){
             Logger.info("Ignored Events null or empty. Setting default value");
@@ -147,9 +147,11 @@ public class Notifications extends Controller {
             ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
             sub.setIgnoredEvents(ignoredEvents);
         }
-        Logger.info("Ignored Events " + sub.getIgnoredEvents());
+        Logger.info("USER ID: " + sub.getUserId());
         try {
-			sub.insert();
+            NotificationsDelegate.subscribeToEvent(sub);
+
+            sub.insert();
 		} catch (Exception e) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			String error = e.getMessage();

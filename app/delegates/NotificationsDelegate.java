@@ -5,6 +5,8 @@ import static enums.ResourceSpaceTypes.CAMPAIGN;
 import static enums.ResourceSpaceTypes.CONTRIBUTION;
 import static enums.ResourceSpaceTypes.WORKING_GROUP;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,17 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import models.AppCivistBaseModel;
-import models.Assembly;
-import models.Ballot;
-import models.Campaign;
-import models.Component;
-import models.ComponentMilestone;
-import models.Contribution;
-import models.NotificationEventSignal;
-import models.ResourceSpace;
-import models.User;
-import models.WorkingGroup;
+import enums.*;
+import models.*;
 import models.transfer.NotificationEventTransfer;
 import models.transfer.NotificationSignalTransfer;
 import models.transfer.NotificationSubscriptionTransfer;
@@ -40,10 +33,6 @@ import utils.services.NotificationServiceWrapper;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
 
-import enums.AppcivistResourceTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResponseStatus;
 import exceptions.ConfigurationException;
 
 public class NotificationsDelegate {
@@ -51,31 +40,31 @@ public class NotificationsDelegate {
     public static HashMap<NotificationEventName, String> eventsTitleByType = new HashMap<>();
 
     static {
-        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "New Campaign");
-        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "New Working Group");
-        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "New Voting Ballot");
-        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "New Milestone");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "New Contribution Idea");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "New Contribution Proposal");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "New Contribution Discussion");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "New Contribution Comment");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "New Contribution note");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "New Contribution Post in Forum");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "New Contribution Feedback");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "Updated Campaign");
-        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "Updated Working Group");
-        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "Updated Voting ballot");
-        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "Updated Milestone");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "Updated Contribution Idea");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "Updated Contribution Proposal");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "Updated Contribution Discussion");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "Updated Contribution Comment");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "Updated Contribution Note");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "Updated Contribution Post");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "Updated Contribution Feedback");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "Updated Contribution History");
-        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "Milestone Passed!");
-        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "Upcoming Milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "notifications.{{resourceType}}.new.campaign");
+        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "notifications.{{resourceType}}.new.working.group");
+        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "notifications.{{resourceType}}.new.voting.ballot");
+        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "notifications.{{resourceType}}.new.milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "notifications.{{resourceType}}.new.contribution.idea");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.new.contribution.proposal");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.new.contribution.discussion");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.new.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.new.contribution.note");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.new.contribution.post.in.forum");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.new.contribution.feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "notifications.{{resourceType}}.updated.campaign");
+        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "notifications.{{resourceType}}.updated.working.group");
+        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "notifications.{{resourceType}}.updated.voting.ballot");
+        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "notifications.{{resourceType}}.updated.milestone");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "notifications.{{resourceType}}.updated.contribution.idea");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.updated.contribution.proposal");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.updated.contribution.discussion");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.updated.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.updated.contribution.note");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.updated.contribution.post");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.updated.contribution.feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "notifications.{{resourceType}}.updated.contribution.history");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "notifications.{{resourceType}}.milestone.passed");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "notifications.{{resourceType}}.upcoming.milestone");
     }
 
     public static NotificationEventName assemblyEvents[] = {
@@ -467,40 +456,60 @@ public class NotificationsDelegate {
 
     public static Result signalNotification(UUID origin,
                                             ResourceSpaceTypes originType, String originName, NotificationEventName eventName,
-                                            String title, String text
-            , UUID resourceUuid, String resourceTitle, String resourceText,
-                                            Date notificationDate, String resourceType, String associatedUser) {
+                                            String title, String text,
+                                            UUID resourceUuid,
+                                            String resourceTitle,
+                                            String resourceText,
+                                            Date notificationDate,
+                                            String resourceType,
+                                            String associatedUser) {
         // 1. Prepare the notification event data
         NotificationEventSignal notificationEvent = new NotificationEventSignal();
-        notificationEvent.setOrigin(origin);
-        notificationEvent.setOriginType(originType);
-        notificationEvent.setOriginName(originName);
-        notificationEvent.setEventName(eventName);
+        notificationEvent.setSpaceType(originType);
+        //Default value
+        notificationEvent.setSignalType(SubscriptionTypes.REGULAR);
+        notificationEvent.setEventId(eventName);
         notificationEvent.setTitle(title);
         notificationEvent.setText(text);
-        notificationEvent.setResourceUUID(resourceUuid);
-        notificationEvent.setResourceTitle(resourceTitle);
-        notificationEvent.setResourceText(resourceText);
-        notificationEvent.setNotificationDate(notificationDate);
-        notificationEvent.setResourceType(resourceType);
-        notificationEvent.setAssociatedUser(associatedUser);
+
+        //Construct hash map
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("origin",origin.toString());
+        data.put("originType", originType);
+        data.put("eventName", eventName);
+        data.put("originName", originName);
+        data.put("resourceType",resourceType);
+        data.put( "resourceUUID", resourceUuid.toString());
+        data.put("resourceTitle", resourceTitle);
+        data.put("resourceText",resourceText );
+        data.put("notificationDate",notificationDate );
+        data.put("associatedUser", associatedUser);
+        data.put("signaled", false);
+
+        notificationEvent.setData(data);
+
+
         Logger.info("NOTIFICATION: Notification event ready");
 
-        // 2. Prepare the Notification signal and send to the Notification Service for dispatch
-        Logger.info("NOTIFICATION: Signaling notification from '" + notificationEvent.getOriginType() + "' " + notificationEvent.getOrigin() + " about '" + notificationEvent.getEventName() + "'");
 
-        // TODO: change the notification signal to include and eventId = origin+"_"+eventName and use title for another purpose
-        NotificationSignalTransfer newNotificationSignal = prepareNotificationSignal(notificationEvent);
 
         // Send notification Signal to Notification Service
         try {
+            // TODO: change the notification signal to include and eventId = origin+"_"+eventName and use title for another purpose
+            NotificationSignalTransfer newNotificationSignal = prepareNotificationSignal(notificationEvent);
+
+            // 2. Prepare the Notification signal and send to the Notification Service for dispatch
+            Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
+
             NotificationServiceWrapper ns = new NotificationServiceWrapper();
             WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
+
+            Logger.info("NOTIFICATION: SENDING SIGNAL");
 
             // Relay response to requestor
             if (response.getStatus() == 200) {
                 Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
-                notificationEvent.setSignaled(true);
+                notificationEvent.getData().put("signaled",true);
                 NotificationEventSignal.create(notificationEvent);
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
             } else {
@@ -530,40 +539,47 @@ public class NotificationsDelegate {
      * Method to prepare a quick notificaiton event object and send it to the local notification endpoint that will prepare the full notificaiton
      * and send the signal to the notification service
      */
-    private static NotificationSignalTransfer prepareNotificationSignal(NotificationEventSignal notificationEvent) {
+    private static NotificationSignalTransfer prepareNotificationSignal(NotificationEventSignal notificationEvent) throws Exception {
         NotificationSignalTransfer newNotificationSignal = new NotificationSignalTransfer();
 
-        newNotificationSignal.setEventId(notificationEvent.getOrigin().toString() + "_" + notificationEvent.getEventName());
+        newNotificationSignal.setEventId(notificationEvent.getData().get("origin") + "_" + notificationEvent.getEventId());
         // TODO: after updating notification service, use title for something different
         newNotificationSignal.setTitle(notificationEvent.getTitle());
+
+        newNotificationSignal.setSpaceId((String) notificationEvent.getData().get("origin"));
+        newNotificationSignal.setSignalType(notificationEvent.getSignalType().toString());
+        newNotificationSignal.setSpaceType((String) notificationEvent.getData().get("resourceType"));
 
         // parts of the notification text
         //  There are news related to a {0} in {1} '{2}' / {3} / {4}
         String text = "";
-        String resourceType = notificationEvent.getResourceType().toString();
-        String originType = notificationEvent.getOriginType().toString();
-        String originName = notificationEvent.getOriginName();
-        String associatedUser = notificationEvent.getAssociatedUser();
-        String associatedDate = notificationEvent.getNotificationDate().toString();
+        String resourceType = (String) notificationEvent.getData().get("resourceType");
+        String originType = (String) notificationEvent.getData().get("originType").toString();
+        String originName = (String) notificationEvent.getData().get("originName");
+        String associatedUser = (String) notificationEvent.getData().get("associatedUser");
+        Date associatedDate = (Date) notificationEvent.getData().get("notificationDate");
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+        String associatedDateString = format.format(associatedDate);
+        String eventName = (String) notificationEvent.getData().get("eventName").toString();
 
         String messageCode = "notification.description.general";
         // Get proper i8tnl messages format
-        if (notificationEvent.getEventName().toString().contains("NEW")) {
+        if (eventName.contains("NEW")) {
             messageCode = "notification.description.general.resource_new";
-        } else if (notificationEvent.getEventName().toString().contains("UPDATED")) {
+        } else if (eventName.contains("UPDATED")) {
             messageCode = "notification.description.general.resource_updated";
-        } else if (notificationEvent.getEventName().toString().contains("MILESTONE")) {
-            if (notificationEvent.getEventName().toString().contains("UPCOMING")) {
+        } else if (eventName.contains("MILESTONE")) {
+            if (eventName.contains("UPCOMING")) {
                 messageCode = "notification.description.campaign.update.milestone";
             } else {
                 messageCode = "notification.description.campaign.update.milestone_passed";
             }
         }
         // notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
-        text = Messages.get(messageCode, resourceType, originType, originName, associatedUser, associatedDate);
+        text = Messages.get(messageCode, resourceType, originType, originName, associatedUser, associatedDateString);
         // setting the text for the signal
         newNotificationSignal.setText(text);
-        newNotificationSignal.setData(Json.toJson(notificationEvent).toString());
+        newNotificationSignal.setData(notificationEvent.getData());
         return newNotificationSignal;
     }
 
@@ -624,7 +640,22 @@ public class NotificationsDelegate {
     }
 
     /* Subscriptions */
+    @Deprecated
     public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) throws ConfigurationException {
+        NotificationServiceWrapper ns = new NotificationServiceWrapper();
+        WSResponse response = ns.createNotificationSubscription(subscription);
+        // Relay response to requestor
+        if (response.getStatus() == 200) {
+            Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
+            return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
+        } else {
+            Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
+            return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
+        }
+    }
+
+    /* Subscriptions */
+    public static Result subscribeToEvent(Subscription subscription) throws ConfigurationException {
         NotificationServiceWrapper ns = new NotificationServiceWrapper();
         WSResponse response = ns.createNotificationSubscription(subscription);
         // Relay response to requestor
@@ -668,7 +699,8 @@ public class NotificationsDelegate {
         NotificationServiceWrapper wrapper = new NotificationServiceWrapper();
         NotificationEventTransfer net = new NotificationEventTransfer();
         net.setEventId(uuid + "_" + eventName);
-        net.setTitle(title);
+        net.setTitle(title.replace("{{resourceType}}",eventName.toString().toLowerCase()));
+        System.out.println("== title == " + net.getTitle());
         wrapper.createNotificationEvent(net);
     }
 
@@ -710,6 +742,7 @@ public class NotificationsDelegate {
 
     public static void createNotificationEvents(NotificationEventName[] events, UUID uuid) throws ConfigurationException {
         for (NotificationEventName e : events) {
+
             createNotificationEvent(uuid, e, eventsTitleByType.get(e));
         }
     }

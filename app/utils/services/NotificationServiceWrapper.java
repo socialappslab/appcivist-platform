@@ -1,6 +1,7 @@
 package utils.services;
 
 import exceptions.ConfigurationException;
+import models.Subscription;
 import models.transfer.NotificationEventTransfer;
 import models.transfer.NotificationSignalTransfer;
 import models.transfer.NotificationSubscriptionTransfer;
@@ -51,7 +52,7 @@ public class NotificationServiceWrapper {
      */
     public WSResponse createNotificationEvent(NotificationEventTransfer notificationEvent) {
         WSRequest holder = getWSHolder(EVENTS, "POST", notificationEvent);
-        Logger.info("NOTIFICATION: Creating notification EVENT  in notification service: " + holder.getUrl());
+        Logger.info("NOTIFICATION: Creating notification EVENT  in notification service: " + holder.getUrl() + "---" +notificationEvent.getTitle() );
         Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
         return response;
@@ -64,7 +65,23 @@ public class NotificationServiceWrapper {
      * @param notificationSubscription
      * @return
      */
+    @Deprecated
     public WSResponse createNotificationSubscription(NotificationSubscriptionTransfer notificationSubscription) {
+        WSRequest holder = getWSHolder(SUBSCRIPTIONS, "POST", notificationSubscription);
+        Logger.info("NOTIFICATION: Creating notification SUBSCRIPTION in notification service: " + holder.getUrl());
+        Promise<WSResponse> promise = wsSend(holder);
+        WSResponse response = promise.get(DEFAULT_TIMEOUT);
+        return response;
+    }
+
+    /**
+     * Subscribe to an Event
+     * curl -i -X POST -H 'Content-Type: application/json' -d '{"eventId": "1234_NEW_CONTRIBUTION_IDEA", "alertEndpoint": "account@mail.com", "endpointType" : "email"}'   // TODO: tp://<hostname>/subscriptions
+     *
+     * @param notificationSubscription
+     * @return
+     */
+    public WSResponse createNotificationSubscription(Subscription notificationSubscription) {
         WSRequest holder = getWSHolder(SUBSCRIPTIONS, "POST", notificationSubscription);
         Logger.info("NOTIFICATION: Creating notification SUBSCRIPTION in notification service: " + holder.getUrl());
         Promise<WSResponse> promise = wsSend(holder);
@@ -80,6 +97,7 @@ public class NotificationServiceWrapper {
      * @param notificationSignal
      * @return
      */
+
     public WSResponse sendNotificationSignal(NotificationSignalTransfer notificationSignal) {
         WSRequest holder = getWSHolder(SIGNALS, "POST", notificationSignal);
         Logger.info("NOTIFICATION: Sending notification signal to notification service: " + holder.getUrl());

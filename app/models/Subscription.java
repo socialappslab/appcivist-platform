@@ -36,13 +36,12 @@ public class Subscription extends Model {
     @ApiModelProperty(hidden=true)
     private Long id;
 
-    @Transient
-    @ApiModelProperty(hidden=true)
-    private Long userId;
+    @Column(name = "user_id")
+    private String userId;
 
     @JsonInclude(Include.NON_EMPTY)
     @Column(name = "space_id")
-    private Long spaceId;
+    private String spaceId;
 
     @JsonInclude(Include.NON_EMPTY)
     @Column(name = "space_type")
@@ -67,11 +66,6 @@ public class Subscription extends Model {
     @Column(name = "disabled_services")
     private Map<String, Boolean> disabledServices;
 
-    @ManyToOne
-    @JsonIgnore
-    @Column(name = "user_id")
-    private User user;
-
     @Column(name = "default_service")
     private Integer defaultService = null;
 
@@ -93,19 +87,19 @@ public class Subscription extends Model {
         this.id = id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public Long getSpaceId() {
+    public String getSpaceId() {
         return spaceId;
     }
 
-    public void setSpaceId(Long spaceId) {
+    public void setSpaceId(String spaceId) {
         this.spaceId = spaceId;
     }
 
@@ -149,14 +143,6 @@ public class Subscription extends Model {
         this.disabledServices = disabledServices;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public Integer getDefaultService() {
         return defaultService;
     }
@@ -174,7 +160,7 @@ public class Subscription extends Model {
     }
 
     public static List<Subscription> findByUserId(User u) {
-        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUserId()).query();
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString()).query();
         List<Subscription> membs = q.findList();
         return membs;
     }
