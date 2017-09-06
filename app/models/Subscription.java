@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
+import models.transfer.NotificationSignalTransfer;
 
 
 @Entity
@@ -165,14 +166,18 @@ public class Subscription extends Model {
         return membs;
     }
 
-    public static List<Subscription> findBySignal(NotificationEventSignal signal) {
+    public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
         /*
             * subscription.spaceType === signal.spaceType
     * subscription.spaceId === signal.spaceId
     * subscription.subscriptionType === signal.signalType
     * subscription.ignoredEventsList[signal.eventName] === null OR false
          */
-        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.spaceType",signal.get).query();
+        com.avaje.ebean.Query<Subscription> q = find.where()
+                .eq("spaceType",signal.getSpaceType())
+                .eq("spaceId", signal.getSpaceId())
+                .eq("subscriptionType",signal.getSignalType())
+                .query();
         List<Subscription> membs = q.findList();
         return membs;
     }

@@ -1,24 +1,16 @@
 package models;
 
-import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonView;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import models.misc.Views;
-import sun.tools.tree.BooleanExpression;
 
 import javax.persistence.*;
 
 /**
- *
  * Created by ggaona on 02/9/17.
- *
  */
 
 @Entity
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class NotificationEventSignalUser extends AppCivistBaseModel{
+public class NotificationEventSignalUser extends AppCivistBaseModel {
 
     @Id
     @GeneratedValue
@@ -33,6 +25,12 @@ public class NotificationEventSignalUser extends AppCivistBaseModel{
     @ManyToOne()
     @Column(name = "notification_event_signal_id")
     private NotificationEventSignal signal;
+
+    public NotificationEventSignalUser(User user, NotificationEventSignal notificationEvent) {
+        this.user = user;
+        this.signal = notificationEvent;
+        this.read = false;
+    }
 
     public Long getId() {
         return id;

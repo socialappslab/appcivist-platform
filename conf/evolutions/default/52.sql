@@ -6,9 +6,16 @@ CREATE SEQUENCE public.notification_event_signal_user_id_seq
   START 1
   CACHE 1;
 
+-- DROP TABLE public.notification_event_signal_user;
+
 CREATE TABLE public.notification_event_signal_user
 (
   id bigint NOT NULL DEFAULT nextval('notification_event_signal_user_id_seq'::regclass),
+  creation timestamp without time zone,
+  last_update timestamp without time zone,
+  lang character varying(255),
+  removal timestamp without time zone,
+  removed boolean,
   user_user_id bigint,
   notification_event_signal_id bigint,
   read boolean,
