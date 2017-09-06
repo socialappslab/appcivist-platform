@@ -1,14 +1,12 @@
 package models;
 
 import com.avaje.ebean.annotation.DbJsonB;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import javax.persistence.*;
 
@@ -55,6 +53,9 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	@Column(name = "data")
 	@JsonInclude(Include.NON_EMPTY)
 	private Map<String, Object> data;
+
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="signal", fetch=FetchType.LAZY)
+	private List<NotificationEventSignalUser> notificationsEventsSignalsUsers = new ArrayList<>();
 
 	// Information about the space where the event happened
 	/*private UUID origin;
@@ -137,6 +138,17 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 
 	public NotificationEventSignal() {
 		super();
+	}
+	public List<NotificationEventSignalUser> getNotificationsEventsSignalsUsers() {
+		return notificationsEventsSignalsUsers;
+	}
+
+	public void setNotificationsEventsSignalsUsers(List<NotificationEventSignalUser> notificationsEventsSignalsUsers) {
+		this.notificationsEventsSignalsUsers = notificationsEventsSignalsUsers;
+	}
+
+	public void addNotificationEventSignalUser(NotificationEventSignalUser signal){
+		this.notificationsEventsSignalsUsers.add(signal);
 	}
 
 

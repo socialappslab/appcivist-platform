@@ -26,6 +26,7 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
+import scala.tools.nsc.backend.icode.Primitives;
 import utils.GlobalData;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
@@ -491,12 +492,41 @@ public class NotificationsDelegate {
 
         Logger.info("NOTIFICATION: Notification event ready");
 
+        NotificationSignalTransfer newNotificationSignal = null;
+        try {
+            newNotificationSignal = prepareNotificationSignal(notificationEvent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(e.getMessage());
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+            Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
+            return Controller.internalServerError(Json.toJson(responseBody));
+        }
+
+        //Get all subscriptions and create NotificationEventSignalUser
+        List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
+        for(Subscription sub : subscriptions){
+            //subscription.ignoredEventsList[signal.eventName] === null OR false
+            if(sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName"))== null
+                    ||sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false ) {
+                // If subscription does not have a defaultService override,
+                // then iterate the list of enabled identities of the user (where enabled === true),
+                // and create the message to send as follow (see signals.js => processMatch):
+                if(sub.getDefaultService() == null){
+                    User user = User.findByUUID(UUID.fromString(sub.getUserId()));
+                    NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
+                    notificationEvent.addNotificationEventSignalUser(userSignal);
+                }
+
+            }
+
+        }
 
 
         // Send notification Signal to Notification Service
         try {
-            // TODO: change the notification signal to include and eventId = origin+"_"+eventName and use title for another purpose
-            NotificationSignalTransfer newNotificationSignal = prepareNotificationSignal(notificationEvent);
+
 
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
@@ -511,6 +541,7 @@ public class NotificationsDelegate {
                 Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
                 notificationEvent.getData().put("signaled",true);
                 NotificationEventSignal.create(notificationEvent);
+                // Register signals by user
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
             } else {
                 Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
