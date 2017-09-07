@@ -2626,44 +2626,6 @@ public class Contributions extends Controller {
             newContrib.getResourceSpace().refresh();
         }
 
-        // If contribution is a proposal and the resource space where it is added is a Campaign
-        // create automatically a related candidate for the contribution in the bindingBallot
-        // and consultiveBallot associated to the campaign.
-        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-            UUID binding = Campaign.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
-                    .getResourceSpaceId());
-            UUID consultive = Campaign.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
-                    .getResourceSpaceId());
-
-            // Add the candidates automatically only to the binding ballot marked in the campaign as such
-            // and to the "consultive" ballot marked in the campaign as such
-            for (Ballot ballot : containerResourceSpace.getBallots()) {
-                if ((ballot.getDecisionType().equals("BINDING") && (ballot.getUuid().equals(binding)))
-                        || (ballot.getDecisionType().equals("CONSULTIVE") && ballot.getUuid().equals(consultive))) {
-                    BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-                    contributionAssociatedCandidate.setBallotId(ballot.getId());
-                    contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
-                    contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
-                    contributionAssociatedCandidate.save();
-                }
-            }
-        }
-
-        // If the contribution is a proposal, create an associated candidate in the ballot
-        // of the working group authors
-        for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
-            UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
-            Ballot b = Ballot.findByUUID(consensus);
-
-            if (b!=null) {
-                BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-                contributionAssociatedCandidate.setBallotId(b.getId());
-                contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
-                contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
-                contributionAssociatedCandidate.save();
-            }
-        }
-
         return newContrib;
     }
 
