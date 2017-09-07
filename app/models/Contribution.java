@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import enums.ContributionStatus;
 import enums.ContributionTypes;
 import enums.ResourceSpaceTypes;
-import enums.MyRoles;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)

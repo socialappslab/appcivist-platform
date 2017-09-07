@@ -1945,3 +1945,16 @@ CREATE TABLE public.notification_event_signal_user
 WITH (
   OIDS=FALSE
 );
+
+--53.sql
+ALTER TABLE campaign ADD COLUMN external_ballot text;
+ALTER TABLE campaign RENAME COLUMN binding_ballot TO current_ballot;
+ALTER TABLE campaign DROP COLUMN consultive_ballot;
+
+--54.sql
+ALTER TABLE ballot ADD COLUMN votes_limit CHARACTER VARYING(40);
+ALTER TABLE ballot ADD COLUMN votes_limit_meaning CHARACTER VARYING(15);
+ALTER TABLE ballot
+  ADD CONSTRAINT ck_ballot_votes_limit_meaning 
+  CHECK (votes_limit_meaning::text = 
+    ANY (ARRAY['SELECTIONS'::character varying, 'TOKENS'::character varying, 'RANGE'::character varying]));
