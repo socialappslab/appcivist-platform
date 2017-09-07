@@ -63,7 +63,7 @@ public class CampaignDelegate {
 	}
 
 	public static List<CampaignSummaryTransfer> findByBindingBallot(UUID uuid) {
-		List<Campaign> campaigns = Campaign.findByBindingBallotUUID(uuid);
+		List<Campaign> campaigns = Campaign.findByCurrentBallotUUID(uuid);
 		List<CampaignSummaryTransfer> campaignSummaries = new ArrayList<CampaignSummaryTransfer>();
 		for (Campaign campaign : campaigns) {
 			CampaignSummaryTransfer campaignSummary = mapper.map(campaign, CampaignSummaryTransfer.class);	
