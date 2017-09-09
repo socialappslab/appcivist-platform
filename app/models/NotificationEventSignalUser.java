@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.persistence.*;
@@ -24,6 +25,7 @@ public class NotificationEventSignalUser extends AppCivistBaseModel {
 
     @ManyToOne()
     @Column(name = "notification_event_signal_id")
+    @JsonIgnore
     private NotificationEventSignal signal;
 
     public NotificationEventSignalUser(User user, NotificationEventSignal notificationEvent) {

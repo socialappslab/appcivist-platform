@@ -85,6 +85,9 @@ GET       /api/notification/subscription/:sid                                   
 DELETE    /api/notification/subscription/:sid                                    controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 POST      /api/notification/events/:type                                         controllers.Notifications.createResourceSpaceEvents(type: String)
 
+GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0)
+GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long)
+
 
 ##################################################################################################################################################################
 # Assemblies API

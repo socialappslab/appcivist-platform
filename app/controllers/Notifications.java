@@ -15,10 +15,7 @@ import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
-import models.transfer.NotificationSubscriptionTransfer;
-import models.transfer.PaginatedListTransfer;
-import models.transfer.TransferResponseStatus;
-import models.transfer.UpdateTransfer;
+import models.transfer.*;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -429,5 +426,80 @@ public class Notifications extends Controller {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("resourceSpaceUuid", rs.getResourceSpaceUuid());
         return NotificationsDelegate.findNotifications(conditions, page, pageSize);
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = UpdateTransfer.class, responseContainer = "List", produces = "application/json", value = "Get notifications by user", notes = "Get notifications by user")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+    })
+    public static Result getNotificationSignals(@ApiParam(name = "id", value = "User ID") Long id,
+                                    @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page) {
+        List<NotificationEventSignalUser> notifications = new ArrayList<>();
+        NotificationSignalStatsTransfer tmp = processUserNotificationSignalStats(id);
+        Integer pageSize = 5;
+        if (tmp.getRead().intValue() == tmp.getTotal().intValue()) {
+            pageSize = 10;
+        }
+        notifications = processUserNotificationsSignal(id, page - 1, pageSize);
+        if (notifications.isEmpty()) {
+            return notFound(Json.toJson(new TransferResponseStatus("No data")));
+        } else {
+            if (page != null) {
+                PaginatedListTransfer<NotificationEventSignalUser> response = new PaginatedListTransfer<>();
+                response.setPage(page);
+                response.setPageSize(pageSize);
+                response.setTotal(tmp.getTotal());
+                response.setList(notifications);
+                return ok(Json.toJson(response));
+            } else {
+                return ok(Json.toJson(notifications));
+            }
+        }
+
+    }
+
+    private static List<NotificationEventSignalUser> processUserNotificationsSignal(Long userId, Integer page, Integer pageSize) {
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("user", userId);
+        return NotificationsDelegate.findNotificationsUser(conditions, page, pageSize);
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = UpdateTransfer.class, responseContainer = "Object", produces = "application/json", value = "Get notifications stats by user", notes = "Get notifications stats by user")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+    })
+    public static Result getNotificationSignalsStats(@ApiParam(name = "id", value = "User ID") Long id) {
+        NotificationSignalStatsTransfer stats = processUserNotificationSignalStats(id);
+        return ok(Json.toJson(stats));
+    }
+
+    private static NotificationSignalStatsTransfer processUserNotificationSignalStats(Long userId) {
+
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("user", userId);
+        List<NotificationEventSignalUser> allNotif = NotificationsDelegate.findNotificationsUser(conditions, null, null);
+
+        NotificationSignalStatsTransfer stats = new NotificationSignalStatsTransfer();
+
+        int total = allNotif.size();
+        int read = 0;
+        int unread = 0;
+        for (NotificationEventSignalUser notif : allNotif) {
+            if (notif.getRead() == true) {
+                read++;
+            } else {
+                unread++;
+            }
+        }
+        stats.setTotal(total);
+        stats.setPages(total/5); //total/5
+        stats.setRead(read);
+        stats.setUnread(unread);
+
+        return stats;
     }
 }
