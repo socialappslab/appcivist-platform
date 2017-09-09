@@ -19,13 +19,13 @@ public class NotificationEventSignalUser extends AppCivistBaseModel {
 
     @ManyToOne()
     @Column(name = "user_id")
+    @JsonIgnore
     private User user;
 
     private Boolean read = false;
 
     @ManyToOne()
     @Column(name = "notification_event_signal_id")
-    @JsonIgnore
     private NotificationEventSignal signal;
 
     public NotificationEventSignalUser(User user, NotificationEventSignal notificationEvent) {
