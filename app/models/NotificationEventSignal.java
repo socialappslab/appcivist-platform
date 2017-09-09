@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
@@ -55,6 +56,7 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	private Map<String, Object> data;
 
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="signal", fetch=FetchType.LAZY)
+	@JsonIgnore
 	private List<NotificationEventSignalUser> notificationsEventsSignalsUsers = new ArrayList<>();
 
 	// Information about the space where the event happened

@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * Created by ggaona on 02/9/17.
@@ -62,6 +63,19 @@ public class NotificationEventSignalUser extends AppCivistBaseModel {
 
     public void setRead(Boolean read) {
         this.read = read;
+    }
+
+    public static Finder<Long, NotificationEventSignalUser> find = new Finder<>(
+            NotificationEventSignalUser.class);
+
+    public static NotificationEventSignalUser getNotificationByUser(Long userId, Long notificationId) {
+        Finder<Long, NotificationEventSignalUser> find = new Finder<>(NotificationEventSignalUser.class);
+        return find.where().eq("id", notificationId).eq("user.userId", userId).findUnique();
+    }
+
+    public static List<NotificationEventSignalUser> getNotificationsByUser(Long userId) {
+        Finder<Long, NotificationEventSignalUser> find = new Finder<>(NotificationEventSignalUser.class);
+        return find.where().eq("user.userId", userId).findList();
     }
 
 }
