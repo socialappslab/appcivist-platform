@@ -87,7 +87,7 @@ POST      /api/notification/events/:type                                        
 
 
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
-PUT       /api/user/:id/notifications                                            controllers.Notifications.updateNotifications(id: Long)
+PUT       /api/user/:id/notifications/read                                            controllers.Notifications.updateNotifications(id: Long)
 
 
 ##################################################################################################################################################################

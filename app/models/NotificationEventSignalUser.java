@@ -70,7 +70,7 @@ public class NotificationEventSignalUser extends AppCivistBaseModel {
 
     public static NotificationEventSignalUser getNotificationByUser(Long userId, Long notificationId) {
         Finder<Long, NotificationEventSignalUser> find = new Finder<>(NotificationEventSignalUser.class);
-        return find.where().eq("id", notificationId).eq("user.userId", userId).findUnique();
+        return find.where().eq("signal.id", notificationId).eq("user.userId", userId).findUnique();
     }
 
     public static List<NotificationEventSignalUser> getNotificationsByUser(Long userId) {

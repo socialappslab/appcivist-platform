@@ -437,7 +437,7 @@ public class Notifications extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    public static Result updateNotification(@ApiParam(name = "id", value = "User ID") Long id, @ApiParam(name = "nid", value = "User ID") Long nid) {
+    public static Result updateNotification(@ApiParam(name = "id", value = "User ID") Long id, @ApiParam(name = "nid", value = " ID") Long nid) {
 
         NotificationEventSignalUser notif = NotificationEventSignalUser.getNotificationByUser(id, nid);
 
