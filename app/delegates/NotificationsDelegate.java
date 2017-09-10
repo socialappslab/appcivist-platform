@@ -504,6 +504,7 @@ public class NotificationsDelegate {
             return Controller.internalServerError(Json.toJson(responseBody));
         }
 
+        List<Long> notificatedUsers = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         for(Subscription sub : subscriptions){
@@ -517,10 +518,41 @@ public class NotificationsDelegate {
                     User user = User.findByUUID(UUID.fromString(sub.getUserId()));
                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                     notificationEvent.addNotificationEventSignalUser(userSignal);
+                    notificatedUsers.add(user.getUserId());
                 }
 
             }
 
+        }
+        //if the spaceType is CAMPAIGN
+        if(originType.equals(ResourceSpaceTypes.CAMPAIGN)){
+
+            List<Assembly> assemblies = Assembly.findAssemblyFromCampaign(origin);
+            if(!assemblies.isEmpty()){
+                for(Assembly assembly : assemblies){
+                    System.out.println("Members: " + assembly.getMemberships().size());
+
+                    for( MembershipAssembly member : assembly.getMemberships()){
+                        //Get configuration CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION
+                        User user = member.getUser();
+
+                        if(!notificatedUsers.contains(user.getUserId())) {// if not already notified
+                            Config config = Config.findByUser(user.getUuid(), UserProfileConfigsTypes.CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION);
+
+                            //If auto subscription is active
+                            if (config != null) {
+                                if (new Boolean(config.getValue())) {
+                                    //create new signal
+                                    NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
+                                    notificationEvent.addNotificationEventSignalUser(userSignal);
+                                    notificatedUsers.add(user.getUserId());
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
 
