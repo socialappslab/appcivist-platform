@@ -394,6 +394,7 @@ GET       /api/public/space/:uuid/contribution/pinned                           
 GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
 POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/analytics                                      controllers.Spaces.getAnalytics(uuid: java.util.UUID, includeThemes?="")
 
 # Public custom field endpoints
 GET       /api/public/space/:uuid/field                                          controllers.Spaces.findSpaceFieldsByUUID(uuid: java.util.UUID)
