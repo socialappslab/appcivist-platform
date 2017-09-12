@@ -569,7 +569,7 @@ public class ContributionsDelegate {
     	  List<Config> assemblyConfig = Config.findByTypeAndKey(
                                           assembly.getUuid(), 
                                           ConfigTargets.ASSEMBLY, 
-                                          "appcivist.assembly.social-ideation-integration-enabled");
+                                          "appcivist.assembly.enable-social-ideation");
 		    for (Config aConfig: assemblyConfig) {
             if (aConfig.getValue().equalsIgnoreCase("TRUE")) {
 				      return true;
