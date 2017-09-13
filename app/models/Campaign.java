@@ -1,22 +1,46 @@
 package models;
 
+import io.swagger.annotations.ApiModel;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
+import javax.persistence.Transient;
+
+import models.misc.Views;
+
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
-import com.fasterxml.jackson.annotation.*;
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.ResourceSpaceTypes;
-import enums.VotingSystemTypes;
-import io.swagger.annotations.ApiModel;
-import models.misc.Views;
-import utils.GlobalData;
-
-import javax.persistence.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -448,7 +472,9 @@ String uuidAsString, List<Component> phases) {
 
 	public List<WorkingGroup> getPagedWorkingGroups(Integer page, Integer pageSize) {
 		Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
-		return find.where().eq("containingSpaces", this.resources).
+		return find.where()
+				.eq("containingSpaces", this.resources)
+				.eq("removed",false).
 				findPagedList(page, pageSize).getList();
 	}
 
