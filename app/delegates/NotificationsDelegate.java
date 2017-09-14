@@ -942,4 +942,27 @@ public class NotificationsDelegate {
             return q.findList();
         }
     }
+
+    static Model.Finder<Long, NotificationEventSignalUser> finderNotificationUser = new Model.Finder<>(
+            NotificationEventSignalUser.class);
+
+    public static List<NotificationEventSignalUser> findNotificationsUser(Map<String, Object> conditions, Integer page, Integer pageSize){
+        ExpressionList<NotificationEventSignalUser> q = finderNotificationUser.where();
+
+        if(conditions != null){
+            for(String key : conditions.keySet()){
+                switch (key){
+                    case "user":
+                        q.eq("user.userId", conditions.get(key));
+                        break;
+                }
+            }
+        }
+
+        if(page != null && pageSize != null){
+            return q.findPagedList(page, pageSize).getList();
+        }else{
+            return q.findList();
+        }
+    }
 }
