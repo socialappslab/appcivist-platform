@@ -33,10 +33,16 @@ public class SocialIdeationWrapper {
 		super();
 	}
 
-	public static String createUser(String fbToken, String fbUid, String initiativeUrl) {
+	public static String createUser(String fbToken, String fbUid, String initiativeUrl, String permissionType) {
 		try {
 			// String encodedQuery = URLEncoder.encode(query, "UTF-8");
-			WSRequest holder = WS.url(BASE_URL+"/login_fb");
+			String url;
+			if (permissionType == "read"){
+				url = BASE_URL+"/login_fb";
+			} else {
+				url = BASE_URL+"/write_permissions_fb";
+			}
+			WSRequest holder = WS.url(url);
 			holder.setHeader(TOKEN_NAME, TOKEN);
 			holder.setQueryParameter("access_token", fbToken);
 			holder.setQueryParameter("user_id", fbUid);
