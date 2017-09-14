@@ -820,41 +820,7 @@ String uuidAsString, List<Component> phases) {
 		return find.where().eq("currentBallot",uuid).findList();
 	}
 
-	public static List<Campaign> currentBallotStart(Date startDate, Date endDate){
-		String sql = "select c.campaign_id as campaign_id from campaign c,ballot b "
-				+ "where b.uuid = c.current_ballot "
-				+ "and b.starts_at between :start and :end";
-		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
-		sqlQuery.setParameter("start", startDate);
-		sqlQuery.setParameter("end", endDate);
-		List<SqlRow> result = sqlQuery.findList();
-		System.out.println(" == Returning rows: " + result.size()
-		+ sqlQuery.toString());
-		List<Campaign> membs = new ArrayList<>();
-		for(SqlRow r : result){
-			membs.add(find.where().eq("campaignId",r.getLong("campaign_id")).findUnique());
-		}
-
-		return membs;
-	}
-
-	public static List<Campaign> currentBallotEnd(Date startDate, Date endDate){
-		String sql = "select c.campaign_id as campaign_id from campaign c,ballot b "
-				+ "where b.uuid = c.current_ballot "
-				+ "and b.ends_at between :start and :end";
-		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
-		sqlQuery.setParameter("start", startDate);
-		sqlQuery.setParameter("end", endDate);
-		List<SqlRow> result = sqlQuery.findList();
-
-		List<Campaign> membs = new ArrayList<>();
-		for(SqlRow r : result){
-			membs.add(find.where().eq("campaignId",r.getLong("campaign_id")).findUnique());
-		}
-
-		return membs;
-	}
-
+	
 	public List<Theme> filterThemesByTitle(String t) {
 		return this.resources.getThemes()
 				.stream()
