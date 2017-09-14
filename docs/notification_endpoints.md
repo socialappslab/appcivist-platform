@@ -60,5 +60,6 @@ HTTP Method | Base URL | Description | Path Params | Query Params | Body | Respo
             }
         }
     ]
+}
 ```
 
