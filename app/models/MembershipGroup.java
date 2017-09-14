@@ -9,8 +9,6 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
-import play.Logger;
-
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Query;
@@ -200,6 +198,9 @@ public class MembershipGroup extends Membership {
 		} else {
 			return false;
 		}
+	}
+	public static Integer membershipCountByGroupId(Long groupId) {
+		return find.where().eq("workingGroup.groupId",groupId).findRowCount();		
 	}
 	
 	

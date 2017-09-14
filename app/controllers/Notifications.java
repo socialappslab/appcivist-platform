@@ -456,8 +456,25 @@ public class Notifications extends Controller {
             } else {
                 return ok(Json.toJson(notifications));
             }
-        }
+          }
+    }
 
+    @ApiOperation(httpMethod = "PUT", response = NotificationEventSignalUser.class, responseContainer = "Object", produces = "application/json", value = "Update user notification", notes = "Update user notification")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "Notification not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+    })
+    public static Result updateNotification(@ApiParam(name = "id", value = "User ID") Long id, @ApiParam(name = "nid", value = " ID") Long nid) {
+
+        NotificationEventSignalUser notif = NotificationEventSignalUser.getNotificationByUser(id, nid);
+
+        if (notif != null) {
+            notif.setRead(true);
+            notif.update();
+            return ok(Json.toJson(notif));
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus("Notification does not exist")));
+        }
     }
 
     private static List<NotificationEventSignalUser> processUserNotificationsSignal(Long userId, Integer page, Integer pageSize) {
@@ -501,5 +518,24 @@ public class Notifications extends Controller {
         stats.setUnread(unread);
 
         return stats;
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = NotificationEventSignalUser.class, responseContainer = "List", produces = "application/json", value = "Update user notifications", notes = "Update user notifications")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "Notification not found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
+    })
+    public static Result updateNotifications(@ApiParam(name = "id", value = "User ID") Long id) {
+        List<NotificationEventSignalUser> notifs = NotificationEventSignalUser.getNotificationsByUser(id);
+
+        if (notifs != null) {
+            for (NotificationEventSignalUser notif: notifs) {
+                notif.setRead(true);
+                notif.update();
+            }
+            return ok(Json.toJson(notifs));
+        } else {
+            return notFound(Json.toJson(new TransferResponseStatus("User has no notifications")));
+        }
     }
 }

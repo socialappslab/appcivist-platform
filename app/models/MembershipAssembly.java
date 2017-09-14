@@ -1,6 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -155,5 +154,8 @@ public class MembershipAssembly extends Membership {
 		} else {
 			return false;
 		}
+	}
+	public static Integer membershipCountByAssemblyId(Long assemblyId) {
+		return find.where().eq("assembly.assemblyId",assemblyId).findRowCount();
 	}
 }

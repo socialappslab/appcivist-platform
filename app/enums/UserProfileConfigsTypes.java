@@ -35,4 +35,5 @@ public class UserProfileConfigsTypes {
            "notifications.service.twitter.identity");
 
 
+   public static String CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION = "notifications.preference.campaign-newsletters.auto-subscription";
 }

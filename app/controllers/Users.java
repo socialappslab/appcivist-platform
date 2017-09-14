@@ -1007,7 +1007,8 @@ public class Users extends Controller {
     Config token = Config.findByTypeAndKey(assemblyUuid, ConfigTargets.ASSEMBLY, "appcivist.assembly.social-ideation-authtoken").get(0);
     SocialIdeationWrapper.TOKEN = token.getValue();
     SocialIdeationWrapper.BASE_URL = endpoint.getValue();
-    String response = SocialIdeationWrapper.createUser(fbToken, userId, initiative_url.getValue());
+    String response = SocialIdeationWrapper.createUser(fbToken, userId, initiative_url.getValue(), "read");
+    response = SocialIdeationWrapper.createUser(fbToken, userId, initiative_url.getValue(), "write");
 
     return(response);
 
