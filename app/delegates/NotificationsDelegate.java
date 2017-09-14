@@ -306,6 +306,10 @@ public class NotificationsDelegate {
                 originUUID = ((WorkingGroup) origin).getUuid();
                 originName = ((WorkingGroup) origin).getName();
                 break;
+            case COMPONENT:
+                originUUID = ((Component) origin).getUuid();
+                originName = ((Component) origin).getTitle();
+                break;
             default:
                 break;
         }
@@ -437,14 +441,66 @@ public class NotificationsDelegate {
                 // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
                 break;
             case MILESTONE_UPCOMING_IN_A_WEEK:
+                resourceUuid = ((ComponentMilestone) resource).getUuid();
+                resourceTitle = ((ComponentMilestone) resource).getTitle();
+                resourceText = ((ComponentMilestone) resource).getDescription();
+                resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceType = "MILESTONE";
                 break;
             case MILESTONE_UPCOMING_IN_A_DAY:
+                resourceUuid = ((ComponentMilestone) resource).getUuid();
+                resourceTitle = ((ComponentMilestone) resource).getTitle();
+                resourceText = ((ComponentMilestone) resource).getDescription();
+                resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceType = "MILESTONE";
                 break;
             case MEMBER_JOINED:
                 break;
             case UPDATED_CONTRIBUTION_FEEDBACK:
                 break;
             case UPDATED_CONTRIBUTION_HISTORY:
+                break;
+            case BALLOT_UPCOMING_IN_A_DAY:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_UPCOMING_IN_A_WEEK:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_UPCOMING_IN_A_MONTH:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_DAY:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_WEEK:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_MONTH:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
             default:
                 break;

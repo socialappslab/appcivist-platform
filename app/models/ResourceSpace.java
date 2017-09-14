@@ -56,9 +56,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
+
 	@Enumerated(EnumType.STRING)
 	@JsonView(Views.Public.class)
 	private ResourceSpaceTypes type = ResourceSpaceTypes.ASSEMBLY;
+
 	private UUID parent;
 
 	@Transient

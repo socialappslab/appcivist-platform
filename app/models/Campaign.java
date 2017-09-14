@@ -1,7 +1,5 @@
 package models;
 
-import io.swagger.annotations.ApiModel;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -11,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.*;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,8 +23,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Transient;
+import javax.persistence.*;
 
-import models.misc.Views;
+import com.avaje.ebean.*;
 
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
@@ -39,8 +39,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 
 import enums.ResourceSpaceTypes;
+import enums.VotingSystemTypes;
+import io.swagger.annotations.ApiModel;
+import models.misc.Views;
+import utils.GlobalData;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -68,7 +73,7 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private Boolean listed = true;
 	@JsonView(Views.Public.class)
-	private UUID currentBallot; 
+	private UUID currentBallot;
 	@Transient
 	private String currentBallotAsString; 
 	// Relationships	
@@ -848,6 +853,7 @@ String uuidAsString, List<Component> phases) {
 		return find.where().eq("currentBallot",uuid).findList();
 	}
 
+	
 	public List<Theme> filterThemesByTitle(String t) {
 		return this.resources.getThemes()
 				.stream()

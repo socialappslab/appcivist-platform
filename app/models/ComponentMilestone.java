@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.Query;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
@@ -62,6 +63,14 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "milestones")
 	private List<ResourceSpace> containingSpaces;
+
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
+
+	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
+		this.containingSpaces = containingSpaces;
+	}
 	
 	/**
 	 * The find property is a static property that facilitates database query creation
@@ -226,5 +235,13 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 
 	public static ComponentMilestone readByUUID(UUID resourceUUID) {
 		return find.where().eq("uuid",resourceUUID).findUnique();
+	}
+
+	public static List<ComponentMilestone> getMilestoneByDate(Date startDate, Date endDate){
+
+		Query<ComponentMilestone> q = find.where().between("date",startDate,endDate).query();
+		List<ComponentMilestone> membs = q.findList();
+		return membs;
+
 	}
 }
