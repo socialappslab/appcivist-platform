@@ -4,7 +4,7 @@ import akka.actor.ActorSystem;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
-import models.Component;
+import models.Campaign;
 import models.ComponentMilestone;
 import models.ResourceSpace;
 import scala.concurrent.ExecutionContext;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Schedule process that create signals according to:
  * Milestones that are due in one week
  * Milestones that are due in one day
- *
+ * <p>
  * Created by ggaona on 12/9/17.
  */
 public class MilestoneNotificationSchedule {
@@ -40,21 +40,35 @@ public class MilestoneNotificationSchedule {
 
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(new Date());
-        calStart.set(Calendar.HOUR_OF_DAY, 15);
-        calStart.set(Calendar.MINUTE, 11);
+        calStart.set(Calendar.HOUR_OF_DAY, 10);
+        calStart.set(Calendar.MINUTE, 0);
         calStart.set(Calendar.SECOND, 0);
+
+
+
 
         Date startDate = calStart.getTime();
         Date now = new Date();
 
         Long delay = startDate.getTime() - now.getTime();
+
         if (delay < 0) {
-            calStart.set(Calendar.DATE, 1);
-            delay = calStart.getTime().getTime();
+            calStart.add(Calendar.DATE, 1);
+
+            delay = calStart.getTime().getTime() - now.getTime();
         }
 
+        delay = TimeUnit.MILLISECONDS.toMinutes(delay);
+
+        System.out.println("Calendarized milestone process at: "
+                + calStart.get(Calendar.HOUR) + ":"
+                + calStart.get(Calendar.MINUTE)
+                + " Delay: " + delay);
+
+
         this.actorSystem.scheduler().schedule(
-                Duration.create(delay, TimeUnit.MILLISECONDS), // initialDelay
+                Duration.create(delay, TimeUnit.MINUTES), // initialDelay
+                //Duration.create(1, TimeUnit.SECONDS), // initialDelay
                 Duration.create(1, TimeUnit.DAYS), // interval
                 () -> {
                     this.signalMilestones();
@@ -67,7 +81,6 @@ public class MilestoneNotificationSchedule {
      * Find milestone
      */
     public void signalMilestones() {
-        System.out.println("Calendarized process");
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(new Date());
         calStart.set(Calendar.HOUR_OF_DAY, 0);
@@ -94,39 +107,34 @@ public class MilestoneNotificationSchedule {
 
 
         List<ComponentMilestone> oneWeek = ComponentMilestone.getMilestoneByDate(calStart.getTime(), calEnd.getTime());
-        //System.out.println("Start ONE week" + calStart.getTime() + " End: " + calEnd.getTime() + " Found: " + oneWeek.size());
 
-        //Create signals for Milestones that are due in one day
-        for (ComponentMilestone mile : oneDay) {
-            //Find Parent Campaign
-            for (ResourceSpace space : mile.getContainingSpaces()) {
-                //System.out.println("FOUND--" + space.getType() + "--is:--" + ResourceSpaceTypes.COMPONENT + "--Equals: " + (space.getType().toString().equals(ResourceSpaceTypes.CAMPAIGN.toString())));
+        this.createNotifications(oneDay,NotificationEventName.MILESTONE_UPCOMING_IN_A_DAY);
+        this.createNotifications(oneWeek,NotificationEventName.MILESTONE_UPCOMING_IN_A_WEEK);
 
-                if (space.getType().equals(ResourceSpaceTypes.COMPONENT)) {
 
-                    Component parent = space.getComponent();
-                    //signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName,
-                    //models.AppCivistBaseModel origin, AppCivistBaseModel resource)
-                    NotificationsDelegate.signalNotification(ResourceSpaceTypes.COMPONENT,
-                            NotificationEventName.MILESTONE_UPCOMING_IN_A_DAY, parent, mile);
-                }
-            }
+    }
 
-        }
-
+    public  void createNotifications(List<ComponentMilestone> milestones, NotificationEventName eventName){
         //Milestones that are due in one week
-        for (ComponentMilestone mile : oneWeek) {
+        for (ComponentMilestone mile : milestones) {
             //Find Parent Campaign
             for (ResourceSpace space : mile.getContainingSpaces()) {
                 if (space.getType().equals(ResourceSpaceTypes.COMPONENT)) {
-                    Component parent = space.getComponent();
-                    //signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName,
-                    //models.AppCivistBaseModel origin, AppCivistBaseModel resource)
-                    NotificationsDelegate.signalNotification(ResourceSpaceTypes.COMPONENT,
-                            NotificationEventName.MILESTONE_UPCOMING_IN_A_WEEK, parent, mile);
+
+                    for (ResourceSpace parent : space.getComponent().getContainingSpaces()) {
+                        //signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName,
+                        //models.AppCivistBaseModel origin, AppCivistBaseModel resource)
+                        System.out.println("Parent of: " + mile.getUuidAsString() + " is " + parent.getType());
+                        NotificationsDelegate.signalNotification(parent.getType(),
+                                eventName, parent.getCampaign(), mile);
+                    }
+
+
                 }
             }
 
         }
     }
+
+
 }

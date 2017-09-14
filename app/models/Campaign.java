@@ -1,9 +1,6 @@
 package models;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.*;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -14,6 +11,7 @@ import models.misc.Views;
 import utils.GlobalData;
 
 import javax.persistence.*;
+import javax.persistence.OrderBy;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,7 +42,7 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private Boolean listed = true;
 	@JsonView(Views.Public.class)
-	private UUID currentBallot; 
+	private UUID currentBallot;
 	@Transient
 	private String currentBallotAsString; 
 	// Relationships	
@@ -820,6 +818,41 @@ String uuidAsString, List<Component> phases) {
 
 	public static List<Campaign> findByCurrentBallotUUID(UUID uuid) {
 		return find.where().eq("currentBallot",uuid).findList();
+	}
+
+	public static List<Campaign> currentBallotStart(Date startDate, Date endDate){
+		String sql = "select c.campaign_id as campaign_id from campaign c,ballot b "
+				+ "where b.uuid = c.current_ballot "
+				+ "and b.starts_at between :start and :end";
+		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+		sqlQuery.setParameter("start", startDate);
+		sqlQuery.setParameter("end", endDate);
+		List<SqlRow> result = sqlQuery.findList();
+		System.out.println(" == Returning rows: " + result.size()
+		+ sqlQuery.toString());
+		List<Campaign> membs = new ArrayList<>();
+		for(SqlRow r : result){
+			membs.add(find.where().eq("campaignId",r.getLong("campaign_id")).findUnique());
+		}
+
+		return membs;
+	}
+
+	public static List<Campaign> currentBallotEnd(Date startDate, Date endDate){
+		String sql = "select c.campaign_id as campaign_id from campaign c,ballot b "
+				+ "where b.uuid = c.current_ballot "
+				+ "and b.ends_at between :start and :end";
+		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
+		sqlQuery.setParameter("start", startDate);
+		sqlQuery.setParameter("end", endDate);
+		List<SqlRow> result = sqlQuery.findList();
+
+		List<Campaign> membs = new ArrayList<>();
+		for(SqlRow r : result){
+			membs.add(find.where().eq("campaignId",r.getLong("campaign_id")).findUnique());
+		}
+
+		return membs;
 	}
 
 	public List<Theme> filterThemesByTitle(String t) {

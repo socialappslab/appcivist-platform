@@ -460,6 +460,48 @@ public class NotificationsDelegate {
                 break;
             case UPDATED_CONTRIBUTION_HISTORY:
                 break;
+            case BALLOT_UPCOMING_IN_A_DAY:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_UPCOMING_IN_A_WEEK:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_UPCOMING_IN_A_MONTH:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_DAY:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_WEEK:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_MONTH:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
             default:
                 break;
         }

@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -421,6 +422,22 @@ public class Ballot extends Model {
 		}
 
 		return consensusBallot;
+
+	}
+
+	public static List<Ballot> getBalltoByDateStart(Date startDate, Date endDate){
+
+		Query<Ballot> q = find.where().between("startsAt",startDate,endDate).query();
+		List<Ballot> membs = q.findList();
+		return membs;
+
+	}
+
+	public static List<Ballot> getBalltoByDateEnd(Date startDate, Date endDate){
+
+		Query<Ballot> q = find.where().between("endsAt",startDate,endDate).query();
+		List<Ballot> membs = q.findList();
+		return membs;
 
 	}
 }
