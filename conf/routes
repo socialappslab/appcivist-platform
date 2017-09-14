@@ -86,6 +86,10 @@ DELETE    /api/notification/subscription/:sid                                   
 POST      /api/notification/events/:type                                         controllers.Notifications.createResourceSpaceEvents(type: String)
 
 
+PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
+PUT       /api/user/:id/notifications/read                                            controllers.Notifications.updateNotifications(id: Long)
+
+
 ##################################################################################################################################################################
 # Assemblies API
 # API operations to manage Assemblies and entities that related to it 
