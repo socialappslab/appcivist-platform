@@ -1,6 +1,5 @@
 package models;
 
-import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -25,6 +24,7 @@ import play.Logger;
 import utils.GlobalData;
 
 import com.avaje.ebean.Model;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.BallotStatus;
-import enums.ContributionStatus;
 import enums.VotesLimitMeanings;
 import enums.VotingSystemTypes;
 

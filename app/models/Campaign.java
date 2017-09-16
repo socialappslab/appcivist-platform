@@ -11,34 +11,16 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
-import javax.persistence.Transient;
 import javax.persistence.*;
 
 import com.avaje.ebean.*;
-
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.SqlRow;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.*;
 
 import enums.ResourceSpaceTypes;
@@ -570,9 +552,18 @@ String uuidAsString, List<Component> phases) {
 		this.resources.setContributions(contributions);
 	}
 
+	@JsonIgnore
 	public List<Ballot> getBallots() {
 		this.ballots = this.resources.getBallots();
 		return this.ballots;
+	}
+
+	@JsonView(Views.Public.class)
+	public Map<String, Object> getBallotIndex() {
+		List<Ballot> list = this.resources.getBallots();
+        Map<String, Object> ballotIndex = list.stream().collect(
+                Collectors.toMap(x -> ((Ballot)x).getUuid().toString() , x -> x));
+		return ballotIndex;
 	}
 	
 	public void setBallots(List<Ballot> ballots) {
