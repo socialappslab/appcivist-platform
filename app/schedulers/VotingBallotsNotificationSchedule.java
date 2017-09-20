@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class VotingBallotsNotificationSchedule extends DailySchedule {
 
-   
+
     @Inject
     public VotingBallotsNotificationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;

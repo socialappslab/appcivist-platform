@@ -44,6 +44,7 @@ public class GlobalData {
 	public static String CAMPAIGN_CREATE_MSG_ERROR = "campaign.creation.error";
 	public static String CAMPAIGN_BASE_PATH = "/campaign";
 	public static CampaignTemplatesEnum DEFAULT_CAMPAIGN_TYPE = CampaignTemplatesEnum.PARTICIPATORY_BUDGETING;
+	public static String CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL = "campaign.include.all.published.proposals";
 
 	// Campaign Phase
 	public static String CAMPAIGN_PHASE_CREATE_MSG_SUCCESS = "campaign.phase.creation.success";
