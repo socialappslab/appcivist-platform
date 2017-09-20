@@ -12,5 +12,7 @@ public class TaskModule extends AbstractModule {
         System.out.println("Calendarized TaskModule");
         bind(MilestoneNotificationSchedule.class).asEagerSingleton();
         bind(VotingBallotsNotificationSchedule.class).asEagerSingleton();
+        bind(BallotCreationSchedule.class).asEagerSingleton();
+
     }
 }
