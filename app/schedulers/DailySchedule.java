@@ -46,8 +46,8 @@ public abstract class DailySchedule {
 
 
         this.actorSystem.scheduler().schedule(
-                //Duration.create(delay, TimeUnit.MINUTES), // initialDelay
-                Duration.create(1, TimeUnit.SECONDS), // initialDelay
+                Duration.create(delay, TimeUnit.MINUTES), // initialDelay
+                //Duration.create(1, TimeUnit.SECONDS), // initialDelay
                 Duration.create(1, TimeUnit.DAYS), // interval
                 () -> {
                     this.executeProcess();
