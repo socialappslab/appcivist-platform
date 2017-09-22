@@ -1961,7 +1961,16 @@ ALTER TABLE ballot
 
 ALTER TABLE contribution DROP CONSTRAINT ck_contrinution_contrinbutoin_status ;
 
--- 55
+ALTER TABLE contribution DROP CONSTRAINT ck_contrinution_contrinbutoin_status ;
+
+ALTER TABLE contribution
+  ADD CONSTRAINT ck_contrinution_contrinbutoin_status 
+  CHECK (status::text = 
+    ANY (ARRAY['NEW'::character varying, 'DRAFT'::character varying, 'PUBLISHED'::character varying,
+                    'ARCHIVED'::character varying, 'EXCLUDED'::character varying, 'MODERATED'::character varying, 
+                    'INBALLOT'::character varying, 'SELECTED'::character varying]::text[]));
+
+-- 55.sql
 ALTER TABLE ballot
   DROP CONSTRAINT ck_ballot_status;
 
