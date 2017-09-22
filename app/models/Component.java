@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -453,5 +454,16 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@Override
 	public int compare(Component o1, Component o2) {
 		return o1.getPosition() - o2.getPosition();
+	}
+
+	public static List<Component> findVotingByStartingDay(Date startDate, Date endDate){
+
+		Query<Component> q = find.where()
+				.eq("type",ComponentTypes.VOTING.toString())
+				.between("startDate",startDate,endDate)
+				.query();
+		List<Component> membs = q.findList();
+		return membs;
+
 	}
 }

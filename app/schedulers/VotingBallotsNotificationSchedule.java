@@ -4,78 +4,40 @@ import akka.actor.ActorSystem;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
-import models.*;
+import models.Ballot;
+import models.Campaign;
 import scala.concurrent.ExecutionContext;
-import scala.concurrent.duration.Duration;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Schedule process that create signals according to:
  * voting ballots that end in one month
  * voting ballots that end in one week
  * voting ballots that end in one day
- *
+ * <p>
  * Created by ggaona on 12/9/17.
  */
-public class VotingBallotsNotificationSchedule {
+public class VotingBallotsNotificationSchedule extends DailySchedule {
 
-    private final ActorSystem actorSystem;
-    private final ExecutionContext executionContext;
 
     @Inject
     public VotingBallotsNotificationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        this.initialize();
+        this.initialize(9, 0, "Voting Ballots Notification");
     }
 
-    private void initialize() {
-
-        Calendar calStart = Calendar.getInstance();
-        calStart.setTime(new Date());
-        calStart.set(Calendar.HOUR_OF_DAY, 9);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
-
-
-
-        Date startDate = calStart.getTime();
-        Date now = new Date();
-
-        Long delay = startDate.getTime() - now.getTime();
-        if (delay < 0) {
-            calStart.add(Calendar.DATE, 1);
-            delay = calStart.getTime().getTime() - now.getTime();
-        }
-
-
-        System.out.println("Calendarized voting ballot process at: "
-                + calStart.get(Calendar.HOUR) + ":"
-                + calStart.get(Calendar.MINUTE)
-                + " Delay: " + TimeUnit.MILLISECONDS.toMinutes(delay));
-
-        this.actorSystem.scheduler().schedule(
-                Duration.create(TimeUnit.MILLISECONDS.toMinutes(delay), TimeUnit.MINUTES), // initialDelay
-                //Duration.create(1, TimeUnit.SECONDS),
-                Duration.create(1, TimeUnit.DAYS), // interval
-                () -> {
-                    this.signalBallots();
-                },
-                this.executionContext
-        );
-    }
 
     /**
      * Find ballots and create notifications
      */
-    public void signalBallots() {
+    public void executeProcess() {
         System.out.println("Calendarized Voting Ballot notifications ");
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(new Date());
@@ -126,19 +88,20 @@ public class VotingBallotsNotificationSchedule {
                 + " Start Found: " + oneMonthStart.size()
                 + " End Found:" + oneMonthEnd.size());
 
-        this.createNotifications(oneDayStart,NotificationEventName.BALLOT_UPCOMING_IN_A_DAY);
-        this.createNotifications(oneDayEnd,NotificationEventName.BALLOT_ENDING_IN_A_DAY);
+        this.createNotifications(oneDayStart, NotificationEventName.BALLOT_UPCOMING_IN_A_DAY);
+        this.createNotifications(oneDayEnd, NotificationEventName.BALLOT_ENDING_IN_A_DAY);
 
 
-        this.createNotifications(oneWeekStart,NotificationEventName.BALLOT_UPCOMING_IN_A_WEEK);
-        this.createNotifications(oneWeekEnd,NotificationEventName.BALLOT_ENDING_IN_A_WEEK);
+        this.createNotifications(oneWeekStart, NotificationEventName.BALLOT_UPCOMING_IN_A_WEEK);
+        this.createNotifications(oneWeekEnd, NotificationEventName.BALLOT_ENDING_IN_A_WEEK);
 
 
-        this.createNotifications(oneMonthStart,NotificationEventName.BALLOT_UPCOMING_IN_A_MONTH);
-        this.createNotifications(oneMonthEnd,NotificationEventName.BALLOT_ENDING_IN_A_MONTH);
+        this.createNotifications(oneMonthStart, NotificationEventName.BALLOT_UPCOMING_IN_A_MONTH);
+        this.createNotifications(oneMonthEnd, NotificationEventName.BALLOT_ENDING_IN_A_MONTH);
 
     }
-    public  void createNotifications(List<Campaign> campaigns, NotificationEventName eventName) {
+
+    public void createNotifications(List<Campaign> campaigns, NotificationEventName eventName) {
         for (Campaign campaign : campaigns) {
             //System.out.println("Parent of: " + mile.getUuidAsString() + " is " + parent.getType());
 
@@ -147,26 +110,25 @@ public class VotingBallotsNotificationSchedule {
         }
     }
 
-    public List<Campaign> currentBallotStart(Date start , Date end){
-        List<Ballot> ballots = Ballot.getBalltoByDateStart(start,end);
+    public List<Campaign> currentBallotStart(Date start, Date end) {
+        List<Ballot> ballots = Ballot.getBalltoByDateStart(start, end);
         List<Campaign> campaigns = new ArrayList<>();
-        for(Ballot b : ballots ){
+        for (Ballot b : ballots) {
             List<Campaign> c = Campaign.findByCurrentBallotUUID(b.getUuid());
             campaigns.addAll(c);
         }
         return campaigns;
     }
 
-    public List<Campaign> currentBallotEnd(Date start , Date end){
-        List<Ballot> ballots = Ballot.getBalltoByDateEnd(start,end);
+    public List<Campaign> currentBallotEnd(Date start, Date end) {
+        List<Ballot> ballots = Ballot.getBalltoByDateEnd(start, end);
         List<Campaign> campaigns = new ArrayList<>();
-        for(Ballot b : ballots ){
+        for (Ballot b : ballots) {
             List<Campaign> c = Campaign.findByCurrentBallotUUID(b.getUuid());
             campaigns.addAll(c);
         }
         return campaigns;
     }
-
 
 
 }

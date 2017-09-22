@@ -4,17 +4,14 @@ import akka.actor.ActorSystem;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
-import models.Campaign;
 import models.ComponentMilestone;
 import models.ResourceSpace;
 import scala.concurrent.ExecutionContext;
-import scala.concurrent.duration.Duration;
 
 import javax.inject.Inject;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Schedule process that create signals according to:
@@ -23,64 +20,22 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Created by ggaona on 12/9/17.
  */
-public class MilestoneNotificationSchedule {
+public class MilestoneNotificationSchedule extends DailySchedule {
 
-    private final ActorSystem actorSystem;
-    private final ExecutionContext executionContext;
 
     @Inject
     public MilestoneNotificationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        this.initialize();
+        this.initialize(22, 0, "MilestoneNotification");
     }
 
-    private void initialize() {
-
-        Calendar calStart = Calendar.getInstance();
-        calStart.setTime(new Date());
-        calStart.set(Calendar.HOUR_OF_DAY, 10);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
-
-
-
-
-        Date startDate = calStart.getTime();
-        Date now = new Date();
-
-        Long delay = startDate.getTime() - now.getTime();
-
-        if (delay < 0) {
-            calStart.add(Calendar.DATE, 1);
-
-            delay = calStart.getTime().getTime() - now.getTime();
-        }
-
-        delay = TimeUnit.MILLISECONDS.toMinutes(delay);
-
-        System.out.println("Calendarized milestone process at: "
-                + calStart.get(Calendar.HOUR) + ":"
-                + calStart.get(Calendar.MINUTE)
-                + " Delay: " + delay);
-
-
-        this.actorSystem.scheduler().schedule(
-                Duration.create(delay, TimeUnit.MINUTES), // initialDelay
-                //Duration.create(1, TimeUnit.SECONDS), // initialDelay
-                Duration.create(1, TimeUnit.DAYS), // interval
-                () -> {
-                    this.signalMilestones();
-                },
-                this.executionContext
-        );
-    }
 
     /**
      * Find milestone
      */
-    public void signalMilestones() {
+    public void executeProcess() {
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(new Date());
         calStart.set(Calendar.HOUR_OF_DAY, 0);
@@ -108,13 +63,13 @@ public class MilestoneNotificationSchedule {
 
         List<ComponentMilestone> oneWeek = ComponentMilestone.getMilestoneByDate(calStart.getTime(), calEnd.getTime());
 
-        this.createNotifications(oneDay,NotificationEventName.MILESTONE_UPCOMING_IN_A_DAY);
-        this.createNotifications(oneWeek,NotificationEventName.MILESTONE_UPCOMING_IN_A_WEEK);
+        this.createNotifications(oneDay, NotificationEventName.MILESTONE_UPCOMING_IN_A_DAY);
+        this.createNotifications(oneWeek, NotificationEventName.MILESTONE_UPCOMING_IN_A_WEEK);
 
 
     }
 
-    public  void createNotifications(List<ComponentMilestone> milestones, NotificationEventName eventName){
+    public void createNotifications(List<ComponentMilestone> milestones, NotificationEventName eventName) {
         //Milestones that are due in one week
         for (ComponentMilestone mile : milestones) {
             //Find Parent Campaign
