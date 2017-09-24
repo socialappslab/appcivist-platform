@@ -1864,6 +1864,7 @@ CREATE UNIQUE INDEX unique_subscription_of_user_in_space ON subscription (user_u
 ALTER TABLE public.config DROP CONSTRAINT ck_config_config_target;
 ALTER TABLE public.config ADD CONSTRAINT ck_config_config_target CHECK (config_target::text = ANY (ARRAY['ASSEMBLY'::character varying::text, 'CAMPAIGN'::character varying::text, 'COMPONENT'::character varying::text, 'WORKING_GROUP'::character varying::text, 'MODULE'::character varying::text, 'PROPOSAL'::character varying::text, 'CONTRIBUTION'::character varying::text,'USER'::character varying::text]))
 
+
 -- 51. SQL
 alter table subscription drop column user_user_id;
 alter table subscription add column user_id character varying(40);
@@ -1912,3 +1913,67 @@ CREATE INDEX ix_notification_event_id
   (id);
 
 -- Index: public.ix_notification_event_uuid
+
+-- 52. SQL
+
+CREATE SEQUENCE public.notification_event_signal_user_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+
+-- DROP TABLE public.notification_event_signal_user;
+
+CREATE TABLE public.notification_event_signal_user
+(
+  id bigint NOT NULL DEFAULT nextval('notification_event_signal_user_id_seq'::regclass),
+  creation timestamp without time zone,
+  last_update timestamp without time zone,
+  lang character varying(255),
+  removal timestamp without time zone,
+  removed boolean,
+  user_user_id bigint,
+  signal_id bigint,
+  read boolean,
+
+  CONSTRAINT pk_notification_event_signal_user PRIMARY KEY (id),
+  CONSTRAINT fk_user FOREIGN KEY (user_user_id) REFERENCES public.appcivist_user (user_id) MATCH SIMPLE,
+  CONSTRAINT fk_notification_event_signal FOREIGN KEY (signal_id) REFERENCES public.notification_event_signal (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+
+--53.sql
+ALTER TABLE campaign ADD COLUMN external_ballot text;
+ALTER TABLE campaign RENAME COLUMN binding_ballot TO current_ballot;
+ALTER TABLE campaign DROP COLUMN consultive_ballot;
+
+--54.sql
+ALTER TABLE ballot ADD COLUMN votes_limit CHARACTER VARYING(40);
+ALTER TABLE ballot ADD COLUMN votes_limit_meaning CHARACTER VARYING(15);
+ALTER TABLE ballot
+  ADD CONSTRAINT ck_ballot_votes_limit_meaning 
+  CHECK (votes_limit_meaning::text = 
+    ANY (ARRAY['SELECTIONS'::character varying, 'TOKENS'::character varying, 'RANGE'::character varying]));
+
+ALTER TABLE contribution DROP CONSTRAINT ck_contrinution_contrinbutoin_status ;
+
+ALTER TABLE contribution DROP CONSTRAINT ck_contrinution_contrinbutoin_status ;
+
+ALTER TABLE contribution
+  ADD CONSTRAINT ck_contrinution_contrinbutoin_status 
+  CHECK (status::text = 
+    ANY (ARRAY['NEW'::character varying, 'DRAFT'::character varying, 'PUBLISHED'::character varying,
+                    'ARCHIVED'::character varying, 'EXCLUDED'::character varying, 'MODERATED'::character varying, 
+                    'INBALLOT'::character varying, 'SELECTED'::character varying]::text[]));
+
+-- 55.sql
+ALTER TABLE ballot
+  DROP CONSTRAINT ck_ballot_status;
+
+ALTER TABLE ballot
+  ADD CONSTRAINT ck_ballot_status
+  CHECK (status = ANY (ARRAY[0, 2]));

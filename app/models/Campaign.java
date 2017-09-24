@@ -1,20 +1,33 @@
 package models;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.SqlRow;
-import com.fasterxml.jackson.annotation.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.*;
+
+import javax.persistence.OrderBy;
+import javax.persistence.*;
+
+import com.avaje.ebean.*;
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.*;
+
 import enums.ResourceSpaceTypes;
 import enums.VotingSystemTypes;
 import io.swagger.annotations.ApiModel;
 import models.misc.Views;
 import utils.GlobalData;
-
-import javax.persistence.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -42,13 +55,9 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private Boolean listed = true;
 	@JsonView(Views.Public.class)
-	private UUID consultiveBallot; 
+	private UUID currentBallot;
 	@Transient
-	private String consultiveBallotAsString;
-	@JsonView(Views.Public.class)
-	private UUID bindingBallot; 
-	@Transient
-	private String bindingBallotAsString; 
+	private String currentBallotAsString; 
 	// Relationships	
 	@OneToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	@JsonIgnoreProperties({"uuid"})
@@ -129,16 +138,20 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	@OneToOne(cascade = CascadeType.ALL)
 	private Resource cover;
-	
+
 	@JsonView(Views.Public.class)
 	@OneToOne(cascade = CascadeType.ALL)
 	private Resource logo;
+	
+	@JsonView(Views.Public.class)
+	private String externalBallot;
 	/** 
-	 * The find property is an static property that facilitates database query
+	
+ * The find property is an static property that facilitates database query
 	 * creation
 	 */
 	public static Finder<Long, Campaign> find = new Finder<>(Campaign.class);
-
+	
 	public Campaign() {
 		super();
 		this.uuid =  UUID.randomUUID(); 
@@ -439,14 +452,16 @@ String uuidAsString, List<Component> phases) {
 	public void setCover(Resource cover) {
 		this.cover = cover;
 	}
-
+	
 	public List<WorkingGroup> getWorkingGroups() {
 		return this.resources.getWorkingGroups();
 	}
 
 	public List<WorkingGroup> getPagedWorkingGroups(Integer page, Integer pageSize) {
 		Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
-		return find.where().eq("containingSpaces", this.resources).
+		return find.where()
+				.eq("containingSpaces", this.resources)
+				.eq("removed",false).
 				findPagedList(page, pageSize).getList();
 	}
 
@@ -537,9 +552,18 @@ String uuidAsString, List<Component> phases) {
 		this.resources.setContributions(contributions);
 	}
 
+	@JsonIgnore
 	public List<Ballot> getBallots() {
 		this.ballots = this.resources.getBallots();
 		return this.ballots;
+	}
+
+	@JsonView(Views.Public.class)
+	public Map<String, Object> getBallotIndex() {
+		List<Ballot> list = this.resources.getBallots();
+        Map<String, Object> ballotIndex = list.stream().collect(
+                Collectors.toMap(x -> ((Ballot)x).getUuid().toString() , x -> x));
+		return ballotIndex;
 	}
 	
 	public void setBallots(List<Ballot> ballots) {
@@ -629,33 +653,26 @@ String uuidAsString, List<Component> phases) {
 	public void setListed(Boolean listed) {
 		this.listed = listed;
 	}
-
-	public UUID getConsultiveBallot() {
-		return consultiveBallot;
+	
+	public UUID getCurrentBallot() {
+		return currentBallot;
 	}
 
-	
-	public void setConsultiveBallot(UUID upsDownBallot) {
-		this.consultiveBallot = upsDownBallot;
+	public void setCurrentBallot(UUID ballot) {
+		this.currentBallot = ballot;
 	}
 
-	
-	public void setConsultiveBallotAsString(String upsDownBallotAsString) {
-		this.consultiveBallotAsString = upsDownBallotAsString;
-		this.consultiveBallot = UUID.fromString(upsDownBallotAsString);
+	public void setCurrentBallotAsString(String ballotAsString) {
+		this.currentBallotAsString = ballotAsString;
+		this.currentBallot = UUID.fromString(ballotAsString);
 	}
 	
-	public UUID getBindingBallot() {
-		return bindingBallot;
+	public String getExternalBallot() {
+		return externalBallot;
 	}
 
-	public void setBindingBallot(UUID bindingBallot) {
-		this.bindingBallot = bindingBallot;
-	}
-
-	public void setBindingBallotAsString(String bindingBallotAsString) {
-		this.bindingBallotAsString = bindingBallotAsString;
-		this.bindingBallot = UUID.fromString(bindingBallotAsString);
+	public void setExternalBallot(String ballotURL) {
+		this.externalBallot = ballotURL;
 	}
 
 	/*
@@ -709,67 +726,6 @@ String uuidAsString, List<Component> phases) {
 			
 			campaignResources.addComponent(component);
 
-			// If this is a voting component, create a ballot associated with it 
-			// and add the ballot to the campaign
-			String componentKey = component.getKey();
-			if (!component.getLinked() && componentKey != null && componentKey.toLowerCase().equals("voting") ) {
-				// 6. Create a decision ballot associated with this component and add it to the campaign
-				Ballot ballot = new Ballot();
-				Date startBallot = component.getStartDate();
-				Date endBallot = component.getEndDate();
-				
-				// if component has no start date, use now
-				startBallot = startBallot != null ? startBallot : Calendar.getInstance().getTime();
-				
-				// if component has no end date, use 30 days after startDate
-				Calendar c = Calendar.getInstance();
-				c.setTime(startBallot);
-				c.add(Calendar.DATE, 30);
-				endBallot = endBallot != null ? endBallot : c.getTime();
-
-				ballot.setStartsAt(startBallot);
-				ballot.setEndsAt(endBallot);
-				ballot.setPassword(campaign.getUuidAsString());
-				
-				Config votingSystemConfig = component.getResourceSpace()
-						.getConfigByKey(
-								GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
-				VotingSystemTypes vtype = votingSystemConfig != null ? VotingSystemTypes
-						.valueOf(votingSystemConfig.getValue())
-						: VotingSystemTypes.PLURALITY;
-				ballot.setVotingSystemType(vtype);
-				// TODO: include registration and signature configuration in configs of component
-				ballot.setRequireRegistration(false);
-				ballot.setUserUuidAsSignature(true);
-				ballot.setDecisionType("BINDING");
-				ballot.setComponent(component);
-				ballot.save();
-				ballot.refresh();
-				campaign.setBindingBallotAsString(ballot.getUuid().toString());
-				campaignResources.addBallot(ballot);
-				// Add Ballot configurations
-				for (Config config : component.getConfigs()) {
-					BallotConfiguration ballotConfig = new BallotConfiguration();
-					ballotConfig.setBallotId(ballot.getId());
-					ballotConfig.setKey(config.getKey());
-					ballotConfig.setValue(config.getValue());
-					ballotConfig.save();
-					if (config.getKey().equals("component.voting.ballot.password")) {
-						BallotRegistrationField brf = new BallotRegistrationField();
-						brf.setBallotId(ballot.getId());
-						brf.setDescription("The password used by non-users to vote on proposals through the voting ballot");
-						brf.setExpectedValue(config.getValue());
-						brf.setName("Ballot Password");
-						brf.setPosition(0);
-						brf.save();
-						ballot.setPassword(config.getValue());
-						ballot.update();
-					}
-				}
-				
-				// TODO: add ballot registration fields
-			}
-			
 			// Add connection to the Timeline of Edges
 			CampaignTimelineEdge edge = new CampaignTimelineEdge();
 			edge.setCampaign(campaign);
@@ -796,49 +752,10 @@ String uuidAsString, List<Component> phases) {
 		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
 			campaignResources.getWorkingGroups().addAll(existingWorkingGroups);
 		
-		// 7. Create the default up/down votes ballot
-		Ballot consultiveBallot = new Ballot();
-		Date startUDBallot = campaign.getStartDate();
-		Date endUDBallot = campaign.getEndDate();
-		startUDBallot = startUDBallot != null ? startUDBallot : Calendar.getInstance().getTime();
-		// if component has no end date, use 30 days after startDate
-		Calendar c = Calendar.getInstance();
-		c.setTime(startUDBallot);
-		c.add(Calendar.DATE, 30);
-		endUDBallot = endUDBallot  != null ? endUDBallot : c.getTime();
-		consultiveBallot.setStartsAt(startUDBallot);
-		consultiveBallot.setEndsAt(endUDBallot);
-		consultiveBallot.setPassword(campaign.getUuidAsString());
-		consultiveBallot.setVotingSystemType(VotingSystemTypes.PLURALITY);
-		consultiveBallot.setRequireRegistration(false);
-		consultiveBallot.setUserUuidAsSignature(true);
-		consultiveBallot.setDecisionType("CONSULTIVE");
-		consultiveBallot.save();
-		consultiveBallot.refresh();
-		
-		campaign.setConsultiveBallotAsString(consultiveBallot.getUuid().toString());
-		campaignResources.addBallot(consultiveBallot);
-		
-		// Add Ballot configurations
-		
-		// VOTING SYSTEM
-		BallotConfiguration ballotConfig = new BallotConfiguration();
-		ballotConfig.setBallotId(consultiveBallot.getId());
-		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
-		ballotConfig.setValue("PLURALITY");
-		ballotConfig.save();
-		
-		// VOTING SYSTEM BLOCK THRESHOLD
-		ballotConfig = new BallotConfiguration();
-		ballotConfig.setBallotId(consultiveBallot.getId());
-		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE);
-		ballotConfig.setValue("YES/NO/ABSTAIN");
-		ballotConfig.save();
-		
 		campaign.update();
 		campaignResources.update();
 		
-		// 4. Refresh the new campaign to get the newest version
+		// 6. Refresh the new campaign to get the newest version
 		campaign.refresh();
 	}
 
@@ -907,22 +824,14 @@ String uuidAsString, List<Component> phases) {
 			return null;
 	}	
 
-	public static UUID queryBindingBallotByCampaignResourceSpaceId(Long rsId) {
-		String sql = "select binding_ballot from campaign where resources_resource_space_id = :rsId";
+	public static UUID queryCurrentBallotByCampaignResourceSpaceId(Long rsId) {
+		String sql = "select current_ballot from campaign where resources_resource_space_id = :rsId";
 		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
 		sqlQuery.setParameter("rsId", rsId);
 		SqlRow result = sqlQuery.findUnique();
-		return result !=null ? result.getUUID("binding_ballot") : null;
+		return result !=null ? result.getUUID("current_ballot") : null;
 	}
 	
-	public static UUID queryConsultiveBallotByCampaignResourceSpaceId(Long rsId) {
-		String sql = "select consultive_ballot from campaign where resources_resource_space_id = :rsId";
-		SqlQuery sqlQuery = Ebean.createSqlQuery(sql);
-		sqlQuery.setParameter("rsId", rsId);
-		SqlRow result = sqlQuery.findUnique();
-		return result !=null ? result.getUUID("consultive_ballot") : null;	
-	}
-
 	public static Campaign readByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
@@ -931,10 +840,11 @@ String uuidAsString, List<Component> phases) {
 		return find.where().eq("resources_resource_space_id", rsId).findUnique();
 	}
 
-	public static List<Campaign> findByBindingBallotUUID(UUID uuid) {
-		return find.where().eq("bindingBallot",uuid).findList();
+	public static List<Campaign> findByCurrentBallotUUID(UUID uuid) {
+		return find.where().eq("currentBallot",uuid).findList();
 	}
 
+	
 	public List<Theme> filterThemesByTitle(String t) {
 		return this.resources.getThemes()
 				.stream()

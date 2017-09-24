@@ -3,5 +3,6 @@ package enums;
 
 public enum BallotStatus {
     ACTIVE,
-    ARCHIVED
+    ARCHIVED,
+    DRAFT
 }

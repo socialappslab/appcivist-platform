@@ -1026,6 +1026,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE_URL", value = "Source to the original post", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_NAME", value = "User name in source", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
@@ -1067,6 +1068,7 @@ public class Contributions extends Controller {
                         non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         if (non_member_author == null){
                             non_member_author = new NonMemberAuthor();
+                            non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
                             non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                             non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                         }     
@@ -1498,6 +1500,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SOCIAL_IDEATION_SOURCE_URL", value = "Source to the original post", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_NAME", value = "User name in source", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateContributionFeedback(
@@ -1531,6 +1534,7 @@ public class Contributions extends Controller {
                     non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                     if (non_member_author == null){
                         non_member_author = new NonMemberAuthor();
+                        non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
                         non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     }     
@@ -2338,10 +2342,8 @@ public class Contributions extends Controller {
                                                   ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
 
         newContrib.setType(type);
-        // if type is PROPOSAL, then change the default status value
-//        if (type.equals(ContributionTypes.PROPOSAL)) {
-//            newContrib.setStatus(ContributionStatus.DRAFT);
-//        }
+        
+        // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
             List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
             for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
@@ -2352,11 +2354,16 @@ public class Contributions extends Controller {
             newContrib.setNonMemberAuthors(nonMemberAuthors);
             newContrib.setNonMemberAuthor(nonMemberAuthors.get(0));
         }
+        
+        // Add author to the proposal and use its Lang as the language of the Proposal
+        // TODO: derive language from the text
         if (author != null) {
             newContrib.addAuthor(author);
             newContrib.setContextUserId(author.getUserId());
             newContrib.setLang(author.getLanguage());
         }
+        
+        // If still there is no language, try first the first NonMemberAuthor and then the Campaign, WG, and Assembly, in that order
         if (newContrib.getLang() == null){
             if (newContrib.getNonMemberAuthor() != null && newContrib.getNonMemberAuthor().getLang()!=null) {
                 newContrib.setLang(newContrib.getNonMemberAuthor().getLang());
@@ -2376,24 +2383,29 @@ public class Contributions extends Controller {
         }
 
 
-        if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
-            // read etherpad server url from config file
-            Logger.info("Etherpad URL was not configured");
-            etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+        if(type != null 
+        		&& (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+	        if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
+	            // read etherpad server url from config file
+	            Logger.info("Etherpad URL was not configured");
+	            etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+	        }
+	
+	        if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
+	            // read etherpad server url from config file
+	            Logger.info("Etherpad API Key was not configured");
+	            etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+	        }
+	
+	        Logger.info("Using Etherpad server at: " + etherpadServerUrl);
+	        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         }
-
-        if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
-            // read etherpad server url from config file
-            Logger.info("Etherpad API Key was not configured");
-            etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
-        }
-
-        Logger.info("Using Etherpad server at: " + etherpadServerUrl);
-        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
+        
         Boolean addIdeaToProposals = false;
         String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
         Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) && type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) 
+        		&& type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign();
 
         	List<Config> campaignConfigs = c.getConfigs();
@@ -2415,25 +2427,27 @@ public class Contributions extends Controller {
         			}
         		}
 
-    			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD)){
-    				hasEtherpadConfig = 1;
-    				if (cc.getValue().equalsIgnoreCase("FALSE")) {
-    					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
-    				}
-    	        }
-                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
-                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
-                        allowEmergent = true;
-                    }
-                }
-                if (type.equals(ContributionTypes.IDEA)) {
-                    if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
-                        hasIdeasDuringProposal = 1;
-                        if (cc.getValue().equals("TRUE")) {
-                            addIdeaToProposals=true;
-                        }
-                    }
-    			}
+        		if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
+	    			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD)){
+	    				hasEtherpadConfig = 1;
+	    				if (cc.getValue().equalsIgnoreCase("FALSE")) {
+	    					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+	    				}
+	    	        }
+	                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
+	                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
+	                        allowEmergent = true;
+	                    }
+	                }
+	                if (type.equals(ContributionTypes.IDEA)) {
+	                    if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS)){
+	                        hasIdeasDuringProposal = 1;
+	                        if (cc.getValue().equals("TRUE")) {
+	                            addIdeaToProposals=true;
+	                        }
+	                    }
+	    			}
+        		} 
         	}
         	// If the configuration is not defined, get the defaults values
         	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
@@ -2441,12 +2455,16 @@ public class Contributions extends Controller {
         		newContrib.setStatus(ContributionStatus.valueOf(status));
         	}
 
-        	if (hasEtherpadConfig == 0) {
-        		String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
-        		if (etherpad.equalsIgnoreCase("FALSE"))
-        			ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
-        	}
-
+			if (type != null
+					&& (type.equals(ContributionTypes.PROPOSAL) || type
+							.equals(ContributionTypes.NOTE))) {
+				if (hasEtherpadConfig == 0) {
+					String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS
+							.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
+					if (etherpad.equalsIgnoreCase("FALSE"))
+						ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+				}
+			}
             if (hasIdeasDuringProposal == 0 && type.equals(ContributionTypes.IDEA)) {
                 String ideasDuringProposal = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS);
                 if (ideasDuringProposal.equals("TRUE")){
@@ -2624,44 +2642,6 @@ public class Contributions extends Controller {
             newContrib.setAssociatedContributions(contributionList);
             newContrib.getResourceSpace().update();
             newContrib.getResourceSpace().refresh();
-        }
-
-        // If contribution is a proposal and the resource space where it is added is a Campaign
-        // create automatically a related candidate for the contribution in the bindingBallot
-        // and consultiveBallot associated to the campaign.
-        if (containerResourceSpace != null && containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-            UUID binding = Campaign.queryBindingBallotByCampaignResourceSpaceId(containerResourceSpace
-                    .getResourceSpaceId());
-            UUID consultive = Campaign.queryConsultiveBallotByCampaignResourceSpaceId(containerResourceSpace
-                    .getResourceSpaceId());
-
-            // Add the candidates automatically only to the binding ballot marked in the campaign as such
-            // and to the "consultive" ballot marked in the campaign as such
-            for (Ballot ballot : containerResourceSpace.getBallots()) {
-                if ((ballot.getDecisionType().equals("BINDING") && (ballot.getUuid().equals(binding)))
-                        || (ballot.getDecisionType().equals("CONSULTIVE") && ballot.getUuid().equals(consultive))) {
-                    BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-                    contributionAssociatedCandidate.setBallotId(ballot.getId());
-                    contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
-                    contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
-                    contributionAssociatedCandidate.save();
-                }
-            }
-        }
-
-        // If the contribution is a proposal, create an associated candidate in the ballot
-        // of the working group authors
-        for (WorkingGroup wg : newContrib.getWorkingGroupAuthors()) {
-            UUID consensus = WorkingGroup.queryConsensusBallotByGroupResourceSpaceId(wg.getResourcesResourceSpaceId());
-            Ballot b = Ballot.findByUUID(consensus);
-
-            if (b!=null) {
-                BallotCandidate contributionAssociatedCandidate = new BallotCandidate();
-                contributionAssociatedCandidate.setBallotId(b.getId());
-                contributionAssociatedCandidate.setCandidateType(BallotCandidateTypes.ASSEMBLY);
-                contributionAssociatedCandidate.setCandidateUuid(newContrib.getUuid());
-                contributionAssociatedCandidate.save();
-            }
         }
 
         return newContrib;

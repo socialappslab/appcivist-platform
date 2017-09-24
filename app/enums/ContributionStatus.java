@@ -6,5 +6,7 @@ public enum ContributionStatus {
 	PUBLISHED,
 	EXCLUDED,
 	ARCHIVED, 
-	MODERATED
+	MODERATED, 
+	INBALLOT,
+	SELECTED
 }

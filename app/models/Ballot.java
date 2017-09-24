@@ -1,9 +1,7 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import enums.BallotStatus;
-import enums.ResourceSpaceTypes;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -21,17 +19,22 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import models.misc.Views;
+import play.Logger;
+import utils.GlobalData;
+
 import com.avaje.ebean.Model;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonView;
 
+import enums.BallotStatus;
+import enums.VotesLimitMeanings;
 import enums.VotingSystemTypes;
-import models.misc.Views;
-import play.Logger;
-import utils.GlobalData;
 
 @Entity(name="ballot")
 @JsonInclude(Include.NON_EMPTY)
@@ -86,7 +89,16 @@ public class Ballot extends Model {
 	private Boolean removed = false;
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	private Date removedAt;
-	
+	@JsonView(Views.Public.class)
+	@Column(name = "votes_limit")
+    @ApiModelProperty(value="The limit on the votes a voter can give on this ballot")
+	private String votesLimit; 
+	@JsonView(Views.Public.class)
+	@Column(name = "votes_limit_meaning")
+	@Enumerated(EnumType.STRING)
+    @ApiModelProperty(value="Meaning of the limit on the votes")
+	private VotesLimitMeanings votesLimitMeaning;
+
     /**
 	 * The find property is an static property that facilitates database query creation
 	 */
@@ -283,6 +295,22 @@ public class Ballot extends Model {
 		this.entityType = entityType;
 	}
 
+	public String getVotesLimit() {
+		return votesLimit;
+	}
+
+	public void setVotesLimit(String votesLimit) {
+		this.votesLimit = votesLimit;
+	}
+
+	public VotesLimitMeanings getVotesLimitMeaning() {
+		return votesLimitMeaning;
+	}
+
+	public void setVotesLimitMeaning(VotesLimitMeanings votesLimitMeaning) {
+		this.votesLimitMeaning = votesLimitMeaning;
+	}
+
 	public static Ballot findByUUID(UUID uuid) {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
@@ -393,6 +421,22 @@ public class Ballot extends Model {
 		}
 
 		return consensusBallot;
+
+	}
+
+	public static List<Ballot> getBalltoByDateStart(Date startDate, Date endDate){
+
+		Query<Ballot> q = find.where().between("startsAt",startDate,endDate).query();
+		List<Ballot> membs = q.findList();
+		return membs;
+
+	}
+
+	public static List<Ballot> getBalltoByDateEnd(Date startDate, Date endDate){
+
+		Query<Ballot> q = find.where().between("endsAt",startDate,endDate).query();
+		List<Ballot> membs = q.findList();
+		return membs;
 
 	}
 }

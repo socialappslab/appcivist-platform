@@ -1600,8 +1600,7 @@
     listed: true
     template: *ct1
     uuidAsString: e1998630-4079-11e5-a151-feff819cdc9f
-    bindingBallotAsString: c0301524-f0b2-11e5-9ce9-5e5517507c66
-    consultiveBallotAsString: 3cb04204-f0b3-11e5-9ce9-5e5517507c66
+    currentBallotAsString: c0301524-f0b2-11e5-9ce9-5e5517507c66
     resources: *rs5
   - &c2 !!models.Campaign
     title: "Fundraising for art program at neighborhood school"

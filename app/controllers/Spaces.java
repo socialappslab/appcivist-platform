@@ -2,14 +2,6 @@ package controllers;
 
 
 import static play.data.Form.form;
-
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
-import delegates.ContributionsDelegate;
-import delegates.NotificationsDelegate;
-import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -21,20 +13,46 @@ import io.swagger.annotations.ApiResponses;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 
-import models.*;
+import models.Assembly;
+import models.AssemblyProfile;
+import models.Ballot;
+import models.BallotCandidate;
+import models.Campaign;
+import models.Component;
+import models.ComponentMilestone;
+import models.Config;
+import models.Contribution;
+import models.CustomFieldDefinition;
+import models.CustomFieldValue;
+import models.CustomFieldValueOption;
+import models.MembershipAssembly;
+import models.MembershipGroup;
+import models.NonMemberAuthor;
+import models.Resource;
+import models.ResourceSpace;
+import models.ResourceSpaceAssociationHistory;
+import models.Theme;
+import models.User;
+import models.WorkingGroup;
 import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.BallotTransfer;
 import models.transfer.TransferResponseStatus;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomUtils;
+
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -45,16 +63,30 @@ import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.With;
 import play.twirl.api.Content;
+import security.SecurityModelConstants;
+import utils.GlobalData;
+import utils.LogActions;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
 
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
-import security.SecurityModelConstants;
-import utils.GlobalData;
-import utils.LogActions;
 
-import javax.persistence.*;
+import delegates.NotificationsDelegate;
+import enums.BallotCandidateTypes;
+import enums.BallotStatus;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
+import enums.EntityTypes;
+import enums.NotificationEventName;
+import enums.ResourceSpaceAssociationTypes;
+import enums.ResourceSpaceTypes;
+import enums.ResponseStatus;
+import enums.ThemeTypes;
 
 @Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
@@ -219,12 +251,12 @@ public class Spaces extends Controller {
     }
     
     /**
-     * GET       /api/space/:uuid/commentcount
+     * GET       /api/public/space/:uuid/commentcount
      *
      * @param uuid
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Comment count of a resource space")
+    @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Number of CONTRIBUTIONS of type COMMENT in a resource space")
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
     public static Result getCommentCountPublic(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid) {
         ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
@@ -238,6 +270,58 @@ public class Spaces extends Controller {
         return ok(result);
     }
 
+    
+    /**
+     * GET       /api/public/space/:uuid/commentcount
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Basic analytics of entities in a resource space")
+    @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
+    public static Result getAnalytics(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid,
+            @ApiParam(name = "includeThemes", value = "Include analytics of contributions per theme", allowableValues = "false,true", defaultValue = "false") String includeThemes) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        // 1. Number of Contributions per Type
+        // 1.1. Number of Ideas
+        // 1.2. Number of Proposals
+        // 1.3. Number of Notes
+        // 1.4. Number of Discussions
+        // 1.5. Number of Comments
+        // 1.6. Number of Comments counting Discussions as comments
+        Map<String, Map<String, Map<String, Integer>>> contributionCountMap = resourceSpace.contributionCountPerType(includeThemes);
+        // 2. Number of Working Groups
+        Integer wgCount = resourceSpace.getWorkingGroups().size();
+        // 3. Number of Campaigns (ongoing, past, upcoming)
+        Map<String,Integer> campaignsCountMap = resourceSpace.getCampaignCountByStatus();
+        // 4. Number of resources by type        
+        Map<String,Integer> resourcesCountMap = resourceSpace.resourceCountPerType();
+        // 5. Number of Assemblies
+        Integer assembliesCount = resourceSpace.getAssemblies().size();
+        // 6. Number of members if resource space if of type ASSEMBLY or WORKING_GROUP
+        Integer members = 0;
+        if (resourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+        	members = MembershipAssembly.membershipCountByAssemblyId(resourceSpace.getAssemblyResources().getAssemblyId());
+        } else if (resourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP))  {
+        	members = MembershipGroup.membershipCountByGroupId(resourceSpace.getWorkingGroupResources().getGroupId());
+        }
+        
+        ObjectNode result = Json.newObject();
+        JsonNode contributionCountNode = Json.mapper().convertValue(contributionCountMap, JsonNode.class);
+        JsonNode resourceCountNode = Json.mapper().convertValue(resourcesCountMap, JsonNode.class);
+        JsonNode campaignsCountNode = Json.mapper().convertValue(campaignsCountMap, JsonNode.class);
+        JsonNode wgCountNode = Json.mapper().convertValue(wgCount, JsonNode.class);
+        JsonNode membersCountNode = Json.mapper().convertValue(members, JsonNode.class);
+        JsonNode assembliesCountNode = Json.mapper().convertValue(assembliesCount, JsonNode.class);
+        result.set("contributions_total", contributionCountNode);
+        result.set("resources_total", resourceCountNode);
+        result.set("assemblies_total",assembliesCountNode);
+        result.set("working_groups_total",wgCountNode);
+        result.set("campaigns_total",campaignsCountNode);
+        result.set("members",membersCountNode);
+        return ok(result);
+    }
+    
     /**
      * POST       /api/space/:sid/field
      *
@@ -2647,34 +2731,31 @@ public class Spaces extends Controller {
             @ApiParam(name = "sid", value = "Space id") Long sid,
             @ApiParam(name = "format", value = "Export format", allowableValues = "CSV") String format) {
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        
         if(resourceSpace!=null && resourceSpace.getResourceSpaceId()==sid) {
             List<HashMap<String, String>> hashMapList = new ArrayList<HashMap<String, String>>();
             List<CustomFieldDefinition> definitions = resourceSpace.getCustomFieldDefinitions();
             List<Contribution> contributionList = resourceSpace.getContributions();
-            HashMap<String, Long> nonMemberIds = new HashMap<String, Long>();
+            List<Long> nonMemberIds = new ArrayList<Long>();
             for (Contribution contribution : contributionList) {
-                for (NonMemberAuthor author : contribution.getNonMemberAuthors()
-                        ) {
-                    nonMemberIds.put("id",author.getId());
+                for (NonMemberAuthor author : contribution.getNonMemberAuthors()) {
+                    nonMemberIds.add(author.getId());
                 }
             }
-            HashMap<String, String> nonMemberAuthorsMap = new HashMap<String, String>();
-            Iterator iterator = nonMemberIds.entrySet().iterator();
+            Iterator<Long> iterator = nonMemberIds.iterator();
             while (iterator.hasNext()) {
-                Map.Entry pair = (Map.Entry) iterator.next();
-                iterator.remove();
-                Long authorId = Long.parseLong(pair.getValue()+"");
+                Long authorId = iterator.next();
                 NonMemberAuthor author = NonMemberAuthor.read(authorId);
+                iterator.remove();
+                HashMap<String, String> nonMemberAuthorsMap = new HashMap<String, String>();
                 nonMemberAuthorsMap.put("name", author.getName() == null ? "" : author.getName());
                 nonMemberAuthorsMap.put("email", author.getEmail() == null ? "" : author.getEmail());
                 nonMemberAuthorsMap.put("phone", author.getPhone() == null ? "" : author.getPhone());
-                for (CustomFieldDefinition definition : definitions
-                        ) {
+                for (CustomFieldDefinition definition : definitions) {
                     if (definition.getEntityType().equals(EntityTypes.NON_MEMBER_AUTHOR)) {
                         int b = 0;
                         if (author.getCustomFieldValues() != null) {
-                            for (CustomFieldValue value : author.getCustomFieldValues()
-                                    ) {
+                            for (CustomFieldValue value : author.getCustomFieldValues()) {
                                 if (definition.getName().equals(value.getCustomFieldDefinition().getName())) {
                                     nonMemberAuthorsMap.put(definition.getName(), value.getValue() == null ? "" : value.getValue());
                                     b = 1;
@@ -2693,9 +2774,9 @@ public class Spaces extends Controller {
                 String csvDetail = "";
                 Boolean head = false;
                 for (HashMap<String, String> contributionMap : hashMapList) {
-                    Iterator it = contributionMap.entrySet().iterator();
+                	Iterator<Entry<String, String>> it = contributionMap.entrySet().iterator();
                     while (it.hasNext()) {
-                        Map.Entry pair = (Map.Entry) it.next();
+                        Map.Entry<String, String> pair = (Entry<String, String>) it.next();
                         it.remove();
                         if (it.hasNext()) {
                             if (!head) {

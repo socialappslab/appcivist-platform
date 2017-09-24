@@ -85,6 +85,13 @@ GET       /api/notification/subscription/:sid                                   
 DELETE    /api/notification/subscription/:sid                                    controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 POST      /api/notification/events/:type                                         controllers.Notifications.createResourceSpaceEvents(type: String)
 
+GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0)
+GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long)
+
+
+PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
+PUT       /api/user/:id/notifications/read                                            controllers.Notifications.updateNotifications(id: Long)
+
 
 ##################################################################################################################################################################
 # Assemblies API
@@ -394,6 +401,7 @@ GET       /api/public/space/:uuid/contribution/pinned                           
 GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
 POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
+GET       /api/public/space/:uuid/analytics                                      controllers.Spaces.getAnalytics(uuid: java.util.UUID, includeThemes?="")
 
 # Public custom field endpoints
 GET       /api/public/space/:uuid/field                                          controllers.Spaces.findSpaceFieldsByUUID(uuid: java.util.UUID)

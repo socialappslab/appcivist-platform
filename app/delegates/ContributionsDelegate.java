@@ -569,7 +569,7 @@ public class ContributionsDelegate {
     	  List<Config> assemblyConfig = Config.findByTypeAndKey(
                                           assembly.getUuid(), 
                                           ConfigTargets.ASSEMBLY, 
-                                          "appcivist.assembly.social-ideation-integration-enabled");
+                                          "appcivist.assembly.enable-social-ideation");
 		    for (Config aConfig: assemblyConfig) {
             if (aConfig.getValue().equalsIgnoreCase("TRUE")) {
 				      return true;
@@ -587,6 +587,7 @@ public class ContributionsDelegate {
         headerMap.put("SOCIAL_IDEATION_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_SOURCE_URL"));
         headerMap.put("SOCIAL_IDEATION_USER_SOURCE_ID", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_ID"));
         headerMap.put("SOCIAL_IDEATION_USER_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_URL"));
+        headerMap.put("SOCIAL_IDEATION_USER_NAME", req.getHeader("SOCIAL_IDEATION_USER_NAME"));
         headerMap.put("IGNORE_ADMIN_USER", req.getHeader("IGNORE_ADMIN_USER"));
 
         return headerMap;
@@ -605,7 +606,7 @@ public class ContributionsDelegate {
             }
         }
 
-        if (headersCount == 6) {
+        if (headersCount == 7) {
             String assemblyID = headerMap.get("ASSEMBLY_ID");
             Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
             if (assemblyConfig == true)

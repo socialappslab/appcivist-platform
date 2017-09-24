@@ -1,11 +1,12 @@
 package models;
 
-import enums.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
-import play.Logger;
+
+import enums.BallotStatus;
+import enums.CampaignTemplatesEnum;
+import enums.ContributionTypes;
+import enums.ManagementTypes;
+import enums.MembershipTypes;
+import enums.MyRoles;
+import enums.ResourceSpaceTypes;
+import enums.ResourceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -47,9 +56,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 	private UUID uuid = UUID.randomUUID();
 	@Transient
 	private String uuidAsString;
+
 	@Enumerated(EnumType.STRING)
 	@JsonView(Views.Public.class)
 	private ResourceSpaceTypes type = ResourceSpaceTypes.ASSEMBLY;
+
 	private UUID parent;
 
 	@Transient
@@ -790,14 +801,16 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public List<Contribution> getContributionsFilteredByType(
 			ContributionTypes type) {
-		List<Contribution> comments = new ArrayList<>();
+		List<Contribution> cPerType = new ArrayList<>();
 		for (Contribution c : this.contributions) {
 			if (c.getType().equals(type)) {
-				comments.add(c);
+				cPerType.add(c);
 			}
 		}
-		return comments;
+		return cPerType;
 	}
+	
+	
 	public static ResourceSpace setResourceSpaceItems(ResourceSpace rs,
 			ResourceSpace rsNew) {
 		if(ResourceSpaceTypes.ASSEMBLY.equals(rsNew.getType())){
@@ -979,5 +992,107 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public void setBallotHistories(List<Ballot> ballotHistories) {
 		this.ballotHistories = ballotHistories;
+	}
+	
+	// Analytics
+	public Map<String,Map<String,Map<String,Integer>>> contributionCountPerType(String includeThemes) {
+		Map<String,Map<String,Integer>> contributionCountMap = new HashMap<>();
+		Map<String,Map<String,Integer>> themeContribCountMap = new HashMap<>();
+		Map<String,Map<String,Map<String,Integer>>> result = new HashMap<>();
+
+		for (Contribution c : this.contributions) {
+			Map<String,Integer> contributionTypeMap = contributionCountMap.get(c.getType().toString());
+			if (contributionTypeMap == null) {
+				contributionTypeMap = new HashMap<>();
+				contributionTypeMap.put("TOTAL", 1);
+				contributionTypeMap.put(c.getStatus().toString(),1);
+				
+				Integer authorCount = c.getAuthors().size();
+				Integer nonMemberAuthorCount = c.getNonMemberAuthors().size(); 
+				contributionTypeMap.put("MEMBER_AUTHORS",authorCount);
+				contributionTypeMap.put("NON_MEMBER_AUTHORS",nonMemberAuthorCount);
+				contributionCountMap.put(c.getType().toString(),contributionTypeMap);
+			} else {
+				Integer currentTotal = contributionTypeMap.get("TOTAL");
+				Integer currentForStatus = contributionTypeMap.get(c.getStatus().toString());
+				contributionTypeMap.put("TOTAL", currentTotal+1);
+				contributionTypeMap.put(c.getStatus().toString(),currentForStatus!=null ? currentForStatus+1 : 1);
+				
+				Integer authorCount = c.getAuthors().size();
+				Integer nonMemberAuthorCount = c.getNonMemberAuthors().size(); 
+				Integer currentAuthorTotal = contributionTypeMap.get("MEMBER_AUTHORS");
+				Integer currentNonMemberAuthorTotal = contributionTypeMap.get("NON_MEMBER_AUTHORS");
+				contributionTypeMap.put("MEMBER_AUTHORS",currentAuthorTotal!=null ? currentAuthorTotal+authorCount:authorCount);
+				contributionTypeMap.put("NON_MEMBER_AUTHORS",currentNonMemberAuthorTotal!=null? currentNonMemberAuthorTotal+nonMemberAuthorCount:nonMemberAuthorCount);
+				contributionCountMap.put(c.getType().toString(),contributionTypeMap);
+			}
+			Integer currentAuthorTotal = contributionTypeMap.get("MEMBER_AUTHORS");
+			Integer currentNonMemberAuthorTotal = contributionTypeMap.get("NON_MEMBER_AUTHORS");
+			contributionTypeMap.put("AUTHORS",currentAuthorTotal+currentNonMemberAuthorTotal);
+
+			if (c.getType().equals(ContributionTypes.DISCUSSION) || c.getType().equals(ContributionTypes.COMMENT) ) {
+				contributionTypeMap = contributionCountMap.get("DISCUSSION_COMMENT");
+				if (contributionTypeMap == null) {
+					contributionTypeMap = new HashMap<>();
+					contributionTypeMap.put("TOTAL", 1);
+				} else {
+					Integer currentTotal = contributionTypeMap.get("TOTAL");
+					contributionTypeMap.put("TOTAL", currentTotal+1);
+				}
+			}
+			
+			if (includeThemes != "" && includeThemes.equals("true")) {
+				for (Theme t : c.getThemes()) {
+					Map<String,Integer> themeTypeMap = themeContribCountMap.get(t.getType().toString());
+					if (themeTypeMap==null) {
+						themeTypeMap = new HashMap<>();
+						themeTypeMap.put(t.getTitle(),1);
+						themeContribCountMap.put(t.getType().toString(),themeTypeMap);
+					} else {
+						Integer currentTotal = themeTypeMap.get(t.getTitle());
+						themeTypeMap.put(t.getTitle(),currentTotal!=null ? currentTotal+1 : 1);
+					}
+				}
+			}
+		}
+		
+		result.put("contributions_per_type",contributionCountMap);
+		result.put("contributions_per_theme",themeContribCountMap);
+		return result;
+	}
+	
+	public Map<String,Integer> resourceCountPerType() {
+		Map<String,Integer> countMap = new HashMap<String, Integer>();
+		for (Resource r : this.resources) {
+			Integer currentValue = countMap.get(r.getResourceType().toString());
+			countMap.put(r.getResourceType().toString(),currentValue !=null ? currentValue+1 : 1);
+		}
+		return countMap;
+	}
+	
+	public Map<String,Integer> themeCountPerType() {
+		Map<String,Integer> countMap = new HashMap<String, Integer>();
+		for (Theme t : this.themes) {
+			Integer currentValue = countMap.get(t.getType().toString());
+			countMap.put(t.getType().toString(),currentValue !=null ? currentValue+1 : 1);	
+		}
+		return countMap;
+	}
+	
+	public Map<String,Integer> getCampaignCountByStatus() {
+		Map<String,Integer> campaignCount = new HashMap<>();
+		for (Campaign c : campaigns) {
+			if (c.getActive()) {
+				Integer currentValue = campaignCount.get("ONGOING");
+				campaignCount.put("ONGOING",currentValue !=null ? currentValue+1 : 1);
+			} else if (c.getPast()) {
+				Integer currentValue = campaignCount.get("PAST");
+				campaignCount.put("PAST",currentValue !=null ? currentValue+1 : 1);
+			} else if (c.getUpcoming()) {
+				Integer currentValue = campaignCount.get("UPCOMING");
+				campaignCount.put("UPCOMING",currentValue !=null ? currentValue+1 : 1);
+			}
+		}
+		return campaignCount;
 	}
 }

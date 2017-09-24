@@ -15,8 +15,7 @@ public class CampaignTransfer {
 	private String url;
 	private UUID uuid;
 	private Boolean listed = true;
-	private UUID bindingBallot;
-	private UUID consultiveBallot;
+	private UUID currentBallot;
 	private ResourceTransfer cover;
 
 	private List<ComponentTransfer> components = new ArrayList<>();
@@ -76,17 +75,11 @@ public class CampaignTransfer {
 	public void setListed(Boolean listed) {
 		this.listed = listed;
 	}
-	public UUID getBindingBallot() {
-		return bindingBallot;
+	public UUID getCurrentBallot() {
+		return currentBallot;
 	}
-	public void setBindingBallot(UUID bindingBallot) {
-		this.bindingBallot = bindingBallot;
-	}
-	public UUID getConsultiveBallot() {
-		return consultiveBallot;
-	}
-	public void setConsultiveBallot(UUID consultiveBallot) {
-		this.consultiveBallot = consultiveBallot;
+	public void setCurrentBallot(UUID ballot) {
+		this.currentBallot = ballot;
 	}
 	public List<ComponentTransfer> getComponents() {
 		return components;

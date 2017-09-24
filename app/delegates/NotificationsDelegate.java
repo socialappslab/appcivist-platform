@@ -26,6 +26,7 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
+import scala.tools.nsc.backend.icode.Primitives;
 import utils.GlobalData;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
@@ -40,31 +41,31 @@ public class NotificationsDelegate {
     public static HashMap<NotificationEventName, String> eventsTitleByType = new HashMap<>();
 
     static {
-        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "New Campaign");
-        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "New Working Group");
-        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "New Voting Ballot");
-        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "New Milestone");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "New Contribution Idea");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "New Contribution Proposal");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "New Contribution Discussion");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "New Contribution Comment");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "New Contribution note");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "New Contribution Post in Forum");
-        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "New Contribution Feedback");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "Updated Campaign");
-        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "Updated Working Group");
-        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "Updated Voting ballot");
-        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "Updated Milestone");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "Updated Contribution Idea");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "Updated Contribution Proposal");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "Updated Contribution Discussion");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "Updated Contribution Comment");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "Updated Contribution Note");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "Updated Contribution Post");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "Updated Contribution Feedback");
-        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "Updated Contribution History");
-        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "Milestone Passed!");
-        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "Upcoming Milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "notifications.{{resourceType}}.new.campaign");
+        eventsTitleByType.put(NotificationEventName.NEW_WORKING_GROUP, "notifications.{{resourceType}}.new.working.group");
+        eventsTitleByType.put(NotificationEventName.NEW_VOTING_BALLOT, "notifications.{{resourceType}}.new.voting.ballot");
+        eventsTitleByType.put(NotificationEventName.NEW_MILESTONE, "notifications.{{resourceType}}.new.milestone");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_IDEA, "notifications.{{resourceType}}.new.contribution.idea");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.new.contribution.proposal");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.new.contribution.discussion");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.new.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.new.contribution.note");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.new.contribution.post.in.forum");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.new.contribution.feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CAMPAIGN, "notifications.{{resourceType}}.updated.campaign");
+        eventsTitleByType.put(NotificationEventName.UPDATED_WORKING_GROUP, "notifications.{{resourceType}}.updated.working.group");
+        eventsTitleByType.put(NotificationEventName.UPDATED_VOTING_BALLOT, "notifications.{{resourceType}}.updated.voting.ballot");
+        eventsTitleByType.put(NotificationEventName.UPDATED_MILESTONE, "notifications.{{resourceType}}.updated.milestone");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_IDEA, "notifications.{{resourceType}}.updated.contribution.idea");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.updated.contribution.proposal");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.updated.contribution.discussion");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.updated.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.updated.contribution.note");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.updated.contribution.post");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.updated.contribution.feedback");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "notifications.{{resourceType}}.updated.contribution.history");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "notifications.{{resourceType}}.milestone.passed");
+        eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "notifications.{{resourceType}}.upcoming.milestone");
     }
 
     public static NotificationEventName assemblyEvents[] = {
@@ -305,6 +306,10 @@ public class NotificationsDelegate {
                 originUUID = ((WorkingGroup) origin).getUuid();
                 originName = ((WorkingGroup) origin).getName();
                 break;
+            case COMPONENT:
+                originUUID = ((Component) origin).getUuid();
+                originName = ((Component) origin).getTitle();
+                break;
             default:
                 break;
         }
@@ -436,14 +441,66 @@ public class NotificationsDelegate {
                 // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
                 break;
             case MILESTONE_UPCOMING_IN_A_WEEK:
+                resourceUuid = ((ComponentMilestone) resource).getUuid();
+                resourceTitle = ((ComponentMilestone) resource).getTitle();
+                resourceText = ((ComponentMilestone) resource).getDescription();
+                resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceType = "MILESTONE";
                 break;
             case MILESTONE_UPCOMING_IN_A_DAY:
+                resourceUuid = ((ComponentMilestone) resource).getUuid();
+                resourceTitle = ((ComponentMilestone) resource).getTitle();
+                resourceText = ((ComponentMilestone) resource).getDescription();
+                resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceType = "MILESTONE";
                 break;
             case MEMBER_JOINED:
                 break;
             case UPDATED_CONTRIBUTION_FEEDBACK:
                 break;
             case UPDATED_CONTRIBUTION_HISTORY:
+                break;
+            case BALLOT_UPCOMING_IN_A_DAY:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_UPCOMING_IN_A_WEEK:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_UPCOMING_IN_A_MONTH:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_DAY:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_WEEK:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
+                break;
+            case BALLOT_ENDING_IN_A_MONTH:
+                resourceUuid = ((Campaign) resource).getUuid();
+                resourceTitle = ((Campaign) resource).getTitle();
+                resourceText = ((Campaign) resource).getGoal();
+                resourceDate = resource.getLastUpdate();
+                resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
             default:
                 break;
@@ -491,12 +548,73 @@ public class NotificationsDelegate {
 
         Logger.info("NOTIFICATION: Notification event ready");
 
+        NotificationSignalTransfer newNotificationSignal = null;
+        try {
+            newNotificationSignal = prepareNotificationSignal(notificationEvent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(e.getMessage());
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+            Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
+            return Controller.internalServerError(Json.toJson(responseBody));
+        }
+
+        List<Long> notificatedUsers = new ArrayList<>();
+        //Get all subscriptions and create NotificationEventSignalUser
+        List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
+        for(Subscription sub : subscriptions){
+            //subscription.ignoredEventsList[signal.eventName] === null OR false
+            if(sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName"))== null
+                    ||sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false ) {
+                // If subscription does not have a defaultService override,
+                // then iterate the list of enabled identities of the user (where enabled === true),
+                // and create the message to send as follow (see signals.js => processMatch):
+                if(sub.getDefaultService() == null){
+                    User user = User.findByUUID(UUID.fromString(sub.getUserId()));
+                    NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
+                    notificationEvent.addNotificationEventSignalUser(userSignal);
+                    notificatedUsers.add(user.getUserId());
+                }
+
+            }
+
+        }
+        //if the spaceType is CAMPAIGN
+        if(originType.equals(ResourceSpaceTypes.CAMPAIGN)){
+
+            List<Assembly> assemblies = Assembly.findAssemblyFromCampaign(origin);
+            if(!assemblies.isEmpty()){
+                for(Assembly assembly : assemblies){
+                    System.out.println("Members: " + assembly.getMemberships().size());
+
+                    for( MembershipAssembly member : assembly.getMemberships()){
+                        //Get configuration CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION
+                        User user = member.getUser();
+
+                        if(!notificatedUsers.contains(user.getUserId())) {// if not already notified
+                            Config config = Config.findByUser(user.getUuid(), UserProfileConfigsTypes.CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION);
+
+                            //If auto subscription is active
+                            if (config != null) {
+                                if (new Boolean(config.getValue())) {
+                                    //create new signal
+                                    NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
+                                    notificationEvent.addNotificationEventSignalUser(userSignal);
+                                    notificatedUsers.add(user.getUserId());
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
 
 
         // Send notification Signal to Notification Service
         try {
-            // TODO: change the notification signal to include and eventId = origin+"_"+eventName and use title for another purpose
-            NotificationSignalTransfer newNotificationSignal = prepareNotificationSignal(notificationEvent);
+
 
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
@@ -511,6 +629,7 @@ public class NotificationsDelegate {
                 Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
                 notificationEvent.getData().put("signaled",true);
                 NotificationEventSignal.create(notificationEvent);
+                // Register signals by user
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
             } else {
                 Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
@@ -699,7 +818,8 @@ public class NotificationsDelegate {
         NotificationServiceWrapper wrapper = new NotificationServiceWrapper();
         NotificationEventTransfer net = new NotificationEventTransfer();
         net.setEventId(uuid + "_" + eventName);
-        net.setTitle(title);
+        net.setTitle(title.replace("{{resourceType}}",eventName.toString().toLowerCase()));
+        System.out.println("== title == " + net.getTitle());
         wrapper.createNotificationEvent(net);
     }
 
@@ -741,6 +861,7 @@ public class NotificationsDelegate {
 
     public static void createNotificationEvents(NotificationEventName[] events, UUID uuid) throws ConfigurationException {
         for (NotificationEventName e : events) {
+
             createNotificationEvent(uuid, e, eventsTitleByType.get(e));
         }
     }
@@ -866,6 +987,29 @@ public class NotificationsDelegate {
                         break;
                     case "userUuid": // just an example
                         q.eq("userUuid", conditions.get(key));
+                        break;
+                }
+            }
+        }
+
+        if(page != null && pageSize != null){
+            return q.findPagedList(page, pageSize).getList();
+        }else{
+            return q.findList();
+        }
+    }
+
+    static Model.Finder<Long, NotificationEventSignalUser> finderNotificationUser = new Model.Finder<>(
+            NotificationEventSignalUser.class);
+
+    public static List<NotificationEventSignalUser> findNotificationsUser(Map<String, Object> conditions, Integer page, Integer pageSize){
+        ExpressionList<NotificationEventSignalUser> q = finderNotificationUser.where();
+
+        if(conditions != null){
+            for(String key : conditions.keySet()){
+                switch (key){
+                    case "user":
+                        q.eq("user.userId", conditions.get(key));
                         break;
                 }
             }
