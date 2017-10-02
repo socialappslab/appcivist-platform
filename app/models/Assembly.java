@@ -786,7 +786,10 @@ public class Assembly extends AppCivistBaseModel {
 	}
 
 	public static List<Campaign> findCampaigns(Long aid) {
-		return find.where().eq("assemblyId",aid).findUnique().getResources().getCampaigns();
+		return find.where().eq("assemblyId",aid)
+				.findUnique()
+				.getResources()
+				.getCampaignsFilteredByStatus("all");
 	}
 
 	public static Assembly findByName(String n) {

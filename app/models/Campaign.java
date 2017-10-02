@@ -798,19 +798,12 @@ String uuidAsString, List<Component> phases) {
 	}
 
 	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) {
-		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+		List<Campaign> ongoingCampaigns = new ArrayList<>();
 		ResourceSpace resources = a.getResources();
 		List<Campaign> campaigns = null;
 		if (resources != null)
 			campaigns = resources.getCampaignsFilteredByStatus("ongoing");
 		if (campaigns != null && !campaigns.isEmpty()) {
-//			for (Campaign c : campaigns) {
-//				Calendar today = Calendar.getInstance();
-//				if (c.getStartDate()!=null && c.getEndDate()!=null && c.getStartDate().before(today.getTime())
-//						&& c.getEndDate().after(today.getTime())) {
-//					ongoingCampaigns.add(c);
-//				}
-//			}
 			ongoingCampaigns.addAll(campaigns);
 		}
 		return ongoingCampaigns;
@@ -819,7 +812,10 @@ String uuidAsString, List<Component> phases) {
 	public static List<Campaign> getOngoingCampaignsFromAssembly(Long assemblyId) {
 		List<Campaign> campaigns = find.where().eq("containingSpaces.assemblyResources.assemblyId", assemblyId).findList();
 		if (campaigns!=null && !campaigns.isEmpty())
-			return campaigns.stream().filter(p -> p.getActive()).collect(Collectors.toList());
+			return campaigns.stream()
+					.filter(p -> p.getActive())
+					.sorted(Comparator.comparing(Campaign::getStartDate))
+					.collect(Collectors.toList());
 		else 
 			return null;
 	}	
