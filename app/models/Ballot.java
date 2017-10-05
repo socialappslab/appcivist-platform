@@ -322,6 +322,13 @@ public class Ballot extends Model {
 		return ballotCandidateFinder.where().eq("ballotId", this.id).findList();
 	}
 
+	@Transient
+	public Integer getCandidatesNumber () {
+		Finder<Long, BallotCandidate> ballotCandidateFinder = new Finder<>(
+				BallotCandidate.class);
+		return ballotCandidateFinder.where().eq("ballotId", this.id).findRowCount();
+	}
+
 	public static Ballot createConsensusBallotForWorkingGroup(WorkingGroup workingGroup){
 		ResourceSpace groupResources = workingGroup.getResources();
 		Ballot consensusBallot = new Ballot();
