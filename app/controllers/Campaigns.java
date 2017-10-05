@@ -332,9 +332,9 @@ public class Campaigns extends Controller {
                 Logger.debug("=> " + newCampaignForm.toString());
                 ResourceSpace rs = Assembly.read(aid).getResources();
 
-                Promise.promise(() -> {
+                /*Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, campaignOld);
-                });
+                });*/
 
                 return ok(Json.toJson(campaignOld));
             } catch (Exception e) {
@@ -382,8 +382,12 @@ public class Campaigns extends Controller {
                 CampaignTransfer newCampaign = CampaignDelegate.create(
                         campaignTransfer, campaignCreator, aid, templates);
                 Ebean.commitTransaction();
-                Assembly rs = Assembly.read(aid);
                 Campaign c = Campaign.read(newCampaign.getCampaignId());
+
+                System.out.println("=== AFTER PERSIST == " + c.getAssemblies().size() );
+
+                /*Assembly rs = Assembly.read(aid);
+
 
                 Promise.promise(() -> {
                 	try {
@@ -394,7 +398,7 @@ public class Campaigns extends Controller {
                         Logger.error("Error when notification creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
                     }
                     return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_CAMPAIGN, rs, c);
-                });
+                });*/
 
                 return ok(Json.toJson(newCampaign));
             }
@@ -1533,9 +1537,9 @@ public class Campaigns extends Controller {
             Logger.debug("=> " + newCampaignForm.toString());
             Assembly rs = Assembly.read(aid);
             Campaign c = Campaign.read(loadedCampaign.getCampaignId());
-            Promise.promise(() -> {
+            /*Promise.promise(() -> {
                 return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, rs, c);
-            });
+            });*/
 
             return ok(Json.toJson(loadedCampaign));
         }

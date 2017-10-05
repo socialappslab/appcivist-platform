@@ -128,10 +128,11 @@ public class Campaign extends AppCivistBaseModel {
 	private List<Theme> existingThemes = new ArrayList<>();
 	@Transient
 	private List<WorkingGroup> existingWorkingGroups = new ArrayList<>();
+
 	// TODO: check if it works
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "campaigns")
-	private List<ResourceSpace> containingSpaces;
+	private List<ResourceSpace> containingSpaces = new ArrayList<>();
 	@ManyToOne
 	private CampaignTemplate template;
 
@@ -850,5 +851,13 @@ String uuidAsString, List<Component> phases) {
 				.stream()
 				.filter(theme -> theme.getTitle().equals(t))
 				.collect(Collectors.toList());
+	}
+
+	public List<ResourceSpace> getContainingSpaces() {
+		return containingSpaces;
+	}
+
+	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
+		this.containingSpaces = containingSpaces;
 	}
 }

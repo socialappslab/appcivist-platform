@@ -397,7 +397,11 @@ public class NotificationsDelegate {
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
-                associatedUser = ((WorkingGroup) resource).getCreator().getName();
+                if(((WorkingGroup) resource).getCreator() !=null) {
+                    associatedUser = ((WorkingGroup) resource).getCreator().getName();
+                }else{
+                    associatedUser ="";
+                }
                 break;
             case NEW_VOTING_BALLOT:
                 Logger.info("NEW_VOTING_BALLOT");
@@ -536,7 +540,7 @@ public class NotificationsDelegate {
         data.put("eventName", eventName);
         data.put("originName", originName);
         data.put("resourceType",resourceType);
-        data.put( "resourceUUID", resourceUuid.toString());
+        data.put( "resourceUUID", resourceUuid ==null ? "" : resourceUuid.toString());
         data.put("resourceTitle", resourceTitle);
         data.put("resourceText",resourceText );
         data.put("notificationDate",notificationDate );
@@ -702,7 +706,7 @@ public class NotificationsDelegate {
         return newNotificationSignal;
     }
 
-    private static NotificationEventName getNewContributionEventName(Contribution c) {
+    public static NotificationEventName getNewContributionEventName(Contribution c) {
         NotificationEventName eventName = NotificationEventName.NEW_CONTRIBUTION_COMMENT;
         switch (c.getType()) {
             case IDEA:
@@ -730,7 +734,7 @@ public class NotificationsDelegate {
         return eventName;
     }
 
-    private static NotificationEventName getUpdatedContributionEventName(Contribution c) {
+    public static NotificationEventName getUpdatedContributionEventName(Contribution c) {
         NotificationEventName eventName = NotificationEventName.UPDATED_CONTRIBUTION_COMMENT;
         switch (c.getType()) {
             case IDEA:
