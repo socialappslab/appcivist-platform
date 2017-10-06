@@ -315,7 +315,6 @@ public class Ballot extends Model {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
 
-	@JsonIgnore
 	public List<BallotCandidate> getBallotCandidates(){
 		Finder<Long, BallotCandidate> ballotCandidateFinder = new Finder<>(
 				BallotCandidate.class);
