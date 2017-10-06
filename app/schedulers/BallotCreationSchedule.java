@@ -26,8 +26,8 @@ public class BallotCreationSchedule extends DailySchedule {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        Integer hour = 15;
-        Integer minute = 26;
+        Integer hour = 00;
+        Integer minute = 00;
         String processName = "Ballot Creation";
         this.initialize(hour, minute, processName);
     }
@@ -84,7 +84,7 @@ public class BallotCreationSchedule extends DailySchedule {
 
                     Config publishedProposal = component.getResourceSpace()
                             .getConfigByKey(
-                                    GlobalData.CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
+                                    GlobalData.CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
                     Boolean published = false;
                     if (publishedProposal != null && Boolean.valueOf(publishedProposal.getValue())) {
                         //Update Campaign status or ballot
