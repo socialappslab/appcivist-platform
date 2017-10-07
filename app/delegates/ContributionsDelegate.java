@@ -257,7 +257,11 @@ public class ContributionsDelegate {
                         String propertyName = "status";
                         String values = (String) value;
                         String[] statuses = values.split("\\s*,\\s*");
-                        Expression e = Expr.in(propertyName,statuses);
+                        List<ContributionStatus> cStatuses = new ArrayList<>();
+                        for (String status : statuses) {
+                            cStatuses.add(ContributionStatus.valueOf(status));
+                        }
+                        Expression e = Expr.in(propertyName,cStatuses);
                         where.add(e);
                         break;
                     default:

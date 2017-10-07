@@ -45,6 +45,7 @@ public class GlobalData {
 	public static final String CAMPAIGN_BASE_PATH = "/campaign";
 	public static final CampaignTemplatesEnum DEFAULT_CAMPAIGN_TYPE = CampaignTemplatesEnum.PARTICIPATORY_BUDGETING;
 	public static final String CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL = "campaign.include.all.published.proposals";
+	public static final String CONFIG_CAMPAIGN_CONTRIBUTION_TYPES = "appcivist.campaign.contribution-types";
 
 	// Campaign Components
 	public static final String CAMPAIGN_PHASE_CREATE_MSG_SUCCESS = "campaign.phase.creation.success";

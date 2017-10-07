@@ -809,7 +809,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random) {
+            @ApiParam(name = "random", value = "Boolean") String random,
+            @ApiParam(name = "status", value = "Status of Contributions", defaultValue = "") String status) { // DRAFT, NEW, PUBLISHED, INBALLOT, SELECTED, EXCLUDED,ARCHIVED,MODERATED,
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -834,8 +835,11 @@ public class Contributions extends Controller {
             if (sorting != null && !sorting.isEmpty()) {
                 conditions.put("sorting", sorting);
             }
-            if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-                conditions.put("status",ContributionStatus.PUBLISHED);
+            if (status != null && !status.isEmpty()) {
+                conditions.put("status",status);
+            }
+            if ((status == null || status.isEmpty()) && !rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                conditions.put("status","PUBLISHED,INBALLOT,SELECTED");
             }
 
             PaginatedContribution pag = new PaginatedContribution();
