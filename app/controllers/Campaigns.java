@@ -759,7 +759,7 @@ public class Campaigns extends Controller {
      */
     private static Result ongoingCampaignsByAssemblyId(Long aid) {
         Assembly a = Assembly.read(aid);
-        List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+        List<Campaign> ongoingCampaigns = new ArrayList<>();
         ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
         if (!ongoingCampaigns.isEmpty())
             return ok(Json.toJson(ongoingCampaigns));

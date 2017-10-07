@@ -253,13 +253,23 @@ public class ContributionsDelegate {
                         break;
                     case "sorting":
                         break;
+                    case "status":
+                        String propertyName = "status";
+                        String values = (String) value;
+                        String[] statuses = values.split("\\s*,\\s*");
+                        List<ContributionStatus> cStatuses = new ArrayList<>();
+                        for (String status : statuses) {
+                            cStatuses.add(ContributionStatus.valueOf(status));
+                        }
+                        Expression e = Expr.in(propertyName,cStatuses);
+                        where.add(e);
+                        break;
                     default:
                         if(value instanceof String){
                             where.ilike(key, ("t0."+(String)value).toLowerCase() + "%");
                         }else{
                             where.eq("t0." + key, value);
                         }
-
                 }
             }            
         }

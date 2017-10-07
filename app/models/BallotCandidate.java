@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import enums.BallotCandidateTypes;
 import io.swagger.annotations.ApiModel;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import javax.persistence.*;
 
@@ -172,5 +169,16 @@ public class BallotCandidate extends Model {
 	@JsonIgnore
 	public Contribution getContribution(){
 		return Contribution.find.where().eq("uuid", this.candidateUuid).findUnique();
+	}
+
+	@Transient
+	public Map<String,String> getContributionSummary() {
+		Contribution c = Contribution.find.where().eq("uuid", this.candidateUuid).findUnique();
+		Map<String, String> cSummary = new HashMap<>();
+		String title = c!=null ? c.getTitle() : null;
+		Long id = c!=null ? c.getContributionId() : null;
+		cSummary.put("title",title);
+		cSummary.put("id",id+"");
+		return cSummary;
 	}
 }
