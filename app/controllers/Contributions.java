@@ -837,8 +837,7 @@ public class Contributions extends Controller {
             }
             if (status != null && !status.isEmpty()) {
                 conditions.put("status",status);
-            }
-            if ((status == null || status.isEmpty()) && !rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+            } else {
                 conditions.put("status","PUBLISHED,INBALLOT,SELECTED");
             }
 
