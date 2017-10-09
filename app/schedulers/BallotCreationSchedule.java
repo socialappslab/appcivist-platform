@@ -27,7 +27,7 @@ public class BallotCreationSchedule extends DailySchedule {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        Integer hour = 3;
+        Integer hour = 0;
         Integer minute = 0;
         String processName = "Ballot Creation";
         this.initialize(hour, minute, processName);
@@ -161,28 +161,40 @@ public class BallotCreationSchedule extends DailySchedule {
         }
     }
 
-    private void createBallotCandidates(Campaign campaign, Ballot ballot, Boolean publishedProposal) {
+    // Crate ballot candidates if:
+    // - Their status is INBALLOT
+    // - Their status is PUBLISHED and there is a configuration to allow PUBLISHED contributions
+    private void createBallotCandidates(Campaign campaign, Ballot ballot, Boolean publishedProposalAllowed) {
         List<Contribution> contributions = campaign.getContributions();
         Boolean hasCandidates = false;
         for(Contribution c : contributions) {
             ContributionTypes ballotEntityType = ContributionTypes.valueOf(ballot.getEntityType());
             if(c.getType()!=null && c.getType().equals(ballotEntityType)){
-                //if config campaign.include.all.published.proposals === TRUE,
-                // change status of PUBLISHED to INBALLOT
+                // if config campaign.include.all.published.proposals === TRUE,
+                // allow the creation of the candidate and change the status of PUBLISHED to INBALLOT
                 hasCandidates=true;
                 Logger.info("Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
-                if(publishedProposal){
-                    c.setStatus(ContributionStatus.INBALLOT);
-                    c.update();
+                Boolean createCandidate = false;
+                if(publishedProposalAllowed){
+                    if (c.getStatus().equals(ContributionStatus.PUBLISHED)) {
+                        c.setStatus(ContributionStatus.INBALLOT);
+                        c.update();
+                        createCandidate = true;
+                    }
+                } else {
+                    if (c.getStatus().equals(ContributionStatus.INBALLOT)) {
+                        createCandidate = true;
+                    }
                 }
 
-                //Creating candidate
-                BallotCandidate candidate = new BallotCandidate();
-                candidate.setBallotId(ballot.getId());
-                candidate.setCandidateType(BallotCandidateTypes.CAMPAIGN);
-                candidate.setCandidateUuid(c.getUuid());
-                candidate.insert();
-
+                if (createCandidate) {
+                    //Creating candidate
+                    BallotCandidate candidate = new BallotCandidate();
+                    candidate.setBallotId(ballot.getId());
+                    candidate.setCandidateType(BallotCandidateTypes.CAMPAIGN);
+                    candidate.setCandidateUuid(c.getUuid());
+                    candidate.insert();
+                }
             }
         }
         //If ballot has not candidates, then set status to draft
