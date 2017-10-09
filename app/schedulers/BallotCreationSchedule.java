@@ -28,7 +28,7 @@ public class BallotCreationSchedule extends DailySchedule {
         this.executionContext = executionContext;
 
         Integer hour = 0;
-        Integer minute = 0;
+        Integer minute = 1;
         String processName = "Ballot Creation";
         this.initialize(hour, minute, processName);
     }
