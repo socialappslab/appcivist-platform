@@ -26,15 +26,18 @@ public class BallotCreationSchedule extends DailySchedule {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        Integer hour = 00;
-        Integer minute = 00;
+        Integer hour = 3;
+        Integer minute = 0;
         String processName = "Ballot Creation";
         this.initialize(hour, minute, processName);
     }
 
-
     @Override
     public void executeProcess() {
+        createBallot();
+    }
+
+    private void createBallot() {
         System.out.println("Executing ballot");
 
         //Get Components of type voting with starting day = today
