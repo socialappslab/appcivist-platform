@@ -3,6 +3,7 @@ package schedulers;
 import akka.actor.ActorSystem;
 import enums.*;
 import models.*;
+import play.Logger;
 import scala.concurrent.ExecutionContext;
 import utils.GlobalData;
 
@@ -38,7 +39,7 @@ public class BallotCreationSchedule extends DailySchedule {
     }
 
     private void createBallot() {
-        System.out.println("Executing ballot");
+        Logger.info("Executing ballot");
 
         //Get Components of type voting with starting day = today
 
@@ -54,17 +55,17 @@ public class BallotCreationSchedule extends DailySchedule {
         calEnd.set(Calendar.MINUTE, 59);
         calEnd.set(Calendar.SECOND, 59);
 
-        System.out.println("Searching Component Start day between: "+ calStart.getTime() + " and " +calEnd.getTime() );
+        Logger.info("Searching Component Start day between: "+ calStart.getTime() + " and " +calEnd.getTime() );
 
         List<Component> components = Component.findVotingByStartingDay(calStart.getTime(), calEnd.getTime());
-        System.out.println("Found "+ components.size() + " COMPONENT to create Voting ballots");
+        Logger.info("Found "+ components.size() + " COMPONENT to create Voting ballots");
 
         //Find all campaigns related and create ballot
         for (Component component : components) {
             for (ResourceSpace spaces : component.getContainingSpaces()) {
                 if (spaces.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                     Campaign campaign = spaces.getCampaign();
-                    System.out.println("Creating ballot for campaing:" + campaign.getCampaignId());
+                    Logger.info("Creating ballot for campaing:" + campaign.getCampaignId());
 
                     //Campaign related, creating Ballot
                     // 6. Create a decision ballot associated with this component and add it to the campaign
@@ -169,7 +170,7 @@ public class BallotCreationSchedule extends DailySchedule {
                 //if config campaign.include.all.published.proposals === TRUE,
                 // change status of PUBLISHED to INBALLOT
                 hasCandidates=true;
-                System.out.println("Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
+                Logger.info("Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
                 if(publishedProposal){
                     c.setStatus(ContributionStatus.INBALLOT);
                     c.update();
