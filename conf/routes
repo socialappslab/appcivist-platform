@@ -32,8 +32,7 @@ GET       /api/doc.json/notification                                            
 ##################################################################################################################################################################
 # User and Authentication Management based on play-authenticate
 GET       /api/user                                                              controllers.Users.getUsers() 
-GET       /api/user/:uid                                                         controllers.Users.getUser(uid: Long) 
-GET       /api/user/:uid/loggedin                                                controllers.Users.getCurrentUser(uid: Long) 
+GET       /api/user/:uid/loggedin                                                controllers.Users.getCurrentUser(uid: Long)
 GET       /api/user/:uid/profile                                                 controllers.Users.profile(uid: Long)
 POST      /api/user/:uid/profile                                                 controllers.Users.createUserProfile(uid: Long) 
 PUT       /api/user/:uid                                                         controllers.Users.updateUser(uid: Long) 
@@ -72,6 +71,7 @@ POST      /api/user/password/forgot                                             
 POST      /api/user/password/forgot/change                                       controllers.Users.doChangeForgotPassword
 GET       /api/user/logout/redirect                                              controllers.Users.redirectAfterLogout
 POST      /api/site/verify                                                       controllers.Secured.verifyRecaptcha(k: String)
+GET       /api/user/:uid                                                         controllers.Users.getUser(uid: Long)
 
 ##################################################################################################################################################################
 # Notifications Service Proxy
@@ -84,14 +84,10 @@ DELETE    /api/notification/subscription/:origin/:eventName                     
 GET       /api/notification/subscription/:sid                                    controllers.Notifications.subscribeToResourceSpace(sid: Long)
 DELETE    /api/notification/subscription/:sid                                    controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 POST      /api/notification/events/:type                                         controllers.Notifications.createResourceSpaceEvents(type: String)
-
 GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0)
 GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long)
-
-
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
-PUT       /api/user/:id/notifications/read                                            controllers.Notifications.updateNotifications(id: Long)
-
+PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
 
 ##################################################################################################################################################################
 # Assemblies API
@@ -210,9 +206,9 @@ GET       /api/assembly/:aid/campaign/:cid/components                           
 GET       /api/assembly/:aid/campaign/:cid/themes                                controllers.Campaigns.listCampaignThemes(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/groups                                controllers.Campaigns.listCampaignGroups(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/timeline                              controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-
 PUT       /api/assembly/:aid/campaign/:cid/description                           controllers.Campaigns.updateCampaignDescription(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/group/:gid/description                controllers.Campaigns.updateCampaignGroupDescription(aid: Long, cid: Long, gid: Long)
+
 ##################################################################################################################################################################
 # CampaignComponent API
 GET       /api/assembly/:aid/campaign/:cid/component                             controllers.CampaignComponents.findCampaignComponents(aid: Long, cid:Long)
@@ -395,6 +391,7 @@ GET       /api/public/campaign/:uuid/components                                 
 GET       /api/public/campaign/:uuid/themes                                      controllers.Campaigns.listPublicCampaignThemes(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/public/campaign/:uuid/groups                                      controllers.Campaigns.listPublicCampaignGroups(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/public/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/campaign/:uuid/brief                                       controllers.Campaigns.getCampaignBrief(uuid: java.util.UUID)
 GET       /api/public/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
 GET       /api/public/space/:uuid                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/contribution/pinned                            controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")

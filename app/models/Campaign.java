@@ -45,6 +45,9 @@ public class Campaign extends AppCivistBaseModel {
 	@Column(name="goal", columnDefinition="text")
 	@JsonView(Views.Public.class)
 	private String goal;
+	@Column(name="brief", columnDefinition="text")
+	@JsonIgnore
+	private String brief;
 	@JsonView(Views.Public.class)
 	private String url;
 	@JsonView(Views.Public.class)
@@ -241,6 +244,14 @@ String uuidAsString, List<Component> phases) {
 
 	public void setGoal(String goal) {
 		this.goal = goal;
+	}
+
+	public String getBrief() {
+		return brief;
+	}
+
+	public void setBrief(String brief) {
+		this.brief = brief;
 	}
 
 	public Boolean getActive() {
@@ -847,4 +858,15 @@ String uuidAsString, List<Component> phases) {
 				.filter(theme -> theme.getTitle().equals(t))
 				.collect(Collectors.toList());
 	}
+
+
+	public static String getCampaignBriefByCampaignId(UUID uuid) {
+//		String query = "SELECT brief FROM campaign WHERE uuid = :uuid";
+//		SqlQuery sqlQuery = Ebean.createSqlQuery(query);
+//		sqlQuery.setParameter("uuid", uuid);
+//		SqlRow result = sqlQuery.findUnique();
+//		return result !=null ? result.get("brief").toString() : null;
+		return find.where().eq("uuid",uuid).select("brief").findUnique().getBrief();
+	}
+
 }

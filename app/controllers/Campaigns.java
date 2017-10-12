@@ -36,6 +36,7 @@ import models.Theme;
 import models.User;
 import models.WorkingGroup;
 import models.misc.Views;
+import models.transfer.CampaignBriefTransfer;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
@@ -1269,8 +1270,36 @@ public class Campaigns extends Controller {
             campaignTimelineEdges = campaign.getPagedTimelineEdges(page, pageSize);
         }
         return ok(Json.toJson(campaignTimelineEdges));
+    }
+
+    /**
+     * GET /api/public/campaign/:uuid/brief
+     * Returns the Campaign brief: an html/svg TEXT that will be displayed as a welcome
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CampaignBriefTransfer.class, value = "Public endpoint for reading campaign's html/svg brief")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No Brief Found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result getCampaignBrief(
+            @ApiParam(name = "uuid", value = "Campaign UUID") UUID uuid) {
+        String brief = Campaign.getCampaignBriefByCampaignId(uuid);
+
+        if (brief != null) {
+            CampaignBriefTransfer cbt = new CampaignBriefTransfer();
+            cbt.setCampaignUuid(uuid);
+            cbt.setBrief(brief);
+            return ok(Json.toJson(cbt));
+        } else {
+            return notFound(Json.toJson(Json
+                    .toJson(new TransferResponseStatus("Brief not found for campaign "+uuid))));
+        }
 
     }
+
+
 
     /**
      * GET /api/campaign/:uuid/timeline
