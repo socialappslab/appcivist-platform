@@ -28,7 +28,7 @@ public class BallotCreationSchedule extends DailySchedule {
         this.executionContext = executionContext;
 
         Integer hour = 0;
-        Integer minute = 1;
+        Integer minute = 0;
         String processName = "Ballot Creation";
         this.initialize(hour, minute, processName);
     }
@@ -41,13 +41,17 @@ public class BallotCreationSchedule extends DailySchedule {
     private void createBallot() {
         Logger.info("Executing ballot");
 
-        //Get Components of type voting with starting day = today
-
+        /*
+         * Get Components of type voting with starting day = today
+         * Set calStart to YESTERDAY at 23:59:59 to ensure that voting components that start at midnight are included
+         * sine they are excluded in some implementations of postgres between
+         */
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(new Date());
-        calStart.set(Calendar.HOUR_OF_DAY, 0);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
+        calStart.add(Calendar.DATE, -1);
+        calStart.set(Calendar.HOUR_OF_DAY, 23);
+        calStart.set(Calendar.MINUTE, 59);
+        calStart.set(Calendar.SECOND, 59);
 
         Calendar calEnd = Calendar.getInstance();
         calEnd.setTime(new Date());
