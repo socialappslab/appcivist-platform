@@ -203,7 +203,7 @@ DELETE    /api/assembly/:aid/campaign/:cid                                      
 POST      /api/assembly/:aid/campaign/:cid/resource                              controllers.Campaigns.createCampaignResource(aid: Long, cid: Long)
 GET       /api/assembly/:aid/campaign/:cid/resources                             controllers.Campaigns.listCampaignResources(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/components                            controllers.Campaigns.listCampaignComponents(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/assembly/:aid/campaign/:cid/themes                                controllers.Campaigns.listCampaignThemes(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/assembly/:aid/campaign/:cid/themes                                controllers.Campaigns.listCampaignThemes(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null, themeType: String?=null, query: String?=null)
 GET       /api/assembly/:aid/campaign/:cid/groups                                controllers.Campaigns.listCampaignGroups(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 GET       /api/assembly/:aid/campaign/:cid/timeline                              controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
 PUT       /api/assembly/:aid/campaign/:cid/description                           controllers.Campaigns.updateCampaignDescription(aid: Long, cid: Long)

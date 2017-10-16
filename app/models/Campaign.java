@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.*;
 
 import enums.ResourceSpaceTypes;
+import enums.ThemeTypes;
 import enums.VotingSystemTypes;
 import io.swagger.annotations.ApiModel;
 import models.misc.Views;
@@ -861,12 +862,29 @@ String uuidAsString, List<Component> phases) {
 
 
 	public static String getCampaignBriefByCampaignId(UUID uuid) {
-//		String query = "SELECT brief FROM campaign WHERE uuid = :uuid";
-//		SqlQuery sqlQuery = Ebean.createSqlQuery(query);
-//		sqlQuery.setParameter("uuid", uuid);
-//		SqlRow result = sqlQuery.findUnique();
-//		return result !=null ? result.get("brief").toString() : null;
 		return find.where().eq("uuid",uuid).select("brief").findUnique().getBrief();
+	}
+
+	public static List<Theme> getThemesByCampaignIdAndType(Long cid, String type, Integer page, Integer pageSize, String query) {
+		Finder<Long, Theme> find = new Finder<>(Theme.class);
+		ExpressionList<Theme> e = find.where().eq("containingSpaces.campaign.campaignId", cid);
+
+		if (type!=null) {
+			ThemeTypes typeEnum = ThemeTypes.valueOf(type);
+			if (typeEnum!=null) {
+				e = e.eq("type",typeEnum);
+			}
+		}
+
+		if (query!=null && !query.isEmpty()) {
+		    e = e.ilike("title","%"+query+"%");
+        }
+
+		if (pageSize==null) {
+			return e.findList();
+		} else {
+			return e.findPagedList(page, pageSize).getList();
+		}
 	}
 
 }

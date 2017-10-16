@@ -1,6 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -67,11 +69,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.CampaignDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
 import exceptions.ConfigurationException;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
@@ -1080,19 +1077,20 @@ public class Campaigns extends Controller {
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Integer") Integer page,
-            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize,
+            @ApiParam(name = "themeType", value = "String") String themeType,
+            @ApiParam(name = "query", value = "String") String query) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
-        Campaign campaign = Campaign.read(campaignId);
+        //Campaign campaign = Campaign.read(campaignId);
         List<Theme> themes;
         if (all != null) {
-            themes = campaign.getThemes();
+            themes = Campaign.getThemesByCampaignIdAndType(campaignId, themeType, null, null, query);
         } else {
-            themes = campaign.getPagedThemes(page, pageSize);
+            themes = Campaign.getThemesByCampaignIdAndType(campaignId, themeType, page, pageSize, query);
         }
         return ok(Json.toJson(themes));
-
     }
 
     /**
