@@ -132,23 +132,24 @@ public class MyUsernamePasswordAuthProvider
 		private UUID invitationToken;
 		
 		public String validate() {
-			if (password == null || !password.equals(getRepeatPassword())) {
-				// ResponseStatusBean response = ResponseStatusBean();
-				// response.setResponseStatus(ResponseStatus.BADREQUEST);
-				// response.setStatusMessage("playauthenticate.password.signup.error.passwords_not_same");
-				// return
-				return Messages
-						.get("playauthenticate.password.signup.error.passwords_not_same");
+			String error = null;
+			if (password == null) {
+				error = Messages.get("playauthenticate.password.signup.error.password_null");
+
+			} else if (getRepeatPassword()==null) {
+				error = Messages.get("playauthenticate.password.signup.error.password_repeat_null");
+			} else if (!password.equals(getRepeatPassword())) {
+				error = Messages.get("playauthenticate.password.signup.error.passwords_not_same");
 			} else if (lang == null) {
-				return Messages
-						.get("playauthenticate.password.signup.error.missing_lang");
+				error = Messages.get("playauthenticate.password.signup.error.missing_lang");
 			} else if (invitationToken != null) {
 				TokenAction ta = Users.tokenIsValid(invitationToken.toString(), Type.MEMBERSHIP_INVITATION);
 				if (ta == null) {
-					return Messages.get("playauthenticate.token.error.message","Invitation token is not valid");
+					error = Messages.get("playauthenticate.token.error.message","Invitation token is not valid");
 				}
 			}
-			return null;
+			if(error!=null) Logger.debug(error);
+			return error;
 		}
 
 		public String getRepeatPassword() {

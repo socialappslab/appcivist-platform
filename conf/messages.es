@@ -49,6 +49,8 @@ playauthenticate.change_password.success=Password has been changed successfully.
 playauthenticate.password.signup.error.passwords_not_same=Las passwords no coinciden
 playauthenticate.password.login.unknown_user_or_pw=Usuario o password desconocidos
 playauthenticate.password.signup.error.missing_lang=Falta elegir un idioma
+playauthenticate.password.signup.error.password_null=Password not provided.
+playauthenticate.password.signup.error.password_repeat_null=Password not repeated.
 
 
 playauthenticate.password.verify_signup.subject=AppCivist: Completa tu subscripción

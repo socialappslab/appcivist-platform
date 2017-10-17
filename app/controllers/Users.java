@@ -240,6 +240,7 @@ public class Users extends Controller {
     com.feth.play.module.pa.controllers.Authenticate.noCache(response());
     final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
         .bindFromRequest();
+    Logger.debug("Signup request received: "+filledForm.get().toString());
     if (filledForm.hasErrors()) {
       // User did not fill everything properly
       // TODO: HTML rendered response return
