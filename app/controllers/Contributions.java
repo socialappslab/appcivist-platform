@@ -1461,7 +1461,7 @@ public class Contributions extends Controller {
      * GET       /api/assembly/:aid/contribution/:cid/feedback
      *
      * @param aid
-     * @param cid
+     * @param coid
      * @return
      */
     // TODO: REVIEW to evaluate if removing
@@ -1474,9 +1474,10 @@ public class Contributions extends Controller {
     @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result readContributionFeedbackByUser(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
-            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "cid", value = "Contribution ID") Long coid) {
         User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-        ContributionFeedback feedback = ContributionFeedback.findByContributionAndUserId(cid, user.getUserId());
+        ContributionFeedback feedback = ContributionFeedback.findByContributionAndUserId(coid, user.getUserId());
         if (feedback != null) {
             return ok(Json.toJson(feedback));
         } else {
