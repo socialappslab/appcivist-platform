@@ -930,12 +930,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 				return this.campaigns
 						.stream()
 						.filter(p -> p.getActive())
-                        .sorted(Comparator.comparing(Campaign::getStartDate))
+                        .sorted(Comparator.comparing(Campaign::getStartDate).reversed())
 						.collect(Collectors.toList());
 			case "past":
 				return this.campaigns.stream()
                         .filter(p -> p.getPast())
-                        .sorted(Comparator.comparing(Campaign::getStartDate))
+                        .sorted(Comparator.comparing(Campaign::getStartDate).reversed())
                         .collect(Collectors.toList());
 			case "upcoming":
 				return this.campaigns.
@@ -946,7 +946,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 			default:
 				return this.campaigns
 						.stream()
-						.sorted(Comparator.comparing(Campaign::getStartDate))
+						.sorted(Comparator.comparing(Campaign::getStartDate).reversed())
 						.collect(Collectors.toList());
 			}
 		}
