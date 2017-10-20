@@ -1416,7 +1416,7 @@ public class Contribution extends AppCivistBaseModel {
         if(publishHistories != null && !publishHistories.isEmpty()){
             this.publicRevision = publishHistories.get(publishHistories.size() - 1).getRevision();
         }
-        return this.publicRevision;
+        return 0;
     }
 
     public Integer getPopularity() {

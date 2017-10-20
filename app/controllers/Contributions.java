@@ -3705,10 +3705,16 @@ public class Contributions extends Controller {
             EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
             if (padId != null) {
                 if(finalFormat.equals("TEXT")){
-                    String body = wrapper.getTextRevision(padId,revision);
+                    String body ="";
+                    if(rev == null || rev == 0)
+                        body = wrapper.getText(padId);
+                    body = wrapper.getTextRevision(padId,revision);
                     return ok(Json.toJson(body));
                 }else if(finalFormat.equals("HTML")){
-                    String body = wrapper.getHTMLRevision(padId,revision);
+                    String body ="";
+                    if(rev == null || rev == 0)
+                        body = wrapper.getHTML(padId);
+                    body = wrapper.getHTMLRevision(padId,revision);
                     return ok(Json.toJson(body));
                 }
             } else {
