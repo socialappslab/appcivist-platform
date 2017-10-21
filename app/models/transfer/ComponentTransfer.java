@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import enums.ComponentTypes;
+
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 public class ComponentTransfer {
 	private Long componentId;
@@ -25,6 +29,17 @@ public class ComponentTransfer {
 	private List<VotingBallotTransfer> ballots = new ArrayList<>();
 	private List<ContributionTemplateTransfer> templates = new ArrayList<>();
 	private List<ConfigsTransfer> configs = new ArrayList<>();
+
+	public ComponentTypes getType() {
+		return type;
+	}
+
+	public void setType(ComponentTypes type) {
+		this.type = type;
+	}
+
+	@Enumerated(EnumType.STRING)
+	private ComponentTypes type;
 	
 	public ComponentTransfer() {
 		super();
