@@ -3695,33 +3695,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.read(coid);
-        String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
-        String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
-        if (c != null) {
-            Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
-            Resource pad = c.getExtendedTextPad();
-            String padId = pad.getPadId();
-            String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
-            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
-            if (padId != null) {
-                if(finalFormat.equals("TEXT")){
-                    String body ="";
-                    if(rev == null || rev == 0)
-                        body = wrapper.getText(padId);
-                    body = wrapper.getTextRevision(padId,revision);
-                    return ok(Json.toJson(body));
-                }else if(finalFormat.equals("HTML")){
-                    String body ="";
-                    if(rev == null || rev == 0)
-                        body = wrapper.getHTML(padId);
-                    body = wrapper.getHTMLRevision(padId,revision);
-                    return ok(Json.toJson(body));
-                }
-            } else {
-                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
-            }
-        }
-        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with ID " + coid + " not found")));
+        return getPadHTML(c, rev, format);
+
     }
 
     /**
@@ -3737,6 +3712,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "rev", value = "Revision", defaultValue = "0") Long rev,
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.readByUUID(couuid);
+        return getPadHTML(c, rev, format);
+    }
+
+    public static Result getPadHTML(Contribution c, Long rev, String format) {
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         if (c != null) {
@@ -3745,21 +3724,33 @@ public class Contributions extends Controller {
             String padId = pad.getPadId();
             String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
             EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+            Map<String,Object> result = new HashMap<>();
+            String body ="";
             if (padId != null) {
                 if(finalFormat.equals("TEXT")){
-                    String body = wrapper.getTextRevision(padId,revision);
-                    return ok(Json.toJson(body));
+                    if(rev == null || rev == 0) {
+                        body = wrapper.getText(padId);
+                    } else {
+                        body = wrapper.getTextRevision(padId,revision);
+                    }
                 }else if(finalFormat.equals("HTML")){
-                    String body = wrapper.getHTMLRevision(padId,revision);
-                    return ok(Json.toJson(body));
+                    if(rev == null || rev == 0) {
+                        body = wrapper.getHTML(padId);
+                    } else {
+                        body = wrapper.getHTMLRevision(padId,revision);
+                    }
                 }
+                result.put("text", body);
+                result.put("rev", revision);
+                result.put("format",format);
+                return ok(Json.toJson(result));
+
             } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Pad for this Contribution")));
             }
         }
-        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution with UUID " + couuid.toString() + " not found")));
+        return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution was not found")));
     }
-
     /**
      * PUT       /api/space/:sid/contribution/comment/reset
      *
