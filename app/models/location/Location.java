@@ -221,7 +221,8 @@ public class Location extends Model {
                 } else {                 
                   this.geoJson = NominatimWrapper.geoCode(query).toString();
                 }
-                return Optional.ofNullable(null);
+            }
+            return Optional.ofNullable(null);
         });
 	}
 
