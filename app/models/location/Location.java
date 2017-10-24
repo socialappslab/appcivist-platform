@@ -11,9 +11,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import delegates.NotificationsDelegate;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
 import models.AppCivistBaseModel;
 import models.WorkingGroup;
 import models.misc.Views;
+import play.Logger;
 import play.Play;
 import play.libs.F;
 import utils.GlobalData;
@@ -172,13 +176,8 @@ public class Location extends Model {
 		this.geoJson = geoJson;
 	}
 
-//	@PostLoad
-//	public void afterRetrievingFromDB() {
-//		this.oldLocation = 
-//	}
-
-	@PrePersist
-	public void beforePersist() {
+	@PostPersist
+	public void postPersist() {
 		this.serializedLocation = "";
 		this.serializedLocation += this.placeName!=null && !this.placeName.isEmpty() ? this.placeName : "";
 		this.serializedLocation += this.street!=null && !this.street.isEmpty() ? " " + this.street : "";
@@ -191,7 +190,6 @@ public class Location extends Model {
 		String geocodingService = Play.application().configuration().getString(GlobalData.GEOCODING_SERVICE);
         F.Promise.promise(() -> {
             if ((this.geoJson == null || this.geoJson.isEmpty()) && geocodingService.equals("nominatim")) {
-
                 if (this.getPlaceName() != null) {
                     JsonNode resultLocation = NominatimWrapper.geoCode(this.getPlaceName());
 
@@ -220,14 +218,10 @@ public class Location extends Model {
                     this.setGeoJson(geojsonArr.toString());
                     this.setAdditionInfo(additionalInfoArr.toString());
                     this.update();
+                } else {                 
+                  this.geoJson = NominatimWrapper.geoCode(query).toString();
                 }
-
-                this.geoJson = NominatimWrapper.geoCode(query).toString();
-    //		MapBox will be used only for live geocoding. Can't store as per ToS.
-    //		} else if (geocodingService.equals("mapbox")) {
-    //			this.geoJson = MapBoxWrapper.geoCode(query);
-            }
-            return Optional.ofNullable(null);
+                return Optional.ofNullable(null);
         });
 	}
 

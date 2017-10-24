@@ -275,7 +275,7 @@ DELETE    /api/contribution/:uuid/authors/:auuid                                
 
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
-POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
+POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="", createThemes: Boolean ?=false)
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
 
 ##################################################################################################################################################################
