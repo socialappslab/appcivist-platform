@@ -340,6 +340,7 @@ public class ContributionsDelegate {
         String readId = eth.getReadOnlyId(padId);
         String readurl = eth.buildReadOnlyUrl(readId);
 
+
         if (readurl != null) {
             createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c);
         }
