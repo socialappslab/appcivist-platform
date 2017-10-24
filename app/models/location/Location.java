@@ -10,10 +10,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import delegates.NotificationsDelegate;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
 import models.AppCivistBaseModel;
 import models.WorkingGroup;
 import models.misc.Views;
+import play.Logger;
 import play.Play;
+import play.libs.F;
+import play.mvc.Result;
+import play.mvc.Results;
 import utils.GlobalData;
 import utils.services.MapBoxWrapper;
 
@@ -169,14 +176,15 @@ public class Location extends Model {
 	public void setGeoJson(String geoJson) {
 		this.geoJson = geoJson;
 	}
-	
-//	@PostLoad
-//	public void afterRetrievingFromDB() {
-//		this.oldLocation = 
-//	}
-	
-	@PrePersist
-	public void beforePersist() {
+
+	@PostPersist
+	public void postPersist() {
+		F.Promise.promise(() -> {
+			return this.postPersistNominatim();
+		});
+	}
+
+	public Result postPersistNominatim() {
 		this.serializedLocation = "";
 		this.serializedLocation += this.placeName!=null && !this.placeName.isEmpty() ? this.placeName : "";
 		this.serializedLocation += this.street!=null && !this.street.isEmpty() ? " " + this.street : "";
@@ -187,43 +195,45 @@ public class Location extends Model {
 		String query = this.serializedLocation;
 		// only store geoJson if geocoding service is nominatim
 		String geocodingService = Play.application().configuration().getString(GlobalData.GEOCODING_SERVICE);
-		if ((this.geoJson == null || this.geoJson.isEmpty()) && geocodingService.equals("nominatim")) {
+		try {
+			if ((this.geoJson == null || this.geoJson.isEmpty()) && geocodingService.equals("nominatim")) {
+				if (this.getPlaceName() != null) {
+					JsonNode resultLocation = NominatimWrapper.geoCode(this.getPlaceName());
 
-			if (this.getPlaceName() != null) {
-				JsonNode resultLocation = NominatimWrapper.geoCode(this.getPlaceName());
+					ArrayNode geojsonArr;
+					ArrayNode additionalInfoArr;
 
-				ArrayNode geojsonArr;
-				ArrayNode additionalInfoArr;
+					if (resultLocation.isArray()) {
+						// split additional info and geojson for each result
+						ArrayNode arr = (ArrayNode) resultLocation;
+						geojsonArr = new ObjectMapper().createArrayNode();
+						additionalInfoArr = new ObjectMapper().createArrayNode();
+						for (int a = 0; a < arr.size(); a++) {
+							JsonNode json = arr.get(a);
+							geojsonArr.add(json.get("geojson"));
+							createAdditionalInfo(additionalInfoArr, json);
+						}
 
-				if (resultLocation.isArray()) {
-					// split additional info and geojson for each result
-					ArrayNode arr = (ArrayNode) resultLocation;
-					geojsonArr = new ObjectMapper().createArrayNode();
-					additionalInfoArr = new ObjectMapper().createArrayNode();
-					for (int a = 0; a < arr.size(); a++) {
-						JsonNode json = arr.get(a);
-						geojsonArr.add(json.get("geojson"));
+					} else {
+						// split additional info and geojson
+						geojsonArr = new ObjectMapper().createArrayNode();
+						additionalInfoArr = new ObjectMapper().createArrayNode();
+						JsonNode json = resultLocation;
+
 						createAdditionalInfo(additionalInfoArr, json);
 					}
-
+					this.setGeoJson(geojsonArr.toString());
+					this.setAdditionInfo(additionalInfoArr.toString());
+					this.update();
 				} else {
-					// split additional info and geojson
-					geojsonArr = new ObjectMapper().createArrayNode();
-					additionalInfoArr = new ObjectMapper().createArrayNode();
-					JsonNode json = resultLocation;
-
-					createAdditionalInfo(additionalInfoArr, json);
+					this.geoJson = NominatimWrapper.geoCode(query).toString();
 				}
-				this.setGeoJson(geojsonArr.toString());
-				this.setAdditionInfo(additionalInfoArr.toString());
-				this.update();
 			}
-
-			this.geoJson = NominatimWrapper.geoCode(query).toString();
-//		MapBox will be used only for live geocoding. Can't store as per ToS. 
-//		} else if (geocodingService.equals("mapbox")) {
-//			this.geoJson = MapBoxWrapper.geoCode(query);
+		} catch (Exception e) {
+			Logger.error("Nominatim GeoCoding Service Timeout");
+			return Results.internalServerError("Nominatim GeoCoding Service Timeout");
 		}
+		return Results.ok();
 	}
 
 	public static void createAdditionalInfo(ArrayNode additionalInfoArr, JsonNode json) {
