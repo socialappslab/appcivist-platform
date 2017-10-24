@@ -3100,6 +3100,7 @@ public class Contributions extends Controller {
                                 } else if (createThemes){
                                     Theme t = new Theme();
                                     t.setTitle(category);
+                                    t.setType(ThemeTypes.OFFICIAL_PRE_DEFINED);
                                     newThemes.add(t);
                                     campaign.addTheme(t);
                                 }
