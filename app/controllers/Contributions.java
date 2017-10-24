@@ -3041,7 +3041,7 @@ public class Contributions extends Controller {
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         Campaign campaign = Campaign.read(cid);
 
-        if (createThemes != null) {
+        if (createThemes == null) {
             createThemes = false;
         }
 
@@ -3092,10 +3092,10 @@ public class Contributions extends Controller {
                             List<Theme> existing = new ArrayList<>();
                             List<Theme> newThemes = new ArrayList<>();
                             for (String category : categories) {
-                                Logger.info("Importing => Category => " + category);
+                                Logger.info("Importing Category => " + category);
                                 List<Theme> themes = campaign.filterThemesByTitle(category.trim());
                                 if (themes.size()>0) {
-                                    Logger.info(themes.size() + " themes found thath match category " + category);
+                                    Logger.info(themes.size() + " themes found that match category " + category);
                                     existing.addAll(themes);
                                 } else if (createThemes){
                                     Theme t = new Theme();
