@@ -935,11 +935,9 @@ public class Contribution extends AppCivistBaseModel {
         List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors();
         
         // Set plain text if text is HTML
-        if (TextUtils.isHtml(c.getText())) {
-            c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
-            c.setPlainText(Jsoup.parse(c.getText()).text());
-        }
-        
+        c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
+        c.setPlainText(Jsoup.parse(c.getText()).text());
+
         // Make sure there is an status
         if (c.getStatus()==null) {
         	c.setStatus(ContributionStatus.PUBLISHED);
