@@ -598,7 +598,7 @@ public class User extends AppCivistBaseModel implements Subject {
 					MembershipAssembly ma = new MembershipAssembly();
 					ma.setAssembly(assembly);
 					ma.setCreator(assembly.getCreator());
-					ma.setUser(assembly.getCreator());
+					ma.setUser(user);
 					ma.setStatus(MembershipStatus.ACCEPTED);
 					ma.setLang(assembly.getLang());
 					System.out.println("Entro");
