@@ -145,7 +145,6 @@ PUT       /api/assembly/:aid/group/:gid/ballot                                  
 POST      /api/assembly/:aid/campaign/:cid/group/:gid/assignments                controllers.WorkingGroups.assignContributionsToGroup(aid: Long, cid: Long, gid: Long)
 PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish                   controllers.WorkingGroups.publishProposal(aid: Long, gid: Long, pid: Long)
 GET       /api/assembly/:aid/group/location/:location_name                       controllers.WorkingGroups.findWorkingGroupsByLocationName(aid: Long, location_name: String)
-POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.WorkingGroups.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad")
 
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
@@ -277,6 +276,7 @@ DELETE    /api/contribution/:uuid/authors/:auuid                                
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="")
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
+POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad")
 
 ##################################################################################################################################################################
 # Location endpoints

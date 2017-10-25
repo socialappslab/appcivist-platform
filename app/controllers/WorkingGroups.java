@@ -842,82 +842,6 @@ public class WorkingGroups extends Controller {
 
     }
 
-    /**
-     * POST               /api/assembly/:aid/campaign/:cid/contribution/:coid/document
-     *
-     * @param aid
-     * @return
-     */
-    @ApiOperation(httpMethod = "POST", response = Integer.class, produces = "application/json", value = "Publishes a Contribution")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-    public static Result createPad(
-            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
-            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
-            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "typeDocument", value = "Type of document") String typeDocument) {
-
-        try {
-            JsonNode body = request().body().asJson();
-            Contribution contribution = Contribution.read(coid);
-            Campaign campaign = Campaign.read(cid);
-
-            User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
-                    .getUser(session()));
-            ResourceTypes resourceTypes;
-
-            Assembly a = Assembly.read(aid);
-            ResourceSpace rs = a.getResources();
-
-            ContributionTemplate template = null;
-            List<ContributionTemplate> templates = rs.getTemplates();
-            if (templates != null && !templates.isEmpty()) {
-                template = rs.getTemplates().get(0);
-            }
-
-            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
-            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
-
-
-            if (typeDocument.equals("etherpad")) {
-                if (body.get("etherpadServerUrl") != null) {
-                    etherpadServerUrl = body.get("etherpadServerUrl").asText();
-                }
-                resourceTypes = ResourceTypes.PROPOSAL;
-            }
-
-            if (typeDocument.equals("gdoc")) {
-                if (body.get("etherpadServerUrl") != null) {
-                    etherpadServerUrl = body.get("gdocLink").asText();
-                }
-                resourceTypes = ResourceTypes.GDOC;
-            }
-
-            if (body.get("etherpadServerApiKey") != null) {
-                etherpadApiKey = body.get("etherpadServerApiKey").asText();
-            }
-
-            Resource res = null;
-
-
-            // save the etherpad
-            ContributionsDelegate.createAssociatedPad(etherpadServerUrl,
-                    etherpadApiKey,
-                    contribution,
-                    template,
-                    campaign.getResources().getUuid());
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
-        }
-        return ok(" ok");
-
-    }
 
     /**
      * Return the full list of working groups in an assembly
@@ -938,5 +862,9 @@ public class WorkingGroups extends Controller {
         List<WorkingGroup> workingGroups = WorkingGroup.findByLocationName(locationName);
         return ok(Json.toJson(workingGroups));
     }
+
+
+
+
 
 }

@@ -2,6 +2,7 @@ package controllers;
 
 import static play.data.Form.form;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
@@ -101,6 +102,7 @@ public class Contributions extends Controller {
     public static final Form<User> AUTHORS_FORM = form(User.class);
 
     private static BufferedReader br;
+
 
     /**
      * GET       /api/assembly/:aid/contribution
@@ -2437,9 +2439,9 @@ public class Contributions extends Controller {
         		if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
 	    			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD)){
 	    				hasEtherpadConfig = 1;
-	    				if (cc.getValue().equalsIgnoreCase("FALSE")) {
-	    					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
-	    				}
+	    				//if (cc.getValue().equalsIgnoreCase("FALSE")) {
+	    				//	ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+	    				//}
 	    	        }
 	                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
 	                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
@@ -2468,8 +2470,8 @@ public class Contributions extends Controller {
 				if (hasEtherpadConfig == 0) {
 					String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS
 							.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
-					if (etherpad.equalsIgnoreCase("FALSE"))
-						ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+					//if (etherpad.equalsIgnoreCase("FALSE"))
+					//	ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
 				}
 			}
             if (hasIdeasDuringProposal == 0 && type.equals(ContributionTypes.IDEA)) {
@@ -4235,6 +4237,85 @@ public class Contributions extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Resource Space with id: "+sid)));
         }
     }
+
+    /**
+     * POST               /api/assembly/:aid/campaign/:cid/contribution/:coid/document
+     *
+     * @param aid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Integer.class, produces = "application/json", value = "Publishes a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result createPad(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "typeDocument", value = "Type of document") String typeDocument) {
+
+        try {
+            JsonNode body = request().body().asJson();
+            Contribution contribution = Contribution.read(coid);
+            Campaign campaign = Campaign.read(cid);
+
+            User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            ResourceTypes resourceTypes;
+
+            Assembly a = Assembly.read(aid);
+            ResourceSpace rs = a.getResources();
+
+            ContributionTemplate template = null;
+            List<ContributionTemplate> templates = rs.getTemplates();
+            if (templates != null && !templates.isEmpty()) {
+                template = rs.getTemplates().get(0);
+            }
+
+            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+            resourceTypes = ResourceTypes.PAD;
+
+            if (typeDocument.equals("etherpad")) {
+                if (body.get("etherpadServerUrl") != null) {
+                    etherpadServerUrl = body.get("etherpadServerUrl").asText();
+                }
+                resourceTypes = ResourceTypes.PAD;
+            }
+
+            if (typeDocument.equals("gdoc")) {
+                if (body.get("gdocLink") != null) {
+                    etherpadServerUrl = body.get("gdocLink").asText();
+                }
+                resourceTypes = ResourceTypes.GDOC;
+            }
+
+            if (body.get("etherpadServerApiKey") != null) {
+                etherpadApiKey = body.get("etherpadServerApiKey").asText();
+            }
+
+
+
+            // save the etherpad
+            ContributionsDelegate.createAssociatedPad(etherpadServerUrl,
+                    etherpadApiKey,
+                    contribution,
+                    template,
+                    campaign.getResources().getUuid(),
+                    resourceTypes);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return badRequest(Json.toJson(Json
+                    .toJson(new TransferResponseStatus("Error processing request"))));
+        }
+        return ok(" ok");
+
+    }
+
 }
 
 class PaginatedContribution {
