@@ -720,13 +720,16 @@ public class NotificationsDelegate {
                 eventName = NotificationEventName.NEW_CONTRIBUTION_DISCUSSION;
                 break;
             case FORUM_POST:
-                eventName = NotificationEventName.NEW_CONTRIBUTION_DISCUSSION;
+                eventName = NotificationEventName.NEW_CONTRIBUTION_FORUM_POST;
                 break;
             case PROPOSAL:
                 eventName = NotificationEventName.NEW_CONTRIBUTION_PROPOSAL;
                 break;
             case NOTE:
                 eventName = NotificationEventName.NEW_CONTRIBUTION_NOTE;
+                break;
+            case ISSUE:
+                eventName = NotificationEventName.NEW_CONTRIBUTION_ISSUE;
                 break;
             default:
                 break;
@@ -754,6 +757,9 @@ public class NotificationsDelegate {
                 eventName = NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL;
                 break;
             case NOTE:
+                eventName = NotificationEventName.UPDATED_CONTRIBUTION_NOTE;
+                break;
+            case COMMENT:
                 eventName = NotificationEventName.UPDATED_CONTRIBUTION_NOTE;
                 break;
             default:
@@ -1024,5 +1030,24 @@ public class NotificationsDelegate {
         }else{
             return q.findList();
         }
+    }
+
+    public static NotificationEventName getUpdateConfigEventName(Config c) {
+        switch (c.getConfigTarget()){
+            case ASSEMBLY:
+                return NotificationEventName.UPDATED_ASSEMBLY_CONFIGS;
+                break;
+            case CAMPAIGN:
+                return NotificationEventName.UPDATED_CAMPAIGN_CONFIGS;
+                break;
+            case COMPONENT:
+                break;
+            case WORKING_GROUP:
+                return NotificationEventName.UPDATED_WORKING_GROUP_CONFIGS;
+                break;
+            default:
+                break;
+        }
+        return null;
     }
 }

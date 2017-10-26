@@ -5,11 +5,9 @@ import com.avaje.ebean.event.BeanPersistRequest;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
-import play.libs.F;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Created by ggaona on 29/8/17.
@@ -82,6 +80,7 @@ public class BeanPersistAdapter implements BeanPersistController {
             this.notifyMemberShip(request, NotificationEventName.MEMBER_JOINED);
         }
 
+       
 
     }
 
@@ -115,6 +114,47 @@ public class BeanPersistAdapter implements BeanPersistController {
         if (request.getBean() instanceof ContributionFeedback) {
             this.notifyContributionFeedback(request, NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK);
         }
+
+        if (request.getBean() instanceof Assembly) {
+            this.notifyAssembly(request, NotificationEventName.UPDATED_ASSEMBLY);
+        }
+
+        if(request.getBean() instanceof Config){
+            Config c = (Config)request.getBean();
+            NotificationEventName name = NotificationsDelegate.getUpdateConfigEventName(c);
+            if(name != null) {
+                this.notifyConfig(request, name);
+            }
+        }
+
+    }
+
+    private void notifyConfig(BeanPersistRequest<?> request, NotificationEventName name) {
+        Config c = (Config) request.getBean();
+        switch (c.getConfigTarget()){
+            case ASSEMBLY:
+                Assembly a = Assembly.readByUUID(c.getTargetUuid());
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, name, a, c);
+                break;
+            case CAMPAIGN:
+                Campaign camp = Campaign.readByUUID(c.getTargetUuid());
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, name, camp, c);
+                break;
+            case WORKING_GROUP:
+                WorkingGroup wc = WorkingGroup.readByUUID(c.getTargetUuid());
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, name, wc, c);
+                break;
+            default:
+                break;
+        }
+
+
+    }
+
+    private void notifyAssembly(BeanPersistRequest<?> request, NotificationEventName updatedAssembly) {
+        Assembly feedback = (Assembly) request.getBean();
+
+        NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, updatedAssembly, feedback, feedback);
 
     }
 
@@ -171,7 +211,7 @@ public class BeanPersistAdapter implements BeanPersistController {
     private void notifyBallotVote(BeanPersistRequest<?> request, NotificationEventName newVotingBallot) {
         Ballot entity = (Ballot) request.getBean();
         List<Campaign> campaigns = Campaign.findByCurrentBallotUUID(entity.getUuid());
-        System.out.println("=== NOTIFICATION FOR == " + newVotingBallot+ " CAMPAINGS: " + campaigns.size());
+        System.out.println("=== NOTIFICATION FOR == " + newVotingBallot + " CAMPAINGS: " + campaigns.size());
 
         for (Campaign c : campaigns) {
             NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, newVotingBallot, c, c);
@@ -212,25 +252,23 @@ public class BeanPersistAdapter implements BeanPersistController {
 
         //List<Assembly> assemblies = Assembly.findAssemblyFromCampaign(entity.getUuid());
 
-        for (ResourceSpace rs  : entity.getContainingSpaces()) {
-            System.out.println("=== NotificationsDelegate FOR == " + rs.getAssemblies().size() + " " + rs.getResourceSpaceId()  + " " + rs.getAssemblyResources());
+        for (ResourceSpace rs : entity.getContainingSpaces()) {
 
 
-                NotificationsDelegate.signalNotification(rs.getType(), eventName, rs.getAssemblyResources(), entity);
+            NotificationsDelegate.signalNotification(rs.getType(), eventName, rs.getAssemblyResources(), entity);
 
         }
 
     }
 
-    private void notifyMemberShip(BeanPersistRequest<?> request, NotificationEventName eventName){
+    private void notifyMemberShip(BeanPersistRequest<?> request, NotificationEventName eventName) {
 
-        System.out.println("=== ADAPTER notifyMemberShip == " + request.getBean().getClass());
 
         Membership m = (Membership) request.getBean();
-        if(m.getTargetAssembly() != null){
+        if (m.getTargetAssembly() != null) {
             NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, eventName, m.getTargetAssembly(), m);
         }
-        if(m.getTargetGroup() != null){
+        if (m.getTargetGroup() != null) {
             NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, m.getTargetGroup(), m);
         }
 
@@ -239,6 +277,9 @@ public class BeanPersistAdapter implements BeanPersistController {
 
     @Override
     public void postDelete(BeanPersistRequest<?> request) {
+        if (request.getBean() instanceof Contribution) {
+            this.notifyContribution(request, NotificationEventName.DELETED_CONTRIBUTION);
+        }
 
     }
 
