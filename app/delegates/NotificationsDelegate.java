@@ -752,6 +752,7 @@ public class NotificationsDelegate {
                 eventName = NotificationEventName.UPDATED_CONTRIBUTION_NOTE;
                 break;
             default:
+
                 break;
         }
         return eventName;
@@ -817,7 +818,9 @@ public class NotificationsDelegate {
         NotificationServiceWrapper wrapper = new NotificationServiceWrapper();
         NotificationEventTransfer net = new NotificationEventTransfer();
         net.setEventId(uuid + "_" + eventName);
-        net.setTitle(title.replace("{{resourceType}}", eventName.toString().toLowerCase()));
+        if(title != null) {
+            net.setTitle(title.replace("{{resourceType}}", eventName.toString().toLowerCase()));
+        }
         System.out.println("== title == " + net.getTitle());
         wrapper.createNotificationEvent(net);
     }

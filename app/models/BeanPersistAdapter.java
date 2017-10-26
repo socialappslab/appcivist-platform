@@ -69,7 +69,13 @@ public class BeanPersistAdapter implements BeanPersistController {
         }
 
         if (request.getBean() instanceof ContributionFeedback) {
-            this.notifyContributionFeedback(request, NotificationEventName.NEW_CONTRIBUTION_FEEDBACK);
+            ContributionFeedback feed = (ContributionFeedback) request.getBean();
+            if(feed.getFlag()){
+                this.notifyContributionFeedback(request, NotificationEventName.NEW_CONTRIBUTION_FEEDBACK_FLAG);
+            }else{
+                this.notifyContributionFeedback(request, NotificationEventName.NEW_CONTRIBUTION_FEEDBACK);
+
+            }
         }
 
         if (request.getBean() instanceof ContributionHistory) {
@@ -108,7 +114,11 @@ public class BeanPersistAdapter implements BeanPersistController {
 
         if (request.getBean() instanceof Contribution) {
             Contribution c = (Contribution) request.getBean();
-            this.notifyContribution(request, NotificationsDelegate.getUpdatedContributionEventName(c));
+            if(!c.getRemoved()) {
+                this.notifyContribution(request, NotificationsDelegate.getUpdatedContributionEventName(c));
+            }else{
+                this.notifyContribution(request,NotificationEventName.MODERATED_CONTRIBUTION);
+            }
         }
 
         if (request.getBean() instanceof ContributionFeedback) {

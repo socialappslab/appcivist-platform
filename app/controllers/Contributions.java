@@ -2052,9 +2052,11 @@ public class Contributions extends Controller {
             Contribution.softDelete(contributionFromDatabase);
 
             ResourceSpace rs = Assembly.read(aid).getResources();
+
+
             Promise.promise(() -> {
                 ContributionsDelegate.updateCommentCounters(contributionFromDatabase, "-");
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, contributionFromDatabase);
+                return ok();
             });
             return ok();
         }
@@ -2084,7 +2086,8 @@ public class Contributions extends Controller {
         ResourceSpace rs = Assembly.read(aid).getResources();
         Promise.promise(() -> {
             ContributionsDelegate.updateCommentCounters(c, "-");
-            return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
+            return ok();
+            //return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
         });
         return ok();
     }
@@ -2107,9 +2110,9 @@ public class Contributions extends Controller {
         Contribution.softRecovery(contributionId);
         Contribution c = Contribution.read(contributionId);
         ResourceSpace rs = Assembly.read(aid).getResources();
-        Promise.promise(() -> {
+        /*Promise.promise(() -> {
             return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
-        });
+        });*/
         return ok();
     }
 
