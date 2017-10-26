@@ -1,20 +1,9 @@
 package delegates;
 
-import static enums.ResourceSpaceTypes.ASSEMBLY;
-import static enums.ResourceSpaceTypes.CAMPAIGN;
-import static enums.ResourceSpaceTypes.CONTRIBUTION;
-import static enums.ResourceSpaceTypes.WORKING_GROUP;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.Model;
 import enums.*;
+import exceptions.ConfigurationException;
 import models.*;
 import models.transfer.NotificationEventTransfer;
 import models.transfer.NotificationSignalTransfer;
@@ -26,15 +15,15 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
-import scala.tools.nsc.backend.icode.Primitives;
 import utils.GlobalData;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Model;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-import exceptions.ConfigurationException;
+import static enums.ResourceSpaceTypes.*;
 
 public class NotificationsDelegate {
 
@@ -397,10 +386,10 @@ public class NotificationsDelegate {
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
-                if(((WorkingGroup) resource).getCreator() !=null) {
+                if (((WorkingGroup) resource).getCreator() != null) {
                     associatedUser = ((WorkingGroup) resource).getCreator().getName();
-                }else{
-                    associatedUser ="";
+                } else {
+                    associatedUser = "";
                 }
                 break;
             case NEW_VOTING_BALLOT:
@@ -535,15 +524,15 @@ public class NotificationsDelegate {
 
         //Construct hash map
         HashMap<String, Object> data = new HashMap<>();
-        data.put("origin",origin.toString());
+        data.put("origin", origin.toString());
         data.put("originType", originType);
         data.put("eventName", eventName);
         data.put("originName", originName);
-        data.put("resourceType",resourceType);
-        data.put( "resourceUUID", resourceUuid ==null ? "" : resourceUuid.toString());
+        data.put("resourceType", resourceType);
+        data.put("resourceUUID", resourceUuid == null ? "" : resourceUuid.toString());
         data.put("resourceTitle", resourceTitle);
-        data.put("resourceText",resourceText );
-        data.put("notificationDate",notificationDate );
+        data.put("resourceText", resourceText);
+        data.put("notificationDate", notificationDate);
         data.put("associatedUser", associatedUser);
         data.put("signaled", false);
 
@@ -567,14 +556,14 @@ public class NotificationsDelegate {
         List<Long> notificatedUsers = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
-        for(Subscription sub : subscriptions){
+        for (Subscription sub : subscriptions) {
             //subscription.ignoredEventsList[signal.eventName] === null OR false
-            if(sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName"))== null
-                    ||sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false ) {
+            if (sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
+                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false) {
                 // If subscription does not have a defaultService override,
                 // then iterate the list of enabled identities of the user (where enabled === true),
                 // and create the message to send as follow (see signals.js => processMatch):
-                if(sub.getDefaultService() == null){
+                if (sub.getDefaultService() == null) {
                     User user = User.findByUUID(UUID.fromString(sub.getUserId()));
                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                     notificationEvent.addNotificationEventSignalUser(userSignal);
@@ -585,18 +574,18 @@ public class NotificationsDelegate {
 
         }
         //if the spaceType is CAMPAIGN
-        if(originType.equals(ResourceSpaceTypes.CAMPAIGN)){
+        if (originType.equals(ResourceSpaceTypes.CAMPAIGN)) {
 
             List<Assembly> assemblies = Assembly.findAssemblyFromCampaign(origin);
-            if(!assemblies.isEmpty()){
-                for(Assembly assembly : assemblies){
+            if (!assemblies.isEmpty()) {
+                for (Assembly assembly : assemblies) {
                     System.out.println("Members: " + assembly.getMemberships().size());
 
-                    for( MembershipAssembly member : assembly.getMemberships()){
+                    for (MembershipAssembly member : assembly.getMemberships()) {
                         //Get configuration CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION
                         User user = member.getUser();
 
-                        if(!notificatedUsers.contains(user.getUserId())) {// if not already notified
+                        if (!notificatedUsers.contains(user.getUserId())) {// if not already notified
                             Config config = Config.findByUser(user.getUuid(), UserProfileConfigsTypes.CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION);
 
                             //If auto subscription is active
@@ -631,7 +620,7 @@ public class NotificationsDelegate {
             // Relay response to requestor
             if (response.getStatus() == 200) {
                 Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
-                notificationEvent.getData().put("signaled",true);
+                notificationEvent.getData().put("signaled", true);
                 NotificationEventSignal.create(notificationEvent);
                 // Register signals by user
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
@@ -646,15 +635,15 @@ public class NotificationsDelegate {
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.MISSING_CONFIGURATION, e.getMessage()));
             responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-        	Logger.error("Configuration error: ", LogActions.exceptionStackTraceToString(e));
+            Logger.error("Configuration error: ", LogActions.exceptionStackTraceToString(e));
             return Controller.internalServerError(Json.toJson(responseBody));
         } catch (Exception e) {
             Logger.info("NOTIFICATION: Error while signaling => " + e.getMessage());
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(e.getMessage());
             responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-        	Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
-        	return Controller.internalServerError(Json.toJson(responseBody));
+            Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
+            return Controller.internalServerError(Json.toJson(responseBody));
         }
     }
 
@@ -828,7 +817,7 @@ public class NotificationsDelegate {
         NotificationServiceWrapper wrapper = new NotificationServiceWrapper();
         NotificationEventTransfer net = new NotificationEventTransfer();
         net.setEventId(uuid + "_" + eventName);
-        net.setTitle(title.replace("{{resourceType}}",eventName.toString().toLowerCase()));
+        net.setTitle(title.replace("{{resourceType}}", eventName.toString().toLowerCase()));
         System.out.println("== title == " + net.getTitle());
         wrapper.createNotificationEvent(net);
     }
@@ -986,12 +975,12 @@ public class NotificationsDelegate {
     static Model.Finder<Long, NotificationEventSignal> finder = new Model.Finder<>(
             NotificationEventSignal.class);
 
-    public static List<NotificationEventSignal> findNotifications(Map<String, Object> conditions, Integer page, Integer pageSize){
+    public static List<NotificationEventSignal> findNotifications(Map<String, Object> conditions, Integer page, Integer pageSize) {
         ExpressionList<NotificationEventSignal> q = finder.where();
 
-        if(conditions != null){
-            for(String key : conditions.keySet()){
-                switch (key){
+        if (conditions != null) {
+            for (String key : conditions.keySet()) {
+                switch (key) {
                     case "resourceSpaceUuid":
                         q.eq("resourceUUID", conditions.get(key));
                         break;
@@ -1002,9 +991,9 @@ public class NotificationsDelegate {
             }
         }
 
-        if(page != null && pageSize != null){
+        if (page != null && pageSize != null) {
             return q.findPagedList(page, pageSize).getList();
-        }else{
+        } else {
             return q.findList();
         }
     }
@@ -1012,12 +1001,12 @@ public class NotificationsDelegate {
     static Model.Finder<Long, NotificationEventSignalUser> finderNotificationUser = new Model.Finder<>(
             NotificationEventSignalUser.class);
 
-    public static List<NotificationEventSignalUser> findNotificationsUser(Map<String, Object> conditions, Integer page, Integer pageSize){
+    public static List<NotificationEventSignalUser> findNotificationsUser(Map<String, Object> conditions, Integer page, Integer pageSize) {
         ExpressionList<NotificationEventSignalUser> q = finderNotificationUser.where();
 
-        if(conditions != null){
-            for(String key : conditions.keySet()){
-                switch (key){
+        if (conditions != null) {
+            for (String key : conditions.keySet()) {
+                switch (key) {
                     case "user":
                         q.eq("user.userId", conditions.get(key));
                         break;
@@ -1025,26 +1014,23 @@ public class NotificationsDelegate {
             }
         }
 
-        if(page != null && pageSize != null){
+        if (page != null && pageSize != null) {
             return q.findPagedList(page, pageSize).getList();
-        }else{
+        } else {
             return q.findList();
         }
     }
 
     public static NotificationEventName getUpdateConfigEventName(Config c) {
-        switch (c.getConfigTarget()){
+        switch (c.getConfigTarget()) {
             case ASSEMBLY:
                 return NotificationEventName.UPDATED_ASSEMBLY_CONFIGS;
-                break;
+
             case CAMPAIGN:
                 return NotificationEventName.UPDATED_CAMPAIGN_CONFIGS;
-                break;
-            case COMPONENT:
-                break;
+
             case WORKING_GROUP:
                 return NotificationEventName.UPDATED_WORKING_GROUP_CONFIGS;
-                break;
             default:
                 break;
         }

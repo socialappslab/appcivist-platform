@@ -80,7 +80,7 @@ public class BeanPersistAdapter implements BeanPersistController {
             this.notifyMemberShip(request, NotificationEventName.MEMBER_JOINED);
         }
 
-       
+
 
     }
 
@@ -122,6 +122,9 @@ public class BeanPersistAdapter implements BeanPersistController {
         if(request.getBean() instanceof Config){
             Config c = (Config)request.getBean();
             NotificationEventName name = NotificationsDelegate.getUpdateConfigEventName(c);
+
+            System.out.println("=== Notificacion For Config Type == " + name );
+
             if(name != null) {
                 this.notifyConfig(request, name);
             }
