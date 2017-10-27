@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.*;
-import models.transfer.AssemblySummaryTransfer;
-import models.transfer.AssemblyTransfer;
-import models.transfer.InvitationTransfer;
-import models.transfer.LinkedAssemblyTransfer;
+import models.location.Location;
+import models.transfer.*;
 
 import org.dozer.DozerBeanMapper;
 
@@ -68,9 +66,29 @@ public class AssembliesDelegate {
 	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
 			User creator, String templates, Assembly principal, String invitations) throws MembershipCreationException {
 
-		Assembly newAssembly = mapper.map(newAssemblyTransfer, Assembly.class);
+		Location location = null;
+		LocationTransfer locationTransfer = null;
+		if (newAssemblyTransfer.getProfile() != null) {
+			locationTransfer = newAssemblyTransfer.getProfile().getLocation();
+			if (locationTransfer != null && locationTransfer.getLocationId() != null) {
+				location = Location.find.where().eq("locationId", locationTransfer.getLocationId()).findUnique();
+				if(location == null) {
+					locationTransfer.setLocationId(null);
+					newAssemblyTransfer.setLocation(locationTransfer);
+				} else {
+					newAssemblyTransfer.setLocation(null);
+				}
+			} else {
+				newAssemblyTransfer.setLocation(locationTransfer);
+			}
+		}
 
+		Assembly newAssembly = mapper.map(newAssemblyTransfer, Assembly.class);
+		if (newAssemblyTransfer.getLocation() == null) {
+			newAssembly.setLocation(null);
+		}
 		newAssembly.setCreator(creator);
+
 		if (newAssembly.getLang() == null)
 			newAssembly.setLang(creator.getLanguage());
 
@@ -95,6 +113,11 @@ public class AssembliesDelegate {
 		}
 
 		Assembly.create(newAssembly);
+		if(location != null) {
+			Location location1 = mapper.map(locationTransfer, Location.class);
+			newAssembly.setLocation(location1);
+			newAssembly.update();
+		}
 
 		// Add List of Followed Assemblies
 		ResourceSpace rs = newAssembly.getResources();
@@ -109,6 +132,7 @@ public class AssembliesDelegate {
 		}
 		rs.update();
 		Logger.info("Assembly created!");
+
 		newAssembly.refresh();
 
 		// Adding new assembly to principal assembly if created under it
