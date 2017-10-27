@@ -1,6 +1,7 @@
 package models.transfer;
 
 public class LocationTransfer {
+	private Long locationId;
 	private String street; //: "1969 calle de alberto aguilera",
 	private String city; //: "la coruña",
 	private String state; //: "asturias",
@@ -59,5 +60,13 @@ public class LocationTransfer {
 
 	public void setGeoJson(String geoJson) {
 		this.geoJson = geoJson;
-	}	
+	}
+
+	public Long getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(Long locationId) {
+		this.locationId = locationId;
+	}
 }
