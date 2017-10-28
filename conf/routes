@@ -146,7 +146,6 @@ POST      /api/assembly/:aid/campaign/:cid/group/:gid/assignments               
 PUT       /api/assembly/:aid/group/:gid/proposals/:pid/publish                   controllers.WorkingGroups.publishProposal(aid: Long, gid: Long, pid: Long)
 GET       /api/assembly/:aid/group/location/:location_name                       controllers.WorkingGroups.findWorkingGroupsByLocationName(aid: Long, location_name: String)
 
-
 ##################################################################################################################################################################
 # Invitations and Requests to join a Group and/or and Assembly
 # TODO: mark for review and removal if not needed
@@ -277,6 +276,7 @@ DELETE    /api/contribution/:uuid/authors/:auuid                                
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="", createThemes: Boolean ?=false)
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
+POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad")
 
 ##################################################################################################################################################################
 # Location endpoints
