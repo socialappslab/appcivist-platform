@@ -1032,13 +1032,11 @@ public class Contribution extends AppCivistBaseModel {
     public static Contribution readAndUpdate(Contribution newContribution,
             Long contributionId, Long authorId) throws IllegalArgumentException, IllegalAccessException {
 
-        // Set plain text if text is HTML
-        if (TextUtils.isHtml(newContribution.getText())) {
-            newContribution.setText(Jsoup.clean(newContribution.getText(),
+        newContribution.setText(Jsoup.clean(newContribution.getText(),
                     Whitelist.basicWithImages()));
-            newContribution.setPlainText(Jsoup.parse(newContribution.getText())
+        newContribution.setPlainText(Jsoup.parse(newContribution.getText())
                     .text());
-        }
+
         Contribution existingContribution = Contribution.read(contributionId);
         
 // TODO: find a way for reflections to work with Ebean updates in Play
@@ -1074,6 +1072,7 @@ public class Contribution extends AppCivistBaseModel {
         existingContribution.setType(newContribution.getType());
         existingContribution.setContextUserId(authorId);
         existingContribution.setAttachments(newContribution.getAttachments());
+        existingContribution.setCover(newContribution.getCover());
 
         return Contribution.update(existingContribution);
     }
