@@ -15,6 +15,7 @@ public class AssemblyProfileTransfer {
 	private String primaryContactName;
 	private String primaryContactPhone;
 	private String primaryContactEmail;
+	private LocationTransfer location;
 	public String getTargetAudience() {
 		return targetAudience;
 	}
@@ -63,5 +64,11 @@ public class AssemblyProfileTransfer {
 	}
 	public void setPrimaryContactEmail(String primaryContactEmail) {
 		this.primaryContactEmail = primaryContactEmail;
+	}
+	public LocationTransfer getLocation() {
+		return location;
+	}
+	public void setLocation(LocationTransfer location) {
+		this.location = location;
 	}
 }
