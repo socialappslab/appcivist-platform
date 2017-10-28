@@ -935,11 +935,9 @@ public class Contribution extends AppCivistBaseModel {
         List<WorkingGroup> workingGroupAuthors = c.getWorkingGroupAuthors();
         
         // Set plain text if text is HTML
-        if (TextUtils.isHtml(c.getText())) {
-            c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
-            c.setPlainText(Jsoup.parse(c.getText()).text());
-        }
-        
+        c.setText(Jsoup.clean(c.getText(), Whitelist.basic()));
+        c.setPlainText(Jsoup.parse(c.getText()).text());
+
         // Make sure there is an status
         if (c.getStatus()==null) {
         	c.setStatus(ContributionStatus.PUBLISHED);
@@ -1034,13 +1032,11 @@ public class Contribution extends AppCivistBaseModel {
     public static Contribution readAndUpdate(Contribution newContribution,
             Long contributionId, Long authorId) throws IllegalArgumentException, IllegalAccessException {
 
-        // Set plain text if text is HTML
-        if (TextUtils.isHtml(newContribution.getText())) {
-            newContribution.setText(Jsoup.clean(newContribution.getText(),
+        newContribution.setText(Jsoup.clean(newContribution.getText(),
                     Whitelist.basicWithImages()));
-            newContribution.setPlainText(Jsoup.parse(newContribution.getText())
+        newContribution.setPlainText(Jsoup.parse(newContribution.getText())
                     .text());
-        }
+
         Contribution existingContribution = Contribution.read(contributionId);
         
 // TODO: find a way for reflections to work with Ebean updates in Play
@@ -1076,6 +1072,7 @@ public class Contribution extends AppCivistBaseModel {
         existingContribution.setType(newContribution.getType());
         existingContribution.setContextUserId(authorId);
         existingContribution.setAttachments(newContribution.getAttachments());
+        existingContribution.setCover(newContribution.getCover());
 
         return Contribution.update(existingContribution);
     }
@@ -1416,7 +1413,7 @@ public class Contribution extends AppCivistBaseModel {
         if(publishHistories != null && !publishHistories.isEmpty()){
             this.publicRevision = publishHistories.get(publishHistories.size() - 1).getRevision();
         }
-        return this.publicRevision;
+        return 0;
     }
 
     public Integer getPopularity() {

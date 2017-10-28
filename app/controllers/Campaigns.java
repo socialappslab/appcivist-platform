@@ -1,6 +1,8 @@
 package controllers;
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -36,6 +38,7 @@ import models.Theme;
 import models.User;
 import models.WorkingGroup;
 import models.misc.Views;
+import models.transfer.CampaignBriefTransfer;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
 import models.transfer.TransferResponseStatus;
@@ -66,11 +69,6 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import delegates.CampaignDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
-import enums.ContributionTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
-import enums.ResourceTypes;
-import enums.ResponseStatus;
 import exceptions.ConfigurationException;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
@@ -763,7 +761,7 @@ public class Campaigns extends Controller {
      */
     private static Result ongoingCampaignsByAssemblyId(Long aid) {
         Assembly a = Assembly.read(aid);
-        List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+        List<Campaign> ongoingCampaigns = new ArrayList<>();
         ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
         if (!ongoingCampaigns.isEmpty())
             return ok(Json.toJson(ongoingCampaigns));
@@ -1083,19 +1081,20 @@ public class Campaigns extends Controller {
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Integer") Integer page,
-            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize,
+            @ApiParam(name = "themeType", value = "String") String themeType,
+            @ApiParam(name = "query", value = "String") String query) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
-        Campaign campaign = Campaign.read(campaignId);
+        //Campaign campaign = Campaign.read(campaignId);
         List<Theme> themes;
         if (all != null) {
-            themes = campaign.getThemes();
+            themes = Campaign.getThemesByCampaignIdAndType(campaignId, themeType, null, null, query);
         } else {
-            themes = campaign.getPagedThemes(page, pageSize);
+            themes = Campaign.getThemesByCampaignIdAndType(campaignId, themeType, page, pageSize, query);
         }
         return ok(Json.toJson(themes));
-
     }
 
     /**
@@ -1273,8 +1272,36 @@ public class Campaigns extends Controller {
             campaignTimelineEdges = campaign.getPagedTimelineEdges(page, pageSize);
         }
         return ok(Json.toJson(campaignTimelineEdges));
+    }
+
+    /**
+     * GET /api/public/campaign/:uuid/brief
+     * Returns the Campaign brief: an html/svg TEXT that will be displayed as a welcome
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CampaignBriefTransfer.class, value = "Public endpoint for reading campaign's html/svg brief")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No Brief Found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result getCampaignBrief(
+            @ApiParam(name = "uuid", value = "Campaign UUID") UUID uuid) {
+        String brief = Campaign.getCampaignBriefByCampaignId(uuid);
+
+        if (brief != null) {
+            CampaignBriefTransfer cbt = new CampaignBriefTransfer();
+            cbt.setCampaignUuid(uuid);
+            cbt.setBrief(brief);
+            return ok(Json.toJson(cbt));
+        } else {
+            return notFound(Json.toJson(Json
+                    .toJson(new TransferResponseStatus("Brief not found for campaign "+uuid))));
+        }
 
     }
+
+
 
     /**
      * GET /api/campaign/:uuid/timeline

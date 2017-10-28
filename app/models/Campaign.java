@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.*;
 
 import enums.ResourceSpaceTypes;
+import enums.ThemeTypes;
 import enums.VotingSystemTypes;
 import io.swagger.annotations.ApiModel;
 import models.misc.Views;
@@ -45,6 +46,9 @@ public class Campaign extends AppCivistBaseModel {
 	@Column(name="goal", columnDefinition="text")
 	@JsonView(Views.Public.class)
 	private String goal;
+	@Column(name="brief", columnDefinition="text")
+	@JsonIgnore
+	private String brief;
 	@JsonView(Views.Public.class)
 	private String url;
 	@JsonView(Views.Public.class)
@@ -242,6 +246,14 @@ String uuidAsString, List<Component> phases) {
 
 	public void setGoal(String goal) {
 		this.goal = goal;
+	}
+
+	public String getBrief() {
+		return brief;
+	}
+
+	public void setBrief(String brief) {
+		this.brief = brief;
 	}
 
 	public Boolean getActive() {
@@ -799,19 +811,12 @@ String uuidAsString, List<Component> phases) {
 	}
 
 	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) {
-		List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
+		List<Campaign> ongoingCampaigns = new ArrayList<>();
 		ResourceSpace resources = a.getResources();
 		List<Campaign> campaigns = null;
 		if (resources != null)
 			campaigns = resources.getCampaignsFilteredByStatus("ongoing");
 		if (campaigns != null && !campaigns.isEmpty()) {
-//			for (Campaign c : campaigns) {
-//				Calendar today = Calendar.getInstance();
-//				if (c.getStartDate()!=null && c.getEndDate()!=null && c.getStartDate().before(today.getTime())
-//						&& c.getEndDate().after(today.getTime())) {
-//					ongoingCampaigns.add(c);
-//				}
-//			}
 			ongoingCampaigns.addAll(campaigns);
 		}
 		return ongoingCampaigns;
@@ -820,7 +825,10 @@ String uuidAsString, List<Component> phases) {
 	public static List<Campaign> getOngoingCampaignsFromAssembly(Long assemblyId) {
 		List<Campaign> campaigns = find.where().eq("containingSpaces.assemblyResources.assemblyId", assemblyId).findList();
 		if (campaigns!=null && !campaigns.isEmpty())
-			return campaigns.stream().filter(p -> p.getActive()).collect(Collectors.toList());
+			return campaigns.stream()
+					.filter(p -> p.getActive())
+					.sorted(Comparator.comparing(Campaign::getStartDate))
+					.collect(Collectors.toList());
 		else 
 			return null;
 	}	
@@ -859,5 +867,31 @@ String uuidAsString, List<Component> phases) {
 
 	public void setContainingSpaces(List<ResourceSpace> containingSpaces) {
 		this.containingSpaces = containingSpaces;
+	}
+
+	public static String getCampaignBriefByCampaignId(UUID uuid) {
+		return find.where().eq("uuid",uuid).select("brief").findUnique().getBrief();
+	}
+
+	public static List<Theme> getThemesByCampaignIdAndType(Long cid, String type, Integer page, Integer pageSize, String query) {
+		Finder<Long, Theme> find = new Finder<>(Theme.class);
+		ExpressionList<Theme> e = find.where().eq("containingSpaces.campaign.campaignId", cid);
+
+		if (type!=null) {
+			ThemeTypes typeEnum = ThemeTypes.valueOf(type);
+			if (typeEnum!=null) {
+				e = e.eq("type",typeEnum);
+			}
+		}
+
+		if (query!=null && !query.isEmpty()) {
+		    e = e.ilike("title","%"+query+"%");
+        }
+
+		if (pageSize==null) {
+			return e.findList();
+		} else {
+			return e.findPagedList(page, pageSize).getList();
+		}
 	}
 }

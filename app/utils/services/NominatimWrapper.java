@@ -26,6 +26,7 @@ public class NominatimWrapper {
 	}
 
 	public static JsonNode geoCode(String query) {
+		Logger.info("Geocoding: "+query);
 		try {
 			String encodedQuery = URLEncoder.encode(query, "UTF-8");
 			WSRequest holder = WS.url(BASE_URL);
@@ -37,6 +38,7 @@ public class NominatimWrapper {
 			holder.setQueryParameter("q", query); 
 			holder.setQueryParameter("polygon_geojson", GEOJSON);
 			holder.setMethod("GET");
+			Logger.info("Geocoding URL: "+holder.getPassword());
 
 			Promise<WSResponse> promise = holder.execute().map(
 					new Function<WSResponse, WSResponse>() {

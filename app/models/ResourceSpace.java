@@ -2,25 +2,11 @@ package models;
 
 import io.swagger.annotations.ApiModel;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import models.misc.Views;
 
@@ -41,6 +27,7 @@ import enums.MembershipTypes;
 import enums.MyRoles;
 import enums.ResourceSpaceTypes;
 import enums.ResourceTypes;
+import play.Logger;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -940,13 +927,27 @@ public class ResourceSpace extends AppCivistBaseModel {
 		if (status!=null) {
 			switch (status) {
 			case "ongoing":
-				return this.campaigns.stream().filter(p -> p.getActive()).collect(Collectors.toList());
+				return this.campaigns
+						.stream()
+						.filter(p -> p.getActive())
+                        .sorted(Comparator.comparing(Campaign::getStartDate).reversed())
+						.collect(Collectors.toList());
 			case "past":
-				return this.campaigns.stream().filter(p -> p.getPast()).collect(Collectors.toList());
+				return this.campaigns.stream()
+                        .filter(p -> p.getPast())
+                        .sorted(Comparator.comparing(Campaign::getStartDate).reversed())
+                        .collect(Collectors.toList());
 			case "upcoming":
-				return this.campaigns.stream().filter(p -> p.getUpcoming()).collect(Collectors.toList());
+				return this.campaigns.
+						stream()
+						.filter(p -> p.getUpcoming())
+                        .sorted(Comparator.comparing(Campaign::getStartDate))
+						.collect(Collectors.toList());
 			default:
-				return this.campaigns;
+				return this.campaigns
+						.stream()
+						.sorted(Comparator.comparing(Campaign::getStartDate).reversed())
+						.collect(Collectors.toList());
 			}
 		}
 		return this.campaigns;

@@ -1977,3 +1977,6 @@ ALTER TABLE ballot
 ALTER TABLE ballot
   ADD CONSTRAINT ck_ballot_status
   CHECK (status = ANY (ARRAY[0, 2]));
+
+-- 56.sql
+ALTER TABLE "public"."campaign" ADD COLUMN "brief" text;

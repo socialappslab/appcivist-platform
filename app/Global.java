@@ -3,11 +3,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import akka.actor.Cancellable;
 import delegates.ResourcesDelegate;
+import enums.*;
+import models.*;
 import models.misc.InitialDataConfig;
 
 import org.apache.commons.io.FileUtils;
@@ -40,6 +44,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import scala.concurrent.duration.Duration;
 import service.PlayAuthenticateLocal;
+import utils.GlobalData;
 import utils.LogActions;
 
 public class Global extends GlobalSettings {
@@ -260,7 +265,7 @@ public class Global extends GlobalSettings {
 				new Runnable() {
 					@Override
 					public void run() {
-						System.out.println("Cron Job");
+						Logger.info("Cron Job");
 						// Call a function (to print JVM stats)
 						ResourcesDelegate.deleteUnconfirmedContributionTemplates();
 					}
@@ -272,7 +277,7 @@ public class Global extends GlobalSettings {
 				new Runnable() {
 					@Override
 					public void run() {
-						System.out.println("Daily Newsletter Job");
+						Logger.info("Daily Newsletter Job");
 						//TODO add notification service control to send not sent signals
 					}
 				},

@@ -1,6 +1,7 @@
 package models.location;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.*;
 
@@ -10,10 +11,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import delegates.NotificationsDelegate;
+import enums.NotificationEventName;
+import enums.ResourceSpaceTypes;
 import models.AppCivistBaseModel;
 import models.WorkingGroup;
 import models.misc.Views;
+import play.Logger;
 import play.Play;
+import play.libs.F;
 import utils.GlobalData;
 import utils.services.MapBoxWrapper;
 
@@ -27,7 +33,7 @@ import utils.services.NominatimWrapper;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 public class Location extends Model {
-	
+
 	@Id
 	@GeneratedValue
 	private Long locationId;
@@ -54,7 +60,7 @@ public class Location extends Model {
 	@Column
 	@JsonView(Views.Public.class)
 	private Integer bestCoordinates = 0;
-	
+
 	@JsonView(Views.Public.class)
 	private String source;
 
@@ -75,16 +81,16 @@ public class Location extends Model {
 	 */
     public static Finder<Long, Location> find = new Finder<>(Location.class);
 
-	
+
 	// TODO: find a way for knowing if part of the location was changed before updating
 	// @Transient
 	//	@JsonIgnore
 	//	Location oldLocation;
-	
+
 	public Location() {
 		super();
 	}
-	
+
 	public Location(String street, String city, String state, String zip,
 			String country) {
 		super();
@@ -169,14 +175,9 @@ public class Location extends Model {
 	public void setGeoJson(String geoJson) {
 		this.geoJson = geoJson;
 	}
-	
-//	@PostLoad
-//	public void afterRetrievingFromDB() {
-//		this.oldLocation = 
-//	}
-	
-	@PrePersist
-	public void beforePersist() {
+
+	@PostPersist
+	public void postPersist() {
 		this.serializedLocation = "";
 		this.serializedLocation += this.placeName!=null && !this.placeName.isEmpty() ? this.placeName : "";
 		this.serializedLocation += this.street!=null && !this.street.isEmpty() ? " " + this.street : "";
@@ -187,43 +188,42 @@ public class Location extends Model {
 		String query = this.serializedLocation;
 		// only store geoJson if geocoding service is nominatim
 		String geocodingService = Play.application().configuration().getString(GlobalData.GEOCODING_SERVICE);
-		if ((this.geoJson == null || this.geoJson.isEmpty()) && geocodingService.equals("nominatim")) {
+        F.Promise.promise(() -> {
+            if ((this.geoJson == null || this.geoJson.isEmpty()) && geocodingService.equals("nominatim")) {
+                if (this.getPlaceName() != null) {
+                    JsonNode resultLocation = NominatimWrapper.geoCode(this.getPlaceName());
 
-			if (this.getPlaceName() != null) {
-				JsonNode resultLocation = NominatimWrapper.geoCode(this.getPlaceName());
+                    ArrayNode geojsonArr;
+                    ArrayNode additionalInfoArr;
 
-				ArrayNode geojsonArr;
-				ArrayNode additionalInfoArr;
+                    if (resultLocation.isArray()) {
+                        // split additional info and geojson for each result
+                        ArrayNode arr = (ArrayNode) resultLocation;
+                        geojsonArr = new ObjectMapper().createArrayNode();
+                        additionalInfoArr = new ObjectMapper().createArrayNode();
+                        for (int a = 0; a < arr.size(); a++) {
+                            JsonNode json = arr.get(a);
+                            geojsonArr.add(json.get("geojson"));
+                            createAdditionalInfo(additionalInfoArr, json);
+                        }
 
-				if (resultLocation.isArray()) {
-					// split additional info and geojson for each result
-					ArrayNode arr = (ArrayNode) resultLocation;
-					geojsonArr = new ObjectMapper().createArrayNode();
-					additionalInfoArr = new ObjectMapper().createArrayNode();
-					for (int a = 0; a < arr.size(); a++) {
-						JsonNode json = arr.get(a);
-						geojsonArr.add(json.get("geojson"));
-						createAdditionalInfo(additionalInfoArr, json);
-					}
+                    } else {
+                        // split additional info and geojson
+                        geojsonArr = new ObjectMapper().createArrayNode();
+                        additionalInfoArr = new ObjectMapper().createArrayNode();
+                        JsonNode json = resultLocation;
 
-				} else {
-					// split additional info and geojson
-					geojsonArr = new ObjectMapper().createArrayNode();
-					additionalInfoArr = new ObjectMapper().createArrayNode();
-					JsonNode json = resultLocation;
-
-					createAdditionalInfo(additionalInfoArr, json);
-				}
-				this.setGeoJson(geojsonArr.toString());
-				this.setAdditionInfo(additionalInfoArr.toString());
-				this.update();
-			}
-
-			this.geoJson = NominatimWrapper.geoCode(query).toString();
-//		MapBox will be used only for live geocoding. Can't store as per ToS. 
-//		} else if (geocodingService.equals("mapbox")) {
-//			this.geoJson = MapBoxWrapper.geoCode(query);
-		}
+                        createAdditionalInfo(additionalInfoArr, json);
+                    }
+                    this.setGeoJson(geojsonArr.toString());
+                    this.setAdditionInfo(additionalInfoArr.toString());
+                    this.update();
+                } else {                 
+                  this.geoJson = NominatimWrapper.geoCode(query).toString();
+                }
+            }
+            return Optional.ofNullable(null);
+        });
 	}
 
 	public static void createAdditionalInfo(ArrayNode additionalInfoArr, JsonNode json) {
@@ -247,16 +247,16 @@ public class Location extends Model {
 		JsonNode node = json.get(attribute);
 		return node != null ? node.asText() : "";
 	}
-	
+
 	private static Double jsonNodeAsDouble(JsonNode json, String attribute) {
 		JsonNode node = json.get(attribute);
 		return node != null ? node.asDouble() : null;
 	}
-	
+
 	public static List<Location> findByQuery(String query) {
 		return find.where().ilike("serializedLocation", query).findList();
 	}
-	
+
 	public static List<Location> findMarkedForReview() {
 		return find.where().eq("markedForReview", true).findList();
 	}

@@ -49,6 +49,7 @@ playauthenticate.change_password.success=Password has been changed successfully.
 playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
 playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
 playauthenticate.password.signup.error.missing_lang=Missing language
+playauthenticate.password.signup.error.password_null=Password not provided.
 
 playauthenticate.password.verify_signup.subject=AppCivist: Complete your signup
 playauthenticate.password.verify_email.subject=AppCivist: Confirm your e-mail address

@@ -3,6 +3,7 @@ package schedulers;
 import akka.actor.ActorSystem;
 import enums.*;
 import models.*;
+import play.Logger;
 import scala.concurrent.ExecutionContext;
 import utils.GlobalData;
 
@@ -26,21 +27,31 @@ public class BallotCreationSchedule extends DailySchedule {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        this.initialize(15, 7, "Ballot Creation");
+        Integer hour = 0;
+        Integer minute = 0;
+        String processName = "Ballot Creation";
+        this.initialize(hour, minute, processName);
     }
-
 
     @Override
     public void executeProcess() {
-        System.out.println("Executing ballot");
+        createBallot();
+    }
 
-        //Get Components of type voting with starting day = today
+    private void createBallot() {
+        Logger.info("Executing ballot");
 
+        /*
+         * Get Components of type voting with starting day = today
+         * Set calStart to YESTERDAY at 23:59:59 to ensure that voting components that start at midnight are included
+         * sine they are excluded in some implementations of postgres between
+         */
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(new Date());
-        calStart.set(Calendar.HOUR_OF_DAY, 0);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
+        calStart.add(Calendar.DATE, -1);
+        calStart.set(Calendar.HOUR_OF_DAY, 23);
+        calStart.set(Calendar.MINUTE, 59);
+        calStart.set(Calendar.SECOND, 59);
 
         Calendar calEnd = Calendar.getInstance();
         calEnd.setTime(new Date());
@@ -48,27 +59,17 @@ public class BallotCreationSchedule extends DailySchedule {
         calEnd.set(Calendar.MINUTE, 59);
         calEnd.set(Calendar.SECOND, 59);
 
-        System.out.println("Searching Component Start day between: "+ calStart.getTime() + " and " +calEnd.getTime() );
+        Logger.info("Searching Component Start day between: "+ calStart.getTime() + " and " +calEnd.getTime() );
 
         List<Component> components = Component.findVotingByStartingDay(calStart.getTime(), calEnd.getTime());
-        System.out.println("Found "+ components.size() + " COMPONENT to create Voting ballots");
+        Logger.info("Found "+ components.size() + " COMPONENT to create Voting ballots");
 
         //Find all campaigns related and create ballot
         for (Component component : components) {
             for (ResourceSpace spaces : component.getContainingSpaces()) {
                 if (spaces.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-
-
                     Campaign campaign = spaces.getCampaign();
-
-                    System.out.println("Creating ballot for campaing:"+ campaign.getCampaignId());
-
-
-                    //If campaign config campaign.include.all.published.proposals === TRUE,
-                    // change status of PUBLISHED to INBALLOT before creating ballot.
-                    Config publisheProposal = spaces
-                            .getConfigByKey(
-                                    GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM);
+                    Logger.info("Creating ballot for campaing:" + campaign.getCampaignId());
 
                     //Campaign related, creating Ballot
                     // 6. Create a decision ballot associated with this component and add it to the campaign
@@ -87,12 +88,11 @@ public class BallotCreationSchedule extends DailySchedule {
 
                     ballot.setStartsAt(startBallot);
                     ballot.setEndsAt(endBallot);
-                    ballot.setPassword(campaign.getUuidAsString());
-
+                    ballot.setPassword(campaign.getShortname());
 
                     Config publishedProposal = component.getResourceSpace()
                             .getConfigByKey(
-                                    GlobalData.CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
+                                    GlobalData.CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
                     Boolean published = false;
                     if (publishedProposal != null && Boolean.valueOf(publishedProposal.getValue())) {
                         //Update Campaign status or ballot
@@ -100,9 +100,12 @@ public class BallotCreationSchedule extends DailySchedule {
                         published = true;
                     }
 
-                    //Creating candidates
-                    createBallotCandidates(campaign,ballot,published);
+                    Config ballotEntityType = component.getResourceSpace()
+                            .getConfigByKey(
+                                    GlobalData.CONFIG_COMPONENT_VOTING_BALLOT_ENTITY_TYPE);
 
+                    String entityType = ballotEntityType != null ? ballotEntityType.getValue() : null;
+                    ballot.setEntityType(entityType != null ? entityType : "PROPOSAL");
 
                     Config votingSystemConfig = component.getResourceSpace()
                             .getConfigByKey(
@@ -110,7 +113,36 @@ public class BallotCreationSchedule extends DailySchedule {
 
                     VotingSystemTypes vtype = votingSystemConfig != null ? VotingSystemTypes
                             .valueOf(votingSystemConfig.getValue())
-                            : VotingSystemTypes.PLURALITY;
+                            : VotingSystemTypes.DISTRIBUTED;
+                    String votesLimit = "5";
+                    String votesLimitMeaning = "TOKENS";
+                    if (vtype.equals(VotingSystemTypes.PLURALITY)) {
+                        votesLimitMeaning = "SELECTIONS"; // user can give vote on up to 'votesLimit' candidates
+                        Config votingVotesLimitConfig = component.getResourceSpace()
+                                .getConfigByKey(
+                                        GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE);
+                        votesLimit = votingVotesLimitConfig != null ? votingVotesLimitConfig.getValue() : votesLimit;
+                    } else if (vtype.equals(VotingSystemTypes.DISTRIBUTED)) {
+                        votesLimitMeaning = "TOKENS"; // user can distribute up to 'votesLimit' points among candidates
+                        Config votingVotesLimitConfig = component.getResourceSpace()
+                                .getConfigByKey(
+                                        GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_DISTRIBUTED_POINTS);
+                        votesLimit = votingVotesLimitConfig != null ? votingVotesLimitConfig.getValue() : votesLimit;
+                    } else if (vtype.equals(VotingSystemTypes.RANGE)) {
+                        votesLimitMeaning = "RANGE"; // user can assign scores to candidates in the range of 'votesLimit' (min-max)
+                        Config votingVotesLimitConfig = component.getResourceSpace()
+                                .getConfigByKey(
+                                        GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_RANGE_MAX_SCORE);
+                        votesLimit = votingVotesLimitConfig != null ? votingVotesLimitConfig.getValue() : votesLimit;
+                    } else if (vtype.equals(VotingSystemTypes.RANKED)) {
+                        votesLimitMeaning = "SELECTIONS"; // user can give vote on up to 'votesLimit' candidates
+                        Config votingVotesLimitConfig = component.getResourceSpace()
+                                .getConfigByKey(
+                                        GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_RANKED_NUMBER_PROPOSALS);
+                        votesLimit = votingVotesLimitConfig != null ? votingVotesLimitConfig.getValue() : votesLimit;
+                    }
+                    ballot.setVotesLimit(votesLimit);
+                    ballot.setVotesLimitMeaning(VotesLimitMeanings.valueOf(votesLimitMeaning));
                     ballot.setVotingSystemType(vtype);
                     ballot.setRequireRegistration(false);
                     ballot.setUserUuidAsSignature(true);
@@ -120,38 +152,53 @@ public class BallotCreationSchedule extends DailySchedule {
                     ballot.refresh();
                     campaign.setCurrentBallotAsString(ballot.getUuid().toString());
                     campaign.getResources().addBallot(ballot);
+                    campaign.getResources().update();
+                    campaign.update();
+
+                    //Creating candidates
+                    createBallotCandidates(campaign, ballot, published);
 
                     //Adding configurations to ballot
-                    addBallotConfigurations(component.getConfigs(),ballot);
-
-
-
+                    addBallotConfigurations(component.getConfigs(), ballot);
                 }
             }
         }
     }
 
-    private void createBallotCandidates(Campaign campaign, Ballot ballot, Boolean publishedProposal) {
+    // Crate ballot candidates if:
+    // - Their status is INBALLOT
+    // - Their status is PUBLISHED and there is a configuration to allow PUBLISHED contributions
+    private void createBallotCandidates(Campaign campaign, Ballot ballot, Boolean publishedProposalAllowed) {
         List<Contribution> contributions = campaign.getContributions();
         Boolean hasCandidates = false;
-        for(Contribution c : contributions){
-            if(c.getType()!=null && c.getType().equals(ContributionTypes.PROPOSAL)){
-                //if config campaign.include.all.published.proposals === TRUE,
-                // change status of PUBLISHED to INBALLOT
+        for(Contribution c : contributions) {
+            ContributionTypes ballotEntityType = ContributionTypes.valueOf(ballot.getEntityType());
+            if(c.getType()!=null && c.getType().equals(ballotEntityType)){
+                // if config campaign.include.all.published.proposals === TRUE,
+                // allow the creation of the candidate and change the status of PUBLISHED to INBALLOT
                 hasCandidates=true;
-                System.out.println("Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
-                if(publishedProposal){
-                    c.setStatus(ContributionStatus.INBALLOT);
-                    c.update();
+                Logger.info("Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
+                Boolean createCandidate = false;
+                if(publishedProposalAllowed){
+                    if (c.getStatus().equals(ContributionStatus.PUBLISHED)) {
+                        c.setStatus(ContributionStatus.INBALLOT);
+                        c.update();
+                        createCandidate = true;
+                    }
+                } else {
+                    if (c.getStatus().equals(ContributionStatus.INBALLOT)) {
+                        createCandidate = true;
+                    }
                 }
 
-                //Creating candidate
-                BallotCandidate candidate = new BallotCandidate();
-                candidate.setBallotId(ballot.getId());
-                candidate.setCandidateType(BallotCandidateTypes.CAMPAIGN);
-                candidate.setCandidateUuid(c.getUuid());
-                candidate.insert();
-
+                if (createCandidate) {
+                    //Creating candidate
+                    BallotCandidate candidate = new BallotCandidate();
+                    candidate.setBallotId(ballot.getId());
+                    candidate.setCandidateType(BallotCandidateTypes.CAMPAIGN);
+                    candidate.setCandidateUuid(c.getUuid());
+                    candidate.insert();
+                }
             }
         }
         //If ballot has not candidates, then set status to draft

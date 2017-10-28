@@ -3,10 +3,8 @@ package models;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -98,6 +96,8 @@ public class Ballot extends Model {
 	@Enumerated(EnumType.STRING)
     @ApiModelProperty(value="Meaning of the limit on the votes")
 	private VotesLimitMeanings votesLimitMeaning;
+	@Transient
+    private List<BallotCandidate> ballotCandidates = new ArrayList<>();
 
     /**
 	 * The find property is an static property that facilitates database query creation
@@ -315,11 +315,35 @@ public class Ballot extends Model {
 		return find.where().eq("uuid", uuid).findUnique();
 	}
 
-	@JsonIgnore
-	public List<BallotCandidate> getBallotCandidates(){
+    @Transient
+    public List<BallotCandidate> getBallotCandidates(){
 		Finder<Long, BallotCandidate> ballotCandidateFinder = new Finder<>(
 				BallotCandidate.class);
-		return ballotCandidateFinder.where().eq("ballotId", this.id).findList();
+		this.ballotCandidates = ballotCandidateFinder.where().eq("ballotId", this.id).findList();
+		return this.ballotCandidates;
+	}
+
+	@Transient
+    public Map<String, Integer> getBallotCandidatesIndex() {
+	    if (this.ballotCandidates.size()==0) {
+            Finder<Long, BallotCandidate> ballotCandidateFinder = new Finder<>(
+                    BallotCandidate.class);
+            this.ballotCandidates = ballotCandidateFinder.where().eq("ballotId", this.id).findList();
+        }
+        Map<String, Integer> ballotCandidatesIndex = new HashMap<>();
+
+	    for (int index = 0; index<this.ballotCandidates.size(); index++) {
+	        BallotCandidate bc = ballotCandidates.get(index);
+	        ballotCandidatesIndex.put(bc.getId()+"",index);
+        }
+        return ballotCandidatesIndex;
+    }
+
+	@Transient
+	public Integer getCandidatesNumber () {
+		Finder<Long, BallotCandidate> ballotCandidateFinder = new Finder<>(
+				BallotCandidate.class);
+		return ballotCandidateFinder.where().eq("ballotId", this.id).findRowCount();
 	}
 
 	public static Ballot createConsensusBallotForWorkingGroup(WorkingGroup workingGroup){

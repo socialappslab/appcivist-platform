@@ -64,6 +64,7 @@ import play.mvc.Results;
 import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
+import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.LogActions;
 import be.objectify.deadbolt.java.actions.Dynamic;
@@ -2423,6 +2424,7 @@ public class Spaces extends Controller {
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No Resource found", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
     public static Result deleteSpaceResource(@ApiParam(name = "sid", value = "Space ID") Long sid,
                                           @ApiParam(name = "rid", value = "Resource ID") Long rid) {
         ResourceSpace resourceSpace = ResourceSpace.findByResource(sid, rid);
@@ -2430,12 +2432,6 @@ public class Spaces extends Controller {
             return notFound(Json
                     .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
         } else {
-            User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-            if(!ResourceSpace.isCoordinatorResourceSpace(author,resourceSpace)){
-                return unauthorized(Json.toJson(new TransferResponseStatus(
-                        ResponseStatus.UNAUTHORIZED,
-                        "User unauthorized")));
-            }
             Resource resource = Resource.read(rid);
             if (resource == null) {
                 return notFound(Json
@@ -2445,7 +2441,10 @@ public class Spaces extends Controller {
             resourceSpace.update();
             resourceSpace.refresh();
             ResourceSpaceAssociationHistory.createAssociationHistory(resourceSpace,ResourceSpaceAssociationTypes.RESOURCE,resource.getResourceId());
-            return ok(Json.toJson(resourceSpace.getResources()));
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setResponseStatus(ResponseStatus.OK);
+            response.setStatusMessage("Resource deleted:" +rid);
+            return ok(Json.toJson(response));
         }
     }
 
