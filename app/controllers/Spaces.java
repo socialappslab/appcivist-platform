@@ -843,13 +843,13 @@ public class Spaces extends Controller {
                     return badRequest(Json.toJson(responseBody));
                 }
                 ballot.update();
-                F.Promise.promise(() -> {
+                /*F.Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
                             resourceSpace.getType(),
                             NotificationEventName.UPDATED_VOTING_BALLOT,
                             resourceSpace,
                             resourceSpace);
-                });
+                });*/
                 return ok(Json.toJson(ballot));
             }
         }
@@ -1916,12 +1916,12 @@ public class Spaces extends Controller {
             responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
                     + newWorkingGroup.getGroupId());
 
-            F.Promise.promise(() -> {
+           /* F.Promise.promise(() -> {
                 return NotificationsDelegate.signalNotification(
                         ResourceSpaceTypes.WORKING_GROUP,
                         NotificationEventName.UPDATED_WORKING_GROUP,
                         resourceSpace, newWorkingGroup);
-            });
+            });*/
 
             return ok(Json.toJson(responseBody));
         }

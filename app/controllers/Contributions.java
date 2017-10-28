@@ -1638,7 +1638,7 @@ public class Contributions extends Controller {
                 ContributionFeedback.create(feedback);
 
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
-                NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
+              /*  NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
                 Promise.promise(() -> {
                     Contribution c = Contribution.read(feedback.getContributionId());
                     for (Long campId : c.getCampaignIds()) {
@@ -1646,16 +1646,16 @@ public class Contributions extends Controller {
                             NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
                     }
                     return true;
-                });
+                });*/
 
-                feedback.getWorkingGroupId();
+               /* feedback.getWorkingGroupId();
                 Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
                             ResourceSpaceTypes.WORKING_GROUP,
                             eventName,
                             WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
                             feedback);
-                });
+                });*/
 
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
@@ -1775,7 +1775,7 @@ public class Contributions extends Controller {
                 ContributionFeedback.create(feedback);
 
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
-                NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
+               /* NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
                 Promise.promise(() -> {
                     Contribution c = Contribution.read(feedback.getContributionId());
                     for (Long campId : c.getCampaignIds()) {
@@ -1783,16 +1783,16 @@ public class Contributions extends Controller {
                         NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
                     }
                     return true;
-                });
+                });*/
 
-                feedback.getWorkingGroupId();
+               /* feedback.getWorkingGroupId();
                 Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
                             ResourceSpaceTypes.WORKING_GROUP,
                             eventName,
                             WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
                             feedback);
-                });
+                });*/
 
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
@@ -2062,9 +2062,11 @@ public class Contributions extends Controller {
             Contribution.softDelete(contributionFromDatabase);
 
             ResourceSpace rs = Assembly.read(aid).getResources();
+
+
             Promise.promise(() -> {
                 ContributionsDelegate.updateCommentCounters(contributionFromDatabase, "-");
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, contributionFromDatabase);
+                return ok();
             });
             return ok();
         }
@@ -2094,7 +2096,8 @@ public class Contributions extends Controller {
         ResourceSpace rs = Assembly.read(aid).getResources();
         Promise.promise(() -> {
             ContributionsDelegate.updateCommentCounters(c, "-");
-            return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
+            return ok();
+            //return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
         });
         return ok();
     }
@@ -2117,9 +2120,9 @@ public class Contributions extends Controller {
         Contribution.softRecovery(contributionId);
         Contribution c = Contribution.read(contributionId);
         ResourceSpace rs = Assembly.read(aid).getResources();
-        Promise.promise(() -> {
+        /*Promise.promise(() -> {
             return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
-        });
+        });*/
         return ok();
     }
 

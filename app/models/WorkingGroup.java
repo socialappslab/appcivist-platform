@@ -198,12 +198,17 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return find.where().ilike("locations.placeName", name).findList();
 	}
 
-    public static WorkingGroup create(WorkingGroup workingGroup) throws MembershipCreationException {
+    public static WorkingGroup create(WorkingGroup workingGroup ) throws MembershipCreationException {
 		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
 		List<Theme> existingThemes = workingGroup.getExistingThemes();
 		List<Long> campaigns = workingGroup.getCampaigns();
 		List<Contribution> existingContributions = workingGroup.getExistingContributions();
-	
+
+		/*for(Long resourceId : resources) {
+			ResourceSpace rs = ResourceSpace.read(resourceId);
+			workingGroup.getContainingSpaces().add(rs);
+		}*/
+
 		// 2. Create the new working group
 		workingGroup.save();
 		// 3. Add existing entities in relationships to the manytomany resources then update
@@ -241,7 +246,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 		// TODO: figure out why updates trigger inserts in the resource space
 		// for resources that already exist
-		workingGroup.update();
+		//workingGroup.update();
 		groupResources.update();
 
 		// Add Ballot configurations

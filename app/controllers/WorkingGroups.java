@@ -208,13 +208,17 @@ public class WorkingGroups extends Controller {
                     if (newWorkingGroup.getCreator() == null) {
                         newWorkingGroup.setCreator(groupCreator);
                     }
-                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
-                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
 
                     // Add the working group to the assembly
                     ResourceSpace rs = Assembly.read(aid).getResources();
                     rs.addWorkingGroup(newWorkingGroup);
+                    newWorkingGroup.getContainingSpaces().add(rs);
                     rs.update();
+
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
+                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+
+
 
                     // Create and send invitations
                     if (invitations != null  && invitations.equals("true")) {
@@ -229,11 +233,11 @@ public class WorkingGroups extends Controller {
                         Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                     }
 
-                    Assembly assembly = Assembly.read(aid);
+                    /*Assembly assembly = Assembly.read(aid);
                     WorkingGroup finalNewWorkingGroup = newWorkingGroup;
                     Promise.promise(() -> {
                         return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_WORKING_GROUP, assembly, finalNewWorkingGroup);
-                    });
+                    });*/
 
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
@@ -303,14 +307,6 @@ public class WorkingGroups extends Controller {
                     if (newWorkingGroup.getCreator() == null) {
                         newWorkingGroup.setCreator(groupCreator);
                     }
-                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
-                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-                    newWorkingGroup.refresh();
-                    // Add the working group to the assembly
-                    ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
-                    rs.addWorkingGroup(newWorkingGroup);
-                    newWorkingGroup.getContainingSpaces().add(rs);
-                    rs.update();
 
                     // Add the working group to the campaign
                     Campaign c = Campaign.read(cid);
@@ -318,6 +314,19 @@ public class WorkingGroups extends Controller {
                     rsC.addWorkingGroup(newWorkingGroup);
                     newWorkingGroup.getContainingSpaces().add(rsC);
                     rsC.update();
+
+                    // Add the working group to the assembly
+                    ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
+                    rs.addWorkingGroup(newWorkingGroup);
+                    newWorkingGroup.getContainingSpaces().add(rs);
+                    rs.update();
+
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
+                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+                    newWorkingGroup.refresh();
+
+
+
 
                     newWorkingGroup.refresh();
 
@@ -329,13 +338,13 @@ public class WorkingGroups extends Controller {
                     }
 
 
-                    WorkingGroup finalNewWorkingGroup = newWorkingGroup;
+                    /*WorkingGroup finalNewWorkingGroup = newWorkingGroup;
                     Promise.promise(() -> {
                         return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN,
                                 NotificationEventName.NEW_WORKING_GROUP,
                                 c,
                                 finalNewWorkingGroup);
-                    });
+                    });*/
 
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
@@ -412,12 +421,12 @@ public class WorkingGroups extends Controller {
                 responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
                         + newWorkingGroup.getGroupId());
             }
-            Promise.promise(() -> {
+           /* Promise.promise(() -> {
                 return NotificationsDelegate.signalNotification(
                         ResourceSpaceTypes.WORKING_GROUP,
                         NotificationEventName.UPDATED_WORKING_GROUP,
                         Assembly.read(aid).getResources(), newWorkingGroup);
-            });
+            });*/
 
             return ok(Json.toJson(responseBody));
         }
@@ -656,9 +665,9 @@ public class WorkingGroups extends Controller {
         //Archive previous ballot
         currentBallot.setStatus(BallotStatus.ARCHIVED);
 
-        Promise.promise(() -> {
+       /* Promise.promise(() -> {
             return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.NEW_VOTING_BALLOT, workingGroup, workingGroup);
-        });
+        });*/
 
         return ok(Json.toJson(newBallot));
     }
@@ -684,7 +693,7 @@ public class WorkingGroups extends Controller {
         Ballot ballot = Ballot.findByUUID(consensus);
         ballot.setStatus(BallotStatus.ARCHIVED);
         ballot.update();
-        Promise.promise(() -> {
+        /*Promise.promise(() -> {
             return NotificationsDelegate.signalNotification(
                     ResourceSpaceTypes.WORKING_GROUP,
                     NotificationEventName.UPDATED_VOTING_BALLOT,
@@ -697,7 +706,7 @@ public class WorkingGroups extends Controller {
                     NotificationEventName.UPDATED_VOTING_BALLOT,
                     Assembly.read(aid).getResources(),
                     workingGroup);
-        });
+        });*/
         return ok(Json.toJson(ballot));
     }
 
@@ -777,19 +786,20 @@ public class WorkingGroups extends Controller {
             workingGroup.update();
             for (Contribution contribution : selectedContributionsList) {
                 ContributionHistory.createHistoricFromContribution(contribution);
-                Promise.promise(() -> {
+                /*Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
                             ResourceSpaceTypes.WORKING_GROUP,
                             NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
                             workingGroup.getResources(),
                             contribution);
-                });
+                });*/
             }
 
 
 
             return ok(Json.toJson(workingGroup));
         } catch (Exception e) {
+            e.printStackTrace();
             return badRequest(Json.toJson(Json
                     .toJson(new TransferResponseStatus("Error processing request"))));
         }
