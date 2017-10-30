@@ -34,7 +34,7 @@ public class NewsletterCreatorSchedule extends DailySchedule {
                 SpaceTypes.CAMPAIGN, SpaceTypes.IDEA);
         for (Subscription sub : subscriptionList) {
             String spaceId = sub.getSpaceId();
-            Boolean newRequired = NotificationsDelegate.checkIfNewNewslatterIsRequired(spaceId);
+            Boolean newRequired = NotificationsDelegate.checkIfNewNewsletterIsRequired(spaceId);
             if (newRequired) {
                 Campaign campaign = Campaign.readByUUID(UUID.fromString(spaceId));
                 try {
