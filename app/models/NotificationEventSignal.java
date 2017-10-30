@@ -1,10 +1,10 @@
 package models;
 
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import enums.SpaceTypes;
-import enums.SubscriptionTypes;
+import enums.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.*;
@@ -14,9 +14,6 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -160,6 +157,25 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 
 	public static List<NotificationEventSignal> findAll() {
 		return find.all();
+	}
+
+	public static List<NotificationEventSignal> findByOriginUuid(String spaceId) {
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalTyoe", SubscriptionTypes.REGULAR.name())
+				.orderBy("creation desc");
+		return q.findPagedList(0, 1).getList();
+	}
+
+	public static List<NotificationEventSignal> findLatestByOriginUuid(String spaceId, Integer days) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, - days);
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalTyoe", SubscriptionTypes.REGULAR.name())
+				.ge("creation", calendar.getTime())
+				.orderBy("creation desc");
+		return q.findList();
 	}
 
 	public static NotificationEventSignal create(NotificationEventSignal notification) {
