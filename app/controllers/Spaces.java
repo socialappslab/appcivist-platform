@@ -2,6 +2,8 @@ package controllers;
 
 
 import static play.data.Form.form;
+
+import enums.*;
 import http.Headers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -78,16 +80,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 
 import delegates.NotificationsDelegate;
-import enums.BallotCandidateTypes;
-import enums.BallotStatus;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.EntityTypes;
-import enums.NotificationEventName;
-import enums.ResourceSpaceAssociationTypes;
-import enums.ResourceSpaceTypes;
-import enums.ResponseStatus;
-import enums.ThemeTypes;
 
 @Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
@@ -1067,7 +1059,7 @@ public class Spaces extends Controller {
                 }
 
                 F.Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(resourceSpace.getType(), NotificationEventName.NEW_VOTING_BALLOT, resourceSpace, resourceSpace);
+                    return NotificationsDelegate.signalNotification(resourceSpace.getType(), NotificationEventName.NEW_VOTING_BALLOT, resourceSpace, resourceSpace, SubscriptionTypes.REGULAR, null);
                 });
 
                 return ok(Json.toJson(newBallot));
@@ -1985,7 +1977,7 @@ public class Spaces extends Controller {
                 resourceSpace.getCampaigns().add(updatedCampaign);
                 resourceSpace.update();
                 F.Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, resourceSpace, updatedCampaign);
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.UPDATED_CAMPAIGN, resourceSpace, updatedCampaign, SubscriptionTypes.REGULAR, null);
                 });
 
                 return ok(Json.toJson(updatedCampaign));
