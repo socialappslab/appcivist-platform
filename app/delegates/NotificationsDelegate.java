@@ -246,12 +246,12 @@ public class NotificationsDelegate {
     public static Object newNewsletterInCampaign(Campaign origin, UUID userId) throws ConfigurationException {
         NotificationEventName eventName = NotificationEventName.NEWSLETTER;
         User user = User.findByUUID(userId);
-        return signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, origin, null, SubscriptionTypes.NEWSLETTER, user);
+        return signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, origin, origin, SubscriptionTypes.NEWSLETTER, user);
     }
     public static Object newNewsletterInWorkingGroup(WorkingGroup origin, UUID userId) throws ConfigurationException {
         NotificationEventName eventName = NotificationEventName.NEWSLETTER;
         User user = User.findByUUID(userId);
-        return signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, origin, null, SubscriptionTypes.NEWSLETTER, user);
+        return signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, origin, origin, SubscriptionTypes.NEWSLETTER, user);
     }
 
     /**
