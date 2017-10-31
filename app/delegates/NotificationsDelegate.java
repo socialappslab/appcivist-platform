@@ -1007,7 +1007,7 @@ public class NotificationsDelegate {
         return newsletterFrecuency;
     }
 
-    public static Boolean checkIfNewNewslatterIsRequired(String spaceId) {
+    public static Boolean checkIfNewNewsletterIsRequired(String spaceId) {
         Integer newsletterFrecuency = getNewsletterFrecuency(UUID.fromString(spaceId));
         List<NotificationEventSignal> list = NotificationEventSignal.findByOriginUuid(spaceId);
         if (list == null || list.isEmpty()) {
@@ -1140,6 +1140,7 @@ public class NotificationsDelegate {
             } else if(stage.equals(ComponentTypes.PROPOSALS)) {
                 List<Map<String, Object>> contributionsFormated = new ArrayList<>();
                 List<String> developingProposals = new ArrayList<>();
+                List<String> updates = new ArrayList<>();
                 for (WorkingGroup wg: campaign.getWorkingGroups()) {
                     if (wg.getMembers().stream()
                             .anyMatch(t -> t.getUser().getUserId().equals(user.getUserId()))) {
@@ -1161,10 +1162,14 @@ public class NotificationsDelegate {
                         toRet.put("newProposals", contributionsFormated);
                         toRet.put("developingProposals", developingProposals);
                         break;
+                    } else {
+                        updates.addAll(NotificationEventSignal
+                                .findLatesWGtBySpaceUuid(wg.getUuid().toString(), newsletterFrecuency)
+                                .stream().map(NotificationEventSignal::getTitle).collect(Collectors.toList()));
                     }
 
                 }
-                campaign.getWorkingGroups();
+                toRet.put("updatedWG", updates);
             }
         }
         return toRet;
