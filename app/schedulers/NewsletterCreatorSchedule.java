@@ -1,12 +1,14 @@
 package schedulers;
 
 import akka.actor.ActorSystem;
+import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import delegates.NotificationsDelegate;
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
 import exceptions.ConfigurationException;
 import models.Campaign;
 import models.Subscription;
+import models.WorkingGroup;
 import play.Logger;
 import scala.concurrent.ExecutionContext;
 
@@ -15,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
+ * Automatically create newsletter from {@link Campaign} or {@link WorkingGroup}
+ * each 7 or configured amount of days.
  * Created by yohanna on 28/10/17.
  */
 public class NewsletterCreatorSchedule extends DailySchedule {
@@ -31,14 +35,19 @@ public class NewsletterCreatorSchedule extends DailySchedule {
     public void executeProcess() {
 
         List<Subscription> subscriptionList = Subscription.findBySubscriptionAndSpaceType(SubscriptionTypes.NEWSLETTER,
-                SpaceTypes.CAMPAIGN, SpaceTypes.IDEA);
+                SpaceTypes.CAMPAIGN, SpaceTypes.WORKING_GROUP);
         for (Subscription sub : subscriptionList) {
             String spaceId = sub.getSpaceId();
             Boolean newRequired = NotificationsDelegate.checkIfNewNewsletterIsRequired(spaceId);
             if (newRequired) {
-                Campaign campaign = Campaign.readByUUID(UUID.fromString(spaceId));
                 try {
-                    NotificationsDelegate.newNewsletterInCampaign(campaign, UUID.fromString(sub.getUserId()));
+                    if(sub.getSpaceType().equals(SpaceTypes.CAMPAIGN)) {
+                        Campaign campaign = Campaign.readByUUID(UUID.fromString(spaceId));
+                        NotificationsDelegate.newNewsletterInCampaign(campaign, UUID.fromString(sub.getUserId()));
+                    } else {
+                        WorkingGroup workingGroup = WorkingGroup.readByUUID(UUID.fromString(spaceId));
+                        NotificationsDelegate.newNewsletterInWorkingGroup(workingGroup, UUID.fromString(sub.getUserId()));
+                    }
                 } catch (ConfigurationException e) {
                     Logger.error("Error creating newsletter", e);
                 }

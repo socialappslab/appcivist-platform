@@ -244,10 +244,14 @@ public class NotificationsDelegate {
     }
 
     public static Object newNewsletterInCampaign(Campaign origin, UUID userId) throws ConfigurationException {
-        ResourceSpaceTypes originType = ResourceSpaceTypes.CAMPAIGN;
         NotificationEventName eventName = NotificationEventName.NEWSLETTER;
         User user = User.findByUUID(userId);
-        return signalNotification(originType, eventName, origin, null, SubscriptionTypes.NEWSLETTER, user);
+        return signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, origin, null, SubscriptionTypes.NEWSLETTER, user);
+    }
+    public static Object newNewsletterInWorkingGroup(WorkingGroup origin, UUID userId) throws ConfigurationException {
+        NotificationEventName eventName = NotificationEventName.NEWSLETTER;
+        User user = User.findByUUID(userId);
+        return signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, origin, null, SubscriptionTypes.NEWSLETTER, user);
     }
 
     /**
@@ -996,33 +1000,40 @@ public class NotificationsDelegate {
     static Model.Finder<Long, NotificationEventSignal> finder = new Model.Finder<>(
             NotificationEventSignal.class);
 
-    private static Integer getNewsletterFrecuency(UUID uuid) {
-        Integer newsletterFrecuency = Integer.valueOf(GlobalDataConfigKeys.CONFIG_DEFAULTS
+    /**
+     * Returns the frequency, in number of days, to send the newsletter for the given uuid
+     * If none frequency is configured then returns the default value: 7 days
+     * @param uuid: space id
+     * @return newsletterFrequency
+     */
+    private static Integer getNewsletterFrequency(UUID uuid) {
+        Integer newsletterFrequency = Integer.valueOf(GlobalDataConfigKeys.CONFIG_DEFAULTS
                 .get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY));
         List<Config> config = Config.findByCampaignAndKey(uuid,
                 GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY);
         if (config != null && !config.isEmpty()) {
-            newsletterFrecuency = Integer.valueOf(config.get(0).getValue());
+            newsletterFrequency = Integer.valueOf(config.get(0).getValue());
         }
-        return newsletterFrecuency;
+        return newsletterFrequency;
     }
 
+    /**
+     * Returns True if the last {@link NotificationEventSignal} from the given space UUID
+     * was before getNewsletterFrequency amount of days, else False.
+     * If there is no {@link NotificationEventSignal} returns True, too
+     * @param spaceId: space id
+     * @return
+     */
     public static Boolean checkIfNewNewsletterIsRequired(String spaceId) {
-        Integer newsletterFrecuency = getNewsletterFrecuency(UUID.fromString(spaceId));
+        Integer newsletterFrequency = getNewsletterFrequency(UUID.fromString(spaceId));
         List<NotificationEventSignal> list = NotificationEventSignal.findByOriginUuid(spaceId);
         if (list == null || list.isEmpty()) {
             return true;
         } else {
             NotificationEventSignal event = list.get(0);
-            List<Config> config = Config.findByCampaignAndKey(UUID.fromString(spaceId),
-                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY);
-            if (config != null && !config.isEmpty()) {
-                newsletterFrecuency = Integer.valueOf(config.get(0).getValue());
-            }
-
             long diff = new Date().getTime() - event.getCreation().getTime();
             long days =  TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
-            return days > newsletterFrecuency;
+            return days > newsletterFrequency;
         }
     }
 
@@ -1088,14 +1099,22 @@ public class NotificationsDelegate {
         return null;
     }
 
+    /**
+     * Returns a Map object with the template of the newsletter acording to the type of
+     * {@link Campaign}
+     * @param spaceType
+     * @param spaceID
+     * @param user
+     * @return
+     */
     private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType, UUID spaceID, User user) {
         Map<String, Object> toRet = new HashMap<>();
-        Integer newsletterFrecuency = getNewsletterFrecuency(spaceID);
+        Integer newsletterFrequency = getNewsletterFrequency(spaceID);
         if(spaceType.equals(ResourceSpaceTypes.CAMPAIGN.name())) {
             Campaign campaign = Campaign.readByUUID(spaceID);
             ComponentTypes stage = Component.getCurrentComponentType(campaign.getCampaignId());
             List<NotificationEventSignal> notificationEventSignals = NotificationEventSignal
-                    .findLatestByOriginUuid(spaceID.toString(), newsletterFrecuency);
+                    .findLatestByOriginUuid(spaceID.toString(), newsletterFrequency);
             toRet.put("campaignName", campaign.getTitle());
 
             //Campaign without Activity
@@ -1123,7 +1142,7 @@ public class NotificationsDelegate {
             } else if (stage.equals(ComponentTypes.IDEAS)) {
 
                 List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
-                        newsletterFrecuency);
+                        newsletterFrequency);
                 List<Map<String, Object>> contributionsFormated = new ArrayList<>();
                 for(Contribution con: contributions) {
                     Map<String, Object> cont = new HashMap<>();
@@ -1147,7 +1166,7 @@ public class NotificationsDelegate {
                         toRet.put("workingGroupName", wg.getName());
                         for(Contribution proposal: wg.getProposals()) {
                             Calendar calendar = Calendar.getInstance();
-                            calendar.add(Calendar.DAY_OF_MONTH, - newsletterFrecuency);
+                            calendar.add(Calendar.DAY_OF_MONTH, - newsletterFrequency);
 
                             if (proposal.getCreation().after(calendar.getTime())) {
                                 Map<String, Object> cont = new HashMap<>();
@@ -1164,7 +1183,7 @@ public class NotificationsDelegate {
                         break;
                     } else {
                         updates.addAll(NotificationEventSignal
-                                .findLatesWGtBySpaceUuid(wg.getUuid().toString(), newsletterFrecuency)
+                                .findLatesWGtBySpaceUuid(wg.getUuid().toString(), newsletterFrequency)
                                 .stream().map(NotificationEventSignal::getTitle).collect(Collectors.toList()));
                     }
 

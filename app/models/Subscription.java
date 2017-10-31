@@ -186,7 +186,6 @@ public class Subscription extends Model {
                             com.avaje.ebean.Expr.eq("spaceType", space2)
                         )
                         .query();
-        List<Subscription> membs = q.findList();
-        return membs;
+        return q.findList();
     }
 }
