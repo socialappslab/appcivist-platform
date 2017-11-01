@@ -60,12 +60,10 @@ public abstract class DailySchedule {
 
     public abstract void executeProcess();
 
-    protected int getConfigOrElse(String key, int def) {
+    int getConfigOrElse(String key, int def) {
         com.typesafe.config.Config config = ConfigFactory.load();
-        int aRet = def;
         try {
-            aRet = config.getInt(key);
-            return aRet;
+            return config.getInt(key);
         } catch (ConfigException.Missing e) {
             return def;
         }
