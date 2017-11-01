@@ -1,6 +1,8 @@
 package schedulers;
 
 import akka.actor.ActorSystem;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
@@ -57,4 +59,13 @@ public abstract class DailySchedule {
     }
 
     public abstract void executeProcess();
+
+    protected int getConfigOrElse(String key, int def) {
+        com.typesafe.config.Config config = ConfigFactory.load();
+        try {
+            return config.getInt(key);
+        } catch (ConfigException.Missing e) {
+            return def;
+        }
+    }
 }

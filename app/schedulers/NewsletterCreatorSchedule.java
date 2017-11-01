@@ -1,9 +1,6 @@
 package schedulers;
 
 import akka.actor.ActorSystem;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
-import com.typesafe.config.ConfigFactory;
 import delegates.NotificationsDelegate;
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
@@ -27,18 +24,11 @@ public class NewsletterCreatorSchedule extends DailySchedule {
 
     @Inject
     public NewsletterCreatorSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
-        Config config = ConfigFactory.load();
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
-        int hour, minute;
-        try {
-            hour = config.getInt("appcivist.schedule.newsletter.hour");
-            minute = config.getInt("appcivist.schedule.newsletter.minute");
-        } catch (ConfigException.Missing e) {
-            hour = 16;
-            minute = 0;
-        }
-        this.initialize(hour, minute, "NewsletterCreator");
+        this.initialize(getConfigOrElse("appcivist.schedule.newsletter.hour", 16),
+                getConfigOrElse("appcivist.schedule.newsletter.hour", 0),
+                "NewsletterCreator");
     }
 
     @Override
