@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -162,7 +163,7 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	public static List<NotificationEventSignal> findByOriginUuid(String spaceId) {
 		ExpressionList<NotificationEventSignal> q = find.where();
 		q.eq("data->>'origin'", spaceId)
-				.eq("signalType", SubscriptionTypes.REGULAR.name())
+				.eq("signalType", SubscriptionTypes.NEWSLETTER.name())
 				.orderBy("creation desc");
 		return q.findPagedList(0, 1).getList();
 	}
@@ -171,6 +172,18 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.DAY_OF_MONTH, - days);
 		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalType", SubscriptionTypes.REGULAR.name())
+				.ge("creation", calendar.getTime())
+				.orderBy("creation desc");
+		return q.findList();
+	}
+	public static List<NotificationEventSignal> findLatestIdeasByOriginUuid(String spaceId, Integer days) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, - days);
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.or(com.avaje.ebean.Expr.eq("eventId", NotificationEventName.UPDATED_CONTRIBUTION_IDEA),
+				com.avaje.ebean.Expr.eq("eventId", NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL));
 		q.eq("data->>'origin'", spaceId)
 				.eq("signalType", SubscriptionTypes.REGULAR.name())
 				.ge("creation", calendar.getTime())

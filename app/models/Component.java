@@ -411,11 +411,11 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	public static ComponentTypes getCurrentComponentType(Long campaignId) {
 		ExpressionList<Component> campaignPhases = find.where()
 				.eq("containingSpaces.campaign.campaignId", campaignId)
-				.le("endDate", new Date())
-				.ge("startDate", new Date());
+				.ge("endDate", new Date())
+				.le("startDate", new Date());
 		List<Component> campaignPhaseList = campaignPhases
 				.orderBy("startDate asc")
-				.findPagedList(0, 1).getList();
+				.findList();
 		if (campaignPhaseList == null || campaignPhaseList.isEmpty()) {
 			return null;
 		} else {

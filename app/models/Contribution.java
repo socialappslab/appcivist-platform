@@ -1523,7 +1523,7 @@ public class Contribution extends AppCivistBaseModel {
         calendar.add(Calendar.DAY_OF_MONTH, - days);
         return find.where()
                 .eq("containingSpaces.resourceSpaceId", rs.getResourceSpaceId())
-                .eq("type", ContributionTypes.IDEA.name())
+                .eq("type", ContributionTypes.IDEA)
                 .ge("creation", calendar.getTime())
                 .findList();
     }

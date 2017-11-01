@@ -1,7 +1,6 @@
 package schedulers;
 
 import akka.actor.ActorSystem;
-import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import delegates.NotificationsDelegate;
 import enums.SpaceTypes;
 import enums.SubscriptionTypes;
@@ -28,7 +27,7 @@ public class NewsletterCreatorSchedule extends DailySchedule {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
-        this.initialize(18, 53, "NewsletterCreator");
+        this.initialize(0, 0, "NewsletterCreator");
     }
 
     @Override
@@ -41,6 +40,7 @@ public class NewsletterCreatorSchedule extends DailySchedule {
             Boolean newRequired = NotificationsDelegate.checkIfNewNewsletterIsRequired(spaceId);
             if (newRequired) {
                 try {
+                    Logger.info("Newsletter Creator Scheduler for uuid " +spaceId);
                     if(sub.getSpaceType().equals(SpaceTypes.CAMPAIGN)) {
                         Campaign campaign = Campaign.readByUUID(UUID.fromString(spaceId));
                         NotificationsDelegate.newNewsletterInCampaign(campaign, UUID.fromString(sub.getUserId()));

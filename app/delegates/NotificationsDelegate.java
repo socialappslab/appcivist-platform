@@ -510,6 +510,25 @@ public class NotificationsDelegate {
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
+            case NEWSLETTER:
+                switch (originType) {
+                    case CAMPAIGN:
+                        resourceUuid = ((Campaign) resource).getUuid();
+                        resourceTitle = ((Campaign) resource).getTitle();
+                        resourceText = ((Campaign) resource).getGoal();
+                        resourceDate = resource.getLastUpdate();
+                        resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
+                        title = "[AppCivist] New Newsletter for " + resourceType;
+                        break;
+                    case WORKING_GROUP:
+                        resourceUuid = ((WorkingGroup) resource).getUuid();
+                        resourceTitle = ((WorkingGroup) resource).getName();
+                        resourceText = ((WorkingGroup) resource).getText();
+                        resourceDate = resource.getCreation();
+                        resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
+                        title = "[AppCivist] New Newsletter for " + resourceType;
+                        break;
+                }
             default:
                 break;
         }
@@ -1110,86 +1129,94 @@ public class NotificationsDelegate {
     private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType, UUID spaceID, User user) {
         Map<String, Object> toRet = new HashMap<>();
         Integer newsletterFrequency = getNewsletterFrequency(spaceID);
-        if(spaceType.equals(ResourceSpaceTypes.CAMPAIGN.name())) {
-            Campaign campaign = Campaign.readByUUID(spaceID);
-            ComponentTypes stage = Component.getCurrentComponentType(campaign.getCampaignId());
-            List<NotificationEventSignal> notificationEventSignals = NotificationEventSignal
-                    .findLatestByOriginUuid(spaceID.toString(), newsletterFrequency);
-            toRet.put("campaignName", campaign.getTitle());
+        switch (spaceType) {
+            case CAMPAIGN:
+                Campaign campaign = Campaign.readByUUID(spaceID);
+                ComponentTypes stage = Component.getCurrentComponentType(campaign.getCampaignId());
+                List<NotificationEventSignal> notificationEventSignals = NotificationEventSignal
+                        .findLatestByOriginUuid(spaceID.toString(), newsletterFrequency);
+                toRet.put("campaignName", campaign.getTitle());
 
-            //Campaign without Activity
-            if (notificationEventSignals.isEmpty()) {
-                toRet.put("campaignNewsletterDescription",campaign.getGoal());
-                if (stage!=null) {
-                    toRet.put("stageName", stage.name());
-                }
-                List<String> themes = campaign.getThemes().stream()
-                        .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
-                        .map(Theme::getTitle).collect(Collectors.toList());
-                toRet.put("themes", themes);
-                List<String> workingGroups = campaign.getWorkingGroups().stream().map(WorkingGroup::getName)
-                        .collect(Collectors.toList());
-                toRet.put("workingGroups", workingGroups);
-                List<Map<String, Object>> resourcesFormated = new ArrayList<>();
-                for(Resource con: campaign.getResourceList()) {
-                    Map<String, Object> cont = new HashMap<>();
-                    cont.put("title", con.getTitle());
-                    cont.put("link", con.getUrlLargeString());
-                    resourcesFormated.add(cont);
-                }
-                toRet.put("resources", resourcesFormated);
-            //Campaign in Idea Collection Stage
-            } else if (stage.equals(ComponentTypes.IDEAS)) {
-
-                List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
-                        newsletterFrequency);
-                List<Map<String, Object>> contributionsFormated = new ArrayList<>();
-                for(Contribution con: contributions) {
-                    Map<String, Object> cont = new HashMap<>();
-                    cont.put("ideaTitle", con.getTitle());
-                    cont.put("user", con.getFirstAuthorName());
-                    contributionsFormated.add(cont);
-                }
-                toRet.put("newIdeas", contributionsFormated);
-                List<String> updatedIdeas = notificationEventSignals.stream().map(NotificationEventSignal
-                        ::getTitle)
-                        .collect(Collectors.toList());
-                toRet.put("updatedIdeas", updatedIdeas);
-                //Campaign in Proposal Stage
-            } else if(stage.equals(ComponentTypes.PROPOSALS)) {
-                List<Map<String, Object>> contributionsFormated = new ArrayList<>();
-                List<String> developingProposals = new ArrayList<>();
-                List<String> updates = new ArrayList<>();
-                for (WorkingGroup wg: campaign.getWorkingGroups()) {
-                    if (wg.getMembers().stream()
-                            .anyMatch(t -> t.getUser().getUserId().equals(user.getUserId()))) {
-                        toRet.put("workingGroupName", wg.getName());
-                        for(Contribution proposal: wg.getProposals()) {
-                            Calendar calendar = Calendar.getInstance();
-                            calendar.add(Calendar.DAY_OF_MONTH, - newsletterFrequency);
-
-                            if (proposal.getCreation().after(calendar.getTime())) {
-                                Map<String, Object> cont = new HashMap<>();
-                                cont.put("proposalTitle", proposal.getTitle());
-                                cont.put("user", proposal.getFirstAuthorName());
-                                contributionsFormated.add(cont);
-                            }
-                            if (proposal.getStatus().equals(ContributionStatus.DRAFT)) {
-                                developingProposals.add(proposal.getTitle());
-                            }
-                        }
-                        toRet.put("newProposals", contributionsFormated);
-                        toRet.put("developingProposals", developingProposals);
-                        break;
-                    } else {
-                        updates.addAll(NotificationEventSignal
-                                .findLatesWGtBySpaceUuid(wg.getUuid().toString(), newsletterFrequency)
-                                .stream().map(NotificationEventSignal::getTitle).collect(Collectors.toList()));
+                //Campaign without Activity
+                if (notificationEventSignals.isEmpty()) {
+                    toRet.put("campaignNewsletterDescription",campaign.getGoal());
+                    if (stage!=null) {
+                        toRet.put("stageName", stage.name());
                     }
+                    List<String> themes = campaign.getThemes().stream()
+                            .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
+                            .map(Theme::getTitle).collect(Collectors.toList());
+                    toRet.put("themes", themes);
+                    List<String> workingGroups = campaign.getWorkingGroups().stream().map(WorkingGroup::getName)
+                            .collect(Collectors.toList());
+                    toRet.put("workingGroups", workingGroups);
+                    List<Map<String, Object>> resourcesFormated = new ArrayList<>();
+                    for(Resource con: campaign.getResourceList()) {
+                        Map<String, Object> cont = new HashMap<>();
+                        cont.put("title", con.getTitle());
+                        cont.put("link", con.getUrlLargeString());
+                        resourcesFormated.add(cont);
+                    }
+                    toRet.put("resources", resourcesFormated);
+                //Campaign in Idea Collection Stage
+                } else if (stage == null) {
+                    return toRet;
+                } else if (stage.equals(ComponentTypes.IDEAS)) {
 
+                    List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
+                            newsletterFrequency);
+                    List<Map<String, Object>> contributionsFormated = new ArrayList<>();
+                    for(Contribution con: contributions) {
+                        Map<String, Object> cont = new HashMap<>();
+                        cont.put("ideaTitle", con.getTitle());
+                        cont.put("user", con.getFirstAuthorName());
+                        contributionsFormated.add(cont);
+                    }
+                    toRet.put("newIdeas", contributionsFormated);
+                    List<NotificationEventSignal> updatedIdeas = NotificationEventSignal
+                            .findLatestIdeasByOriginUuid(spaceID.toString(), newsletterFrequency);
+                    List<String> updatedIdeasFormat = updatedIdeas.stream().map(NotificationEventSignal
+                            ::getTitle)
+                            .collect(Collectors.toList());
+                    toRet.put("updatedIdeas", updatedIdeasFormat);
+                    //Campaign in Proposal Stage
+                } else if(stage.equals(ComponentTypes.PROPOSALS)) {
+                    List<Map<String, Object>> contributionsFormated = new ArrayList<>();
+                    List<String> developingProposals = new ArrayList<>();
+                    List<String> updates = new ArrayList<>();
+                    for (WorkingGroup wg: campaign.getWorkingGroups()) {
+                        if (wg.getMembers().stream()
+                                .anyMatch(t -> t.getUser().getUserId().equals(user.getUserId()))) {
+                            toRet.put("workingGroupName", wg.getName());
+                            for(Contribution proposal: wg.getProposals()) {
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.add(Calendar.DAY_OF_MONTH, - newsletterFrequency);
+
+                                if (proposal.getCreation().after(calendar.getTime())) {
+                                    Map<String, Object> cont = new HashMap<>();
+                                    cont.put("proposalTitle", proposal.getTitle());
+                                    cont.put("user", proposal.getFirstAuthorName());
+                                    contributionsFormated.add(cont);
+                                }
+                                if (proposal.getStatus().equals(ContributionStatus.DRAFT)) {
+                                    developingProposals.add(proposal.getTitle());
+                                }
+                            }
+                            toRet.put("newProposals", contributionsFormated);
+                            toRet.put("developingProposals", developingProposals);
+                            break;
+                        } else {
+                            updates.addAll(NotificationEventSignal
+                                    .findLatesWGtBySpaceUuid(wg.getUuid().toString(), newsletterFrequency)
+                                    .stream().map(NotificationEventSignal::getTitle).collect(Collectors.toList()));
+                        }
+
+                    }
+                    toRet.put("updatedWG", updates);
                 }
-                toRet.put("updatedWG", updates);
-            }
+                break;
+            default:
+                break;
         }
         return toRet;
     }
