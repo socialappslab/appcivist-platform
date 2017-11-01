@@ -26,11 +26,9 @@ public class BallotCreationSchedule extends DailySchedule {
     public BallotCreationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
-
-        Integer hour = 0;
-        Integer minute = 0;
         String processName = "Ballot Creation";
-        this.initialize(hour, minute, processName);
+        this.initialize(getConfigOrElse("appcivist.schedule.ballotCreation.hour",0),
+                getConfigOrElse("appcivist.schedule.ballotCreation.minute",0), processName);
     }
 
     @Override
