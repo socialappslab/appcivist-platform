@@ -39,6 +39,7 @@ import providers.GroupSignupIdentity;
 import providers.InvitationSignupIdentity;
 import providers.LanguageSignupIdentity;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.security.HashGenerationException;
 import utils.security.HashGeneratorUtils;
 import be.objectify.deadbolt.core.models.Permission;
@@ -600,13 +601,39 @@ public class User extends AppCivistBaseModel implements Subject {
 					ma.setCreator(assembly.getCreator());
 					ma.setUser(user);
 					ma.setStatus(MembershipStatus.ACCEPTED);
-					ma.setLang(assembly.getLang());
-					System.out.println("Entro");
-					List<SecurityRole> roles = new ArrayList<SecurityRole>();
+					ma.setLang(user.getLang());
+					List<SecurityRole> roles = new ArrayList<>();
 					roles.add(SecurityRole.findByName("MEMBER"));
 					ma.setRoles(roles);
-
 					MembershipAssembly.create(ma);
+
+					/*
+					 * 12. If assembly is configured to join new members into specific Working Grops automatically
+					 *     create group memberships
+					 */
+
+					Config c = assembly.getResources().getConfigByKey(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS);
+					if (c!=null) {
+						String autoWgsList = c.getValue();
+						List<String> wgNames = Arrays.asList(autoWgsList.split(","));
+
+						for (String wgName: wgNames) {
+							WorkingGroup wg = WorkingGroup.readByName(wgName.trim());
+							if (wg!=null) {
+								// Add the user as a members with roles MEMBER
+								MembershipGroup mg = new MembershipGroup();
+								mg.setWorkingGroup(wg);
+								mg.setCreator(assembly.getCreator());
+								mg.setUser(user);
+								mg.setStatus(MembershipStatus.ACCEPTED);
+								mg.setLang(user.getLang());
+								roles = new ArrayList<>();
+								roles.add(SecurityRole.findByName("MEMBER"));
+								mg.setRoles(roles);
+								MembershipGroup.create(mg);
+							}
+						}
+					}
 				}
 			}
 		}

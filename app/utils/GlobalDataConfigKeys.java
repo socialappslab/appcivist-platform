@@ -28,8 +28,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_MEMBERSHIP_INVITATION_BY_MEMBERS = "appcivist.assembly.membership-invitation-by-members"; // if TRUE, regular members can invite other users to join, otherwise only COORDINATORS have this right
 	public static final String APPCIVIST_ASSEMBLY_MEMBERSHIP_TYPE = "appcivist.assembly.membership-type"; // REGISTRATION (other users ask to join), INVITATION (members invite other users) or INVITATION_AND_REGISTRATION. 
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION = "appcivist.assembly.enable-social-ideation"; // FALSE DEFAULT
-
-	
+	public static final String APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS = "appcivist.assembly.auto-membership-working-groups"; // Name of groups separated by comma
+	public static final String APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS_ALL = "appcivist.assembly.auto-membership-working-groups-all"; // Default FALSE
 	// Campaign Level Configuration Keys
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.campaign.contribution-type-principal"; // what type of contribution is the displayed at the center of the page if a timeline with components is disabled (e.g., these campaigns is centered around PROPOSALS or IDEAS)    
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPES = "appcivist.campaign.contribution-types"; // and array that contains the list of contribution TYPES collected in this campaign (IDEA, PROPOSAL, NOTE, etc.)  
@@ -43,7 +43,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_DISABLE_PUBLIC_DISCUSSIONS = "appcivist.campaign.disable-public-discussions"; // if TRUE, the comment sections is hidden in public site
 	public static final String APPCIVIST_CAMPAIGN_DISABLE_PUBLIC_SITE = "appcivist.campaign.disable-public-site"; // if TRUE, the campaign does not have a public site
 	public static final String APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD = "appcivist.campaign.extended-feedback-password"; // if TRUE, extended feedback is disabled 
-	public static final String APPCIVIST_CAMPAIGN_HIDE_TIMELINE = "appcivist.campaign.hide-timeline"; // if TRUE, the timeline of the campaign is hidden and the campaign has only one stage
+	public static final String APPCIVIST_CAMPAIGN_HIDE_TIMELINE = "appcivist.campaign.hide-timeline"; // if TRUappcivist.assembly.disable-new-membershipsE, the timeline of the campaign is hidden and the campaign has only one stage
 	public static final String APPCIVIST_CAMPAIGN_SHOW_ASSEMBLY_LOGO = "appcivist.campaign.show-assembly-logo"; // if TRUE, show the assembly logo in the campaign dashboard
 	public static final String APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS = "appcivist.campaign.proposal-default-status"; // NEW or PUBLISHED
 	public static final String APPCIVIST_CAMPAIGN_FEEDBACK_HIDDEN_FIELDS = "appcivist.campaign.feedback.hidden-fields"; // EMPTY DEFAULT
