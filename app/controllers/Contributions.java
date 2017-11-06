@@ -1602,23 +1602,12 @@ public class Contributions extends Controller {
 
             Ebean.beginTransaction();
             try {
-                feedback.setContribution(contribution);
-                if (social_ideation_author != null){
-                    feedback.setUserId(social_ideation_author.getUserId());
-                } else if (non_member_author != null){
-                    feedback.setNonMemberAuthor(non_member_author);
-                } else {
-                    feedback.setUserId(author.getUserId());
-                }
-
                 //If we found a previous feedback, we set that feedback as archived
                 if (existingFeedbacks != null) {
                     for (ContributionFeedback existingFeedback : existingFeedbacks) {
                         existingFeedback.setArchived(true);
                         existingFeedback.update();
                     }
-
-
                 }
 
                 // We have to do some authorization control
@@ -1642,28 +1631,9 @@ public class Contributions extends Controller {
                 }
 
                 // Make sure ContributionFeedback Type and Status are correct
+                // And remove the id if there is one
+                feedback.setId(null);
                 ContributionFeedback.create(feedback);
-
-                //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
-              /*  NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
-                Promise.promise(() -> {
-                    Contribution c = Contribution.read(feedback.getContributionId());
-                    for (Long campId : c.getCampaignIds()) {
-                        Campaign campaign = Campaign.read(campId);
-                            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
-                    }
-                    return true;
-                });*/
-
-               /* feedback.getWorkingGroupId();
-                Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(
-                            ResourceSpaceTypes.WORKING_GROUP,
-                            eventName,
-                            WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
-                            feedback);
-                });*/
-
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
                 ContributionHistory.createHistoricFromContribution(contribution);
