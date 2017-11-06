@@ -1128,14 +1128,19 @@ public class Contributions extends Controller {
                                 ResponseStatus.SERVERERROR,
                                 "Error when creating Contribution: " + e.toString())));
             }
+            Ebean.commitTransaction();
+            c.refresh();
             if (c != null) {
-                rs.addContribution(c);
+                rs.getContributions().add(c);
                 rs.update();
-
-
             }
 
-            Ebean.commitTransaction();
+            // Add contribution to workingGroupAuthors resource spaces
+            for (WorkingGroup wgroup: newContribution.getWorkingGroupAuthors()) {
+                WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
+                g.getResources().getContributions().add(c);
+                g.getResources().update();
+            }
 
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
@@ -2357,7 +2362,8 @@ public class Contributions extends Controller {
                                                   ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
 
         newContrib.setType(type);
-        
+        List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
+
         // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
             List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
@@ -2415,7 +2421,8 @@ public class Contributions extends Controller {
 	        Logger.info("Using Etherpad server at: " + etherpadServerUrl);
 	        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         }
-        
+
+
         Boolean addIdeaToProposals = false;
         String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
         Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
@@ -2516,7 +2523,6 @@ public class Contributions extends Controller {
                 workingGroupAuthors = null;
                 newContrib.setWorkingGroupAuthors(null);
             }
-            List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
             for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
                 WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
                 workingGroupAuthorsLoaded.add(contact);
@@ -2553,18 +2559,6 @@ public class Contributions extends Controller {
             newWorkingGroup = WorkingGroup.create(newWorkingGroup);
 
             containerResourceSpace.addWorkingGroup(newWorkingGroup);
-
-            // Find resource space of the assembly and add it also in there
-            if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-                Campaign c = containerResourceSpace.getCampaign();
-                Assembly a = Assembly.read(c.getAssemblies().get(0));
-                ResourceSpace aRs = a.getResources();
-                aRs.addWorkingGroup(newWorkingGroup);
-                aRs.update();
-                ResourceSpace cRS = c.getResources();
-                cRS.addWorkingGroup(newWorkingGroup);
-                cRS.update();
-            }
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
         }
@@ -2608,7 +2602,13 @@ public class Contributions extends Controller {
         Contribution.create(newContrib);
         newContrib.refresh();
 
-            //Previously we also asked the associated contribution to be PROPOSAL,
+//        // Add contribution to workingGroupAuthors resource spaces
+//        for (WorkingGroup wgroup: workingGroupAuthorsLoaded) {
+//            wgroup.getResources().getContributions().add(newContrib);
+//            wgroup.getResources().update();
+//        }
+
+        //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
             ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());
