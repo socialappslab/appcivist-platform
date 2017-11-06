@@ -16,12 +16,15 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static enums.ResourceSpaceTypes.*;
 
@@ -149,7 +152,7 @@ public class NotificationsDelegate {
         NotificationEventName eventName = getNewContributionEventName(c);
         AppCivistBaseModel origin = getOriginByContribution(rs, c);
         AppCivistBaseModel resource = c;
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     public static AppCivistBaseModel getOriginByContribution(ResourceSpace rs, Contribution c) {
@@ -180,7 +183,7 @@ public class NotificationsDelegate {
         NotificationEventName eventName = getUpdatedContributionEventName(c);
         AppCivistBaseModel origin = getOriginByContribution(rs, c);
         AppCivistBaseModel resource = c;
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
 
@@ -195,14 +198,14 @@ public class NotificationsDelegate {
         Logger.info("NOTIFICATION: New contribution in ASSEMBLY of '" + origin.getName() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.ASSEMBLY;
         NotificationEventName eventName = getNewContributionEventName(resource);
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     public static Result updateContributionInAssembly(Assembly origin, Contribution resource) throws ConfigurationException {
         Logger.info("NOTIFICATION: New contribution in ASSEMBLY of '" + origin.getName() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.ASSEMBLY;
         NotificationEventName eventName = getUpdatedContributionEventName(resource);
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     /**
@@ -216,7 +219,7 @@ public class NotificationsDelegate {
         Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '" + resource.getTitle() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.CONTRIBUTION;
         NotificationEventName eventName = getNewContributionEventName(resource);
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     /**
@@ -230,14 +233,25 @@ public class NotificationsDelegate {
         Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '" + resource.getTitle() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.COMPONENT;
         NotificationEventName eventName = getNewContributionEventName(resource);
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     public static Object newContributionInCampaign(Campaign origin, Contribution resource) throws ConfigurationException {
         Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '" + resource.getTitle() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.COMPONENT;
         NotificationEventName eventName = getNewContributionEventName(resource);
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
+    }
+
+    public static Object newNewsletterInCampaign(Campaign origin, UUID userId) throws ConfigurationException {
+        NotificationEventName eventName = NotificationEventName.NEWSLETTER;
+        User user = User.findByUUID(userId);
+        return signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, origin, origin, SubscriptionTypes.NEWSLETTER, user);
+    }
+    public static Object newNewsletterInWorkingGroup(WorkingGroup origin, UUID userId) throws ConfigurationException {
+        NotificationEventName eventName = NotificationEventName.NEWSLETTER;
+        User user = User.findByUUID(userId);
+        return signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, origin, origin, SubscriptionTypes.NEWSLETTER, user);
     }
 
     /**
@@ -251,7 +265,7 @@ public class NotificationsDelegate {
         Logger.info("NOTIFICATION: New contribution in CONTRIBUTION of '" + resource.getTitle() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.COMPONENT;
         NotificationEventName eventName = getNewContributionEventName(resource);
-        return signalNotification(originType, eventName, origin, resource);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     /**
@@ -264,7 +278,8 @@ public class NotificationsDelegate {
      * @return the result from sending the signal to the notification service
      */
     public static Result signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName,
-                                            AppCivistBaseModel origin, AppCivistBaseModel resource) {
+                                            AppCivistBaseModel origin, AppCivistBaseModel resource, SubscriptionTypes subscriptionType,
+                                            User userParam) {
         Logger.info("NOTIFICATION: Prepare the notification event details");
         Logger.info("OriginType: " + originType + " EventName: " + eventName);
         UUID originUUID = null;
@@ -495,11 +510,30 @@ public class NotificationsDelegate {
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
+            case NEWSLETTER:
+                switch (originType) {
+                    case CAMPAIGN:
+                        resourceUuid = ((Campaign) resource).getUuid();
+                        resourceTitle = ((Campaign) resource).getTitle();
+                        resourceText = ((Campaign) resource).getGoal();
+                        resourceDate = resource.getLastUpdate();
+                        resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
+                        title = "[AppCivist] New Newsletter for " + resourceType;
+                        break;
+                    case WORKING_GROUP:
+                        resourceUuid = ((WorkingGroup) resource).getUuid();
+                        resourceTitle = ((WorkingGroup) resource).getName();
+                        resourceText = ((WorkingGroup) resource).getText();
+                        resourceDate = resource.getCreation();
+                        resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
+                        title = "[AppCivist] New Newsletter for " + resourceType;
+                        break;
+                }
             default:
                 break;
         }
         Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
-        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser);
+        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam);
     }
 
     // TODO: signalNotification for non AppCivistBaseModel Resources: VotingBallot
@@ -512,12 +546,14 @@ public class NotificationsDelegate {
                                             String resourceText,
                                             Date notificationDate,
                                             String resourceType,
-                                            String associatedUser) {
+                                            String associatedUser,
+                                            SubscriptionTypes subscriptionType,
+                                            User userParam) {
         // 1. Prepare the notification event data
         NotificationEventSignal notificationEvent = new NotificationEventSignal();
         notificationEvent.setSpaceType(originType);
         //Default value
-        notificationEvent.setSignalType(SubscriptionTypes.REGULAR);
+        notificationEvent.setSignalType(subscriptionType);
         notificationEvent.setEventId(eventName);
         notificationEvent.setTitle(title);
         notificationEvent.setText(text);
@@ -535,6 +571,11 @@ public class NotificationsDelegate {
         data.put("notificationDate", notificationDate);
         data.put("associatedUser", associatedUser);
         data.put("signaled", false);
+
+        if(subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
+            data.put("template", getNewsletterTemplate(originType, UUID.fromString(origin.toString()),userParam));
+        }
+
 
         notificationEvent.setData(data);
 
@@ -978,6 +1019,43 @@ public class NotificationsDelegate {
     static Model.Finder<Long, NotificationEventSignal> finder = new Model.Finder<>(
             NotificationEventSignal.class);
 
+    /**
+     * Returns the frequency, in number of days, to send the newsletter for the given uuid
+     * If none frequency is configured then returns the default value: 7 days
+     * @param uuid: space id
+     * @return newsletterFrequency
+     */
+    private static Integer getNewsletterFrequency(UUID uuid) {
+        Integer newsletterFrequency = Integer.valueOf(GlobalDataConfigKeys.CONFIG_DEFAULTS
+                .get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY));
+        List<Config> config = Config.findByCampaignAndKey(uuid,
+                GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY);
+        if (config != null && !config.isEmpty()) {
+            newsletterFrequency = Integer.valueOf(config.get(0).getValue());
+        }
+        return newsletterFrequency;
+    }
+
+    /**
+     * Returns True if the last {@link NotificationEventSignal} from the given space UUID
+     * was before getNewsletterFrequency amount of days, else False.
+     * If there is no {@link NotificationEventSignal} returns True, too
+     * @param spaceId: space id
+     * @return
+     */
+    public static Boolean checkIfNewNewsletterIsRequired(String spaceId) {
+        Integer newsletterFrequency = getNewsletterFrequency(UUID.fromString(spaceId));
+        List<NotificationEventSignal> list = NotificationEventSignal.findByOriginUuid(spaceId);
+        if (list == null || list.isEmpty()) {
+            return true;
+        } else {
+            NotificationEventSignal event = list.get(0);
+            long diff = new Date().getTime() - event.getCreation().getTime();
+            long days =  TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+            return days > newsletterFrequency;
+        }
+    }
+
     public static List<NotificationEventSignal> findNotifications(Map<String, Object> conditions, Integer page, Integer pageSize) {
         ExpressionList<NotificationEventSignal> q = finder.where();
 
@@ -1038,5 +1116,108 @@ public class NotificationsDelegate {
                 break;
         }
         return null;
+    }
+
+    /**
+     * Returns a Map object with the template of the newsletter acording to the type of
+     * {@link Campaign}
+     * @param spaceType
+     * @param spaceID
+     * @param user
+     * @return
+     */
+    private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType, UUID spaceID, User user) {
+        Map<String, Object> toRet = new HashMap<>();
+        Integer newsletterFrequency = getNewsletterFrequency(spaceID);
+        switch (spaceType) {
+            case CAMPAIGN:
+                Campaign campaign = Campaign.readByUUID(spaceID);
+                ComponentTypes stage = Component.getCurrentComponentType(campaign.getCampaignId());
+                List<NotificationEventSignal> notificationEventSignals = NotificationEventSignal
+                        .findLatestByOriginUuid(spaceID.toString(), newsletterFrequency);
+                toRet.put("campaignName", campaign.getTitle());
+
+                //Campaign without Activity
+                if (notificationEventSignals.isEmpty()) {
+                    toRet.put("campaignNewsletterDescription",campaign.getGoal());
+                    if (stage!=null) {
+                        toRet.put("stageName", stage.name());
+                    }
+                    List<String> themes = campaign.getThemes().stream()
+                            .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
+                            .map(Theme::getTitle).collect(Collectors.toList());
+                    toRet.put("themes", themes);
+                    List<String> workingGroups = campaign.getWorkingGroups().stream().map(WorkingGroup::getName)
+                            .collect(Collectors.toList());
+                    toRet.put("workingGroups", workingGroups);
+                    List<Map<String, Object>> resourcesFormated = new ArrayList<>();
+                    for(Resource con: campaign.getResourceList()) {
+                        Map<String, Object> cont = new HashMap<>();
+                        cont.put("title", con.getTitle());
+                        cont.put("link", con.getUrlLargeString());
+                        resourcesFormated.add(cont);
+                    }
+                    toRet.put("resources", resourcesFormated);
+                //Campaign in Idea Collection Stage
+                } else if (stage == null) {
+                    return toRet;
+                } else if (stage.equals(ComponentTypes.IDEAS)) {
+
+                    List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
+                            newsletterFrequency);
+                    List<Map<String, Object>> contributionsFormated = new ArrayList<>();
+                    for(Contribution con: contributions) {
+                        Map<String, Object> cont = new HashMap<>();
+                        cont.put("ideaTitle", con.getTitle());
+                        cont.put("user", con.getFirstAuthorName());
+                        contributionsFormated.add(cont);
+                    }
+                    toRet.put("newIdeas", contributionsFormated);
+                    List<NotificationEventSignal> updatedIdeas = NotificationEventSignal
+                            .findLatestIdeasByOriginUuid(spaceID.toString(), newsletterFrequency);
+                    List<String> updatedIdeasFormat = updatedIdeas.stream().map(NotificationEventSignal
+                            ::getTitle)
+                            .collect(Collectors.toList());
+                    toRet.put("updatedIdeas", updatedIdeasFormat);
+                    //Campaign in Proposal Stage
+                } else if(stage.equals(ComponentTypes.PROPOSALS)) {
+                    List<Map<String, Object>> contributionsFormated = new ArrayList<>();
+                    List<String> developingProposals = new ArrayList<>();
+                    List<String> updates = new ArrayList<>();
+                    for (WorkingGroup wg: campaign.getWorkingGroups()) {
+                        if (wg.getMembers().stream()
+                                .anyMatch(t -> t.getUser().getUserId().equals(user.getUserId()))) {
+                            toRet.put("workingGroupName", wg.getName());
+                            for(Contribution proposal: wg.getProposals()) {
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.add(Calendar.DAY_OF_MONTH, - newsletterFrequency);
+
+                                if (proposal.getCreation().after(calendar.getTime())) {
+                                    Map<String, Object> cont = new HashMap<>();
+                                    cont.put("proposalTitle", proposal.getTitle());
+                                    cont.put("user", proposal.getFirstAuthorName());
+                                    contributionsFormated.add(cont);
+                                }
+                                if (proposal.getStatus().equals(ContributionStatus.DRAFT)) {
+                                    developingProposals.add(proposal.getTitle());
+                                }
+                            }
+                            toRet.put("newProposals", contributionsFormated);
+                            toRet.put("developingProposals", developingProposals);
+                            break;
+                        } else {
+                            updates.addAll(NotificationEventSignal
+                                    .findLatesWGtBySpaceUuid(wg.getUuid().toString(), newsletterFrequency)
+                                    .stream().map(NotificationEventSignal::getTitle).collect(Collectors.toList()));
+                        }
+
+                    }
+                    toRet.put("updatedWG", updates);
+                }
+                break;
+            default:
+                break;
+        }
+        return toRet;
     }
 }

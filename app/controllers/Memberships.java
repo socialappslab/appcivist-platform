@@ -5,6 +5,7 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 
+import com.amazonaws.services.simpleemail.model.NotificationType;
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 
@@ -109,13 +110,13 @@ public class Memberships extends Controller {
             if (targetCollection.toUpperCase().equals("GROUP")) {
                 WorkingGroup rs = WorkingGroup.read(targetCollectionId);
                 F.Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.MEMBER_JOINED, rs, m);
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.MEMBER_JOINED, rs, m, SubscriptionTypes.REGULAR, null);
                 });
             }
             if (targetCollection.toUpperCase().equals("ASSEMBLY")) {
                 Assembly rs = Assembly.read(targetCollectionId);
                 F.Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m);
+                    return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.MEMBER_JOINED, rs, m, SubscriptionTypes.REGULAR, null);
                 });
             }
             Ebean.commitTransaction();

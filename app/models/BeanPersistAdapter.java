@@ -5,6 +5,7 @@ import com.avaje.ebean.event.BeanPersistRequest;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
+import enums.SubscriptionTypes;
 
 import java.util.List;
 import java.util.Set;
@@ -147,15 +148,15 @@ public class BeanPersistAdapter implements BeanPersistController {
         switch (c.getConfigTarget()){
             case ASSEMBLY:
                 Assembly a = Assembly.readByUUID(c.getTargetUuid());
-                NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, name, a, c);
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, name, a, c, SubscriptionTypes.REGULAR, null);
                 break;
             case CAMPAIGN:
                 Campaign camp = Campaign.readByUUID(c.getTargetUuid());
-                NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, name, camp, c);
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, name, camp, c, SubscriptionTypes.REGULAR, null);
                 break;
             case WORKING_GROUP:
                 WorkingGroup wc = WorkingGroup.readByUUID(c.getTargetUuid());
-                NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, name, wc, c);
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, name, wc, c, SubscriptionTypes.REGULAR, null);
                 break;
             default:
                 break;
@@ -167,7 +168,7 @@ public class BeanPersistAdapter implements BeanPersistController {
     private void notifyAssembly(BeanPersistRequest<?> request, NotificationEventName updatedAssembly) {
         Assembly feedback = (Assembly) request.getBean();
 
-        NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, updatedAssembly, feedback, feedback);
+        NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, updatedAssembly, feedback, feedback, SubscriptionTypes.REGULAR, null);
 
     }
 
@@ -176,7 +177,7 @@ public class BeanPersistAdapter implements BeanPersistController {
         Contribution c = Contribution.read(feedback.getContributionId());
         for (Long campId : c.getCampaignIds()) {
             Campaign campaign = Campaign.read(campId);
-            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
+            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback, SubscriptionTypes.REGULAR, null);
         }
 
     }
@@ -184,7 +185,7 @@ public class BeanPersistAdapter implements BeanPersistController {
     private void notifyContribution(BeanPersistRequest<?> request, NotificationEventName newContributionEventName) {
         Contribution c = (Contribution) request.getBean();
         for (ResourceSpace r : c.getContainingSpaces()) {
-            NotificationsDelegate.signalNotification(r.getType(), newContributionEventName, r, c);
+            NotificationsDelegate.signalNotification(r.getType(), newContributionEventName, r, c, SubscriptionTypes.REGULAR, null);
         }
     }
 
@@ -198,7 +199,7 @@ public class BeanPersistAdapter implements BeanPersistController {
                     r.getType(),
                     updatedContributionHistory,
                     r,
-                    history);
+                    history, SubscriptionTypes.REGULAR, null);
 
         }
 
@@ -215,7 +216,7 @@ public class BeanPersistAdapter implements BeanPersistController {
     private void notifyMilestone(BeanPersistRequest<?> request, NotificationEventName updatedMilestone) {
         ComponentMilestone entity = (ComponentMilestone) request.getBean();
         for (ResourceSpace c : entity.getContainingSpaces()) {
-            NotificationsDelegate.signalNotification(c.getType(), updatedMilestone, c, entity);
+            NotificationsDelegate.signalNotification(c.getType(), updatedMilestone, c, entity, SubscriptionTypes.REGULAR, null);
 
         }
 
@@ -227,7 +228,7 @@ public class BeanPersistAdapter implements BeanPersistController {
         System.out.println("=== NOTIFICATION FOR == " + newVotingBallot + " CAMPAINGS: " + campaigns.size());
 
         for (Campaign c : campaigns) {
-            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, newVotingBallot, c, c);
+            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, newVotingBallot, c, c, SubscriptionTypes.REGULAR, null);
 
         }
 
@@ -245,10 +246,10 @@ public class BeanPersistAdapter implements BeanPersistController {
         for (ResourceSpace s : entity.getContainingSpaces()) {
             switch (s.getType()) {
                 case ASSEMBLY:
-                    NotificationsDelegate.signalNotification(s.getType(), eventName, s.getAssemblyResources(), entity);
+                    NotificationsDelegate.signalNotification(s.getType(), eventName, s.getAssemblyResources(), entity, SubscriptionTypes.REGULAR, null);
                     break;
                 case CAMPAIGN:
-                    NotificationsDelegate.signalNotification(s.getType(), eventName, s.getCampaign(), entity);
+                    NotificationsDelegate.signalNotification(s.getType(), eventName, s.getCampaign(), entity, SubscriptionTypes.REGULAR, null);
                     break;
             }
         }
@@ -268,7 +269,7 @@ public class BeanPersistAdapter implements BeanPersistController {
         for (ResourceSpace rs : entity.getContainingSpaces()) {
 
 
-            NotificationsDelegate.signalNotification(rs.getType(), eventName, rs.getAssemblyResources(), entity);
+            NotificationsDelegate.signalNotification(rs.getType(), eventName, rs.getAssemblyResources(), entity, SubscriptionTypes.REGULAR, null);
 
         }
 
@@ -279,10 +280,10 @@ public class BeanPersistAdapter implements BeanPersistController {
 
         Membership m = (Membership) request.getBean();
         if (m.getTargetAssembly() != null) {
-            NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, eventName, m.getTargetAssembly(), m);
+            NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, eventName, m.getTargetAssembly(), m, SubscriptionTypes.REGULAR, null);
         }
         if (m.getTargetGroup() != null) {
-            NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, m.getTargetGroup(), m);
+            NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, eventName, m.getTargetGroup(), m, SubscriptionTypes.REGULAR, null);
         }
 
     }
