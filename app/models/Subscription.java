@@ -1,31 +1,19 @@
 package models;
 
+import com.avaje.ebean.Model;
+import com.avaje.ebean.annotation.DbJsonB;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import enums.SpaceTypes;
+import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.transfer.NotificationSignalTransfer;
 
+import javax.persistence.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
-
-import com.avaje.ebean.Model;
-import com.avaje.ebean.annotation.DbJson;
-import com.avaje.ebean.annotation.DbJsonB;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import enums.SpaceTypes;
-import enums.SubscriptionTypes;
-import models.transfer.NotificationSignalTransfer;
 
 
 @Entity
@@ -166,6 +154,13 @@ public class Subscription extends Model {
         return membs;
     }
 
+    public static List<Subscription> findIdeasByUserId(User u) {
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
+                .eq("spaceType", SpaceTypes.IDEA).query();
+        List<Subscription> membs = q.findList();
+        return membs;
+    }
+
     public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
         /*
             * subscription.spaceType === signal.spaceType
@@ -180,5 +175,17 @@ public class Subscription extends Model {
                 .query();
         List<Subscription> membs = q.findList();
         return membs;
+    }
+
+    public static List<Subscription> findBySubscriptionAndSpaceType(SubscriptionTypes type, SpaceTypes space1,
+                                                                    SpaceTypes space2) {
+        com.avaje.ebean.Query<Subscription> q = find.where()
+                        .eq("subscriptionType", type)
+                        .or(
+                            com.avaje.ebean.Expr.eq("spaceType", space1),
+                            com.avaje.ebean.Expr.eq("spaceType", space2)
+                        )
+                        .query();
+        return q.findList();
     }
 }

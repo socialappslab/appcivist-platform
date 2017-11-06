@@ -14,6 +14,7 @@ public class TaskModule extends AbstractModule {
         bind(MilestoneNotificationSchedule.class).asEagerSingleton();
         bind(VotingBallotsNotificationSchedule.class).asEagerSingleton();
         bind(BallotCreationSchedule.class).asEagerSingleton();
+        bind(NewsletterCreatorSchedule.class).asEagerSingleton();
 
     }
 }

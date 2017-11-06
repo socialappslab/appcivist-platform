@@ -4,6 +4,7 @@ import akka.actor.ActorSystem;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
+import enums.SubscriptionTypes;
 import models.Ballot;
 import models.Campaign;
 import scala.concurrent.ExecutionContext;
@@ -108,7 +109,7 @@ public class VotingBallotsNotificationSchedule extends DailySchedule {
             //System.out.println("Parent of: " + mile.getUuidAsString() + " is " + parent.getType());
 
             NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN,
-                    eventName, campaign, campaign);
+                    eventName, campaign, campaign, SubscriptionTypes.REGULAR, null);
         }
     }
 
