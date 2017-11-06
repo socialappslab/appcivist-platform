@@ -95,6 +95,15 @@ public class BallotCreationSchedule extends DailySchedule {
                     String configValue = null;
                     if (publishedProposal!=null) {
                         configValue = publishedProposal.getValue();
+                    } else {
+                        // if the configuration is not at the level of the component, consider that it might be at the
+                        // level of the campaign
+                        publishedProposal = campaign.getResources()
+                                .getConfigByKey(
+                                        GlobalData.CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
+                        if (publishedProposal!=null) {
+                            configValue = publishedProposal.getValue();
+                        }
                     }
                     Logger.info("Ballot Creation Scheduler: Published Proposal Config Value = " + configValue);
                     if ((configValue != null && Boolean.valueOf(configValue))
