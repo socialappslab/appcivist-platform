@@ -30,8 +30,10 @@ public class VotingBallotsNotificationSchedule extends DailySchedule {
     public VotingBallotsNotificationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
-
-        this.initialize(9, 0, "Voting Ballots Notification");
+        this.initialize(
+                getConfigOrElse("appcivist.schedule.votingBallot.hour",9),
+                getConfigOrElse("appcivist.schedule.votingBallot.minute",0),
+                "Voting Ballots Notification");
     }
 
 

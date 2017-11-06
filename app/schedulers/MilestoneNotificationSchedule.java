@@ -28,8 +28,10 @@ public class MilestoneNotificationSchedule extends DailySchedule {
     public MilestoneNotificationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
-
-        this.initialize(22, 0, "MilestoneNotification");
+        this.initialize(
+                getConfigOrElse("appcivist.schedule.milestoneNotification.hour",22),
+                getConfigOrElse("appcivist.schedule.milestoneNotification.minute",0),
+                "MilestoneNotification");
     }
 
 
