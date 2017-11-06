@@ -92,7 +92,7 @@ public class BallotCreationSchedule extends DailySchedule {
                             .getConfigByKey(
                                     GlobalData.CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
                     Boolean published = false;
-                    Logger.info("Ballot Creation Scheduler: Published Proposal Config Value = " + publishedProposal);
+                    Logger.info("Ballot Creation Scheduler: Published Proposal Config Value = " + publishedProposal!=null ? publishedProposal.getValue() : "null");
                     if ((publishedProposal != null && Boolean.valueOf(publishedProposal.getValue()))
                             || (publishedProposal!=null && publishedProposal.getValue().toLowerCase().equals("true"))) {
                         //Update Campaign status or ballot
