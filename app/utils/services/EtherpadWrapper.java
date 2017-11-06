@@ -13,11 +13,12 @@ public class EtherpadWrapper {
 	private String etherpadServerUrl = "";
 	private String etherpadApiKey = "";
 	private EPLiteClient client;
-	
+	private String apiVersion = "/api/1.2.12";
+
 	public static final String PAD_PATH_URL = "/p";
 	
 	public EtherpadWrapper() {
-		this.etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl");
+		this.etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl")+apiVersion;
 		this.etherpadApiKey = Play.application().configuration().getString("appcivist.services.etherpad.default.apiKey");
 		this.client = new EPLiteClient(this.etherpadServerUrl, this.etherpadApiKey);
 	}
@@ -25,14 +26,14 @@ public class EtherpadWrapper {
 	public EtherpadWrapper(String server, String key) {
 		if (server != null && !server.isEmpty() && key != null
 				&& !key.isEmpty()) {
-			this.etherpadServerUrl = server;
+			this.etherpadServerUrl = server+apiVersion;
 			this.etherpadApiKey = key;
 		} else {
 			etherpadServerUrl = Play
 					.application()
 					.configuration()
 					.getString(
-							"appcivist.services.etherpad.default.serverBaseUrl");
+							"appcivist.services.etherpad.default.serverBaseUrl")+apiVersion;
 			this.etherpadApiKey = Play.application().configuration()
 					.getString("appcivist.services.etherpad.default.apiKey");
 		}
