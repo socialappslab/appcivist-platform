@@ -5,14 +5,12 @@ import enums.MyRoles;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.persistence.*;
 
+import io.swagger.models.auth.In;
 import models.location.Location;
 import models.misc.Views;
 
@@ -1032,13 +1030,11 @@ public class Contribution extends AppCivistBaseModel {
     public static Contribution readAndUpdate(Contribution newContribution,
             Long contributionId, Long authorId) throws IllegalArgumentException, IllegalAccessException {
 
-        // Set plain text if text is HTML
-        if (TextUtils.isHtml(newContribution.getText())) {
-            newContribution.setText(Jsoup.clean(newContribution.getText(),
+        newContribution.setText(Jsoup.clean(newContribution.getText(),
                     Whitelist.basicWithImages()));
-            newContribution.setPlainText(Jsoup.parse(newContribution.getText())
+        newContribution.setPlainText(Jsoup.parse(newContribution.getText())
                     .text());
-        }
+
         Contribution existingContribution = Contribution.read(contributionId);
         
 // TODO: find a way for reflections to work with Ebean updates in Play
@@ -1074,6 +1070,7 @@ public class Contribution extends AppCivistBaseModel {
         existingContribution.setType(newContribution.getType());
         existingContribution.setContextUserId(authorId);
         existingContribution.setAttachments(newContribution.getAttachments());
+        existingContribution.setCover(newContribution.getCover());
 
         return Contribution.update(existingContribution);
     }
@@ -1519,6 +1516,16 @@ public class Contribution extends AppCivistBaseModel {
                     .eq("status", status)
                     .not(Expr.eq("removed",true))
                     .findList();
+    }
+
+    public static List<Contribution> findLatestContributionIdeas(ResourceSpace rs, Integer days) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, - days);
+        return find.where()
+                .eq("containingSpaces.resourceSpaceId", rs.getResourceSpaceId())
+                .eq("type", ContributionTypes.IDEA)
+                .ge("creation", calendar.getTime())
+                .findList();
     }
 
     public String getSource(){

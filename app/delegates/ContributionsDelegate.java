@@ -301,59 +301,80 @@ public class ContributionsDelegate {
         String readurl = eth.buildReadOnlyUrl(readId);
 
         if (readurl != null) {
-            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c);
+            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c, ResourceTypes.PAD);
         }
         return null;
     }
 
-	public static Resource createAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c, ContributionTemplate t, UUID resourceSpaceConfigsUUID) throws MalformedURLException, UnsupportedEncodingException {
-        EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
-        // Create pad and set text
-        String padId = UUID.randomUUID().toString();
-        String templateText = t != null ? prepareTemplate(t) : c.getText();
-        Boolean isHtml = TextUtils.isHtml(templateText);
-        eth.createPad(padId);
-        if(isHtml) {
-        	try {
-        		Logger.info("Trying to create etherpad of proposal with HTML");
-				eth.setHTML(padId, templateText);
-			} catch (EPLiteException e) {
-				try {
-					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body");
-					Document doc = Jsoup.parseBodyFragment(templateText);
-					String wellFormedHtml = doc.html();
-					String wellFormedHtmlUnescaped = StringEscapeUtils.unescapeHtml4(wellFormedHtml); 
-					eth.setHTML(padId, wellFormedHtmlUnescaped);
-				} catch (EPLiteException e2) {
-					Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body manually.");
-					String wellFormedHtml = "<!DOCTYPE html><html><head><title></title></head><body>" + templateText + "</body></html>";
-					String wellFormedHtmlUnescaped = StringEscapeUtils.unescapeHtml4(wellFormedHtml); 
-					eth.setHTML(padId, wellFormedHtmlUnescaped);
-				}
-				
-			}
-        	
-        } else {
-        	eth.setText(padId, templateText);
-        }
-        
-        String readId = eth.getReadOnlyId(padId);
-        String readurl = eth.buildReadOnlyUrl(readId);
+	public static Resource createAssociatedPad(String ethServerBaseUrl,
+                                               String ethApiToken,
+                                               Contribution c,
+                                               ContributionTemplate t,
+                                               UUID resourceSpaceConfigsUUID,
+                                               ResourceTypes type) throws MalformedURLException, UnsupportedEncodingException {
 
-        if (readurl != null) {
-            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c);
+        String padId = UUID.randomUUID().toString();
+
+        if(type.equals(ResourceTypes.PAD)) {
+            EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
+            // Create pad and set text
+            String templateText = t != null ? prepareTemplate(t) : c.getText();
+            Boolean isHtml = TextUtils.isHtml(templateText);
+            eth.createPad(padId);
+            if (isHtml) {
+                try {
+                    Logger.info("Trying to create etherpad of proposal with HTML");
+                    eth.setHTML(padId, templateText);
+                } catch (EPLiteException e) {
+                    try {
+                        Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body");
+                        Document doc = Jsoup.parseBodyFragment(templateText);
+                        String wellFormedHtml = doc.html();
+                        String wellFormedHtmlUnescaped = StringEscapeUtils.unescapeHtml4(wellFormedHtml);
+                        eth.setHTML(padId, wellFormedHtmlUnescaped);
+                    } catch (EPLiteException e2) {
+                        Logger.info("Etherpad of proposal with HTML failed. Trying to fix the HTML body manually.");
+                        String wellFormedHtml = "<!DOCTYPE html><html><head><title></title></head><body>" + templateText + "</body></html>";
+                        String wellFormedHtmlUnescaped = StringEscapeUtils.unescapeHtml4(wellFormedHtml);
+                        eth.setHTML(padId, wellFormedHtmlUnescaped);
+                    }
+
+                }
+
+            } else {
+                eth.setText(padId, templateText);
+            }
+
+            String readId = eth.getReadOnlyId(padId);
+            String readurl = eth.buildReadOnlyUrl(readId);
+
+
+            if (readurl != null) {
+                createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c, type);
+            }
+        }
+        else{
+            //GDOC
+            System.out.println(" UrL: "+ ethServerBaseUrl);
+            createResourceAndUpdateContribution(padId, null, ethServerBaseUrl, resourceSpaceConfigsUUID, c, type);
+
         }
         return null;
     }
 
     private static void createResourceAndUpdateContribution(String padId,
-                                                            String readId, String readurl, UUID resourceSpaceConfigsUUID, Contribution c) throws MalformedURLException {
+                                                            String readId, String readurl,
+                                                            UUID resourceSpaceConfigsUUID,
+                                                            Contribution c,
+                                                            ResourceTypes type) throws MalformedURLException {
         Resource r = new Resource(new URL(readurl));
         r.setPadId(padId);
-        r.setResourceType(ResourceTypes.PAD);
+        r.setResourceType(type);
         r.setReadOnlyPadId(readId);
         r.setResourceSpaceWithServerConfigs(resourceSpaceConfigsUUID);
         c.setExtendedTextPad(r);
+        r.save();
+        c.update();
     }
 
     public static String readHTMLofAssociatedPad(String ethServerBaseUrl, String ethApiToken, Contribution c) {

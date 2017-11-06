@@ -45,10 +45,15 @@ public class CampaignDelegate {
 
 			}
 		}
-		
-		// Adding the new campaign to the Assembly Resource Space
-		Campaign.create(newCampaign);
 		ResourceSpace assemblyResources = Assembly.read(aid).getResources();
+
+
+		// Adding the new campaign to the Assembly Resource Space
+		newCampaign.getAssemblies().add(aid);
+		newCampaign.getContainingSpaces().add(assemblyResources);
+		Campaign.create(newCampaign);
+
+
 		assemblyResources.addCampaign(newCampaign);
 		assemblyResources.update();
 		newCampaign.refresh();

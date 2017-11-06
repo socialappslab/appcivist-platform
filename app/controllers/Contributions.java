@@ -2,6 +2,7 @@ package controllers;
 
 import static play.data.Form.form;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
@@ -101,6 +102,7 @@ public class Contributions extends Controller {
     public static final Form<User> AUTHORS_FORM = form(User.class);
 
     private static BufferedReader br;
+
 
     /**
      * GET       /api/assembly/:aid/contribution
@@ -1126,14 +1128,19 @@ public class Contributions extends Controller {
                                 ResponseStatus.SERVERERROR,
                                 "Error when creating Contribution: " + e.toString())));
             }
+            Ebean.commitTransaction();
+            c.refresh();
             if (c != null) {
-                rs.addContribution(c);
+                rs.getContributions().add(c);
                 rs.update();
-
-
             }
 
-            Ebean.commitTransaction();
+            // Add contribution to workingGroupAuthors resource spaces
+            for (WorkingGroup wgroup: newContribution.getWorkingGroupAuthors()) {
+                WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
+                g.getResources().getContributions().add(c);
+                g.getResources().update();
+            }
 
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             if (c.getType().equals(ContributionTypes.IDEA) ||
@@ -1595,23 +1602,12 @@ public class Contributions extends Controller {
 
             Ebean.beginTransaction();
             try {
-                feedback.setContribution(contribution);
-                if (social_ideation_author != null){
-                    feedback.setUserId(social_ideation_author.getUserId());
-                } else if (non_member_author != null){
-                    feedback.setNonMemberAuthor(non_member_author);
-                } else {
-                    feedback.setUserId(author.getUserId());
-                }
-
                 //If we found a previous feedback, we set that feedback as archived
                 if (existingFeedbacks != null) {
                     for (ContributionFeedback existingFeedback : existingFeedbacks) {
                         existingFeedback.setArchived(true);
                         existingFeedback.update();
                     }
-
-
                 }
 
                 // We have to do some authorization control
@@ -1635,28 +1631,9 @@ public class Contributions extends Controller {
                 }
 
                 // Make sure ContributionFeedback Type and Status are correct
+                // And remove the id if there is one
+                feedback.setId(null);
                 ContributionFeedback.create(feedback);
-
-                //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
-                NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
-                Promise.promise(() -> {
-                    Contribution c = Contribution.read(feedback.getContributionId());
-                    for (Long campId : c.getCampaignIds()) {
-                        Campaign campaign = Campaign.read(campId);
-                            NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
-                    }
-                    return true;
-                });
-
-                feedback.getWorkingGroupId();
-                Promise.promise(() -> {
-                    return NotificationsDelegate.signalNotification(
-                            ResourceSpaceTypes.WORKING_GROUP,
-                            eventName,
-                            WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
-                            feedback);
-                });
-
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
                 ContributionHistory.createHistoricFromContribution(contribution);
@@ -1775,7 +1752,7 @@ public class Contributions extends Controller {
                 ContributionFeedback.create(feedback);
 
                 //NEW_CONTRIBUTION_FEEDBACK NOTIFICATION
-                NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
+               /* NotificationEventName eventName = existingFeedbacks != null ? NotificationEventName.NEW_CONTRIBUTION_FEEDBACK : NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK;
                 Promise.promise(() -> {
                     Contribution c = Contribution.read(feedback.getContributionId());
                     for (Long campId : c.getCampaignIds()) {
@@ -1783,16 +1760,16 @@ public class Contributions extends Controller {
                         NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback);
                     }
                     return true;
-                });
+                });*/
 
-                feedback.getWorkingGroupId();
+               /* feedback.getWorkingGroupId();
                 Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
                             ResourceSpaceTypes.WORKING_GROUP,
                             eventName,
                             WorkingGroup.read(feedback.getWorkingGroupId()).getResources(),
                             feedback);
-                });
+                });*/
 
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
@@ -2062,9 +2039,11 @@ public class Contributions extends Controller {
             Contribution.softDelete(contributionFromDatabase);
 
             ResourceSpace rs = Assembly.read(aid).getResources();
+
+
             Promise.promise(() -> {
                 ContributionsDelegate.updateCommentCounters(contributionFromDatabase, "-");
-                return NotificationsDelegate.updatedContributionInResourceSpace(rs, contributionFromDatabase);
+                return ok();
             });
             return ok();
         }
@@ -2094,7 +2073,8 @@ public class Contributions extends Controller {
         ResourceSpace rs = Assembly.read(aid).getResources();
         Promise.promise(() -> {
             ContributionsDelegate.updateCommentCounters(c, "-");
-            return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
+            return ok();
+            //return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
         });
         return ok();
     }
@@ -2117,9 +2097,9 @@ public class Contributions extends Controller {
         Contribution.softRecovery(contributionId);
         Contribution c = Contribution.read(contributionId);
         ResourceSpace rs = Assembly.read(aid).getResources();
-        Promise.promise(() -> {
+        /*Promise.promise(() -> {
             return NotificationsDelegate.updatedContributionInResourceSpace(rs, c);
-        });
+        });*/
         return ok();
     }
 
@@ -2352,7 +2332,8 @@ public class Contributions extends Controller {
                                                   ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
 
         newContrib.setType(type);
-        
+        List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
+
         // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
             List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
@@ -2410,7 +2391,8 @@ public class Contributions extends Controller {
 	        Logger.info("Using Etherpad server at: " + etherpadServerUrl);
 	        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         }
-        
+
+
         Boolean addIdeaToProposals = false;
         String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
         Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
@@ -2440,9 +2422,9 @@ public class Contributions extends Controller {
         		if (type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
 	    			if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD)){
 	    				hasEtherpadConfig = 1;
-	    				if (cc.getValue().equalsIgnoreCase("FALSE")) {
-	    					ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
-	    				}
+	    				//if (cc.getValue().equalsIgnoreCase("FALSE")) {
+	    				//	ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+	    				//}
 	    	        }
 	                if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES)){
 	                    if (cc.getValue().equalsIgnoreCase("TRUE")) {
@@ -2471,8 +2453,8 @@ public class Contributions extends Controller {
 				if (hasEtherpadConfig == 0) {
 					String etherpad = GlobalDataConfigKeys.CONFIG_DEFAULTS
 							.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_DISABLE_ETHERPAD);
-					if (etherpad.equalsIgnoreCase("FALSE"))
-						ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
+					//if (etherpad.equalsIgnoreCase("FALSE"))
+					//	ContributionsDelegate.createAssociatedPad(etherpadServerUrl, etherpadApiKey, newContrib, t, containerResourceSpace.getResourceSpaceUuid());
 				}
 			}
             if (hasIdeasDuringProposal == 0 && type.equals(ContributionTypes.IDEA)) {
@@ -2511,7 +2493,6 @@ public class Contributions extends Controller {
                 workingGroupAuthors = null;
                 newContrib.setWorkingGroupAuthors(null);
             }
-            List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
             for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
                 WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
                 workingGroupAuthorsLoaded.add(contact);
@@ -2548,18 +2529,6 @@ public class Contributions extends Controller {
             newWorkingGroup = WorkingGroup.create(newWorkingGroup);
 
             containerResourceSpace.addWorkingGroup(newWorkingGroup);
-
-            // Find resource space of the assembly and add it also in there
-            if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-                Campaign c = containerResourceSpace.getCampaign();
-                Assembly a = Assembly.read(c.getAssemblies().get(0));
-                ResourceSpace aRs = a.getResources();
-                aRs.addWorkingGroup(newWorkingGroup);
-                aRs.update();
-                ResourceSpace cRS = c.getResources();
-                cRS.addWorkingGroup(newWorkingGroup);
-                cRS.update();
-            }
 
             newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
         }
@@ -2603,7 +2572,13 @@ public class Contributions extends Controller {
         Contribution.create(newContrib);
         newContrib.refresh();
 
-            //Previously we also asked the associated contribution to be PROPOSAL,
+//        // Add contribution to workingGroupAuthors resource spaces
+//        for (WorkingGroup wgroup: workingGroupAuthorsLoaded) {
+//            wgroup.getResources().getContributions().add(newContrib);
+//            wgroup.getResources().update();
+//        }
+
+        //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
             ResourceSpace cSpace = ResourceSpace.read(newContrib.getResourceSpaceId());
@@ -3735,7 +3710,6 @@ public class Contributions extends Controller {
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.read(coid);
         return getPadHTML(c, rev, format);
-
     }
 
     /**
@@ -3757,25 +3731,63 @@ public class Contributions extends Controller {
     public static Result getPadHTML(Contribution c, Long rev, String format) {
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+        String etherpadProductionServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_SERVER);
+        String etherpadProductionApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_API_KEY);
+
+        String etherpadTestServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_TEST_ETHERPAD_SERVER);
+        String etherpadTestApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_TEST_ETHERPAD_API_KEY);
+
         if (c != null) {
             Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
             Resource pad = c.getExtendedTextPad();
             String padId = pad.getPadId();
             String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+
+            String padUrl = pad.getUrlAsString();
+            String[] parts = padUrl.split("/p/");
+
+            if (!etherpadServerUrl.equals(parts[0])) {
+                etherpadServerUrl = parts[0];
+                if (etherpadServerUrl.equals(etherpadProductionServerUrl)) {
+                    etherpadApiKey = etherpadProductionApiKey;
+                } else if (etherpadServerUrl.equals(etherpadTestServerUrl)) {
+                    etherpadApiKey = etherpadTestApiKey;
+                } else {
+                    // Try to use the URL as a config path in case a sysadmin wants to used this way
+                    parts = etherpadServerUrl.split("://");
+                    if (parts!=null && parts.length>1) {
+                        String domain = parts[1];
+                        String apiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD+"."+domain+".apiKey");
+                        if (apiKey!=null) {
+                            etherpadApiKey=apiKey;
+                        } else {
+                            Logger.info("The API Key for Etherpad Server ("+domain+") of this PAD is not available in our configs. We are letting the call fail with on of the existing keys");
+                        }
+                    } else {
+                        Logger.info("The etherpad url of this PAD is malformed ("+etherpadServerUrl+"). We are letting the call fail with one of the existing keys");
+                    }
+                }
+            }
+
             EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
             Map<String,Object> result = new HashMap<>();
             String body ="";
             if (padId != null) {
                 if(finalFormat.equals("TEXT")){
                     if(rev == null || rev == 0) {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getText?padID="+padId+"&apikey="+etherpadApiKey);
                         body = wrapper.getText(padId);
                     } else {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getText?padID="+padId+"&apikey="+etherpadApiKey+"&rev="+revision);
                         body = wrapper.getTextRevision(padId,revision);
                     }
                 }else if(finalFormat.equals("HTML")){
                     if(rev == null || rev == 0) {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getHTML?padID="+padId+"&apikey="+etherpadApiKey);
                         body = wrapper.getHTML(padId);
                     } else {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getHTML?padID="+padId+"&apikey="+etherpadApiKey+"&rev="+revision);
                         body = wrapper.getHTMLRevision(padId,revision);
                     }
                 }
@@ -4274,6 +4286,85 @@ public class Contributions extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Resource Space with id: "+sid)));
         }
     }
+
+    /**
+     * POST               /api/assembly/:aid/campaign/:cid/contribution/:coid/document
+     *
+     * @param aid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Integer.class, produces = "application/json", value = "Publishes a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result createPad(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid,
+            @ApiParam(name = "typeDocument", value = "Type of document") String typeDocument) {
+
+        try {
+            JsonNode body = request().body().asJson();
+            Contribution contribution = Contribution.read(coid);
+            Campaign campaign = Campaign.read(cid);
+
+            User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            ResourceTypes resourceTypes;
+
+            Assembly a = Assembly.read(aid);
+            ResourceSpace rs = a.getResources();
+
+            ContributionTemplate template = null;
+            List<ContributionTemplate> templates = rs.getTemplates();
+            if (templates != null && !templates.isEmpty()) {
+                template = rs.getTemplates().get(0);
+            }
+
+            String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+            String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+            resourceTypes = ResourceTypes.PAD;
+
+            if (typeDocument.equals("etherpad")) {
+                if (body.get("etherpadServerUrl") != null) {
+                    etherpadServerUrl = body.get("etherpadServerUrl").asText();
+                }
+                resourceTypes = ResourceTypes.PAD;
+            }
+
+            if (typeDocument.equals("gdoc")) {
+                if (body.get("gdocLink") != null) {
+                    etherpadServerUrl = body.get("gdocLink").asText();
+                }
+                resourceTypes = ResourceTypes.GDOC;
+            }
+
+            if (body.get("etherpadServerApiKey") != null) {
+                etherpadApiKey = body.get("etherpadServerApiKey").asText();
+            }
+
+
+
+            // save the etherpad
+            ContributionsDelegate.createAssociatedPad(etherpadServerUrl,
+                    etherpadApiKey,
+                    contribution,
+                    template,
+                    campaign.getResources().getUuid(),
+                    resourceTypes);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return badRequest(Json.toJson(Json
+                    .toJson(new TransferResponseStatus("Error processing request"))));
+        }
+        return ok(" ok");
+
+    }
+
 }
 
 class PaginatedContribution {

@@ -39,10 +39,12 @@ public class ResourcesDelegate {
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
         try {
-        	if (html)
+        	if (html) {
                 res.createHtmlPad(etherpadServerUrl, etherpadApiKey, text);
-        	else 
-        		res.createTextPad(etherpadServerUrl, etherpadApiKey, text);
+            }else {
+                System.out.println("URL en Delegate: " + etherpadServerUrl);
+                res.createTextPad(etherpadServerUrl, etherpadApiKey, text);
+            }
         } catch (MalformedURLException e) {
             System.out.println("MalformedURLException");
             return null;

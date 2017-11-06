@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import play.Logger;
 import play.Play;
 import net.gjerull.etherpad.client.EPLiteClient;
 
@@ -13,7 +14,7 @@ public class EtherpadWrapper {
 	private String etherpadServerUrl = "";
 	private String etherpadApiKey = "";
 	private EPLiteClient client;
-	
+
 	public static final String PAD_PATH_URL = "/p";
 	
 	public EtherpadWrapper() {

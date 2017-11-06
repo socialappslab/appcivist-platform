@@ -1,10 +1,11 @@
 package models;
 
+import com.avaje.ebean.Expression;
+import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import enums.SpaceTypes;
-import enums.SubscriptionTypes;
+import enums.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.*;
@@ -14,9 +15,6 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import enums.NotificationEventName;
-import enums.ResourceSpaceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -160,6 +158,49 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 
 	public static List<NotificationEventSignal> findAll() {
 		return find.all();
+	}
+
+	public static List<NotificationEventSignal> findByOriginUuid(String spaceId) {
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalType", SubscriptionTypes.NEWSLETTER.name())
+				.orderBy("creation desc");
+		return q.findPagedList(0, 1).getList();
+	}
+
+	public static List<NotificationEventSignal> findLatestByOriginUuid(String spaceId, Integer days) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, - days);
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalType", SubscriptionTypes.REGULAR.name())
+				.ge("creation", calendar.getTime())
+				.orderBy("creation desc");
+		return q.findList();
+	}
+	public static List<NotificationEventSignal> findLatestIdeasByOriginUuid(String spaceId, Integer days) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, - days);
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.or(com.avaje.ebean.Expr.eq("eventId", NotificationEventName.UPDATED_CONTRIBUTION_IDEA),
+				com.avaje.ebean.Expr.eq("eventId", NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL));
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalType", SubscriptionTypes.REGULAR.name())
+				.ge("creation", calendar.getTime())
+				.orderBy("creation desc");
+		return q.findList();
+	}
+
+	public static List<NotificationEventSignal> findLatesWGtBySpaceUuid(String spaceId, Integer days) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, - days);
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalType", SubscriptionTypes.REGULAR.name())
+				.eq("spaceType", ResourceSpaceTypes.WORKING_GROUP.name())
+				.ge("creation", calendar.getTime())
+				.orderBy("creation desc");
+		return q.findList();
 	}
 
 	public static NotificationEventSignal create(NotificationEventSignal notification) {

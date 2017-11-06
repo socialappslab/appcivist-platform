@@ -1,45 +1,28 @@
 package controllers;
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.ContributionsDelegate;
+import delegates.NotificationsDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
+import exceptions.ConfigurationException;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import models.Assembly;
-import models.Ballot;
-import models.BallotCandidate;
-import models.Campaign;
-import models.Contribution;
-import models.ContributionHistory;
-import models.Membership;
-import models.MembershipGroup;
-import models.MembershipInvitation;
-import models.ResourceSpace;
-import models.Theme;
-import models.User;
-import models.WorkingGroup;
+import io.swagger.annotations.*;
+import models.*;
 import models.misc.Views;
 import models.transfer.InvitationTransfer;
 import models.transfer.MembershipTransfer;
 import models.transfer.TransferResponseStatus;
 import models.transfer.WorkingGroupSummaryTransfer;
-
 import org.json.simple.JSONArray;
-
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -54,19 +37,15 @@ import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.services.EtherpadWrapper;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.pa.PlayAuthenticate;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-import delegates.NotificationsDelegate;
-import delegates.WorkingGroupsDelegate;
-import exceptions.ConfigurationException;
+import static play.data.Form.form;
 
 @Api(value = "02 group: Working Group Management", description = "Group Management endpoints in the Assembly Making service")
 @With(Headers.class)
@@ -173,7 +152,7 @@ public class WorkingGroups extends Controller {
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     @SubjectPresent
     public static Result createWorkingGroup(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
-                                            @ApiParam(name="invitations", value="Send invitations if true") String invitations) {
+                                            @ApiParam(name = "invitations", value = "Send invitations if true") String invitations) {
         // 1. obtaining the user of the requestor
         User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -208,16 +187,20 @@ public class WorkingGroups extends Controller {
                     if (newWorkingGroup.getCreator() == null) {
                         newWorkingGroup.setCreator(groupCreator);
                     }
-                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
-                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
 
                     // Add the working group to the assembly
                     ResourceSpace rs = Assembly.read(aid).getResources();
                     rs.addWorkingGroup(newWorkingGroup);
+                    newWorkingGroup.getContainingSpaces().add(rs);
                     rs.update();
 
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
+                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+
+
+
                     // Create and send invitations
-                    if (invitations != null  && invitations.equals("true")) {
+                    if (invitations != null && invitations.equals("true")) {
                         for (InvitationTransfer invitation : invitationsList) {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
@@ -229,11 +212,11 @@ public class WorkingGroups extends Controller {
                         Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
                     }
 
-                    Assembly assembly = Assembly.read(aid);
+                    /*Assembly assembly = Assembly.read(aid);
                     WorkingGroup finalNewWorkingGroup = newWorkingGroup;
                     Promise.promise(() -> {
                         return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_WORKING_GROUP, assembly, finalNewWorkingGroup);
-                    });
+                    });*/
 
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
@@ -266,7 +249,7 @@ public class WorkingGroups extends Controller {
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createWorkingGroupInCampaign(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
                                                       @ApiParam(name = "cid", value = "Campaign ID") Long cid,
-                                                      @ApiParam(name="invitations", value="Send invitations if true") String invitations) {
+                                                      @ApiParam(name = "invitations", value = "Send invitations if true") String invitations) {
         // 1. obtaining the user of the requestor
         User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
@@ -303,14 +286,6 @@ public class WorkingGroups extends Controller {
                     if (newWorkingGroup.getCreator() == null) {
                         newWorkingGroup.setCreator(groupCreator);
                     }
-                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
-                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-                    newWorkingGroup.refresh();
-                    // Add the working group to the assembly
-                    ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
-                    rs.addWorkingGroup(newWorkingGroup);
-                    newWorkingGroup.getContainingSpaces().add(rs);
-                    rs.update();
 
                     // Add the working group to the campaign
                     Campaign c = Campaign.read(cid);
@@ -318,6 +293,19 @@ public class WorkingGroups extends Controller {
                     rsC.addWorkingGroup(newWorkingGroup);
                     newWorkingGroup.getContainingSpaces().add(rsC);
                     rsC.update();
+
+                    // Add the working group to the assembly
+                    ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
+                    rs.addWorkingGroup(newWorkingGroup);
+                    newWorkingGroup.getContainingSpaces().add(rs);
+                    rs.update();
+
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
+                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+                    newWorkingGroup.refresh();
+
+
+
 
                     newWorkingGroup.refresh();
 
@@ -329,13 +317,13 @@ public class WorkingGroups extends Controller {
                     }
 
 
-                    WorkingGroup finalNewWorkingGroup = newWorkingGroup;
+                    /*WorkingGroup finalNewWorkingGroup = newWorkingGroup;
                     Promise.promise(() -> {
                         return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN,
                                 NotificationEventName.NEW_WORKING_GROUP,
                                 c,
                                 finalNewWorkingGroup);
-                    });
+                    });*/
 
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
@@ -391,7 +379,7 @@ public class WorkingGroups extends Controller {
                 newWorkingGroup.setGroupId(groupId);
                 List<Theme> themes = newWorkingGroup.getThemes();
                 List<Theme> themesLoaded = new ArrayList<Theme>();
-                for (Theme theme: themes) {
+                for (Theme theme : themes) {
                     Theme themeRead = Theme.read(theme.getThemeId());
                     themesLoaded.add(themeRead);
                 }
@@ -412,12 +400,12 @@ public class WorkingGroups extends Controller {
                 responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
                         + newWorkingGroup.getGroupId());
             }
-            Promise.promise(() -> {
+           /* Promise.promise(() -> {
                 return NotificationsDelegate.signalNotification(
                         ResourceSpaceTypes.WORKING_GROUP,
                         NotificationEventName.UPDATED_WORKING_GROUP,
                         Assembly.read(aid).getResources(), newWorkingGroup);
-            });
+            });*/
 
             return ok(Json.toJson(responseBody));
         }
@@ -656,9 +644,9 @@ public class WorkingGroups extends Controller {
         //Archive previous ballot
         currentBallot.setStatus(BallotStatus.ARCHIVED);
 
-        Promise.promise(() -> {
+       /* Promise.promise(() -> {
             return NotificationsDelegate.signalNotification(ResourceSpaceTypes.WORKING_GROUP, NotificationEventName.NEW_VOTING_BALLOT, workingGroup, workingGroup);
-        });
+        });*/
 
         return ok(Json.toJson(newBallot));
     }
@@ -684,7 +672,7 @@ public class WorkingGroups extends Controller {
         Ballot ballot = Ballot.findByUUID(consensus);
         ballot.setStatus(BallotStatus.ARCHIVED);
         ballot.update();
-        Promise.promise(() -> {
+        /*Promise.promise(() -> {
             return NotificationsDelegate.signalNotification(
                     ResourceSpaceTypes.WORKING_GROUP,
                     NotificationEventName.UPDATED_VOTING_BALLOT,
@@ -697,7 +685,7 @@ public class WorkingGroups extends Controller {
                     NotificationEventName.UPDATED_VOTING_BALLOT,
                     Assembly.read(aid).getResources(),
                     workingGroup);
-        });
+        });*/
         return ok(Json.toJson(ballot));
     }
 
@@ -777,19 +765,19 @@ public class WorkingGroups extends Controller {
             workingGroup.update();
             for (Contribution contribution : selectedContributionsList) {
                 ContributionHistory.createHistoricFromContribution(contribution);
-                Promise.promise(() -> {
+                /*Promise.promise(() -> {
                     return NotificationsDelegate.signalNotification(
                             ResourceSpaceTypes.WORKING_GROUP,
                             NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
                             workingGroup.getResources(),
                             contribution);
-                });
+                });*/
             }
-
 
 
             return ok(Json.toJson(workingGroup));
         } catch (Exception e) {
+            e.printStackTrace();
             return badRequest(Json.toJson(Json
                     .toJson(new TransferResponseStatus("Error processing request"))));
         }
@@ -829,17 +817,17 @@ public class WorkingGroups extends Controller {
 
             Integer newRevision = null;
             try {
-	            //Let's save the revision with no number, so etherpad can generate one by itself	       
-	            wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());            		      
-	            Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
-	            JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
-	            //Integer newRevision = null;
-	            if (savedRevisions != null && !savedRevisions.isEmpty()) {
-	                newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
-	                proposal.addRevisionToContributionPublishHistory(newRevision);
-	            }
+                //Let's save the revision with no number, so etherpad can generate one by itself
+                wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());
+                Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
+                JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
+                //Integer newRevision = null;
+                if (savedRevisions != null && !savedRevisions.isEmpty()) {
+                    newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
+                    proposal.addRevisionToContributionPublishHistory(newRevision);
+                }
             } catch (Exception e) {
-            	newRevision = 0;
+                newRevision = 0;
             }
 
             proposal.setStatus(ContributionStatus.PUBLISHED);
@@ -847,10 +835,10 @@ public class WorkingGroups extends Controller {
 
             Promise.promise(() -> {
                 ResourceSpace wg = WorkingGroup.read(gid).getResources();
-                if (wg != null){
-                	return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
+                if (wg != null) {
+                    return NotificationsDelegate.updatedContributionInResourceSpace(wg, proposal);
                 } else {
-                	return true;
+                    return true;
                 }
             });
 
@@ -863,6 +851,7 @@ public class WorkingGroups extends Controller {
 
 
     }
+
 
     /**
      * Return the full list of working groups in an assembly
@@ -883,5 +872,9 @@ public class WorkingGroups extends Controller {
         List<WorkingGroup> workingGroups = WorkingGroup.findByLocationName(locationName);
         return ok(Json.toJson(workingGroups));
     }
+
+
+
+
 
 }

@@ -15,6 +15,7 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utils.GlobalData;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 
 public class NotificationServiceWrapper {
@@ -98,7 +99,7 @@ public class NotificationServiceWrapper {
      * @return
      */
 
-    public WSResponse sendNotificationSignal(NotificationSignalTransfer notificationSignal) {
+    public WSResponse sendNotificationSignal(NotificationSignalTransfer notificationSignal) throws ConnectException{
         WSRequest holder = getWSHolder(SIGNALS, "POST", notificationSignal);
         Logger.info("NOTIFICATION: Sending notification signal to notification service: " + holder.getUrl());
         Promise<WSResponse> promise = wsSend(holder);

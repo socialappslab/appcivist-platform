@@ -4,6 +4,7 @@ import akka.actor.ActorSystem;
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
+import enums.SubscriptionTypes;
 import models.ComponentMilestone;
 import models.ResourceSpace;
 import scala.concurrent.ExecutionContext;
@@ -27,8 +28,10 @@ public class MilestoneNotificationSchedule extends DailySchedule {
     public MilestoneNotificationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
-
-        this.initialize(22, 0, "MilestoneNotification");
+        this.initialize(
+                getConfigOrElse("appcivist.schedule.milestoneNotification.hour",22),
+                getConfigOrElse("appcivist.schedule.milestoneNotification.minute",0),
+                "MilestoneNotification");
     }
 
 
@@ -81,7 +84,7 @@ public class MilestoneNotificationSchedule extends DailySchedule {
                         //models.AppCivistBaseModel origin, AppCivistBaseModel resource)
                         System.out.println("Parent of: " + mile.getUuidAsString() + " is " + parent.getType());
                         NotificationsDelegate.signalNotification(parent.getType(),
-                                eventName, parent.getCampaign(), mile);
+                                eventName, parent.getCampaign(), mile, SubscriptionTypes.REGULAR, null);
                     }
 
 

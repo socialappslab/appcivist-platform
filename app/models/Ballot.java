@@ -389,7 +389,7 @@ public class Ballot extends Model {
 		ballotConfig = new BallotConfiguration();
 		ballotConfig.setBallotId(consensusBallot.getId());
 		ballotConfig.setKey(GlobalData.CONFIG_COMPONENT_VOTING_SYSTEM_PLURALITY_TYPE);
-		if (workingGroup.getBlockMajority()) {
+		if (workingGroup.getBlockMajority()!=null && workingGroup.getBlockMajority() ) {
 			ballotConfig.setValue("YES/NO/ABSTAIN/BLOCK");
 			ballotConfig.save();
 			ballotConfig = new BallotConfiguration();

@@ -26,11 +26,9 @@ public class BallotCreationSchedule extends DailySchedule {
     public BallotCreationSchedule(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
-
-        Integer hour = 0;
-        Integer minute = 0;
         String processName = "Ballot Creation";
-        this.initialize(hour, minute, processName);
+        this.initialize(getConfigOrElse("appcivist.schedule.ballotCreation.hour",0),
+                getConfigOrElse("appcivist.schedule.ballotCreation.minute",0), processName);
     }
 
     @Override
@@ -39,7 +37,7 @@ public class BallotCreationSchedule extends DailySchedule {
     }
 
     private void createBallot() {
-        Logger.info("Executing ballot");
+        Logger.info("Ballot Creation Scheduler");
 
         /*
          * Get Components of type voting with starting day = today
@@ -59,17 +57,17 @@ public class BallotCreationSchedule extends DailySchedule {
         calEnd.set(Calendar.MINUTE, 59);
         calEnd.set(Calendar.SECOND, 59);
 
-        Logger.info("Searching Component Start day between: "+ calStart.getTime() + " and " +calEnd.getTime() );
+        Logger.info("Ballot Creation Scheduler: Searching Component Start day between: "+ calStart.getTime() + " and " +calEnd.getTime() );
 
         List<Component> components = Component.findVotingByStartingDay(calStart.getTime(), calEnd.getTime());
-        Logger.info("Found "+ components.size() + " COMPONENT to create Voting ballots");
+        Logger.info("Ballot Creation Scheduler: Found "+ components.size() + " COMPONENT to create Voting ballots");
 
         //Find all campaigns related and create ballot
         for (Component component : components) {
             for (ResourceSpace spaces : component.getContainingSpaces()) {
                 if (spaces.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                     Campaign campaign = spaces.getCampaign();
-                    Logger.info("Creating ballot for campaing:" + campaign.getCampaignId());
+                    Logger.info("Ballot Creation Scheduler: Creating ballot for campaing:" + campaign.getCampaignId());
 
                     //Campaign related, creating Ballot
                     // 6. Create a decision ballot associated with this component and add it to the campaign
@@ -94,11 +92,28 @@ public class BallotCreationSchedule extends DailySchedule {
                             .getConfigByKey(
                                     GlobalData.CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
                     Boolean published = false;
-                    if (publishedProposal != null && Boolean.valueOf(publishedProposal.getValue())) {
+                    String configValue = null;
+                    if (publishedProposal!=null) {
+                        configValue = publishedProposal.getValue();
+                    } else {
+                        // if the configuration is not at the level of the component, consider that it might be at the
+                        // level of the campaign
+                        publishedProposal = campaign.getResources()
+                                .getConfigByKey(
+                                        GlobalData.CONFIG_CAMPAIGN_INCLUDE_PUBLISHED_PROPOSAL);
+                        if (publishedProposal!=null) {
+                            configValue = publishedProposal.getValue();
+                        }
+                    }
+                    Logger.info("Ballot Creation Scheduler: Published Proposal Config Value = " + configValue);
+                    if ((configValue != null && Boolean.valueOf(configValue))
+                            || (configValue!=null && configValue.toLowerCase().equals("true"))) {
                         //Update Campaign status or ballot
                         //Create a BallotCandidate for ever Contribution.type = PROPOSAL
                         published = true;
                     }
+
+                    Logger.info("Ballot Creation Scheduler: Including entities with published status: " + published);
 
                     Config ballotEntityType = component.getResourceSpace()
                             .getConfigByKey(
@@ -106,6 +121,7 @@ public class BallotCreationSchedule extends DailySchedule {
 
                     String entityType = ballotEntityType != null ? ballotEntityType.getValue() : null;
                     ballot.setEntityType(entityType != null ? entityType : "PROPOSAL");
+                    Logger.info("Ballot Creation Scheduler: Creating ballot with entities of type: " + ballot.getEntityType());
 
                     Config votingSystemConfig = component.getResourceSpace()
                             .getConfigByKey(
@@ -171,13 +187,14 @@ public class BallotCreationSchedule extends DailySchedule {
     private void createBallotCandidates(Campaign campaign, Ballot ballot, Boolean publishedProposalAllowed) {
         List<Contribution> contributions = campaign.getContributions();
         Boolean hasCandidates = false;
+        Logger.info("Ballot Creation Scheduler: Creating BallotCandidates");
         for(Contribution c : contributions) {
             ContributionTypes ballotEntityType = ContributionTypes.valueOf(ballot.getEntityType());
             if(c.getType()!=null && c.getType().equals(ballotEntityType)){
                 // if config campaign.include.all.published.proposals === TRUE,
                 // allow the creation of the candidate and change the status of PUBLISHED to INBALLOT
                 hasCandidates=true;
-                Logger.info("Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
+                Logger.info("Ballot Creation Scheduler: Creating BallotCandidate for Contribution "+ c.getTitle() + "=="+ c.getContributionId() );
                 Boolean createCandidate = false;
                 if(publishedProposalAllowed){
                     if (c.getStatus().equals(ContributionStatus.PUBLISHED)) {
