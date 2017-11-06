@@ -3710,7 +3710,6 @@ public class Contributions extends Controller {
             @ApiParam(name = "format", value = "String", allowableValues = "text, html", defaultValue = "html") String format) {
         Contribution c = Contribution.read(coid);
         return getPadHTML(c, rev, format);
-
     }
 
     /**
@@ -3732,11 +3731,45 @@ public class Contributions extends Controller {
     public static Result getPadHTML(Contribution c, Long rev, String format) {
         String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
         String etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+
+        String etherpadProductionServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_SERVER);
+        String etherpadProductionApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_API_KEY);
+
+        String etherpadTestServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_TEST_ETHERPAD_SERVER);
+        String etherpadTestApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_TEST_ETHERPAD_API_KEY);
+
         if (c != null) {
             Long revision = rev !=null && rev != 0 ? rev : c.getPublicRevision();
             Resource pad = c.getExtendedTextPad();
             String padId = pad.getPadId();
             String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+
+            String padUrl = pad.getUrlAsString();
+            String[] parts = padUrl.split("/p/");
+
+            if (!etherpadServerUrl.equals(parts[0])) {
+                etherpadServerUrl = parts[0];
+                if (etherpadServerUrl.equals(etherpadProductionServerUrl)) {
+                    etherpadApiKey = etherpadProductionApiKey;
+                } else if (etherpadServerUrl.equals(etherpadTestServerUrl)) {
+                    etherpadApiKey = etherpadTestApiKey;
+                } else {
+                    // Try to use the URL as a config path in case a sysadmin wants to used this way
+                    parts = etherpadServerUrl.split("://");
+                    if (parts!=null && parts.length>1) {
+                        String domain = parts[1];
+                        String apiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD+"."+domain+".apiKey");
+                        if (apiKey!=null) {
+                            etherpadApiKey=apiKey;
+                        } else {
+                            Logger.info("The API Key for Etherpad Server ("+domain+") of this PAD is not available in our configs. We are letting the call fail with on of the existing keys");
+                        }
+                    } else {
+                        Logger.info("The etherpad url of this PAD is malformed ("+etherpadServerUrl+"). We are letting the call fail with one of the existing keys");
+                    }
+                }
+            }
+
             EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
             Map<String,Object> result = new HashMap<>();
             String body ="";

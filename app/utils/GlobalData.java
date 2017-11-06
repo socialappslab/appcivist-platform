@@ -105,6 +105,11 @@ public class GlobalData {
 	public static final String CONFIG_ETHERPAD_API_KEY = "component.proposal-making.etherpad-api-key";
 	public static final String CONFIG_APPCIVIST_ETHERPAD_SERVER = "appcivist.services.etherpad.default.serverBaseUrl";
 	public static final String CONFIG_APPCIVIST_ETHERPAD_API_KEY = "appcivist.services.etherpad.default.apiKey";
+	public static final String CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_SERVER = "appcivist.services.etherpad.appcivist.serverBaseUrl";
+	public static final String CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_API_KEY = "appcivist.services.etherpad.appcivist.apiKey";
+	public static final String CONFIG_APPCIVIST_TEST_ETHERPAD_SERVER = "appcivist.services.etherpad.appcivist-test.serverBaseUrl";
+	public static final String CONFIG_APPCIVIST_TEST_ETHERPAD_API_KEY = "appcivist.services.etherpad.appcivist-test.apiKey";
+	public static final String CONFIG_APPCIVIST_ETHERPAD= "appcivist.services.etherpad";
 	public static final String CONFIG_USER_ACTIONS_LOGGING = "appcivist.logging";
 	public static final String CONFIG_RECAPTCHA_SERVER_URL = "appcivist.services.recaptcha.serverURL";
 	public static final String CONFIG_RECAPTCHA_SECRET = "appcivist.services.recaptcha.secret";
