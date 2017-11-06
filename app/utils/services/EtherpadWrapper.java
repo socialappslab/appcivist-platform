@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import play.Logger;
 import play.Play;
 import net.gjerull.etherpad.client.EPLiteClient;
 
@@ -13,12 +14,11 @@ public class EtherpadWrapper {
 	private String etherpadServerUrl = "";
 	private String etherpadApiKey = "";
 	private EPLiteClient client;
-	private String apiVersion = "/api/1.2.12";
 
 	public static final String PAD_PATH_URL = "/p";
 	
 	public EtherpadWrapper() {
-		this.etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl")+apiVersion;
+		this.etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl");
 		this.etherpadApiKey = Play.application().configuration().getString("appcivist.services.etherpad.default.apiKey");
 		this.client = new EPLiteClient(this.etherpadServerUrl, this.etherpadApiKey);
 	}
@@ -26,14 +26,14 @@ public class EtherpadWrapper {
 	public EtherpadWrapper(String server, String key) {
 		if (server != null && !server.isEmpty() && key != null
 				&& !key.isEmpty()) {
-			this.etherpadServerUrl = server+apiVersion;
+			this.etherpadServerUrl = server;
 			this.etherpadApiKey = key;
 		} else {
 			etherpadServerUrl = Play
 					.application()
 					.configuration()
 					.getString(
-							"appcivist.services.etherpad.default.serverBaseUrl")+apiVersion;
+							"appcivist.services.etherpad.default.serverBaseUrl");
 			this.etherpadApiKey = Play.application().configuration()
 					.getString("appcivist.services.etherpad.default.apiKey");
 		}
