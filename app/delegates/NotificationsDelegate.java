@@ -20,6 +20,7 @@ import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
+import java.net.ConnectException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -293,26 +294,47 @@ public class NotificationsDelegate {
         Date resourceDate = new Date();
         String associatedUser = "";
 
+        Boolean originIsResourceSpace = false;
+        if (origin instanceof ResourceSpace) {
+            originIsResourceSpace = true;
+        }
+
+        AppCivistBaseModel originParent = origin;
         switch (originType) {
             case ASSEMBLY:
-                originUUID = ((Assembly) origin).getUuid();
-                originName = ((Assembly) origin).getName();
+                if (originIsResourceSpace) {
+                    originParent = ((ResourceSpace) origin).getAssemblyResources();
+                }
+                originUUID = ((Assembly) originParent).getUuid();
+                originName = ((Assembly) originParent).getName();
                 break;
             case CAMPAIGN:
-                originUUID = ((Campaign) origin).getUuid();
-                originName = ((Campaign) origin).getTitle();
+                if (originIsResourceSpace) {
+                    originParent = ((ResourceSpace) origin).getCampaign();
+                }
+                originUUID = ((Campaign) originParent).getUuid();
+                originName = ((Campaign) originParent).getTitle();
                 break;
             case CONTRIBUTION:
-                originUUID = ((Contribution) origin).getUuid();
-                originName = ((Contribution) origin).getTitle();
+                if (originIsResourceSpace) {
+                    originParent = ((ResourceSpace) origin).getContribution();
+                }
+                originUUID = ((Contribution) originParent).getUuid();
+                originName = ((Contribution) originParent).getTitle();
                 break;
             case WORKING_GROUP:
-                originUUID = ((WorkingGroup) origin).getUuid();
-                originName = ((WorkingGroup) origin).getName();
+                if (originIsResourceSpace) {
+                    originParent = ((ResourceSpace) origin).getWorkingGroupResources();
+                }
+                originUUID = ((WorkingGroup) originParent).getUuid();
+                originName = ((WorkingGroup) originParent).getName();
                 break;
             case COMPONENT:
-                originUUID = ((Component) origin).getUuid();
-                originName = ((Component) origin).getTitle();
+                if (originIsResourceSpace) {
+                    originParent = ((ResourceSpace) origin).getComponent();
+                }
+                originUUID = ((Component) originParent).getUuid();
+                originName = ((Component) originParent).getTitle();
                 break;
             default:
                 break;
@@ -534,6 +556,7 @@ public class NotificationsDelegate {
         }
         Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
         return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam);
+
     }
 
     // TODO: signalNotification for non AppCivistBaseModel Resources: VotingBallot
@@ -572,8 +595,8 @@ public class NotificationsDelegate {
         data.put("associatedUser", associatedUser);
         data.put("signaled", false);
 
-        if(subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
-            data.put("template", getNewsletterTemplate(originType, UUID.fromString(origin.toString()),userParam));
+        if (subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
+            data.put("template", getNewsletterTemplate(originType, UUID.fromString(origin.toString()), userParam));
         }
 
 
@@ -648,8 +671,6 @@ public class NotificationsDelegate {
 
         // Send notification Signal to Notification Service
         try {
-
-
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
 
@@ -670,20 +691,20 @@ public class NotificationsDelegate {
                 NotificationEventSignal.create(notificationEvent);
                 return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
             }
-        } catch (ConfigurationException e) {
-            Logger.info("NOTIFICATION: Error while signaling => " + e.getMessage());
+        } catch (ConfigurationException | ConnectException e) {
+            Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());
             TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(Messages.get(
-                    GlobalData.MISSING_CONFIGURATION, e.getMessage()));
+            responseBody.setStatusMessage(e.getLocalizedMessage());
             responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-            Logger.error("Configuration error: ", LogActions.exceptionStackTraceToString(e));
+            Logger.error("Notification Service Error ("+e.getClass().toString()+"): ", LogActions.exceptionStackTraceToString(e));
+            NotificationEventSignal.create(notificationEvent);
             return Controller.internalServerError(Json.toJson(responseBody));
         } catch (Exception e) {
-            Logger.info("NOTIFICATION: Error while signaling => " + e.getMessage());
+            Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());
             TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(e.getMessage());
+            responseBody.setStatusMessage(e.getLocalizedMessage());
             responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-            Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
+            Logger.error("Error signaling notification: ("+e.getClass().toString()+") " + LogActions.exceptionStackTraceToString(e));
             return Controller.internalServerError(Json.toJson(responseBody));
         }
     }
