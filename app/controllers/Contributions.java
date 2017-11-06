@@ -3776,14 +3776,18 @@ public class Contributions extends Controller {
             if (padId != null) {
                 if(finalFormat.equals("TEXT")){
                     if(rev == null || rev == 0) {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getText?padID="+padId+"&apikey="+etherpadApiKey);
                         body = wrapper.getText(padId);
                     } else {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getText?padID="+padId+"&apikey="+etherpadApiKey+"&rev="+revision);
                         body = wrapper.getTextRevision(padId,revision);
                     }
                 }else if(finalFormat.equals("HTML")){
                     if(rev == null || rev == 0) {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getHTML?padID="+padId+"&apikey="+etherpadApiKey);
                         body = wrapper.getHTML(padId);
                     } else {
+                        Logger.info("Downloading: "+etherpadServerUrl+"/getHTML?padID="+padId+"&apikey="+etherpadApiKey+"&rev="+revision);
                         body = wrapper.getHTMLRevision(padId,revision);
                     }
                 }
