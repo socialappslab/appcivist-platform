@@ -35,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.ComponentTypes;
 import enums.ResourceSpaceTypes;
+import play.Logger;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -478,6 +479,7 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	}
 
 	public ComponentMilestone getMilestoneById (Long id) {
+		Logger.debug("Getting component by ID: "+id);
 		List<ComponentMilestone> milestones = this.getMilestones();
 		if (milestones != null && milestones.size()>0)
 		{
