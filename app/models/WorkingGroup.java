@@ -284,7 +284,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		// 5. Add WorkingGroup to campaigns
 		for (Long cID: campaigns) {
 			Campaign c = Campaign.read(cID);
-			Logger.info("Adding Working Group to campaign" + cID);
+			Logger.info("Adding Working Group to campaign " + cID);
 			if(c!=null) {
 				c.addWorkingGroup(workingGroup);
 				c.update();
