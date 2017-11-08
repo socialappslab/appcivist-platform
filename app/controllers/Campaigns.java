@@ -242,6 +242,7 @@ public class Campaigns extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             try {
+                Logger.debug("Starting to update campaign by ID: "+campaignId)
                 Campaign campaignOld = Campaign.read(campaignId);
                 Campaign updatedCampaign = newCampaignForm.get();
                 List<Component> componentLoaded = updatedCampaign.getTransientComponents();
@@ -265,6 +266,7 @@ public class Campaigns extends Controller {
                     }
                 }
                 List<Component> componentList = new ArrayList<Component>();
+                Logger.debug("Starting to update campaign components...");
                 for (Component component : componentLoaded
                         ) {
                     Component componentOld = Component.read(component.getComponentId());
@@ -280,6 +282,7 @@ public class Campaigns extends Controller {
                     componentList.add(componentOld);
 
                     List <ComponentMilestone> updatedMilestonesList = component.getMilestones();
+                    Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
                     for(ComponentMilestone updateM : updatedMilestonesList) {
                         if (updateM.getComponentMilestoneId()!=null) {
                             ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
@@ -363,8 +366,9 @@ public class Campaigns extends Controller {
 
                 return ok(Json.toJson(campaignOld));
             } catch (Exception e) {
-                e.printStackTrace();
-                return badRequest(Json.toJson("Error updating fields"));
+                Logger.info("Error updating campaign: "+e.getLocalizedMessage());
+                return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,
+                        "Error updating campaign: "+e.getLocalizedMessage(), e.getStackTrace().toString())));
             }
         }
     }
