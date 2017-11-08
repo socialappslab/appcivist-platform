@@ -3,13 +3,8 @@ package models;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -480,5 +475,17 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 		List<Component> membs = q.findList();
 		return membs;
 
+	}
+
+	public ComponentMilestone getMilestoneById (Long id) {
+		List<ComponentMilestone> milestones = this.getMilestones();
+		if (milestones != null && milestones.size()>0)
+		{
+			Optional<ComponentMilestone> filtered = milestones.stream().filter(m -> m.getComponentMilestoneId().equals(id)).findFirst();
+			if (filtered!=null) {
+				return filtered.get();
+			}
+		}
+		return  null;
 	}
 }

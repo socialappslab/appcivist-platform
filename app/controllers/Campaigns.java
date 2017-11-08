@@ -25,18 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import models.Assembly;
-import models.Campaign;
-import models.CampaignTemplate;
-import models.CampaignTimelineEdge;
-import models.Component;
-import models.Membership;
-import models.MembershipAssembly;
-import models.Resource;
-import models.ResourceSpace;
-import models.Theme;
-import models.User;
-import models.WorkingGroup;
+import models.*;
 import models.misc.Views;
 import models.transfer.CampaignBriefTransfer;
 import models.transfer.CampaignSummaryTransfer;
@@ -262,13 +251,13 @@ public class Campaigns extends Controller {
                 campaignOld.setShortname(updatedCampaign.getShortname());
                 campaignOld.setUrl(updatedCampaign.getUrl());
                 campaignOld.setListed(updatedCampaign.getListed());
-                if (updatedCampaign.getCover()!=null ){
-                    if(updatedCampaign.getCover().getResourceId()!=null){
+                if (updatedCampaign.getCover() != null) {
+                    if (updatedCampaign.getCover().getResourceId() != null) {
                         Resource cover = updatedCampaign.getCover();
                         cover.update();
                         cover.refresh();
                         campaignOld.setCover(cover);
-                    }else{
+                    } else {
                         Resource cover = updatedCampaign.getCover();
                         cover.save();
                         cover.refresh();
@@ -276,7 +265,7 @@ public class Campaigns extends Controller {
                     }
                 }
                 List<Component> componentList = new ArrayList<Component>();
-                for (Component component:componentLoaded
+                for (Component component : componentLoaded
                         ) {
                     Component componentOld = Component.read(component.getComponentId());
                     componentOld.setTitle(component.getTitle());
@@ -289,10 +278,48 @@ public class Campaigns extends Controller {
                     componentOld.update();
                     componentOld.refresh();
                     componentList.add(componentOld);
+
+                    List <ComponentMilestone> updatedMilestonesList = component.getMilestones();
+                    for(ComponentMilestone updateM : updatedMilestonesList) {
+                        if (updateM.getComponentMilestoneId()!=null) {
+                            ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
+                            int changes = 0;
+                            if (!oldMilestone.getTitle().equals(updateM.getTitle())) {
+                                oldMilestone.setTitle(updateM.getTitle());
+                                changes++;
+                            }
+
+                            if (!oldMilestone.getDescription().equals(updateM.getDescription())) {
+                                oldMilestone.setDescription(updateM.getDescription());
+                                changes++;
+                            }
+
+                            if (!oldMilestone.getDate().equals(updateM.getDate())) {
+                                oldMilestone.setDate(updateM.getDate());
+                                changes++;
+                            }
+
+                            if (!oldMilestone.getType().equals(ComponentMilestoneTypes.START)
+                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)) {
+                                if (!oldMilestone.getType().equals(updateM.getType())) {
+                                    oldMilestone.setType(updateM.getType());
+                                    changes++;
+                                }
+                            }
+                            if (changes>0) {
+                                oldMilestone.update();
+                            }
+                        } else {
+                            // add new milestone
+                            ComponentMilestone.create(updateM);
+                            componentOld.getResourceSpace().getMilestones().add(updateM);
+                        }
+                    }
+                    componentOld.getResourceSpace().update();
                 }
                 List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
-                int edges =0;
-                for (Component component:componentList
+                int edges = 0;
+                for (Component component : componentList
                         ) {
                     CampaignTimelineEdge edge = new CampaignTimelineEdge();
                     edge.setCampaign(campaignOld);
@@ -311,13 +338,13 @@ public class Campaigns extends Controller {
                         edges++;
                     }
                 }
-                for (CampaignTimelineEdge edge:campaignOld.getTimelineEdges()
+                for (CampaignTimelineEdge edge : campaignOld.getTimelineEdges()
                         ) {
                     edge.delete();
                 }
                 List<CampaignTimelineEdge> timelineEdgesLoaded = new ArrayList<>();
-                for (CampaignTimelineEdge edge:timelineEdges
-                     ) {
+                for (CampaignTimelineEdge edge : timelineEdges
+                        ) {
                     edge.save();
                     edge.refresh();
                     timelineEdgesLoaded.add(edge);
