@@ -242,7 +242,7 @@ public class Campaigns extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             try {
-                Logger.debug("Starting to update campaign by ID: "+campaignId)
+                Logger.debug("Starting to update campaign by ID: "+campaignId);
                 Campaign campaignOld = Campaign.read(campaignId);
                 Campaign updatedCampaign = newCampaignForm.get();
                 List<Component> componentLoaded = updatedCampaign.getTransientComponents();
