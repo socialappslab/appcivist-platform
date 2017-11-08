@@ -287,6 +287,10 @@ public class WorkingGroups extends Controller {
                         newWorkingGroup.setCreator(groupCreator);
                     }
 
+                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
+                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+                    newWorkingGroup.refresh();
+
                     // Add the working group to the campaign
                     Campaign c = Campaign.read(cid);
                     ResourceSpace rsC = ResourceSpace.read(c.getResourceSpaceId());
@@ -294,20 +298,6 @@ public class WorkingGroups extends Controller {
                     newWorkingGroup.getContainingSpaces().add(rsC);
                     rsC.update();
 
-                    // Add the working group to the assembly
-                    ResourceSpace rs = ResourceSpace.read(a.getResourcesResourceSpaceId());
-                    rs.addWorkingGroup(newWorkingGroup);
-                    newWorkingGroup.getContainingSpaces().add(rs);
-                    rs.update();
-
-                    List<InvitationTransfer> invitationsList = newWorkingGroup.getInvitations();
-                    newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-                    newWorkingGroup.refresh();
-
-
-
-
-                    newWorkingGroup.refresh();
 
                     // Create and send invitations
                     if (invitations != null && invitations.equals("true")) {
@@ -316,19 +306,9 @@ public class WorkingGroups extends Controller {
                         }
                     }
 
-
-                    /*WorkingGroup finalNewWorkingGroup = newWorkingGroup;
-                    Promise.promise(() -> {
-                        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN,
-                                NotificationEventName.NEW_WORKING_GROUP,
-                                c,
-                                finalNewWorkingGroup);
-                    });*/
-
                 } catch (Exception e) {
                     Ebean.rollbackTransaction();
-                    e.printStackTrace();
-                    Logger.info("Error creating Working Group: " + e.getMessage());
+                    Logger.info("Error creating Working Group: " + e.getLocalizedMessage());
                     responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
                     responseBody.setStatusMessage("Error creating Working Group: " + e.getMessage());
                     return internalServerError(Json.toJson(responseBody));
