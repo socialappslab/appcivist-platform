@@ -17,20 +17,13 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import models.*;
 import models.misc.Views;
-import models.transfer.CampaignBriefTransfer;
-import models.transfer.CampaignSummaryTransfer;
-import models.transfer.CampaignTransfer;
-import models.transfer.TransferResponseStatus;
+import models.transfer.*;
+import org.dozer.DozerBeanMapper;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -231,12 +224,10 @@ public class Campaigns extends Controller {
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
         // 1. read the campaign data from the body
         // another way of getting the body content => request().body().asJson()
-        final Form<Campaign> newCampaignForm = CAMPAIGN_FORM.bindFromRequest();
+        final Form<CampaignTransfer> newCampaignForm = CAMPAIGN_TRANSFER_FORM.bindFromRequest();
         if (newCampaignForm.hasErrors()) {
             TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(Messages.get(
-                    GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
-                    newCampaignForm.errorsAsJson()));
+            responseBody.setStatusMessage(Messages.get( GlobalData.CAMPAIGN_CREATE_MSG_ERROR, newCampaignForm.errorsAsJson()));
             Logger.info("Error updating campaign");
             Logger.debug("=> " + newCampaignForm.errorsAsJson());
             return badRequest(Json.toJson(responseBody));
@@ -244,8 +235,8 @@ public class Campaigns extends Controller {
             try {
                 Logger.debug("Starting to update campaign by ID: "+campaignId);
                 Campaign campaignOld = Campaign.read(campaignId);
-                Campaign updatedCampaign = newCampaignForm.get();
-                List<Component> componentLoaded = updatedCampaign.getTransientComponents();
+                CampaignTransfer updatedCampaign = newCampaignForm.get();
+                List<ComponentTransfer> updatedComponents = updatedCampaign.getTransientComponents();
                 campaignOld.setCampaignId(campaignId);
                 campaignOld.setGoal(updatedCampaign.getGoal());
                 campaignOld.setTitle(updatedCampaign.getTitle());
@@ -253,13 +244,16 @@ public class Campaigns extends Controller {
                 campaignOld.setUrl(updatedCampaign.getUrl());
                 campaignOld.setListed(updatedCampaign.getListed());
                 if (updatedCampaign.getCover() != null) {
+                    ResourceTransfer coverT = updatedCampaign.getCover();
+                    List<String> mappingFiles = Play.application().configuration()
+                            .getStringList("appcivist.dozer.mappingFiles");
+                    DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
+                    Resource cover = mapper.map(coverT, Resource.class);
                     if (updatedCampaign.getCover().getResourceId() != null) {
-                        Resource cover = updatedCampaign.getCover();
                         cover.update();
                         cover.refresh();
                         campaignOld.setCover(cover);
                     } else {
-                        Resource cover = updatedCampaign.getCover();
                         cover.save();
                         cover.refresh();
                         campaignOld.setCover(cover);
@@ -267,8 +261,7 @@ public class Campaigns extends Controller {
                 }
                 List<Component> componentList = new ArrayList<Component>();
                 Logger.debug("Starting to update campaign components...");
-                for (Component component : componentLoaded
-                        ) {
+                for (ComponentTransfer component : updatedComponents) {
                     Component componentOld = Component.read(component.getComponentId());
                     componentOld.setTitle(component.getTitle());
                     componentOld.setDescription(component.getDescription());
@@ -281,21 +274,29 @@ public class Campaigns extends Controller {
                     componentOld.refresh();
                     componentList.add(componentOld);
 
-                    List <ComponentMilestone> updatedMilestonesList = component.getMilestones();
+                    List <ComponentMilestoneTransfer> updatedMilestonesList = component.getMilestones();
                     Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
                     int position = 0;
-                    int componentCount = 0;
-                    for(ComponentMilestone updateM : updatedMilestonesList) {
-                        componentCount+=1;
+                    int milestoneCount = 0;
+                    updatedMilestonesList.sort(Comparator.comparing(ComponentMilestoneTransfer::getDate));
+
+                    for(ComponentMilestoneTransfer updateM : updatedMilestonesList) {
+                        milestoneCount+=1;
                         if (updateM.getComponentMilestoneId()!=null) {
                             ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
                             int changes = 0;
                             if (oldMilestone.getTitle()!=null
                                     && !oldMilestone.getTitle().equals(updateM.getTitle())) {
-                                Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setTitle(updateM.getTitle());
-                                changes++;
-                            } else if (updateM.getTitle()!=null) {
+
+                                if ( updateM.getTitle()!=null
+                                        && !updateM.getTitle().isEmpty()
+                                        && !updateM.getTitle().equals("")) {
+                                    Logger.debug("Updating milestone title:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setTitle(updateM.getTitle());
+                                    changes++;
+                                }
+                            } else if (oldMilestone.getTitle()==null && updateM.getTitle()!=null && !updateM.getTitle().isEmpty()
+                                    && !updateM.getTitle().equals("")) {
                                 Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setTitle(updateM.getTitle());
                                 changes++;
@@ -306,7 +307,7 @@ public class Campaigns extends Controller {
                                 Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDescription(updateM.getDescription());
                                 changes++;
-                            } else if (updateM.getDescription()!=null) {
+                            } else if (oldMilestone.getDescription() == null && updateM.getDescription()!=null) {
                                 Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDescription(updateM.getDescription());
                                 changes++;
@@ -317,37 +318,26 @@ public class Campaigns extends Controller {
                                 Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDate(updateM.getDate());
                                 changes++;
-                            } else if (updateM.getDate()!=null) {
+                            } else if (oldMilestone.getDate() == null && updateM.getDate()!=null) {
                                 Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDate(updateM.getDate());
                                 changes++;
                             }
 
-                            if (oldMilestone.getType()!=null
-                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)
-                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)) {
-                                if (!oldMilestone.getType().equals(updateM.getType())) {
-                                    Logger.debug("Updating milestone type:"+updateM.getComponentMilestoneId());
-                                    oldMilestone.setType(updateM.getType());
-                                    changes++;
-                                }
-                            } else if (updateM.getType()!=null) {
-                                Logger.debug("Updating milestone type:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setType(updateM.getType());
-                                changes++;
-                            }
-
-                            if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)) {
+                            if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                    && oldMilestone.getPosition()!=updatedMilestonesList.size()) {
                                 oldMilestone.setPosition(updatedMilestonesList.size());
                                 changes++;
                             }
 
                             if (changes>0) {
-                                if (position == 0) {
-                                    position = componentCount;
-                                }
                                 Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setPosition(position);
+                                if (position == 0) {
+                                    position = milestoneCount;
+                                }
+                                if (!oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                        && !oldMilestone.getType().equals(ComponentMilestoneTypes.START))
+                                    oldMilestone.setPosition(position);
                                 oldMilestone.update();
                                 position++;
                             }
@@ -355,11 +345,30 @@ public class Campaigns extends Controller {
                             // add new milestone
                             Logger.debug("Creating new milestone: "+updateM.getTitle());
                             updateM.setPosition(position);
+                            updateM.setType(ComponentMilestoneTypes.REMINDER);
                             position++;
-                            ComponentMilestone.create(updateM);
-                            componentOld.getResourceSpace().getMilestones().add(updateM);
+                            List<String> mappingFiles = Play.application().configuration()
+                                    .getStringList("appcivist.dozer.mappingFiles");
+                            DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
+                            ComponentMilestone updatedMObject = mapper.map(updateM, ComponentMilestone.class);
+                            ComponentMilestone.create(updatedMObject);
+                            componentOld.getResourceSpace().getMilestones().add(updatedMObject);
                         }
                     }
+
+                    List <ComponentMilestoneTransfer> deletedMilestonesList = component.getDeletedMilestones();
+                    for (ComponentMilestoneTransfer milestone : deletedMilestonesList) {
+                        if (milestone.getComponentMilestoneId()!=null) {
+                            ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
+                            if (oldMilestone!=null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
+                                oldMilestone.setRemoved(true);
+                                oldMilestone.setRemoval(new Date());
+                                oldMilestone.update();
+                            }
+                        }
+                    }
+
                     Logger.debug("Update component space: "+componentOld.getComponentId());
                     componentOld.getResourceSpace().update();
                 }

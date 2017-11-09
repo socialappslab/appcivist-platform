@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import models.Ballot;
+import models.Component;
 import models.Resource;
 
 public class CampaignTransfer {
@@ -19,6 +20,7 @@ public class CampaignTransfer {
 	private ResourceTransfer cover;
 
 	private List<ComponentTransfer> components = new ArrayList<>();
+	private List<ComponentTransfer> transientComponents = new ArrayList<>();
 	private List<ConfigTransfer> configs = new ArrayList<>();
 	private List<ThemeTransfer> themes = new ArrayList<>();
 	private List<WorkingGroupTransfer> workingGroups = new ArrayList<>();
@@ -162,4 +164,8 @@ public class CampaignTransfer {
 	public void setCover(ResourceTransfer cover) {
 		this.cover = cover;
 	}
+
+	public void setTransientComponents(List<ComponentTransfer> list) { this.transientComponents = list; }
+	public List<ComponentTransfer> getTransientComponents() { return this.transientComponents; }
+
 }

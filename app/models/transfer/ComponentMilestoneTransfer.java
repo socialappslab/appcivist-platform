@@ -9,14 +9,17 @@ import javax.persistence.Enumerated;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import enums.ComponentMilestoneTypes;
 import enums.ContributionTypes;
 
 public class ComponentMilestoneTransfer {
-	private Long milestoneId;
+	private Long componentMilestoneId;
 	private String title;
 	private int position;
 	private String description;
 	private String key;
+	@Enumerated(EnumType.STRING)
+	private ComponentMilestoneTypes type;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
 	private Date start = Calendar.getInstance().getTime(); 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
@@ -31,12 +34,12 @@ public class ComponentMilestoneTransfer {
 		super();
 	}
 	
-	public Long getMilestoneId() {
-		return milestoneId;
+	public Long getComponentMilestoneId() {
+		return componentMilestoneId;
 	}
 
-	public void setMilestoneId(Long milestoneId) {
-		this.milestoneId = milestoneId;
+	public void setComponentMilestoneId(Long milestoneId) {
+		this.componentMilestoneId = milestoneId;
 	}
 
 	public String getTitle() {
@@ -117,5 +120,13 @@ public class ComponentMilestoneTransfer {
 
 	public void setMainContributionType(ContributionTypes mainContributionType) {
 		this.mainContributionType = mainContributionType;
+	}
+
+	public ComponentMilestoneTypes getType() {
+		return type;
+	}
+
+	public void setType(ComponentMilestoneTypes t) {
+		this.type = t;
 	}
 }

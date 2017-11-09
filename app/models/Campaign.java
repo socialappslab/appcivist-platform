@@ -106,6 +106,10 @@ public class Campaign extends AppCivistBaseModel {
 	//@JsonIgnore
 	private List<Component> components = new ArrayList<>();
 	@Transient
+	//@JsonView(Views.Public.class)
+	//@JsonIgnore
+	private List<Component> transientComponents = new ArrayList<>();
+	@Transient
 	private List<Config> configs = new ArrayList<>();
 	@Transient
 	private List<Resource> resourceList = new ArrayList<>();
@@ -418,7 +422,11 @@ String uuidAsString, List<Component> phases) {
 	}
 
 	public List<Component> getTransientComponents() {
-		return this.components;
+		return this.transientComponents;
+	}
+
+	public void setTransientComponents(List<Component> components) {
+		this.transientComponents = components;
 	}
 
 	public List<Config> getConfigs() {

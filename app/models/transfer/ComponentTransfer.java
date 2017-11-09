@@ -25,6 +25,7 @@ public class ComponentTransfer {
 	private int timeline;
 	private Boolean linked;
 	private List<ComponentMilestoneTransfer> milestones = new ArrayList<>();
+	private List<ComponentMilestoneTransfer> deletedMilestones = new ArrayList<>();
 	private List<ContributionTransfer> contributions = new ArrayList<>();
 	private List<VotingBallotTransfer> ballots = new ArrayList<>();
 	private List<ContributionTemplateTransfer> templates = new ArrayList<>();
@@ -123,6 +124,14 @@ public class ComponentTransfer {
 
 	public void setLinked(Boolean linked) {
 		this.linked = linked;
+	}
+
+	public List<ComponentMilestoneTransfer> getDeletedMilestones() {
+		return deletedMilestones;
+	}
+
+	public void setDeletedMilestones(List<ComponentMilestoneTransfer> milestones) {
+		this.deletedMilestones = milestones;
 	}
 
 	public List<ComponentMilestoneTransfer> getMilestones() {
