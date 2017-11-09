@@ -285,32 +285,40 @@ public class Campaigns extends Controller {
                     Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
                     for(ComponentMilestone updateM : updatedMilestonesList) {
                         if (updateM.getComponentMilestoneId()!=null) {
-                            Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
                             ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
                             int changes = 0;
-                            if (!oldMilestone.getTitle().equals(updateM.getTitle())) {
+                            if (oldMilestone.getTitle()!=null
+                                    && !oldMilestone.getTitle().equals(updateM.getTitle())) {
+                                Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setTitle(updateM.getTitle());
                                 changes++;
                             }
 
-                            if (!oldMilestone.getDescription().equals(updateM.getDescription())) {
+                            if (oldMilestone.getDescription()!=null
+                                    && !oldMilestone.getDescription().equals(updateM.getDescription())) {
+                                Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDescription(updateM.getDescription());
                                 changes++;
                             }
 
-                            if (!oldMilestone.getDate().equals(updateM.getDate())) {
+                            if (oldMilestone.getDate()!=null
+                                    && !oldMilestone.getDate().equals(updateM.getDate())) {
+                                Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDate(updateM.getDate());
                                 changes++;
                             }
 
-                            if (!oldMilestone.getType().equals(ComponentMilestoneTypes.START)
+                            if (oldMilestone.getType()!=null
+                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)
                                     && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)) {
                                 if (!oldMilestone.getType().equals(updateM.getType())) {
+                                    Logger.debug("Updating milestone type:"+updateM.getComponentMilestoneId());
                                     oldMilestone.setType(updateM.getType());
                                     changes++;
                                 }
                             }
                             if (changes>0) {
+                                Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
                                 oldMilestone.update();
                             }
                         } else {
