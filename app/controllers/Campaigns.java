@@ -285,7 +285,7 @@ public class Campaigns extends Controller {
                     Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
                     for(ComponentMilestone updateM : updatedMilestonesList) {
                         if (updateM.getComponentMilestoneId()!=null) {
-                            Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId();
+                            Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
                             ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
                             int changes = 0;
                             if (!oldMilestone.getTitle().equals(updateM.getTitle())) {
