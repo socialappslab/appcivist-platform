@@ -283,12 +283,19 @@ public class Campaigns extends Controller {
 
                     List <ComponentMilestone> updatedMilestonesList = component.getMilestones();
                     Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
+                    int position = 0;
+                    int componentCount = 0;
                     for(ComponentMilestone updateM : updatedMilestonesList) {
+                        componentCount+=1;
                         if (updateM.getComponentMilestoneId()!=null) {
                             ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
                             int changes = 0;
                             if (oldMilestone.getTitle()!=null
                                     && !oldMilestone.getTitle().equals(updateM.getTitle())) {
+                                Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
+                                oldMilestone.setTitle(updateM.getTitle());
+                                changes++;
+                            } else if (updateM.getTitle()!=null) {
                                 Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setTitle(updateM.getTitle());
                                 changes++;
@@ -299,10 +306,18 @@ public class Campaigns extends Controller {
                                 Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDescription(updateM.getDescription());
                                 changes++;
+                            } else if (updateM.getDescription()!=null) {
+                                Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
+                                oldMilestone.setDescription(updateM.getDescription());
+                                changes++;
                             }
 
                             if (oldMilestone.getDate()!=null
                                     && !oldMilestone.getDate().equals(updateM.getDate())) {
+                                Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
+                                oldMilestone.setDate(updateM.getDate());
+                                changes++;
+                            } else if (updateM.getDate()!=null) {
                                 Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
                                 oldMilestone.setDate(updateM.getDate());
                                 changes++;
@@ -316,14 +331,31 @@ public class Campaigns extends Controller {
                                     oldMilestone.setType(updateM.getType());
                                     changes++;
                                 }
+                            } else if (updateM.getType()!=null) {
+                                Logger.debug("Updating milestone type:"+updateM.getComponentMilestoneId());
+                                oldMilestone.setType(updateM.getType());
+                                changes++;
                             }
+
+                            if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)) {
+                                oldMilestone.setPosition(updatedMilestonesList.size());
+                                changes++;
+                            }
+
                             if (changes>0) {
+                                if (position == 0) {
+                                    position = componentCount;
+                                }
                                 Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
+                                oldMilestone.setPosition(position);
                                 oldMilestone.update();
+                                position++;
                             }
                         } else {
                             // add new milestone
                             Logger.debug("Creating new milestone: "+updateM.getTitle());
+                            updateM.setPosition(position);
+                            position++;
                             ComponentMilestone.create(updateM);
                             componentOld.getResourceSpace().getMilestones().add(updateM);
                         }
