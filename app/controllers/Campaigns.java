@@ -285,6 +285,7 @@ public class Campaigns extends Controller {
                     Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
                     for(ComponentMilestone updateM : updatedMilestonesList) {
                         if (updateM.getComponentMilestoneId()!=null) {
+                            Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId();
                             ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
                             int changes = 0;
                             if (!oldMilestone.getTitle().equals(updateM.getTitle())) {
@@ -314,16 +315,17 @@ public class Campaigns extends Controller {
                             }
                         } else {
                             // add new milestone
+                            Logger.debug("Creating new milestone: "+updateM.getTitle());
                             ComponentMilestone.create(updateM);
                             componentOld.getResourceSpace().getMilestones().add(updateM);
                         }
                     }
+                    Logger.debug("Update component space: "+componentOld.getComponentId());
                     componentOld.getResourceSpace().update();
                 }
                 List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
                 int edges = 0;
-                for (Component component : componentList
-                        ) {
+                for (Component component : componentList) {
                     CampaignTimelineEdge edge = new CampaignTimelineEdge();
                     edge.setCampaign(campaignOld);
                     if (edges == 0) {
