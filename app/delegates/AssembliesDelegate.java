@@ -3,6 +3,7 @@ package delegates;
 import java.util.ArrayList;
 import java.util.List;
 
+import enums.AssemblyStatus;
 import models.*;
 import models.location.Location;
 import models.transfer.*;
@@ -134,7 +135,9 @@ public class AssembliesDelegate {
 		Logger.info("Assembly created!");
 
 		newAssembly.refresh();
-
+		newAssembly.setStatus(AssemblyStatus.PUBLISHED);
+		newAssembly.update();
+		newAssembly.refresh();
 		// Adding new assembly to principal assembly if created under it
 		if (principal!=null) {
 			ResourceSpace rsprincipal = principal.getResources();

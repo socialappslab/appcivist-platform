@@ -1,32 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
-import io.swagger.annotations.ApiModel;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrePersist;
-import javax.persistence.Transient;
-
-import models.location.Location;
-import models.misc.Views;
-import play.data.validation.Constraints.MaxLength;
-import play.data.validation.Constraints.Required;
-import utils.GlobalData;
-
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -34,11 +7,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
+import com.fasterxml.jackson.annotation.JsonView;
+import enums.AssemblyStatus;
 import enums.ConfigTargets;
 import enums.MembershipStatus;
 import enums.ResourceSpaceTypes;
 import exceptions.MembershipCreationException;
+import io.swagger.annotations.ApiModel;
+import models.location.Location;
+import models.misc.Views;
+import play.data.validation.Constraints.MaxLength;
+import play.data.validation.Constraints.Required;
+import utils.GlobalData;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * An assembly represents the central repository of a group of people interested
@@ -189,6 +174,9 @@ public class Assembly extends AppCivistBaseModel {
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
 	private List<Campaign> existingCampaigns = new ArrayList<>();
+
+	@Enumerated(EnumType.STRING)
+	private AssemblyStatus status;
 	
 	/**
 	 * The find property is an static property that facilitates database query
@@ -760,7 +748,15 @@ public class Assembly extends AppCivistBaseModel {
 	public void updateResources() {
 		this.resources.update();
 	}
-	
+
+	public AssemblyStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AssemblyStatus status) {
+		this.status = status;
+	}
+
 	public static Boolean isAssemblyListed(Long id) {
 		return find.where().eq("assemblyId",id).eq("listed",true).findUnique()!=null;
 	}

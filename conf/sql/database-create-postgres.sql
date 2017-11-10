@@ -1988,3 +1988,8 @@ ALTER TABLE resource
 
 ALTER TABLE resource
   ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying::text, 'VIDEO'::character varying::text, 'PAD'::character varying::text, 'TEXT'::character varying::text, 'WEBPAGE'::character varying::text, 'FILE'::character varying::text, 'AUDIO'::character varying::text, 'CONTRIBUTION_TEMPLATE'::character varying::text, 'CAMPAIGN_TEMPLATE'::character varying::text, 'PROPOSAL'::character varying::text, 'GDOC'::character varying::text]))
+
+-- 58.sql
+ALTER TABLE campaign ADD COLUMN status character varying(40);
+ALTER TABLE working_group ADD COLUMN status character varying(40);
+ALTER TABLE assembly ADD COLUMN status character varying(40);

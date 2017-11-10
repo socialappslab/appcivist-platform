@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.*;
+import enums.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -25,12 +26,6 @@ import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.MembershipStatus;
-import enums.ResourceSpaceTypes;
-import enums.SupportedMembershipRegistration;
-import enums.VotingSystemTypes;
 import exceptions.MembershipCreationException;
 
 @Entity
@@ -155,8 +150,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 	// Locations
 	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "workingGroups")
 	private List<Location> locations;
-	
-	
+
+	@Enumerated(EnumType.STRING)
+	private WorkingGroupStatus status;
+
+
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
 
     public WorkingGroup() {
@@ -306,6 +304,9 @@ public class WorkingGroup extends AppCivistBaseModel {
 		mg.setRoles(roles);
 		
 		MembershipGroup.create(mg);
+		workingGroup.setStatus(WorkingGroupStatus.PUBLISHED);
+		workingGroup.update();
+		workingGroup.refresh();
 		return workingGroup;
     }
 
@@ -457,6 +458,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	public String getConsensusBallotAsString() {
 		return consensusBallot!=null ? consensusBallot.toString() : null;
+	}
+
+	public WorkingGroupStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(WorkingGroupStatus status) {
+		this.status = status;
 	}
 
 	public void setConsensusBallotAsString(String consensusBallotAsString) {

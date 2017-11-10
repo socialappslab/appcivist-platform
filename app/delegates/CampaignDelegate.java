@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import enums.CampaignStatus;
 import models.*;
 import models.transfer.CampaignSummaryTransfer;
 import models.transfer.CampaignTransfer;
@@ -56,6 +57,8 @@ public class CampaignDelegate {
 
 		assemblyResources.addCampaign(newCampaign);
 		assemblyResources.update();
+		newCampaign.setStatus(CampaignStatus.PUBLISHED);
+		newCampaign.update();
 		newCampaign.refresh();
 		
 		newCampaignTransfer = mapper.map(newCampaign, CampaignTransfer.class);
