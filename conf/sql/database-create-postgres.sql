@@ -1988,3 +1988,73 @@ ALTER TABLE resource
 
 ALTER TABLE resource
   ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying::text, 'VIDEO'::character varying::text, 'PAD'::character varying::text, 'TEXT'::character varying::text, 'WEBPAGE'::character varying::text, 'FILE'::character varying::text, 'AUDIO'::character varying::text, 'CONTRIBUTION_TEMPLATE'::character varying::text, 'CAMPAIGN_TEMPLATE'::character varying::text, 'PROPOSAL'::character varying::text, 'GDOC'::character varying::text]))
+
+
+  --57.sql
+  CREATE TABLE notification_event_signal_archive
+(
+  id bigint NOT NULL,
+  creation timestamp without time zone,
+  last_update timestamp without time zone,
+  lang character varying(255),
+  removal timestamp without time zone,
+  removed boolean,
+  space_type character varying(255),
+  signal_type character varying(255),
+  event_id character varying(40),
+  text text,
+  title character varying(255),
+  data jsonb,
+  CONSTRAINT pk_notification_event_archive PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE notification_event_signal
+  OWNER TO postgres;
+  --58.sql
+  CREATE TABLE notification_event_signal_user_archival
+(
+  id bigint NOT NULL,
+  creation timestamp without time zone,
+  last_update timestamp without time zone,
+  lang character varying(255),
+  removal timestamp without time zone,
+  removed boolean,
+  user_user_id bigint,
+  signal_id bigint,
+  read boolean,
+  CONSTRAINT pk_notification_event_signal_archive_user PRIMARY KEY (id),
+  CONSTRAINT fk_notification_event_signal_archive FOREIGN KEY (signal_id)
+      REFERENCES notification_event_signal_archive (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT fk_user FOREIGN KEY (user_user_id)
+      REFERENCES appcivist_user (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE notification_event_signal_user
+  OWNER TO postgres;
+  --59.sql
+CREATE OR REPLACE FUNCTION move_signals(init_date timestamp)
+RETURNS void AS
+$BODY$
+begin
+	case when (select count(*) FROM public.notification_event_signal where creation < init_date) > 0 then
+		WITH tmp_event AS (DELETE FROM public.notification_event_signal where creation < init_date RETURNING *)
+		INSERT INTO public.notification_event_signal_archive SELECT * FROM tmp_event;
+	when (select count(*) FROM public.notification_event_signal_user where signal_id in
+	(SELECT id from public.notification_event_signal where creation < init_date ) > 0) THEN
+		WITH tmp_user AS (DELETE FROM public.notification_event_signal_user where
+		signal_id in (SELECT id from public.notification_event_signal where creation < init_date )
+		RETURNING *)
+		INSERT INTO public.notification_event_signal_user_archive SELECT * FROM tmp_user;
+	end case;
+	exception when others then
+	   RAISE EXCEPTION 'ERROR. %', SQLERRM
+	   USING ERRCODE = 'ER001';
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE
