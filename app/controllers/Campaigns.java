@@ -374,7 +374,10 @@ public class Campaigns extends Controller {
                 }
                 List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
                 int edges = 0;
-                for (Component component : componentList) {
+                Set<Component> componentsSet = new LinkedHashSet<>();
+                componentsSet.addAll(componentList);
+                for (Component component : componentsSet) {
+
                     CampaignTimelineEdge edge = new CampaignTimelineEdge();
                     edge.setCampaign(campaignOld);
                     if (edges == 0) {
