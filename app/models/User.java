@@ -556,10 +556,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			user.setLanguage(userLanguage);
 
 		}
-
-		UserProfile userProfile = new UserProfile(user, null, "", "",  "", null, "");
-		userProfile.save();
-
+		
 		/*
 		 * 9. Create the new user
 		 */
@@ -661,7 +658,7 @@ public class User extends AppCivistBaseModel implements Subject {
 				MembershipInvitation.acceptAndCreateMembershipByToken(mi, user);				
 			}
 		}
-
+				
 		
 		return user;
 	}
