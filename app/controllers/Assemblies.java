@@ -1049,6 +1049,15 @@ public class Assemblies extends Controller {
 						// Else create membership
 						if (sendInvitations.equals("true")) {
 							if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
+								//membership created with status invited
+								MembershipAssembly m = new MembershipAssembly();
+								m.setUser(u);
+								m.setMembershipType(cell[4].toUpperCase());
+								m.setTargetAssembly(assembly);
+								m.setAssembly(assembly);
+								m.setStatus(MembershipStatus.INVITED);
+								m.save();
+								//invitation created and send mail
 								InvitationTransfer invitation = new InvitationTransfer();
 								invitation.setEmail(u.getEmail());
 								invitation.setInvitationEmail(u.getEmail()); // change
@@ -1068,6 +1077,7 @@ public class Assemblies extends Controller {
 								MembershipInvitation.create(invitation, assembly.getCreator(), assembly);
 							}
 						} else {
+
 							// Create membership (with the assembly aid)
 							MembershipAssembly m = new MembershipAssembly();
 							m.setUser(u);
@@ -1169,6 +1179,23 @@ public class Assemblies extends Controller {
 						// Else create membership
 						if (sendInvitations.equals("true")) {
 							if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), wg.getGroupId(), MembershipTypes.GROUP)) {
+								// Create membership (with the group gid)
+								MembershipGroup mG = new MembershipGroup();
+								mG.setUser(u);
+								mG.setMembershipType(cell[4].toUpperCase());
+								mG.setTargetAssembly(assembly);
+								mG.setWorkingGroup(wg);
+								mG.setStatus(MembershipStatus.INVITED);
+								mG.save();
+
+								// Also with the assembly aid
+								MembershipAssembly m = new MembershipAssembly();
+								m.setUser(u);
+								m.setMembershipType(cell[4].toUpperCase());
+								m.setTargetAssembly(assembly);
+								m.setAssembly(assembly);
+								m.setStatus(MembershipStatus.INVITED);
+								m.save();
 								InvitationTransfer invitation = new InvitationTransfer();
 								invitation.setEmail(u.getEmail());
 								invitation.setInvitationEmail(u.getEmail()); // change
