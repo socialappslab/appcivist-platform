@@ -340,7 +340,7 @@ public class Campaigns extends Controller {
                                             && !oldMilestone.getType().equals(ComponentMilestoneTypes.START))
                                         oldMilestone.setPosition(position);
 
-                                    if (!oldMilestone.getType().equals(ComponentMilestoneTypes.START))
+                                    if (oldMilestone.getType().equals(ComponentMilestoneTypes.START))
                                         oldMilestone.setPosition(1);
 
                                     oldMilestone.update();
