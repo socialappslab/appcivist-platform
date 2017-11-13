@@ -262,116 +262,138 @@ public class Campaigns extends Controller {
                 List<Component> componentList = new ArrayList<Component>();
                 Logger.debug("Starting to update campaign components...");
                 for (ComponentTransfer component : updatedComponents) {
-                    Component componentOld = Component.read(component.getComponentId());
-                    componentOld.setTitle(component.getTitle());
-                    componentOld.setDescription(component.getDescription());
-                    componentOld.setEndDate(component.getEndDate());
-                    componentOld.setStartDate(component.getStartDate());
-                    componentOld.setKey(component.getKey());
-                    componentOld.setPosition(component.getPosition());
-                    componentOld.setTimeline(component.getTimeline());
-                    componentOld.update();
-                    componentOld.refresh();
-                    componentList.add(componentOld);
+                    if (component.getComponentId()!=null) {
+                        Component componentOld = Component.read(component.getComponentId());
+                        componentOld.setTitle(component.getTitle());
+                        componentOld.setDescription(component.getDescription());
+                        componentOld.setEndDate(component.getEndDate());
+                        componentOld.setStartDate(component.getStartDate());
+                        componentOld.setKey(component.getKey());
+                        componentOld.setPosition(component.getPosition());
+                        componentOld.setTimeline(component.getTimeline());
+                        componentOld.update();
+                        componentOld.refresh();
+                        componentList.add(componentOld);
 
-                    List <ComponentMilestoneTransfer> updatedMilestonesList = component.getMilestones();
-                    Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
-                    int position = 0;
-                    int milestoneCount = 0;
-                    updatedMilestonesList.sort(Comparator.comparing(ComponentMilestoneTransfer::getDate));
+                        List<ComponentMilestoneTransfer> updatedMilestonesList = component.getMilestones();
+                        Logger.debug("Starting to update component milestones for component:" + componentOld.getTitle() + "(" + componentOld.getComponentId() + ")");
+                        int position = 1;
+                        int milestoneCount = 0;
+                        updatedMilestonesList.sort(Comparator.comparing(ComponentMilestoneTransfer::getDate));
 
-                    for(ComponentMilestoneTransfer updateM : updatedMilestonesList) {
-                        milestoneCount+=1;
-                        if (updateM.getComponentMilestoneId()!=null) {
-                            ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
-                            int changes = 0;
-                            if (oldMilestone.getTitle()!=null
-                                    && !oldMilestone.getTitle().equals(updateM.getTitle())) {
+                        for (ComponentMilestoneTransfer updateM : updatedMilestonesList) {
+                            milestoneCount += 1;
+                            if (updateM.getComponentMilestoneId() != null) {
+                                ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
+                                int changes = 0;
+                                if (oldMilestone.getTitle() != null
+                                        && !oldMilestone.getTitle().equals(updateM.getTitle())) {
 
-                                if ( updateM.getTitle()!=null
-                                        && !updateM.getTitle().isEmpty()
+                                    if (updateM.getTitle() != null
+                                            && !updateM.getTitle().isEmpty()
+                                            && !updateM.getTitle().equals("")) {
+                                        Logger.debug("Updating milestone title:" + updateM.getComponentMilestoneId());
+                                        oldMilestone.setTitle(updateM.getTitle());
+                                        changes++;
+                                    }
+                                } else if (oldMilestone.getTitle() == null && updateM.getTitle() != null && !updateM.getTitle().isEmpty()
                                         && !updateM.getTitle().equals("")) {
                                     Logger.debug("Updating milestone title:" + updateM.getComponentMilestoneId());
                                     oldMilestone.setTitle(updateM.getTitle());
                                     changes++;
                                 }
-                            } else if (oldMilestone.getTitle()==null && updateM.getTitle()!=null && !updateM.getTitle().isEmpty()
-                                    && !updateM.getTitle().equals("")) {
-                                Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setTitle(updateM.getTitle());
-                                changes++;
-                            }
 
-                            if (oldMilestone.getDescription()!=null
-                                    && !oldMilestone.getDescription().equals(updateM.getDescription())) {
-                                Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDescription(updateM.getDescription());
-                                changes++;
-                            } else if (oldMilestone.getDescription() == null && updateM.getDescription()!=null) {
-                                Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDescription(updateM.getDescription());
-                                changes++;
-                            }
-
-                            if (oldMilestone.getDate()!=null
-                                    && !oldMilestone.getDate().equals(updateM.getDate())) {
-                                Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDate(updateM.getDate());
-                                changes++;
-                            } else if (oldMilestone.getDate() == null && updateM.getDate()!=null) {
-                                Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDate(updateM.getDate());
-                                changes++;
-                            }
-
-                            if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)
-                                    && oldMilestone.getPosition()!=updatedMilestonesList.size()) {
-                                oldMilestone.setPosition(updatedMilestonesList.size());
-                                changes++;
-                            }
-
-                            if (changes>0) {
-                                Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
-                                if (position == 0) {
-                                    position = milestoneCount;
+                                if (oldMilestone.getDescription() != null
+                                        && !oldMilestone.getDescription().equals(updateM.getDescription())) {
+                                    Logger.debug("Updating milestone description:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDescription(updateM.getDescription());
+                                    changes++;
+                                } else if (oldMilestone.getDescription() == null && updateM.getDescription() != null) {
+                                    Logger.debug("Updating milestone description:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDescription(updateM.getDescription());
+                                    changes++;
                                 }
-                                if (!oldMilestone.getType().equals(ComponentMilestoneTypes.END)
-                                        && !oldMilestone.getType().equals(ComponentMilestoneTypes.START))
-                                    oldMilestone.setPosition(position);
-                                oldMilestone.update();
+
+                                if (oldMilestone.getDate() != null
+                                        && !oldMilestone.getDate().equals(updateM.getDate())) {
+                                    Logger.debug("Updating milestone date:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDate(updateM.getDate());
+                                    changes++;
+                                } else if (oldMilestone.getDate() == null && updateM.getDate() != null) {
+                                    Logger.debug("Updating milestone date:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDate(updateM.getDate());
+                                    changes++;
+                                }
+
+                                if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                        && oldMilestone.getPosition() != updatedMilestonesList.size()) {
+                                    oldMilestone.setPosition(updatedMilestonesList.size());
+                                    changes++;
+                                }
+
+                                if (changes > 0) {
+                                    Logger.debug("Updating milestone:" + updateM.getComponentMilestoneId());
+                                    if (position == 1) {
+                                        position = milestoneCount;
+                                    }
+                                    if (!oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                            && !oldMilestone.getType().equals(ComponentMilestoneTypes.START))
+                                        oldMilestone.setPosition(position);
+
+                                    if (!oldMilestone.getType().equals(ComponentMilestoneTypes.START))
+                                        oldMilestone.setPosition(1);
+
+                                    oldMilestone.update();
+                                    position++;
+                                } else {
+                                    if (oldMilestone.getType().equals(ComponentMilestoneTypes.START)
+                                            && oldMilestone.getPosition() != 1) {
+                                        oldMilestone.setPosition(1);
+                                        oldMilestone.update();
+                                    }
+                                }
+                            } else {
+                                // add new milestone
+                                Logger.debug("Creating new milestone: " + updateM.getTitle());
+                                updateM.setPosition(position);
+                                updateM.setType(ComponentMilestoneTypes.REMINDER);
                                 position++;
-                            }
-                        } else {
-                            // add new milestone
-                            Logger.debug("Creating new milestone: "+updateM.getTitle());
-                            updateM.setPosition(position);
-                            updateM.setType(ComponentMilestoneTypes.REMINDER);
-                            position++;
-                            List<String> mappingFiles = Play.application().configuration()
-                                    .getStringList("appcivist.dozer.mappingFiles");
-                            DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
-                            ComponentMilestone updatedMObject = mapper.map(updateM, ComponentMilestone.class);
-                            ComponentMilestone.create(updatedMObject);
-                            componentOld.getResourceSpace().getMilestones().add(updatedMObject);
-                        }
-                    }
-
-                    List <ComponentMilestoneTransfer> deletedMilestonesList = component.getDeletedMilestones();
-                    for (ComponentMilestoneTransfer milestone : deletedMilestonesList) {
-                        if (milestone.getComponentMilestoneId()!=null) {
-                            ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
-                            if (oldMilestone!=null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
-                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
-                                oldMilestone.setRemoved(true);
-                                oldMilestone.setRemoval(new Date());
-                                oldMilestone.update();
+                                List<String> mappingFiles = Play.application().configuration()
+                                        .getStringList("appcivist.dozer.mappingFiles");
+                                DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
+                                ComponentMilestone updatedMObject = mapper.map(updateM, ComponentMilestone.class);
+                                ComponentMilestone.create(updatedMObject);
+                                componentOld.getResourceSpace().getMilestones().add(updatedMObject);
                             }
                         }
-                    }
 
-                    Logger.debug("Update component space: "+componentOld.getComponentId());
-                    componentOld.getResourceSpace().update();
+                        List<ComponentMilestoneTransfer> deletedMilestonesList = component.getDeletedMilestones();
+                        for (ComponentMilestoneTransfer milestone : deletedMilestonesList) {
+                            if (milestone.getComponentMilestoneId() != null) {
+                                ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
+                                if (oldMilestone != null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                        && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
+                                    oldMilestone.setRemoved(true);
+                                    oldMilestone.setRemoval(new Date());
+                                    oldMilestone.update();
+                                }
+                            }
+                        }
+
+                        Logger.debug("Update component space: " + componentOld.getComponentId());
+                        componentOld.getResourceSpace().update();
+                    } else {
+                        List<String> mappingFiles = Play.application().configuration()
+                                .getStringList("appcivist.dozer.mappingFiles");
+                        DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
+                        Component c = mapper.map(component, Component.class);
+                        Component.create(campaignId, c);
+                        campaignOld.getResources().addComponent(c);
+                        campaignOld.getResources().update();
+                        componentList.add(c);
+                    }
                 }
+
                 List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
                 int edges = 0;
                 Set<Component> componentsSet = new LinkedHashSet<>();
