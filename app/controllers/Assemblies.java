@@ -1213,6 +1213,9 @@ public class Assemblies extends Controller {
 									invitation.setModerator(false);
 								}
 
+								if(wg.getCreator() == null) {
+									return internalServerError("The working group doesn't have a creator");
+								}
 								MembershipInvitation.create(invitation, wg.getCreator(), wg);
 							}
 						} else {
