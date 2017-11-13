@@ -490,4 +490,13 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 		}
 		return  null;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Component) {
+			Component component = (Component) obj;
+			return this.componentId.equals(component.getComponentId());
+		}
+		return false;
+	}
 }
