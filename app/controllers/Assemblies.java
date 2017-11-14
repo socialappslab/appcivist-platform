@@ -990,6 +990,7 @@ public class Assemblies extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result uploadAssemblyUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
 												@ApiParam(name = "send_invitations", value = "Send invitations if true") String sendInvitations) {
 
@@ -1115,6 +1116,7 @@ public class Assemblies extends Controller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
 	public static Result uploadGroupUsers(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
 													 @ApiParam(name = "cid", value = "Campaign ID") Long cid,
 													 @ApiParam(name = "gid", value = "Working Group ID") Long gid,
@@ -1214,7 +1216,7 @@ public class Assemblies extends Controller {
 								}
 
 								if(wg.getCreator() == null) {
-									return internalServerError("The working group doesn't have a creator");
+									wg.setCreator(requestor);
 								}
 								MembershipInvitation.create(invitation, wg.getCreator(), wg);
 							}
