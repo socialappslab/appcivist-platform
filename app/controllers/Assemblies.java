@@ -1138,7 +1138,7 @@ public class Assemblies extends Controller {
 				// Read CSV with list of users
 				br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
 				String cvsSplitBy = ",";
-				String line = "";
+				String line = br.readLine(); // ignore first line of header
 				while ((line = br.readLine()) != null) {
 					String[] cell = line.split(cvsSplitBy);
 					if (!line.contains("WebKitFormBoundary") && cell.length == 5) {
