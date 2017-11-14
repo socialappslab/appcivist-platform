@@ -310,8 +310,9 @@ public class MembershipInvitation extends AppCivistBaseModel {
 	public static List<MembershipInvitation> findByTargetId(Long targetId) {	
 		return find.where().eq("targetId",targetId).findList();
 	}
-	public static List<MembershipInvitation> findByTargetIdAndStatus(Long targetId, String status) {	
+	public static List<MembershipInvitation> findByTargetIdAndStatus(String targetType, Long targetId, String status) {
 		return find.where()
+				.eq("targetType", targetType.toUpperCase())
 				.eq("targetId", targetId)
 				.eq("status", status.toUpperCase())
 				.findList();

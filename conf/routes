@@ -154,7 +154,7 @@ POST      /api/membership                                                       
 GET       /api/membership/user/:uid                                              controllers.Memberships.findMembershipByUser(uid: Long, type ?="", by_assembly:Long?= -1)
 GET       /api/membership/user/:uid/config                                       controllers.Memberships.userConfigs(uid: Long, type ?="ASSEMBLY")
 POST      /api/membership/invitation/:iid/email                                  controllers.Memberships.reSendInvitation(iid: Long)
-GET       /api/membership/invitation/:targetId/:status                           controllers.Memberships.listInvitations(targetId: Long, status: String)
+GET       /api/membership/invitation/:targetType/:targetId/:status               controllers.Memberships.listInvitations(targetType: String, targetId: Long, status: String)
 GET       /api/membership/invitation/:token                                      controllers.Memberships.readInvitation(token: java.util.UUID) 
 PUT       /api/membership/invitation/:token/:answer                              controllers.Memberships.answerInvitation(token: java.util.UUID, answer: String) 
 GET       /api/membership/assembly/:aid/user/:uid                                controllers.Memberships.readUserMembershipInAssembly(aid: Long, uid: Long) 
