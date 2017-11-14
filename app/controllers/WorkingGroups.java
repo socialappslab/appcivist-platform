@@ -339,6 +339,7 @@ public class WorkingGroups extends Controller {
         final Form<WorkingGroup> newWorkingGroupForm = WORKING_GROUP_FORM
                 .bindFromRequest();
 
+
         if (newWorkingGroupForm.hasErrors()) {
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
@@ -347,7 +348,6 @@ public class WorkingGroups extends Controller {
             return badRequest(Json.toJson(responseBody));
         } else {
             WorkingGroup newWorkingGroup = newWorkingGroupForm.get();
-
             TransferResponseStatus responseBody = new TransferResponseStatus();
 
             if (WorkingGroup.numberByNameInAssembly(newWorkingGroup.getName(), aid) > 0) {
@@ -356,6 +356,18 @@ public class WorkingGroups extends Controller {
                 responseBody.setResponseStatus(ResponseStatus.UNAUTHORIZED);
                 responseBody.setStatusMessage(status_message);
             } else {
+                WorkingGroup oldWorkingGroup = WorkingGroup.read(groupId);
+                oldWorkingGroup.setName(newWorkingGroup.getName());
+                oldWorkingGroup.setInvitationEmail(newWorkingGroup.getInvitationEmail());
+                oldWorkingGroup.setText(newWorkingGroup.getText());
+                oldWorkingGroup.setConsensusBallot(newWorkingGroup.getConsensusBallot());
+                oldWorkingGroup.setMajorityThreshold(newWorkingGroup.getMajorityThreshold());
+                oldWorkingGroup.setIsTopic(newWorkingGroup.getIsTopic());
+                oldWorkingGroup.setListed(newWorkingGroup.getListed());
+                if (newWorkingGroup.getProfile() != null) {
+                    oldWorkingGroup.setProfile(newWorkingGroup.getProfile());
+                }
+                oldWorkingGroup.setProfile(newWorkingGroup.getProfile());
                 newWorkingGroup.setGroupId(groupId);
                 List<Theme> themes = newWorkingGroup.getThemes();
                 List<Theme> themesLoaded = new ArrayList<Theme>();
@@ -363,22 +375,22 @@ public class WorkingGroups extends Controller {
                     Theme themeRead = Theme.read(theme.getThemeId());
                     themesLoaded.add(themeRead);
                 }
-                newWorkingGroup.setThemes(themesLoaded);
-                newWorkingGroup.update();
+                oldWorkingGroup.setThemes(themesLoaded);
+                oldWorkingGroup.update();
 
                 // TODO: return URL of the new group
-                Logger.info("Creating working group");
+                Logger.info("Updating working group");
                 Logger.debug("=> " + newWorkingGroupForm.toString());
 
-                responseBody.setNewResourceId(newWorkingGroup.getGroupId());
+                responseBody.setNewResourceId(oldWorkingGroup.getGroupId());
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.GROUP_CREATE_MSG_SUCCESS,
-                        newWorkingGroup.getName()/*
+                        oldWorkingGroup.getName()/*
                                                  * ,
 												 * groupCreator.getIdentifier()
 												 */));
                 responseBody.setNewResourceURL(GlobalData.GROUP_BASE_PATH + "/"
-                        + newWorkingGroup.getGroupId());
+                        + oldWorkingGroup.getGroupId());
             }
            /* Promise.promise(() -> {
                 return NotificationsDelegate.signalNotification(
