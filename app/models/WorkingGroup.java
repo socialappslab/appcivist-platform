@@ -60,6 +60,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     @Transient
     private String consensusBallotAsString;
 	@JsonView(Views.Public.class)
+	@ManyToOne
     private User creator;
 
 	@JsonView(Views.Public.class)
