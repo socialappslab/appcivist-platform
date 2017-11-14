@@ -1,0 +1,2 @@
+ALTER TABLE public.campaign ADD COLUMN creator_user_id bigint;
+ALTER TABLE public.campaign ADD CONSTRAINT fk_creator_campaign FOREIGN KEY (creator_user_id) REFERENCES public.appcivist_user (user_id) MATCH SIMPLE;
