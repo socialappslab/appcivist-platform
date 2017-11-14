@@ -291,20 +291,25 @@ public class Configs extends Controller {
 
             updateConfigs = Config.findByTypeAndKey(uuid, configTargets, key);
             if (updateConfigs == null || updateConfigs.size() == 0) {
-                responseBody = new TransferResponseStatus();
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.CONFIG_CREATE_MSG_ERROR, "\nConfiguration Key '" + key + "' does not exists"));
-                return badRequest(Json.toJson(responseBody));
-            }
-            for (Config conf : updateConfigs
-                    ) {
-                conf.setValue(value.toString());
-                configList.add(conf);
+                // Add the config
+                Config newConf = new Config();
+                newConf.setConfigTarget(configTargets);
+                newConf.setKey(key);
+                newConf.setValue(value.toString());
+                newConf.setTargetUuid(uuid);
+                newConf = Config.create(newConf);
+                ResourceSpace rs = ResourceSpace.read(sid);
+                rs.getConfigs().add(newConf);
+                rs.update();
+            } else {
+                for (Config conf : updateConfigs) {
+                    conf.setValue(value.toString());
+                    configList.add(conf);
+                }
             }
 
         }
-        for (Config conf : configList
-                ) {
+        for (Config conf : configList) {
             Config.update(conf);
         }
         responseBody.setStatusMessage("OK");
