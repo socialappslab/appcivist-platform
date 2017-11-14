@@ -26,6 +26,7 @@ public class CampaignDelegate {
 	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User campaignCreator, Long aid, String templates) {
 		
 		Campaign newCampaign =  mapper.map(newCampaignTransfer, Campaign.class);
+		newCampaign.setCreator(campaignCreator);
 		
 		if (newCampaign.getLang() == null) 
 			newCampaign.setLang(campaignCreator.getLanguage());
