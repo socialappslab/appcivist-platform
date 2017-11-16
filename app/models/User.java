@@ -70,7 +70,7 @@ import exceptions.TokenNotValidException;
 @Entity
 @JsonInclude(Include.NON_EMPTY)
 @Table(name="appcivist_user")
-@Where(clause="active=true")
+@Where(clause="active=true and removed=false")
 @ApiModel(value="User", description="Model representing each user in AppCivist")
 public class User extends AppCivistBaseModel implements Subject {
 
@@ -363,7 +363,7 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 	
 	private static ExpressionList<User> findByEmailList(final String email) {
-		return find.where().eq("email", email).eq("active",true);
+		return find.where().eq("email", email).eq("active",true).eq("removed",false);
 	}
 
 	public static User findByUsernamePasswordIdentity(
