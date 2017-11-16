@@ -633,7 +633,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 				.collect(Collectors.toList());
 	}
 
-	public List<Campaign> getWorkingGroupCampaigns(String status) {
+	public List<Campaign> getWorkingGroupCampaigns(String status) throws Exception {
 		List<ResourceSpace> campaignSpaces = getContainingSpacesFilteredByType(ResourceSpaceTypes.CAMPAIGN);
 		List<Campaign> campaigns = new ArrayList<>();
 		for (ResourceSpace rs : campaignSpaces) {

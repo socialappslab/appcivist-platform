@@ -830,7 +830,7 @@ String uuidAsString, List<Component> phases) {
 		}
 	}
 
-	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) {
+	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) throws Exception {
 		List<Campaign> ongoingCampaigns = new ArrayList<>();
 		ResourceSpace resources = a.getResources();
 		List<Campaign> campaigns = null;
