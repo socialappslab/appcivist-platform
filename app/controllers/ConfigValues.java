@@ -11,7 +11,7 @@ public class ConfigValues {
     public ConfigValues() {
     }
 
-    public HashMap<String,String> configs;
+    public HashMap<String,String> configs = new HashMap<>();
 
     public ConfigValues(HashMap<String, String> configs) {
         this.configs = configs;

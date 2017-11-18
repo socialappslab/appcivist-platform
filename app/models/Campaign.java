@@ -153,8 +153,14 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private String externalBallot;
 
+
 	@Enumerated(EnumType.STRING)
 	private CampaignStatus status;
+
+
+	@JsonView(Views.Public.class)
+ 	@ManyToOne
+	private User creator;
 
 	/** 
 	
@@ -648,6 +654,14 @@ String uuidAsString, List<Component> phases) {
 
 	public void setTemplate(CampaignTemplate template) {
 		this.template = template;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
 	}
 
 	public static List<Campaign> findAll() {

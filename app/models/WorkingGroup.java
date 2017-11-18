@@ -55,6 +55,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     @Transient
     private String consensusBallotAsString;
 	@JsonView(Views.Public.class)
+	@ManyToOne
     private User creator;
 
 	@JsonView(Views.Public.class)
@@ -96,10 +97,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private Long forumResourceSpaceUuid;
+	private String forumResourceSpaceUuid;
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private Long resourcesResourceSpaceUuid;
+	private String resourcesResourceSpaceUuid;
  	
  	@JsonIgnore
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
