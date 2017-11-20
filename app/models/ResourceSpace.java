@@ -923,7 +923,8 @@ public class ResourceSpace extends AppCivistBaseModel {
 	 * @param status
 	 * @return
 	 */
-	public List<Campaign> getCampaignsFilteredByStatus(String status) {
+	public List<Campaign> getCampaignsFilteredByStatus(String status) throws Exception {
+		try {
 		if (status!=null) {
 			switch (status) {
 			case "ongoing":
@@ -951,6 +952,10 @@ public class ResourceSpace extends AppCivistBaseModel {
 			}
 		}
 		return this.campaigns;
+		} catch (NullPointerException exp) {
+			throw new Exception("Some campaigns have not components (startDate)");
+		}
+
 	}
 
 	public List<Ballot> getBallotsFilteredByStatusDate(BallotStatus status, Date startsAt, Date endsAt) {

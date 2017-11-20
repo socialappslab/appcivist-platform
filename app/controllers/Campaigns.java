@@ -85,9 +85,16 @@ public class Campaigns extends Controller {
             return internalServerError(Json.toJson(new TransferResponseStatus(
                     "Not implemented")));
         } else {
-        	List<Campaign> campaigns = Assembly.findCampaigns(aid);
-            if (!campaigns.isEmpty())
+            List<Campaign> campaigns = null;
+            try {
+                campaigns = Assembly.findCampaigns(aid);
+            } catch (Exception e) {
+                return internalServerError(Json.toJson(new TransferResponseStatus(
+                        e.getMessage())));
+            }
+            if (!campaigns.isEmpty()) {
                 return ok(Json.toJson(campaigns));
+            }
             else
                 return notFound(Json.toJson(new TransferResponseStatus(
                         "No ongoing campaigns")));
@@ -852,7 +859,12 @@ public class Campaigns extends Controller {
     private static Result ongoingCampaignsByAssembly(UUID uuid) {
         Assembly a = Assembly.readByUUID(uuid);
         List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
-        ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        try {
+            ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(
+                    e.getMessage())));
+        }
         if (!ongoingCampaigns.isEmpty())
             return ok(Json.toJson(ongoingCampaigns));
         else
@@ -869,7 +881,12 @@ public class Campaigns extends Controller {
     private static Result ongoingCampaignsByAssemblyId(Long aid) {
         Assembly a = Assembly.read(aid);
         List<Campaign> ongoingCampaigns = new ArrayList<>();
-        ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        try {
+            ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(
+                    e.getMessage())));
+        }
         if (!ongoingCampaigns.isEmpty())
             return ok(Json.toJson(ongoingCampaigns));
         else
