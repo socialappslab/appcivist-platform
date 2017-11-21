@@ -745,10 +745,6 @@ String uuidAsString, List<Component> phases) {
 		List<Component> componentList = campaign.getTransientComponents();
 		campaign.setComponents(new ArrayList<>());
 
-		// By default, if no goal is stated, then the goal is the same as the title
-		if (campaign.getGoal()==null) {
-			campaign.setGoal(campaign.getTitle());
-		}
 
 		// 2. Create the new campaign
 		campaign.save();
