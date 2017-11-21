@@ -37,6 +37,7 @@ import play.mvc.*;
 import play.twirl.api.Content;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
+import security.AssemblyDynamicResourceHandler;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
@@ -202,6 +203,71 @@ public class Assemblies extends Controller {
 			return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' is not available for this user", "")));
 		}
 	}
+
+    @ApiOperation(httpMethod = "PUT", response = AssemblyTransfer.class, produces = "application/json", value = "Create assembly membership")
+    @ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({ @Group(GlobalData.USER_ROLE) })
+    public static Result createNewAssemblyMembership(@ApiParam(name = "id", value = "Assembly ID") Long id) {
+
+        try {
+            return ok(Json.toJson(AssembliesDelegate.createMembership(id)));
+        } catch (MembershipCreationException e) {
+            e.printStackTrace();
+            Ebean.rollbackTransaction();
+            return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
+                    Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+                            e.getMessage()), "")));
+
+        }
+    }
+    @ApiOperation(httpMethod = "PUT", response = CampaignTransfer.class, produces = "application/json", value = "Change assembly status to PUBLISHED", notes = "Only for COORDINATORS.")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+
+    public static Result publish(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid) {
+        try {
+            Assembly assembly = Assembly.read(aid);
+            if (assembly == null) {
+                return notFound();
+            }
+            return ok(Json.toJson(AssembliesDelegate.publish(aid)));
+        } catch (Exception e) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+                    "There was an internal error: " + e.getMessage()));
+            e.printStackTrace();
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
+
+
+
+    @ApiOperation(httpMethod = "PUT", response = AssemblyTransfer.class, produces = "application/json", value = "Create assembly resources")
+    @ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Assembly Object", value = "Body of Assembly in JSON", required = true, dataType = "models.Assembly", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({ @Group(GlobalData.USER_ROLE) })
+    public static Result createAssemblyResources(@ApiParam(name = "id", value = "Assembly ID") Long id) {
+        final Form<AssemblyTransfer> newAssemblyForm = ASSEMBLY_TRANSFER_FORM.bindFromRequest();
+        // Check for errors in received data
+        if (newAssemblyForm.hasErrors()) {
+            return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+                    Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
+                            newAssemblyForm.errorsAsJson()), newAssemblyForm
+                            .errorsAsJson().toString())));
+        } else {
+            AssemblyTransfer newAssembly = newAssemblyForm.get();
+            return ok(Json.toJson(AssembliesDelegate.createResources(newAssembly)));
+
+        }
+    }
 
 	/**
 	 * POST      /api/assembly
@@ -1226,4 +1292,6 @@ public class Assemblies extends Controller {
             return mG;
         }
     }
+
+
 }

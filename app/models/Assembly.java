@@ -563,57 +563,128 @@ public class Assembly extends AppCivistBaseModel {
 		else return find.all();
 	}
 
+	public static void createMembership(Assembly a) throws MembershipCreationException {
+        // 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
+        MembershipAssembly ma = new MembershipAssembly();
+        ma.setAssembly(a);
+        ma.setCreator(a.getCreator());
+        ma.setUser(a.getCreator());
+        ma.setStatus(MembershipStatus.ACCEPTED);
+        ma.setLang(a.getLang());
+
+        List<SecurityRole> roles = new ArrayList<SecurityRole>();
+        roles.add(SecurityRole.findByName("MEMBER"));
+        roles.add(SecurityRole.findByName("COORDINATOR"));
+        roles.add(SecurityRole.findByName("MODERATOR"));
+        ma.setRoles(roles);
+
+        MembershipAssembly.create(ma);
+
+        if (a.getUrl() == null || a.getUrl() == "") {
+            a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
+                    + a.getAssemblyId());
+        }
+
+    }
+
+	public static void createResources(Assembly a) {
+        // 1. Check first for existing entities in ManyToMany relationships.
+        // Save them for later update
+        List<Component> existingComponents = a.getExistingComponents();
+        List<Theme> existingThemes = a.getExistingThemes();
+        List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
+        List<Campaign> existingCampaigns = a.getExistingCampaigns();
+        List<Assembly> followedAssemblies = a.getFollowedAssemblies();
+
+        List<Organization> organizations = new ArrayList<Organization>();
+        for (Organization organization : a.getOrganizations()) {
+            if (organization.getOrganizationId() != null) {
+                Organization existingOrganization = Organization.read(organization.getOrganizationId());
+                organizations.add(existingOrganization);
+            } else {
+                organizations.add(organization);
+            }
+        }
+        a.setOrganizations(organizations);
+        // 2. Create the new assembly
+        a.update();
+
+        // 3. Add existing entities in relationships to the manytomany resources
+        // then update
+        ResourceSpace assemblyResources = a.getResources();
+
+        if (existingComponents != null && !existingComponents.isEmpty())
+            assemblyResources.getComponents().addAll(existingComponents);
+        if (existingThemes != null && !existingThemes.isEmpty())
+            assemblyResources.getThemes().addAll(existingThemes);
+        if (organizations != null)
+            assemblyResources.setOrganizations(organizations);
+        if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
+            assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
+        if (existingCampaigns != null && !existingCampaigns.isEmpty())
+            assemblyResources.getCampaigns().addAll(existingCampaigns);
+        if (followedAssemblies != null && !followedAssemblies.isEmpty())
+            assemblyResources.getAssemblies().addAll(followedAssemblies);
+
+        assemblyResources.update();
+
+        // 4. Refresh the new campaign to get the newest version
+        a.refresh();
+
+
+    }
+
 	public static void create(Assembly a) throws MembershipCreationException {
 		if (a.getAssemblyId() != null
 				&& (a.getUrl() == null || a.getUrl() == "")) {
 			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
 					+ a.getAssemblyId());
 		}
+        // 1. Check first for existing entities in ManyToMany relationships.
+        // Save them for later update
+        List<Component> existingComponents = a.getExistingComponents();
+        List<Theme> existingThemes = a.getExistingThemes();
+        List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
+        List<Campaign> existingCampaigns = a.getExistingCampaigns();
+        List<Assembly> followedAssemblies = a.getFollowedAssemblies();
 
-		// 1. Check first for existing entities in ManyToMany relationships.
-		// Save them for later update
-		List<Component> existingComponents = a.getExistingComponents();
-		List<Theme> existingThemes = a.getExistingThemes();
-		List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
-		List<Campaign> existingCampaigns = a.getExistingCampaigns();
-		List<Assembly> followedAssemblies = a.getFollowedAssemblies();
+        List<Organization> organizations = new ArrayList<Organization>();
+        for (Organization organization : a.getOrganizations()) {
+            if (organization.getOrganizationId() != null) {
+                Organization existingOrganization = Organization.read(organization.getOrganizationId());
+                organizations.add(existingOrganization);
+            } else {
+                organizations.add(organization);
+            }
+        }
+        a.setOrganizations(organizations);
+        // 2. Create the new assembly
+        a.save();
 
-		List<Organization> organizations = new ArrayList<Organization>();
-		for (Organization organization : a.getOrganizations()) {
-			if (organization.getOrganizationId() != null) {
-				Organization existingOrganization = Organization.read(organization.getOrganizationId());
-				organizations.add(existingOrganization);
-			} else {
-				organizations.add(organization);
-			}
-		}
-		a.setOrganizations(organizations);
-		// 2. Create the new assembly
-		a.save();
+        // 3. Add existing entities in relationships to the manytomany resources
+        // then update
+        ResourceSpace assemblyResources = a.getResources();
 
-		// 3. Add existing entities in relationships to the manytomany resources
-		// then update
-		ResourceSpace assemblyResources = a.getResources();
+        if (existingComponents != null && !existingComponents.isEmpty())
+            assemblyResources.getComponents().addAll(existingComponents);
+        if (existingThemes != null && !existingThemes.isEmpty())
+            assemblyResources.getThemes().addAll(existingThemes);
+        if (organizations != null)
+            assemblyResources.setOrganizations(organizations);
+        if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
+            assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
+        if (existingCampaigns != null && !existingCampaigns.isEmpty())
+            assemblyResources.getCampaigns().addAll(existingCampaigns);
+        if (followedAssemblies != null && !followedAssemblies.isEmpty())
+            assemblyResources.getAssemblies().addAll(followedAssemblies);
 
-		if (existingComponents != null && !existingComponents.isEmpty())
-			assemblyResources.getComponents().addAll(existingComponents);
-		if (existingThemes != null && !existingThemes.isEmpty())
-			assemblyResources.getThemes().addAll(existingThemes);
-		if (organizations != null)
-			assemblyResources.setOrganizations(organizations);
-		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
-			assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
-		if (existingCampaigns != null && !existingCampaigns.isEmpty())
-			assemblyResources.getCampaigns().addAll(existingCampaigns);
-		if (followedAssemblies != null && !followedAssemblies.isEmpty())
-			assemblyResources.getAssemblies().addAll(followedAssemblies);
-		
-		assemblyResources.update();
-		
-		// 4. Refresh the new campaign to get the newest version
-		a.refresh();
+        assemblyResources.update();
 
-		// 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
+        // 4. Refresh the new campaign to get the newest version
+        a.refresh();
+
+
+        // 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
 		MembershipAssembly ma = new MembershipAssembly();
 		ma.setAssembly(a);
 		ma.setCreator(a.getCreator());
