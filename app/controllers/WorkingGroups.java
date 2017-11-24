@@ -278,12 +278,12 @@ public class WorkingGroups extends Controller {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
                     }
-                  //  try {
-                    //    NotificationsDelegate.createNotificationEventsByType(
-                     //           ResourceSpaceTypes.WORKING_GROUP.toString(), newWorkingGroup.getUuid());
-                 //   } catch (ConfigurationException e) {
-                  //      Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
-                  //  }
+                    try {
+                        NotificationsDelegate.createNotificationEventsByType(
+                                ResourceSpaceTypes.WORKING_GROUP.toString(), newWorkingGroup.getUuid());
+                    } catch (ConfigurationException e) {
+                        Logger.error("Configuration error when creating events for contribution: " + e.getMessage());
+                    }
 
                     /*Assembly assembly = Assembly.read(aid);
                     WorkingGroup finalNewWorkingGroup = newWorkingGroup;
