@@ -458,8 +458,7 @@ public class Campaigns extends Controller {
 
     public static Result createResources(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
-            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
-            @ApiParam(name = "templates", value = "List of campaign ids (separated by comma) to use as template for the current campaign") String templates) {
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
         try {
             final Form<CampaignTransfer> newCampaignForm = CAMPAIGN_TRANSFER_FORM
                     .bindFromRequest();
@@ -473,7 +472,8 @@ public class Campaigns extends Controller {
                 return badRequest(Json.toJson(responseBody));
             } else {
                 CampaignTransfer campaignTransfer = newCampaignForm.get();
-                CampaignTransfer aRet = CampaignDelegate.createResources(campaignTransfer,templates);
+                campaignTransfer.setCampaignId(cid);
+                CampaignTransfer aRet = CampaignDelegate.createResources(campaignTransfer);
                 return ok(Json.toJson(aRet));
             }
 
@@ -526,7 +526,8 @@ public class Campaigns extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result createCampaignInAssembly(
-            @ApiParam(name = "aid", value = "Assembly ID") Long aid) {
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "templates", value = "List of campaign ids (separated by comma) to use as template for the current campaign") String templates) {
         try {
             Ebean.beginTransaction();
             // 1. obtaining the user of the requestor
@@ -547,7 +548,7 @@ public class Campaigns extends Controller {
             } else {
                 CampaignTransfer campaignTransfer = newCampaignForm.get();
                 CampaignTransfer newCampaign = CampaignDelegate.create(
-                        campaignTransfer, campaignCreator, aid);
+                        campaignTransfer, campaignCreator, aid, templates);
                 Ebean.commitTransaction();
                 Campaign c = Campaign.read(newCampaign.getCampaignId());
 
