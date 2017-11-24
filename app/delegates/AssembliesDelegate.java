@@ -111,16 +111,17 @@ public class AssembliesDelegate {
 
 	public static AssemblyTransfer createResources(AssemblyTransfer assemblyTransfer) {
 		Assembly newAssembly = mapper.map(assemblyTransfer, Assembly.class);
+		Assembly.createResources(newAssembly);
 		Assembly old = Assembly.read(assemblyTransfer.getAssemblyId());
-		old.setExistingComponents(newAssembly.getExistingComponents());
-		old.setExistingThemes(newAssembly.getExistingThemes());
-		old.setExistingWorkingGroups(newAssembly.getExistingWorkingGroups());
-		old.setExistingCampaigns(newAssembly.getExistingCampaigns());
-		old.setFollowedAssemblies(newAssembly.getFollowedAssemblies());
-		old.setOrganizations(newAssembly.getOrganizations());
-		old.setResources(newAssembly.getResources());
-		Assembly.createResources(old);
+		List<Config> configs = getDefaultConfigs();
+		List<Config> configsLoaded = new ArrayList<Config>();
+		for (Config conf: configs) {
+			Config.create(conf);
+			configsLoaded.add(conf);
+		}
+		old.setConfigs(configsLoaded);
 		old.update();
+		old.refresh();
 		return  mapper.map(old, AssemblyTransfer.class);
 
 	}
@@ -149,7 +150,7 @@ public class AssembliesDelegate {
 		if (newAssemblyTransfer.getLocation() == null) {
 			newAssembly.setLocation(null);
 		}
-		newAssembly.setConfigs(getDefaultConfigs());
+
 		newAssembly.setCreator(creator);
 		newAssembly.setStatus(AssemblyStatus.DRAFT);
 
@@ -177,7 +178,7 @@ public class AssembliesDelegate {
 		}
         newAssembly.save();
         newAssembly.refresh();
-//		Assembly.create(newAssembly);
+		Assembly.create(newAssembly);
 		if(location != null) {
 			Location location1 = mapper.map(locationTransfer, Location.class);
 			newAssembly.setLocation(location1);
@@ -199,7 +200,7 @@ public class AssembliesDelegate {
 		Logger.info("Assembly created!");
 
 		newAssembly.refresh();
-		newAssembly.setStatus(AssemblyStatus.PUBLISHED);
+		newAssembly.setStatus(AssemblyStatus.DRAFT);
 		newAssembly.update();
 		newAssembly.refresh();
 		// Adding new assembly to principal assembly if created under it

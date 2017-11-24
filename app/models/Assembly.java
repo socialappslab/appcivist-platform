@@ -16,6 +16,7 @@ import exceptions.MembershipCreationException;
 import io.swagger.annotations.ApiModel;
 import models.location.Location;
 import models.misc.Views;
+import play.Logger;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 import utils.GlobalData;
@@ -590,45 +591,19 @@ public class Assembly extends AppCivistBaseModel {
 	public static void createResources(Assembly a) {
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
-        List<Component> existingComponents = a.getExistingComponents();
-        List<Theme> existingThemes = a.getExistingThemes();
-        List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
-        List<Campaign> existingCampaigns = a.getExistingCampaigns();
-        List<Assembly> followedAssemblies = a.getFollowedAssemblies();
 
-        List<Organization> organizations = new ArrayList<Organization>();
-        for (Organization organization : a.getOrganizations()) {
-            if (organization.getOrganizationId() != null) {
-                Organization existingOrganization = Organization.read(organization.getOrganizationId());
-                organizations.add(existingOrganization);
-            } else {
-                organizations.add(organization);
-            }
-        }
-        a.setOrganizations(organizations);
-        // 2. Create the new assembly
-        a.update();
+        List<Theme> existingThemes = a.getExistingThemes();
+
+
 
         // 3. Add existing entities in relationships to the manytomany resources
         // then update
-        ResourceSpace assemblyResources = a.getResources();
+		Assembly assembly = Assembly.read(a.getAssemblyId());
+        ResourceSpace assemblyResources = assembly.getResources();
 
-        if (existingComponents != null && !existingComponents.isEmpty())
-            assemblyResources.getComponents().addAll(existingComponents);
         if (existingThemes != null && !existingThemes.isEmpty())
             assemblyResources.getThemes().addAll(existingThemes);
-        if (organizations != null)
-            assemblyResources.setOrganizations(organizations);
-        if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
-            assemblyResources.getWorkingGroups().addAll(existingWorkingGroups);
-        if (existingCampaigns != null && !existingCampaigns.isEmpty())
-            assemblyResources.getCampaigns().addAll(existingCampaigns);
-        if (followedAssemblies != null && !followedAssemblies.isEmpty())
-            assemblyResources.getAssemblies().addAll(followedAssemblies);
-
-        assemblyResources.update();
-
-        // 4. Refresh the new campaign to get the newest version
+		assemblyResources.update();
         a.refresh();
 
 
@@ -643,7 +618,6 @@ public class Assembly extends AppCivistBaseModel {
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
         List<Component> existingComponents = a.getExistingComponents();
-        List<Theme> existingThemes = a.getExistingThemes();
         List<WorkingGroup> existingWorkingGroups = a.getExistingWorkingGroups();
         List<Campaign> existingCampaigns = a.getExistingCampaigns();
         List<Assembly> followedAssemblies = a.getFollowedAssemblies();
@@ -667,8 +641,6 @@ public class Assembly extends AppCivistBaseModel {
 
         if (existingComponents != null && !existingComponents.isEmpty())
             assemblyResources.getComponents().addAll(existingComponents);
-        if (existingThemes != null && !existingThemes.isEmpty())
-            assemblyResources.getThemes().addAll(existingThemes);
         if (organizations != null)
             assemblyResources.setOrganizations(organizations);
         if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
@@ -682,23 +654,6 @@ public class Assembly extends AppCivistBaseModel {
 
         // 4. Refresh the new campaign to get the newest version
         a.refresh();
-
-
-        // 5. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
-		MembershipAssembly ma = new MembershipAssembly();
-		ma.setAssembly(a);
-		ma.setCreator(a.getCreator());
-		ma.setUser(a.getCreator());
-		ma.setStatus(MembershipStatus.ACCEPTED);
-		ma.setLang(a.getLang());
-	
-		List<SecurityRole> roles = new ArrayList<SecurityRole>();
-		roles.add(SecurityRole.findByName("MEMBER"));
-		roles.add(SecurityRole.findByName("COORDINATOR"));
-		roles.add(SecurityRole.findByName("MODERATOR"));
-		ma.setRoles(roles);
-		
-		MembershipAssembly.create(ma);
 		
 		if (a.getUrl() == null || a.getUrl() == "") {
 			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"

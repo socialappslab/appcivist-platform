@@ -264,6 +264,7 @@ public class Assemblies extends Controller {
                             .errorsAsJson().toString())));
         } else {
             AssemblyTransfer newAssembly = newAssemblyForm.get();
+            newAssembly.setAssemblyId(id);
             return ok(Json.toJson(AssembliesDelegate.createResources(newAssembly)));
 
         }
