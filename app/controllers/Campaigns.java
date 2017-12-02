@@ -456,6 +456,69 @@ public class Campaigns extends Controller {
         }
     }
 
+    @ApiOperation(httpMethod = "PUT", response = CampaignTransfer.class, produces = "application/json", value = "Create a Campaign Resources", notes = "Only for COORDINATORS. The templates will be used to import all the resources from a list of existing campaigns to the new")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Campaign simplified object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+
+    public static Result createResources(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
+        try {
+            final Form<CampaignTransfer> newCampaignForm = CAMPAIGN_TRANSFER_FORM
+                    .bindFromRequest();
+
+            if (newCampaignForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                        newCampaignForm.errorsAsJson()));
+                Ebean.rollbackTransaction();
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                CampaignTransfer campaignTransfer = newCampaignForm.get();
+                campaignTransfer.setCampaignId(cid);
+                CampaignTransfer aRet = CampaignDelegate.createResources(campaignTransfer);
+                return ok(Json.toJson(aRet));
+            }
+
+        } catch (Exception e) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                    "There was an internal error: " + e.getMessage()));
+            e.printStackTrace();
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = CampaignTransfer.class, produces = "application/json", value = "Cahnge campaign status to PUBLISHED", notes = "Only for COORDINATORS.")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+
+    public static Result publish(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
+        try {
+            Campaign campaign = Campaign.read(cid);
+            if (campaign == null) {
+                return notFound();
+            }
+            return ok(Json.toJson(CampaignDelegate.publish(cid)));
+        } catch (Exception e) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                    "There was an internal error: " + e.getMessage()));
+            e.printStackTrace();
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
+
     /**
      * POST /api/assembly/:aid/campaign
      * Create a new Campaign
@@ -463,7 +526,7 @@ public class Campaigns extends Controller {
      * @param aid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = CampaignTransfer.class, produces = "application/json", value = "Create a new Campaign", notes = "Only for COORDINATORS. The templates will be used to import all the resources from a list of existing campaigns to the new")
+    @ApiOperation(httpMethod = "POST", response = CampaignTransfer.class, produces = "application/json", value = "Create a new Campaign", notes = "Only for COORDINATORS.")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Campaign simplified object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
@@ -1740,4 +1803,5 @@ public class Campaigns extends Controller {
             return ok(Json.toJson(loadedWorkingGroup));
         }
     }
+
 }
