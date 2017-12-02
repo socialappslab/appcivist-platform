@@ -221,11 +221,12 @@ public class Memberships extends Controller {
             @ApiResponse(code = ACCEPTED, message = "Invitations found", response = MembershipInvitation.class),
             @ApiResponse(code = NOT_FOUND, message = "Invitations not found", response = TransferResponseStatus.class)})
     public static Result listInvitations(
+            @ApiParam(name = "targetType", value = "group or assembly") String targetType,
             @ApiParam(name = "targetId", value = "Working Group or Assembly Id") Long targetId,
             @ApiParam(name = "status", value = "Invitation Status", allowableValues = "INVITED, ACCEPTED, REJECTED") String status) {
 
         List<MembershipInvitation> invitations = MembershipInvitation
-                .findByTargetIdAndStatus(targetId, status);
+                .findByTargetIdAndStatus(targetType, targetId, status);
         if (invitations != null && invitations.isEmpty()) {
             TransferResponseStatus response = new TransferResponseStatus(
                     ResponseStatus.NODATA, "No invitations with status '"

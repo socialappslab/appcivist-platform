@@ -246,7 +246,8 @@ public class Configs extends Controller {
         JsonNode requestBody = request().body().asJson();
         ObjectMapper mapper = new ObjectMapper();
         HashMap<String, String> result = mapper.convertValue(requestBody, HashMap.class);
-        ConfigValues updatedConfig = new ConfigValues(result);
+        ConfigValues updatedConfigValues = new ConfigValues(result);
+        ConfigValues refreshedConfigValues = new ConfigValues();
         TransferResponseStatus responseBody = new TransferResponseStatus();
         if (result == null || result.keySet() == null || result.values() == null) {
             responseBody = new TransferResponseStatus();
@@ -261,8 +262,8 @@ public class Configs extends Controller {
                     GlobalData.CONFIG_CREATE_MSG_ERROR, "\nResource Space does not exists"));
             return badRequest(Json.toJson(responseBody));
         }
-        for (String key : updatedConfig.getConfigs().keySet()) {
-            Object value = updatedConfig.getConfigs().get(key);
+        for (String key : updatedConfigValues.getConfigs().keySet()) {
+            Object value = updatedConfigValues.getConfigs().get(key);
             List<Config> updateConfigs = new ArrayList<Config>();
             ConfigTargets configTargets = null;
             UUID uuid = null;
@@ -291,24 +292,30 @@ public class Configs extends Controller {
 
             updateConfigs = Config.findByTypeAndKey(uuid, configTargets, key);
             if (updateConfigs == null || updateConfigs.size() == 0) {
-                responseBody = new TransferResponseStatus();
-                responseBody.setStatusMessage(Messages.get(
-                        GlobalData.CONFIG_CREATE_MSG_ERROR, "\nConfiguration Key '" + key + "' does not exists"));
-                return badRequest(Json.toJson(responseBody));
-            }
-            for (Config conf : updateConfigs
-                    ) {
-                conf.setValue(value.toString());
-                configList.add(conf);
+                // Add the config
+                Config newConf = new Config();
+                newConf.setConfigTarget(configTargets);
+                newConf.setKey(key);
+                newConf.setValue(value.toString());
+                newConf.setTargetUuid(uuid);
+                newConf = Config.create(newConf);
+                ResourceSpace rs = ResourceSpace.read(sid);
+                rs.getConfigs().add(newConf);
+                rs.update();
+                refreshedConfigValues.getConfigs().put(newConf.getKey(),newConf.getValue());
+            } else {
+                for (Config conf : updateConfigs) {
+                    conf.setValue(value.toString());
+                    configList.add(conf);
+                }
             }
 
         }
-        for (Config conf : configList
-                ) {
+        for (Config conf : configList) {
             Config.update(conf);
+            refreshedConfigValues.getConfigs().put(conf.getKey(),conf.getValue());
         }
-        responseBody.setStatusMessage("OK");
-        return ok(Json.toJson(updatedConfig));
+        return ok(Json.toJson(refreshedConfigValues));
 
     }
 

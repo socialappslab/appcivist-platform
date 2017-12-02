@@ -23,9 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.*;
 
-import enums.ResourceSpaceTypes;
-import enums.ThemeTypes;
-import enums.VotingSystemTypes;
+import enums.*;
 import io.swagger.annotations.ApiModel;
 import models.misc.Views;
 import utils.GlobalData;
@@ -154,6 +152,16 @@ public class Campaign extends AppCivistBaseModel {
 	
 	@JsonView(Views.Public.class)
 	private String externalBallot;
+
+
+	@Enumerated(EnumType.STRING)
+	private CampaignStatus status;
+
+
+	@JsonView(Views.Public.class)
+ 	@ManyToOne
+	private User creator;
+
 	/** 
 	
  * The find property is an static property that facilitates database query
@@ -339,7 +347,15 @@ String uuidAsString, List<Component> phases) {
 		Finder<Long, CampaignTimelineEdge> find = new Finder<>(CampaignTimelineEdge.class);
 		return find.where().eq("campaign", this).findPagedList(page, pageSize).getList();
 	}
-	
+
+	public CampaignStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(CampaignStatus status) {
+		this.status = status;
+	}
+
 	public Long getResourceSpaceId() {
 		return resources != null ? resources.getResourceSpaceId() : null;
 	}
@@ -640,6 +656,14 @@ String uuidAsString, List<Component> phases) {
 		this.template = template;
 	}
 
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
+
 	public static List<Campaign> findAll() {
 		List<Campaign> campaigns = find.all();
 		return campaigns;
@@ -714,13 +738,12 @@ String uuidAsString, List<Component> phases) {
 			}
 		}
 
-		List<Theme> existingThemes = campaign.getExistingThemes();
+
 		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
 
 		// Save components to create them independently 
 		List<Component> componentList = campaign.getTransientComponents();
 		campaign.setComponents(new ArrayList<>());
-
 		// By default, if no goal is stated, then the goal is the same as the title
 		if (campaign.getGoal()==null) {
 			campaign.setGoal(campaign.getTitle());
@@ -766,10 +789,7 @@ String uuidAsString, List<Component> phases) {
 			}
 		}
 		campaign.setTimelineEdges(edgeList);
-		
-		// 5. Add existing themes to the resource space
-		if (existingThemes != null && !existingThemes.isEmpty())
-			campaignResources.getThemes().addAll(existingThemes);
+
 		if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
 			campaignResources.getWorkingGroups().addAll(existingWorkingGroups);
 		
@@ -818,7 +838,7 @@ String uuidAsString, List<Component> phases) {
 		}
 	}
 
-	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) {
+	public static List<Campaign> getOngoingCampaignsFromAssembly(Assembly a) throws Exception {
 		List<Campaign> ongoingCampaigns = new ArrayList<>();
 		ResourceSpace resources = a.getResources();
 		List<Campaign> campaigns = null;

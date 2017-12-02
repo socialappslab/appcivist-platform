@@ -1989,8 +1989,7 @@ ALTER TABLE resource
 ALTER TABLE resource
   ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying::text, 'VIDEO'::character varying::text, 'PAD'::character varying::text, 'TEXT'::character varying::text, 'WEBPAGE'::character varying::text, 'FILE'::character varying::text, 'AUDIO'::character varying::text, 'CONTRIBUTION_TEMPLATE'::character varying::text, 'CAMPAIGN_TEMPLATE'::character varying::text, 'PROPOSAL'::character varying::text, 'GDOC'::character varying::text]))
 
-
-  --57.sql
+--57.sql
   CREATE TABLE notification_event_signal_archive
 (
   id bigint NOT NULL,
@@ -2012,8 +2011,9 @@ WITH (
 );
 ALTER TABLE notification_event_signal
   OWNER TO postgres;
-  --58.sql
-  CREATE TABLE notification_event_signal_user_archival
+
+--58.sql
+CREATE TABLE notification_event_signal_user_archival
 (
   id bigint NOT NULL,
   creation timestamp without time zone,
@@ -2037,7 +2037,14 @@ WITH (
 );
 ALTER TABLE notification_event_signal_user
   OWNER TO postgres;
-  --59.sql
+
+ALTER TABLE public.working_group ADD COLUMN creator_user_id bigint;
+ALTER TABLE public.working_group ADD CONSTRAINT fk_creator_wk FOREIGN KEY (creator_user_id) REFERENCES public.appcivist_user (user_id) MATCH SIMPLE;
+ALTER TABLE public.campaign ADD COLUMN creator_user_id bigint;
+ALTER TABLE public.campaign ADD CONSTRAINT fk_creator_campaign FOREIGN KEY (creator_user_id) REFERENCES public.appcivist_user (user_id) MATCH SIMPLE;
+
+-- 59.sql
+--59.sql
 CREATE OR REPLACE FUNCTION move_signals(init_date timestamp)
 RETURNS void AS
 $BODY$
@@ -2058,3 +2065,7 @@ begin
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE
+
+ALTER TABLE campaign ADD COLUMN status character varying(40);
+ALTER TABLE working_group ADD COLUMN status character varying(40);
+ALTER TABLE assembly ADD COLUMN status character varying(40);

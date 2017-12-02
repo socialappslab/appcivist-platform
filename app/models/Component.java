@@ -430,14 +430,15 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	public static Component create(Long campaignId,
 			Component phase) {
 		ComponentDefinition phaseDefinition = null;
-		if (phase.getDefinition().getComponentDefId() != null) {
+		if (phase.getDefinition() !=null && phase.getDefinition().getComponentDefId() != null) {
 			phaseDefinition = ComponentDefinition.read(phase.getDefinition()
 					.getComponentDefId());
-		} else if (phase.getDefinition().getName() != null) {
+		} else if (phase.getDefinition() != null && phase.getDefinition().getName() != null) {
 			phaseDefinition = ComponentDefinition.readByName(phase.getDefinition()
 					.getName());
 		}
-		phase.setDefinition(phaseDefinition);
+		if (phaseDefinition!=null)
+			phase.setDefinition(phaseDefinition);
 		phase.save();
 		phase.refresh();
 		return phase;
@@ -489,5 +490,14 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 			}
 		}
 		return  null;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Component) {
+			Component component = (Component) obj;
+			return this.componentId.equals(component.getComponentId());
+		}
+		return false;
 	}
 }

@@ -85,9 +85,16 @@ public class Campaigns extends Controller {
             return internalServerError(Json.toJson(new TransferResponseStatus(
                     "Not implemented")));
         } else {
-        	List<Campaign> campaigns = Assembly.findCampaigns(aid);
-            if (!campaigns.isEmpty())
+            List<Campaign> campaigns = null;
+            try {
+                campaigns = Assembly.findCampaigns(aid);
+            } catch (Exception e) {
+                return internalServerError(Json.toJson(new TransferResponseStatus(
+                        e.getMessage())));
+            }
+            if (!campaigns.isEmpty()) {
                 return ok(Json.toJson(campaigns));
+            }
             else
                 return notFound(Json.toJson(new TransferResponseStatus(
                         "No ongoing campaigns")));
@@ -262,119 +269,144 @@ public class Campaigns extends Controller {
                 List<Component> componentList = new ArrayList<Component>();
                 Logger.debug("Starting to update campaign components...");
                 for (ComponentTransfer component : updatedComponents) {
-                    Component componentOld = Component.read(component.getComponentId());
-                    componentOld.setTitle(component.getTitle());
-                    componentOld.setDescription(component.getDescription());
-                    componentOld.setEndDate(component.getEndDate());
-                    componentOld.setStartDate(component.getStartDate());
-                    componentOld.setKey(component.getKey());
-                    componentOld.setPosition(component.getPosition());
-                    componentOld.setTimeline(component.getTimeline());
-                    componentOld.update();
-                    componentOld.refresh();
-                    componentList.add(componentOld);
+                    if (component.getComponentId()!=null) {
+                        Component componentOld = Component.read(component.getComponentId());
+                        componentOld.setTitle(component.getTitle());
+                        componentOld.setDescription(component.getDescription());
+                        componentOld.setEndDate(component.getEndDate());
+                        componentOld.setStartDate(component.getStartDate());
+                        componentOld.setKey(component.getKey());
+                        componentOld.setPosition(component.getPosition());
+                        componentOld.setTimeline(component.getTimeline());
+                        componentOld.update();
+                        componentOld.refresh();
+                        componentList.add(componentOld);
 
-                    List <ComponentMilestoneTransfer> updatedMilestonesList = component.getMilestones();
-                    Logger.debug("Starting to update component milestones for component:"+componentOld.getTitle()+"("+componentOld.getComponentId()+")");
-                    int position = 0;
-                    int milestoneCount = 0;
-                    updatedMilestonesList.sort(Comparator.comparing(ComponentMilestoneTransfer::getDate));
+                        List<ComponentMilestoneTransfer> updatedMilestonesList = component.getMilestones();
+                        Logger.debug("Starting to update component milestones for component:" + componentOld.getTitle() + "(" + componentOld.getComponentId() + ")");
+                        int position = 1;
+                        int milestoneCount = 0;
+                        updatedMilestonesList.sort(Comparator.comparing(ComponentMilestoneTransfer::getDate));
 
-                    for(ComponentMilestoneTransfer updateM : updatedMilestonesList) {
-                        milestoneCount+=1;
-                        if (updateM.getComponentMilestoneId()!=null) {
-                            ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
-                            int changes = 0;
-                            if (oldMilestone.getTitle()!=null
-                                    && !oldMilestone.getTitle().equals(updateM.getTitle())) {
+                        for (ComponentMilestoneTransfer updateM : updatedMilestonesList) {
+                            milestoneCount += 1;
+                            if (updateM.getComponentMilestoneId() != null) {
+                                ComponentMilestone oldMilestone = componentOld.getMilestoneById(updateM.getComponentMilestoneId());
+                                int changes = 0;
+                                if (oldMilestone.getTitle() != null
+                                        && !oldMilestone.getTitle().equals(updateM.getTitle())) {
 
-                                if ( updateM.getTitle()!=null
-                                        && !updateM.getTitle().isEmpty()
+                                    if (updateM.getTitle() != null
+                                            && !updateM.getTitle().isEmpty()
+                                            && !updateM.getTitle().equals("")) {
+                                        Logger.debug("Updating milestone title:" + updateM.getComponentMilestoneId());
+                                        oldMilestone.setTitle(updateM.getTitle());
+                                        changes++;
+                                    }
+                                } else if (oldMilestone.getTitle() == null && updateM.getTitle() != null && !updateM.getTitle().isEmpty()
                                         && !updateM.getTitle().equals("")) {
                                     Logger.debug("Updating milestone title:" + updateM.getComponentMilestoneId());
                                     oldMilestone.setTitle(updateM.getTitle());
                                     changes++;
                                 }
-                            } else if (oldMilestone.getTitle()==null && updateM.getTitle()!=null && !updateM.getTitle().isEmpty()
-                                    && !updateM.getTitle().equals("")) {
-                                Logger.debug("Updating milestone title:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setTitle(updateM.getTitle());
-                                changes++;
-                            }
 
-                            if (oldMilestone.getDescription()!=null
-                                    && !oldMilestone.getDescription().equals(updateM.getDescription())) {
-                                Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDescription(updateM.getDescription());
-                                changes++;
-                            } else if (oldMilestone.getDescription() == null && updateM.getDescription()!=null) {
-                                Logger.debug("Updating milestone description:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDescription(updateM.getDescription());
-                                changes++;
-                            }
-
-                            if (oldMilestone.getDate()!=null
-                                    && !oldMilestone.getDate().equals(updateM.getDate())) {
-                                Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDate(updateM.getDate());
-                                changes++;
-                            } else if (oldMilestone.getDate() == null && updateM.getDate()!=null) {
-                                Logger.debug("Updating milestone date:"+updateM.getComponentMilestoneId());
-                                oldMilestone.setDate(updateM.getDate());
-                                changes++;
-                            }
-
-                            if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)
-                                    && oldMilestone.getPosition()!=updatedMilestonesList.size()) {
-                                oldMilestone.setPosition(updatedMilestonesList.size());
-                                changes++;
-                            }
-
-                            if (changes>0) {
-                                Logger.debug("Updating milestone:"+updateM.getComponentMilestoneId());
-                                if (position == 0) {
-                                    position = milestoneCount;
+                                if (oldMilestone.getDescription() != null
+                                        && !oldMilestone.getDescription().equals(updateM.getDescription())) {
+                                    Logger.debug("Updating milestone description:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDescription(updateM.getDescription());
+                                    changes++;
+                                } else if (oldMilestone.getDescription() == null && updateM.getDescription() != null) {
+                                    Logger.debug("Updating milestone description:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDescription(updateM.getDescription());
+                                    changes++;
                                 }
-                                if (!oldMilestone.getType().equals(ComponentMilestoneTypes.END)
-                                        && !oldMilestone.getType().equals(ComponentMilestoneTypes.START))
-                                    oldMilestone.setPosition(position);
-                                oldMilestone.update();
+
+                                if (oldMilestone.getDate() != null
+                                        && !oldMilestone.getDate().equals(updateM.getDate())) {
+                                    Logger.debug("Updating milestone date:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDate(updateM.getDate());
+                                    changes++;
+                                } else if (oldMilestone.getDate() == null && updateM.getDate() != null) {
+                                    Logger.debug("Updating milestone date:" + updateM.getComponentMilestoneId());
+                                    oldMilestone.setDate(updateM.getDate());
+                                    changes++;
+                                }
+
+                                if (oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                        && oldMilestone.getPosition() != updatedMilestonesList.size()) {
+                                    oldMilestone.setPosition(updatedMilestonesList.size());
+                                    changes++;
+                                }
+
+                                if (changes > 0) {
+                                    Logger.debug("Updating milestone:" + updateM.getComponentMilestoneId());
+                                    if (position == 1) {
+                                        position = milestoneCount;
+                                    }
+                                    if (!oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                            && !oldMilestone.getType().equals(ComponentMilestoneTypes.START))
+                                        oldMilestone.setPosition(position);
+
+                                    if (oldMilestone.getType().equals(ComponentMilestoneTypes.START))
+                                        oldMilestone.setPosition(1);
+
+                                    oldMilestone.update();
+                                    position++;
+                                } else {
+                                    if (oldMilestone.getType().equals(ComponentMilestoneTypes.START)
+                                            && oldMilestone.getPosition() != 1) {
+                                        oldMilestone.setPosition(1);
+                                        oldMilestone.update();
+                                    }
+                                }
+                            } else {
+                                // add new milestone
+                                Logger.debug("Creating new milestone: " + updateM.getTitle());
+                                updateM.setPosition(position);
+                                updateM.setType(ComponentMilestoneTypes.REMINDER);
                                 position++;
-                            }
-                        } else {
-                            // add new milestone
-                            Logger.debug("Creating new milestone: "+updateM.getTitle());
-                            updateM.setPosition(position);
-                            updateM.setType(ComponentMilestoneTypes.REMINDER);
-                            position++;
-                            List<String> mappingFiles = Play.application().configuration()
-                                    .getStringList("appcivist.dozer.mappingFiles");
-                            DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
-                            ComponentMilestone updatedMObject = mapper.map(updateM, ComponentMilestone.class);
-                            ComponentMilestone.create(updatedMObject);
-                            componentOld.getResourceSpace().getMilestones().add(updatedMObject);
-                        }
-                    }
-
-                    List <ComponentMilestoneTransfer> deletedMilestonesList = component.getDeletedMilestones();
-                    for (ComponentMilestoneTransfer milestone : deletedMilestonesList) {
-                        if (milestone.getComponentMilestoneId()!=null) {
-                            ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
-                            if (oldMilestone!=null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
-                                    && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
-                                oldMilestone.setRemoved(true);
-                                oldMilestone.setRemoval(new Date());
-                                oldMilestone.update();
+                                List<String> mappingFiles = Play.application().configuration()
+                                        .getStringList("appcivist.dozer.mappingFiles");
+                                DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
+                                ComponentMilestone updatedMObject = mapper.map(updateM, ComponentMilestone.class);
+                                ComponentMilestone.create(updatedMObject);
+                                componentOld.getResourceSpace().getMilestones().add(updatedMObject);
                             }
                         }
-                    }
 
-                    Logger.debug("Update component space: "+componentOld.getComponentId());
-                    componentOld.getResourceSpace().update();
+                        List<ComponentMilestoneTransfer> deletedMilestonesList = component.getDeletedMilestones();
+                        for (ComponentMilestoneTransfer milestone : deletedMilestonesList) {
+                            if (milestone.getComponentMilestoneId() != null) {
+                                ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
+                                if (oldMilestone != null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
+                                        && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
+                                    oldMilestone.setRemoved(true);
+                                    oldMilestone.setRemoval(new Date());
+                                    oldMilestone.update();
+                                }
+                            }
+                        }
+
+                        Logger.debug("Update component space: " + componentOld.getComponentId());
+                        componentOld.getResourceSpace().update();
+                    } else {
+                        List<String> mappingFiles = Play.application().configuration()
+                                .getStringList("appcivist.dozer.mappingFiles");
+                        DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
+                        Component c = mapper.map(component, Component.class);
+                        Component.create(campaignId, c);
+                        campaignOld.getResources().addComponent(c);
+                        campaignOld.getResources().update();
+                        componentList.add(c);
+                    }
                 }
+
                 List<CampaignTimelineEdge> timelineEdges = new ArrayList<>();
                 int edges = 0;
-                for (Component component : componentList) {
+                Set<Component> componentsSet = new LinkedHashSet<>();
+                componentsSet.addAll(componentList);
+                for (Component component : componentsSet) {
+
                     CampaignTimelineEdge edge = new CampaignTimelineEdge();
                     edge.setCampaign(campaignOld);
                     if (edges == 0) {
@@ -424,6 +456,69 @@ public class Campaigns extends Controller {
         }
     }
 
+    @ApiOperation(httpMethod = "PUT", response = CampaignTransfer.class, produces = "application/json", value = "Create a Campaign Resources", notes = "Only for COORDINATORS. The templates will be used to import all the resources from a list of existing campaigns to the new")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Campaign simplified object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+
+    public static Result createResources(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
+        try {
+            final Form<CampaignTransfer> newCampaignForm = CAMPAIGN_TRANSFER_FORM
+                    .bindFromRequest();
+
+            if (newCampaignForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                        newCampaignForm.errorsAsJson()));
+                Ebean.rollbackTransaction();
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                CampaignTransfer campaignTransfer = newCampaignForm.get();
+                campaignTransfer.setCampaignId(cid);
+                CampaignTransfer aRet = CampaignDelegate.createResources(campaignTransfer);
+                return ok(Json.toJson(aRet));
+            }
+
+        } catch (Exception e) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                    "There was an internal error: " + e.getMessage()));
+            e.printStackTrace();
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = CampaignTransfer.class, produces = "application/json", value = "Cahnge campaign status to PUBLISHED", notes = "Only for COORDINATORS.")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+
+    public static Result publish(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid) {
+        try {
+            Campaign campaign = Campaign.read(cid);
+            if (campaign == null) {
+                return notFound();
+            }
+            return ok(Json.toJson(CampaignDelegate.publish(cid)));
+        } catch (Exception e) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(Messages.get(
+                    GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
+                    "There was an internal error: " + e.getMessage()));
+            e.printStackTrace();
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
+
     /**
      * POST /api/assembly/:aid/campaign
      * Create a new Campaign
@@ -431,7 +526,7 @@ public class Campaigns extends Controller {
      * @param aid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = CampaignTransfer.class, produces = "application/json", value = "Create a new Campaign", notes = "Only for COORDINATORS. The templates will be used to import all the resources from a list of existing campaigns to the new")
+    @ApiOperation(httpMethod = "POST", response = CampaignTransfer.class, produces = "application/json", value = "Create a new Campaign", notes = "Only for COORDINATORS.")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Campaign simplified object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
@@ -827,7 +922,12 @@ public class Campaigns extends Controller {
     private static Result ongoingCampaignsByAssembly(UUID uuid) {
         Assembly a = Assembly.readByUUID(uuid);
         List<Campaign> ongoingCampaigns = new ArrayList<Campaign>();
-        ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        try {
+            ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(
+                    e.getMessage())));
+        }
         if (!ongoingCampaigns.isEmpty())
             return ok(Json.toJson(ongoingCampaigns));
         else
@@ -844,7 +944,12 @@ public class Campaigns extends Controller {
     private static Result ongoingCampaignsByAssemblyId(Long aid) {
         Assembly a = Assembly.read(aid);
         List<Campaign> ongoingCampaigns = new ArrayList<>();
-        ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        try {
+            ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(
+                    e.getMessage())));
+        }
         if (!ongoingCampaigns.isEmpty())
             return ok(Json.toJson(ongoingCampaigns));
         else
@@ -1698,4 +1803,5 @@ public class Campaigns extends Controller {
             return ok(Json.toJson(loadedWorkingGroup));
         }
     }
+
 }

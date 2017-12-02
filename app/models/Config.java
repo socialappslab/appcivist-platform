@@ -204,8 +204,6 @@ public class Config extends AppCivistBaseModel {
 			ConfigDefinition cd = ConfigDefinition.findByKey(config.getKey());
 			if(cd != null) {
 				config.setDefinition(cd);
-			} else {
-				return null;
 			}
 		}
         config.save();

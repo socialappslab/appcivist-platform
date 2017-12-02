@@ -53,7 +53,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES = "appcivsit.campaign.allow-emergent-themes"; // TRUE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS = "appcivist.campaign.allow-anonymous-ideas"; // FALSE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY = "appcivist.campaign.newsletter-frecuency";
-	
+	public static final String APPCIVIST_CAMPAIGN_ENABLE_GROUP_AUTHORSHIP = "appcivist.campaign.enable-group-authorship";
+
 	//Add the configuration to the default templates for creating campaigns
 	
 	// Component Level Configuration Keys

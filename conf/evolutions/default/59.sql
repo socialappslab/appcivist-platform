@@ -1,4 +1,5 @@
-﻿CREATE OR REPLACE FUNCTION move_signals(init_date timestamp) 
+# --- !Ups
+CREATE OR REPLACE FUNCTION move_signals(init_date timestamp) 
 RETURNS void AS
 $BODY$
 begin
@@ -18,3 +19,7 @@ begin
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE
+
+ALTER TABLE campaign ADD COLUMN status character varying(40);
+ALTER TABLE working_group ADD COLUMN status character varying(40);
+ALTER TABLE assembly ADD COLUMN status character varying(40);

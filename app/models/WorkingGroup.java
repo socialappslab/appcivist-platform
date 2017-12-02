@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.*;
+import enums.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
@@ -25,13 +26,8 @@ import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import enums.ContributionTypes;
-import enums.ManagementTypes;
-import enums.MembershipStatus;
-import enums.ResourceSpaceTypes;
-import enums.SupportedMembershipRegistration;
-import enums.VotingSystemTypes;
 import exceptions.MembershipCreationException;
+import utils.GlobalDataConfigKeys;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -60,6 +56,7 @@ public class WorkingGroup extends AppCivistBaseModel {
     @Transient
     private String consensusBallotAsString;
 	@JsonView(Views.Public.class)
+	@ManyToOne
     private User creator;
 
 	@JsonView(Views.Public.class)
@@ -101,10 +98,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private Long forumResourceSpaceUuid;
+	private String forumResourceSpaceUuid;
 	@Transient
 	@JsonInclude(Include.NON_EMPTY)
-	private Long resourcesResourceSpaceUuid;
+	private String resourcesResourceSpaceUuid;
  	
  	@JsonIgnore
  	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "workingGroups")
@@ -155,8 +152,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 	// Locations
 	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "workingGroups")
 	private List<Location> locations;
-	
-	
+
+	@Enumerated(EnumType.STRING)
+	private WorkingGroupStatus status;
+
+
 	public static Finder<Long, WorkingGroup> find = new Finder<>(WorkingGroup.class);
 
     public WorkingGroup() {
@@ -198,9 +198,65 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return find.where().ilike("locations.placeName", name).findList();
 	}
 
-    public static WorkingGroup create(WorkingGroup workingGroup ) throws MembershipCreationException {
+	public static WorkingGroup createResources(WorkingGroup wg) {
+		WorkingGroup workingGroup = WorkingGroup.read(wg.getGroupId());
+		workingGroup.setExistingThemes(wg.getExistingThemes());
+		workingGroup.setResources(wg.getResources());
+		if (workingGroup.getExistingThemes() != null && !workingGroup.getExistingThemes().isEmpty())
+			workingGroup.getResources().getThemes().addAll(workingGroup.getExistingThemes());
+		workingGroup.setConfigs(getDefaultConfigs());
+		workingGroup.update();
+		workingGroup.refresh();
+		return workingGroup;
+	}
+
+	private static List<Config> getDefaultConfigs() {
+		List<Config> aRet = new ArrayList<>();
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_WG_DISABLE_PUBLIC_SITE,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_WG_DISABLE_PUBLIC_SITE)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_WG_ENABLE_MODERATOR_ROLE,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_WG_ENABLE_MODERATOR_ROLE)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_WG_HAS_REGISTRATION_FORM,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_WG_HAS_REGISTRATION_FORM)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_WG_MEMBERSHIP_INVITATION_BY_MEMBERS)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_WG_MEMBERSHIP_TYPE,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_WG_MEMBERSHIP_TYPE)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_WG_ALLOW_EMERGENT_THEMES,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_WG_ALLOW_EMERGENT_THEMES)));
+
+		for (Config config: aRet) {
+			config.setConfigTarget(ConfigTargets.WORKING_GROUP);
+		}
+
+		return aRet;
+	}
+	public static WorkingGroup createMembership(Long workingGroupId) throws MembershipCreationException {
+
+		WorkingGroup workingGroup = WorkingGroup.read(workingGroupId);
+		// 6. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
+		MembershipGroup mg = new MembershipGroup();
+		mg.setWorkingGroup(workingGroup);
+		mg.setCreator(workingGroup.getCreator());
+		mg.setUser(workingGroup.getCreator());
+		mg.setStatus(MembershipStatus.ACCEPTED);
+		mg.setLang(workingGroup.getLang());
+
+		List<SecurityRole> roles = new ArrayList<SecurityRole>();
+		roles.add(SecurityRole.findByName("MEMBER"));
+		roles.add(SecurityRole.findByName("COORDINATOR"));
+		roles.add(SecurityRole.findByName("MODERATOR"));
+		mg.setRoles(roles);
+
+		MembershipGroup.create(mg);
+		workingGroup.update();
+		workingGroup.refresh();
+		return workingGroup;
+	}
+
+    public static WorkingGroup create(WorkingGroup workingGroup ) {
 		// 1. Check first for existing entities in ManyToMany relationships. Save them for later update
-		List<Theme> existingThemes = workingGroup.getExistingThemes();
+
 		List<Long> campaigns = workingGroup.getCampaigns();
 		List<Contribution> existingContributions = workingGroup.getExistingContributions();
 
@@ -213,8 +269,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		workingGroup.save();
 		// 3. Add existing entities in relationships to the manytomany resources then update
 		ResourceSpace groupResources = workingGroup.getResources();
-		if (existingThemes != null && !existingThemes.isEmpty())
-			groupResources.getThemes().addAll(existingThemes);
+
 		if (existingContributions != null && !existingContributions.isEmpty())
 			groupResources.getContributions().addAll(existingContributions);
 		
@@ -290,22 +345,10 @@ public class WorkingGroup extends AppCivistBaseModel {
 				c.update();
 			}
 		}
-		
-		// 6. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
-		MembershipGroup mg = new MembershipGroup();
-		mg.setWorkingGroup(workingGroup);
-		mg.setCreator(workingGroup.getCreator());
-		mg.setUser(workingGroup.getCreator());
-		mg.setStatus(MembershipStatus.ACCEPTED);
-		mg.setLang(workingGroup.getLang());
-	
-		List<SecurityRole> roles = new ArrayList<SecurityRole>();
-		roles.add(SecurityRole.findByName("MEMBER"));
-		roles.add(SecurityRole.findByName("COORDINATOR"));
-		roles.add(SecurityRole.findByName("MODERATOR"));
-		mg.setRoles(roles);
-		
-		MembershipGroup.create(mg);
+
+		workingGroup.setStatus(WorkingGroupStatus.DRAFT);
+		workingGroup.update();
+		workingGroup.refresh();
 		return workingGroup;
     }
 
@@ -457,6 +500,14 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 	public String getConsensusBallotAsString() {
 		return consensusBallot!=null ? consensusBallot.toString() : null;
+	}
+
+	public WorkingGroupStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(WorkingGroupStatus status) {
+		this.status = status;
 	}
 
 	public void setConsensusBallotAsString(String consensusBallotAsString) {
@@ -632,7 +683,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 				.collect(Collectors.toList());
 	}
 
-	public List<Campaign> getWorkingGroupCampaigns(String status) {
+	public List<Campaign> getWorkingGroupCampaigns(String status) throws Exception {
 		List<ResourceSpace> campaignSpaces = getContainingSpacesFilteredByType(ResourceSpaceTypes.CAMPAIGN);
 		List<Campaign> campaigns = new ArrayList<>();
 		for (ResourceSpace rs : campaignSpaces) {

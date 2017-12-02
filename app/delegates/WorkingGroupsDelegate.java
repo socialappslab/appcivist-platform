@@ -2,10 +2,15 @@ package delegates;
 
 import java.util.List;
 
+import enums.AssemblyStatus;
+import enums.WorkingGroupStatus;
+import models.Assembly;
 import models.User;
 import models.WorkingGroup;
+import models.transfer.AssemblyTransfer;
 import models.transfer.WorkingGroupSummaryTransfer;
 
+import models.transfer.WorkingGroupTransfer;
 import org.dozer.DozerBeanMapper;
 
 import play.Play;
@@ -27,6 +32,14 @@ public class WorkingGroupsDelegate {
 		} else {
 			return null;
 		}
+	}
+
+	public static WorkingGroup publish(Long workingGroupId) {
+		WorkingGroup workingGroup =  WorkingGroup.read(workingGroupId);
+		workingGroup.setStatus(WorkingGroupStatus.PUBLISHED);
+		workingGroup.update();
+		workingGroup.refresh();
+		return  workingGroup;
 	}
 
 }

@@ -13,6 +13,11 @@ public class WorkingGroupSummaryTransfer {
     private Boolean blockMajority;
 	private WorkingGroupProfileTransfer profile;
 	private List<ThemeTransfer> existingThemes;
+	private Long resourcesResourceSpaceId;
+	private Long forumResourceSpaceId;
+	private String resourcesResourceSpaceUUID;
+	private String forumResourceSpaceUUID;
+	private Boolean isTopic;
 	public Long getGroupId() {
 		return groupId;
 	}
@@ -67,5 +72,44 @@ public class WorkingGroupSummaryTransfer {
 	public void setExistingThemes(List<ThemeTransfer> existingThemes) {
 		this.existingThemes = existingThemes;
 	}
-	
+
+	public Long getResourcesResourceSpaceId() {
+		return resourcesResourceSpaceId;
+	}
+
+	public void setResourcesResourceSpaceId(Long resourcesResourceSpaceId) {
+		this.resourcesResourceSpaceId = resourcesResourceSpaceId;
+	}
+
+	public Long getForumResourceSpaceId() {
+		return forumResourceSpaceId;
+	}
+
+	public String getResourcesResourceSpaceUUID() {
+		return resourcesResourceSpaceUUID;
+	}
+
+	public String getForumResourceSpaceUUID() {
+		return forumResourceSpaceUUID;
+	}
+
+	public Boolean getTopic() {
+		return isTopic;
+	}
+
+	public void setTopic(Boolean topic) {
+		isTopic = topic;
+	}
+
+	public void setForumResourceSpaceId(Long forumResourceSpaceId) {
+		this.forumResourceSpaceId = forumResourceSpaceId;
+	}
+
+	public void setResourcesResourceSpaceUUID(String resourcesResourceSpaceUUID) {
+		this.resourcesResourceSpaceUUID = resourcesResourceSpaceUUID;
+	}
+
+	public void setForumResourceSpaceUUID(String forumResourceSpaceUUID) {
+		this.forumResourceSpaceUUID = forumResourceSpaceUUID;
+	}
 }
