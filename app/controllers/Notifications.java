@@ -11,6 +11,7 @@ import delegates.NotificationsDelegate;
 import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
 import enums.NotificationEventName;
+import enums.SubscriptionTypes;
 import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.*;
@@ -435,14 +436,20 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
     public static Result getNotificationSignals(@ApiParam(name = "id", value = "User ID") Long id,
-                                    @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page) {
+                                    @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
+                                                @ApiParam(name = "type", value = "Type") String type) {
+
         List<NotificationEventSignalUser> notifications = new ArrayList<>();
-        NotificationSignalStatsTransfer tmp = processUserNotificationSignalStats(id);
+        if((type != null) && (!type.equals(SubscriptionTypes.NEWSLETTER.name()) && !type.equals(SubscriptionTypes.REGULAR.name()))) {
+            return badRequest();
+        }
+
+        NotificationSignalStatsTransfer tmp = processUserNotificationSignalStats(id, type);
         Integer pageSize = 5;
         if (tmp.getRead().intValue() == tmp.getTotal().intValue()) {
             pageSize = 10;
         }
-        notifications = processUserNotificationsSignal(id, page - 1, pageSize);
+        notifications = processUserNotificationsSignal(id, page - 1, pageSize, type);
         if (notifications.isEmpty()) {
             return notFound(Json.toJson(new TransferResponseStatus("No data")));
         } else {
@@ -477,9 +484,12 @@ public class Notifications extends Controller {
         }
     }
 
-    private static List<NotificationEventSignalUser> processUserNotificationsSignal(Long userId, Integer page, Integer pageSize) {
+    private static List<NotificationEventSignalUser> processUserNotificationsSignal(Long userId, Integer page, Integer pageSize, String subsType) {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("user", userId);
+        if (subsType != null) {
+            conditions.put("signal.signalType", SubscriptionTypes.valueOf(subsType));
+        }
         return NotificationsDelegate.findNotificationsUser(conditions, page, pageSize);
     }
 
@@ -489,14 +499,21 @@ public class Notifications extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    public static Result getNotificationSignalsStats(@ApiParam(name = "id", value = "User ID") Long id) {
-        NotificationSignalStatsTransfer stats = processUserNotificationSignalStats(id);
+    public static Result getNotificationSignalsStats(@ApiParam(name = "id", value = "User ID") Long id,
+                                                     @ApiParam(name = "type", value = "Type") String type) {
+        if((type != null) && (!type.equals(SubscriptionTypes.NEWSLETTER.name()) && !type.equals(SubscriptionTypes.REGULAR.name()))) {
+            return badRequest();
+        }
+        NotificationSignalStatsTransfer stats = processUserNotificationSignalStats(id, type);
         return ok(Json.toJson(stats));
     }
 
-    private static NotificationSignalStatsTransfer processUserNotificationSignalStats(Long userId) {
+    private static NotificationSignalStatsTransfer processUserNotificationSignalStats(Long userId, String subsType) {
 
         Map<String, Object> conditions = new HashMap<>();
+        if(subsType != null) {
+            conditions.put("signal.signalType", SubscriptionTypes.valueOf(subsType));
+        }
         conditions.put("user", userId);
         List<NotificationEventSignalUser> allNotif = NotificationsDelegate.findNotificationsUser(conditions, null, null);
 
