@@ -1112,10 +1112,12 @@ public class NotificationsDelegate {
                     case "user":
                         q.eq("user.userId", conditions.get(key));
                         break;
+                    case "signal.signalType":
+                        q.eq("signal.signalType", conditions.get(key));
+                        break;
                 }
             }
         }
-
         if (page != null && pageSize != null) {
             return q.findPagedList(page, pageSize).getList();
         } else {
