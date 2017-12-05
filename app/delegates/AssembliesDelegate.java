@@ -3,6 +3,11 @@ package delegates;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.jsontype.impl.AsExistingPropertyTypeSerializer;
+import enums.AssemblyStatus;
+import enums.CampaignStatus;
+import enums.ConfigTargets;
 import models.*;
 import models.location.Location;
 import models.transfer.*;
@@ -12,6 +17,7 @@ import org.dozer.DozerBeanMapper;
 import exceptions.MembershipCreationException;
 import play.Logger;
 import play.Play;
+import utils.GlobalDataConfigKeys;
 
 public class AssembliesDelegate {
 
@@ -62,6 +68,63 @@ public class AssembliesDelegate {
 		}
 		return result;
 	}
+	public static AssemblyTransfer createMembership(Long id) throws MembershipCreationException {
+
+		Assembly a = Assembly.read(id);
+		Assembly.createMembership(a);
+		a.update();
+		a.refresh();
+		return  mapper.map(a, AssemblyTransfer.class);
+	}
+
+	private static List<Config> getDefaultConfigs() {
+		List<Config> aRet = new ArrayList<>();
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_ENABLE_FORUM,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_ENABLE_FORUM)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_ENABLE_MODERATOR_ROLE,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_ENABLE_MODERATOR_ROLE)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_HAS_REGISTRATION_FORM,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_HAS_REGISTRATION_FORM)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_MEMBERSHIP_INVITATION_BY_MEMBERS,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_MEMBERSHIP_INVITATION_BY_MEMBERS)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_MEMBERSHIP_TYPE,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_MEMBERSHIP_TYPE)));
+		aRet.add(new Config(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION,
+				GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION)));
+		for (Config config: aRet) {
+			config.setConfigTarget(ConfigTargets.ASSEMBLY);
+		}
+
+		return aRet;
+	}
+	public static AssemblyTransfer publish(Long assemblyId) {
+		Assembly newAssembly =  Assembly.read(assemblyId);
+		newAssembly.setStatus(AssemblyStatus.PUBLISHED);
+		newAssembly.update();
+		newAssembly.refresh();
+		return  mapper.map(newAssembly, AssemblyTransfer.class);
+	}
+
+	public static AssemblyTransfer createResources(AssemblyTransfer assemblyTransfer) {
+		Assembly newAssembly = mapper.map(assemblyTransfer, Assembly.class);
+		Assembly.createResources(newAssembly);
+		Assembly old = Assembly.read(assemblyTransfer.getAssemblyId());
+		List<Config> configs = getDefaultConfigs();
+		List<Config> configsLoaded = new ArrayList<Config>();
+		for (Config conf: configs) {
+			Config.create(conf);
+			configsLoaded.add(conf);
+		}
+		old.setConfigs(configsLoaded);
+		old.update();
+		old.refresh();
+		return  mapper.map(old, AssemblyTransfer.class);
+
+	}
 
 	public static AssemblyTransfer create(AssemblyTransfer newAssemblyTransfer,
 			User creator, String templates, Assembly principal, String invitations) throws MembershipCreationException {
@@ -87,7 +150,9 @@ public class AssembliesDelegate {
 		if (newAssemblyTransfer.getLocation() == null) {
 			newAssembly.setLocation(null);
 		}
+
 		newAssembly.setCreator(creator);
+		newAssembly.setStatus(AssemblyStatus.DRAFT);
 
 		if (newAssembly.getLang() == null)
 			newAssembly.setLang(creator.getLanguage());
@@ -111,7 +176,8 @@ public class AssembliesDelegate {
 
 			}
 		}
-
+        newAssembly.save();
+        newAssembly.refresh();
 		Assembly.create(newAssembly);
 		if(location != null) {
 			Location location1 = mapper.map(locationTransfer, Location.class);
@@ -134,7 +200,9 @@ public class AssembliesDelegate {
 		Logger.info("Assembly created!");
 
 		newAssembly.refresh();
-
+		newAssembly.setStatus(AssemblyStatus.DRAFT);
+		newAssembly.update();
+		newAssembly.refresh();
 		// Adding new assembly to principal assembly if created under it
 		if (principal!=null) {
 			ResourceSpace rsprincipal = principal.getResources();

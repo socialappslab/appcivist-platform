@@ -14,14 +14,12 @@ import delegates.NotificationsDelegate;
 import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.ConfigurationException;
+import exceptions.MembershipCreationException;
 import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
-import models.transfer.InvitationTransfer;
-import models.transfer.MembershipTransfer;
-import models.transfer.TransferResponseStatus;
-import models.transfer.WorkingGroupSummaryTransfer;
+import models.transfer.*;
 import org.json.simple.JSONArray;
 import play.Logger;
 import play.Play;
@@ -134,6 +132,81 @@ public class WorkingGroups extends Controller {
                                             @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
         WorkingGroup.delete(wGroupId);
         return ok();
+    }
+
+    /**
+     *
+     * @param aid
+     * @param wGroupId
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = WorkingGroup.class, produces = "application/json", value = "Publish group by ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No working group found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+    public static Result publish(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                            @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
+        WorkingGroup wg = WorkingGroup.read(wGroupId);
+        if (wg == null) {
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setResponseStatus(ResponseStatus.NODATA);
+            response.setStatusMessage("Working group " + wGroupId + " does not exist");
+            return notFound(Json.toJson(response));
+        }
+        return ok(Json.toJson(WorkingGroupsDelegate.publish(wGroupId)));
+
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = WorkingGroup.class, produces = "application/json", value = "Publish group by ID")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No working group found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfGroup", meta = SecurityModelConstants.GROUP_RESOURCE_PATH)
+    public static Result createMembership(@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+                                 @ApiParam(name = "gid", value = "Working Group ID") Long wGroupId) {
+        WorkingGroup wg = WorkingGroup.read(wGroupId);
+        if (wg == null) {
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setResponseStatus(ResponseStatus.NODATA);
+            response.setStatusMessage("Working group " + wGroupId + " does not exist");
+            return notFound(Json.toJson(response));
+        }
+        try {
+            return ok(Json.toJson(WorkingGroup.createMembership(wGroupId)));
+        } catch (MembershipCreationException e) {
+            e.printStackTrace();
+            Logger.info("Error creating Working Group: " + e.getMessage());
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+            responseBody.setStatusMessage("Error creating Working Group: " + e.getMessage());
+            return internalServerError(Json.toJson(responseBody));
+        }
+
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = WorkingGroup.class, produces = "application/json", value = "Create working group resources")
+    @ApiResponses(value = { @ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class) })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Working Group Object", value = "Body of WG in JSON", required = true, dataType = "models.WorkingGroup", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Restrict({ @Group(GlobalData.USER_ROLE) })
+    public static Result createWorkingGroupResource(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "id", value = "WG ID") Long id) {
+        final Form<WorkingGroup> newWGForm = WORKING_GROUP_FORM.bindFromRequest();
+        // Check for errors in received data
+        if (newWGForm.hasErrors()) {
+            return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+                    Messages.get(GlobalData.GROUP_CREATE_MSG_ERROR,
+                            newWGForm.errorsAsJson()), newWGForm
+                            .errorsAsJson().toString())));
+        } else {
+            WorkingGroup workingGroup = newWGForm.get();
+            workingGroup.setGroupId(id);
+            return ok(Json.toJson(WorkingGroup.createResources(workingGroup)));
+
+        }
     }
 
     /**
