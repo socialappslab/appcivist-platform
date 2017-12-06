@@ -10,6 +10,7 @@ import models.transfer.NotificationSignalTransfer;
 import models.transfer.NotificationSubscriptionTransfer;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.libs.ws.WSResponse;
@@ -20,7 +21,11 @@ import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -596,7 +601,16 @@ public class NotificationsDelegate {
         data.put("signaled", false);
 
         if (subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
-            data.put("template", getNewsletterTemplate(originType, UUID.fromString(origin.toString()), userParam));
+            try {
+                Map<String, Object> template = getNewsletterTemplate(originType, UUID.fromString(origin.toString()), userParam);
+                notificationEvent.setRichText(String.valueOf(template.get("richText")));
+                template.remove("richText");
+                data.put("template", template);
+
+            } catch (IOException e) {
+                Logger.error("Error creating the rich text for the notification");
+                e.printStackTrace();
+            }
         }
 
 
@@ -1149,7 +1163,7 @@ public class NotificationsDelegate {
      * @param user
      * @return
      */
-    private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType, UUID spaceID, User user) {
+    private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType, UUID spaceID, User user) throws IOException {
         Map<String, Object> toRet = new HashMap<>();
         Integer newsletterFrequency = getNewsletterFrequency(spaceID);
         switch (spaceType) {
@@ -1162,25 +1176,56 @@ public class NotificationsDelegate {
 
                 //Campaign without Activity
                 if (notificationEventSignals.isEmpty()) {
+                    File file = Play.application().getFile("conf/newsletters-templates/newsletter-backend-template-no-activity.html");
+                    String content = new String(Files.readAllBytes(Paths.get(file.toString())));
+                    content = content.replaceAll("CAMPAIGN_NAME",campaign.getTitle());
                     toRet.put("campaignNewsletterDescription",campaign.getGoal());
+                    content = content.replaceAll("CAMPAIGN_DESCRIPTION",campaign.getGoal());
                     if (stage!=null) {
                         toRet.put("stageName", stage.name());
+                        content = content.replaceAll("STAGE_NAME",stage.name());
                     }
+                    StringBuilder stagesString = new StringBuilder();
+                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
+                        if(component.getEndDate().before(new Date())) {
+                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
+                                    .append("</div>");
+                        } else {
+                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
+                                    append(component.getType().name()).append("</div>");
+                        }
+                    }
+                    content = content.replaceAll("PROGRESS", stagesString.toString());
                     List<String> themes = campaign.getThemes().stream()
                             .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
                             .map(Theme::getTitle).collect(Collectors.toList());
                     toRet.put("themes", themes);
+                    StringBuilder themesString = new StringBuilder();
+                    for (String theme: themes) {
+                        themesString.append("<li>").append(theme).append("</li>");
+                    }
+                    content = content.replaceAll("THEMES", themesString.toString());
                     List<String> workingGroups = campaign.getWorkingGroups().stream().map(WorkingGroup::getName)
                             .collect(Collectors.toList());
                     toRet.put("workingGroups", workingGroups);
+                    StringBuilder wgString = new StringBuilder();
+                    for (String wg: workingGroups) {
+                        wgString.append("<li>").append(wg).append("</li>");
+                    }
+                    content = content.replaceAll("WORKING_GROUPS", wgString.toString());
                     List<Map<String, Object>> resourcesFormated = new ArrayList<>();
+                    StringBuilder resources = new StringBuilder();
                     for(Resource con: campaign.getResourceList()) {
                         Map<String, Object> cont = new HashMap<>();
                         cont.put("title", con.getTitle());
                         cont.put("link", con.getUrlLargeString());
+                        resources.append("<li>").append("<a href =").append(con.getUrlLargeString()).
+                                append(">").append(con.getTitle()).append("</a></li>");
                         resourcesFormated.add(cont);
                     }
                     toRet.put("resources", resourcesFormated);
+                    content = content.replaceAll("RESOURCES", resources.toString());
+                    toRet.put("richText",content);
                 //Campaign in Idea Collection Stage
                 } else if (stage == null) {
                     return toRet;
