@@ -2329,7 +2329,7 @@ public class Contributions extends Controller {
      */
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey,
-                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
+                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException, ConfigurationException {
 
         newContrib.setType(type);
         List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
@@ -2352,6 +2352,26 @@ public class Contributions extends Controller {
             newContrib.addAuthor(author);
             newContrib.setContextUserId(author.getUserId());
             newContrib.setLang(author.getLanguage());
+            if(Subscription.findByUserIdAndSpaceId(author,containerResourceSpace.getUuid().toString()).isEmpty()) {
+                Subscription subscription = new Subscription();
+                subscription.setSubscriptionType(SubscriptionTypes.REGULAR);
+                subscription.setUserId(author.getUuid().toString());
+                String uuid = "";
+                if(containerResourceSpace.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+                    uuid = containerResourceSpace.getAssemblyResources().getUuidAsString();
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    uuid = containerResourceSpace.getCampaign().getUuidAsString();
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    uuid = containerResourceSpace.getWorkingGroupResources().getUuid().toString();
+                } else if (containerResourceSpace.getType().equals(ResourceSpaceTypes.COMPONENT)) {
+                    uuid = containerResourceSpace.getComponent().getUuid().toString();
+                }
+                subscription.setSpaceId(uuid);
+                subscription.setSpaceType(SpaceTypes.CONTRIBUTION);
+                Logger.info("Creating subscription to the resource space of the contribution");
+                NotificationsDelegate.subscribeToEvent(subscription);
+                subscription.insert();
+            }
         }
         
         // If still there is no language, try first the first NonMemberAuthor and then the Campaign, WG, and Assembly, in that order
@@ -2683,7 +2703,7 @@ public class Contributions extends Controller {
 
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, ContributionTemplate t,
-                                                  ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException {
+                                                  ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException, ConfigurationException {
         // TODO: dynamically obtain etherpad server URL and Key from component configuration
         return createContribution(newContrib, author, type, null, null, t, containerResourceSpace);
     }

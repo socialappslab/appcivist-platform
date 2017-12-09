@@ -154,6 +154,13 @@ public class Subscription extends Model {
         return membs;
     }
 
+    public static List<Subscription> findByUserIdAndSpaceId(User u, String spaceId) {
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
+                .eq("spaceId", spaceId).query();
+        List<Subscription> membs = q.findList();
+        return membs;
+    }
+
     public static List<Subscription> findIdeasByUserId(User u) {
         com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
                 .eq("spaceType", SpaceTypes.IDEA).query();
