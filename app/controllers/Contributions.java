@@ -3989,6 +3989,19 @@ public class Contributions extends Controller {
                     }
 
                 }
+                if(contribution.getExtendedTextPad() != null) {
+                    if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.GDOC)) {
+
+                        contributionMap.put("exportUrl", contribution
+                                .getExtendedTextPad()
+                                .getUrlAsString() + "/export?format=docx");
+
+                    } else {
+                        contributionMap.put("exportUrl", contribution
+                                .getExtendedTextPad()
+                                .getUrlAsString());
+                    }
+                }
                 if(format!=null && format.equals("PDF")){
                     try {
                         File tempFile = File.createTempFile("proposal.pdf", ".tmp");
@@ -4143,6 +4156,19 @@ public class Contributions extends Controller {
                                     return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Fields specified are not valid")));
                                 }
                             }
+                        }
+                    }
+                    if(contribution.getExtendedTextPad() != null) {
+                        if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.GDOC)) {
+
+                                contributionMap.put("exportUrl", contribution
+                                        .getExtendedTextPad()
+                                        .getUrlAsString() + "/export?format=docx");
+
+                        } else {
+                            contributionMap.put("exportUrl", contribution
+                                    .getExtendedTextPad()
+                                    .getUrlAsString());
                         }
                     }
                     hashMapList.add(contributionMap);
