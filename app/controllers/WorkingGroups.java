@@ -25,6 +25,7 @@ import play.Logger;
 import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F;
 import play.libs.F.Promise;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -510,69 +511,72 @@ public class WorkingGroups extends Controller {
         } else {
             MembershipTransfer newMembership = newMembershipForm.get();
             Result aRet =  Memberships.createMemberShip(requestor, "group", newMembership, id);
-            Boolean coordinator = false;
-            for(SecurityRole role : requestor.getRoles()) {
-                if (role.getName().equals("COORDINATOR")) {
-                    coordinator = true;
-                }
-            }
-            WorkingGroup wg = WorkingGroup.read(id);
-            if(!coordinator) {
-                if (Subscription.findByUserIdAndSpaceId(requestor,wg.getResourcesResourceSpaceUUID()).isEmpty()) {
-                    HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
-                    ignoredEvents.put(EventKeys.NEW_CONTRIBUTION_FEEDBACK, true);
-                    ignoredEvents.put(EventKeys.NEW_CONTRIBUTION_FEEDBACK_FLAG, true);
-                    ignoredEvents.put(EventKeys.UPDATED_ASSEMBLY_CONFIGS, true);
-                    ignoredEvents.put(EventKeys.UPDATED_WORKING_GROUP_CONFIGS, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_IDEA, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_PROPOSAL, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_DISCUSSION, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_COMMENT, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_NOTE, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_FORUM_POST, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_FEEDBACK, true);
-                    ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_HISTORY, true);
-                    ignoredEvents.put(EventKeys.MEMBER_JOINED, true);
-                    ignoredEvents.put(EventKeys.DELETED_CONTRIBUTION, true);
-                    ignoredEvents.put(EventKeys.MODERATED_CONTRIBUTION, true);
-                    Subscription subscription = new Subscription();
-                    subscription.setIgnoredEvents(ignoredEvents);
-                    subscription.setSpaceId(wg.getResourcesResourceSpaceUUID());
-                    subscription.setSubscriptionType(SubscriptionTypes.REGULAR);
-                    subscription.setUserId(requestor.getUuid().toString());
-                    subscription.setSpaceType(SpaceTypes.WORKING_GROUP);
-                    subscription.insert();
-                    try {
-                        NotificationsDelegate.subscribeToEvent(subscription);
-                    } catch (ConfigurationException e) {
-                        Logger.error("Error notification the subscription creation", e);
-                        e.printStackTrace();
+            F.Promise.promise(() -> {
+                Boolean coordinator = false;
+                for (SecurityRole role : requestor.getRoles()) {
+                    if (role.getName().equals("COORDINATOR")) {
+                        coordinator = true;
                     }
-                    Config config = Config.findByUser(requestor.getUuid(), "notifications.preference." +
-                            "contributed-contributions.auto-subscription");
-                    if (config != null
-                            && config.getValue().equals("true")) {
-                        Subscription sub = new Subscription();
-                        sub.setUserId(requestor.getUuid().toString());
-                        sub.setSpaceType(SpaceTypes.CAMPAIGN);
-                        sub.setSpaceId(wg.getResourcesResourceSpaceUUID());
-                        sub.setSubscriptionType(SubscriptionTypes.NEWSLETTER);
-                        HashMap<String, Boolean> services = new HashMap<>();
-                        services.put("facebook-messenger", true);
-                        sub.setDisabledServices(services);
-                        sub.insert();
+                }
+                WorkingGroup wg = WorkingGroup.read(id);
+                if (!coordinator) {
+                    if (Subscription.findByUserIdAndSpaceId(requestor, wg.getResourcesResourceSpaceUUID()).isEmpty()) {
+                        HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
+                        ignoredEvents.put(EventKeys.NEW_CONTRIBUTION_FEEDBACK, true);
+                        ignoredEvents.put(EventKeys.NEW_CONTRIBUTION_FEEDBACK_FLAG, true);
+                        ignoredEvents.put(EventKeys.UPDATED_ASSEMBLY_CONFIGS, true);
+                        ignoredEvents.put(EventKeys.UPDATED_WORKING_GROUP_CONFIGS, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_IDEA, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_PROPOSAL, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_DISCUSSION, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_COMMENT, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_NOTE, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_FORUM_POST, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_FEEDBACK, true);
+                        ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_HISTORY, true);
+                        ignoredEvents.put(EventKeys.MEMBER_JOINED, true);
+                        ignoredEvents.put(EventKeys.DELETED_CONTRIBUTION, true);
+                        ignoredEvents.put(EventKeys.MODERATED_CONTRIBUTION, true);
+                        Subscription subscription = new Subscription();
+                        subscription.setIgnoredEvents(ignoredEvents);
+                        subscription.setSpaceId(wg.getResourcesResourceSpaceUUID());
+                        subscription.setSubscriptionType(SubscriptionTypes.REGULAR);
+                        subscription.setUserId(requestor.getUuid().toString());
+                        subscription.setSpaceType(SpaceTypes.WORKING_GROUP);
+                        subscription.insert();
                         try {
-                            NotificationsDelegate.subscribeToEvent(sub);
+                            NotificationsDelegate.subscribeToEvent(subscription);
                         } catch (ConfigurationException e) {
                             Logger.error("Error notification the subscription creation", e);
                             e.printStackTrace();
                         }
+                        Config config = Config.findByUser(requestor.getUuid(), "notifications.preference." +
+                                "contributed-contributions.auto-subscription");
+                        if (config != null
+                                && config.getValue().equals("true")) {
+                            Subscription sub = new Subscription();
+                            sub.setUserId(requestor.getUuid().toString());
+                            sub.setSpaceType(SpaceTypes.CAMPAIGN);
+                            sub.setSpaceId(wg.getResourcesResourceSpaceUUID());
+                            sub.setSubscriptionType(SubscriptionTypes.NEWSLETTER);
+                            HashMap<String, Boolean> services = new HashMap<>();
+                            services.put("facebook-messenger", true);
+                            sub.setDisabledServices(services);
+                            sub.insert();
+                            try {
+                                NotificationsDelegate.subscribeToEvent(sub);
+                            } catch (ConfigurationException e) {
+                                Logger.error("Error notification the subscription creation", e);
+                                e.printStackTrace();
+                            }
+                        }
+
                     }
 
+
                 }
-
-
-            }
+                return Optional.ofNullable(null);
+            });
 
             return aRet;
         }
