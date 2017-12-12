@@ -419,6 +419,16 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 		}
 	}
 
+	public static List<Component> getAllPhases(Long campaignId) {
+		ExpressionList<Component> campaignPhases = find.where()
+				.eq("containingSpaces.campaign.campaignId", campaignId);
+		List<Component> campaignPhaseList = campaignPhases
+				.orderBy("startDate desc")
+				.findList();
+		return campaignPhaseList;
+
+	}
+
 	public static List<Component> findByAssemblyAndCampaign(Long aid,
 			Long campaignId) {
 		ExpressionList<Component> campaignPhases = find.where().eq(

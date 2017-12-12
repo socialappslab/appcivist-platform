@@ -223,7 +223,7 @@ public class Campaigns extends Controller {
     @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update a campaign by its ID and the assembly ID", notes = "Only for COORDINATORS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
+            @ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateCampaign(
@@ -380,6 +380,7 @@ public class Campaigns extends Controller {
                                 ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
                                 if (oldMilestone != null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
                                         && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
+
                                     oldMilestone.setRemoved(true);
                                     oldMilestone.setRemoval(new Date());
                                     oldMilestone.update();
@@ -387,8 +388,24 @@ public class Campaigns extends Controller {
                             }
                         }
 
+
                         Logger.debug("Update component space: " + componentOld.getComponentId());
                         componentOld.getResourceSpace().update();
+                        componentOld.refresh();
+                        componentOld.getMilestones().sort(Comparator.comparing(ComponentMilestone::getDate));
+                        int pos = 1;
+                        for(ComponentMilestone cm: componentOld.getMilestones()) {
+
+                            if (cm.getType().equals(ComponentMilestoneTypes.START)) {
+                                cm.setPosition(1);
+                            } else if (cm.getType().equals(ComponentMilestoneTypes.END)) {
+                                    cm.setPosition(componentOld.getMilestones().size());
+                            } else {
+                                pos ++;
+                                cm.setPosition(pos);
+                            }
+                            cm.update();
+                        }
                     } else {
                         List<String> mappingFiles = Play.application().configuration()
                                 .getStringList("appcivist.dozer.mappingFiles");
