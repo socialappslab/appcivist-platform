@@ -88,7 +88,7 @@ GET       /api/user/:id/notifications                                           
 GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?=null)
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
 PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
-
+GET       /api/notification/user/subscription/:sid                               controllers.Notifications.findByUserAndResourceSpace(sid: Long)
 ##################################################################################################################################################################
 # Assemblies API
 # API operations to manage Assemblies and entities that related to it 

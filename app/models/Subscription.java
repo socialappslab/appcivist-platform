@@ -161,6 +161,13 @@ public class Subscription extends Model {
         return membs;
     }
 
+    public static Boolean existByUserIdAndSpaceId(User u, ResourceSpace resourceSpace) {
+        com.avaje.ebean.Query<Subscription> q = find.where().eq("userId",u.getUuidAsString())
+                .eq("spaceId", resourceSpace.getUuidAsString()).query();
+        List<Subscription> membs = q.findList();
+        return !membs.isEmpty();
+    }
+
     public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
         /*
             * subscription.spaceType === signal.spaceType

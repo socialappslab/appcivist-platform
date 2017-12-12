@@ -555,4 +555,20 @@ public class Notifications extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus("User has no notifications")));
         }
     }
+
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Return if a user is subscribed to a notification or not", httpMethod = "GET")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result findByUserAndResourceSpace(Long sid) {
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        if(rs == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
+        }
+        Map<String, Object> aRet = new HashMap<>();
+        aRet.put("subscribed", Subscription.existByUserIdAndSpaceId(subscriber,rs));
+        return ok(Json.toJson(aRet));
+    }
 }
