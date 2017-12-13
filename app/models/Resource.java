@@ -75,6 +75,10 @@ public class Resource extends AppCivistBaseModel {
 
 	private boolean confirmed;
 
+	private String resourceAuthKey;
+
+	private boolean isTemplate;
+
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "resources", cascade = CascadeType.ALL)
 	private List<ResourceSpace> containingSpaces;
@@ -195,8 +199,24 @@ public class Resource extends AppCivistBaseModel {
 	public void setConfirmed(boolean confirmed) {
 		this.confirmed = confirmed;
 	}
-	// TODO @Transient getPadContent => GET using Etherpad Client
-	
+
+	public String getResourceAuthKey() {
+		return this.resourceAuthKey;
+	}
+
+	public void setResourceAuthKey(String key) {
+		this.resourceAuthKey = key;
+	}
+
+	public boolean getIsTemplate() {
+		return this.isTemplate;
+	}
+
+	public void setIsTemplate(boolean isTemplate) {
+		this.isTemplate = isTemplate;
+	}
+
+
 	public UUID getResourceSpaceWithServerConfigs() {
 		return resourceSpaceWithServerConfigs;
 	}

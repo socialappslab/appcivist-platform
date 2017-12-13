@@ -26,23 +26,16 @@ import io.swagger.annotations.ApiResponses;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.persistence.*;
-import javax.ws.rs.PathParam;
 
 import models.*;
 import models.location.Location;
-import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.ApiResponseTransfer;
 import models.transfer.InvitationTransfer;
@@ -52,7 +45,6 @@ import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.hamcrest.core.IsNull;
 
 import play.Logger;
 import play.Play;
@@ -3743,15 +3735,20 @@ public class Contributions extends Controller {
             Resource pad = c.getExtendedTextPad();
             String padId = pad.getPadId();
             String finalFormat = format != null && format == "text" ? "TEXT":"HTML";
+            String padStoredKey = pad.getResourceAuthKey();
 
             String padUrl = pad.getUrlAsString();
             String[] parts = padUrl.split("/p/");
 
+            if (padStoredKey!=null) {
+                etherpadApiKey = padStoredKey;
+            }
+
             if (!etherpadServerUrl.equals(parts[0])) {
                 etherpadServerUrl = parts[0];
-                if (etherpadServerUrl.equals(etherpadProductionServerUrl)) {
+                if (padStoredKey==null && etherpadServerUrl.equals(etherpadProductionServerUrl)) {
                     etherpadApiKey = etherpadProductionApiKey;
-                } else if (etherpadServerUrl.equals(etherpadTestServerUrl)) {
+                } else if (padStoredKey==null && etherpadServerUrl.equals(etherpadTestServerUrl)) {
                     etherpadApiKey = etherpadTestApiKey;
                 } else {
                     // Try to use the URL as a config path in case a sysadmin wants to used this way
@@ -3759,9 +3756,9 @@ public class Contributions extends Controller {
                     if (parts!=null && parts.length>1) {
                         String domain = parts[1];
                         String apiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD+"."+domain+".apiKey");
-                        if (apiKey!=null) {
+                        if (padStoredKey==null && apiKey!=null) {
                             etherpadApiKey=apiKey;
-                        } else {
+                        } else if (padStoredKey==null) {
                             Logger.info("The API Key for Etherpad Server ("+domain+") of this PAD is not available in our configs. We are letting the call fail with on of the existing keys");
                         }
                     } else {
@@ -4293,7 +4290,7 @@ public class Contributions extends Controller {
      * @param aid
      * @return
      */
-    @ApiOperation(httpMethod = "POST", response = Integer.class, produces = "application/json", value = "Publishes a Contribution")
+    @ApiOperation(httpMethod = "POST", response = Integer.class, produces = "application/json", value = "Adds a document to a proposal")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No group found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
@@ -4302,7 +4299,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "typeDocument", value = "Type of document") String typeDocument) {
+            @ApiParam(name = "typeDocument", value = "Type of document", allowableValues = "gdoc, etherpad") String typeDocument) {
 
         try {
             JsonNode body = request().body().asJson();
@@ -4341,8 +4338,10 @@ public class Contributions extends Controller {
                 resourceTypes = ResourceTypes.GDOC;
             }
 
+            boolean storeKey = false;
             if (body.get("etherpadServerApiKey") != null) {
                 etherpadApiKey = body.get("etherpadServerApiKey").asText();
+                storeKey = true;
             }
 
 
@@ -4353,7 +4352,7 @@ public class Contributions extends Controller {
                     contribution,
                     template,
                     campaign.getResources().getUuid(),
-                    resourceTypes);
+                    resourceTypes, storeKey);
 
 
         } catch (Exception e) {

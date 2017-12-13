@@ -28,6 +28,7 @@ import org.jsoup.nodes.Document;
 
 import play.Logger;
 import play.Play;
+import play.i18n.Messages;
 import play.mvc.Http;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
@@ -301,7 +302,7 @@ public class ContributionsDelegate {
         String readurl = eth.buildReadOnlyUrl(readId);
 
         if (readurl != null) {
-            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c, ResourceTypes.PAD);
+            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c, ResourceTypes.PAD, false, null);
         }
         return null;
     }
@@ -311,7 +312,7 @@ public class ContributionsDelegate {
                                                Contribution c,
                                                ContributionTemplate t,
                                                UUID resourceSpaceConfigsUUID,
-                                               ResourceTypes type) throws MalformedURLException, UnsupportedEncodingException {
+                                               ResourceTypes type, Boolean storeEthKey) throws MalformedURLException, UnsupportedEncodingException {
 
         String padId = UUID.randomUUID().toString();
 
@@ -348,15 +349,14 @@ public class ContributionsDelegate {
             String readId = eth.getReadOnlyId(padId);
             String readurl = eth.buildReadOnlyUrl(readId);
 
-
             if (readurl != null) {
-                createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c, type);
+                createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c, type, storeEthKey, ethApiToken);
             }
         }
         else{
             //GDOC
             System.out.println(" UrL: "+ ethServerBaseUrl);
-            createResourceAndUpdateContribution(padId, null, ethServerBaseUrl, resourceSpaceConfigsUUID, c, type);
+            createResourceAndUpdateContribution(padId, null, ethServerBaseUrl, resourceSpaceConfigsUUID, c, type, false, null);
 
         }
         return null;
