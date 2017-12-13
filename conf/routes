@@ -74,20 +74,24 @@ POST      /api/site/verify                                                      
 GET       /api/user/:uid                                                         controllers.Users.getUser(uid: Long)
 
 ##################################################################################################################################################################
-# Notifications Service Proxy
+# Notifications Service Proxy -OLD
 # TODO: integrate a proper message queue manager like rabbitmq
 GET       /api/notification/inbox/:sid                                           controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?=-1)
 GET       /api/notification/user/:uuid                                           controllers.Notifications.userInbox(uuid: java.util.UUID)
 GET       /api/notification/subscription                                         controllers.Notifications.subscriptions()
-POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
 DELETE    /api/notification/subscription/:origin/:eventName                      controllers.Notifications.unsubscribe(origin: java.util.UUID, eventName: String)
-GET       /api/notification/subscription/:sid                                    controllers.Notifications.subscribeToResourceSpace(sid: Long)
-DELETE    /api/notification/subscription/:sid                                    controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 POST      /api/notification/events/:type                                         controllers.Notifications.createResourceSpaceEvents(type: String)
+
+##################################################################################################################################################################
+# Subscriptions and Notifications - NEW
 GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0, type: String?=null)
 GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?=null)
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
 PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
+POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
+GET       /api/notification/subscription/space/:sid                              controllers.Notifications.findByUserAndResourceSpace(sid: Long)
+POST      /api/notification/subscription/space/:sid                              controllers.Notifications.subscribeToResourceSpace(sid: Long)
+DELETE    /api/notification/subscription/space/:sid                              controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 
 ##################################################################################################################################################################
 # Assemblies API
@@ -208,11 +212,11 @@ PUT       /api/assembly/:aid/campaign/:cid/publish                              
 POST      /api/assembly/:aid/campaign                                            controllers.Campaigns.createCampaignInAssembly(aid: Long, templates?="")
 DELETE    /api/assembly/:aid/campaign/:cid                                       controllers.Campaigns.deleteCampaign(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/resource                              controllers.Campaigns.createCampaignResource(aid: Long, cid: Long)
-GET       /api/assembly/:aid/campaign/:cid/resources                             controllers.Campaigns.listCampaignResources(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/assembly/:aid/campaign/:cid/components                            controllers.Campaigns.listCampaignComponents(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/assembly/:aid/campaign/:cid/themes                                controllers.Campaigns.listCampaignThemes(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null, themeType: String?=null, query: String?=null)
-GET       /api/assembly/:aid/campaign/:cid/groups                                controllers.Campaigns.listCampaignGroups(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/assembly/:aid/campaign/:cid/timeline                              controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/assembly/:aid/campaign/:cid/resources                             controllers.Campaigns.listCampaignResources(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/assembly/:aid/campaign/:cid/components                            controllers.Campaigns.listCampaignComponents(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/assembly/:aid/campaign/:cid/themes                                controllers.Campaigns.listCampaignThemes(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16, themeType: String?=null, query: String?=null)
+GET       /api/assembly/:aid/campaign/:cid/groups                                controllers.Campaigns.listCampaignGroups(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/assembly/:aid/campaign/:cid/timeline                              controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
 PUT       /api/assembly/:aid/campaign/:cid/description                           controllers.Campaigns.updateCampaignDescription(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/group/:gid/description                controllers.Campaigns.updateCampaignGroupDescription(aid: Long, cid: Long, gid: Long)
 
@@ -243,7 +247,7 @@ GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/userfeedback      
 GET       /api/assembly/:aid/campaign/:cid/contribution/:coid/feedback/:fid      controllers.Contributions.readContributionFeedback(aid: Long, cid: Long, coid: Long, fid: Long)
 GET       /api/assembly/:aid/contribution/:cid/padid                             controllers.Contributions.findContributionPadId(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/comment                           controllers.Contributions.findContributionComments(aid: Long, cid: Long)
-GET       /api/assembly/:aid/contribution/:cid/contributions                     controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/assembly/:aid/contribution/:cid/contributions                     controllers.Contributions.findAssociatedContributions(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
 
 PUT       /api/space/:sid/contribution/comment/reset                             controllers.Contributions.updateContributionCounters(sid: Long)
 #GET		  /api/space/:sid/contribution/word/frequency							 controllers.Contributions.wordsCloud(sid: Long)
@@ -331,7 +335,7 @@ GET       /api/space/:sid/field/:fid/value/:etype                               
 
 POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
-POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
+POST      /api/space/:sid/resource                                               controllers.Spaces.addSpaceResources(sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 GET       /api/space/:sid/export/contribution/:cid                               controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
 GET       /api/space/:sid/export/contribution                                    controllers.Contributions.exportSpaceContributionProposal(sid: Long, format?="", include?="")
@@ -345,7 +349,7 @@ GET       /api/space/:sid/config                                                
 PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: java.util.UUID)
 PUT       /api/space/:sid/config                                                 controllers.Configs.updateSpaceConfig(sid: Long)
 GET       /api/space/:sid/contribution/:cid                                      controllers.Contributions.findResourceSpaceContributionById(sid: Long, cid: Long)
-GET       /api/space/:sid/contribution                                           controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, by_author:Integer?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null, status: String?="")
+GET       /api/space/:sid/contribution                                           controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, by_author:Integer?=0, page:Integer?=0, pageSize:Integer?=16, sorting?="", random: String ?= null, status: String?="")
 GET       /api/space/:sid/resource/:rid                                          controllers.Campaigns.listSpaceResourcesById(sid: Long, rid: Long)
 GET       /api/space/:sid/resource                                               controllers.Campaigns.listSpaceResources(sid: Long)
 GET       /api/space/:sid/component/:cid                                         controllers.Spaces.listSpaceComponentById(sid: Long, cid: Long)
@@ -395,18 +399,18 @@ GET       /api/public/contribution/:uuid                                        
 GET       /api/public/contribution/:uuid/history                                 controllers.Contributions.findContributionHistoryByUUID(uuid: java.util.UUID)
 GET       /api/public/contribution/:couuid/feedback                              controllers.Contributions.readContributionFeedbackPublic(couuid: String, type: String ?= null)
 GET       /api/public/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)
-GET       /api/public/campaign/:uuid/resources                                   controllers.Campaigns.listPublicCampaignResources(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/components                                  controllers.Campaigns.listPublicCampaignComponents(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/themes                                      controllers.Campaigns.listPublicCampaignThemes(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/groups                                      controllers.Campaigns.listPublicCampaignGroups(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
-GET       /api/public/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?= null)
+GET       /api/public/campaign/:uuid/resources                                   controllers.Campaigns.listPublicCampaignResources(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/public/campaign/:uuid/components                                  controllers.Campaigns.listPublicCampaignComponents(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/public/campaign/:uuid/themes                                      controllers.Campaigns.listPublicCampaignThemes(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/public/campaign/:uuid/groups                                      controllers.Campaigns.listPublicCampaignGroups(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
+GET       /api/public/campaign/:uuid/timeline                                    controllers.Campaigns.listPublicCampaignTimeline(uuid: java.util.UUID, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
 GET       /api/public/campaign/:uuid/brief                                       controllers.Campaigns.getCampaignBrief(uuid: java.util.UUID)
 GET       /api/public/ballot/:uuid/campaign                                      controllers.Campaigns.findCampaignsByBallot(uuid: java.util.UUID)
 GET       /api/public/space/:uuid                                                controllers.Spaces.getPublicSpace(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/contribution/pinned                            controllers.Contributions.findResourceSpacePinnedContributionsByUUID(uuid: java.util.UUID, type?="")
 GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
-POST      /api/public/space/:uuid/resource                                       controllers.Campaigns.addSpaceResourcesbyUuid(uuid: java.util.UUID)
+POST      /api/public/space/:uuid/resource                                       controllers.Spaces.addSpaceResourcesbyUuid(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/analytics                                      controllers.Spaces.getAnalytics(uuid: java.util.UUID, includeThemes?="")
 
 # Public custom field endpoints
@@ -424,7 +428,7 @@ POST      /api/public/group/:uuid/contribution                                  
 POST      /api/public/contribution/:uuid/contribution                            controllers.Contributions.createAnonymousContribution(uuid: String)
 POST      /api/public/space/:uuid/contribution                                   controllers.Contributions.createAnonymousContributionInSpacePublic(uuid: String)
 
-GET       /api/public/space/:uuid/contribution                                   controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null, status: String ?= "")
+GET       /api/public/space/:uuid/contribution                                   controllers.Contributions.findResourceSpaceContributionsByUUID(uuid: java.util.UUID, type?="", by_text?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, page:Integer?=0, pageSize:Integer?=16, sorting?="", random: String ?= null, status: String ?= "")
 GET       /api/public/space/:uuid/config                                         controllers.Configs.findSpaceConfigsPublic(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/ballot                                         controllers.Spaces.findSpaceBallotPublic(uuid: java.util.UUID, status?="", starts_at?="" , ends_at?="")
 GET       /api/public/space/:uuid/resource                                       controllers.Campaigns.listSpaceResourcesbyUuid(uuid: java.util.UUID)

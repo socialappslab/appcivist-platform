@@ -124,7 +124,7 @@ public class Notifications extends Controller {
         }
     }*/
 
-    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),
@@ -195,10 +195,14 @@ public class Notifications extends Controller {
         }
     }
 
-    @ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List", produces = "application/json", value = "List notification events to which the user is subscribed", httpMethod = "GET")
-    @ApiResponses(value = {@ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class)})
+    @ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List",
+            produces = "application/json", value = "List notification subscriptions of a user",
+            httpMethod = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key",
+                    dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result subscriptions() {
         // Get the user record of the creator
@@ -356,9 +360,16 @@ public class Notifications extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
-    public static Result subscribeToResourceSpace(long sid) {
+    public static Result subscribeToResourceSpace(Long sid) {
+        // TODO: review the manageSubscriptionToResourceSpace method
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace rs = ResourceSpace.read(sid);
+        Subscription sub = new Subscription();
+        sub.setSpaceId(rs.getUuidAsString());
+        sub.setUserId(subscriber.getUuidAsString());
+        sub.setSubscriptionType(SubscriptionTypes.REGULAR);
+        sub.setSpaceType(rs.getType());
+        sub.insert();
         return NotificationsDelegate.manageSubscriptionToResourceSpace("SUBSCRIBE", rs, "email", subscriber);
     }
 
@@ -368,8 +379,14 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result unsubscribeToResourceSpace(long sid) {
+        // TODO: review the manageSubscriptionToResourceSpace method
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace rs = ResourceSpace.read(sid);
+        List<Subscription> subs = Subscription.findSubscriptionByUserIdAndSpaceId(subscriber.getUuidAsString(),rs.getUuidAsString());
+        for (Subscription sub : subs) {
+            sub.delete();
+            sub.delete();
+        }
         return NotificationsDelegate.manageSubscriptionToResourceSpace("UNSUBSCRIBE", rs, "email", subscriber);    }
 
     public static Result createResourceSpaceEvents(String type) {
@@ -554,5 +571,21 @@ public class Notifications extends Controller {
         } else {
             return notFound(Json.toJson(new TransferResponseStatus("User has no notifications")));
         }
+    }
+
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Return if a user is subscribed to a notification or not", httpMethod = "GET")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result findByUserAndResourceSpace(Long sid) {
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        if(rs == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
+        }
+        Map<String, Object> aRet = new HashMap<>();
+        aRet.put("subscribed", Subscription.existByUserIdAndSpaceId(subscriber,rs));
+        return ok(Json.toJson(aRet));
     }
 }

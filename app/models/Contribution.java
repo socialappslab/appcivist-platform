@@ -139,6 +139,9 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class) 
     private Boolean pinned = false;
 
+    @JsonView(Views.Public.class)
+    private Integer extendedTextPadResourceNumber;
+
     @Transient
     @ApiModelProperty(value="Read only property displaying the first information", readOnly=true)
     private User firstAuthor;
@@ -151,9 +154,8 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Read only property displaying the Assembly where this Contribution was created", readOnly=true)
     private Long assemblyId;
 
-
-   // @JsonIgnore
-   @JsonView(Views.Public.class)
+    // @JsonIgnore
+    @JsonView(Views.Public.class)
     @JsonManagedReference
     @Transient
     @ApiModelProperty(value="Working Groups to which this Contribution is associated")
@@ -1453,6 +1455,14 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setPinned(Boolean pinned) {
         this.pinned = pinned;
+    }
+
+    public Integer getExtendedTextPadResourceNumber() {
+        return this.extendedTextPadResourceNumber;
+    }
+
+    public void setExtendedTextPadResourceNumber(Integer number) {
+        this.extendedTextPadResourceNumber = number;
     }
 
     public static List<Contribution> findPinnedInSpace(Long sid, ContributionTypes type) {

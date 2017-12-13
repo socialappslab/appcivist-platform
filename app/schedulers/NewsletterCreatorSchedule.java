@@ -2,7 +2,7 @@ package schedulers;
 
 import akka.actor.ActorSystem;
 import delegates.NotificationsDelegate;
-import enums.SpaceTypes;
+import enums.ResourceSpaceTypes;
 import enums.SubscriptionTypes;
 import exceptions.ConfigurationException;
 import models.Campaign;
@@ -35,14 +35,14 @@ public class NewsletterCreatorSchedule extends DailySchedule {
     public void executeProcess() {
 
         List<Subscription> subscriptionList = Subscription.findBySubscriptionAndSpaceType(SubscriptionTypes.NEWSLETTER,
-                SpaceTypes.CAMPAIGN, SpaceTypes.WORKING_GROUP);
+                ResourceSpaceTypes.CAMPAIGN, ResourceSpaceTypes.WORKING_GROUP);
         for (Subscription sub : subscriptionList) {
             String spaceId = sub.getSpaceId();
             Boolean newRequired = NotificationsDelegate.checkIfNewNewsletterIsRequired(spaceId);
             if (newRequired) {
                 try {
                     Logger.info("Newsletter Creator Scheduler for uuid " +spaceId);
-                    if(sub.getSpaceType().equals(SpaceTypes.CAMPAIGN)) {
+                    if(sub.getSpaceType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                         Campaign campaign = Campaign.readByUUID(UUID.fromString(spaceId));
                         NotificationsDelegate.newNewsletterInCampaign(campaign, UUID.fromString(sub.getUserId()));
                     } else {
