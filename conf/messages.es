@@ -183,4 +183,4 @@ notification.title.message.new.group=Nuevo Mensaje para Grupo de Trabajo
 notification.title.message.reply.group=Nueva Respuesta para Grupo de Trabajo
 notification.title.message.new.assembly=Nuevo Mensaje para Asamblea
 notification.title.message.reply.assembly=Nueva Respuesta para Asamblea
-
+contribution.previous.proposal.document=Documento de propuesta anterior

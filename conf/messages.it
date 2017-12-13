@@ -171,3 +171,4 @@ membership.invitation.creation.unauthorized = La membresía no pudo ser creada p
 membership.invitation.email.subject=Invitación para unirse a AppCivist {0}
 membership.request.email.subject=Petición para unirse a AppCivist {0}
 membership.confirmation.email.subject=Bienvenido a AppCivist {0}
+contribution.previous.proposal.document=Documento di proposta precedente
