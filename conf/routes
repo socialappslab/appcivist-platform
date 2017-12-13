@@ -74,21 +74,25 @@ POST      /api/site/verify                                                      
 GET       /api/user/:uid                                                         controllers.Users.getUser(uid: Long)
 
 ##################################################################################################################################################################
-# Notifications Service Proxy
+# Notifications Service Proxy -OLD
 # TODO: integrate a proper message queue manager like rabbitmq
 GET       /api/notification/inbox/:sid                                           controllers.Notifications.spaceInbox(sid: Long, page:Integer?=0, pageSize:Integer?=-1)
 GET       /api/notification/user/:uuid                                           controllers.Notifications.userInbox(uuid: java.util.UUID)
 GET       /api/notification/subscription                                         controllers.Notifications.subscriptions()
-POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
 DELETE    /api/notification/subscription/:origin/:eventName                      controllers.Notifications.unsubscribe(origin: java.util.UUID, eventName: String)
-GET       /api/notification/subscription/:sid                                    controllers.Notifications.subscribeToResourceSpace(sid: Long)
-DELETE    /api/notification/subscription/:sid                                    controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 POST      /api/notification/events/:type                                         controllers.Notifications.createResourceSpaceEvents(type: String)
+
+##################################################################################################################################################################
+# Subscriptions and Notifications - NEW
 GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0, type: String?=null)
 GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?=null)
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
 PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
-GET       /api/space/:sid/subscription                                           controllers.Notifications.findByUserAndResourceSpace(sid: Long)
+POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
+GET       /api/notification/subscription/space/:sid                              controllers.Notifications.findByUserAndResourceSpace(sid: Long)
+POST      /api/notification/subscription/space/:sid                              controllers.Notifications.subscribeToResourceSpace(sid: Long)
+DELETE    /api/notification/subscription/space/:sid                              controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
+
 ##################################################################################################################################################################
 # Assemblies API
 # API operations to manage Assemblies and entities that related to it 

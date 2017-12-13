@@ -1,14 +1,6 @@
 package models.transfer;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import enums.ResourceSpaceTypes;
-import enums.SpaceTypes;
 import io.swagger.annotations.ApiModel;
-
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import java.util.HashMap;
 import java.util.Map;
 
 @ApiModel(value="NotificationSignalTransfer", description="Basic Notification Signals")

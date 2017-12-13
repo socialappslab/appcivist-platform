@@ -1,5 +1,5 @@
 package enums;
 
-public enum ResourceSpaceTypes {
+public enum ResourceSpaceTypes  {
 	ASSEMBLY, CAMPAIGN, WORKING_GROUP, COMPONENT, CONTRIBUTION, VOTING_BALLOT
 }

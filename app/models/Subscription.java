@@ -4,7 +4,7 @@ import com.avaje.ebean.Model;
 import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import enums.SpaceTypes;
+import enums.ResourceSpaceTypes;
 import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -35,7 +35,7 @@ public class Subscription extends Model {
     @JsonInclude(Include.NON_EMPTY)
     @Column(name = "space_type")
     @Enumerated(EnumType.STRING)
-    private SpaceTypes spaceType;
+    private ResourceSpaceTypes spaceType;
 
     @JsonInclude(Include.NON_EMPTY)
     @Column(name = "subscription_type")
@@ -92,11 +92,11 @@ public class Subscription extends Model {
         this.spaceId = spaceId;
     }
 
-    public SpaceTypes getSpaceType() {
+    public ResourceSpaceTypes getSpaceType() {
         return spaceType;
     }
 
-    public void setSpaceType(SpaceTypes spaceType) {
+    public void setSpaceType(ResourceSpaceTypes spaceType) {
         this.spaceType = spaceType;
     }
 
@@ -154,18 +154,25 @@ public class Subscription extends Model {
         return membs;
     }
 
-    public static List<Subscription> findIdeasByUserId(User u) {
+    public static List<Subscription> findContributionSubscriptionsByUserId(User u) {
         com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
-                .eq("spaceType", SpaceTypes.IDEA).query();
+                .eq("spaceType", ResourceSpaceTypes.CONTRIBUTION).query();
         List<Subscription> membs = q.findList();
         return membs;
     }
 
     public static Boolean existByUserIdAndSpaceId(User u, ResourceSpace resourceSpace) {
-        com.avaje.ebean.Query<Subscription> q = find.where().eq("userId",u.getUuidAsString())
-                .eq("spaceId", resourceSpace.getUuidAsString()).query();
-        List<Subscription> membs = q.findList();
+        List<Subscription> membs = findSubscriptionByUserIdAndSpaceId(u.getUuidAsString(),resourceSpace.getUuidAsString());
         return !membs.isEmpty();
+    }
+
+    public static List<Subscription> findSubscriptionByUserIdAndSpaceId (String userUUID, String resourceSpaceUUID) {
+        return find.where()
+                .eq("userId",userUUID)
+                .eq("spaceId",resourceSpaceUUID)
+                .query()
+                .findList();
+
     }
 
     public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
@@ -184,8 +191,8 @@ public class Subscription extends Model {
         return membs;
     }
 
-    public static List<Subscription> findBySubscriptionAndSpaceType(SubscriptionTypes type, SpaceTypes space1,
-                                                                    SpaceTypes space2) {
+    public static List<Subscription> findBySubscriptionAndSpaceType(SubscriptionTypes type, ResourceSpaceTypes space1,
+                                                                    ResourceSpaceTypes space2) {
         com.avaje.ebean.Query<Subscription> q = find.where()
                         .eq("subscriptionType", type)
                         .or(
