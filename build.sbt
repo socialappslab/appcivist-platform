@@ -48,7 +48,9 @@ libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.10.2",
   "com.typesafe.akka" %% "akka-actor" % "2.3.11",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.11" % "test",
-  "org.json" % "json" % "20171018"
+  "org.json" % "json" % "20171018",
+  "com.github.opendevl" % "json2flat" % "1.0.3"
+
 
 )
 

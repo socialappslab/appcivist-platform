@@ -1,8 +1,17 @@
 package controllers;
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.feth.play.module.pa.PlayAuthenticate;
+import com.github.opendevl.JFlat;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
@@ -12,48 +21,20 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.rtf.RtfWriter2;
 import com.lowagie.text.rtf.field.RtfPageNumber;
 import com.lowagie.text.rtf.headerfooter.RtfHeaderFooter;
-
+import delegates.ContributionsDelegate;
+import delegates.NotificationsDelegate;
+import delegates.ResourcesDelegate;
 import enums.*;
+import exceptions.ConfigurationException;
+import exceptions.MembershipCreationException;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.persistence.*;
-import javax.ws.rs.PathParam;
-
+import io.swagger.annotations.*;
 import models.*;
 import models.location.Location;
-import models.misc.ThemeStats;
 import models.misc.Views;
-import models.transfer.ApiResponseTransfer;
-import models.transfer.InvitationTransfer;
-import models.transfer.PadTransfer;
-import models.transfer.ThemeListTransfer;
-import models.transfer.TransferResponseStatus;
-
+import models.transfer.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.hamcrest.core.IsNull;
-
 import org.json.CDL;
 import org.json.JSONArray;
 import play.Logger;
@@ -63,11 +44,7 @@ import play.i18n.Messages;
 import play.libs.F;
 import play.libs.F.Promise;
 import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Results;
-import play.mvc.With;
+import play.mvc.*;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
@@ -75,24 +52,18 @@ import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.Packager;
 import utils.services.EtherpadWrapper;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.pa.PlayAuthenticate;
+import javax.persistence.*;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import delegates.ContributionsDelegate;
-import delegates.NotificationsDelegate;
-import delegates.ResourcesDelegate;
-import exceptions.ConfigurationException;
-import exceptions.MembershipCreationException;
-import enums.MyRoles;
+import static play.data.Form.form;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -360,7 +331,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid,
             @ApiParam(name = "format", value = "Export format", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC") String format,
-            @ApiParam(name = "includeExtendedText", value = "Include or not extended text") boolean includeExtendedText,
+            @ApiParam(name = "includeExtendedText", value = "Include or not extended text") String includeExtendedText,
             @ApiParam(name = "extendedTextFormat", value = "Include or not extended text", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat,
             @ApiParam(name = "selectedContributions", value = "Contribuitions UUIDs to include in export") List<String> selectedContributions) {
         ResourceSpace rs = ResourceSpace.findByContribution(sid,cid);
@@ -369,12 +340,21 @@ public class Contributions extends Controller {
                     .toJson(new TransferResponseStatus("No contribution found with id "+cid+ "in space "+sid)));
         }else{
             Contribution contribution = Contribution.read(cid);
+            List<Contribution> contributions = new ArrayList<>();
+            contributions.add(contribution);
             switch (format) {
                 case "JSON":
                     return ok(Json.toJson(contribution));
                 case "CSV":
-                    System.out.println(CDL.toString(new JSONArray(Json.toJson(contribution).toString())));
-                    return ok(Json.toJson(contribution));
+                    File tempFile;
+                    JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
+                    try {
+                        tempFile = File.createTempFile("contributions.csv", ".tmp");
+                        flatMe.json2Sheet().headerSeparator("/").write2csv(tempFile.getAbsolutePath());
+                        return ok(tempFile);
+                    } catch (Exception e) {
+                        return badRequest();
+                    }
             }
 
             return ok(Json.toJson(contribution));
