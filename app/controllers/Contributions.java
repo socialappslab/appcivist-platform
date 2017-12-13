@@ -54,6 +54,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.hamcrest.core.IsNull;
 
+import org.json.CDL;
+import org.json.JSONArray;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -356,13 +358,25 @@ public class Contributions extends Controller {
     @SubjectPresent
     public static Result findResourceSpaceContributionById(
             @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
-            @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
+            @ApiParam(name = "cid", value = "Contribution ID") Long cid,
+            @ApiParam(name = "format", value = "Export format", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC") String format,
+            @ApiParam(name = "includeExtendedText", value = "Include or not extended text") boolean includeExtendedText,
+            @ApiParam(name = "extendedTextFormat", value = "Include or not extended text", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat,
+            @ApiParam(name = "selectedContributions", value = "Contribuitions UUIDs to include in export") List<String> selectedContributions) {
         ResourceSpace rs = ResourceSpace.findByContribution(sid,cid);
         if (rs == null) {
             return notFound(Json
                     .toJson(new TransferResponseStatus("No contribution found with id "+cid+ "in space "+sid)));
         }else{
             Contribution contribution = Contribution.read(cid);
+            switch (format) {
+                case "JSON":
+                    return ok(Json.toJson(contribution));
+                case "CSV":
+                    System.out.println(CDL.toString(new JSONArray(Json.toJson(contribution).toString())));
+                    return ok(Json.toJson(contribution));
+            }
+
             return ok(Json.toJson(contribution));
         }
 
