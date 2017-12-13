@@ -153,7 +153,7 @@ public class Subscription extends Model {
         List<Subscription> membs = q.findList();
         return membs;
     }
-
+  
     public static List<Subscription> findContributionSubscriptionsByUserId(User u) {
         com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
                 .eq("spaceType", ResourceSpaceTypes.CONTRIBUTION).query();
