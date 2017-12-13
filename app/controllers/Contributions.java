@@ -2361,7 +2361,7 @@ public class Contributions extends Controller {
                         uuid = containerResourceSpace.getComponent().getUuid().toString();
                     }
                     subscription.setSpaceId(uuid);
-                    subscription.setSpaceType(SpaceTypes.CONTRIBUTION);
+                    subscription.setSpaceType(ResourceSpaceTypes.CONTRIBUTION);
                     Logger.info("Creating subscription to the resource space of the contribution");
                     NotificationsDelegate.subscribeToEvent(subscription);
                     subscription.insert();

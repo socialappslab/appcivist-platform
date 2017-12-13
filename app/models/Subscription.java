@@ -161,6 +161,10 @@ public class Subscription extends Model {
         return membs;
     }
 
+    public static List<Subscription> findByUserIdAndSpaceId(User u, String rsUUID) {
+        return findSubscriptionByUserIdAndSpaceId(u.getUuidAsString(),rsUUID);
+    }
+
     public static Boolean existByUserIdAndSpaceId(User u, ResourceSpace resourceSpace) {
         List<Subscription> membs = findSubscriptionByUserIdAndSpaceId(u.getUuidAsString(),resourceSpace.getUuidAsString());
         return !membs.isEmpty();
@@ -172,7 +176,6 @@ public class Subscription extends Model {
                 .eq("spaceId",resourceSpaceUUID)
                 .query()
                 .findList();
-
     }
 
     public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
