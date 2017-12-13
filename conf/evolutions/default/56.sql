@@ -1,5 +1,4 @@
 # --- !Ups
--- 56.sql
 ALTER TABLE "public"."campaign" ADD COLUMN "brief" text;
 
 # --- !Downs
