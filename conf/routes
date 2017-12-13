@@ -88,7 +88,7 @@ GET       /api/user/:id/notifications                                           
 GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?=null)
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
 PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
-GET       /api/notification/user/subscription/:sid                               controllers.Notifications.findByUserAndResourceSpace(sid: Long)
+GET       /api/space/:sid/subscription                                           controllers.Notifications.findByUserAndResourceSpace(sid: Long)
 ##################################################################################################################################################################
 # Assemblies API
 # API operations to manage Assemblies and entities that related to it 
@@ -331,7 +331,7 @@ GET       /api/space/:sid/field/:fid/value/:etype                               
 
 POST      /api/space/:sid/ballot                                                 controllers.Spaces.createSpaceBallot(sid: Long)
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
-POST      /api/space/:sid/resource                                               controllers.Campaigns.addSpaceResources(sid: Long)
+POST      /api/space/:sid/resource                                               controllers.Spaces.addSpaceResources(sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
 GET       /api/space/:sid/export/contribution/:cid                               controllers.Contributions.exportContributionProposal(sid: Long, cid: Long, format?="", include?="")
 GET       /api/space/:sid/export/contribution                                    controllers.Contributions.exportSpaceContributionProposal(sid: Long, format?="", include?="")

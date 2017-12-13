@@ -2802,4 +2802,76 @@ public class Spaces extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No Resource Space with id: "+sid)));
         }
     }
+
+    /**
+     * POST /api/space/:sid/resources
+     * Add resources to a resource space
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result addSpaceResources(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
+        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            if (resourceForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error in resource form "+
+                        resourceForm.errorsAsJson());
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Resource newResource = resourceForm.get();
+                newResource.setConfirmed(true);
+                newResource.setContextUserId(creator.getUserId());
+                newResource = Resource.create(newResource);
+                resourceSpace.getResources().add(newResource);
+                resourceSpace.update();
+                return ok(Json.toJson(newResource));
+            }
+        }
+    }
+
+    /**
+     * POST /api/space/:uuid/resources
+     * Add resources to a resource space
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
+    public static Result addSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
+        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
+        final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with uuid "+uuid)));
+        } else {
+            if (resourceForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error in resource form "+
+                        resourceForm.errorsAsJson());
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Resource newResource = resourceForm.get();
+                newResource.setConfirmed(true);
+                newResource = Resource.create(newResource);
+                resourceSpace.getResources().add(newResource);
+                resourceSpace.update();
+                return ok(Json.toJson(newResource));
+            }
+        }
+    }
 }

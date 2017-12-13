@@ -195,10 +195,14 @@ public class Notifications extends Controller {
         }
     }
 
-    @ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List", produces = "application/json", value = "List notification events to which the user is subscribed", httpMethod = "GET")
-    @ApiResponses(value = {@ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class)})
+    @ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List",
+            produces = "application/json", value = "List notification subscriptions of a User",
+            httpMethod = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key",
+                    dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result subscriptions() {
         // Get the user record of the creator
