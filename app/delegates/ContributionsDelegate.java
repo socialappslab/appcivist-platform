@@ -366,13 +366,27 @@ public class ContributionsDelegate {
                                                             String readId, String readurl,
                                                             UUID resourceSpaceConfigsUUID,
                                                             Contribution c,
-                                                            ResourceTypes type) throws MalformedURLException {
+                                                            ResourceTypes type, Boolean storeEthKey, String ethKey) throws MalformedURLException {
         Resource r = new Resource(new URL(readurl));
         r.setPadId(padId);
         r.setResourceType(type);
         r.setReadOnlyPadId(readId);
         r.setResourceSpaceWithServerConfigs(resourceSpaceConfigsUUID);
+
+        Resource oldExtendedTextPad = c.getExtendedTextPad();
+        if (oldExtendedTextPad!=null) {
+            Integer docVersion = c.getExtendedTextPadResourceNumber() !=null ? c.getExtendedTextPadResourceNumber() : 1;
+            String oldTextPadTitle = Messages.get("contribution.previous.proposal.document");
+            oldExtendedTextPad.setTitle(oldTextPadTitle+" ("+docVersion+")");
+            oldExtendedTextPad.update();
+            c.getResourceSpace().addResource(oldExtendedTextPad);
+            c.getResourceSpace().update();
+            c.setExtendedTextPadResourceNumber(docVersion+1);
+        }
         c.setExtendedTextPad(r);
+        if(storeEthKey) {
+            r.setResourceAuthKey(ethKey);
+        }
         r.save();
         c.update();
     }
