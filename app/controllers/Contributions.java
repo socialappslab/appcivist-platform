@@ -10,12 +10,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.github.opendevl.JFlat;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
+import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.rtf.RtfWriter2;
@@ -61,6 +59,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
@@ -340,13 +339,34 @@ public class Contributions extends Controller {
                     .toJson(new TransferResponseStatus("No contribution found with id "+cid+ "in space "+sid)));
         }else{
             Contribution contribution = Contribution.read(cid);
+            contribution.setCustomFieldValues(CustomFieldValue.findAllByTargetUUID(contribution.getUuidAsString()));
+            Logger.info(contribution.getCustomFieldValues().toString());
             List<Contribution> contributions = new ArrayList<>();
             contributions.add(contribution);
+            HashMap<String,String> contributionMap = new HashMap<String,String>();
+            for (Field field : contribution.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
+                        || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
+                        || field.isAnnotationPresent(OneToOne.class)) {
+                    continue;
+                }
+                try {
+                    contributionMap.put(field.getName(), field.get(contribution)+"");
+                } catch (IllegalAccessException e) {
+                    return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Fields specified are not valid")));
+                }
+
+            }
+            File tempFile;
             switch (format) {
                 case "JSON":
+
                     return ok(Json.toJson(contribution));
                 case "CSV":
-                    File tempFile;
+
+                    response().setContentType("application/csv");
+                    response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
                     JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
                     try {
                         tempFile = File.createTempFile("contributions.csv", ".tmp");
@@ -355,6 +375,38 @@ public class Contributions extends Controller {
                     } catch (Exception e) {
                         return badRequest();
                     }
+                case "PDF":
+                    try {
+                        File tempFilePDF = File.createTempFile("proposal.pdf", ".tmp");
+                        FileOutputStream fileOutputStream = new FileOutputStream(tempFilePDF);
+                        Document document = new Document();
+                        PdfWriter.getInstance(document, fileOutputStream);
+                        document.open();
+                        Iterator it = contributionMap.entrySet().iterator();
+                        PdfPTable table = new PdfPTable(contributionMap.size());
+                        table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+                        table.getDefaultCell().setPadding(5f);
+                        List<String> values = new ArrayList<>();
+                        while (it.hasNext()) {
+                            Map.Entry pair = (Map.Entry) it.next();
+                            it.remove();
+                            table.addCell(pair.getKey().toString());
+                            values.add(pair.getValue().toString());
+                        }
+                        for (String value : values
+                                ) {
+                            table.addCell(new Paragraph(value));
+                        }
+                        document.add(table);
+
+                        document.close();
+                        response().setContentType("application/pdf");
+                        response().setHeader("Content-disposition", "attachment; filename=proposal.pdf");
+                        return ok(tempFilePDF);
+                    } catch (IOException | DocumentException e) {
+                        e.printStackTrace();
+                    }
+
             }
 
             return ok(Json.toJson(contribution));

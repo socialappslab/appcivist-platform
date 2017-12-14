@@ -180,6 +180,12 @@ public class CustomFieldValue extends AppCivistBaseModel {
 		return customFieldValues;
 	}
 
+	public static List<CustomFieldValue> findAllByTargetUUID(String uuid) {
+		List<CustomFieldValue> customFieldValues = find.where()
+				.eq("entityTargetUuid", uuid).findList();
+		return customFieldValues;
+	}
+
 	public static List<CustomFieldValue> findCustomValuesByText (List<Long> ids, String byText, String entityTargetType, CustomFieldDefinition customFieldDefiniton){
 		//Remove all useless with spaces and replace the others by the logical operator '&'
 		String words = byText.replaceAll("\\s*$", "").replaceAll("^\\s*", "").replaceAll("\\s+", " ").replaceAll("\\s", " & ");

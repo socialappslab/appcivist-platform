@@ -299,6 +299,10 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private String documentSimple;
 
+    @Transient
+    @JsonView(Views.Public.class)
+    List<CustomFieldValue> customFieldValues;
+
     /**
      * The find property is an static property that facilitates database query
      * creation
@@ -1543,5 +1547,13 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setSourceUrl(String sourceUrl){
         this.sourceUrl = sourceUrl;
+    }
+
+    public List<CustomFieldValue> getCustomFieldValues() {
+        return customFieldValues;
+    }
+
+    public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
+        this.customFieldValues = customFieldValues;
     }
 }
