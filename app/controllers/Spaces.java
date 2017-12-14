@@ -706,20 +706,16 @@ public class Spaces extends Controller {
                for (CustomFieldValue customFieldValue : newCustomFieldValues) {
             	   if (customFieldValue.getCustomFieldValueId() == null) {
                 	   customFieldValue = CustomFieldValue.create(customFieldValue);
-                	   customValuesAreNew = true;
+                       Logger.info("Adding custom field values to resource space: "+sid);
+                       if (resourceSpace.getCustomFieldValues() == null) {
+                           Logger.info("Creating array of custom field values in resource space: "+sid);
+                           resourceSpace.setCustomFieldValues(new ArrayList<>());
+                       }
+                       resourceSpace.getCustomFieldValues().add(customFieldValue);
+                       resourceSpace.update();
             	   } else {
                 	   customFieldValue = CustomFieldValue.update(customFieldValue);
             	   }            	   
-               }
-               
-               if (customValuesAreNew) {
-                   Logger.info("Adding custom field values to resource space: "+sid);
-                   if (resourceSpace.getCustomFieldValues() == null) {
-                       Logger.info("Creating array of custom field values in resource space: "+sid);
-                	   resourceSpace.setCustomFieldValues(new ArrayList<>());
-                   } 
-                   resourceSpace.getCustomFieldValues().addAll(newCustomFieldValues);
-                   resourceSpace.update();
                }
                return ok(Json.toJson(newCustomFieldValues));
            }
