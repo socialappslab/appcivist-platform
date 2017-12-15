@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.github.opendevl.JFlat;
 import com.lowagie.text.*;
@@ -33,8 +32,9 @@ import models.misc.Views;
 import models.transfer.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.json.CDL;
-import org.json.JSONArray;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -340,25 +340,22 @@ public class Contributions extends Controller {
         }else{
             Contribution contribution = Contribution.read(cid);
             contribution.setCustomFieldValues(CustomFieldValue.findAllByTargetUUID(contribution.getUuidAsString()));
-            Logger.info(contribution.getCustomFieldValues().toString());
             List<Contribution> contributions = new ArrayList<>();
             contributions.add(contribution);
-            HashMap<String,String> contributionMap = new HashMap<String,String>();
-            for (Field field : contribution.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                if (field.getName().toLowerCase().contains("ebean") || field.isAnnotationPresent(ManyToMany.class)
-                        || field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToMany.class)
-                        || field.isAnnotationPresent(OneToOne.class)) {
-                    continue;
+            HashMap contributionMap = new HashMap<>();
+            try {
+                contributionMap =
+                        new ObjectMapper().readValue(Json.toJson(contribution).toString(), HashMap.class);
+                for (Object o : contributionMap.entrySet()) {
+                    Map.Entry pair = (Map.Entry) o;
+                    pair.setValue(pair.getValue().toString().replaceAll("\\{","\n---\n").
+                            replaceAll("=",": ").replaceAll(",","\n").replaceAll("}","\n---\n")
+                    .replaceAll("]","\n---\n").replaceAll("\\[","\n---\n"));
                 }
-                try {
-                    contributionMap.put(field.getName(), field.get(contribution)+"");
-                } catch (IllegalAccessException e) {
-                    return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Fields specified are not valid")));
-                }
-
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            File tempFile;
+
             switch (format) {
                 case "JSON":
 
@@ -369,7 +366,7 @@ public class Contributions extends Controller {
                     response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
                     JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
                     try {
-                        tempFile = File.createTempFile("contributions.csv", ".tmp");
+                        File tempFile; tempFile = File.createTempFile("contributions.csv", ".tmp");
                         flatMe.json2Sheet().headerSeparator("/").write2csv(tempFile.getAbsolutePath());
                         return ok(tempFile);
                     } catch (Exception e) {
@@ -382,22 +379,13 @@ public class Contributions extends Controller {
                         Document document = new Document();
                         PdfWriter.getInstance(document, fileOutputStream);
                         document.open();
-                        Iterator it = contributionMap.entrySet().iterator();
                         PdfPTable table = new PdfPTable(contributionMap.size());
                         table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
                         table.getDefaultCell().setPadding(5f);
-                        List<String> values = new ArrayList<>();
-                        while (it.hasNext()) {
-                            Map.Entry pair = (Map.Entry) it.next();
-                            it.remove();
-                            table.addCell(pair.getKey().toString());
-                            values.add(pair.getValue().toString());
+                        for (Object o : contributionMap.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            document.add(new Paragraph(pair.getKey().toString() + ": " + pair.getValue().toString()));
                         }
-                        for (String value : values
-                                ) {
-                            table.addCell(new Paragraph(value));
-                        }
-                        document.add(table);
 
                         document.close();
                         response().setContentType("application/pdf");
@@ -405,6 +393,91 @@ public class Contributions extends Controller {
                         return ok(tempFilePDF);
                     } catch (IOException | DocumentException e) {
                         e.printStackTrace();
+                        return badRequest();
+                    }
+                case "TXT":
+                    try {
+
+                        String newLine = System.getProperty("line.separator");
+                        File tempFile = File.createTempFile("proposal.txt", ".tmp");
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+                        for (Object o : contributionMap.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            writer.write(pair.getKey().toString() + ": " + pair.getValue().toString());
+                            writer.write(newLine);
+                        }
+                        writer.close();
+                        response().setContentType("application/txt");
+                        response().setHeader("Content-disposition", "attachment; filename=proposal.txt");
+                        return ok(tempFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return badRequest();
+                    }
+                case "RTF":
+                    try {
+                        File tempFile = File.createTempFile("proposal.rtf", ".tmp");
+                        FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+                        Document document = new Document();
+                        RtfWriter2.getInstance(document, fileOutputStream);
+                        // Create a new Paragraph for the footer
+                        Paragraph par = new Paragraph("Page ");
+                        par.setAlignment(Element.ALIGN_RIGHT);
+
+                        // Add the RtfPageNumber to the Paragraph
+                        par.add(new RtfPageNumber());
+
+                        // Create an RtfHeaderFooter with the Paragraph and set it
+                        // as a footer for the document
+                        RtfHeaderFooter footer = new RtfHeaderFooter(par);
+                        document.setFooter(footer);
+
+                        document.open();
+                        String head = "";
+                        String detail = "";
+                        Iterator it = contributionMap.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry pair = (Map.Entry)it.next();
+                            it.remove();
+                            if(it.hasNext()) {
+                                head = head + pair.getKey() + "\t";
+                                detail = detail + pair.getValue() + "\t";
+                            }else{
+                                head = head + pair.getKey() + "\n";
+                                detail = detail + pair.getValue();
+                            }
+                        }
+                        String text = head + detail;
+
+                        document.add(new Paragraph(text));
+
+                        document.close();
+                        response().setContentType("text/rtf");
+                        response().setHeader("Content-disposition", "attachment; filename=proposal.rtf");
+                        return ok(tempFile);
+                    } catch (Exception de) {
+                        return internalServerError(de.getMessage());
+                    }
+                case "DOC":
+                    try {
+
+                        File tempFile = File.createTempFile("proposal.doc", ".tmp");
+                        XWPFDocument document = new XWPFDocument();
+                        FileOutputStream out = new FileOutputStream(tempFile);
+                        XWPFParagraph paragraph = document.createParagraph();
+                        XWPFRun run = paragraph.createRun();
+                        for (Object o : contributionMap.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            run.setText(pair.getKey().toString() + ": " + pair.getValue().toString());
+                        }
+                        document.write(out);
+                        //Close document
+                        out.close();
+                        response().setContentType("text/doc");
+                        response().setHeader("Content-disposition", "attachment; filename=proposal.doc");
+                        return ok(tempFile);
+                    } catch (Exception de) {
+                        return internalServerError(de.getMessage());
                     }
 
             }
