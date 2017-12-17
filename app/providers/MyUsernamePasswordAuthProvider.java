@@ -696,6 +696,11 @@ public class MyUsernamePasswordAuthProvider
 		mailer.sendMail(subject, body, invitation.getEmail());
 	}
 
+	public void sendZipContributionFile(String url, String email) {
+		final Body body = new Body("Your contribution files is ready, you can download here: "+ url);
+		mailer.sendMail("Contribution File", body, email);
+	}
+
 	private String getEmailName(final User user) {
 		return getEmailName(user.getEmail(), user.getName());
 	}

@@ -80,7 +80,7 @@ dist
 /tests
 /appcivist-core
 
-
+public/contributionsFiles/*
 conf/play-authenticate/mine.heroku.conf
 conf/play-authenticate/mine.local.conf
 conf/play-authenticate/smtp.heroku.conf
