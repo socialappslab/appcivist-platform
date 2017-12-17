@@ -614,7 +614,7 @@ public class Assemblies extends Controller {
 					if (Subscription.findByUserIdAndSpaceId(requestor, a.getResourcesResourceSpaceUUID().toString()).isEmpty()) {
 						Subscription sub = new Subscription();
 						sub.setUserId(requestor.getUuid().toString());
-						sub.setSpaceType(SpaceTypes.ASSEMBLY);
+						sub.setSpaceType(ResourceSpaceTypes.ASSEMBLY);
 						sub.setSpaceId(a.getResourcesResourceSpaceUUID().toString());
 						sub.setSubscriptionType(SubscriptionTypes.REGULAR);
 						sub.setIgnoredEvents(ignoredEvents);
@@ -638,7 +638,7 @@ public class Assemblies extends Controller {
 									&& config.getValue().equals("true")) {
 								Subscription sub = new Subscription();
 								sub.setUserId(requestor.getUuid().toString());
-								sub.setSpaceType(SpaceTypes.CAMPAIGN);
+								sub.setSpaceType(ResourceSpaceTypes.CAMPAIGN);
 								sub.setSpaceId(c.getResourceSpaceUUID());
 								sub.setSubscriptionType(SubscriptionTypes.NEWSLETTER);
 								HashMap<String, Boolean> services = new HashMap<>();
@@ -654,7 +654,7 @@ public class Assemblies extends Controller {
 							}
 							Subscription sub = new Subscription();
 							sub.setUserId(requestor.getUuid().toString());
-							sub.setSpaceType(SpaceTypes.CAMPAIGN);
+							sub.setSpaceType(ResourceSpaceTypes.CAMPAIGN);
 							sub.setSpaceId(c.getResourceSpaceUUID());
 							sub.setSubscriptionType(SubscriptionTypes.REGULAR);
 							sub.setIgnoredEvents(ignoredEvents);

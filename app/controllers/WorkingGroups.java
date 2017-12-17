@@ -542,7 +542,7 @@ public class WorkingGroups extends Controller {
                         subscription.setSpaceId(wg.getResourcesResourceSpaceUUID());
                         subscription.setSubscriptionType(SubscriptionTypes.REGULAR);
                         subscription.setUserId(requestor.getUuid().toString());
-                        subscription.setSpaceType(SpaceTypes.WORKING_GROUP);
+                        subscription.setSpaceType(ResourceSpaceTypes.WORKING_GROUP);
                         subscription.insert();
                         try {
                             NotificationsDelegate.subscribeToEvent(subscription);
@@ -556,7 +556,7 @@ public class WorkingGroups extends Controller {
                                 && config.getValue().equals("true")) {
                             Subscription sub = new Subscription();
                             sub.setUserId(requestor.getUuid().toString());
-                            sub.setSpaceType(SpaceTypes.CAMPAIGN);
+                            sub.setSpaceType(ResourceSpaceTypes.CAMPAIGN);
                             sub.setSpaceId(wg.getResourcesResourceSpaceUUID());
                             sub.setSubscriptionType(SubscriptionTypes.NEWSLETTER);
                             HashMap<String, Boolean> services = new HashMap<>();

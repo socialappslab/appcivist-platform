@@ -28,6 +28,7 @@ import org.jsoup.nodes.Document;
 
 import play.Logger;
 import play.Play;
+import play.i18n.Messages;
 import play.mvc.Http;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
@@ -304,7 +305,7 @@ public class ContributionsDelegate {
         String readurl = eth.buildReadOnlyUrl(readId);
 
         if (readurl != null) {
-            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c, ResourceTypes.PAD);
+            createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceUUID, c, ResourceTypes.PAD, false, null);
         }
         return null;
     }
@@ -314,7 +315,7 @@ public class ContributionsDelegate {
                                                Contribution c,
                                                ContributionTemplate t,
                                                UUID resourceSpaceConfigsUUID,
-                                               ResourceTypes type) throws MalformedURLException, UnsupportedEncodingException {
+                                               ResourceTypes type, Boolean storeEthKey) throws MalformedURLException, UnsupportedEncodingException {
 
         String padId = UUID.randomUUID().toString();
 
@@ -351,15 +352,14 @@ public class ContributionsDelegate {
             String readId = eth.getReadOnlyId(padId);
             String readurl = eth.buildReadOnlyUrl(readId);
 
-
             if (readurl != null) {
-                createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c, type);
+                createResourceAndUpdateContribution(padId, readId, readurl, resourceSpaceConfigsUUID, c, type, storeEthKey, ethApiToken);
             }
         }
         else{
             //GDOC
             System.out.println(" UrL: "+ ethServerBaseUrl);
-            createResourceAndUpdateContribution(padId, null, ethServerBaseUrl, resourceSpaceConfigsUUID, c, type);
+            createResourceAndUpdateContribution(padId, null, ethServerBaseUrl, resourceSpaceConfigsUUID, c, type, false, null);
 
         }
         return null;
@@ -369,13 +369,27 @@ public class ContributionsDelegate {
                                                             String readId, String readurl,
                                                             UUID resourceSpaceConfigsUUID,
                                                             Contribution c,
-                                                            ResourceTypes type) throws MalformedURLException {
+                                                            ResourceTypes type, Boolean storeEthKey, String ethKey) throws MalformedURLException {
         Resource r = new Resource(new URL(readurl));
         r.setPadId(padId);
         r.setResourceType(type);
         r.setReadOnlyPadId(readId);
         r.setResourceSpaceWithServerConfigs(resourceSpaceConfigsUUID);
+
+        Resource oldExtendedTextPad = c.getExtendedTextPad();
+        if (oldExtendedTextPad!=null) {
+            Integer docVersion = c.getExtendedTextPadResourceNumber() !=null ? c.getExtendedTextPadResourceNumber() : 1;
+            String oldTextPadTitle = Messages.get("contribution.previous.proposal.document");
+            oldExtendedTextPad.setTitle(oldTextPadTitle+" ("+docVersion+")");
+            oldExtendedTextPad.update();
+            c.getResourceSpace().addResource(oldExtendedTextPad);
+            c.getResourceSpace().update();
+            c.setExtendedTextPadResourceNumber(docVersion+1);
+        }
         c.setExtendedTextPad(r);
+        if(storeEthKey) {
+            r.setResourceAuthKey(ethKey);
+        }
         r.save();
         c.update();
     }
