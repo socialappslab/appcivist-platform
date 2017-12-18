@@ -1989,6 +1989,56 @@ ALTER TABLE resource
 ALTER TABLE resource
   ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying::text, 'VIDEO'::character varying::text, 'PAD'::character varying::text, 'TEXT'::character varying::text, 'WEBPAGE'::character varying::text, 'FILE'::character varying::text, 'AUDIO'::character varying::text, 'CONTRIBUTION_TEMPLATE'::character varying::text, 'CAMPAIGN_TEMPLATE'::character varying::text, 'PROPOSAL'::character varying::text, 'GDOC'::character varying::text]))
 
+
+--57.sql
+  CREATE TABLE notification_event_signal_archive
+(
+  id bigint NOT NULL,
+  creation timestamp without time zone,
+  last_update timestamp without time zone,
+  lang character varying(255),
+  removal timestamp without time zone,
+  removed boolean,
+  space_type character varying(255),
+  signal_type character varying(255),
+  event_id character varying(40),
+  text text,
+  title character varying(255),
+  data jsonb,
+  CONSTRAINT pk_notification_event_archive PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE notification_event_signal
+  OWNER TO postgres;
+
+--58.sql
+CREATE TABLE notification_event_signal_user_archival
+(
+  id bigint NOT NULL,
+  creation timestamp without time zone,
+  last_update timestamp without time zone,
+  lang character varying(255),
+  removal timestamp without time zone,
+  removed boolean,
+  user_user_id bigint,
+  signal_id bigint,
+  read boolean,
+  CONSTRAINT pk_notification_event_signal_archive_user PRIMARY KEY (id),
+  CONSTRAINT fk_notification_event_signal_archive FOREIGN KEY (signal_id)
+      REFERENCES notification_event_signal_archive (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT fk_user FOREIGN KEY (user_user_id)
+      REFERENCES appcivist_user (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE notification_event_signal_user
+  OWNER TO postgres;
+
 ALTER TABLE "public"."appcivist_user"
   ALTER COLUMN "creation" SET DEFAULT now(),
   ALTER COLUMN "last_update" SET DEFAULT now();
@@ -2133,8 +2183,33 @@ ALTER TABLE public.campaign ADD COLUMN creator_user_id bigint;
 ALTER TABLE public.campaign ADD CONSTRAINT fk_creator_campaign FOREIGN KEY (creator_user_id) REFERENCES public.appcivist_user (user_id) MATCH SIMPLE;
 
 -- 59.sql
+--59.sql
+CREATE OR REPLACE FUNCTION move_signals(init_date timestamp)
+RETURNS void AS
+$BODY$
+begin
+	case when (select count(*) FROM public.notification_event_signal where creation < init_date) > 0 then
+		WITH tmp_event AS (DELETE FROM public.notification_event_signal where creation < init_date RETURNING *)
+		INSERT INTO public.notification_event_signal_archive SELECT * FROM tmp_event;
+	when (select count(*) FROM public.notification_event_signal_user where signal_id in
+	(SELECT id from public.notification_event_signal where creation < init_date ) > 0) THEN
+		WITH tmp_user AS (DELETE FROM public.notification_event_signal_user where
+		signal_id in (SELECT id from public.notification_event_signal where creation < init_date )
+		RETURNING *)
+		INSERT INTO public.notification_event_signal_user_archive SELECT * FROM tmp_user;
+	end case;
+	exception when others then
+	   RAISE EXCEPTION 'ERROR. %', SQLERRM
+	   USING ERRCODE = 'ER001';
+end;
+$BODY$
+LANGUAGE plpgsql VOLATILE
+
 ALTER TABLE campaign ADD COLUMN status character varying(40);
 ALTER TABLE working_group ADD COLUMN status character varying(40);
+
+ALTER TABLE assembly ADD COLUMN status character varying(40);
+
 ALTER TABLE assembly ADD COLUMN status character varying(40);
 
 -- 60.sql
@@ -2147,3 +2222,50 @@ ALTER TABLE "public"."resource" ADD COLUMN "is_template" boolean DEFAULT false;
 ALTER TABLE "public"."s3file" ADD COLUMN "creation" timestamp DEFAULT now();
 ALTER TABLE "public"."subscription" ADD COLUMN "creation" timestamp DEFAULT now();
 ALTER TABLE "public"."resource_space_association_history" ALTER COLUMN "creation" SET DEFAULT now();
+-- 62.sql
+CREATE EXTENSION pgagent;
+CREATE LANGUAGE plpgsql;
+DO $$
+DECLARE
+    jid integer;
+    scid integer;
+BEGIN
+-- Creating a new job
+INSERT INTO pgagent.pga_job(
+    jobjclid, jobname, jobdesc, jobhostagent, jobenabled
+) VALUES (
+    1::integer, 'Notification Archival Job'::text, ''::text, ''::text, true
+) RETURNING jobid INTO jid;
+
+-- Steps
+-- Inserting a step (jobid: NULL)
+INSERT INTO pgagent.pga_jobstep (
+    jstjobid, jstname, jstenabled, jstkind,
+    jstconnstr, jstdbname, jstonerror,
+    jstcode, jstdesc
+) VALUES (
+    jid, 'Notification Arhival Job'::text, true, 's'::character(1),
+    ''::text, 'appcivistcore'::name, 'f'::character(1),
+    'select * from move_signals((select ''now''::timestamp - ''1 month''::interval));'::text, ''::text
+) ;
+
+-- Schedules
+-- Inserting a schedule
+INSERT INTO pgagent.pga_schedule(
+    jscjobid, jscname, jscdesc, jscenabled,
+    jscstart, jscend,    jscminutes, jschours, jscweekdays, jscmonthdays, jscmonths
+) VALUES (
+    jid, 'Notification Schedule'::text, ''::text, true,
+    '2017-12-04 10:18:28-03'::timestamp with time zone, '2030-12-18 10:18:13-03'::timestamp with time zone,
+    -- Minutes
+    ARRAY[false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]::boolean[],
+    -- Hours
+    ARRAY[true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]::boolean[],
+    -- Week days
+    ARRAY[true, false, false, false, false, false, false]::boolean[],
+    -- Month days
+    ARRAY[false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]::boolean[],
+    -- Months
+    ARRAY[false, false, false, false, false, false, false, false, false, false, false, false]::boolean[]
+) RETURNING jscid INTO scid;
+END;
