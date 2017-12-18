@@ -1,4 +1,5 @@
-﻿CREATE TABLE notification_event_signal_archive
+﻿# --- !Ups
+CREATE TABLE notification_event_signal_archive
 (
   id bigint NOT NULL,
   creation timestamp without time zone,
@@ -15,12 +16,11 @@
   CONSTRAINT pk_notification_event_archive PRIMARY KEY (id)
 )
 WITH (
-  OIDS=FALSE
+OIDS=FALSE
 );
 ALTER TABLE notification_event_signal_archive
   OWNER TO postgres;
 
-# --- !Ups
 ALTER TABLE resource
   DROP CONSTRAINT ck_resource_resource_type;
 

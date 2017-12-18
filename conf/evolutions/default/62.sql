@@ -44,3 +44,4 @@ INSERT INTO pgagent.pga_schedule(
     ARRAY[false, false, false, false, false, false, false, false, false, false, false, false]::boolean[]
 ) RETURNING jscid INTO scid;
 END;
+$$
