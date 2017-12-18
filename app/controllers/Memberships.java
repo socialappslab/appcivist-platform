@@ -605,8 +605,7 @@ public class Memberships extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    @Security.Authenticated(Secured.class)
-    // TODO: secured this by limiting the reading of specific membership by ids to OnlyMeAndAdmin
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result readMembership(@ApiParam(name = "id", value = "Membership ID") Long id) {
         Membership m = Membership.read(id);
         if (m != null) {
@@ -663,7 +662,6 @@ public class Memberships extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    // TODO: implement @Dynamic(value="CoordinatorOfAssemblyOrGroup", meta=SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     @Security.Authenticated(Secured.class)
     public static Result addMembershipRole(@ApiParam(value = "Membership ID", name = "id") Long id) {
         Membership m = Membership.read(id);
@@ -746,51 +744,23 @@ public class Memberships extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    // TODO: implement @Dynamic(value="CoordinatorOfAssemblyOrGroup", meta=SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
-    @Security.Authenticated(Secured.class)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result deleteMembershipRole(
             @ApiParam(name = "id", value = "Membership ID") Long id,
             @ApiParam(name = "rid", value = "Role ID") Long rid) {
         Membership m = Membership.read(id);
         if (m != null) {
-            // TODO move all the role checking to another common place
-            // TODO move all the role checking to another common place
-            User requestor = User.findByAuthUserIdentity(PlayAuthenticate
-                    .getUser(session()));
-            Boolean authorization = false;
-            // what's the requestor membership in the group/assembly related to
-            // this membership
-            Membership requestorMembership = MembershipsDelegate
-                    .requestorMembership(requestor, m);
-
-            if (requestorMembership != null) {
-                authorization = MembershipsDelegate.requestorIsCoordinator(
-                        requestor, requestorMembership);
+            if (m.getRoles().size() > 1) {
+                SecurityRole membershipRole = SecurityRole.read(rid);
+                m.getRoles().remove(membershipRole);
+                m.update();
+                m.refresh();
+                return ok(Json.toJson(m));
             } else {
-                return unauthorized(Json.toJson(new TransferResponseStatus(
-                        ResponseStatus.UNAUTHORIZED,
-                        "Requestor is not member of this "
-                                + m.getMembershipType())));
-            }
-
-            if (authorization) {
-
-                if (m.getRoles().size() > 1) {
-                    SecurityRole membershipRole = SecurityRole.read(rid);
-                    m.getRoles().remove(membershipRole);
-                    m.update();
-                    m.refresh();
-                    return ok(Json.toJson(m));
-                } else {
-                    // leave always at least one Role
-                    return badRequest(Json.toJson(new TransferResponseStatus(
-                            ResponseStatus.BADREQUEST,
-                            "Memberships must have at least one role")));
-                }
-            } else {
-                return unauthorized(Json.toJson(new TransferResponseStatus(
-                        ResponseStatus.UNAUTHORIZED, "Requestor is not"
-                        + MyRoles.COORDINATOR)));
+                // leave always at least one Role
+                return badRequest(Json.toJson(new TransferResponseStatus(
+                        ResponseStatus.BADREQUEST,
+                        "Memberships must have at least one role")));
             }
         } else {
             TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -811,7 +781,6 @@ public class Memberships extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    // TODO: implement @Dynamic(value="CoordinatorOfAssemblyOrGroup", meta=SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result updateMembershipStatus(
             @ApiParam(name = "id", value = "Membership ID") Long id,
@@ -860,47 +829,12 @@ public class Memberships extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    // TODO: move authorization logic to a DynamicResourceHandler "CoordinatorOrSelf"
-    @Security.Authenticated(Secured.class)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result deleteMembership(
             @ApiParam(name = "id", value = "Membership ID") Long id) {
         Membership m = Membership.read(id);
-        User requestor = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
-
-        // Any user can delete their own memberships
-        if (MembershipsDelegate.isMembershipOfRequestor(requestor, m)) {
-            m.delete();
-            return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK,
-                    "Membership was deleted")));
-        } else {
-            // Also COORDINATORS of the associated assembly/group can delete memberships
-            Boolean authorization = false;
-
-            // what's the requestor membership in the group/assembly related to this membership
-            Membership requestorMembership = MembershipsDelegate.requestorMembership(requestor, m);
-
-            if (requestorMembership != null) {
-                authorization = MembershipsDelegate.requestorIsCoordinator(
-                        requestor, requestorMembership);
-            } else {
-                return unauthorized(Json.toJson(new TransferResponseStatus(
-                        ResponseStatus.UNAUTHORIZED,
-                        "Requestor is not member of this "
-                                + m.getMembershipType())));
-            }
-
-            if (authorization) {
-                m.delete();
-                return ok(Json.toJson(new TransferResponseStatus(
-                        ResponseStatus.OK, "Membership was deleted")));
-            } else {
-                return unauthorized(Json.toJson(new TransferResponseStatus(
-                        ResponseStatus.UNAUTHORIZED, "Requestor is not"
-                        + MyRoles.COORDINATOR)));
-            }
-
-        }
+        m.delete();
+        return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, "Membership was deleted")));
     }
 
     /**
@@ -911,7 +845,7 @@ public class Memberships extends Controller {
      * @return
      */
     @ApiOperation(httpMethod = "GET", response = TransferResponseStatus.class, produces = "application/json", value = "Verify a MEMBERSHIP", notes = "Only for COORDINATORS and the User of the membership")
-    // TODO: move authorization logic to a DynamicResourceHandler "CoordinatorOrSelf"
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)
     public static Result verifyMembership(
             @ApiParam(name = "id", value = "Membership ID") Long id,
             @ApiParam(name = "token", value = "Membership invitation token") String token) {

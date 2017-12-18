@@ -21,81 +21,147 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
         return super.checkPermission(permissionValue, deadboltHandler, ctx);
     }
 
+    // TODO: we need two dynamic handlers for /membership: one for GET and DELETE, and one for PUT
     @Override
     public Promise<Boolean> isAllowed(String rule, String resource, DeadboltHandler deadboltHandler, Context context) {
-        return deadboltHandler.getSubject(context)
-                               .map(subjectOption -> {
-                                   final boolean[] allowed = {false};
-                                   if (new DeadboltAnalyzer().hasRole(subjectOption, "ADMIN")) {
-                                       allowed[0] = true;
-                                   } else {
-                                       subjectOption.ifPresent(subject -> {
-                                           User u = User.findByUserName(subject.getIdentifier());
-                                           if (u!=null) u.setSessionLanguage();
-                                           String path = context.request().path();
-                                           Long assemblyId = null;
-                                           Assembly a = null;
-                                           Boolean isMembershipGroup = false;
-                                           AssemblyProfile ap = null;
-                                           Membership m = null;
-                                           if (rule.equals("CoordinatorOfAssembly") && resource.equals(SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)) {
-                                               Long membershipId = MyDynamicResourceHandler.getIdFromPath(path, resource);
-                                               Logger.debug("AUTHORIZATION: Checking membership "+membershipId+" to see if it belongs to user...");
-                                               m = Membership.read(membershipId);
-                                               if (m!=null&&m.getMembershipType().equals("ASSEMBLY")) {
-                                                   MembershipAssembly mAssembly = (MembershipAssembly) MembershipAssembly.read(membershipId);
-                                                   assemblyId = mAssembly.getAssembly().getAssemblyId();
-                                                   a = Assembly.read(assemblyId);
-                                               } else {
-                                            	   Logger.debug("AUTHORIZATION: Membership not of Assembly, checking if it is of a Workin Group");
-                                                   MembershipGroup mGroup = (MembershipGroup) MembershipGroup.read(membershipId);
-                                                   // if one group has many assemblies or no one, assemblyId and assembly are null
-                                                   // and m is the membership of the request
-                                                   // This would allow checking for Coordinators Role within a WG (if the membership ID corresponds 
-                                                   // to a working group)
-                                                   m = mGroup;
-                                               }
-                                           } else {
-                                               Logger.debug("AUTHORIZATION: Checking membership of User in "+resource+"...");
-                                               assemblyId = MyDynamicResourceHandler.getIdFromPath(path, resource);
-                                               a = Assembly.read(assemblyId);
-                                           }
-                                           if (a!=null) {
-                                               m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
-                                               ap = a.getProfile();
-                                           }
+        return deadboltHandler.getSubject(context).map(subjectOption ->
+            {
+                Logger.info("AUTHORIZATION: Checking for "+context.request().method()+" on "+context.request().path());
+                final boolean[] allowed = {false};
+                if (new DeadboltAnalyzer().hasRole(subjectOption, "ADMIN")) {
+                    allowed[0] = true;
+                } else {
+                    subjectOption.ifPresent(subject ->
+                    {
+                        User u = User.findByUserName(subject.getIdentifier());
+                        if (u!=null)
+                            u.setSessionLanguage();
+                        String path = context.request().path();
+                        String method = context.request().method();
+                        String res = resource;
+                        Long assemblyId = null;
+                        Long groupId = null;
+                        Assembly a = null;
+                        AssemblyProfile ap = null;
+                        Membership m = null;
+                        WorkingGroup wg = null;
+                        WorkingGroupProfile wgp = null;
+                        Boolean isGroupMembership = false;
+                        Boolean requestorIsOwnerOfMembership = false;
+                        if (resource.equals(SecurityModelConstants.MEMBERSHIP_RESOURCE_PATH)) {
+                            // We are dealing with a Membership record
+                            // - The user of the membership can read and delete
+                            // - Only Assembly/WG Coordinators can edit the Status of the Membership
 
-                                           Boolean assemblyNotOpen = true;
-                                           if (ap!=null) {
-                                        	   assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
-                                               
-                                           }
-                                           if (m!=null && rule.equals("CoordinatorOfAssembly") && assemblyNotOpen) {
-                                               Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
-                                               List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-                                               allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-                                           } else if (m!=null && rule.equals("AssemblyMemberIsExpert") && assemblyNotOpen) {
-                                               Logger.debug("AUTHORIZATION --> Checking if user is Expert");
-                                               List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.EXPERT.getName());
-                                               allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-                                           } else if (m!=null && rule.equals("ModeratorOfAssembly") && assemblyNotOpen) {
-                                               Logger.debug("AUTHORIZATION --> Checking if user is Moderator");
-                                               List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MODERATOR.getName());
-                                               allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();                                           
-                                           }  else {
-                                             Logger.debug("AUTHORIZATION --> Checking if user is Member");
-                                             allowed[0] = m!=null; 
-                                             if(!allowed[0]) {
-                                                 Logger.debug("AUTHORIZATION --> Checking if user has at least an Invitation");
-                                            	 // Check if the user has been invited. In which case, it will be considered a member
-                                            	 MembershipInvitation mi = MembershipInvitation.findByUserIdTargetIdAndType(u.getUserId(), assemblyId, MembershipTypes.ASSEMBLY);
-                                            	 allowed[0] =  mi!=null;
-                                             }
-                                           }
-                                           Logger.debug("--> User authorization for "+resource+" "+assemblyId+" is "+allowed[0]);
-                                       });
-                                   }
-                                   return allowed[0];
-                               });    
+                            Long membershipId = MyDynamicResourceHandler.getIdFromPath(path, resource);
+                            Logger.debug("AUTHORIZATION: Checking user of requested membership = "+membershipId);
+                            m = Membership.read(membershipId);
+
+                            if (m!=null&&m.getMembershipType().equals("ASSEMBLY")) {
+                                // We are dealing with an ASSEMBLY membership
+                                // - The user of the membership can read and delete
+                                // - Only Assembly Coordinators can edit the Membership
+                                MembershipAssembly mAssembly = (MembershipAssembly) m;
+                                a = mAssembly.getAssembly();
+                                assemblyId = a.getAssemblyId();
+                                isGroupMembership = false;
+                            } else {
+                                // We are dealing with a WORKING GROUP membership
+                                // - The user of the membership can read and delete
+                                // - Only Assembly and WG coordinators can edit the Membership
+                                Logger.debug("AUTHORIZATION: Membership of Working Group");
+                                MembershipGroup mGroup = (MembershipGroup) m;
+                                m = mGroup;
+                                wg = mGroup.getWorkingGroup();
+                                groupId = wg.getGroupId();
+                                isGroupMembership = true;
+                            }
+
+                            if (m!=null && u.getUserId()!=m.getUser().getUserId()) {
+                                // user who called the endpoint is NOT the same as the one in the Membership record
+                                // use the caller membership
+                                Logger.debug("AUTHORIZATION: Membership does not belong to requestor");
+                                m = isGroupMembership ? MembershipGroup.findByUserAndGroup(u,wg) : MembershipAssembly.findByUserAndAssembly(u,a);
+                            } else {
+                                // user is same as membership, therefore only GET and DELETE are allowed
+                                Logger.debug("AUTHORIZATION: Membership belongs to requestor. Allow only GET and " +
+                                        "DELETE if requestor is not COORDINATOR.");
+                                requestorIsOwnerOfMembership=true;
+                            }
+                        } else {
+                            Logger.debug("AUTHORIZATION: Checking membership of User in "+resource+"...");
+                            if (resource!=null && resource.equals("assembly/")) {
+                                assemblyId = MyDynamicResourceHandler.getIdFromPath(path, resource);
+                                a = Assembly.read(assemblyId);
+                                m = MembershipAssembly.findByUserAndAssembly(u,a);
+                                isGroupMembership = false;
+                            } else if ((resource!=null && resource.equals("group/"))) {
+                                groupId = MyDynamicResourceHandler.getIdFromPath(path, resource);
+                                wg = WorkingGroup.read(assemblyId);
+                                m = MembershipGroup.findByUserAndGroup(u,wg);
+                                isGroupMembership = true;
+                            }
+                        }
+
+                        if (a!=null) {
+                            ap = a.getProfile();
+                        } else if (wg!=null) {
+                            wgp = wg.getProfile();
+                        }
+
+                        Boolean targetCollectionIsOpen = false;
+                        if (ap!=null) {
+                            targetCollectionIsOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+                        } else if (wgp!=null) {
+                            targetCollectionIsOpen = wgp.getManagementType().equals(ManagementTypes.OPEN);
+                        }
+
+                        // TODO: move this logic into a new Dynamic Handler called CoordinatorOfGroupOrAssembly and keep only COORDINATOR of assembly here
+                        if (m!=null && rule.equals("CoordinatorOfAssembly") && !targetCollectionIsOpen) {
+                            Logger.debug("AUTHORIZATION --> Checking if user" +m.getUser().getUserId()+" is Coordinator");
+                            List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
+                            allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+
+                            if (!allowed[0] && isGroupMembership) {
+                                List<Long> assemblyIDs = wg.getAssemblies();
+                                for (Long aid:assemblyIDs) {
+                                    Assembly groupAssembly = Assembly.read(aid);
+                                    Membership groupAssemblyMembership = MembershipAssembly.findByUserAndAssembly(u, groupAssembly);
+                                    Logger.debug("AUTHORIZATION --> Checking if user" + groupAssemblyMembership.getUser().getUserId() + " is Coordinator of Assembly " + aid);
+                                    membershipRoles = groupAssemblyMembership.filterByRoleName(MyRoles.COORDINATOR.getName());
+                                    allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                    if (allowed[0]) {
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!allowed[0]) {
+                                if (requestorIsOwnerOfMembership) {
+                                    allowed[0]=method.equals("GET") || method.equals("DELETE");
+                                }
+                            }
+                        } else if (m!=null && rule.equals("AssemblyMemberIsExpert")) {
+                            Logger.debug("AUTHORIZATION --> Checking if user is Expert");
+                            List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.EXPERT.getName());
+                            allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                        } else if (m!=null && rule.equals("ModeratorOfAssembly") && !targetCollectionIsOpen) {
+                            Logger.debug("AUTHORIZATION --> Checking if user is Moderator");
+                            List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MODERATOR.getName());
+                            allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                        }  else {
+                          Logger.debug("AUTHORIZATION --> Checking if user is Member");
+                          allowed[0] = m!=null;
+                          if(!allowed[0]) {
+                              Logger.debug("AUTHORIZATION --> Checking if user has at least an Invitation");
+                              // Check if the user has been invited. In which case, it will be considered a member
+                              MembershipInvitation mi = MembershipInvitation.findByUserIdTargetIdAndType(u.getUserId(), assemblyId, MembershipTypes.ASSEMBLY);
+                              allowed[0] =  mi!=null;
+                          }
+                        }
+                        Logger.debug("--> User authorization for "+resource+" "+assemblyId+" is "+allowed[0]);
+                   });
+               }
+               return allowed[0];
+            });
     }
 }

@@ -353,6 +353,7 @@ public class Membership extends AppCivistBaseModel {
 		return membs;
 	}
 
+	// TODO: should return only one
 	public static List<Membership> findByUserAndAssembly(User u, Long assemblyId) {
 		Query<Membership> q = find.where().eq("user",u).eq("assembly.assemblyId", assemblyId).query();
 		List<Membership> membs = q.findList();
