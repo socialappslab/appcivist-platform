@@ -57,6 +57,9 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	@JsonIgnore
 	private List<NotificationEventSignalUser> notificationsEventsSignalsUsers = new ArrayList<>();
 
+	@Column(name = "rich_text")
+	private String richText;
+
 	// Information about the space where the event happened
 	/*private UUID origin;
 	@Enumerated(EnumType.STRING)
@@ -151,6 +154,13 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 		this.notificationsEventsSignalsUsers.add(signal);
 	}
 
+	public String getRichText() {
+		return richText;
+	}
+
+	public void setRichText(String richText) {
+		this.richText = richText;
+	}
 
 	public static NotificationEventSignal read(Long id) {
 		return find.ref(id);

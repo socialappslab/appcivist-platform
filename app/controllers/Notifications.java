@@ -11,6 +11,7 @@ import delegates.NotificationsDelegate;
 import enums.AppcivistNotificationTypes;
 import enums.AppcivistResourceTypes;
 import enums.NotificationEventName;
+import enums.SubscriptionTypes;
 import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.*;
@@ -123,7 +124,7 @@ public class Notifications extends Controller {
         }
     }*/
 
-    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Subscribe to receive notifications for eventName on origin", httpMethod = "POST")
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),
@@ -194,10 +195,14 @@ public class Notifications extends Controller {
         }
     }
 
-    @ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List", produces = "application/json", value = "List notification events to which the user is subscribed", httpMethod = "GET")
-    @ApiResponses(value = {@ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class)})
+    @ApiOperation(response = NotificationSubscriptionTransfer.class, responseContainer = "List",
+            produces = "application/json", value = "List notification subscriptions of a user",
+            httpMethod = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Errors in the server", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key",
+                    dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result subscriptions() {
         // Get the user record of the creator
@@ -355,9 +360,16 @@ public class Notifications extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
-    public static Result subscribeToResourceSpace(long sid) {
+    public static Result subscribeToResourceSpace(Long sid) {
+        // TODO: review the manageSubscriptionToResourceSpace method
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace rs = ResourceSpace.read(sid);
+        Subscription sub = new Subscription();
+        sub.setSpaceId(rs.getUuidAsString());
+        sub.setUserId(subscriber.getUuidAsString());
+        sub.setSubscriptionType(SubscriptionTypes.REGULAR);
+        sub.setSpaceType(rs.getType());
+        sub.insert();
         return NotificationsDelegate.manageSubscriptionToResourceSpace("SUBSCRIBE", rs, "email", subscriber);
     }
 
@@ -367,8 +379,14 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
     public static Result unsubscribeToResourceSpace(long sid) {
+        // TODO: review the manageSubscriptionToResourceSpace method
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace rs = ResourceSpace.read(sid);
+        List<Subscription> subs = Subscription.findSubscriptionByUserIdAndSpaceId(subscriber.getUuidAsString(),rs.getUuidAsString());
+        for (Subscription sub : subs) {
+            sub.delete();
+            sub.delete();
+        }
         return NotificationsDelegate.manageSubscriptionToResourceSpace("UNSUBSCRIBE", rs, "email", subscriber);    }
 
     public static Result createResourceSpaceEvents(String type) {
@@ -435,14 +453,20 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
     public static Result getNotificationSignals(@ApiParam(name = "id", value = "User ID") Long id,
-                                    @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page) {
+                                    @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
+                                                @ApiParam(name = "type", value = "Type") String type) {
+
         List<NotificationEventSignalUser> notifications = new ArrayList<>();
-        NotificationSignalStatsTransfer tmp = processUserNotificationSignalStats(id);
+        if((type != null) && (!type.equals(SubscriptionTypes.NEWSLETTER.name()) && !type.equals(SubscriptionTypes.REGULAR.name()))) {
+            return badRequest();
+        }
+
+        NotificationSignalStatsTransfer tmp = processUserNotificationSignalStats(id, type);
         Integer pageSize = 5;
         if (tmp.getRead().intValue() == tmp.getTotal().intValue()) {
             pageSize = 10;
         }
-        notifications = processUserNotificationsSignal(id, page - 1, pageSize);
+        notifications = processUserNotificationsSignal(id, page - 1, pageSize, type);
         if (notifications.isEmpty()) {
             return notFound(Json.toJson(new TransferResponseStatus("No data")));
         } else {
@@ -477,9 +501,12 @@ public class Notifications extends Controller {
         }
     }
 
-    private static List<NotificationEventSignalUser> processUserNotificationsSignal(Long userId, Integer page, Integer pageSize) {
+    private static List<NotificationEventSignalUser> processUserNotificationsSignal(Long userId, Integer page, Integer pageSize, String subsType) {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("user", userId);
+        if (subsType != null) {
+            conditions.put("signal.signalType", SubscriptionTypes.valueOf(subsType));
+        }
         return NotificationsDelegate.findNotificationsUser(conditions, page, pageSize);
     }
 
@@ -489,14 +516,21 @@ public class Notifications extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")
     })
-    public static Result getNotificationSignalsStats(@ApiParam(name = "id", value = "User ID") Long id) {
-        NotificationSignalStatsTransfer stats = processUserNotificationSignalStats(id);
+    public static Result getNotificationSignalsStats(@ApiParam(name = "id", value = "User ID") Long id,
+                                                     @ApiParam(name = "type", value = "Type") String type) {
+        if((type != null) && (!type.equals(SubscriptionTypes.NEWSLETTER.name()) && !type.equals(SubscriptionTypes.REGULAR.name()))) {
+            return badRequest();
+        }
+        NotificationSignalStatsTransfer stats = processUserNotificationSignalStats(id, type);
         return ok(Json.toJson(stats));
     }
 
-    private static NotificationSignalStatsTransfer processUserNotificationSignalStats(Long userId) {
+    private static NotificationSignalStatsTransfer processUserNotificationSignalStats(Long userId, String subsType) {
 
         Map<String, Object> conditions = new HashMap<>();
+        if(subsType != null) {
+            conditions.put("signal.signalType", SubscriptionTypes.valueOf(subsType));
+        }
         conditions.put("user", userId);
         List<NotificationEventSignalUser> allNotif = NotificationsDelegate.findNotificationsUser(conditions, null, null);
 
@@ -537,5 +571,21 @@ public class Notifications extends Controller {
         } else {
             return notFound(Json.toJson(new TransferResponseStatus("User has no notifications")));
         }
+    }
+
+    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Return if a user is subscribed to a notification or not", httpMethod = "GET")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result findByUserAndResourceSpace(Long sid) {
+        User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace rs = ResourceSpace.read(sid);
+        if(rs == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
+        }
+        Map<String, Object> aRet = new HashMap<>();
+        aRet.put("subscribed", Subscription.existByUserIdAndSpaceId(subscriber,rs));
+        return ok(Json.toJson(aRet));
     }
 }

@@ -32,6 +32,7 @@ import models.transfer.*;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.*;
 import play.twirl.api.Content;
@@ -582,7 +583,101 @@ public class Assemblies extends Controller {
 			return badRequest(Json.toJson(responseBody));
 		} else {
 			MembershipTransfer newMembership = newMembershipForm.get();
-			return Memberships.createMemberShip(requestor, "assembly", newMembership,id);
+			Result aRet =  Memberships.createMemberShip(requestor, "assembly", newMembership,id);
+
+			F.Promise.promise(() -> {
+
+				Boolean coordinator = false;
+				for (SecurityRole role : requestor.getRoles()) {
+					if (role.getName().equals("COORDINATOR")) {
+						coordinator = true;
+					}
+				}
+				Assembly a = Assembly.read(id);
+				if (!coordinator) {
+					HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
+					ignoredEvents.put(EventKeys.NEW_CONTRIBUTION_FEEDBACK, true);
+					ignoredEvents.put(EventKeys.NEW_CONTRIBUTION_FEEDBACK_FLAG, true);
+					ignoredEvents.put(EventKeys.UPDATED_ASSEMBLY_CONFIGS, true);
+					ignoredEvents.put(EventKeys.UPDATED_WORKING_GROUP_CONFIGS, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_IDEA, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_PROPOSAL, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_DISCUSSION, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_COMMENT, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_NOTE, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_FORUM_POST, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_FEEDBACK, true);
+					ignoredEvents.put(EventKeys.UPDATED_CONTRIBUTION_HISTORY, true);
+					ignoredEvents.put(EventKeys.MEMBER_JOINED, true);
+					ignoredEvents.put(EventKeys.DELETED_CONTRIBUTION, true);
+					ignoredEvents.put(EventKeys.MODERATED_CONTRIBUTION, true);
+					if (Subscription.findByUserIdAndSpaceId(requestor, a.getResourcesResourceSpaceUUID().toString()).isEmpty()) {
+						Subscription sub = new Subscription();
+						sub.setUserId(requestor.getUuid().toString());
+						sub.setSpaceType(ResourceSpaceTypes.ASSEMBLY);
+						sub.setSpaceId(a.getResourcesResourceSpaceUUID().toString());
+						sub.setSubscriptionType(SubscriptionTypes.REGULAR);
+						sub.setIgnoredEvents(ignoredEvents);
+						sub.insert();
+						try {
+							NotificationsDelegate.subscribeToEvent(sub);
+						} catch (ConfigurationException e) {
+							Logger.error("Error notification the subscription creation", e);
+							e.printStackTrace();
+						}
+					}
+					try {
+						List<Campaign> campaigns = a.getResources().getCampaignsFilteredByStatus("ongoing");
+						for (Campaign c : campaigns) {
+							if (!Subscription.findByUserIdAndSpaceId(requestor, c.getResources().getUuid().toString()).isEmpty()) {
+								continue;
+							}
+							Config config = Config.findByUser(requestor.getUuid(), "notifications.preference." +
+									"contributed-contributions.auto-subscription");
+							if (config != null
+									&& config.getValue().equals("true")) {
+								Subscription sub = new Subscription();
+								sub.setUserId(requestor.getUuid().toString());
+								sub.setSpaceType(ResourceSpaceTypes.CAMPAIGN);
+								sub.setSpaceId(c.getResourceSpaceUUID());
+								sub.setSubscriptionType(SubscriptionTypes.NEWSLETTER);
+								HashMap<String, Boolean> services = new HashMap<>();
+								services.put("facebook-messenger", true);
+								sub.setDisabledServices(services);
+								sub.insert();
+								try {
+									NotificationsDelegate.subscribeToEvent(sub);
+								} catch (ConfigurationException e) {
+									Logger.error("Error notification the subscription creation", e);
+									e.printStackTrace();
+								}
+							}
+							Subscription sub = new Subscription();
+							sub.setUserId(requestor.getUuid().toString());
+							sub.setSpaceType(ResourceSpaceTypes.CAMPAIGN);
+							sub.setSpaceId(c.getResourceSpaceUUID());
+							sub.setSubscriptionType(SubscriptionTypes.REGULAR);
+							sub.setIgnoredEvents(ignoredEvents);
+							HashMap<String, Boolean> services = new HashMap<>();
+							services.put("facebook-messenger", true);
+							services.put("email", true);
+							sub.setDisabledServices(services);
+							sub.insert();
+							try {
+								NotificationsDelegate.subscribeToEvent(sub);
+							} catch (ConfigurationException e) {
+								Logger.error("Error notification the subscription creation", e);
+								e.printStackTrace();
+							}
+						}
+					} catch (Exception e) {
+						Logger.error("Error in subscription creation", e);
+						e.printStackTrace();
+					}
+				}
+				return Optional.ofNullable(null);
+			});
+			return aRet;
 		}
 	}
 

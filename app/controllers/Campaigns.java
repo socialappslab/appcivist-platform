@@ -223,7 +223,7 @@ public class Campaigns extends Controller {
     @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update a campaign by its ID and the assembly ID", notes = "Only for COORDINATORS")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.Campaign", paramType = "body"),
+            @ApiImplicitParam(name = "Campaign object", value = "Campaign in json", dataType = "models.transfer.CampaignTransfer", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result updateCampaign(
@@ -380,6 +380,7 @@ public class Campaigns extends Controller {
                                 ComponentMilestone oldMilestone = ComponentMilestone.read(milestone.getComponentMilestoneId());
                                 if (oldMilestone != null && !oldMilestone.getType().equals(ComponentMilestoneTypes.END)
                                         && !oldMilestone.getType().equals(ComponentMilestoneTypes.START)) {
+
                                     oldMilestone.setRemoved(true);
                                     oldMilestone.setRemoval(new Date());
                                     oldMilestone.update();
@@ -387,8 +388,24 @@ public class Campaigns extends Controller {
                             }
                         }
 
+
                         Logger.debug("Update component space: " + componentOld.getComponentId());
                         componentOld.getResourceSpace().update();
+                        componentOld.refresh();
+                        componentOld.getMilestones().sort(Comparator.comparing(ComponentMilestone::getDate));
+                        int pos = 1;
+                        for(ComponentMilestone cm: componentOld.getMilestones()) {
+
+                            if (cm.getType().equals(ComponentMilestoneTypes.START)) {
+                                cm.setPosition(1);
+                            } else if (cm.getType().equals(ComponentMilestoneTypes.END)) {
+                                    cm.setPosition(componentOld.getMilestones().size());
+                            } else {
+                                pos ++;
+                                cm.setPosition(pos);
+                            }
+                            cm.update();
+                        }
                     } else {
                         List<String> mappingFiles = Play.application().configuration()
                                 .getStringList("appcivist.dozer.mappingFiles");
@@ -1635,77 +1652,6 @@ public class Campaigns extends Controller {
                 }
             };
             return ok(ret);
-        }
-    }
-
-    /**
-     * POST /api/space/:sid/resources
-     * Add resources to a resource space
-     *
-     * @param sid
-     * @return
-     */
-    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
-            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
-    public static Result addSpaceResources(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
-        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
-        ResourceSpace resourceSpace = ResourceSpace.read(sid);
-        final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
-        if (resourceSpace == null) {
-            return notFound(Json
-                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
-        } else {
-            if (resourceForm.hasErrors()) {
-                TransferResponseStatus responseBody = new TransferResponseStatus();
-                responseBody.setStatusMessage("Error in resource form "+
-                        resourceForm.errorsAsJson());
-                return badRequest(Json.toJson(responseBody));
-            } else {
-                Resource newResource = resourceForm.get();
-                newResource.setConfirmed(true);
-                newResource.setContextUserId(creator.getUserId());
-                newResource = Resource.create(newResource);
-                resourceSpace.getResources().add(newResource);
-                resourceSpace.update();
-                return ok(Json.toJson(newResource));
-            }
-        }
-    }
-
-    /**
-     * POST /api/space/:uuid/resources
-     * Add resources to a resource space
-     *
-     * @param uuid
-     * @return
-     */
-    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a resource  to resource space")
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
-    public static Result addSpaceResourcesbyUuid(@ApiParam(name = "uuid", value = "ResourceSpace UUID") UUID uuid) {
-        ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
-        final Form<Resource> resourceForm = form(Resource.class).bindFromRequest();
-        if (resourceSpace == null) {
-            return notFound(Json
-                    .toJson(new TransferResponseStatus("No resource space found with uuid "+uuid)));
-        } else {
-            if (resourceForm.hasErrors()) {
-                TransferResponseStatus responseBody = new TransferResponseStatus();
-                responseBody.setStatusMessage("Error in resource form "+
-                        resourceForm.errorsAsJson());
-                return badRequest(Json.toJson(responseBody));
-            } else {
-                Resource newResource = resourceForm.get();
-                newResource.setConfirmed(true);
-                newResource = Resource.create(newResource);
-                resourceSpace.getResources().add(newResource);
-                resourceSpace.update();
-                return ok(Json.toJson(newResource));
-            }
         }
     }
 
