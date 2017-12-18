@@ -60,7 +60,7 @@ INSERT INTO pgagent.pga_jobstep (
 ) VALUES (
     jid, 'Notification Arhival Job'::text, true, 's'::character(1),
     ''::text, 'appcivistcore'::name, 'f'::character(1),
-    'select * from move_signals(''2017-12-04'');'::text, ''::text
+    'select * from move_signals((select ''now''::timestamp - ''1 month''::interval));'::text, ''::text
 ) ;
 
 -- Schedules
@@ -70,7 +70,7 @@ INSERT INTO pgagent.pga_schedule(
     jscstart, jscend,    jscminutes, jschours, jscweekdays, jscmonthdays, jscmonths
 ) VALUES (
     jid, 'Notification Schedule'::text, ''::text, true,
-    '2017-12-04 10:18:28-03'::timestamp with time zone, '2017-12-18 10:18:13-03'::timestamp with time zone,
+    '2017-12-04 10:18:28-03'::timestamp with time zone, '2030-12-18 10:18:13-03'::timestamp with time zone,
     -- Minutes
     ARRAY[false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]::boolean[],
     -- Hours
@@ -82,9 +82,9 @@ INSERT INTO pgagent.pga_schedule(
     -- Months
     ARRAY[false, false, false, false, false, false, false, false, false, false, false, false]::boolean[]
 ) RETURNING jscid INTO scid;
-END
+END;
 $$;
 ```
 
 After this the job and schedule is configured and ready to run.
-This configuration can edit and create also through the graphic interface of pgadmin4
+This configuration can be edited and created also through the graphic interface of pgadmin4
