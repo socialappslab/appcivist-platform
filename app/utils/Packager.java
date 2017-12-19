@@ -1,5 +1,7 @@
 package utils;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,6 +25,20 @@ public class Packager
         zipOut.flush();
         zipOut.close();
     }
+
+    public static void packZip(File output, List<File> sources) throws IOException
+    {
+        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(output));
+        zipOut.setLevel(Deflater.DEFAULT_COMPRESSION);
+
+        for (File source : sources)
+        {
+            zipFile(zipOut, "", source, "");
+        }
+        zipOut.flush();
+        zipOut.close();
+    }
+
 
     private static String buildPath(String path, String file)
     {
