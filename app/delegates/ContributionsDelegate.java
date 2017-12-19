@@ -265,6 +265,9 @@ public class ContributionsDelegate {
                         Expression e = Expr.in(propertyName,cStatuses);
                         where.add(e);
                         break;
+                    case "selectedContributions":
+                        List<Integer> selected = (List)value;
+                        where.in("t0.uuid", selected);
                     default:
                         if(value instanceof String){
                             where.ilike(key, ("t0."+(String)value).toLowerCase() + "%");
