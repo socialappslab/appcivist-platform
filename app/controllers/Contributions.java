@@ -4191,7 +4191,7 @@ public class Contributions extends Controller {
                     Logger.info("Error in GDOC text pad url " + url, e);
                 }
             } else {
-                url = url + "/export?format=" + selectFormat.toLowerCase();
+                url = url + "/export/" + selectFormat.toLowerCase();
             }
             File tempFile = new File(EXTENDED_PAD_NAME
                     .replace(EXTENDED_PAD_CONTRIBUTION,contribution.getContributionId().toString())+ "."+selectFormat.toLowerCase());
