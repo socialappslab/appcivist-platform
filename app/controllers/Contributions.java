@@ -77,8 +77,9 @@ public class Contributions extends Controller {
     public static final Form<Resource> ATTACHMENT_FORM = form(Resource.class);
     public static final Form<ThemeListTransfer> THEMES_FORM = form(ThemeListTransfer.class);
     public static final Form<User> AUTHORS_FORM = form(User.class);
-    public static final String EXTENDED_PAD_CONTRIBUTION = "{contribution_id}";
-    public static final String EXTENDED_PAD_NAME = "contribution_"+EXTENDED_PAD_CONTRIBUTION;
+    public static final String CONTRIBUTION_ID_PARAM = "{contribution_id}";
+    public static final String EXTENDED_PAD_NAME = "contribution_doc_"+ CONTRIBUTION_ID_PARAM;
+    public static final String CONTRIBUTION_FILE_NAME = "contribution_"+ CONTRIBUTION_ID_PARAM;
 
     private static BufferedReader br;
 
@@ -4191,10 +4192,16 @@ public class Contributions extends Controller {
                     Logger.info("Error in GDOC text pad url " + url, e);
                 }
             } else {
+                String padId = contribution.getExtendedTextPad().getPadId();
+                // Transform URL from read only to write url
+                // From [.../p/r.613e...] TO [.../p/{padId}]
+                String[] padUrlParts = url.split("/p/");
+                url = padUrlParts[0]+"/p/"+padId;
                 url = url + "/export/" + selectFormat.toLowerCase();
             }
-            File tempFile = new File(EXTENDED_PAD_NAME
-                    .replace(EXTENDED_PAD_CONTRIBUTION,contribution.getContributionId().toString())+ "."+selectFormat.toLowerCase());
+            String fileName = "/tmp/" + EXTENDED_PAD_NAME.replace(CONTRIBUTION_ID_PARAM,
+                    contribution.getContributionId().toString()+ "."+selectFormat.toLowerCase());
+            File tempFile = new File(fileName);
             OutputStream out = new FileOutputStream(tempFile);
             HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             try {
@@ -4254,7 +4261,7 @@ public class Contributions extends Controller {
             e.printStackTrace();
             Logger.error("Error retrieving contribution fields", e);
         }
-        String fileName = "/tmp/" + EXTENDED_PAD_NAME.replace(EXTENDED_PAD_CONTRIBUTION,
+        String fileName = "/tmp/" + CONTRIBUTION_FILE_NAME.replace(CONTRIBUTION_ID_PARAM,
                 contribution.getContributionId().toString());
         switch (format) {
             case "PDF":
