@@ -265,7 +265,9 @@ public class Contributions extends Controller {
             @ApiParam(name = "includeExtendedText", value = "Include or not extended text") String includeExtendedText,
             @ApiParam(name = "extendedTextFormat", value = "Include or not extended text", allowableValues =
                     "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat,
-            @ApiParam(name = "themes", value = "List") List<String> selectedContributions) {
+            @ApiParam(name = "collectionFileFormat", value = "Select the format for the file that contains the collection of contributions",
+                    allowableValues = "JSON,CSV") String collectionFileFormat,
+            @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions) {
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -355,6 +357,12 @@ public class Contributions extends Controller {
                         List<File> aRet = new ArrayList<>();
                         if (format.equals("JSON") || format.equals("CSV")) {
                             aRet.add(getExportFileCsvJson(contributions, true, format));
+                        } else if (collectionFileFormat!=null &&
+                                (collectionFileFormat.equals("CSV") || collectionFileFormat.equals("JSON"))){
+                            aRet.add(getExportFileCsvJson(contributions, true, collectionFileFormat));
+                        } else {
+                            aRet.add(getExportFileCsvJson(contributions, true, "JSON"));
+                            aRet.add(getExportFileCsvJson(contributions, true, "CSV"));
                         }
                         for(Contribution contribution: contributions) {
                             try {
@@ -4232,6 +4240,7 @@ public class Contributions extends Controller {
                 }
                 break;
             case "CSV":
+                // TODO: make sure each contribution is just one line with cols beign nestedobjectclass/attribute name
                 JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
                 tempFile = new File(fileName + ".csv");
                 try {
