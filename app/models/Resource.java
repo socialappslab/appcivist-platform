@@ -77,7 +77,7 @@ public class Resource extends AppCivistBaseModel {
 
 	private String resourceAuthKey;
 
-	private boolean isTemplate;
+	private boolean isTemplate = false;
 
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "resources", cascade = CascadeType.ALL)
