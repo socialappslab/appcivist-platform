@@ -2,6 +2,9 @@ package delegates;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import enums.*;
 import exceptions.ConfigurationException;
 import models.*;
@@ -32,6 +35,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static enums.ResourceSpaceTypes.*;
@@ -1383,5 +1387,20 @@ public class NotificationsDelegate {
                 break;
         }
         return toRet;
+    }
+
+    public static void sendToRabbit() throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        Connection connection = factory.newConnection();
+        Channel channel = connection.createChannel();
+
+        channel.queueDeclare("PRUEBA", false, false, false, null);
+        String message = "Hello World!";
+        channel.basicPublish("", "PRUEBA", null, message.getBytes("UTF-8"));
+        System.out.println(" [x] Sent '" + message + "'");
+
+        channel.close();
+        connection.close();
     }
 }
