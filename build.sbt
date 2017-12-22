@@ -52,7 +52,7 @@ libraryDependencies ++= Seq(
   "com.github.opendevl" % "json2flat" % "1.0.3",
   "org.apache.poi" % "poi-ooxml" % "3.17",
   "com.google.api-client" % "google-api-client" % "1.23.0",
-  "com.rabbitmq" % "amqp-client" % "5.1.0"
+  "com.rabbitmq" % "amqp-client" % "5.1.1"
 
 )
 

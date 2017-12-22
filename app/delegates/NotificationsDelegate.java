@@ -28,7 +28,6 @@ import utils.services.NotificationServiceWrapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -658,6 +657,7 @@ public class NotificationsDelegate {
         }
 
         List<Long> notificatedUsers = new ArrayList<>();
+        List<String> notifiedUsersUUID = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         for (Subscription sub : subscriptions) {
@@ -672,6 +672,7 @@ public class NotificationsDelegate {
                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                     notificationEvent.addNotificationEventSignalUser(userSignal);
                     notificatedUsers.add(user.getUserId());
+                    notifiedUsersUUID.add(user.getUuidAsString());
                 }
 
             }
@@ -699,6 +700,7 @@ public class NotificationsDelegate {
                                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                                     notificationEvent.addNotificationEventSignalUser(userSignal);
                                     notificatedUsers.add(user.getUserId());
+                                    notifiedUsersUUID.add(user.getUuidAsString());
                                 }
                             }
                         }
@@ -714,13 +716,13 @@ public class NotificationsDelegate {
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
 
-            NotificationServiceWrapper ns = new NotificationServiceWrapper();
-            WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
-
+          ///  NotificationServiceWrapper ns = new NotificationServiceWrapper();
+           // WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
+            sendToRabbit(newNotificationSignal, notifiedUsersUUID);
             Logger.info("NOTIFICATION: SENDING SIGNAL");
-
+            return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
             // Relay response to requestor
-            if (response.getStatus() == 200) {
+          /*  if (response.getStatus() == 200) {
                 Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
                 notificationEvent.getData().put("signaled", true);
                 NotificationEventSignal.create(notificationEvent);
@@ -730,8 +732,8 @@ public class NotificationsDelegate {
                 Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
                 NotificationEventSignal.create(notificationEvent);
                 return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
-            }
-        } catch (ConfigurationException | ConnectException e) {
+            }*/
+        } catch (IOException | TimeoutException e) {
             Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(e.getLocalizedMessage());
@@ -1389,17 +1391,25 @@ public class NotificationsDelegate {
         return toRet;
     }
 
-    public static void sendToRabbit() throws IOException, TimeoutException {
+    public static void sendToRabbit(NotificationSignalTransfer notificationSignalTransfer, List<String> notifiedUsersUUID) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        factory.setHost(Play.application().configuration().getString("appcivist.rabbitmq.host"));
+        factory.setPort(Play.application().configuration().getInt("appcivist.rabbitmq.port"));
+        factory.setUsername(Play.application().configuration().getString("appcivist.rabbitmq.user"));
+        factory.setPassword(Play.application().configuration().getString("appcivist.rabbitmq.password"));
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
-
-        channel.queueDeclare("PRUEBA", false, false, false, null);
-        String message = "Hello World!";
-        channel.basicPublish("", "PRUEBA", null, message.getBytes("UTF-8"));
-        System.out.println(" [x] Sent '" + message + "'");
-
+        Map<String, String> toSend = new HashMap<>();
+        toSend.put("title", notificationSignalTransfer.getTitle());
+        toSend.put("text", notificationSignalTransfer.getText());
+        toSend.put("resourceSpaceUUID", notificationSignalTransfer.getSpaceId());
+        String message;
+        for (String user: notifiedUsersUUID) {
+            message = Json.toJson(toSend).toString();
+            channel.queueDeclare(user, false, false, false, null);
+            channel.basicPublish("", user, null, message.getBytes());
+            Logger.info(" [x] Sent '" + message + "'");
+        }
         channel.close();
         connection.close();
     }
