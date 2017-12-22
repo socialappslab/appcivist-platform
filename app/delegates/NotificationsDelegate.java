@@ -21,6 +21,7 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
+import service.BusComponent;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.LogActions;
@@ -715,24 +716,26 @@ public class NotificationsDelegate {
         try {
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
-
-          ///  NotificationServiceWrapper ns = new NotificationServiceWrapper();
-           // WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
-            sendToRabbit(newNotificationSignal, notifiedUsersUUID);
-            Logger.info("NOTIFICATION: SENDING SIGNAL");
-            return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
-            // Relay response to requestor
-          /*  if (response.getStatus() == 200) {
-                Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
-                notificationEvent.getData().put("signaled", true);
-                NotificationEventSignal.create(notificationEvent);
-                // Register signals by user
-                return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
+            if(Play.application().configuration().getBoolean("appcivist.rabbitmq.active")) {
+                BusComponent.sendToRabbit(newNotificationSignal, notifiedUsersUUID);
+                return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
             } else {
-                Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
-                NotificationEventSignal.create(notificationEvent);
-                return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
-            }*/
+                NotificationServiceWrapper ns = new NotificationServiceWrapper();
+                WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
+                Logger.info("NOTIFICATION: SENDING SIGNAL");
+                // Relay response to requestor
+                if (response.getStatus() == 200) {
+                    Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
+                    notificationEvent.getData().put("signaled", true);
+                    NotificationEventSignal.create(notificationEvent);
+                    // Register signals by user
+                    return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
+                } else {
+                    Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
+                    NotificationEventSignal.create(notificationEvent);
+                    return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
+                }
+            }
         } catch (IOException | TimeoutException e) {
             Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());
             TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -1391,26 +1394,4 @@ public class NotificationsDelegate {
         return toRet;
     }
 
-    public static void sendToRabbit(NotificationSignalTransfer notificationSignalTransfer, List<String> notifiedUsersUUID) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(Play.application().configuration().getString("appcivist.rabbitmq.host"));
-        factory.setPort(Play.application().configuration().getInt("appcivist.rabbitmq.port"));
-        factory.setUsername(Play.application().configuration().getString("appcivist.rabbitmq.user"));
-        factory.setPassword(Play.application().configuration().getString("appcivist.rabbitmq.password"));
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-        Map<String, String> toSend = new HashMap<>();
-        toSend.put("title", notificationSignalTransfer.getTitle());
-        toSend.put("text", notificationSignalTransfer.getText());
-        toSend.put("resourceSpaceUUID", notificationSignalTransfer.getSpaceId());
-        String message;
-        for (String user: notifiedUsersUUID) {
-            message = Json.toJson(toSend).toString();
-            channel.queueDeclare(user, false, false, false, null);
-            channel.basicPublish("", user, null, message.getBytes());
-            Logger.info(" [x] Sent '" + message + "'");
-        }
-        channel.close();
-        connection.close();
-    }
 }
