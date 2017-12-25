@@ -405,28 +405,26 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	}
 
 	public static ComponentTypes getCurrentComponentType(Long campaignId) {
-		ExpressionList<Component> campaignPhases = find.where()
-				.eq("containingSpaces.campaign.campaignId", campaignId)
-				.ge("endDate", new Date())
-				.le("startDate", new Date());
-		List<Component> campaignPhaseList = campaignPhases
-				.orderBy("startDate asc")
-				.findList();
+		Campaign campaign = Campaign.read(campaignId);
+		List<Component> campaignPhaseList = campaign.getResources().getComponents();
 		if (campaignPhaseList == null || campaignPhaseList.isEmpty()) {
 			return null;
 		} else {
-			return campaignPhaseList.get(0).getType();
+			for (Component component: campaignPhaseList) {
+				if (component.getStartDate().after(new Date()) &&
+						component.getEndDate().before(new Date())) {
+					return component.getType();
+				}
+			}
+			return null;
 		}
 	}
 
 	public static List<Component> getAllPhases(Long campaignId) {
-		ExpressionList<Component> campaignPhases = find.where()
-				.eq("containingSpaces.campaign.campaignId", campaignId);
-		List<Component> campaignPhaseList = campaignPhases
-				.orderBy("startDate desc")
-				.findList();
-		return campaignPhaseList;
-
+		Campaign campaign = Campaign.read(campaignId);
+		List<Component> components = campaign.getResources().getComponents();
+		components.sort(Comparator.comparing(Component::getStartDate).reversed());
+		return components;
 	}
 
 	public static List<Component> findByAssemblyAndCampaign(Long aid,

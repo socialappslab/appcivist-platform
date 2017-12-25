@@ -9,6 +9,7 @@ import models.Campaign;
 import models.Subscription;
 import models.WorkingGroup;
 import play.Logger;
+import providers.MyUsernamePasswordAuthProvider;
 import scala.concurrent.ExecutionContext;
 
 import javax.inject.Inject;
@@ -27,7 +28,7 @@ public class NewsletterCreatorSchedule extends DailySchedule {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
         this.initialize(getConfigOrElse("appcivist.schedule.newsletter.hour", 16),
-                getConfigOrElse("appcivist.schedule.newsletter.hour", 0),
+                getConfigOrElse("appcivist.schedule.newsletter.minute", 0),
                 "NewsletterCreator");
     }
 
@@ -39,6 +40,7 @@ public class NewsletterCreatorSchedule extends DailySchedule {
         for (Subscription sub : subscriptionList) {
             String spaceId = sub.getSpaceId();
             Boolean newRequired = NotificationsDelegate.checkIfNewNewsletterIsRequired(spaceId);
+            newRequired = true;
             if (newRequired) {
                 try {
                     Logger.info("Newsletter Creator Scheduler for uuid " +spaceId);

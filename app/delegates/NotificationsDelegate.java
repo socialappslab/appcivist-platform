@@ -2,9 +2,6 @@ package delegates;
 
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import enums.*;
 import exceptions.ConfigurationException;
 import models.*;
@@ -21,6 +18,7 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
+import providers.MyUsernamePasswordAuthProvider;
 import service.BusComponent;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
@@ -61,6 +59,24 @@ public class NotificationsDelegate {
             "-template-with-activity.html";
     private static String NEWSLETTER_PROPOSAL_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
             "-template-proposal-stage.html";
+
+    private static String newsletter_mplate_progress_steps_steps = "position: absolute;text-align: center;font-size: 0.9rem;" +
+            "left: 50%;width: 100px;z-index: 2;  display: block;\n" +
+            "  content: \" \";\n" +
+            "  width: 40px;\n" +
+            "  height: 40px;\n" +
+            "  background-color: #999;\n" +
+            "  border-radius: 50%;\n" +
+            "  margin: 0 auto 0.5rem;";
+    private static String newsletter_mplate_progress_steps_steps_completed = " background-color: #465a63;";
+
+    private static String newsletter_mplate_progress_steps_road_first = "position: absolute;height: " +
+            "5px;background-color: #999;left: 50%;top: 18px;right: 50%;margin-left: -250px;";
+    private static String newsletter_mplate_progress_steps_road_last = "position: absolute;height: " +
+            "5px;background-color: #999;left: 50%;top: 18px;right: 50%;margin-right: -250px;";
+
+    private static String newsletter_mplate_progress_steps_road_completed = "background-color: #465a63;";
+
 
     static {
         eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "notifications.{{resourceType}}.new.campaign");
@@ -658,7 +674,6 @@ public class NotificationsDelegate {
         }
 
         List<Long> notificatedUsers = new ArrayList<>();
-        List<String> notifiedUsersUUID = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         for (Subscription sub : subscriptions) {
@@ -673,7 +688,6 @@ public class NotificationsDelegate {
                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                     notificationEvent.addNotificationEventSignalUser(userSignal);
                     notificatedUsers.add(user.getUserId());
-                    notifiedUsersUUID.add(user.getUuidAsString());
                 }
 
             }
@@ -701,7 +715,6 @@ public class NotificationsDelegate {
                                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                                     notificationEvent.addNotificationEventSignalUser(userSignal);
                                     notificatedUsers.add(user.getUserId());
-                                    notifiedUsersUUID.add(user.getUuidAsString());
                                 }
                             }
                         }
@@ -715,9 +728,11 @@ public class NotificationsDelegate {
         // Send notification Signal to Notification Service
         try {
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
-            Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
+            Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' "
+                    + originName + " about '" + eventName + "'");
             if(Play.application().configuration().getBoolean("appcivist.rabbitmq.active")) {
-                BusComponent.sendToRabbit(newNotificationSignal, notifiedUsersUUID);
+                Logger.info("+++++++++------------------------------------------------" + MyUsernamePasswordAuthProvider.getProvider());
+                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichText());
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
             } else {
                 NotificationServiceWrapper ns = new NotificationServiceWrapper();
@@ -1200,8 +1215,8 @@ public class NotificationsDelegate {
         LocalDate now = new LocalDate();
         LocalDate monday = now.withDayOfWeek(DateTimeConstants.MONDAY);
         LocalDate friday = now.withDayOfWeek(DateTimeConstants.FRIDAY);
-        String week = monday.getDayOfMonth() + " " + monday.monthOfYear().getName()
-                + " - " + friday.getDayOfMonth() + " " + friday.monthOfYear().getName();
+        String week = monday.getDayOfMonth() + " " + monday.toString("MMM")
+                + " - " + friday.getDayOfMonth() + " " + friday.toString("MMM");
         switch (spaceType) {
             case CAMPAIGN:
                 Campaign campaign = Campaign.readByUUID(spaceID);
@@ -1217,21 +1232,18 @@ public class NotificationsDelegate {
                     content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle());
                     content = content.replaceAll(DATE, week);
                     toRet.put("campaignNewsletterDescription",campaign.getGoal());
-                    content = content.replaceAll(CAMPAIGN_DESCRIPTION,campaign.getGoal());
+                    if(campaign.getGoal() != null) {
+                        content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
+                    } else {
+                        content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getTitle());
+                    }
                     if (stage!=null) {
                         toRet.put("stageName", stage.name());
                         content = content.replaceAll("STAGE_NAME",stage.name());
+                    } else {
+                        content = content.replaceAll("STAGE_NAME","");
                     }
-                    StringBuilder stagesString = new StringBuilder();
-                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
-                        if(component.getEndDate().before(new Date())) {
-                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
-                                    .append("</div>");
-                        } else {
-                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
-                                    append(component.getType().name()).append("</div>");
-                        }
-                    }
+                    StringBuilder stagesString = getProgressHTML(campaign);
                     content = content.replaceAll(PROGRESS, stagesString.toString());
                     List<String> themes = campaign.getThemes().stream()
                             .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
@@ -1272,18 +1284,8 @@ public class NotificationsDelegate {
                     content = content.replaceAll(CAMPAIGN_NAME, campaign.getTitle());
                     content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
                     content = content.replaceAll(DATE, week);
-                    StringBuilder stagesString = new StringBuilder();
-                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
-                        if(component.getEndDate().before(new Date())) {
-                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
-                                    .append("</div>");
-                        } else {
-                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
-                                    append(component.getType().name()).append("</div>");
-                        }
-                    }
+                    StringBuilder stagesString = getProgressHTML(campaign);
                     content = content.replaceAll(PROGRESS, stagesString.toString());
-
                     List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
                             newsletterFrequency);
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
@@ -1320,16 +1322,7 @@ public class NotificationsDelegate {
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
                     content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle());
                     content = content.replaceAll(DATE, week);
-                    StringBuilder stagesString = new StringBuilder();
-                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
-                        if(component.getEndDate().before(new Date())) {
-                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
-                                    .append("</div>");
-                        } else {
-                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
-                                    append(component.getType().name()).append("</div>");
-                        }
-                    }
+                    StringBuilder stagesString = getProgressHTML(campaign);
                     content = content.replaceAll(PROGRESS, stagesString.toString());
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
                     List<Map<String, Object>> developingProposals = new ArrayList<>();
@@ -1392,6 +1385,45 @@ public class NotificationsDelegate {
                 break;
         }
         return toRet;
+    }
+    private static StringBuilder getProgressHTML(Campaign campaign) {
+        StringBuilder stagesString = new StringBuilder();
+        Integer marginLeft = -300;
+        int pos = 1;
+        List<Component> components = Component.getAllPhases(campaign.getCampaignId());
+        for (Component component: components){
+            if(component.getEndDate().before(new Date())) {
+                stagesString.append("<div class='steps step completed' " +
+                        " style='")
+                        .append(newsletter_mplate_progress_steps_steps)
+                        .append(newsletter_mplate_progress_steps_steps_completed)
+                        .append( " margin-left:")
+                        .append(marginLeft)
+                        .append("'> ").append(component.getType().name())
+                        .append("</div>");
+            } else {
+                stagesString
+                        .append("<div class='steps step' ")
+                        .append(" style='").append(newsletter_mplate_progress_steps_steps)
+                        .append( " margin-left:")
+                        .append(marginLeft)
+                        .append("'> ")
+                        .append(component.getType().name()).append("</div>");
+            }
+            if (pos == 1) {
+                stagesString
+                        .append("<div class='road road' style='")
+                        .append(newsletter_mplate_progress_steps_road_first).append("'></div>");
+            }
+            if (pos == components.size()) {
+                stagesString
+                        .append("<div class='road road' style='")
+                        .append(newsletter_mplate_progress_steps_road_last).append("'></div>");
+            }
+            pos = pos + 1;
+            marginLeft = marginLeft + 250;
+        }
+        return stagesString;
     }
 
 }

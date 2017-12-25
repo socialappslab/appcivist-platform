@@ -1,13 +1,20 @@
 package service;
 
+import com.feth.play.module.mail.Mailer;
+import com.feth.play.module.pa.PlayAuthenticate;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import enums.SubscriptionTypes;
+import models.Config;
+import models.User;
 import models.transfer.NotificationSignalTransfer;
 import play.Logger;
 import play.Play;
 import play.libs.Json;
+import providers.MyUsernamePasswordAuthProvider;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -36,19 +43,44 @@ public class BusComponent {
         return connection;
     }
 
-    public static void sendToRabbit(NotificationSignalTransfer notificationSignalTransfer, List<String> notifiedUsers) throws IOException, TimeoutException {
+    public static void sendToRabbit(NotificationSignalTransfer notificationSignalTransfer, List<Long> notifiedUsers,
+                                    String richText) throws IOException, TimeoutException {
         Channel channel = getConnection().createChannel();
         Map<String, String> toSend = new HashMap<>();
         toSend.put("title", notificationSignalTransfer.getTitle());
         toSend.put("text", notificationSignalTransfer.getText());
         toSend.put("resourceSpaceUUID", notificationSignalTransfer.getSpaceId());
         String message;
-        for (String user: notifiedUsers) {
+        for (Long user: notifiedUsers) {
+            if (notificationSignalTransfer.getSignalType().equals(SubscriptionTypes.NEWSLETTER.name())) {
+                sendNewsletterMail(user, richText);
+            }
             message = Json.toJson(toSend).toString();
-            channel.queueDeclare(user, false, false, false, null);
-            channel.basicPublish(EXCHANGE, user, null, message.getBytes());
+            channel.exchangeDeclare(EXCHANGE, "direct");
+            channel.queueDeclare(user.toString(), false, false, false, null);
+            channel.basicPublish(EXCHANGE, user.toString(), null, message.getBytes());
             Logger.info(" [x] Sent '" + message + "'");
+
         }
 
+    }
+
+    private static void sendNewsletterMail(Long userId, String body) {
+        User fullUser = User.findByUserId(userId);
+        boolean send = false;
+        String mail = null;
+        List<Config> configs = Config.findByUser(fullUser.getUuid());
+        for (Config config: configs) {
+            if (config.getKey().equals("notifications.preference.newsletter.service") &&
+                    config.getValue().equals("email")) {
+                send = true;
+            }
+            if (config.getKey().equals("notifications.service.email.identity")) {
+                mail = config.getValue();
+            }
+        }
+        if(send) {
+            MyUsernamePasswordAuthProvider.sendNewsletterEmail("yohanitalisnichuk@gmail.com", body);
+        }
     }
 }
