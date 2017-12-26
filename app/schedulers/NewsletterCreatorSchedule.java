@@ -35,12 +35,12 @@ public class NewsletterCreatorSchedule extends DailySchedule {
     @Override
     public void executeProcess() {
 
+        Logger.info("NOTIFICATION SCHEDULER ");
         List<Subscription> subscriptionList = Subscription.findBySubscriptionAndSpaceType(SubscriptionTypes.NEWSLETTER,
                 ResourceSpaceTypes.CAMPAIGN, ResourceSpaceTypes.WORKING_GROUP);
         for (Subscription sub : subscriptionList) {
             String spaceId = sub.getSpaceId();
             Boolean newRequired = NotificationsDelegate.checkIfNewNewsletterIsRequired(spaceId);
-            newRequired = true;
             if (newRequired) {
                 try {
                     Logger.info("Newsletter Creator Scheduler for uuid " +spaceId);

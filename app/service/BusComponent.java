@@ -80,7 +80,7 @@ public class BusComponent {
             }
         }
         if(send) {
-            MyUsernamePasswordAuthProvider.sendNewsletterEmail("yohanitalisnichuk@gmail.com", body);
+            MyUsernamePasswordAuthProvider.sendNewsletterEmail(mail, body);
         }
     }
 }
