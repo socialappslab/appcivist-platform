@@ -604,6 +604,17 @@ public class Contributions extends Controller {
             @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
         try {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getFeedbacksByContribution(coid);
+            User user;
+
+            for (ContributionFeedback contributionFeedback: feedbacks) {
+                Map<String, Object> info = new HashMap<>();
+                user = User.findByUserId(contributionFeedback.getUserId());
+                info.put("id", user.getUserId());
+                info.put("name", user.getName());
+                info.put("profilePic", user.getProfilePic().getUrlAsString());
+                contributionFeedback.setUserId(null);
+                contributionFeedback.setUser(info);
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);

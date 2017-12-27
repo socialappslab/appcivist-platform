@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ import enums.ContributionTypes;
 import enums.ContributionFeedbackStatus;
 import enums.ContributionFeedbackTypes;
 import models.misc.Views;
+import org.omg.CORBA.OBJ_ADAPTER;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -71,6 +73,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	@Transient
 	@Enumerated(EnumType.STRING)
 	private ContributionTypes parentType;
+
+	@Transient
+	private Map<String, Object> user;
 
 	public static Finder<Long, ContributionFeedback> find = new Finder<>(ContributionFeedback.class);
 
@@ -287,6 +292,14 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 	public static void update(Long id) {
 		find.ref(id).update();
+	}
+
+	public Map<String, Object> getUser() {
+		return user;
+	}
+
+	public void setUser(Map<String, Object> user) {
+		this.user = user;
 	}
 
 	public static long getUpsForContribution(Long contributionId) {
