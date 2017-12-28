@@ -37,6 +37,10 @@ public class ContributionTemplate extends AppCivistBaseModel {
 
 	public static Finder<Long, ContributionTemplate> find = new Finder<>(ContributionTemplate.class);
 
+	public static ContributionTemplate read(Long id) {
+		return find.ref(id);
+	}
+
 	public ContributionTemplate(List<ContributionTemplateSection> templateSections) {
 		super();
 		this.templateSections = templateSections;
