@@ -288,7 +288,7 @@ DELETE    /api/contribution/:uuid/authors/:auuid                                
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="", createThemes: Boolean ?=false)
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
-POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad")
+POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad", contributionTemplateId: java.lang.Long ?=null)
 
 ##################################################################################################################################################################
 # Location endpoints

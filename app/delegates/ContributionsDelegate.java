@@ -10,15 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import models.Assembly;
-import models.Campaign;
-import models.Config;
-import models.Contribution;
-import models.ContributionTemplate;
-import models.ContributionTemplateSection;
-import models.Resource;
-import models.ResourceSpace;
-import models.WordsEntity;
+import models.*;
 import net.gjerull.etherpad.client.EPLiteException;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -28,6 +20,7 @@ import org.jsoup.nodes.Document;
 
 import play.Logger;
 import play.Play;
+import play.i18n.Lang;
 import play.i18n.Messages;
 import play.mvc.Http;
 import utils.TextUtils;
@@ -322,7 +315,8 @@ public class ContributionsDelegate {
         if(type.equals(ResourceTypes.PAD)) {
             EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
             // Create pad and set text
-            String templateText = t != null ? prepareTemplate(t) : c.getText();
+            String templateText = t != null ? prepareTemplate(t, c.getLang()) :
+                    prepareTemplateCustomDefinition(c.getResourceSpace().getCustomFieldDefinitions(), c.getLang());
             Boolean isHtml = TextUtils.isHtml(templateText);
             eth.createPad(padId);
             if (isHtml) {
@@ -418,11 +412,23 @@ public class ContributionsDelegate {
         return readOnlyId;
     }
 
-    private static String prepareTemplate(ContributionTemplate t) {
+    private static String prepareTemplate(ContributionTemplate t, String lang) {
         String header = "<html><header></header><body>";
         String tBody = "";
+        String word = Messages.get(Lang.forCode(lang),"contribution.etherpad.words");
         for (ContributionTemplateSection section : t.getTemplateSections()) {
-            tBody += "<strong>" + section.getTitle() + " (" + section.getLength() + " words)" + "</strong><br>" + section.getDescription() + "<br><br>";
+            tBody += "<strong>" + section.getTitle() + " (" + section.getLength() +" "+ word+" )" + "</strong><br>" + section.getDescription() + "<br><br>";
+        }
+        return header + tBody + "</body>";
+    }
+
+    private static String prepareTemplateCustomDefinition(List<CustomFieldDefinition> customFieldDefinitions, String lang) {
+        String header = "<html><header></header><body>";
+        StringBuilder tBody = new StringBuilder();
+        String word = Messages.get(Lang.forCode(lang),"contribution.etherpad.words");
+        for (CustomFieldDefinition section : customFieldDefinitions) {
+            tBody.append("<strong>").append(section.getName()).append(" (").append(section.getLimit()).append(" ")
+                    .append(word).append(" )").append("</strong><br>").append(section.getDescription()).append("<br><br>");
         }
         return header + tBody + "</body>";
     }

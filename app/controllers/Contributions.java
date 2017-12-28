@@ -4125,24 +4125,18 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "typeDocument", value = "Type of document", allowableValues = "gdoc, etherpad") String typeDocument) {
+            @ApiParam(name = "typeDocument", value = "Type of document", allowableValues = "gdoc, etherpad") String typeDocument,
+            @ApiParam(name = "contributionTemplateId", value = "Resource ID") Long contributionTemplateId) {
 
         try {
             JsonNode body = request().body().asJson();
             Contribution contribution = Contribution.read(coid);
             Campaign campaign = Campaign.read(cid);
-
-            User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
-                    .getUser(session()));
+            ContributionTemplate template = null;
             ResourceTypes resourceTypes;
 
-            Assembly a = Assembly.read(aid);
-            ResourceSpace rs = a.getResources();
-
-            ContributionTemplate template = null;
-            List<ContributionTemplate> templates = rs.getTemplates();
-            if (templates != null && !templates.isEmpty()) {
-                template = rs.getTemplates().get(0);
+            if(contributionTemplateId != null) {
+                template = ContributionTemplate.read(contributionTemplateId);
             }
 
             String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
