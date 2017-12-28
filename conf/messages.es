@@ -184,3 +184,4 @@ notification.title.message.reply.group=Nueva Respuesta para Grupo de Trabajo
 notification.title.message.new.assembly=Nuevo Mensaje para Asamblea
 notification.title.message.reply.assembly=Nueva Respuesta para Asamblea
 contribution.previous.proposal.document=Documento de propuesta anterior
+contribution.etherpad.words=palabras

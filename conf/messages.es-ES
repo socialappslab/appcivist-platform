@@ -187,3 +187,4 @@ notification.title.message.new.assembly=Nuevo Mensaje para Asamblea
 notification.title.message.reply.assembly=Nueva Respuesta para Asamblea
 
 appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly
+contribution.etherpad.words=palabras

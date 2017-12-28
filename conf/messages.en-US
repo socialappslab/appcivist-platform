@@ -202,4 +202,4 @@ notification.description.general.resource_updated={0} of {1} '{2}' was updated b
 notification.description.general=There are news related to a {0} in {1} '{2}'
 
 appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly
-
+contribution.etherpad.words=words
