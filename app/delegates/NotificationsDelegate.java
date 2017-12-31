@@ -18,6 +18,8 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
+import providers.MyUsernamePasswordAuthProvider;
+import service.BusComponent;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.LogActions;
@@ -25,13 +27,13 @@ import utils.services.NotificationServiceWrapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static enums.ResourceSpaceTypes.*;
@@ -41,7 +43,6 @@ public class NotificationsDelegate {
     public static HashMap<NotificationEventName, String> eventsTitleByType = new HashMap<>();
     private static String CAMPAIGN_NAME = "CAMPAIGN_NAME";
     private static String CAMPAIGN_DESCRIPTION = "CAMPAIGN_DESCRIPTION";
-    private static String PROGRESS = "PROGRESS";
     private static String PROPOSAL_NEW = "PROPOSAL_NEW";
     private static String PROPOSAL_DEVELOPING = "PROPOSAL_DEVELOPING";
     private static String WORKING_GROUPS = "WORKING_GROUP";
@@ -51,12 +52,17 @@ public class NotificationsDelegate {
     private static String NEW_IDEAS_TEXT = "NEW_IDEAS_TEXT";
     private static String THEMES = "THEMES";
     private static String RESOURCES = "RESOURCES";
+    private static String UNSUSCRIBE_URL = "UNSUSCRIBE_URL";
     private static String NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
             "-template-no-activity.html";
     private static String NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
             "-template-with-activity.html";
     private static String NEWSLETTER_PROPOSAL_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
             "-template-proposal-stage.html";
+    private static String LI = "<li style ='background-color: #efefef;\n" +
+            "        padding: 1rem 2rem;\n" +
+            "        margin-bottom: 1rem;'>";
+
 
     static {
         eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "notifications.{{resourceType}}.new.campaign");
@@ -708,26 +714,30 @@ public class NotificationsDelegate {
         // Send notification Signal to Notification Service
         try {
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
-            Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' " + originName + " about '" + eventName + "'");
-
-            NotificationServiceWrapper ns = new NotificationServiceWrapper();
-            WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
-
-            Logger.info("NOTIFICATION: SENDING SIGNAL");
-
-            // Relay response to requestor
-            if (response.getStatus() == 200) {
-                Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
-                notificationEvent.getData().put("signaled", true);
-                NotificationEventSignal.create(notificationEvent);
-                // Register signals by user
-                return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
+            Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' "
+                    + originName + " about '" + eventName + "'");
+            if(Play.application().configuration().getBoolean("appcivist.rabbitmq.active")) {
+                Logger.info("+++++++++------------------------------------------------" + MyUsernamePasswordAuthProvider.getProvider());
+                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichText());
+                return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
             } else {
-                Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
-                NotificationEventSignal.create(notificationEvent);
-                return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
+                NotificationServiceWrapper ns = new NotificationServiceWrapper();
+                WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
+                Logger.info("NOTIFICATION: SENDING SIGNAL");
+                // Relay response to requestor
+                if (response.getStatus() == 200) {
+                    Logger.info("NOTIFICATION: Signaled and with OK status => " + response.getBody().toString());
+                    notificationEvent.getData().put("signaled", true);
+                    NotificationEventSignal.create(notificationEvent);
+                    // Register signals by user
+                    return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled", response.getBody())));
+                } else {
+                    Logger.info("NOTIFICATION: Error while signaling => " + response.getBody().toString());
+                    NotificationEventSignal.create(notificationEvent);
+                    return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
+                }
             }
-        } catch (ConfigurationException | ConnectException e) {
+        } catch (IOException | TimeoutException e) {
             Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(e.getLocalizedMessage());
@@ -1191,8 +1201,9 @@ public class NotificationsDelegate {
         LocalDate now = new LocalDate();
         LocalDate monday = now.withDayOfWeek(DateTimeConstants.MONDAY);
         LocalDate friday = now.withDayOfWeek(DateTimeConstants.FRIDAY);
-        String week = monday.getDayOfMonth() + " " + monday.monthOfYear().getName()
-                + " - " + friday.getDayOfMonth() + " " + friday.monthOfYear().getName();
+        String week = monday.getDayOfMonth() + " " + monday.toString("MMM")
+                + " - " + friday.getDayOfMonth() + " " + friday.toString("MMM");
+        String unsuscribeUrl = Play.application().configuration().getString("newsletter.unsuscribeUrl");
         switch (spaceType) {
             case CAMPAIGN:
                 Campaign campaign = Campaign.readByUUID(spaceID);
@@ -1207,30 +1218,26 @@ public class NotificationsDelegate {
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
                     content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle());
                     content = content.replaceAll(DATE, week);
+                    content = content.replaceAll("UNSUSCRIBE_URL",unsuscribeUrl);
                     toRet.put("campaignNewsletterDescription",campaign.getGoal());
-                    content = content.replaceAll(CAMPAIGN_DESCRIPTION,campaign.getGoal());
+                    if(campaign.getGoal() != null) {
+                        content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
+                    } else {
+                        content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getTitle());
+                    }
                     if (stage!=null) {
                         toRet.put("stageName", stage.name());
                         content = content.replaceAll("STAGE_NAME",stage.name());
+                    } else {
+                        content = content.replaceAll("STAGE_NAME","");
                     }
-                    StringBuilder stagesString = new StringBuilder();
-                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
-                        if(component.getEndDate().before(new Date())) {
-                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
-                                    .append("</div>");
-                        } else {
-                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
-                                    append(component.getType().name()).append("</div>");
-                        }
-                    }
-                    content = content.replaceAll(PROGRESS, stagesString.toString());
                     List<String> themes = campaign.getThemes().stream()
                             .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
                             .map(Theme::getTitle).collect(Collectors.toList());
                     toRet.put("themes", themes);
                     StringBuilder themesString = new StringBuilder();
                     for (String theme: themes) {
-                        themesString.append("<li>").append(theme).append("</li>");
+                        themesString.append(LI).append(theme).append("</li>");
                     }
                     content = content.replaceAll(THEMES, themesString.toString());
                     List<String> workingGroups = campaign.getWorkingGroups().stream().map(WorkingGroup::getName)
@@ -1238,7 +1245,7 @@ public class NotificationsDelegate {
                     toRet.put("workingGroups", workingGroups);
                     StringBuilder wgString = new StringBuilder();
                     for (String wg: workingGroups) {
-                        wgString.append("<li>").append(wg).append("</li>");
+                        wgString.append(LI).append(wg).append("</li>");
                     }
                     content = content.replaceAll(WORKING_GROUPS, wgString.toString());
                     List<Map<String, Object>> resourcesFormated = new ArrayList<>();
@@ -1247,7 +1254,7 @@ public class NotificationsDelegate {
                         Map<String, Object> cont = new HashMap<>();
                         cont.put("title", con.getTitle());
                         cont.put("link", con.getUrlLargeString());
-                        resources.append("<li>").append("<a href =").append(con.getUrlLargeString()).
+                        resources.append(LI).append("<a href =").append(con.getUrlLargeString()).
                                 append(">").append(con.getTitle()).append("</a></li>");
                         resourcesFormated.add(cont);
                     }
@@ -1263,18 +1270,7 @@ public class NotificationsDelegate {
                     content = content.replaceAll(CAMPAIGN_NAME, campaign.getTitle());
                     content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
                     content = content.replaceAll(DATE, week);
-                    StringBuilder stagesString = new StringBuilder();
-                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
-                        if(component.getEndDate().before(new Date())) {
-                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
-                                    .append("</div>");
-                        } else {
-                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
-                                    append(component.getType().name()).append("</div>");
-                        }
-                    }
-                    content = content.replaceAll(PROGRESS, stagesString.toString());
-
+                    content = content.replaceAll("UNSUSCRIBE_URL",unsuscribeUrl);
                     List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
                             newsletterFrequency);
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
@@ -1284,7 +1280,7 @@ public class NotificationsDelegate {
                         cont.put("ideaTitle", con.getTitle());
                         cont.put("user", con.getFirstAuthorName());
                         contributionsFormated.add(cont);
-                        contributionsString.append("<li>").append(con.getTitle())
+                        contributionsString.append(LI).append(con.getTitle())
                                 .append(" submitted by ").append(con.getFirstAuthorName())
                                 .append("</li>");
 
@@ -1301,7 +1297,7 @@ public class NotificationsDelegate {
                     toRet.put("updatedIdeas", updatedIdeasFormat);
                     StringBuilder updatesString = new StringBuilder();
                     for(String update: updatedIdeasFormat) {
-                        updatesString.append("<li>").append(update).append("</li>");
+                        updatesString.append(LI).append(update).append("</li>");
                     }
                     content = content.replaceAll(UPDATES, updatesString.toString());
                     toRet.put("richText", content);
@@ -1311,17 +1307,7 @@ public class NotificationsDelegate {
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
                     content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle());
                     content = content.replaceAll(DATE, week);
-                    StringBuilder stagesString = new StringBuilder();
-                    for (Component component: Component.getAllPhases(campaign.getCampaignId())){
-                        if(component.getEndDate().before(new Date())) {
-                            stagesString.append("<div class='steps step completed'>").append(component.getType().name())
-                                    .append("</div>");
-                        } else {
-                            stagesString.append("<div class='road road'></div>").append("<div class='steps step'>").
-                                    append(component.getType().name()).append("</div>");
-                        }
-                    }
-                    content = content.replaceAll(PROGRESS, stagesString.toString());
+                    content = content.replaceAll("UNSUSCRIBE_URL",unsuscribeUrl);
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
                     List<Map<String, Object>> developingProposals = new ArrayList<>();
                     List<String> updates = new ArrayList<>();
@@ -1341,7 +1327,7 @@ public class NotificationsDelegate {
                                     cont.put("proposalTitle", proposal.getTitle());
                                     cont.put("user", proposal.getFirstAuthorName());
                                     contributionsFormated.add(cont);
-                                    contributionsString.append("<li>").append(proposal.getTitle())
+                                    contributionsString.append(LI).append(proposal.getTitle())
                                             .append(" submitted by ").append(proposal.getFirstAuthorName())
                                             .append("</li>");
                                 }
@@ -1350,7 +1336,9 @@ public class NotificationsDelegate {
                                     prop.put("proposalTitle", proposal.getTitle());
                                     prop.put("user", proposal.getFirstAuthorName());
                                     developingProposals.add(prop);
-                                    developingString.append("<li>").append(proposal.getTitle())
+                                    developingString
+                                            .append(LI)
+                                            .append(proposal.getTitle())
                                             .append(" submitted by ").append(proposal.getFirstAuthorName())
                                             .append("</li>");
                                 }
@@ -1372,7 +1360,9 @@ public class NotificationsDelegate {
                     }
                     StringBuilder updatesString = new StringBuilder();
                     for(String update: updates) {
-                        updatesString.append("<li>").append(update).append("</li>");
+                        updatesString
+                                .append(LI)
+                                .append(update).append("</li>");
                     }
                     content = content.replaceAll(UPDATES, updatesString.toString());
                     toRet.put("richText", content);
