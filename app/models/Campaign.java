@@ -738,9 +738,7 @@ String uuidAsString, List<Component> phases) {
 			}
 		}
 
-
 		List<WorkingGroup> existingWorkingGroups = campaign.getExistingWorkingGroups();
-
 		// Save components to create them independently 
 		List<Component> componentList = campaign.getTransientComponents();
 		campaign.setComponents(new ArrayList<>());
