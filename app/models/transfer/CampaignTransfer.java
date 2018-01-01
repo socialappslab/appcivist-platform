@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import enums.CampaignStatus;
 import models.Ballot;
 import models.Component;
 import models.Resource;
@@ -32,6 +33,7 @@ public class CampaignTransfer {
 	private List<WorkingGroupTransfer> existingWorkingGroups = new ArrayList<>();
 	private CampaignTemplateTransfer template;
 	private CampaignTimelineEdgeTransfer timelineEdges;
+	private CampaignStatus status;
 	public CampaignTransfer() {
 		super();
 	}
@@ -168,4 +170,11 @@ public class CampaignTransfer {
 	public void setTransientComponents(List<ComponentTransfer> list) { this.transientComponents = list; }
 	public List<ComponentTransfer> getTransientComponents() { return this.transientComponents; }
 
+	public CampaignStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(CampaignStatus status) {
+		this.status = status;
+	}
 }

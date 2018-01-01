@@ -1,8 +1,11 @@
 package models.transfer;
 
+import enums.ThemeTypes;
+
 public class ThemeTransfer {
 	private String title;
-	private String description;	
+	private String description;
+	private ThemeTypes type;
 	
 	public ThemeTransfer() {
 		super();
@@ -25,5 +28,11 @@ public class ThemeTransfer {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	public ThemeTypes getType() {
+		return type;
+	}
+	public void setType(ThemeTypes type) {
+		this.type = type;
 	}
 }

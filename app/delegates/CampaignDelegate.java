@@ -56,7 +56,7 @@ public class CampaignDelegate {
 		return  mapper.map(newCampaign, CampaignTransfer.class);
 	}
 
-	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User campaignCreator, Long aid, String templates) {
+	public static CampaignTransfer create(CampaignTransfer newCampaignTransfer, User campaignCreator, Long aid, String templateCampaignIds) {
 		
 		Campaign newCampaign =  mapper.map(newCampaignTransfer, Campaign.class);
 		newCampaign.setCreator(campaignCreator);
@@ -64,38 +64,52 @@ public class CampaignDelegate {
 			newCampaign.setLang(campaignCreator.getLanguage());
 		Logger.info("Creating new campaign");
 
-		// If templates !=  null the assembly must be related with the templates
-		if (templates != null && templates.compareTo("") != 0) {
-			String[] templatesIDs = templates.split(",");
-			for (String id: templatesIDs) {
-				Resource template = Resource.read(Long.parseLong(id));
-				if (newCampaign.getResources() != null && newCampaign.getResources().getResources() != null) {
-					newCampaign.getResources().getResources().add(template);
-				} else {
-					newCampaign.getResources().setResources(new ArrayList<Resource>());
-					newCampaign.getResources().getResources().add(template);
-				}
-
-			}
-		}
-
 		ResourceSpace assemblyResources = Assembly.read(aid).getResources();
 		// Adding the new campaign to the Assembly Resource Space
 		newCampaign.getAssemblies().add(aid);
 		newCampaign.getContainingSpaces().add(assemblyResources);
+		// By default, if no goal is stated, then the goal is the same as the title
+		if (newCampaign.getGoal()==null) {
+			newCampaign.setGoal(newCampaign.getTitle());
+		}
 		Campaign.create(newCampaign);
 		newCampaign.refresh();
         newCampaign.setStatus(CampaignStatus.DRAFT);
-
-
-        // By default, if no goal is stated, then the goal is the same as the title
-        if (newCampaign.getGoal()==null) {
-            newCampaign.setGoal(newCampaign.getTitle());
-        }
-        newCampaign.update();
-        newCampaign.refresh();
 		assemblyResources.addCampaign(newCampaign);
 		assemblyResources.update();
+
+		// If templates !=  null the assembly must be related with the templates
+		if (templateCampaignIds != null && templateCampaignIds.compareTo("") != 0) {
+			String[] templatesIDs = templateCampaignIds.split(",");
+			for (String id: templatesIDs) {
+				Campaign campaignTemplate = Campaign.read(Long.parseLong(id));
+				List<Resource> campaignTemplateResources = campaignTemplate.getResources().getResources();
+				List<Theme> campaignTemplateThemes = campaignTemplate.getResources().getThemes();
+				List<Config> campaignTemplateConfigs = campaignTemplate.getResources().getConfigs();
+				List<Component> campaignTemplateComponents = campaignTemplate.getResources().getComponents();
+				if (newCampaign.getResources() == null) {
+					newCampaign.setResources(new ResourceSpace());
+				}
+				if (newCampaign.getResources().getResources() == null) {
+					newCampaign.getResources().setResources(new ArrayList<>());
+				}
+				if (newCampaign.getResources().getThemes() == null) {
+					newCampaign.getResources().setThemes(new ArrayList<>());
+				}
+				if (newCampaign.getResources().getComponents() == null) {
+					newCampaign.getResources().setComponents(new ArrayList<>());
+				}
+				if (newCampaign.getResources().getConfigs() == null) {
+					newCampaign.getResources().setConfigs(new ArrayList<>());
+				}
+				newCampaign.getResources().getResources().addAll(campaignTemplateResources);
+				newCampaign.getResources().getThemes().addAll(campaignTemplateThemes);
+				newCampaign.getResources().getConfigs().addAll(campaignTemplateConfigs);
+				newCampaign.getResources().getComponents().addAll(campaignTemplateComponents);
+			}
+			newCampaign.getResources().update();
+		}
+
 		newCampaignTransfer = mapper.map(newCampaign, CampaignTransfer.class);
 		return newCampaignTransfer;
 	}

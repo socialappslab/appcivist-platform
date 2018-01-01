@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import com.feth.play.module.mail.Mailer;
 import models.LinkedAccount;
 import models.Membership;
 import models.MembershipInvitation;
@@ -675,6 +676,16 @@ public class MyUsernamePasswordAuthProvider
 		final String token = generateNewMembershipInvitation(m.getUser());
 		final Body body = getMembershipInvitationEmailBody(token, m);
 		mailer.sendMail(subject, body, getEmailName(m.getUser()));
+	}
+
+	public static void sendNewsletterEmail(String mail, String template) {
+		final String subject = "New Newsletter";
+		final Body body = new Body(null, template);
+
+		Mailer mailer = Mailer.getCustomMailer(PlayAuthenticate.getConfiguration().getConfig("password").getConfig(
+				"mail"));
+		Logger.info("Sending " + body.getHtml());
+		mailer.sendMail(subject, body, mail);
 	}
 	
 	public void sendInvitationByEmail(final InvitationTransfer invitation, String targetCollection, Long id) {
