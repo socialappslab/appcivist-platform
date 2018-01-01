@@ -337,6 +337,9 @@ POST      /api/space/:sid/ballot                                                
 POST      /api/space/:sid/config                                                 controllers.Configs.createSpaceConfig(sid: Long)
 POST      /api/space/:sid/resource                                               controllers.Spaces.addSpaceResources(sid: Long)
 POST      /api/space/:sid/contribution                                           controllers.Contributions.createContributionInResourceSpaceWithId(sid: Long)
+POST      /api/space/:sid/theme                                                  controllers.Spaces.addSpaceTheme(sid: Long)
+POST      /api/space/:sid/themes                                                 controllers.Spaces.addSpaceThemes(sid: Long)
+
 GET       /api/space/:sid/insights/themes                                        controllers.Spaces.exportSpaceThemeStats(sid: Long, type?="")
 
 GET       /api/space/:sid/ballot/:bid                                            controllers.Spaces.findSpaceBallotById(sid: Long, bid: Long)

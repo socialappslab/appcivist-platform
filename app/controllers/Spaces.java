@@ -51,6 +51,7 @@ import models.WorkingGroup;
 import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.BallotTransfer;
+import models.transfer.ThemeListTransfer;
 import models.transfer.TransferResponseStatus;
 
 import org.apache.commons.io.FileUtils;
@@ -2833,6 +2834,87 @@ public class Spaces extends Controller {
                 resourceSpace.getResources().add(newResource);
                 resourceSpace.update();
                 return ok(Json.toJson(newResource));
+            }
+        }
+    }
+
+    /**
+     * POST /api/space/:sid/themes
+     * Add themes to a resource space
+     *
+     * @param sid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a theme to a resource space")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "THEME Object", value = "The new THEME in JSON", dataType = "models.Theme", paramType = "body")})
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
+    public static Result addSpaceTheme(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
+        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        final Form<Theme> themeForm = form(Theme.class).bindFromRequest();
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            if (themeForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error in resource form "+
+                        themeForm.errorsAsJson());
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Theme newTheme = themeForm.get();
+                newTheme.setContextUserId(creator.getUserId());
+                newTheme = Theme.create(newTheme);
+                resourceSpace.getThemes().add(newTheme);
+                resourceSpace.update();
+                return ok(Json.toJson(newTheme));
+            }
+        }
+    }
+
+    @ApiOperation(httpMethod = "POST", response = Resource.class, value = "Add a theme to a resource space", responseContainer = "List")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "Theme Objects", value = "List of new Themes in JSON", dataType = "models.transfer.ThemeListTransfer", paramType = "body")})
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
+    public static Result addSpaceThemes(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
+        User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        final Form<ThemeListTransfer> themesForm = form(ThemeListTransfer.class).bindFromRequest();
+        if (resourceSpace == null) {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
+        } else {
+            if (themesForm.hasErrors()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error in themes form "+
+                        themesForm.errorsAsJson());
+                return badRequest(Json.toJson(responseBody));
+            } else {
+                Ebean.beginTransaction();
+                ThemeListTransfer themesList = themesForm.get();
+                List<Theme> themes = themesList.getThemes();
+                try {
+                    List<Theme> createdThemes = new ArrayList<>();
+                    for (Theme t : themes) {
+                        t.setContextUserId(creator.getUserId());
+                        t = Theme.create(t);
+                        resourceSpace.getThemes().add(t);
+                        resourceSpace.update();
+                        createdThemes.add(t);
+                    }
+                    Ebean.commitTransaction();
+                    return ok(Json.toJson(createdThemes));
+                } catch (Exception e) {
+                    Ebean.rollbackTransaction();
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage("Could not create themes. "+e.getLocalizedMessage());
+                    return internalServerError(Json.toJson(responseBody));
+                }
             }
         }
     }
