@@ -1,14 +1,10 @@
 package delegates;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import models.*;
 import net.gjerull.etherpad.client.EPLiteException;
@@ -308,15 +304,21 @@ public class ContributionsDelegate {
                                                Contribution c,
                                                ContributionTemplate t,
                                                UUID resourceSpaceConfigsUUID,
-                                               ResourceTypes type, Boolean storeEthKey) throws MalformedURLException, UnsupportedEncodingException {
+                                               ResourceTypes type, Boolean storeEthKey,
+                                               URL resourceTemplateUrl) throws IOException {
 
         String padId = UUID.randomUUID().toString();
 
         if(type.equals(ResourceTypes.PAD)) {
             EtherpadWrapper eth = new EtherpadWrapper(ethServerBaseUrl, ethApiToken);
             // Create pad and set text
-            String templateText = t != null ? prepareTemplate(t, c.getLang()) :
-                    prepareTemplateCustomDefinition(c.getResourceSpace().getCustomFieldDefinitions(), c.getLang());
+            String templateText = "";
+            if(resourceTemplateUrl != null) {
+                templateText = new Scanner(resourceTemplateUrl.openStream(), "UTF-8").useDelimiter("\\A").next();
+            } else {
+                templateText = t != null ? prepareTemplate(t, c.getLang()) :
+                        prepareTemplateCustomDefinition(c.getResourceSpace().getCustomFieldDefinitions(), c.getLang());
+            }
             Boolean isHtml = TextUtils.isHtml(templateText);
             eth.createPad(padId);
             if (isHtml) {

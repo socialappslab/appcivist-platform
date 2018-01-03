@@ -8,6 +8,8 @@ package utils;
  *
  */
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.regex.Pattern;
 
 public class TextUtils {
@@ -34,5 +36,11 @@ public class TextUtils {
 			ret = htmlPattern.matcher(s).find();
 		}
 		return ret;
+	}
+
+	public static URL getExportGdocUrl(String url, String format) throws MalformedURLException {
+		String id = url.split("/d/")[1].split("/")[0];
+		String pre = url.split("/d/")[0] + "/d/";
+		return new URL(pre + id + "/export?format=" + format.toLowerCase());
 	}
 }
