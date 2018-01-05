@@ -2628,6 +2628,8 @@ public class Contributions extends Controller {
         }
         if (containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP)){
             WorkingGroup wg = containerResourceSpace.getWorkingGroupResources();
+            if (wg==null)
+                wg = containerResourceSpace.getWorkingGroupForum();
             List<Config> groupConfigs = wg.getConfigs();
             for(Config cc: groupConfigs){
                 if (cc.getKey().equals(GlobalDataConfigKeys.APPCIVIST_WG_ALLOW_EMERGENT_THEMES)){
