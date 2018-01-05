@@ -523,7 +523,7 @@ public class Campaigns extends Controller {
         try {
             Campaign campaign = Campaign.read(cid);
             if (campaign == null) {
-                return notFound();
+                return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Campaign with id = '"+cid+"' does not exists", "")));
             }
             return ok(Json.toJson(CampaignDelegate.publish(cid)));
         } catch (Exception e) {
