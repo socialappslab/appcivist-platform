@@ -716,10 +716,12 @@ public class NotificationsDelegate {
             // 2. Prepare the Notification signal and send to the Notification Service for dispatch
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' "
                     + originName + " about '" + eventName + "'");
-            if(Play.application().configuration().getBoolean("appcivist.rabbitmq.active")) {
+            Boolean rabbitIsActive = Play.application().configuration().getBoolean("appcivist.services.rabbitmq.active");
+            if(rabbitIsActive !=null && rabbitIsActive) {
+                notificationEvent = NotificationEventSignal.create(notificationEvent);
                 BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichText());
                 notificationEvent.getData().put("signaled", true);
-                NotificationEventSignal.create(notificationEvent);
+                notificationEvent.update();
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
             } else {
                 NotificationServiceWrapper ns = new NotificationServiceWrapper();
