@@ -35,6 +35,7 @@ import models.misc.Views;
 import models.transfer.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.http.util.TextUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -58,6 +59,7 @@ import utils.services.EtherpadWrapper;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -4126,24 +4128,34 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "typeDocument", value = "Type of document", allowableValues = "gdoc, etherpad") String typeDocument) {
+            @ApiParam(name = "typeDocument", value = "Type of document", allowableValues = "gdoc, etherpad") String typeDocument,
+            @ApiParam(name = "contributionTemplateId", value = "Contribution template ID") Long contributionTemplateId,
+            @ApiParam(name = "resourceTemplateId", value = "Resource ID") Long resourceTemplateId) {
 
         try {
             JsonNode body = request().body().asJson();
             Contribution contribution = Contribution.read(coid);
             Campaign campaign = Campaign.read(cid);
-
-            User groupCreator = User.findByAuthUserIdentity(PlayAuthenticate
-                    .getUser(session()));
-            ResourceTypes resourceTypes;
-
-            Assembly a = Assembly.read(aid);
-            ResourceSpace rs = a.getResources();
-
             ContributionTemplate template = null;
-            List<ContributionTemplate> templates = rs.getTemplates();
-            if (templates != null && !templates.isEmpty()) {
-                template = rs.getTemplates().get(0);
+            URL resourceUrl = null;
+            ResourceTypes resourceTypes;
+            if(resourceTemplateId != null) {
+                Resource resource = Resource.read(resourceTemplateId);
+                if (resource == null ||
+                        (!resource.getResourceType().equals(ResourceTypes.GDOC)
+                        && !resource.getResourceType().equals(ResourceTypes.WEBPAGE))
+                        || !resource.getIsTemplate()) {
+                    return badRequest(Json.toJson(Json
+                            .toJson(new TransferResponseStatus("Resource not exist or is not GDOC or HTML or template"))));
+                }
+                if (resource.getResourceType().equals(ResourceTypes.GDOC)) {
+                    resourceUrl = utils.TextUtils.getExportGdocUrl(resource.getUrlAsString(), "html");
+                } else {
+                    resourceUrl = resource.getUrl();
+                }
+            }
+            if(contributionTemplateId != null) {
+                template = ContributionTemplate.read(contributionTemplateId);
             }
 
             String etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
@@ -4179,7 +4191,7 @@ public class Contributions extends Controller {
                     contribution,
                     template,
                     campaign.getResources().getUuid(),
-                    resourceTypes, storeKey);
+                    resourceTypes, storeKey, resourceUrl);
 
 
         } catch (Exception e) {
@@ -4205,9 +4217,8 @@ public class Contributions extends Controller {
             String url = contribution.getExtendedTextPad().getUrlAsString();
             if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.GDOC)) {
                 try {
-                    String id = url.split("/d/")[1].split("/")[0];
-                    String pre = url.split("/d/")[0] + "/d/";
-                    url = pre + id + "/export?format=" + selectFormat.toLowerCase();
+
+                    url = utils.TextUtils.getExportGdocUrl(url, selectFormat).toString();
                 } catch (IndexOutOfBoundsException e) {
                     Logger.info("Error in GDOC text pad url " + url, e);
                 }

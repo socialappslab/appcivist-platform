@@ -173,3 +173,4 @@ membership.request.email.subject=Petición para unirse a AppCivist {0}
 membership.confirmation.email.subject=Bienvenido a AppCivist {0}
 
 appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly
+contribution.etherpad.words=mots

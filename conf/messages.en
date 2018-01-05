@@ -200,3 +200,4 @@ notification.description.general=There are news related to a {0} in {1} '{2}'
 appcivist.configuration.missing=Configurations not found in local.conf {0}
 resourceSpace.type=Missing resource space type: {0}
 contribution.previous.proposal.document=Previous proposal document
+contribution.etherpad.words=words
