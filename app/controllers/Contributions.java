@@ -1277,8 +1277,12 @@ public class Contributions extends Controller {
             // Add contribution to workingGroupAuthors resource spaces
             for (WorkingGroup wgroup: newContribution.getWorkingGroupAuthors()) {
                 WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
-                g.getResources().getContributions().add(c);
-                g.getResources().update();
+                ResourceSpace gRs = g.getResources();
+                if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) ||
+                        (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) && rs.getResourceSpaceId() != gRs.getResourceSpaceId())) {
+                    gRs.getContributions().add(c);
+                    gRs.update();
+                }
             }
 
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
