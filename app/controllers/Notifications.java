@@ -458,7 +458,7 @@ public class Notifications extends Controller {
 
         List<NotificationEventSignalUser> notifications = new ArrayList<>();
         if((type != null) && (!type.equals(SubscriptionTypes.NEWSLETTER.name()) && !type.equals(SubscriptionTypes.REGULAR.name()))) {
-            return badRequest();
+            return badRequest(Json.toJson(new TransferResponseStatus("Only NEWSLETTER or REGULAR subscription type are accepted")));
         }
 
         NotificationSignalStatsTransfer tmp = processUserNotificationSignalStats(id, type);
@@ -519,7 +519,7 @@ public class Notifications extends Controller {
     public static Result getNotificationSignalsStats(@ApiParam(name = "id", value = "User ID") Long id,
                                                      @ApiParam(name = "type", value = "Type") String type) {
         if((type != null) && (!type.equals(SubscriptionTypes.NEWSLETTER.name()) && !type.equals(SubscriptionTypes.REGULAR.name()))) {
-            return badRequest();
+            return badRequest(Json.toJson(new TransferResponseStatus("Only NEWSLETTER or REGULAR subscription type are accepted")));
         }
         NotificationSignalStatsTransfer stats = processUserNotificationSignalStats(id, type);
         return ok(Json.toJson(stats));

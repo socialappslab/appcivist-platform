@@ -523,7 +523,7 @@ public class Campaigns extends Controller {
         try {
             Campaign campaign = Campaign.read(cid);
             if (campaign == null) {
-                return notFound();
+                return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Campaign with id = '"+cid+"' does not exists", "")));
             }
             return ok(Json.toJson(CampaignDelegate.publish(cid)));
         } catch (Exception e) {
@@ -964,7 +964,7 @@ public class Campaigns extends Controller {
         try {
             ongoingCampaigns.addAll(Campaign.getOngoingCampaignsFromAssembly(a));
         } catch (Exception e) {
-            return internalServerError(Json.toJson(new TransferResponseStatus(
+            return internalServerError(Json.toJson(new TransferResponseStatus("There was an internal error: "+
                     e.getMessage())));
         }
         if (!ongoingCampaigns.isEmpty())
@@ -1174,7 +1174,7 @@ public class Campaigns extends Controller {
             return Results.ok(ret);
         } catch (Exception e) {
             return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
+                    .toJson(new TransferResponseStatus("Error processing request: " + e.getMessage()))));
         }
 
     }
@@ -1260,7 +1260,7 @@ public class Campaigns extends Controller {
             return Results.ok(ret);
         } catch (Exception e) {
             return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
+                    .toJson(new TransferResponseStatus("Error processing request: " + e.getMessage()))));
         }
 
 

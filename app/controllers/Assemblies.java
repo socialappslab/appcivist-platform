@@ -234,7 +234,7 @@ public class Assemblies extends Controller {
         try {
             Assembly assembly = Assembly.read(aid);
             if (assembly == null) {
-                return notFound();
+				return notFound(Json.toJson(TransferResponseStatus.noDataMessage("Assembly with id = '"+aid+"' does not exists", "")));
             }
             return ok(Json.toJson(AssembliesDelegate.publish(aid)));
         } catch (Exception e) {
