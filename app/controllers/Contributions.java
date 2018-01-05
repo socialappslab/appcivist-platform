@@ -611,7 +611,8 @@ public class Contributions extends Controller {
                 user = User.findByUserId(contributionFeedback.getUserId());
                 info.put("id", user.getUserId());
                 info.put("name", user.getName());
-                info.put("profilePic", user.getProfilePic().getUrlAsString());
+                if (user.getProfilePic()!=null)
+                    info.put("profilePic", user.getProfilePic().getUrlAsString());
                 contributionFeedback.setUserId(null);
                 contributionFeedback.setUser(info);
             }
