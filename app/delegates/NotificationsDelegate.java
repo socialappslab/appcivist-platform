@@ -717,8 +717,9 @@ public class NotificationsDelegate {
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' "
                     + originName + " about '" + eventName + "'");
             if(Play.application().configuration().getBoolean("appcivist.rabbitmq.active")) {
-                Logger.info("+++++++++------------------------------------------------" + MyUsernamePasswordAuthProvider.getProvider());
                 BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichText());
+                notificationEvent.getData().put("signaled", true);
+                NotificationEventSignal.create(notificationEvent);
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
             } else {
                 NotificationServiceWrapper ns = new NotificationServiceWrapper();
