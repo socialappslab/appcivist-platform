@@ -871,7 +871,7 @@ public class Spaces extends Controller {
                 try{
                     mappedType = BallotStatus.valueOf(status.toUpperCase());
                 }catch (Exception e) {
-                    return notFound(Json.toJson(new TransferResponseStatus(
+                    return badRequest(Json.toJson(new TransferResponseStatus(
                             "Format status error " + e.getMessage())));
                 }
             }
@@ -880,7 +880,7 @@ public class Spaces extends Controller {
                 try {
                     startsAt = df.parse(starts_at);
                 } catch (ParseException e) {
-                    return notFound(Json.toJson(new TransferResponseStatus(
+                    return badRequest(Json.toJson(new TransferResponseStatus(
                         "Format date error " + e.getMessage())));
                 }
             }
@@ -888,7 +888,7 @@ public class Spaces extends Controller {
                 try {
                     endsAt = df.parse(ends_at);
                 } catch (ParseException e) {
-                    return notFound(Json.toJson(new TransferResponseStatus(
+                    return badRequest(Json.toJson(new TransferResponseStatus(
                             "Format date error " + e.getMessage())));
                 }
             }
@@ -944,7 +944,7 @@ public class Spaces extends Controller {
                 try{
                     mappedType = BallotStatus.valueOf(status.toUpperCase());
                 }catch (Exception e) {
-                    return notFound(Json.toJson(new TransferResponseStatus(
+                    return badRequest(Json.toJson(new TransferResponseStatus(
                             "Format status error " + e.getMessage())));
                 }
             }
@@ -953,7 +953,7 @@ public class Spaces extends Controller {
                 try {
                     startsAt = df.parse(starts_at);
                 } catch (ParseException e) {
-                    return notFound(Json.toJson(new TransferResponseStatus(
+                    return badRequest(Json.toJson(new TransferResponseStatus(
                             "Format date error " + e.getMessage())));
                 }
             }
@@ -961,7 +961,7 @@ public class Spaces extends Controller {
                 try {
                     endsAt = df.parse(ends_at);
                 } catch (ParseException e) {
-                    return notFound(Json.toJson(new TransferResponseStatus(
+                    return badRequest(Json.toJson(new TransferResponseStatus(
                             "Format date error " + e.getMessage())));
                 }
             }
@@ -1979,7 +1979,7 @@ public class Spaces extends Controller {
 
                 return ok(Json.toJson(updatedCampaign));
             } catch (Exception e) {
-                return badRequest(Json.toJson("Invalid fields"));
+                return badRequest(Json.toJson(new TransferResponseStatus("Invalid fields")));
             }
         }
     }
@@ -2789,7 +2789,7 @@ public class Spaces extends Controller {
                     FileUtils.writeStringToFile(tempFile, csv);
                     return ok(tempFile);
                 } catch (IOException e) {
-                    return internalServerError(e.getMessage());
+                    return internalServerError(Json.toJson(new TransferResponseStatus("Error processing request: " + e.getMessage())));
                 }
             } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Format not implemented")));

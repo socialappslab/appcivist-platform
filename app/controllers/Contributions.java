@@ -448,7 +448,7 @@ public class Contributions extends Controller {
                     } catch (Exception e) {
                         e.printStackTrace();
                         return internalServerError(Json.toJson(
-                                new TransferResponseStatus("Error " + e.getMessage())));
+                                new TransferResponseStatus("There was an internal error: " + e.getMessage())));
                     }
             }
 
@@ -469,7 +469,7 @@ public class Contributions extends Controller {
                         } catch (DocumentException e) {
                             e.printStackTrace();
                             return internalServerError(Json.toJson(
-                                    new TransferResponseStatus("Error " + e.getMessage())));
+                                    new TransferResponseStatus("There was an internal error: " + e.getMessage())));
                         }
                 }
                 if (includeExtendedText.toUpperCase().equals("TRUE")) {
@@ -3060,7 +3060,10 @@ public class Contributions extends Controller {
                 //Ebean.commitTransaction();
             } catch (EntityNotFoundException ex) {
                 ex.printStackTrace();
-                return internalServerError("The campaign doesn't exist");
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Internal server error : " + ex.toString())));
             } catch (Exception e) {
                 //Ebean.rollbackTransaction();
                 e.printStackTrace();
@@ -3113,7 +3116,7 @@ public class Contributions extends Controller {
 
             }
         } catch (EntityNotFoundException ex) {
-            return internalServerError("The campaign doesn't exist");
+            return notFound(Json.toJson(new TransferResponseStatus("The campaign doesn't exist")));
         }
 
         response().setContentType("application/csv");
@@ -3124,7 +3127,7 @@ public class Contributions extends Controller {
             FileUtils.writeStringToFile(tempFile, csv);
             return ok(tempFile);
         } catch (IOException e) {
-            return internalServerError();
+            return internalServerError(Json.toJson(new TransferResponseStatus("Internal server error: " + e.getMessage())));
         }
 
     }
@@ -3180,7 +3183,7 @@ public class Contributions extends Controller {
         }
 
         if(! (type.equals("IDEA") || type.equals("PROPOSAL")) ) {
-            return badRequest("Not supported Contribution Type: " + type);
+            return badRequest(Json.toJson(new TransferResponseStatus("Not supported Contribution Type: " + type)));
         }
 
         if (uploadFilePart != null && campaign != null) {
@@ -3437,7 +3440,7 @@ public class Contributions extends Controller {
             //ass.update();
             return ok(Json.toJson(res));
         } else {
-            return internalServerError("There are no templates available");
+            return notFound(Json.toJson(new TransferResponseStatus("There are no templates available")));
         }
 
     }
@@ -3482,7 +3485,7 @@ public class Contributions extends Controller {
             c.update();
             return ok(Json.toJson(c));
         } else {
-            return internalServerError("The status is not valid");
+            return badRequest(Json.toJson(new TransferResponseStatus("The status is not valid")));
         }
     }
 

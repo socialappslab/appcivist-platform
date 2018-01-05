@@ -694,8 +694,7 @@ public class Users extends Controller {
         .bindFromRequest();
     if (filledForm.hasErrors()) {
       // User did not select whether to link or not link
-      return badRequest(Json.toJson(Json
-          .toJson(new TransferResponseStatus("Error processing request"))));
+      return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
     } else {
       final User user = Users.getLocalUser(session());
       final String newPassword = filledForm.get().password;
@@ -721,8 +720,7 @@ public class Users extends Controller {
         .bindFromRequest();
     if (filledForm.hasErrors()) {
       // User did not select whether to link or not link
-      return badRequest(Json.toJson(Json
-          .toJson(new TransferResponseStatus("Error processing request"))));
+      return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
     } else {
       final TokenAction ta = tokenIsValid(filledForm.get().token, Type.PASSWORD_RESET);
       if (ta == null) {
