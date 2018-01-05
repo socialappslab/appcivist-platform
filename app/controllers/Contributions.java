@@ -1279,7 +1279,7 @@ public class Contributions extends Controller {
                 WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
                 ResourceSpace gRs = g.getResources();
                 if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) ||
-                        (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) && rs.getResourceSpaceId() != gRs.getResourceSpaceId())) {
+                        (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) && !gRs.getResourceSpaceId().equals(rs.getResourceSpaceId()))) {
                     gRs.getContributions().add(c);
                     gRs.update();
                 }
