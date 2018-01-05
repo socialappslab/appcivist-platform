@@ -527,8 +527,8 @@ public class Contribution extends AppCivistBaseModel {
      * the contribution id with the existing resources for that WorkingGroup
      */
     public List<WorkingGroup> getWorkingGroupAuthors() {
-        if (this.workingGroupAuthors == null
-                || this.workingGroupAuthors.size() == 0)
+        if ((this.workingGroupAuthors == null
+                || this.workingGroupAuthors.size() == 0) && this.contributionId != null)
             this.workingGroupAuthors = listWorkingGroupAuthors(this.contributionId);
         return this.workingGroupAuthors;
     }
