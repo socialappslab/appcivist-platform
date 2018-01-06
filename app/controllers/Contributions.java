@@ -746,6 +746,16 @@ public class Contributions extends Controller {
         try {
             Contribution co = Contribution.readByUUID(UUID.fromString(couuid));
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(co.getContributionId(), type);
+            for (ContributionFeedback contributionFeedback: feedbacks) {
+                Map<String, Object> info = new HashMap<>();
+                User user = User.findByUserId(contributionFeedback.getUserId());
+                info.put("id", user.getUserId());
+                info.put("name", user.getName());
+                if (user.getProfilePic()!=null)
+                    info.put("profilePic", user.getProfilePic().getUrlAsString());
+                contributionFeedback.setUserId(null);
+                contributionFeedback.setUser(info);
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
