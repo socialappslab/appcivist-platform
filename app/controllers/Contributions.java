@@ -3173,14 +3173,47 @@ public class Contributions extends Controller {
 
     }
 
+
     /**
-     * POST      /api/assembly/:aid/campaign/:cid/contribution/import
+     * POST      /api/space/:sid/import
      * Import ideas file
      *
-     * @param aid Assembly Id
-     * @param cid Campaing Id
+     * @param sid Resource Space Id
      * @return
      */
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
+            notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result importContributionsResourceSpace(
+            @ApiParam(name = "sid", value = "Resource Space id") Long sid,
+            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type,
+            @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
+
+        ResourceSpace resourceSpace = ResourceSpace.read(sid);
+        if (resourceSpace == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
+        }
+        if (resourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+            Campaign campaign = resourceSpace.getCampaign();
+
+            return importContributions(null, campaign.getCampaignId(), type, createThemes);
+        } else {
+            return badRequest(Json.toJson(new TransferResponseStatus("Not implemented")));
+        }
+    }
+
+        /**
+         * POST      /api/assembly/:aid/campaign/:cid/contribution/import
+         * Import ideas file
+         *
+         * @param aid Assembly Id
+         * @param cid Campaing Id
+         * @return
+         */
     @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
             notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
