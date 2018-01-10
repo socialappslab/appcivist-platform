@@ -3386,11 +3386,10 @@ public class Contributions extends Controller {
                         }
 
                         // Create the contribution
-                        Contribution.create(c);
-
                         Logger.info("Adding contribution to campaign...");
-                        campaign.getResources().addContribution(c);
-                        campaign.getResources().update();
+                        ResourceSpace resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                        c.getContainingSpaces().add(resourceSpace);
+                        Contribution.create(c);
                         ContributionHistory.createHistoricFromContribution(c);
 
                     }
