@@ -385,6 +385,7 @@ DELETE    /api/space/:sid/group/:gid                                            
 DELETE    /api/space/:sid/campaign/:cid                                          controllers.Spaces.deleteSpaceCampaign(sid: Long, cid: Long)
 DELETE    /api/space/:sid/resource/:rid                                          controllers.Spaces.deleteSpaceResource(sid: Long, rid: Long)
 DELETE    /api/space/:sid/theme/:tid                                             controllers.Spaces.deleteSpaceTheme(sid: Long, tid: Long)
+POST      /api/space/:sid/import                                                 controllers.Contributions.importContributionsResourceSpace(sid: Long, type?="", createThemes: Boolean ?=false)
 
 ##################################################################################################################################################################
 # Public Common API
