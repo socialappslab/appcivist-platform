@@ -73,7 +73,7 @@ public class SpaceDynamicResourceHandler extends AbstractDynamicResourceHandler 
 
                                                    Boolean assemblyNotOpen = true;
                                                    if (ap != null) {
-                                                       assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+                                                       assemblyNotOpen = !ap.getManagementType().equals(ManagementTypes.OPEN);
 
                                                    }
                                                    if (m != null && assemblyNotOpen) {
