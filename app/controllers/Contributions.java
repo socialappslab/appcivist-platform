@@ -3649,6 +3649,10 @@ public class Contributions extends Controller {
                     inContribution.getResourceSpace().getContributions().add(c);
                     inContribution.getResourceSpace().update();
                 }
+                // Signal a notification asynchronously
+                Promise.promise(() -> {
+                    return NotificationsDelegate.newContributionInContribution(c, inContribution);
+                });
             } catch (Exception e) {
                 Logger.error("Error creating ", e);
                 return internalServerError(Json
