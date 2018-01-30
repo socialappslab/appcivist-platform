@@ -178,6 +178,21 @@ public class Subscription extends Model {
                 .findList();
     }
 
+    public static List<Subscription> findSubscriptionBySpaceId (String resourceSpaceUUID) {
+        return find.where()
+                .eq("spaceId",resourceSpaceUUID)
+                .query()
+                .findList();
+    }
+
+    public static Subscription findSubscriptionBySpaceIdAndId (String resourceSpaceUUID, Long id) {
+        return find.where()
+                .eq("spaceId",resourceSpaceUUID)
+                .eq("id",id)
+                .query()
+                .findUnique();
+    }
+
     public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
         /*
             * subscription.spaceType === signal.spaceType

@@ -85,6 +85,10 @@ GET       /api/notification/subscription/space/:sid                             
 POST      /api/notification/subscription/space/:sid                              controllers.Notifications.subscribeToResourceSpace(sid: Long)
 DELETE    /api/notification/subscription/space/:sid                              controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 
+
+GET       /api/space/:sid/subscription                                           controllers.Subscriptions.findByResourceSpace(sid: Long)
+GET       /api/space/:sid/subscription/:subid                                    controllers.Subscriptions.findByResourceSpaceAndId(sid: Long, subid: Long)
+DELETE    /api/space/:sid/subscription/:subid                                    controllers.Subscriptions.deleteSubscription(sid: Long, subid: Long)
 ##################################################################################################################################################################
 # Notifications Service Proxy -OLD
 # TODO: integrate a proper message queue manager like rabbitmq
