@@ -2271,10 +2271,6 @@ INSERT INTO pgagent.pga_schedule(
 END;
 
 --63.sql
---- !Downs
-
 ALTER TABLE "public"."subscription" DROP COLUMN default_identity;
- --- !Ups
-
 ALTER TABLE "public"."subscription" ADD COLUMN default_identity text;
 
