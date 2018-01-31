@@ -59,7 +59,7 @@ public class Subscription extends Model {
     private Integer defaultService = null;
 
     @Column(name = "default_identity")
-    private Integer defaultIdentity = null;
+    private String defaultIdentity = null;
 
     public static Finder<Long, Subscription> find = new Finder<>(Subscription.class);
 
@@ -140,11 +140,11 @@ public class Subscription extends Model {
         this.defaultService = defaultService;
     }
 
-    public Integer getDefaultIdentity() {
+    public String getDefaultIdentity() {
         return defaultIdentity;
     }
 
-    public void setDefaultIdentity(Integer defaultIdentity) {
+    public void setDefaultIdentity(String defaultIdentity) {
         this.defaultIdentity = defaultIdentity;
     }
 
@@ -193,6 +193,14 @@ public class Subscription extends Model {
                 .findUnique();
     }
 
+    public static Subscription findSubscriptionBySpaceIdAndIdentifier (String resourceSpaceUUID, String defaultIdentity) {
+        return find.where()
+                .eq("spaceId",resourceSpaceUUID)
+                .eq("defaultIdentity",defaultIdentity)
+                .query()
+                .findUnique();
+    }
+
     public static List<Subscription> findBySignal(NotificationSignalTransfer signal) {
         /*
             * subscription.spaceType === signal.spaceType
@@ -219,5 +227,17 @@ public class Subscription extends Model {
                         )
                         .query();
         return q.findList();
+    }
+
+    public static Subscription update(Subscription newSubscription, Subscription old) {
+        old.setDefaultService(newSubscription.getDefaultService());
+        old.setDefaultIdentity(newSubscription.getDefaultIdentity());
+        old.setDisabledServices((HashMap<String, Boolean>) newSubscription.getDisabledServices());
+        old.setIgnoredEvents((HashMap<String, Boolean>) newSubscription.getIgnoredEvents());
+        old.setNewsletterFrecuency(newSubscription.getNewsletterFrecuency());
+        old.setSubscriptionType(newSubscription.getSubscriptionType());
+        old.update();
+        old.refresh();
+        return old;
     }
 }
