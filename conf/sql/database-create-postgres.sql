@@ -2269,3 +2269,8 @@ INSERT INTO pgagent.pga_schedule(
     ARRAY[false, false, false, false, false, false, false, false, false, false, false, false]::boolean[]
 ) RETURNING jscid INTO scid;
 END;
+
+--63.sql
+ALTER TABLE "public"."subscription" DROP COLUMN default_identity;
+ALTER TABLE "public"."subscription" ADD COLUMN default_identity text;
+
