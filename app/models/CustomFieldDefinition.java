@@ -66,6 +66,7 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@OneToMany(fetch=FetchType.LAZY, mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
 	private List<CustomFieldValue> customFieldValues;
 
+	@JsonView(Views.Public.class)
 	@OneToMany(fetch=FetchType.LAZY, mappedBy = "customFieldDefinition", cascade = CascadeType.ALL)
 	private List<CustomFieldValueOption> customFieldValueOptions;
 
