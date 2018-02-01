@@ -8,7 +8,9 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
@@ -30,6 +32,7 @@ import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
 import play.i18n.Lang;
 import play.i18n.Messages;
+import play.libs.F;
 import play.mvc.Call;
 import play.mvc.Http.Context;
 import play.mvc.Result;
@@ -501,15 +504,14 @@ public class MyUsernamePasswordAuthProvider
 					+ "_"
 					+ langCode
 					+ "' was not found! Trying to use English fallback template instead.");
-		}
-		if (cls == null) {
 			try {
 				cls = Class.forName(template + "_"
 						+ EMAIL_TEMPLATE_FALLBACK_LANGUAGE);
-			} catch (ClassNotFoundException e) {
+			} catch (ClassNotFoundException e2) {
 				Logger.error("Fallback template: '" + template + "_"
 						+ EMAIL_TEMPLATE_FALLBACK_LANGUAGE
 						+ "' was not found either!");
+				Logger.error(e2.getMessage());
 			}
 		}
 		if (cls != null) {
@@ -519,13 +521,12 @@ public class MyUsernamePasswordAuthProvider
 						String.class, String.class, String.class);
 				ret = htmlRender.invoke(null, url, token, name, email)
 						.toString();
-
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				Logger.debug(e.getMessage());
 			} catch (IllegalAccessException e) {
-				e.printStackTrace();
+                Logger.debug(e.getMessage());
 			} catch (InvocationTargetException e) {
-				e.printStackTrace();
+                Logger.debug(e.getMessage());
 			}
 		}
 		return ret;
@@ -550,20 +551,17 @@ public class MyUsernamePasswordAuthProvider
 		ctx.changeLang(lang);
 		String locale = langCode;
 
-		if (locale.equals("it_IT") || locale.equals("it-IT")
-				|| locale.equals("it")) {
+		;
+
+		if (Pattern.compile("it", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "it";
-		} else if (locale.equals("es_ES") || locale.equals("es-ES")
-				|| locale.equals("es")) {
+		} else if (Pattern.compile("es", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "es";
-		} else if (locale.equals("en_EN") || locale.equals("en-EN")
-				|| locale.equals("en")) {
+		} else if (Pattern.compile("en", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "en";
-		} else if (locale.equals("de_DE") || locale.equals("de-DE")
-				|| locale.equals("de")) {
+		} else if (Pattern.compile("de", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "de";
-		} else if (locale.equals("fr_FR") || locale.equals("fr-FR")
-				|| locale.equals("fr")) {
+		} else if (Pattern.compile("fr", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "fr";
 		}
 
@@ -575,7 +573,7 @@ public class MyUsernamePasswordAuthProvider
 			templateHtml = "views.html.account.email.verify_email_forgot";
 			templateTxt = "views.txt.account.email.verify_email_forgot";
 		}
-		System.out.println("template++++++++++++"+templateHtml);
+		Logger.debug("Email template used: "+templateHtml);
 		final String html = getEmailTemplate(templateHtml, locale, url, token,
 				name, email);
 		final String text = getEmailTemplate(
@@ -588,11 +586,18 @@ public class MyUsernamePasswordAuthProvider
 	public void sendVerifyEmailMailingAfterSignup(final User user,
 			final Context ctx, boolean isFromForgot) {
 
-		final String subject = getVerifyEmailMailingSubjectAfterSignup(user,
-				ctx);
+		final String subject = getVerifyEmailMailingSubjectAfterSignup(user, ctx);
 		final String token = generateVerificationRecord(user);
 		final Body body = getVerifyEmailMailingBodyAfterSignup(token, user, ctx,isFromForgot);
-		mailer.sendMail(subject, body, getEmailName(user));
+        F.Promise.promise(() -> {
+            try {
+                mailer.sendMail(subject, body, getEmailName(user));
+            } catch (Exception e) {
+                Logger.debug("Verification email not sent.");
+                Logger.debug(e.getMessage());
+            }
+            return Optional.ofNullable(null);
+        });
 	}
 
 	protected Body getMembershipInvitationEmailBody(final String token,
