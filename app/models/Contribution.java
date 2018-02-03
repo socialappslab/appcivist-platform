@@ -45,9 +45,10 @@ public class Contribution extends AppCivistBaseModel {
     @Id
     @GeneratedValue
     @ApiModelProperty(value="Contribution numerical ID", position=0)
+    @JsonView({Views.Report.class})
     private Long contributionId;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Index
     @ApiModelProperty(value="Contribution Universal ID (meant to be valid accross intances of the platform)", position=1)
     private UUID uuid = UUID.randomUUID();
@@ -56,29 +57,29 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(hidden=true, notes="String version of the UUID to facilitate processing in server side. To be removed.")
     private String uuidAsString;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Required
     @ApiModelProperty(value="Title of the contribution", position=2)
     private String title;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Report.class})
     @Required
     @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
-    
-    @JsonView(Views.Public.class)
+
+    @JsonView({Views.Public.class, Views.Report.class})
     @ApiModelProperty(value="Text describing the contribution, in plain text format", position=3)
     @Column(name = "plain_text", columnDefinition = "plain_text")
     private String plainText;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Enumerated(EnumType.STRING)
     @Required
     @ApiModelProperty(value="Type of Contribution", position=4)
     private ContributionTypes type;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Enumerated(EnumType.STRING)
     @ApiModelProperty(value="Status of the Contribution (e.g., new, in progress, published, etc.)", position=5)
     private ContributionStatus status;
@@ -108,6 +109,7 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    @JsonView({Views.Public.class, Views.Report.class})
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "contribution_non_member_author",
             joinColumns = { @JoinColumn(name = "contribution_id", referencedColumnName = "contribution_id", updatable = true, insertable = true) },
@@ -120,7 +122,7 @@ public class Contribution extends AppCivistBaseModel {
     @ManyToMany(cascade = CascadeType.PERSIST)
     @Where(clause = "${ta}.active=true")
     @JsonIgnoreProperties({"providers", "roles", "permissions", "sessionKey", "identifier"})
-    @JsonView(Views.Public.class) 
+    @JsonView({Views.Public.class, Views.Report.class})
     @ApiModelProperty(name="authors", value="List of authors when is more then one but not a working group")
     private List<User> authors = new ArrayList<User>();
 
@@ -155,7 +157,7 @@ public class Contribution extends AppCivistBaseModel {
     private Long assemblyId;
 
     // @JsonIgnore
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @JsonManagedReference
     @Transient
     @ApiModelProperty(value="Working Groups to which this Contribution is associated")
@@ -175,7 +177,7 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     private ResourceSpace forum = new ResourceSpace(ResourceSpaceTypes.CONTRIBUTION);
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Transient
     private ContributionStatistics stats = new ContributionStatistics(this.contributionId);
 
@@ -237,7 +239,7 @@ public class Contribution extends AppCivistBaseModel {
 
     // Fields specific to the type PROPOSAL and ASSESSMENT
     @OneToOne(cascade = CascadeType.ALL)
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     private Resource extendedTextPad;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -285,11 +287,11 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Theme> addedThemes;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Transient
     private List<Theme> officialThemes;
 
-    @JsonView(Views.Public.class)
+    @JsonView({Views.Public.class, Views.Report.class})
     @Transient
     private List<Theme> emergentThemes;
     
