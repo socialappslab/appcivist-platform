@@ -1562,7 +1562,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public List<CustomFieldValue> getCustomFieldValues() {
-        return customFieldValues;
+        return this.resourceSpace.getCustomFieldValues();
     }
 
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
