@@ -485,8 +485,14 @@ public class Contributions extends Controller {
                     }
                     User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
                     String fileName = "contribution" + new Date().getTime() + ".zip";
-                    String path = Play.application().path().getAbsolutePath() +
-                            Play.application().configuration().getString("application.contributionFilesPath") + fileName;
+
+                    String appBasePath = Play.application().path().getAbsolutePath();
+                    String path = Play.application().configuration().getString("application.contributionFilesPath") + fileName;
+
+                    if (!Play.application().configuration().getBoolean("application.contributionFilesPathIsAbsolute")) {
+                        path = appBasePath + path;
+                    }
+
                     File zip = new File(path);
                     Logger.debug("Packing exported contribution in zip File: "+path);
                     Packager.packZip(zip, aRet);
