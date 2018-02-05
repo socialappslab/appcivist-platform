@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.feth.play.module.mail.Mailer;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.github.opendevl.JFlat;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -270,6 +271,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "collectionFileFormat", value = "Select the format for the file that contains the collection of contributions",
                     allowableValues = "JSON,CSV") String collectionFileFormat,
             @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions) {
+
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -456,7 +458,7 @@ public class Contributions extends Controller {
             }
 
         } else {
-            Logger.debug("Contribution in "+format+" will be produced in promise to sent by email");
+            Logger.debug("Contribution in "+format+" will be produced in promise to sent by email (includeExtendedText = "+includeExtendedText);
             F.Promise.promise(() -> {
                 List<File> aRet = new ArrayList<>();
                 switch (format.toUpperCase()) {
@@ -476,21 +478,28 @@ public class Contributions extends Controller {
                                     new TransferResponseStatus("There was an internal error: " + e.getMessage())));
                         }
                 }
-                if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                    Logger.debug("Extended text included");
-                    aRet.add(getPadFile(contribution, extendedTextFormat, format));
+                try {
+                    if (includeExtendedText.toUpperCase().equals("TRUE")) {
+                        Logger.debug("Extended text included");
+                        aRet.add(getPadFile(contribution, extendedTextFormat, format));
+                    }
+                    User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+                    String fileName = "contribution" + new Date().getTime() + ".zip";
+                    String path = Play.application().path().getAbsolutePath() +
+                            Play.application().configuration().getString("application.contributionFilesPath") + fileName;
+                    File zip = new File(path);
+                    Logger.debug("Packing exported contribution in zip File: "+path);
+                    Packager.packZip(zip, aRet);
+                    String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
+                    MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+                    provider.sendZipContributionFile(url, user.getEmail());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Logger.debug("Error in export Promise: "+e.getMessage());
+                } catch (GeneralSecurityException e) {
+                    e.printStackTrace();
+                    Logger.debug("Error in export Promise: "+e.getMessage());
                 }
-                User user = User.findByAuthUserIdentity(PlayAuthenticate
-                        .getUser(session()));
-                String fileName = "contribution" + new Date().getTime() + ".zip";
-                String path = Play.application().path().getAbsolutePath() +
-                        Play.application().configuration().getString("application.contributionFilesPath") + fileName;
-                File zip = new File(path);
-                Logger.debug("Packing exported contribution in zip File: "+path);
-                Packager.packZip(zip, aRet);
-                String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
-                MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-                provider.sendZipContributionFile(url, user.getEmail());
                 return Optional.ofNullable(null);
             });
 
@@ -4028,6 +4037,7 @@ public class Contributions extends Controller {
         }
         return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Contribution was not found")));
     }
+
     /**
      * PUT       /api/space/:sid/contribution/comment/reset
      *
@@ -4066,9 +4076,7 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
         @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Promise<Result> wordsFrecuency (@ApiParam(name = "sid", value = "Resource Space ID")Long sid) {
-
     	List<Contribution> contributions   = Contribution.findAllByContainingSpace(sid);
-
     	Promise<Result> resultPromise = Promise.promise( () -> {
     		List<Long> ids = new ArrayList<Long>();
 
@@ -4082,7 +4090,6 @@ public class Contributions extends Controller {
     	});
 
     	return resultPromise;
-
     }
 
 
@@ -4241,9 +4248,6 @@ public class Contributions extends Controller {
                 etherpadApiKey = body.get("etherpadServerApiKey").asText();
                 storeKey = true;
             }
-
-
-
             // save the etherpad
             ContributionsDelegate.createAssociatedPad(etherpadServerUrl,
                     etherpadApiKey,
@@ -4339,6 +4343,7 @@ public class Contributions extends Controller {
         }
         return tempFile;
     }
+
     private static File getExportFile(Contribution contribution, String includeExtendedText, String extendedTextFormat,
                                       String format) throws IOException, GeneralSecurityException, DocumentException {
         Logger.debug("Exporting contribution " + (contribution != null ? contribution.getContributionId() : "(null)") + " to " + format);
