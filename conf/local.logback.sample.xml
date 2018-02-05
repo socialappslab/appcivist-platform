@@ -31,12 +31,39 @@
   <logger name="application" level="DEBUG" />
   
   <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
-  <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" ></logger>
+  <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
   <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
   <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+  <logger name="com.avaje.ebean.Ebean" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.api.ClassLoadContext" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.type.DefaultTypeManager" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.deploy.PersistControllerManager" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.core.DefaultContainer" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.deploy.parse.DeployCreateProperties" level="OFF" />
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
   <!-- <logger name="org.avaje.ebean.SQL" level="TRACE" />  <logger name="org.avaje.ebean.SUM" level="TRACE"/> -->
-   
+  <logger name="swagger" level="OFF" />
+  <logger name="io.swagger.jackson.ModelResolver" level="OFF" />
+  <logger name="io.swagger.converter.ModelConverters" level="OFF" />
+  <logger name="io.swagger.converter.ModelConverterContextImpl" level="OFF" />
+  <logger name="javax.management.mbeanserver" level="OFF" />
+  <logger name="akka.event.slf4j.Slf4jLogger" level="OFF" />
+  <logger name="com.google.inject.internal.BytecodeGen" level="OFF" />
+  <logger name="com.google.inject.internal.util.Stopwatch" level="OFF" />
+  <logger name="com.zaxxer.hikari.HikariConfig" level="OFF" />
+  <logger name="com.zaxxer.hikari.HikariDataSource" level="OFF" />
+  <logger name="com.zaxxer.hikari.pool.HikariPool" level="OFF" />
+  <logger name="com.zaxxer.hikari.pool.PoolBase" level="OFF" />
+  <logger name="net.sf.ehcache.Cache" level="OFF" />
+  <logger name="net.sf.ehcache.CacheManager" level="OFF" />
+  <logger name="net.sf.ehcache.config.BeanHandler" level="OFF" />
+  <logger name="net.sf.ehcache.config.ConfigurationFactory" level="OFF" />
+  <logger name="net.sf.ehcache.config.ConfigurationHelper" level="OFF" />
+  <logger name="net.sf.ehcache.util.PropertyUtil" level="OFF" />
+  <logger name="org.reflections.Reflections" level="OFF" />
+
 
   <root level="INFO">
     <appender-ref ref="ASYNCFILE" />
