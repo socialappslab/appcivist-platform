@@ -713,7 +713,8 @@ public class MyUsernamePasswordAuthProvider
 	}
 
 	public void sendZipContributionFile(String url, String email) {
-		final Body body = new Body("Your contribution files is ready, you can download here: "+ url);
+        Logger.debug("Sending zip URL ("+url+") by email");
+        final Body body = new Body("Your contribution files is ready, you can download here: "+ url);
 		mailer.sendMail("Contribution File", body, email);
 	}
 

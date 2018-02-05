@@ -418,6 +418,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "includeExtendedText", value = "Include or not extended text") String includeExtendedText,
             @ApiParam(name = "extendedTextFormat", value = "Include or not extended text", allowableValues =
                     "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat) {
+        Logger.debug("Finding Contribution "+cid+" in Resource Space "+sid);
         ResourceSpace rs = ResourceSpace.findByContribution(sid, cid);
         if (rs == null) {
             return notFound(Json
@@ -431,14 +432,17 @@ public class Contributions extends Controller {
         Boolean sendMail = false;
         if (!(format.equals("JSON") || format.equals("CSV")) || includeExtendedText.toUpperCase().equals("TRUE")) {
             sendMail = true;
+            Logger.debug("Contribution export will be produced in format "+format+" and sent by email");
         }
         if (!sendMail) {
+            Logger.debug("Contribution in "+format+" will be sent to client");
             if(format.equals("JSON")) {
                 return ok(Json.toJson(contribution));
             }
             if(format.equals("CSV")) {
                     response().setContentType("application/csv");
                     response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
+                    Logger.debug("Contribution in CSV being produced based on JSON");
                     JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
                     try {
                         File tempFile = File.createTempFile("contributions.csv", ".tmp");
@@ -452,6 +456,7 @@ public class Contributions extends Controller {
             }
 
         } else {
+            Logger.debug("Contribution in "+format+" will be produced in promise to sent by email");
             F.Promise.promise(() -> {
                 List<File> aRet = new ArrayList<>();
                 switch (format.toUpperCase()) {
@@ -472,6 +477,7 @@ public class Contributions extends Controller {
                         }
                 }
                 if (includeExtendedText.toUpperCase().equals("TRUE")) {
+                    Logger.debug("Extended text included");
                     aRet.add(getPadFile(contribution, extendedTextFormat, format));
                 }
                 User user = User.findByAuthUserIdentity(PlayAuthenticate
@@ -480,6 +486,7 @@ public class Contributions extends Controller {
                 String path = Play.application().path().getAbsolutePath() +
                         Play.application().configuration().getString("application.contributionFilesPath") + fileName;
                 File zip = new File(path);
+                Logger.debug("Packing exported contribution in zip File: "+path);
                 Packager.packZip(zip, aRet);
                 String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
                 MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
@@ -4256,53 +4263,55 @@ public class Contributions extends Controller {
     }
 
     private static File getPadFile(Contribution contribution, String extendedTextFormat, String format) throws IOException, GeneralSecurityException {
-            String selectFormat;
-            if (extendedTextFormat.equals("")) {
-                if (format.equals("CSV") || format.equals("JSON")) {
-                    selectFormat = "DOC";
-                } else {
-                    selectFormat = format;
-                }
+        String selectFormat;
+        if (extendedTextFormat.equals("")) {
+            if (format.equals("CSV") || format.equals("JSON")) {
+                selectFormat = "DOC";
             } else {
-                selectFormat = extendedTextFormat;
+                selectFormat = format;
             }
-            String url = contribution.getExtendedTextPad().getUrlAsString();
-            if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.GDOC)) {
-                try {
-
-                    url = utils.TextUtils.getExportGdocUrl(url, selectFormat).toString();
-                } catch (IndexOutOfBoundsException e) {
-                    Logger.info("Error in GDOC text pad url " + url, e);
-                }
-            } else {
-                String padId = contribution.getExtendedTextPad().getPadId();
-                // Transform URL from read only to write url
-                // From [.../p/r.613e...] TO [.../p/{padId}]
-                String[] padUrlParts = url.split("/p/");
-                url = padUrlParts[0]+"/p/"+padId;
-                url = url + "/export/" + selectFormat.toLowerCase();
-            }
-            String fileName = "/tmp/" + EXTENDED_PAD_NAME.replace(CONTRIBUTION_ID_PARAM,
-                    contribution.getContributionId().toString()+ "."+selectFormat.toLowerCase());
-            File tempFile = new File(fileName);
-            OutputStream out = new FileOutputStream(tempFile);
-            HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        } else {
+            selectFormat = extendedTextFormat;
+        }
+        String url = contribution.getExtendedTextPad().getUrlAsString();
+        Logger.debug("Downloading extended text: "+url);
+        if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.GDOC)) {
             try {
-                httpTransport.createRequestFactory().buildGetRequest(new GenericUrl(url)).execute().download(out);
-                out.close();
-                return tempFile;
 
-            } catch (IOException  e) {
-                out.close();
-                Logger.error("Error downloading extendedPAD ", e);
+                url = utils.TextUtils.getExportGdocUrl(url, selectFormat).toString();
+            } catch (IndexOutOfBoundsException e) {
+                Logger.info("Error in GDOC text pad url " + url, e);
             }
+        } else {
+            String padId = contribution.getExtendedTextPad().getPadId();
+            // Transform URL from read only to write url
+            // From [.../p/r.613e...] TO [.../p/{padId}]
+            String[] padUrlParts = url.split("/p/");
+            url = padUrlParts[0]+"/p/"+padId;
+            url = url + "/export/" + selectFormat.toLowerCase();
+        }
+        String fileName = "/tmp/" + EXTENDED_PAD_NAME.replace(CONTRIBUTION_ID_PARAM,
+                contribution.getContributionId().toString()+ "."+selectFormat.toLowerCase());
+        File tempFile = new File(fileName);
+        Logger.debug("Saving file to: "+fileName);
+        OutputStream out = new FileOutputStream(tempFile);
+        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        try {
+            httpTransport.createRequestFactory().buildGetRequest(new GenericUrl(url)).execute().download(out);
+            out.close();
+            return tempFile;
 
+        } catch (IOException  e) {
+            out.close();
+            Logger.error("Error downloading extendedPAD ", e);
+        }
         return null;
-
     }
 
     private static File getExportFileCsvJson(List<Contribution> contributions, Boolean list, String format) throws IOException {
         String fileName = "/tmp/contributions."+format;
+        Logger.debug("Exporting list of contributions "+ (contributions !=null ? contributions.size() : 0) + " to "+format);
+        Logger.debug("Saving list of contributions in "+fileName);
         File tempFile = null;
         if (contributions!=null && contributions.size()>0) {
             switch (format) {
@@ -4332,6 +4341,7 @@ public class Contributions extends Controller {
     }
     private static File getExportFile(Contribution contribution, String includeExtendedText, String extendedTextFormat,
                                       String format) throws IOException, GeneralSecurityException, DocumentException {
+        Logger.debug("Exporting contribution " + (contribution != null ? contribution.getContributionId() : "(null)") + " to " + format);
         File tempFile = null;
         LinkedHashMap<String,String> contributionMap = new LinkedHashMap<>();
         contributionMap.put(contribution.getType().toString(),contribution.getContributionId()+"\n");
@@ -4383,6 +4393,7 @@ public class Contributions extends Controller {
         switch (format.toUpperCase()) {
             case "PDF":
                 tempFile = new File(fileName+".pdf");
+                Logger.debug("Saving contribution in "+fileName+".pdf");
                 FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
                 Document document = new Document();
                 PdfWriter.getInstance(document, fileOutputStream);
@@ -4402,6 +4413,7 @@ public class Contributions extends Controller {
             case "TXT":
                 String newLine = System.getProperty("line.separator");
                 tempFile = new File(fileName+".txt");
+                Logger.debug("Saving contribution in "+fileName+".txt");
                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
@@ -4413,6 +4425,7 @@ public class Contributions extends Controller {
             case "RTF":
                 tempFile = new File(fileName+".rtf");
                 fileOutputStream = new FileOutputStream(tempFile);
+                Logger.debug("Saving contribution in "+fileName+".rtf");
                 document = new Document();
                 RtfWriter2.getInstance(document, fileOutputStream);
                 // Create a new Paragraph for the footer
@@ -4442,6 +4455,7 @@ public class Contributions extends Controller {
                 break;
             case "DOC":
                 tempFile = new File(fileName+".doc");
+                Logger.debug("Saving contribution in "+fileName+".doc");
                 XWPFDocument doc = new XWPFDocument();
                 FileOutputStream out = new FileOutputStream(tempFile);
                 XWPFParagraph paragraph = doc.createParagraph();
