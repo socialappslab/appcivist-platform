@@ -2274,3 +2274,6 @@ END;
 ALTER TABLE "public"."subscription" DROP COLUMN default_identity;
 ALTER TABLE "public"."subscription" ADD COLUMN default_identity text;
 
+--65.sql
+ALTER TABLE "public"."component_milestone" ADD COLUMN end_date timestamp without time zone;
+
