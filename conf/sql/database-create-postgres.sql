@@ -2287,6 +2287,29 @@ CREATE TABLE contribution_status_audit
       REFERENCES contribution (contribution_id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT ck_contribution_status_audit_status CHECK (status::text = ANY (ARRAY['NEW'::character varying, 'PUBLISHED'::character varying,
-  'ARCHIVED'::character varying, 'EXCLUDED'::character varying]::text[]))
+  'ARCHIVED'::character varying, 'EXCLUDED'::character varying, 'DRAFT'::character varying, 'INBALLOT'::character varying]::text[]))
 );
+
+--67.sql
+CREATE OR REPLACE FUNCTION create_contribution_audits() RETURNS void AS
+$BODY$
+DECLARE
+    r contribution%rowtype;
+BEGIN
+    FOR r IN SELECT * FROM contribution
+    LOOP
+        INSERT INTO public.contribution_status_audit(
+            status_start_date, status_end_date, contribution_contribution_id,
+            status)
+            VALUES (now(), null, r.contribution_id,
+                    r.status);
+    END LOOP;
+    RETURN;
+END
+$BODY$
+LANGUAGE plpgsql;
+
+SELECT * FROM create_contribution_audits();
+
+DROP FUNCTION create_contribution_audits();
 
