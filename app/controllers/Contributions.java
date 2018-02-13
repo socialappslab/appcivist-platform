@@ -1326,11 +1326,11 @@ public class Contributions extends Controller {
                     Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
                 }
             }
-
+/*
             Promise.promise( () -> {
                 ContributionsDelegate.updateCommentCounters(c, "+");
                 return NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            });
+            });*/
 
             return ok(Json.toJson(c));
         }
@@ -2825,6 +2825,7 @@ public class Contributions extends Controller {
             newContrib.getResourceSpace().update();
             newContrib.getResourceSpace().refresh();
         }
+        ContributionStatusAudit.create(newContrib);
 
         return newContrib;
     }
