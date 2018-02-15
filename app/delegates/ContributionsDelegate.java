@@ -644,6 +644,7 @@ public class ContributionsDelegate {
         headerMap.put("SOCIAL_IDEATION_USER_SOURCE_ID", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_ID"));
         headerMap.put("SOCIAL_IDEATION_USER_SOURCE_URL", req.getHeader("SOCIAL_IDEATION_USER_SOURCE_URL"));
         headerMap.put("SOCIAL_IDEATION_USER_NAME", req.getHeader("SOCIAL_IDEATION_USER_NAME"));
+        headerMap.put("SOCIAL_IDEATION_USER_EMAIL", req.getHeader("SOCIAL_IDEATION_USER_EMAIL"));
         headerMap.put("IGNORE_ADMIN_USER", req.getHeader("IGNORE_ADMIN_USER"));
 
         return headerMap;
@@ -662,7 +663,7 @@ public class ContributionsDelegate {
             }
         }
 
-        if (headersCount == 7) {
+        if (headersCount == 8) {
             String assemblyID = headerMap.get("ASSEMBLY_ID");
             Boolean assemblyConfig = assemblyHasSocialIdeationIntegrated(Long.valueOf(assemblyID));
             if (assemblyConfig == true)

@@ -1203,6 +1203,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_NAME", value = "User name in source", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_EMAIL", value = "User email in source", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
@@ -1239,7 +1240,8 @@ public class Contributions extends Controller {
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
-                    social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    // social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    social_ideation_author = User.findByEmail(headerMap.get("SOCIAL_IDEATION_USER_EMAIL"));
                     if (social_ideation_author == null){
                         non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         if (non_member_author == null){
