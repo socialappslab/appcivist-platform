@@ -64,6 +64,12 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "milestones")
 	private List<ResourceSpace> containingSpaces;
 
+	@JsonView(Views.Public.class)
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
+	@Column(name = "end_date")
+	private Date endDate;	// ending date of the milestone
+
+
 	public List<ResourceSpace> getContainingSpaces() {
 		return containingSpaces;
 	}
@@ -197,6 +203,14 @@ public class ComponentMilestone extends AppCivistBaseModel implements Comparator
 
 	public void setMainContributionType(ContributionTypes mainContributionType) {
 		this.mainContributionType = mainContributionType;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 	public static ComponentMilestone read(Long id) {

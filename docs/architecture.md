@@ -66,7 +66,7 @@ For the platform to work, the [configuration file](../conf/local.sample.conf) mu
 In the current implementation, files uploaded through the AppCivist-PB UI are stored in Amazon S3. In order for the platform to work the [configuration file](../conf/local.sample.conf) must include the AWS credentials in the aws section. You can get limited free storage using the [AWS free tier](https://aws.amazon.com/free/?sc_channel=PS&sc_campaign=acquisition_US&sc_publisher=google&sc_medium=cloud_computing_b&sc_content=aws_free_e_control_q32016&sc_detail=aws%20free%20tier&sc_category=cloud_computing&sc_segment=102882724602&sc_matchtype=e&sc_country=US&s_kwcid=AL!4422!3!102882724602!e!!g!!aws%20free%20tier&ef_id=V7etgQAAAGl5exIA:20160823183935:s).
 
 ### Sendgrid API
-Email invitations are sent using the [Sendgrid API](https://sendgrid.com/docs/API_Reference/index.html). Credentials for Sendgrid are configured in the [smtp configuration file](../conf/play-authenticate/smtp.conf.sample).  
+Email invitations are sent using the [Sendgrid API](https://sendgrid.com/docs/API_Reference/index.html). Credentials for Sendgrid are configured in the [smtp configuration file](../conf/play-authenticate/smtp.sample.conf).  
 
 ### MapBox API
 A preliminary connection to the [MapBox API](https://www.mapbox.com/api-documentation/) is used when we create assemblies and working groups with a location. The MapBox API is called to obtain the geographic coordinates related to the location string, which is stored in the database in GeoJSON format. MapBox API credentials must be configured in the mapboxapi section of the [configuration file](../conf/local.sample.conf).

@@ -62,6 +62,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -270,14 +273,16 @@ public class Contributions extends Controller {
                     "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat,
             @ApiParam(name = "collectionFileFormat", value = "Select the format for the file that contains the collection of contributions",
                     allowableValues = "JSON,CSV") String collectionFileFormat,
-            @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions) {
+            @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions,
+            @ApiParam(name = "statusStartDate", value = "String") String statusStartDate,
+            @ApiParam(name = "statusEndDate", value = "String") String statusEndDate) {
 
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
         ResourceSpace rs = ResourceSpace.read(sid);
         List<Contribution> contributions;
-
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("containingSpaces", rs.getResourceSpaceId());
         if (type != null && !type.isEmpty()) {
@@ -306,6 +311,21 @@ public class Contributions extends Controller {
             conditions.put("status", status);
         } else if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
             conditions.put("status", "PUBLISHED,INBALLOT,SELECTED");
+        }
+        try {
+            if (statusEndDate != null && !statusEndDate.isEmpty()) {
+
+                conditions.put("statusEndDate", dateFormat.parse(statusEndDate));
+            }
+            if (statusStartDate != null && !statusStartDate.isEmpty()) {
+                conditions.put("statusStartDate", dateFormat.parse(statusStartDate));
+            }
+        } catch (ParseException e) {
+            return badRequest(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.BADREQUEST,
+                            "Error in date formatting: " + e.getMessage())));
+
         }
 
         PaginatedContribution pag = new PaginatedContribution();
@@ -1203,6 +1223,7 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_ID", value = "Email or id of the user in the source social network", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_SOURCE_URL", value = "Link to the user", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_NAME", value = "User name in source", dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = "SOCIAL_IDEATION_USER_EMAIL", value = "User email in source", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "IGNORE_ADMIN_USER", value = "Boolean that indicates if AppCivist should or should not consider the ADMIN user as author", dataType = "String", paramType = "header")})
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
@@ -1239,7 +1260,8 @@ public class Contributions extends Controller {
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
-                    social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    // social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
+                    social_ideation_author = User.findByEmail(headerMap.get("SOCIAL_IDEATION_USER_EMAIL"));
                     if (social_ideation_author == null){
                         non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         if (non_member_author == null){
@@ -1326,11 +1348,11 @@ public class Contributions extends Controller {
                     Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
                 }
             }
-
+/*
             Promise.promise( () -> {
                 ContributionsDelegate.updateCommentCounters(c, "+");
                 return NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            });
+            });*/
 
             return ok(Json.toJson(c));
         }
@@ -2825,6 +2847,7 @@ public class Contributions extends Controller {
             newContrib.getResourceSpace().update();
             newContrib.getResourceSpace().refresh();
         }
+        ContributionStatusAudit.create(newContrib);
 
         return newContrib;
     }
