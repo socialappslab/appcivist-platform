@@ -2274,6 +2274,16 @@ END;
 ALTER TABLE "public"."subscription" DROP COLUMN default_identity;
 ALTER TABLE "public"."subscription" ADD COLUMN default_identity text;
 
+--64.sql
+ALTER TABLE "public"."campaign" ADD COLUMN location_location_id bigint;
+ALTER TABLE "public"."campaign" ADD CONSTRAINT fk_campaign_location FOREIGN KEY (location_location_id)
+      REFERENCES location (location_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION;
+CREATE INDEX ix_campaign_location
+  ON campaign
+  USING btree
+  (location_location_id);
+  
 --65.sql
 ALTER TABLE "public"."component_milestone" ADD COLUMN end_date timestamp without time zone;
 
@@ -2292,4 +2302,3 @@ CREATE TABLE contribution_status_audit
   CONSTRAINT ck_contribution_status_audit_status CHECK (status::text = ANY (ARRAY['NEW'::character varying, 'PUBLISHED'::character varying,
   'ARCHIVED'::character varying, 'EXCLUDED'::character varying, 'DRAFT'::character varying, 'INBALLOT'::character varying]::text[]))
 );
-

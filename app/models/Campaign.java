@@ -1,32 +1,22 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.*;
-
-import javax.persistence.OrderBy;
-import javax.persistence.*;
-
-import com.avaje.ebean.*;
-import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.SqlQuery;
+import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.*;
-
-import enums.*;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import enums.CampaignStatus;
+import enums.ResourceSpaceTypes;
+import enums.ThemeTypes;
 import io.swagger.annotations.ApiModel;
+import models.location.Location;
 import models.misc.Views;
-import utils.GlobalData;
+
+import javax.persistence.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -161,6 +151,10 @@ public class Campaign extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
  	@ManyToOne
 	private User creator;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@Index
+	private Location location;
 
 	/** 
 	
@@ -662,6 +656,14 @@ String uuidAsString, List<Component> phases) {
 
 	public void setCreator(User creator) {
 		this.creator = creator;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
 	}
 
 	public static List<Campaign> findAll() {
