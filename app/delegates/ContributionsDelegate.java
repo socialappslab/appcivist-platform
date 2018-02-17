@@ -266,8 +266,9 @@ public class ContributionsDelegate {
                         where.add(e);
                         break;
                     case "selectedContributions":
-                        List<Integer> selected = (List)value;
+                        List<String> selected = (List)value;
                         where.in("t0.uuid", selected);
+                        break;
                     case "statusEndDate":
                         where.add(Expr.le("csa.status_end_date", value));
                         break;
