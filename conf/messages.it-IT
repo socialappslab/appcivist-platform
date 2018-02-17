@@ -68,6 +68,7 @@ playauthenticate.signup.title=Signup
 playauthenticate.signup.name=Your name
 playauthenticate.signup.now=Sign up now
 playauthenticate.signup.oauth=or sign up using one of the following providers:
+playauthenticate.signup.form-has-errors=The signup form had errors. Either your email is invalid, your passwords don't match or something is missing.
 
 playauthenticate.verify.account.title=E-mail verification required
 playauthenticate.verify.account.before=Before setting a password, you need to

@@ -238,18 +238,17 @@ public class Users extends Controller {
   @ApiImplicitParams({ @ApiImplicitParam(name = "signup_form", value = "User's signup form", dataType = "providers.MySignup", paramType = "body") })
   public static Result doSignup() {
     com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM
-        .bindFromRequest();
-    Logger.debug("Signup request received: "+filledForm.get().toString());
+    final Form<MySignup> filledForm = MyUsernamePasswordAuthProvider.SIGNUP_FORM.bindFromRequest();
     if (filledForm.hasErrors()) {
-      // User did not fill everything properly
-      // TODO: HTML rendered response return
-      // badRequest(signup.render(filledForm));
-      return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-          Messages.get("playauthenticate.signup.form-has-errors"),
-          filledForm.errorsAsJson().toString())));
+        // User did not fill everything properly
+        // badRequest(signup.render(filledForm));
+        String m = Messages.get("playauthenticate.signup.form-has-errors");
+        String formErrors = filledForm.errorsAsJson().toString();
+        return badRequest( Json.toJson( TransferResponseStatus.badMessage( m, formErrors) )
+        );
     } else{
       // Everything was filled correctly
+      Logger.debug("Signup request received: "+filledForm.get().toString());
       return MyUsernamePasswordAuthProvider.handleSignup(ctx());
     }
   }
