@@ -2788,7 +2788,7 @@ public class Contributions extends Controller {
             //emergent themes in themeListEmergent to associate to campaign or wg
         }
 
-        Contribution.create(newContrib);
+        Contribution.create(newContrib, containerResourceSpace);
         newContrib.refresh();
 
 //        // Add contribution to workingGroupAuthors resource spaces
@@ -3093,7 +3093,7 @@ public class Contributions extends Controller {
                         c.setExistingResources(resources);
                     }
 
-                    Contribution.create(c);
+                    Contribution.create(c,null);
 
                     // Feedback support
                     if (cell.length == 9) {
@@ -3464,7 +3464,7 @@ public class Contributions extends Controller {
                         Logger.info("Adding contribution to campaign...");
                         ResourceSpace resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
                         c.getContainingSpaces().add(resourceSpace);
-                        Contribution.create(c);
+                        Contribution.create(c, resourceSpace);
                         ContributionHistory.createHistoricFromContribution(c);
 
                     }

@@ -1,10 +1,12 @@
 package models;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import enums.ThemeTypes;
 import enums.MyRoles;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,9 +16,12 @@ import io.swagger.models.auth.In;
 import models.location.Location;
 import models.misc.Views;
 
+import org.geojson.*;
+import org.geojson.jackson.CrsType;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 
+import play.Logger;
 import play.data.validation.Constraints.Required;
 import utils.TextUtils;
 
@@ -917,7 +922,7 @@ public class Contribution extends AppCivistBaseModel {
         return contribs;
     }
 
-    public static void create(Contribution c) {
+    public static void create(Contribution c, ResourceSpace rs) {
 
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
@@ -948,6 +953,10 @@ public class Contribution extends AppCivistBaseModel {
         if (c.getStatus()==null) {
         	c.setStatus(ContributionStatus.PUBLISHED);
         }
+
+        //geojson logic
+        geoJsonLogic(c, rs);
+
         c.save();
 
         // 3. Add existing entities in relationships to the manytomany resources
@@ -1567,5 +1576,70 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
         this.customFieldValues = customFieldValues;
+    }
+
+    private static double[] polygonCenter(double[]... polygonPoints) {
+        double cumLon = 0;
+        double cumLat = 0;
+        for (double[] coordinate : polygonPoints) {
+            cumLon += coordinate[0];
+            cumLat += coordinate[1];
+        }
+        return new double[] { cumLon / polygonPoints.length, cumLat / polygonPoints.length };
+    }
+
+    private static void geoJsonLogic(Contribution c, ResourceSpace rs) {
+        //if the contribution has a geojson
+        if(c.getLocation() != null && c.getLocation().getGeoJson() != null) {
+            Logger.debug("Contribution has location and geoJson");
+            try {
+                FeatureCollection featureCollection =
+                        new ObjectMapper().readValue(c.getLocation().getGeoJson().replaceAll("'","\""), FeatureCollection.class);
+                //if geojson doesnt has a center, calculate it.
+                if(!(featureCollection.getFeatures().get(0).getGeometry() instanceof Point)) {
+                    Logger.debug(" geoJson has not center");
+                    Polygon polygon = (Polygon) featureCollection.getFeatures().get(0).getGeometry();
+                    double[][] points = new double[polygon.getCoordinates().get(0).size()][2];
+                    int i = 0;
+                    for (LngLatAlt lat: polygon.getCoordinates().get(0)) {
+                        double[] point = {0,0};
+                        point[0] = lat.getLatitude();
+                        point[1] = lat.getLongitude();
+                        points[i] = point;
+                        i++;
+                    }
+                    double[] center = polygonCenter(points);
+                    Point centerPoint = new Point();
+                    LngLatAlt lon = new LngLatAlt();
+                    lon.setLongitude(center[0]);
+                    lon.setLatitude(center[1]);
+                    centerPoint.setCoordinates(lon);
+                    featureCollection.getFeatures().get(0).setGeometry(centerPoint);
+                    String json= new ObjectMapper().writeValueAsString(featureCollection);
+                    c.getLocation().setGeoJson(json.replaceAll("\"","'"));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            //if the contribution doesnt has a geojson use contribution or working group geojson
+            if(c.getLocation() != null) {
+                Logger.debug("Contribution has not geoJson");
+                if(c.getType().equals(ContributionTypes.IDEA) && rs.getCampaign().getLocation()!=null) {
+                    Logger.debug("Using campaign geoJson");
+                    c.getLocation().setGeoJson(rs.getCampaign().getLocation().getGeoJson());
+                } else if(c.getType().equals(ContributionTypes.PROPOSAL)) {
+                    List<Location> locations = rs.getWorkingGroupResources().getLocations();
+                    if(!locations.isEmpty() && locations.get(0).getGeoJson() != null) {
+                        Logger.debug("Using WG geoJson");
+                        c.getLocation().setGeoJson(locations.get(0).getGeoJson());
+                    } else if(rs.getCampaign().getLocation() != null){
+                        Logger.debug("Using campaign geoJson");
+                        c.getLocation().setGeoJson(rs.getCampaign().getLocation().getGeoJson());
+                    }
+                }
+            }
+            Logger.debug("Using none geoJson");
+        }
     }
 }
