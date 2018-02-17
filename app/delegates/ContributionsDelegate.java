@@ -147,7 +147,7 @@ public class ContributionsDelegate {
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
                 "  t0.source_code, t0.popularity, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments from contribution t0\n ";
         String sorting = " order by pinned desc nulls last";
-
+        Boolean intervalStatus = false;
         if(conditions != null){
             for(String key : conditions.keySet()){
                 Object value = conditions.get(key);
@@ -192,6 +192,13 @@ public class ContributionsDelegate {
                         	sorting +=", forum_comment_count desc nulls last";
                         } else if (sortingValue.equals("most_commented_public_asc")) {
                         	sorting +=", forum_comment_count asc nulls last";
+                        }
+                        break;
+                    case "statusStartDate":
+                    case "statusEndDate":
+                        if(!intervalStatus) {
+                            rawQuery += "join contribution_status_audit csa on csa.contribution_contribution_id = t0.contribution_id \n ";
+                            intervalStatus = true;
                         }
                         break;
                 }
@@ -244,6 +251,10 @@ public class ContributionsDelegate {
                     case "sorting":
                         break;
                     case "status":
+                        if(intervalStatus) {
+                            where.add(Expr.eq("csa.status", value));
+                            break;
+                        }
                         String propertyName = "status";
                         String values = (String) value;
                         String[] statuses = values.split("\\s*,\\s*");
@@ -257,6 +268,12 @@ public class ContributionsDelegate {
                     case "selectedContributions":
                         List<Integer> selected = (List)value;
                         where.in("t0.uuid", selected);
+                    case "statusEndDate":
+                        where.add(Expr.le("csa.status_end_date", value));
+                        break;
+                    case "statusStartDate":
+                        where.add(Expr.ge("csa.status_start_date", value));
+                        break;
                     default:
                         if(value instanceof String){
                             where.ilike(key, ("t0."+(String)value).toLowerCase() + "%");
@@ -267,7 +284,6 @@ public class ContributionsDelegate {
             }            
         }
         where.add(Expr.not(Expr.eq("removed",true)));
-
         List<Contribution> contributions;
         if(page != null && pageSize != null){
             contributions = where.findPagedList(page, pageSize).getList();
