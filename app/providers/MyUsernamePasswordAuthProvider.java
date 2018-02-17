@@ -427,7 +427,7 @@ public class MyUsernamePasswordAuthProvider
 			url= configUrl;
 		}else{
 			if (url == null) {
-				url = Play.application().configuration().getString("application.baseUrl")+GlobalData.FORGOT_PASSWORD_DEFAULT_URL_BASE;
+				url = Play.application().configuration().getString("application.baseUrl")+"/api"+GlobalData.FORGOT_PASSWORD_DEFAULT_URL_BASE;
 			}
 		}
 		url += token;
