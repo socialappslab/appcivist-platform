@@ -6,8 +6,10 @@ import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
 import enums.SubscriptionTypes;
+import play.Logger;
 import play.libs.F;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,9 +36,7 @@ public class BeanPersistAdapter implements BeanPersistController {
     }
 
     @Override
-    public boolean preUpdate(BeanPersistRequest<?> request) {
-        return true;
-    }
+    public boolean preUpdate(BeanPersistRequest<?> request) { return true; }
 
     @Override
     public boolean preDelete(BeanPersistRequest<?> request) {
@@ -113,11 +113,13 @@ public class BeanPersistAdapter implements BeanPersistController {
 
             if (request.getBean() instanceof Contribution) {
                 Contribution c = (Contribution) request.getBean();
+                this.updateContributionStatusAudit(request);
                 if (!c.getRemoved()) {
                     this.notifyContribution(request, NotificationsDelegate.getUpdatedContributionEventName(c));
                 } else {
                     this.notifyContribution(request, NotificationEventName.MODERATED_CONTRIBUTION);
                 }
+
             }
 
             if (request.getBean() instanceof ContributionFeedback) {
@@ -307,6 +309,23 @@ public class BeanPersistAdapter implements BeanPersistController {
             return Optional.ofNullable(null);
         });
 
+    }
+    private void updateContributionStatusAudit(BeanPersistRequest<?> request) {
+        F.Promise.promise(() -> {
+            try {
+
+
+            Contribution contribution = (Contribution) request.getBean();
+            ContributionStatusAudit last = ContributionStatusAudit.getLastByContribution(contribution);
+            if(last == null || !last.getStatus().equals(contribution.getStatus())) {
+                Logger.info("Creating or updating contribution status audit");
+                ContributionStatusAudit.newStatus(contribution);
+            }
+            } catch (Exception e) {
+                Logger.error("Error creating audit "+e.getMessage());
+            }
+            return Optional.ofNullable(null);
+        });
     }
 
 
