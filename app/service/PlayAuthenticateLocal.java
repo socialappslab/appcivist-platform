@@ -8,6 +8,7 @@ import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.api.libs.Crypto;
 import play.i18n.Messages;
+import play.libs.Json;
 import play.mvc.Call;
 import play.mvc.Controller;
 import play.mvc.Http.Context;
@@ -89,8 +90,12 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			Crypto cryptoObject = play.Play.application().injector().instanceOf(Crypto.class);
 			signed = cryptoObject.sign(encoded);
 		} catch (UnsupportedEncodingException e) {
+		    TransferResponseStatus message = new TransferResponseStatus();
+		    message.setResponseStatus(ResponseStatus.SERVERERROR);
+		    message.setStatusMessage("Problem while creating the session token.");
+		    message.setErrorTrace(e.getMessage());
 			Logger.error(e.getMessage());
-			e.printStackTrace();
+			return Controller.internalServerError(Json.toJson(message));
 		}
 
 		if (Logger.isDebugEnabled()) {
@@ -125,6 +130,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 	public static Result handleAuthentication(final String provider, final Context context, final Object payload) {
 		final AuthProvider ap = getProvider(provider);
+
 		if (ap == null) {
 			// Provider wasn't found and/or user was fooling with our stuff -
 			// tell him off:
@@ -133,31 +139,31 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 					provider));
 			return Controller.notFound(toJson(response));
 		}
+
 		try {
 			// Authenticate the Session Key of the request
 			final Object o = ap.authenticate(context, payload);
 			if (o instanceof String) {
 				if ("NOT_FOUND".equals(o)) {
 					TransferResponseStatus response = new TransferResponseStatus();
-					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
-					response.setStatusMessage(Messages
-							.get("playauthenticate.password.login.unknown_user_or_pw"));
-					return Controller.unauthorized(toJson(response));
-					// In case redirection is needed again
-					// return Controller.unauthorized(
-					// Messages.get("playauthenticate.password.login.unknown_user_or_pw"));
+					response.setResponseStatus(ResponseStatus.NOTAVAILABLE);
+					response.setStatusMessage(Messages.get("playauthenticate.password.login.unknown_user_or_pw"));
+					return Controller.notFound(toJson(response));
+					// In case redirection is needed again, uncomment the following and comment current return
+					// return Controller.notFound(Messages.get("playauthenticate.password.login.unknown_user_or_pw"));
 				} else if (routes.Users.unverified().url().equals(o)) {
 					TransferResponseStatus response = new TransferResponseStatus();
-					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
-					response.setStatusMessage(Messages.get("playauthenticate.user.exists.message")+" "+Messages
-							.get("playauthenticate.verify.email.cta"));
-					return Controller.unauthorized(toJson(response));
+					response.setResponseStatus(ResponseStatus.BADREQUEST);
+					response.setStatusMessage(
+					        Messages.get("playauthenticate.user.exists.message")+" "
+                                    + Messages.get("playauthenticate.verify.email.cta"));
+					return Controller.badRequest(toJson(response));
 				} else if (routes.Users.exists().url().equals(o)) {
 					TransferResponseStatus response = new TransferResponseStatus();
-					response.setResponseStatus(ResponseStatus.UNAUTHORIZED);
+					response.setResponseStatus(ResponseStatus.BADREQUEST);
 					response.setStatusMessage(Messages
 							.get("playauthenticate.user.exists.message"));
-					return Controller.unauthorized(toJson(response));
+					return Controller.badRequest(toJson(response));
 				} else {
 					return Controller.redirect((String) o);
 				}
@@ -170,7 +176,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 				/*
 				 * We might want to do merging here:
-				 * 
+				 *
 				 * Adapted from:
 				 * http://stackoverflow.com/questions/6666267/architecture
 				 * -for-merging-multiple-user-accounts-together 1. The account

@@ -60,10 +60,8 @@ public class MyUsernamePasswordAuthProvider
 			MyUsernamePasswordAuthProvider.MyLogin, 
 			MyUsernamePasswordAuthProvider.MySignup> {
 
-	private static final String SETTING_KEY_VERIFICATION_LINK_SECURE = SETTING_KEY_MAIL
-			+ "." + "verificationLink.secure";
-	private static final String SETTING_KEY_PASSWORD_RESET_LINK_SECURE = SETTING_KEY_MAIL
-			+ "." + "passwordResetLink.secure";
+	private static final String SETTING_KEY_VERIFICATION_LINK_SECURE = SETTING_KEY_MAIL + "." + "verificationLink.secure";
+	private static final String SETTING_KEY_PASSWORD_RESET_LINK_SECURE = SETTING_KEY_MAIL + "." + "passwordResetLink.secure";
 	private static final String SETTING_KEY_LINK_LOGIN_AFTER_PASSWORD_RESET = "loginAfterPasswordReset";
 
 	private static final String EMAIL_TEMPLATE_FALLBACK_LANGUAGE = "en";
@@ -105,9 +103,7 @@ public class MyUsernamePasswordAuthProvider
 	 *
 	 */
 	
-	public static class MyLogin extends MyIdentity
-			implements
-			com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider.UsernamePassword {
+	public static class MyLogin extends MyIdentity implements com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider.UsernamePassword {
 
 		//@Required
 		@MinLength(5)
