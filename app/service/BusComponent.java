@@ -23,11 +23,11 @@ import java.util.concurrent.TimeoutException;
 
 public class BusComponent {
 
-    private static final String HOST = Play.application().configuration().getString("appcivist.rabbitmq.host");
-    private static final int PORT = Play.application().configuration().getInt("appcivist.rabbitmq.port");
-    private static final String USER = Play.application().configuration().getString("appcivist.rabbitmq.user");
-    private static final String PASS = Play.application().configuration().getString("appcivist.rabbitmq.password");
-    private static final String EXCHANGE = Play.application().configuration().getString("appcivist.rabbitmq.exchange");
+    private static final String HOST = Play.application().configuration().getString("appcivist.services.rabbitmq.host");
+    private static final int PORT = Play.application().configuration().getInt("appcivist.services.rabbitmq.port");
+    private static final String USER = Play.application().configuration().getString("appcivist.services.rabbitmq.user");
+    private static final String PASS = Play.application().configuration().getString("appcivist.services.rabbitmq.password");
+    private static final String EXCHANGE = Play.application().configuration().getString("appcivist.services.rabbitmq.exchange");
 
     private static Connection connection = null;
 
