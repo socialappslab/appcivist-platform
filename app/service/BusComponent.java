@@ -38,6 +38,7 @@ public class BusComponent {
             factory.setPort(PORT);
             factory.setUsername(USER);
             factory.setPassword(PASS);
+            factory.setConnectionTimeout(0);
             connection = factory.newConnection();
         }
         return connection;
