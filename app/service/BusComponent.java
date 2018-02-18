@@ -39,7 +39,10 @@ public class BusComponent {
             factory.setUsername(USER);
             factory.setPassword(PASS);
             factory.setConnectionTimeout(0);
+            factory.setHandshakeTimeout(20000);
+            Logger.info("Trying to connect to rabbit ");
             connection = factory.newConnection();
+            Logger.debug("Connection successful");
         }
         return connection;
     }
@@ -68,6 +71,7 @@ public class BusComponent {
 
     private static void sendNewsletterMail(Long userId, String body) {
         User fullUser = User.findByUserId(userId);
+        Logger.debug("Sending mail to "+ fullUser.getEmail());
         boolean send = false;
         String mail = null;
         List<Config> configs = Config.findByUser(fullUser.getUuid());
