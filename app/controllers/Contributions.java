@@ -4371,27 +4371,31 @@ public class Contributions extends Controller {
     }
 
     private static File getExportFile(Contribution contribution, String includeExtendedText, String extendedTextFormat,
-                                      String format) throws IOException, GeneralSecurityException, DocumentException {
+                                      String format) throws Exception {
         Logger.debug("Exporting contribution " + (contribution != null ? contribution.getContributionId() : "(null)") + " to " + format);
         File tempFile = null;
         LinkedHashMap<String,String> contributionMap = new LinkedHashMap<>();
+        Logger.debug("EXPORT: Exporting metadata...");
         contributionMap.put(contribution.getType().toString(),contribution.getContributionId()+"\n");
         contributionMap.put("Status",contribution.getStatus()+"\n");
         contributionMap.put("Title",contribution.getTitle());
+        Logger.debug("EXPORT: Group author...");
         if (contribution.getWorkingGroupAuthors()!=null && contribution.getWorkingGroupAuthors().size()>0)
             contributionMap.put("Group",contribution.getWorkingGroupAuthors().get(0).getName());
         String authors = "";
+        Logger.debug("EXPORT: Exporting user authors...");
         for (User u: contribution.getAuthors()) {
             authors+=" -"+ u.getName() != null ? u.getName() : u.getEmail()+"\n";
         }
         contributionMap.put("\nAuthors","\n"+authors);
 
         String themes = "";
+        Logger.debug("EXPORT: Exporting themes...");
         for (Theme t: contribution.getOfficialThemes()) {
             themes += "- " + t.getTitle()+"\n";
         }
         contributionMap.put("\n\nThemes","\n"+themes);
-
+        Logger.debug("EXPORT: Exporting keywords...");
         String keywords = "";
         int keycount = 0;
         for (Theme t: contribution.getEmergentThemes()) {
@@ -4399,11 +4403,13 @@ public class Contributions extends Controller {
             keycount++;
         }
         contributionMap.put("\n\nKeywords",keywords);
-
+        Logger.debug("EXPORT: Adding brief summary...");
         contributionMap.put("Brief Summary","\n\n"+contribution.getPlainText());
 
-        contributionMap.put("Main document link", contribution.getExtendedTextPad().getUrlAsString());
+        Logger.debug("EXPORT: Adding main document link...");
+        contributionMap.put("Main document link", contribution.getExtendedTextPad() !=null ? contribution.getExtendedTextPad().getUrlAsString() : "[no extended document]");
 
+        Logger.debug("EXPORT: Adding attachment links...");
         String attachments = "";
         int attcount = 0;
         for (Resource t: contribution.getResourceSpace().getResources()) {
@@ -4412,6 +4418,7 @@ public class Contributions extends Controller {
         }
         contributionMap.put("\n\nAttachments and Media", "\n"+attachments);
 
+        Logger.debug("EXPORT: Adding custom fields...");
         contributionMap.put("\n\nAdditional Information","\n\n");
         int cfcount = 0;
         for (CustomFieldValue t: contribution.getCustomFieldValues()) {
@@ -4419,8 +4426,9 @@ public class Contributions extends Controller {
             String fieldValue = t.getValue();
             contributionMap.put( ++cfcount +". "+fieldName, fieldValue);
         }
-        String fileName = "/tmp/" + CONTRIBUTION_FILE_NAME.replace(CONTRIBUTION_ID_PARAM,
-                contribution.getContributionId().toString());
+        String fileName = "/tmp/" + CONTRIBUTION_FILE_NAME.replace(CONTRIBUTION_ID_PARAM,contribution.getContributionId().toString());
+        Logger.debug("Preparing to save temporal file => " + fileName);
+
         switch (format.toUpperCase()) {
             case "PDF":
                 tempFile = new File(fileName+".pdf");
