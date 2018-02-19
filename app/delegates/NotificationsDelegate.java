@@ -874,24 +874,23 @@ public class NotificationsDelegate {
     public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) throws ConfigurationException {
         NotificationServiceWrapper ns = new NotificationServiceWrapper();
         WSResponse response = ns.createNotificationSubscription(subscription);
-        // Relay response to requestor
-        if (response.getStatus() == 200) {
-            Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
-            return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
-        } else {
-            Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
-            return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
-        }
+        return processSubscribeToEventResponse(response);
     }
 
     /* Subscriptions */
     public static Result subscribeToEvent(Subscription subscription) throws ConfigurationException {
         NotificationServiceWrapper ns = new NotificationServiceWrapper();
         WSResponse response = ns.createNotificationSubscription(subscription);
-        // Relay response to requestor
-        if (response.getStatus() == 200) {
+        return processSubscribeToEventResponse(response);
+    }
+
+    private static Result processSubscribeToEventResponse(WSResponse response) {
+        if (response != null && response.getStatus() == 200) {
             Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
             return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
+        } else if (response == null) {
+            Logger.info("NOTIFICATION: Error while subscribing =>  No response from notifications server");
+            return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", "NOTIFICATION: Error while subscribing =>  No response from notifications server")));
         } else {
             Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
             return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));

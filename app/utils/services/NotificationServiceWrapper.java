@@ -5,6 +5,7 @@ import models.Subscription;
 import models.transfer.NotificationEventTransfer;
 import models.transfer.NotificationSignalTransfer;
 import models.transfer.NotificationSubscriptionTransfer;
+import org.dozer.DozerBeanMapper;
 import play.Logger;
 import play.Play;
 import play.libs.F.Function;
@@ -17,6 +18,7 @@ import utils.GlobalData;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class NotificationServiceWrapper {
 
@@ -27,6 +29,13 @@ public class NotificationServiceWrapper {
     private final String SUBSCRIPTIONS = "/subscriptions";
     private final String ENDPOINT = "/endpoint";
     private static final long DEFAULT_TIMEOUT = 10000;
+    public static DozerBeanMapper mapper;
+
+    static {
+        List<String> mappingFiles = Play.application().configuration().getStringList("appcivist.dozer.mappingFiles");
+        mapper = new DozerBeanMapper(mappingFiles);
+    }
+
 
 
     public NotificationServiceWrapper() throws ConfigurationException {
@@ -68,11 +77,8 @@ public class NotificationServiceWrapper {
      */
     @Deprecated
     public WSResponse createNotificationSubscription(NotificationSubscriptionTransfer notificationSubscription) {
-        WSRequest holder = getWSHolder(SUBSCRIPTIONS, "POST", notificationSubscription);
-        Logger.info("NOTIFICATION: Creating notification SUBSCRIPTION in notification service: " + holder.getUrl());
-        Promise<WSResponse> promise = wsSend(holder);
-        WSResponse response = promise.get(DEFAULT_TIMEOUT);
-        return response;
+        Subscription s = mapper.map(notificationSubscription,Subscription.class);
+        return createNotificationSubscription(s);
     }
 
     /**
@@ -87,7 +93,13 @@ public class NotificationServiceWrapper {
         Logger.info("NOTIFICATION: Creating notification SUBSCRIPTION in notification service: " + holder.getUrl());
         Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
-        return response;
+        try {
+            return response;
+        } catch (Exception e) {
+            Logger.debug("Error connecting to "+SUBSCRIPTIONS);
+            Logger.debug(e.getMessage());
+            return null;
+        }
     }
 
     /**
