@@ -41,5 +41,5 @@ All the components of this software are provided under a dual license model desi
 For open source projects, AppCivist is distributed under the terms of the [Social Apps Lab Open Source License](LICENSE). If you intend to use this software for commercial purposes, contact the project members presented in the next section.
 
 # Who do I talk to?
-- James Holston: james AT berkeley DOT edu (Director, Social Apps Lab)
+- James Holston: jholston AT berkeley DOT edu (Director, Social Apps Lab)
 - Cristhian Parra cdparra AT gmail DOT com (Chief Developer)
