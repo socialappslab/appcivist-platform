@@ -165,6 +165,11 @@ public class Subscription extends Model {
         return findSubscriptionByUserIdAndSpaceId(u.getUuidAsString(),rsUUID);
     }
 
+    public static List<Subscription> findByUserIdAndSpaceIdAndType(User u, String rsUUID, String type) {
+        return findSubscriptionByUserIdAndSpaceIdAndType(u.getUuidAsString(), rsUUID, type);
+    }
+
+
     public static Boolean existByUserIdAndSpaceId(User u, ResourceSpace resourceSpace) {
         List<Subscription> membs = findSubscriptionByUserIdAndSpaceId(u.getUuidAsString(),resourceSpace.getUuidAsString());
         return !membs.isEmpty();
@@ -174,6 +179,16 @@ public class Subscription extends Model {
         return find.where()
                 .eq("userId",userUUID)
                 .eq("spaceId",resourceSpaceUUID)
+                .query()
+                .findList();
+    }
+
+
+    public static List<Subscription> findSubscriptionByUserIdAndSpaceIdAndType (String userUUID, String resourceSpaceUUID, String type) {
+        return find.where()
+                .eq("userId",userUUID)
+                .eq("spaceId",resourceSpaceUUID)
+                .eq("subscriptionType",type)
                 .query()
                 .findList();
     }

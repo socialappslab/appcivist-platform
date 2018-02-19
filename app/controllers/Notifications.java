@@ -18,6 +18,7 @@ import io.swagger.annotations.*;
 import models.*;
 import models.transfer.*;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F;
@@ -125,51 +126,74 @@ public class Notifications extends Controller {
         }
     }*/
 
-    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
+    @ApiOperation(response = Subscription.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
-    public static Result subscribe() {
+    public static Result subscribe(Long sid) {
         // Get the user record of the creator
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
 
-        JsonNode json = request().body().asJson();
-        Subscription sub = Json.fromJson(json, Subscription.class);
+        final Form<Subscription> newSubscriptionForm = SUBSCRIPTION_FORM_NEW.bindFromRequest();
 
-        sub.setUserId(subscriber.getUuid().toString());
-        Logger.info("Ignored Events " + sub.getIgnoredEvents());
-        if(sub.getIgnoredEvents()==null || sub.getIgnoredEvents().isEmpty()){
-            Logger.info("Ignored Events null or empty. Setting default value");
-            HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
-            ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
-            sub.setIgnoredEvents(ignoredEvents);
+        if (newSubscriptionForm.hasErrors()) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("Error in subscription model");
+            return badRequest(Json.toJson(responseBody));
+        } else {
+//        JsonNode json = request().body().asJson();
+//        Subscription sub = Json.fromJson(json, Subscription.class);
+            Subscription sub = newSubscriptionForm.get();
+            sub.setUserId(subscriber.getUuid().toString());
+            Logger.debug("Ignored Events " + sub.getIgnoredEvents());
+            if (sub.getIgnoredEvents() == null || sub.getIgnoredEvents().isEmpty()) {
+                Logger.info("Ignored Events null or empty. Setting default value");
+                HashMap<String, Boolean> ignoredEvents = new HashMap<String, Boolean>();
+                ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
+                sub.setIgnoredEvents(ignoredEvents);
+            }
+            Logger.info("New subscription USER ID: " + sub.getUserId());
+            Logger.info("New subscription SPACE ID: " + sub.getSpaceId());
+            Logger.info("New subscription SPACE TYPE: " + sub.getSpaceType());
+            Logger.info("New subscription TYPE: " + sub.getSubscriptionType());
+            try {
+                sub.insert();
+
+                // Send subscription also to Social Bus
+                F.Promise.promise(() -> {
+                    Boolean socialBusEnabled = Play.application().configuration().getBoolean("appcivist.services.notification.default.useSocialBus");
+                    if (socialBusEnabled) {
+                        Result r = NotificationsDelegate.subscribeToEvent(sub);
+                    }
+                    return Optional.ofNullable(null);
+                });
+
+                // Bootstrap notifications for users by creating signals for user out of the last 20
+                // signals related to the subscription
+                F.Promise.promise(() -> {
+                    NotificationsDelegate.initializeUserSignals(sub);
+                    return Optional.ofNullable(null);
+                });
+            } catch (Exception e) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                String error = e.getMessage();
+                Boolean uniqueConstraintError = error.contains("unique constraint");
+                if (uniqueConstraintError) {
+                    error = "User is already subscribed to this space";
+                    responseBody.setStatusMessage("Error creating subscription: " + error);
+                    Logger.info("Subscription already exists");
+                    return ok(Json.toJson(responseBody));
+                } else {
+                    responseBody.setStatusMessage("Error creating subscription: " + error);
+                    Logger.error("Configuration error: ", e);
+                    return internalServerError(Json.toJson(responseBody));
+                }
+            }
+            sub.refresh();
+            return ok(Json.toJson(sub));
         }
-        Logger.info("USER ID: " + sub.getUserId());
-        try {
-            sub.insert();
-            F.Promise.promise(() -> {
-                Result r = NotificationsDelegate.subscribeToEvent(sub);
-                return Optional.ofNullable(null);
-            });
-		} catch (Exception e) {
-			TransferResponseStatus responseBody = new TransferResponseStatus();
-			String error = e.getMessage();
-			Boolean uniqueConstraintError = error.contains("unique constraint");
-			if (uniqueConstraintError) {
-				error = "User is already subscribed to this space";
-	            responseBody.setStatusMessage("Error creating subscription: "+error);
-	            Logger.info("Subscription already exists");
-	            return ok(Json.toJson(responseBody));
-			} else {
-	            responseBody.setStatusMessage("Error creating subscription: "+error);
-	            Logger.error("Configuration error: ", e);
-	            return internalServerError(Json.toJson(responseBody));
-			}
-		}
-		sub.refresh();
-        return ok(Json.toJson(sub));
     }
 
     @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Unsubscribe to stop receiving notifications for eventName on origin", httpMethod = "DELETE")
@@ -363,6 +387,7 @@ public class Notifications extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
+    @Deprecated
     public static Result subscribeToResourceSpace(Long sid) {
         // TODO: review the manageSubscriptionToResourceSpace method
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
@@ -576,19 +601,18 @@ public class Notifications extends Controller {
         }
     }
 
-    @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Return if a user is subscribed to a notification or not", httpMethod = "GET")
+    @ApiOperation(response = Subscription.class, responseContainer = "List", produces = "application/json", value = "Return if a user is subscribed to a notification or not", httpMethod = "GET")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({@Group(GlobalData.USER_ROLE)})
-    public static Result findByUserAndResourceSpace(Long sid) {
+    public static Result findByUserAndResourceSpace(Long uid, Long sid, String type) {
         User subscriber = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace rs = ResourceSpace.read(sid);
         if(rs == null) {
             return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
         }
-        Map<String, Object> aRet = new HashMap<>();
-        aRet.put("subscribed", Subscription.existByUserIdAndSpaceId(subscriber,rs));
-        return ok(Json.toJson(aRet));
+        List<Subscription> subscriptions = Subscription.findByUserIdAndSpaceIdAndType(subscriber,rs.getUuidAsString(),type);
+        return ok(Json.toJson(subscriptions));
     }
 }

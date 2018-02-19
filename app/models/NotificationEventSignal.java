@@ -1,7 +1,6 @@
 package models;
 
-import com.avaje.ebean.Expression;
-import com.avaje.ebean.ExpressionList;
+import com.avaje.ebean.*;
 import com.avaje.ebean.annotation.DbJsonB;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,26 +58,6 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 
 	@Column(name = "rich_text")
 	private String richText;
-
-	// Information about the space where the event happened
-	/*private UUID origin;
-	@Enumerated(EnumType.STRING)
-	private ResourceSpaceTypes originType;
-	@Enumerated(EnumType.STRING)
-	private NotificationEventName eventName;
-	private String originName;
-
-
-	// Information about the resource related to this event
-	private String resourceType;
-	private UUID resourceUUID;
-	private String resourceTitle;
-	private String resourceText;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-	private Date notificationDate = new Date();
-	private String associatedUser;
-	private Boolean signaled = false;*/
-
 
 	public Long getId() {
 		return id;
@@ -188,6 +167,42 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 				.orderBy("creation desc");
 		return q.findList();
 	}
+
+	public static List<NotificationEventSignal> findLastNtByOriginUuid(String originId, String signalType, Integer number) {
+		return findLastNtByOriginUuidWithFilteredEvents(originId,signalType,number,null);
+	}
+
+
+	public static List<NotificationEventSignal> findLastNtByOriginUuidWithFilteredEvents
+            (String originId, String signalType, Integer number, List<String> filteredEvents) {
+		ExpressionList<NotificationEventSignal> q = null;
+		String rawQ =   " select s.id, s.creation, s.last_update, s.lang, s.removal, s.removed, " +
+                        " s.space_type, s.signal_type, s.event_id, s.text, s.title, s.data, s.rich_text " +
+                        " from notification_event_signal s " +
+                        " order by s.creation desc";
+
+        RawSql rawSql = RawSqlBuilder.parse(rawQ).create();
+        q = find.setRawSql(rawSql).where();
+        q.eq("s.signal_type",signalType);
+        q.eq("s.data->>'origin'", originId);
+        q.setMaxRows(number);
+
+        for(String filter : filteredEvents) {
+            q.not(Expr.like("s.event_id", filter));
+        }
+
+		return q.findList();
+	}
+
+	public static List<NotificationEventSignal> findLastNtByOriginUuidAndFilters(String spaceId, Integer number) {
+		ExpressionList<NotificationEventSignal> q = find.where();
+		q.eq("data->>'origin'", spaceId)
+				.eq("signalType", SubscriptionTypes.REGULAR.name())
+				.orderBy("creation desc")
+				.setMaxRows(number);
+		return q.findList();
+	}
+
 	public static List<NotificationEventSignal> findLatestIdeasByOriginUuid(String spaceId, Integer days) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.DAY_OF_MONTH, - days);
