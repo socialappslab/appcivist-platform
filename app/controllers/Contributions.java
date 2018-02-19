@@ -376,40 +376,37 @@ public class Contributions extends Controller {
 
                 } else {
                     F.Promise.promise(() -> {
-                        List<File> aRet = new ArrayList<>();
-                        if (format.toUpperCase().equals("JSON") || format.toUpperCase().equals("CSV")) {
-                            aRet.add(getExportFileCsvJson(contributions, true, format));
-                        } else if (collectionFileFormat != null &&
-                                (collectionFileFormat.toUpperCase().equals("CSV") || collectionFileFormat.toUpperCase().equals("JSON"))) {
-                            aRet.add(getExportFileCsvJson(contributions, true, collectionFileFormat));
-                        } else {
-                            aRet.add(getExportFileCsvJson(contributions, true, "JSON"));
-                            aRet.add(getExportFileCsvJson(contributions, true, "CSV"));
-                        }
-                        for (Contribution contribution : contributions) {
-                            try {
+                        try {
+                            List<File> aRet = new ArrayList<>();
+                            if (format.toUpperCase().equals("JSON") || format.toUpperCase().equals("CSV")) {
+                                aRet.add(getExportFileCsvJson(contributions, true, format));
+                            } else if (collectionFileFormat != null &&
+                                    (collectionFileFormat.toUpperCase().equals("CSV") || collectionFileFormat.toUpperCase().equals("JSON"))) {
+                                aRet.add(getExportFileCsvJson(contributions, true, collectionFileFormat));
+                            } else {
+                                aRet.add(getExportFileCsvJson(contributions, true, "JSON"));
+                                aRet.add(getExportFileCsvJson(contributions, true, "CSV"));
+                            }
+                            for (Contribution contribution : contributions) {
                                 aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, format));
-                            } catch (DocumentException e) {
-                                e.printStackTrace();
-                                return internalServerError(Json
-                                        .toJson(new TransferResponseStatus(
-                                                ResponseStatus.SERVERERROR,
-                                                "Error reading contribution stats: " + e.getMessage())));
+                                if (includeExtendedText.toUpperCase().equals("TRUE")) {
+                                    aRet.add(getPadFile(contribution, extendedTextFormat, format));
+                                }
                             }
-                            if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                                aRet.add(getPadFile(contribution, extendedTextFormat, format));
-                            }
+                            User user = User.findByAuthUserIdentity(PlayAuthenticate
+                                    .getUser(session()));
+                            String fileName = "contribution" + new Date().getTime() + ".zip";
+                            String path = Play.application().path().getAbsolutePath() +
+                                    Play.application().configuration().getString("application.contributionFilesPath") + fileName;
+                            File zip = new File(path);
+                            Packager.packZip(zip, aRet);
+                            String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
+                            MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+                            provider.sendZipContributionFile(url, user.getEmail());
+                        } catch (DocumentException e) {
+                            Logger.info(e.getMessage());
+                            Logger.debug(e.getStackTrace().toString());
                         }
-                        User user = User.findByAuthUserIdentity(PlayAuthenticate
-                                .getUser(session()));
-                        String fileName = "contribution" + new Date().getTime() + ".zip";
-                        String path = Play.application().path().getAbsolutePath() +
-                                Play.application().configuration().getString("application.contributionFilesPath") + fileName;
-                        File zip = new File(path);
-                        Packager.packZip(zip, aRet);
-                        String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
-                        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-                        provider.sendZipContributionFile(url, user.getEmail());
                         return Optional.ofNullable(null);
                     });
                 }
