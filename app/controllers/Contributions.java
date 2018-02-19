@@ -4445,9 +4445,10 @@ public class Contributions extends Controller {
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
                     Logger.debug("EXPORT: Writing "+pair.getKey().toString()+"");
-                    document.add(new Paragraph(pair.getKey().toString() + ": " + pair.getValue().toString()));
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+                    document.add(new Paragraph(key + ": " + value));
                 }
-
                 document.close();
                 break;
 
@@ -4459,7 +4460,9 @@ public class Contributions extends Controller {
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
                     Logger.debug("EXPORT: Writing "+pair.getKey().toString()+"");
-                    writer.write(pair.getKey().toString() + ": " + pair.getValue().toString());
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+                    writer.write(key + ": " + value);
                     writer.write(newLine);
                 }
                 writer.close();
@@ -4483,12 +4486,15 @@ public class Contributions extends Controller {
                 while (it.hasNext()) {
                     Map.Entry pair = (Map.Entry)it.next();
                     it.remove();
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+
                     if(it.hasNext()) {
-                        head = head + pair.getKey() + "\t";
-                        detail = detail + pair.getValue() + "\t";
+                        head = head + key + "\t";
+                        detail = detail + value + "\t";
                     }else{
-                        head = head + pair.getKey() + "\n";
-                        detail = detail + pair.getValue();
+                        head = head + key + "\n";
+                        detail = detail + value;
                     }
                 }
                 String text = head + detail;
@@ -4504,7 +4510,9 @@ public class Contributions extends Controller {
                 XWPFRun run = paragraph.createRun();
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
-                    run.setText(pair.getKey().toString() + ": " + pair.getValue().toString());
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+                    run.setText(key + ": " + value);
                 }
                 doc.write(out);
                 //Close document
