@@ -1206,7 +1206,10 @@ public class NotificationsDelegate {
         LocalDate friday = now.withDayOfWeek(DateTimeConstants.FRIDAY);
         String week = monday.getDayOfMonth() + " " + monday.toString("MMM")
                 + " - " + friday.getDayOfMonth() + " " + friday.toString("MMM");
-        String unsuscribeUrl = Play.application().configuration().getString("newsletter.unsuscribeUrl");
+        String unsuscribeUrl = Play.application().configuration().getString("appcivist.newsletter.unsuscribeUrl");
+        if(unsuscribeUrl == null) {
+            unsuscribeUrl = "";
+        }
         switch (spaceType) {
             case CAMPAIGN:
                 Campaign campaign = Campaign.readByUUID(spaceID);

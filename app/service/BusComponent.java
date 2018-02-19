@@ -23,11 +23,11 @@ import java.util.concurrent.TimeoutException;
 
 public class BusComponent {
 
-    private static final String HOST = Play.application().configuration().getString("appcivist.rabbitmq.host");
-    private static final int PORT = Play.application().configuration().getInt("appcivist.rabbitmq.port");
-    private static final String USER = Play.application().configuration().getString("appcivist.rabbitmq.user");
-    private static final String PASS = Play.application().configuration().getString("appcivist.rabbitmq.password");
-    private static final String EXCHANGE = Play.application().configuration().getString("appcivist.rabbitmq.exchange");
+    private static final String HOST = Play.application().configuration().getString("appcivist.services.rabbitmq.host");
+    private static final int PORT = Play.application().configuration().getInt("appcivist.services.rabbitmq.port");
+    private static final String USER = Play.application().configuration().getString("appcivist.services.rabbitmq.user");
+    private static final String PASS = Play.application().configuration().getString("appcivist.services.rabbitmq.password");
+    private static final String EXCHANGE = Play.application().configuration().getString("appcivist.services.rabbitmq.exchange");
 
     private static Connection connection = null;
 
@@ -38,7 +38,11 @@ public class BusComponent {
             factory.setPort(PORT);
             factory.setUsername(USER);
             factory.setPassword(PASS);
+            factory.setConnectionTimeout(0);
+            factory.setHandshakeTimeout(20000);
+            Logger.info("Trying to connect to rabbit ");
             connection = factory.newConnection();
+            Logger.debug("Connection successful");
         }
         return connection;
     }
@@ -67,6 +71,7 @@ public class BusComponent {
 
     private static void sendNewsletterMail(Long userId, String body) {
         User fullUser = User.findByUserId(userId);
+        Logger.debug("Sending mail to "+ fullUser.getEmail());
         boolean send = false;
         String mail = null;
         List<Config> configs = Config.findByUser(fullUser.getUuid());

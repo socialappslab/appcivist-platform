@@ -6,6 +6,7 @@ import enums.ResourceSpaceTypes;
 import enums.SubscriptionTypes;
 import exceptions.ConfigurationException;
 import models.Campaign;
+import models.ResourceSpace;
 import models.Subscription;
 import models.WorkingGroup;
 import play.Logger;
@@ -45,10 +46,12 @@ public class NewsletterCreatorSchedule extends DailySchedule {
                 try {
                     Logger.info("Newsletter Creator Scheduler for uuid " +spaceId);
                     if(sub.getSpaceType().equals(ResourceSpaceTypes.CAMPAIGN)) {
-                        Campaign campaign = Campaign.readByUUID(UUID.fromString(spaceId));
+                        ResourceSpace rs = ResourceSpace.readByUUID(UUID.fromString(spaceId));
+                        Campaign campaign = rs.getCampaign();
                         NotificationsDelegate.newNewsletterInCampaign(campaign, UUID.fromString(sub.getUserId()));
                     } else {
-                        WorkingGroup workingGroup = WorkingGroup.readByUUID(UUID.fromString(spaceId));
+                        ResourceSpace rs = ResourceSpace.readByUUID(UUID.fromString(spaceId));
+                        WorkingGroup workingGroup = rs.getWorkingGroupResources();
                         NotificationsDelegate.newNewsletterInWorkingGroup(workingGroup, UUID.fromString(sub.getUserId()));
                     }
                 } catch (ConfigurationException e) {
