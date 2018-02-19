@@ -20,6 +20,7 @@ import models.transfer.*;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -147,9 +148,11 @@ public class Notifications extends Controller {
         }
         Logger.info("USER ID: " + sub.getUserId());
         try {
-            NotificationsDelegate.subscribeToEvent(sub);
-
             sub.insert();
+            F.Promise.promise(() -> {
+                Result r = NotificationsDelegate.subscribeToEvent(sub);
+                return Optional.ofNullable(null);
+            });
 		} catch (Exception e) {
 			TransferResponseStatus responseBody = new TransferResponseStatus();
 			String error = e.getMessage();
@@ -165,8 +168,8 @@ public class Notifications extends Controller {
 	            return internalServerError(Json.toJson(responseBody));
 			}
 		}
-
-        return ok();
+		sub.refresh();
+        return ok(Json.toJson(sub));
     }
 
     @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Unsubscribe to stop receiving notifications for eventName on origin", httpMethod = "DELETE")
