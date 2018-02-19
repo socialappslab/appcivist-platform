@@ -468,7 +468,15 @@ public class MyUsernamePasswordAuthProvider
 		final String token = generatePasswordResetRecord(user);
 		final String subject = getPasswordResetMailingSubject(user, ctx);
 		final Body body = getPasswordResetMailingBody(token, user, ctx, configUrl);
-		mailer.sendMail(subject, body, getEmailName(user));
+		F.Promise.promise(() -> {
+			try {
+				mailer.sendMail(subject, body, getEmailName(user));
+			} catch (Exception e) {
+				Logger.debug("Forgot password email not sent.");
+				Logger.debug(e.getMessage());
+			}
+			return Optional.ofNullable(null);
+		});
 	}
 
 	public boolean isLoginAfterPasswordReset() {
@@ -546,8 +554,6 @@ public class MyUsernamePasswordAuthProvider
 		final String langCode = userLangCode !=null ? userLangCode : lang.code();
 		ctx.changeLang(lang);
 		String locale = langCode;
-
-		;
 
 		if (Pattern.compile("it", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "it";
@@ -676,8 +682,16 @@ public class MyUsernamePasswordAuthProvider
 		final String subject = getMembershipInvitationEmail(targetCollection+"("+m.getTargetAssembly()+")");
 		final String token = generateNewMembershipInvitation(m.getUser());
 		final Body body = getMembershipInvitationEmailBody(token, m);
-		mailer.sendMail(subject, body, getEmailName(m.getUser()));
-	}
+        F.Promise.promise(() -> {
+            try {
+                mailer.sendMail(subject, body, getEmailName(m.getUser()));
+            } catch (Exception e) {
+                Logger.debug("Membership invitation email not sent.");
+                Logger.debug(e.getMessage());
+            }
+            return Optional.ofNullable(null);
+        });
+    }
 
 	public static void sendNewsletterEmail(String mail, String template) {
 		final String subject = "New Newsletter";
@@ -686,7 +700,15 @@ public class MyUsernamePasswordAuthProvider
 		Mailer mailer = Mailer.getCustomMailer(PlayAuthenticate.getConfiguration().getConfig("password").getConfig(
 				"mail"));
 		Logger.info("Sending " + body.getHtml());
-		mailer.sendMail(subject, body, mail);
+        F.Promise.promise(() -> {
+            try {
+                mailer.sendMail(subject, body, mail);
+            } catch (Exception e) {
+                Logger.debug("Newsletter email not sent.");
+                Logger.debug(e.getMessage());
+            }
+            return Optional.ofNullable(null);
+        });
 	}
 	
 	public void sendInvitationByEmail(final InvitationTransfer invitation, String targetCollection, Long id) {
@@ -694,7 +716,13 @@ public class MyUsernamePasswordAuthProvider
 		final String token = generateNewInvitation(invitation.getEmail());
 		final Body body = getInvitationEmailBody(token, id, invitation, targetCollection);
 		mailer.sendMail(subject, body, invitation.getEmail());
-	}
+        F.Promise.promise(() -> {
+            try {
+            } catch (Exception e) {
+            }
+            return Optional.ofNullable(null);
+        });
+    }
 	
 	public void sendInvitationByEmail(final MembershipInvitation invitation, String invitationEmail, String invitationSubject) {
 		final String subject = invitationSubject;
