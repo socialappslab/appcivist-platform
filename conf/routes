@@ -77,7 +77,7 @@ GET       /api/user/:uid                                                        
 ##################################################################################################################################################################
 # Subscriptions and Notifications - NEW
 GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0, type: String?=null)
-GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?=null)
+GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?="REGULAR")
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
 PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
 POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
