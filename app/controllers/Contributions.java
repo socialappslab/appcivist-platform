@@ -4432,7 +4432,7 @@ public class Contributions extends Controller {
         switch (format.toUpperCase()) {
             case "PDF":
                 tempFile = new File(fileName+".pdf");
-                Logger.debug("Saving contribution in "+fileName+".pdf");
+                Logger.debug("EXPORT: Saving contribution in "+fileName+".pdf");
                 FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
                 Document document = new Document();
                 PdfWriter.getInstance(document, fileOutputStream);
@@ -4440,9 +4440,11 @@ public class Contributions extends Controller {
                 PdfPTable table = new PdfPTable(contributionMap.size());
                 table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
                 table.getDefaultCell().setPadding(5f);
+                Logger.debug("EXPORT: Writing data to file "+fileName+".pdf");
 
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
+                    Logger.debug("EXPORT: Writing "+pair.getKey().toString()+"");
                     document.add(new Paragraph(pair.getKey().toString() + ": " + pair.getValue().toString()));
                 }
 
@@ -4452,10 +4454,11 @@ public class Contributions extends Controller {
             case "TXT":
                 String newLine = System.getProperty("line.separator");
                 tempFile = new File(fileName+".txt");
-                Logger.debug("Saving contribution in "+fileName+".txt");
+                Logger.debug("EXPORT: Saving contribution in "+fileName+".txt");
                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
+                    Logger.debug("EXPORT: Writing "+pair.getKey().toString()+"");
                     writer.write(pair.getKey().toString() + ": " + pair.getValue().toString());
                     writer.write(newLine);
                 }
@@ -4464,7 +4467,7 @@ public class Contributions extends Controller {
             case "RTF":
                 tempFile = new File(fileName+".rtf");
                 fileOutputStream = new FileOutputStream(tempFile);
-                Logger.debug("Saving contribution in "+fileName+".rtf");
+                Logger.debug("EXPORT: Saving contribution in "+fileName+".rtf");
                 document = new Document();
                 RtfWriter2.getInstance(document, fileOutputStream);
                 // Create a new Paragraph for the footer
