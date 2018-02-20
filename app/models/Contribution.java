@@ -1,45 +1,28 @@
 package models;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import enums.ThemeTypes;
-import enums.MyRoles;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.persistence.*;
-
-import io.swagger.models.auth.In;
-import models.location.Location;
-import models.misc.Views;
-
-import org.geojson.*;
-import org.geojson.jackson.CrsType;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
-
-import play.Logger;
-import play.data.validation.Constraints.Required;
-import utils.TextUtils;
-
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import models.location.Location;
+import models.misc.Views;
+import org.geojson.FeatureCollection;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
+import play.Logger;
+import play.data.validation.Constraints.Required;
+import utils.LocationUtilities;
 
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ResourceSpaceTypes;
+import javax.persistence.*;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -1577,50 +1560,20 @@ public class Contribution extends AppCivistBaseModel {
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
         this.customFieldValues = customFieldValues;
     }
-
-    private static double[] polygonCenter(double[]... polygonPoints) {
-        double cumLon = 0;
-        double cumLat = 0;
-        for (double[] coordinate : polygonPoints) {
-            cumLon += coordinate[0];
-            cumLat += coordinate[1];
-        }
-        return new double[] { cumLon / polygonPoints.length, cumLat / polygonPoints.length };
-    }
-
     private static void geoJsonLogic(Contribution c, ResourceSpace rs) {
         //if the contribution has a geojson
         if(c.getLocation() != null && c.getLocation().getGeoJson() != null) {
             Logger.debug("Contribution has location and geoJson");
             try {
                 FeatureCollection featureCollection =
-                        new ObjectMapper().readValue(c.getLocation().getGeoJson().replaceAll("'","\""), FeatureCollection.class);
-                //if geojson doesnt has a center, calculate it.
-                if(!(featureCollection.getFeatures().get(0).getGeometry() instanceof Point)) {
-                    Logger.debug(" geoJson has not center");
-                    Polygon polygon = (Polygon) featureCollection.getFeatures().get(0).getGeometry();
-                    double[][] points = new double[polygon.getCoordinates().get(0).size()][2];
-                    int i = 0;
-                    for (LngLatAlt lat: polygon.getCoordinates().get(0)) {
-                        double[] point = {0,0};
-                        point[0] = lat.getLatitude();
-                        point[1] = lat.getLongitude();
-                        points[i] = point;
-                        i++;
-                    }
-                    double[] center = polygonCenter(points);
-                    Point centerPoint = new Point();
-                    LngLatAlt lon = new LngLatAlt();
-                    lon.setLongitude(center[0]);
-                    lon.setLatitude(center[1]);
-                    centerPoint.setCoordinates(lon);
-                    featureCollection.getFeatures().get(0).setGeometry(centerPoint);
+                        new ObjectMapper().readValue(c.getLocation().getGeoJson()
+                                .replaceAll("'","\""), FeatureCollection.class);
+                    featureCollection.getFeatures().get(0).setGeometry(LocationUtilities.polygonCenter(featureCollection));
                     String json= new ObjectMapper().writeValueAsString(featureCollection);
                     c.getLocation().setGeoJson(json.replaceAll("\"","'"));
+                } catch (IOException e) {
+                    Logger.error("Error calculating center point ", e);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         } else {
             //if the contribution doesnt has a geojson use contribution or working group geojson
             if(c.getLocation() != null) {
