@@ -9,6 +9,7 @@ import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.transfer.NotificationSignalTransfer;
+import play.Logger;
 
 import javax.persistence.*;
 import java.util.HashMap;
@@ -223,6 +224,9 @@ public class Subscription extends Model {
     * subscription.subscriptionType === signal.signalType
     * subscription.ignoredEventsList[signal.eventName] === null OR false
          */
+        Logger.debug("spacetype " + signal.getSpaceType());
+        Logger.debug("spaceId " + signal.getSpaceId());
+        Logger.debug("sub type " + signal.getSignalType());
         com.avaje.ebean.Query<Subscription> q = find.where()
                 .eq("spaceType",signal.getSpaceType())
                 .eq("spaceId", signal.getSpaceId())
@@ -230,6 +234,23 @@ public class Subscription extends Model {
                 .query();
         List<Subscription> membs = q.findList();
         return membs;
+    }
+
+    public static Subscription findBySignalAndUser(NotificationSignalTransfer signal, String userId) {
+        /*
+            * subscription.spaceType === signal.spaceType
+    * subscription.spaceId === signal.spaceId
+    * subscription.subscriptionType === signal.signalType
+    * subscription.ignoredEventsList[signal.eventName] === null OR false
+         */
+        com.avaje.ebean.Query<Subscription> q = find.where()
+                .eq("spaceType",signal.getSpaceType())
+                .eq("spaceId", signal.getSpaceId())
+                .eq("subscriptionType",signal.getSignalType())
+                .eq("userId",userId)
+                .query();
+        List<Subscription> membs = q.findList();
+        return membs.isEmpty() ? null : membs.get(0);
     }
 
     public static List<Subscription> findBySubscriptionAndSpaceType(SubscriptionTypes type, ResourceSpaceTypes space1,

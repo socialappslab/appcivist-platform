@@ -1,12 +1,11 @@
 package service;
 
-import com.feth.play.module.mail.Mailer;
-import com.feth.play.module.pa.PlayAuthenticate;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import enums.SubscriptionTypes;
 import models.Config;
+import models.Subscription;
 import models.User;
 import models.transfer.NotificationSignalTransfer;
 import play.Logger;
@@ -14,7 +13,6 @@ import play.Play;
 import play.libs.Json;
 import providers.MyUsernamePasswordAuthProvider;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -56,9 +54,7 @@ public class BusComponent {
         toSend.put("resourceSpaceUUID", notificationSignalTransfer.getSpaceId());
         String message;
         for (Long user: notifiedUsers) {
-            if (notificationSignalTransfer.getSignalType().equals(SubscriptionTypes.NEWSLETTER.name())) {
-                sendNewsletterMail(user, richText);
-            }
+            sendSignalMail(user, richText, notificationSignalTransfer);
             message = Json.toJson(toSend).toString();
             channel.exchangeDeclare(EXCHANGE, "direct");
             channel.queueDeclare(user.toString(), false, false, false, null);
@@ -69,23 +65,34 @@ public class BusComponent {
 
     }
 
-    private static void sendNewsletterMail(Long userId, String body) {
+    private static void sendSignalMail(Long userId, String body, NotificationSignalTransfer notificationSignalTransfer) {
         User fullUser = User.findByUserId(userId);
+
         Logger.debug("Sending mail to "+ fullUser.getEmail());
         boolean send = false;
         String mail = null;
-        List<Config> configs = Config.findByUser(fullUser.getUuid());
-        for (Config config: configs) {
-            if (config.getKey().equals("notifications.preference.newsletter.service") &&
-                    config.getValue().equals("email")) {
-                send = true;
+        String subject = "[Appcivist] New Notification";
+        if(notificationSignalTransfer.getSpaceType().equals(SubscriptionTypes.NEWSLETTER.name())) {
+            subject = "[Appcivist] New Newsletter";
+            List<Config> configs = Config.findByUser(fullUser.getUuid());
+            for (Config config : configs) {
+                if (config.getKey().equals("notifications.preference.newsletter.service") &&
+                        config.getValue().equals("email")) {
+                    send = true;
+                }
+                if (config.getKey().equals("notifications.service.email.identity")) {
+                    mail = config.getValue();
+                }
             }
-            if (config.getKey().equals("notifications.service.email.identity")) {
-                mail = config.getValue();
+        } else if (notificationSignalTransfer.getSpaceType().equals(SubscriptionTypes.REGULAR.name())) {
+            Subscription subscription = Subscription.findBySignalAndUser(notificationSignalTransfer, fullUser.getUuidAsString());
+            if(subscription !=null && subscription.getDisabledServices() != null
+                    && subscription.getDisabledServices().get("email") != null) {
+                send = !subscription.getDisabledServices().get("email");
             }
         }
-        if(send) {
-            MyUsernamePasswordAuthProvider.sendNewsletterEmail(mail, body);
-        }
+       // if(send) {
+            MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,"yohanitalisnichuk@gmail.com", body);
+        //}
     }
 }
