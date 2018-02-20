@@ -63,6 +63,9 @@ public class NotificationsDelegate {
             "        padding: 1rem 2rem;\n" +
             "        margin-bottom: 1rem;'>";
 
+    private static int INITIAL_LIST_OF_SIGNALS_FOR_NEW_SUBSCRIBER = 10;
+
+    private static List<String> filteredEvents = new ArrayList<>();
 
     static {
         eventsTitleByType.put(NotificationEventName.NEW_CAMPAIGN, "notifications.{{resourceType}}.new.campaign");
@@ -90,6 +93,11 @@ public class NotificationsDelegate {
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "notifications.{{resourceType}}.updated.contribution.history");
         eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "notifications.{{resourceType}}.milestone.passed");
         eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "notifications.{{resourceType}}.upcoming.milestone");
+
+        // TODO: review list of events not to include in a initialization list, this one is arbitrary
+        filteredEvents.add("UPDATED%");
+        filteredEvents.add("%FEEDBACK%");
+        filteredEvents.add("%MODERATED%");
     }
 
     public static NotificationEventName assemblyEvents[] = {
@@ -874,24 +882,23 @@ public class NotificationsDelegate {
     public static Result subscribeToEvent(NotificationSubscriptionTransfer subscription) throws ConfigurationException {
         NotificationServiceWrapper ns = new NotificationServiceWrapper();
         WSResponse response = ns.createNotificationSubscription(subscription);
-        // Relay response to requestor
-        if (response.getStatus() == 200) {
-            Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
-            return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
-        } else {
-            Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
-            return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
-        }
+        return processSubscribeToEventResponse(response);
     }
 
     /* Subscriptions */
     public static Result subscribeToEvent(Subscription subscription) throws ConfigurationException {
         NotificationServiceWrapper ns = new NotificationServiceWrapper();
         WSResponse response = ns.createNotificationSubscription(subscription);
-        // Relay response to requestor
-        if (response.getStatus() == 200) {
+        return processSubscribeToEventResponse(response);
+    }
+
+    private static Result processSubscribeToEventResponse(WSResponse response) {
+        if (response != null && response.getStatus() == 200) {
             Logger.info("NOTIFICATION: Subscription created => " + response.getBody().toString());
             return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Subscription created", response.getBody())));
+        } else if (response == null) {
+            Logger.info("NOTIFICATION: Error while subscribing =>  No response from notifications server");
+            return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", "NOTIFICATION: Error while subscribing =>  No response from notifications server")));
         } else {
             Logger.info("NOTIFICATION: Error while subscribing => " + response.getBody().toString());
             return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while subscribing", response.getBody().toString())));
@@ -1206,7 +1213,10 @@ public class NotificationsDelegate {
         LocalDate friday = now.withDayOfWeek(DateTimeConstants.FRIDAY);
         String week = monday.getDayOfMonth() + " " + monday.toString("MMM")
                 + " - " + friday.getDayOfMonth() + " " + friday.toString("MMM");
-        String unsuscribeUrl = Play.application().configuration().getString("newsletter.unsuscribeUrl");
+        String unsuscribeUrl = Play.application().configuration().getString("appcivist.newsletter.unsuscribeUrl");
+        if(unsuscribeUrl == null) {
+            unsuscribeUrl = "";
+        }
         switch (spaceType) {
             case CAMPAIGN:
                 Campaign campaign = Campaign.readByUUID(spaceID);
@@ -1376,5 +1386,58 @@ public class NotificationsDelegate {
                 break;
         }
         return toRet;
+    }
+
+    /**
+     * Create a first set of signals for the user who is subscribing to a space
+     * @param sub subscription
+     */
+    public static void initializeUserSignals(Subscription sub) {
+
+        String spaceUUID = sub.getSpaceId();
+        String origin = "";
+
+        ResourceSpace rs = ResourceSpace.readByUUID(UUID.fromString(spaceUUID));
+
+        switch (sub.getSpaceType()) {
+            case ASSEMBLY:
+                origin = rs.getAssemblyResources().getUuidAsString();
+                break;
+            case CAMPAIGN:
+                origin = rs.getCampaign().getUuidAsString();
+                break;
+            case WORKING_GROUP:
+                origin = rs.getWorkingGroupResources().getUuid().toString();
+                break;
+            case COMPONENT:
+                origin = rs.getComponent().getUuid().toString();
+                break;
+            case CONTRIBUTION:
+                origin = rs.getContribution().getUuidAsString();
+                break;
+//          TODO
+//          case VOTING_BALLOT:
+//                origin = ...
+//                break;
+        }
+
+        try {
+            // Read a list of N notification signals to initialize the notifications of the user
+            Logger.info("Reading signals for origin ("+origin+") to initialize notifications for user...");
+            List<NotificationEventSignal> initializationSignals = NotificationEventSignal
+                    .findLastNtByOriginUuidWithFilteredEvents
+                            (origin, sub.getSubscriptionType().name(),
+                                    INITIAL_LIST_OF_SIGNALS_FOR_NEW_SUBSCRIBER, filteredEvents);
+
+            // Create an initial set of signals for the user
+            Logger.info("Found "+(initializationSignals!=null ? initializationSignals.size() : 0)+" signals for origin ("+origin+")");
+            for (NotificationEventSignal signal: initializationSignals) {
+                NotificationEventSignalUser signalUser = new NotificationEventSignalUser(User.findByUUID(UUID.fromString(sub.getUserId())),signal);
+                signalUser.insert();
+            }
+        } catch (Exception e) {
+            Logger.debug("Exception initializing signals for user...");
+            Logger.debug(e.getMessage());
+        }
     }
 }

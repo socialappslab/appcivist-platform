@@ -77,18 +77,18 @@ GET       /api/user/:uid                                                        
 ##################################################################################################################################################################
 # Subscriptions and Notifications - NEW
 GET       /api/user/:id/notifications                                            controllers.Notifications.getNotificationSignals(id: Long, page:Integer?=0, type: String?=null)
-GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?=null)
+GET       /api/user/:id/notifications/stats                                      controllers.Notifications.getNotificationSignalsStats(id: Long, type: String?="REGULAR")
 PUT       /api/user/:id/notifications/:nid/read                                  controllers.Notifications.updateNotification(id: Long, nid: Long)
 PUT       /api/user/:id/notifications/read                                       controllers.Notifications.updateNotifications(id: Long)
-POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
-GET       /api/notification/subscription/space/:sid                              controllers.Notifications.findByUserAndResourceSpace(sid: Long)
-POST      /api/notification/subscription/space/:sid                              controllers.Notifications.subscribeToResourceSpace(sid: Long)
-DELETE    /api/notification/subscription/space/:sid                              controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
+#POST      /api/notification/subscription                                         controllers.Notifications.subscribe()
+GET       /api/user/:id/space/:sid/subscription                                  controllers.Notifications.findByUserAndResourceSpace(id: Long, sid: Long, type: String?="REGULAR")
+#POST      /api/notification/subscription/space/:sid                              controllers.Notifications.subscribeToResourceSpace(sid: Long)
+#DELETE    /api/notification/subscription/space/:sid                              controllers.Notifications.unsubscribeToResourceSpace(sid: Long)
 
 
 GET       /api/space/:sid/subscription                                           controllers.Subscriptions.findByResourceSpace(sid: Long)
 GET       /api/space/:sid/subscription/:subid                                    controllers.Subscriptions.findByResourceSpaceAndId(sid: Long, subid: Long)
-POST      /api/space/:sid/subscription                                           controllers.Notifications.subscribeToResourceSpace(sid: Long)
+POST      /api/space/:sid/subscription                                           controllers.Notifications.subscribe(sid: Long)
 DELETE    /api/space/:sid/subscription/:subid                                    controllers.Subscriptions.deleteSubscription(sid: Long, subid: Long)
 PUT       /api/space/:sid/subscription/:subid                                    controllers.Subscriptions.updateSubscription(sid: Long, subid: Long)
 GET       /api/public/space/:suuid/subscription/:identifier                      controllers.Subscriptions.findByByResourceSpaceUUIDAndIdentifier(suuid: String, identifier: String)

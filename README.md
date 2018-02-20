@@ -1,6 +1,6 @@
 # The AppCivist Project 
 
-**AppCivist ([www.appcivist.org](www.appcivist.org))** is a software platform for democratic assembly and collective action that lets users design and build their own Assemblies, with modular components, to organize democratic action. The project  is a collaboration between the [Social Apps Lab @ CITRIS](http://citris-uc.org/initiatives/social-apps-lab/) at the University of California, Berkeley and [Inria@Silicon Valley](https://project.inria.fr/siliconvalley/). 
+**AppCivist ([www.appcivist.org](www.appcivist.org))** is a software platform for democratic assembly and collective action that lets users design and build their own Assemblies, with modular components, to organize democratic action. The project was developed as a collaboration between the [Social Apps Lab @ CITRIS](http://citris-uc.org/initiatives/social-apps-lab/) at the University of California, Berkeley and [Inria@Silicon Valley](https://project.inria.fr/siliconvalley/). 
 
 ## AppCivist Core Platform
 
@@ -28,13 +28,18 @@ Altogether, the **AppCivist-PB prototype UI** connected to both the **AppCivist 
 # Copyright
 
 Created by the [Social Apps Lab](http://www.socialappslab.org/) at [CITRIS](http://citris-uc.org/), [University of California, Berkeley](http://www.berkeley.edu/). 
-The Social Apps Lab Team is led by Prof. James Holston and Dr. Cristhian Parra. 
+The Social Apps Lab Team is led by Prof. James Holston (Director) and Dr. Cristhian Parra (Chief Developer). 
 In partnership with the [MiMove Team](https://www.inria.fr/en/teams/mimove) at [INRIA, France](https://www.inria.fr/), led by Dr. Valérie Issarny. 
-Supported by [EIT Digital](https://www.eitdigital.eu/), [TUB](http://www.tu-berlin.de/), [Nexus](http://www.nexusinstitut.de/index.php/en), and [Missions Publiques](https://missionspubliques.org/).
+This project was developed with funding from the [EIT Digital](https://www.eitdigital.eu/), as a part of the EIT-Digital Activity **CivicBudget** in collaboration with [TUB](http://www.tu-berlin.de/), [Nexus](http://www.nexusinstitut.de/index.php/en), and [Missions Publiques](https://missionspubliques.org/).
 Contributions from [City of Vallejo](http://www.ci.vallejo.ca.us/), and [Participa Project](http://www.dei.uc.edu.py/proyectos/participa/?lang=es) at DEI/Universidad Católica de Asunción (UC).
 2017 © Regents of the University of California
 
 # License
 
-All the components of this project are open source software, distributed under the terms of the [Social Apps Lab Open Source License](LICENSE.md)
+All the components of this software are provided under a dual license model designed to meet the development and distribution needs of both open source projects and commercial usage. 
 
+For open source projects, AppCivist is distributed under the terms of the [Social Apps Lab Open Source License](LICENSE). If you intend to use this software for commercial purposes, contact the project members presented in the next section.
+
+# Who do I talk to?
+- James Holston: james AT berkeley DOT edu (Director, Social Apps Lab)
+- Cristhian Parra cdparra AT gmail DOT com (Chief Developer)

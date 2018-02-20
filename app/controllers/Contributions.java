@@ -376,40 +376,37 @@ public class Contributions extends Controller {
 
                 } else {
                     F.Promise.promise(() -> {
-                        List<File> aRet = new ArrayList<>();
-                        if (format.toUpperCase().equals("JSON") || format.toUpperCase().equals("CSV")) {
-                            aRet.add(getExportFileCsvJson(contributions, true, format));
-                        } else if (collectionFileFormat != null &&
-                                (collectionFileFormat.toUpperCase().equals("CSV") || collectionFileFormat.toUpperCase().equals("JSON"))) {
-                            aRet.add(getExportFileCsvJson(contributions, true, collectionFileFormat));
-                        } else {
-                            aRet.add(getExportFileCsvJson(contributions, true, "JSON"));
-                            aRet.add(getExportFileCsvJson(contributions, true, "CSV"));
-                        }
-                        for (Contribution contribution : contributions) {
-                            try {
+                        try {
+                            List<File> aRet = new ArrayList<>();
+                            if (format.toUpperCase().equals("JSON") || format.toUpperCase().equals("CSV")) {
+                                aRet.add(getExportFileCsvJson(contributions, true, format));
+                            } else if (collectionFileFormat != null &&
+                                    (collectionFileFormat.toUpperCase().equals("CSV") || collectionFileFormat.toUpperCase().equals("JSON"))) {
+                                aRet.add(getExportFileCsvJson(contributions, true, collectionFileFormat));
+                            } else {
+                                aRet.add(getExportFileCsvJson(contributions, true, "JSON"));
+                                aRet.add(getExportFileCsvJson(contributions, true, "CSV"));
+                            }
+                            for (Contribution contribution : contributions) {
                                 aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, format));
-                            } catch (DocumentException e) {
-                                e.printStackTrace();
-                                return internalServerError(Json
-                                        .toJson(new TransferResponseStatus(
-                                                ResponseStatus.SERVERERROR,
-                                                "Error reading contribution stats: " + e.getMessage())));
+                                if (includeExtendedText.toUpperCase().equals("TRUE")) {
+                                    aRet.add(getPadFile(contribution, extendedTextFormat, format));
+                                }
                             }
-                            if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                                aRet.add(getPadFile(contribution, extendedTextFormat, format));
-                            }
+                            User user = User.findByAuthUserIdentity(PlayAuthenticate
+                                    .getUser(session()));
+                            String fileName = "contribution" + new Date().getTime() + ".zip";
+                            String path = Play.application().path().getAbsolutePath() +
+                                    Play.application().configuration().getString("application.contributionFilesPath") + fileName;
+                            File zip = new File(path);
+                            Packager.packZip(zip, aRet);
+                            String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
+                            MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+                            provider.sendZipContributionFile(url, user.getEmail());
+                        } catch (DocumentException e) {
+                            Logger.info(e.getMessage());
+                            Logger.debug(e.getStackTrace().toString());
                         }
-                        User user = User.findByAuthUserIdentity(PlayAuthenticate
-                                .getUser(session()));
-                        String fileName = "contribution" + new Date().getTime() + ".zip";
-                        String path = Play.application().path().getAbsolutePath() +
-                                Play.application().configuration().getString("application.contributionFilesPath") + fileName;
-                        File zip = new File(path);
-                        Packager.packZip(zip, aRet);
-                        String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
-                        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-                        provider.sendZipContributionFile(url, user.getEmail());
                         return Optional.ofNullable(null);
                     });
                 }
@@ -4374,27 +4371,31 @@ public class Contributions extends Controller {
     }
 
     private static File getExportFile(Contribution contribution, String includeExtendedText, String extendedTextFormat,
-                                      String format) throws IOException, GeneralSecurityException, DocumentException {
+                                      String format) throws Exception {
         Logger.debug("Exporting contribution " + (contribution != null ? contribution.getContributionId() : "(null)") + " to " + format);
         File tempFile = null;
         LinkedHashMap<String,String> contributionMap = new LinkedHashMap<>();
+        Logger.debug("EXPORT: Exporting metadata...");
         contributionMap.put(contribution.getType().toString(),contribution.getContributionId()+"\n");
         contributionMap.put("Status",contribution.getStatus()+"\n");
         contributionMap.put("Title",contribution.getTitle());
+        Logger.debug("EXPORT: Group author...");
         if (contribution.getWorkingGroupAuthors()!=null && contribution.getWorkingGroupAuthors().size()>0)
             contributionMap.put("Group",contribution.getWorkingGroupAuthors().get(0).getName());
         String authors = "";
+        Logger.debug("EXPORT: Exporting user authors...");
         for (User u: contribution.getAuthors()) {
             authors+=" -"+ u.getName() != null ? u.getName() : u.getEmail()+"\n";
         }
         contributionMap.put("\nAuthors","\n"+authors);
 
         String themes = "";
+        Logger.debug("EXPORT: Exporting themes...");
         for (Theme t: contribution.getOfficialThemes()) {
             themes += "- " + t.getTitle()+"\n";
         }
         contributionMap.put("\n\nThemes","\n"+themes);
-
+        Logger.debug("EXPORT: Exporting keywords...");
         String keywords = "";
         int keycount = 0;
         for (Theme t: contribution.getEmergentThemes()) {
@@ -4402,11 +4403,13 @@ public class Contributions extends Controller {
             keycount++;
         }
         contributionMap.put("\n\nKeywords",keywords);
-
+        Logger.debug("EXPORT: Adding brief summary...");
         contributionMap.put("Brief Summary","\n\n"+contribution.getPlainText());
 
-        contributionMap.put("Main document link", contribution.getExtendedTextPad().getUrlAsString());
+        Logger.debug("EXPORT: Adding main document link...");
+        contributionMap.put("Main document link", contribution.getExtendedTextPad() !=null ? contribution.getExtendedTextPad().getUrlAsString() : "[no extended document]");
 
+        Logger.debug("EXPORT: Adding attachment links...");
         String attachments = "";
         int attcount = 0;
         for (Resource t: contribution.getResourceSpace().getResources()) {
@@ -4415,6 +4418,7 @@ public class Contributions extends Controller {
         }
         contributionMap.put("\n\nAttachments and Media", "\n"+attachments);
 
+        Logger.debug("EXPORT: Adding custom fields...");
         contributionMap.put("\n\nAdditional Information","\n\n");
         int cfcount = 0;
         for (CustomFieldValue t: contribution.getCustomFieldValues()) {
@@ -4422,12 +4426,13 @@ public class Contributions extends Controller {
             String fieldValue = t.getValue();
             contributionMap.put( ++cfcount +". "+fieldName, fieldValue);
         }
-        String fileName = "/tmp/" + CONTRIBUTION_FILE_NAME.replace(CONTRIBUTION_ID_PARAM,
-                contribution.getContributionId().toString());
+        String fileName = "/tmp/" + CONTRIBUTION_FILE_NAME.replace(CONTRIBUTION_ID_PARAM,contribution.getContributionId().toString());
+        Logger.debug("Preparing to save temporal file => " + fileName);
+
         switch (format.toUpperCase()) {
             case "PDF":
                 tempFile = new File(fileName+".pdf");
-                Logger.debug("Saving contribution in "+fileName+".pdf");
+                Logger.debug("EXPORT: Saving contribution in "+fileName+".pdf");
                 FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
                 Document document = new Document();
                 PdfWriter.getInstance(document, fileOutputStream);
@@ -4435,23 +4440,29 @@ public class Contributions extends Controller {
                 PdfPTable table = new PdfPTable(contributionMap.size());
                 table.getDefaultCell().setBorder(Rectangle.NO_BORDER);
                 table.getDefaultCell().setPadding(5f);
+                Logger.debug("EXPORT: Writing data to file "+fileName+".pdf");
 
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
-                    document.add(new Paragraph(pair.getKey().toString() + ": " + pair.getValue().toString()));
+                    Logger.debug("EXPORT: Writing "+pair.getKey().toString()+"");
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+                    document.add(new Paragraph(key + ": " + value));
                 }
-
                 document.close();
                 break;
 
             case "TXT":
                 String newLine = System.getProperty("line.separator");
                 tempFile = new File(fileName+".txt");
-                Logger.debug("Saving contribution in "+fileName+".txt");
+                Logger.debug("EXPORT: Saving contribution in "+fileName+".txt");
                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
-                    writer.write(pair.getKey().toString() + ": " + pair.getValue().toString());
+                    Logger.debug("EXPORT: Writing "+pair.getKey().toString()+"");
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+                    writer.write(key + ": " + value);
                     writer.write(newLine);
                 }
                 writer.close();
@@ -4459,7 +4470,7 @@ public class Contributions extends Controller {
             case "RTF":
                 tempFile = new File(fileName+".rtf");
                 fileOutputStream = new FileOutputStream(tempFile);
-                Logger.debug("Saving contribution in "+fileName+".rtf");
+                Logger.debug("EXPORT: Saving contribution in "+fileName+".rtf");
                 document = new Document();
                 RtfWriter2.getInstance(document, fileOutputStream);
                 // Create a new Paragraph for the footer
@@ -4475,12 +4486,15 @@ public class Contributions extends Controller {
                 while (it.hasNext()) {
                     Map.Entry pair = (Map.Entry)it.next();
                     it.remove();
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+
                     if(it.hasNext()) {
-                        head = head + pair.getKey() + "\t";
-                        detail = detail + pair.getValue() + "\t";
+                        head = head + key + "\t";
+                        detail = detail + value + "\t";
                     }else{
-                        head = head + pair.getKey() + "\n";
-                        detail = detail + pair.getValue();
+                        head = head + key + "\n";
+                        detail = detail + value;
                     }
                 }
                 String text = head + detail;
@@ -4496,7 +4510,9 @@ public class Contributions extends Controller {
                 XWPFRun run = paragraph.createRun();
                 for (Object o : contributionMap.entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
-                    run.setText(pair.getKey().toString() + ": " + pair.getValue().toString());
+                    String key = pair.getKey().toString();
+                    String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
+                    run.setText(key + ": " + value);
                 }
                 doc.write(out);
                 //Close document

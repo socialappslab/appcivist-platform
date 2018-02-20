@@ -11,7 +11,10 @@ import models.ResourceSpace;
 import models.Subscription;
 import models.User;
 import models.transfer.TransferResponseStatus;
+import play.Logger;
+import play.Play;
 import play.data.Form;
+import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -19,6 +22,7 @@ import play.mvc.With;
 import utils.GlobalData;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static play.data.Form.form;
@@ -75,7 +79,19 @@ public class Subscriptions extends Controller {
             return notFound(Json.toJson(new TransferResponseStatus("The subscription doesn't exist")));
         }
         aRet.delete();
-        return NotificationsDelegate.manageSubscriptionToResourceSpace("UNSUBSCRIBE", rs, "email", subscriber);
+
+        F.Promise.promise(() -> {
+            try {
+                Boolean socialBusEnabled = Play.application().configuration().getBoolean("appcivist.services.notification.default.useSocialBus");
+                if (socialBusEnabled) {
+                    NotificationsDelegate.manageSubscriptionToResourceSpace("UNSUBSCRIBE", rs, "email", subscriber);
+                }
+            } catch (Exception e) {
+                Logger.debug("Connection to social bus did not work");
+            }
+            return Optional.ofNullable(null);
+        });
+        return ok();
     }
 
     @ApiOperation(response = TransferResponseStatus.class, produces = "application/json", value = "Update subscription", httpMethod = "PUT")
