@@ -223,10 +223,6 @@ public class NotificationsDelegate {
         NotificationEventName eventName = getUpdatedContributionEventName(c);
         AppCivistBaseModel origin = getOriginByContribution(rs, c);
         AppCivistBaseModel resource = c;
-        if (c.getType().equals(ContributionTypes.PROPOSAL)) {
-            origin = c;
-            originType = CONTRIBUTION;
-        }
         return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
@@ -249,13 +245,7 @@ public class NotificationsDelegate {
         Logger.info("NOTIFICATION: New contribution in ASSEMBLY of '" + origin.getName() + "'");
         ResourceSpaceTypes originType = ResourceSpaceTypes.ASSEMBLY;
         NotificationEventName eventName = getUpdatedContributionEventName(resource);
-        AppCivistBaseModel originToUse = origin;
-        if (resource.getType().equals(ContributionTypes.PROPOSAL)) {
-            originToUse = resource;
-            originType = CONTRIBUTION;
-        }
-        return signalNotification(originType, eventName, originToUse, resource,
-                SubscriptionTypes.REGULAR, null);
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
     /**

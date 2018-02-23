@@ -180,11 +180,10 @@ public class BeanPersistAdapter implements BeanPersistController {
         F.Promise.promise(() -> {
             ContributionFeedback feedback = (ContributionFeedback) request.getBean();
             Contribution c = Contribution.read(feedback.getContributionId());
-            //for (Long campId : c.getCampaignIds()) {
-              //  Campaign campaign = Campaign.read(campId);
-                NotificationsDelegate.signalNotification(ResourceSpaceTypes.CONTRIBUTION,
-                        eventName, c, feedback, SubscriptionTypes.REGULAR, null);
-            //}
+            for (Long campId : c.getCampaignIds()) {
+                Campaign campaign = Campaign.read(campId);
+                NotificationsDelegate.signalNotification(ResourceSpaceTypes.CAMPAIGN, eventName, campaign, feedback, SubscriptionTypes.REGULAR, null);
+            }
             return Optional.ofNullable(null);
         });
     }
@@ -202,18 +201,17 @@ public class BeanPersistAdapter implements BeanPersistController {
     private void notifyContributionHistory(BeanPersistRequest<?> request, NotificationEventName updatedContributionHistory) {
         F.Promise.promise(() -> {
             ContributionHistory history = (ContributionHistory) request.getBean();
-            Contribution c = Contribution.read(history.getContributionId());
 
 
-           // for (ResourceSpace r : history.getRelatedResourceSpaces()) {
+            for (ResourceSpace r : history.getRelatedResourceSpaces()) {
 
                 NotificationsDelegate.signalNotification(
-                        ResourceSpaceTypes.CONTRIBUTION,
+                        r.getType(),
                         updatedContributionHistory,
-                        c,
+                        r,
                         history, SubscriptionTypes.REGULAR, null);
 
-            //}
+            }
 
             return Optional.ofNullable(null);
         });
