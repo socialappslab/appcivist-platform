@@ -91,8 +91,8 @@ public class BusComponent {
                 send = !subscription.getDisabledServices().get("email");
             }
         }
-       // if(send) {
-            MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,"yohanitalisnichuk@gmail.com", body);
-        //}
+        if(send) {
+            MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,mail, body);
+        }
     }
 }

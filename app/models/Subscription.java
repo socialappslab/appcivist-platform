@@ -12,6 +12,7 @@ import models.transfer.NotificationSignalTransfer;
 import play.Logger;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,8 @@ public class Subscription extends Model {
     private String defaultIdentity = null;
 
     public static Finder<Long, Subscription> find = new Finder<>(Subscription.class);
+
+    public static List<String> subscriptionServices = Arrays.asList( "email", "facebook-messenger", "sms", "slack", "twitter-message");
 
     public Subscription() {
         super();
@@ -276,4 +279,20 @@ public class Subscription extends Model {
         old.refresh();
         return old;
     }
+
+    public static void setDisabledServices(Subscription sub) {
+        if (sub.getDisabledServices() == null || sub.getDisabledServices().isEmpty()) {
+            HashMap<String, Boolean> disabledServices = new HashMap<String, Boolean>();
+            for(String service: Subscription.subscriptionServices) {
+                if (sub.getSubscriptionType()!= null && sub.getSubscriptionType().equals(SubscriptionTypes.NEWSLETTER) && service.equals("email")) {
+                    disabledServices.put(service, false);
+
+                } else {
+                    disabledServices.put(service, true);
+                }
+            }
+            sub.setDisabledServices(disabledServices);
+        }
+    }
+
 }

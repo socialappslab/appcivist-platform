@@ -149,6 +149,7 @@ public class Subscriptions extends Controller {
         sub.setSubscriptionType(SubscriptionTypes.REGULAR);
         sub.setSpaceType(rs.getType());
         sub.setDefaultIdentity(identifier);
+        Subscription.setDisabledServices(sub);
         sub.insert();
         return NotificationsDelegate.manageSubscriptionToResourceSpace("SUBSCRIBE", rs, "email", subscriber);
     }
