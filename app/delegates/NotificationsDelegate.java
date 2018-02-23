@@ -728,6 +728,11 @@ public class NotificationsDelegate {
             }
         }
 
+        //remove possible duplicated
+        notificatedUsers = notificatedUsers.stream()
+                .distinct()
+                .collect(Collectors.toList());
+
 
         // Send notification Signal to Notification Service
         try {
