@@ -1,40 +1,28 @@
 package models;
 
-import enums.ThemeTypes;
-import enums.MyRoles;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.persistence.*;
-
-import io.swagger.models.auth.In;
-import models.location.Location;
-import models.misc.Views;
-
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
-
-import play.data.validation.Constraints.Required;
-import utils.TextUtils;
-
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import enums.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import models.location.Location;
+import models.misc.Views;
+import org.geojson.FeatureCollection;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
+import play.Logger;
+import play.data.validation.Constraints.Required;
+import utils.LocationUtilities;
 
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ResourceSpaceTypes;
+import javax.persistence.*;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -917,7 +905,7 @@ public class Contribution extends AppCivistBaseModel {
         return contribs;
     }
 
-    public static void create(Contribution c) {
+    public static void create(Contribution c, ResourceSpace rs) {
 
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
@@ -948,6 +936,10 @@ public class Contribution extends AppCivistBaseModel {
         if (c.getStatus()==null) {
         	c.setStatus(ContributionStatus.PUBLISHED);
         }
+
+        //geojson logic
+        geoJsonLogic(c, rs);
+
         c.save();
 
         // 3. Add existing entities in relationships to the manytomany resources
@@ -1567,5 +1559,40 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
         this.customFieldValues = customFieldValues;
+    }
+    private static void geoJsonLogic(Contribution c, ResourceSpace rs) {
+        //if the contribution has a geojson
+        if(c.getLocation() != null && c.getLocation().getGeoJson() != null) {
+            Logger.debug("Contribution has location and geoJson");
+            try {
+                FeatureCollection featureCollection =
+                        new ObjectMapper().readValue(c.getLocation().getGeoJson()
+                                .replaceAll("'","\""), FeatureCollection.class);
+                    featureCollection.getFeatures().get(0).setGeometry(LocationUtilities.polygonCenter(featureCollection));
+                    String json= new ObjectMapper().writeValueAsString(featureCollection);
+                    c.getLocation().setGeoJson(json.replaceAll("\"","'"));
+                } catch (IOException e) {
+                    Logger.error("Error calculating center point ", e);
+                }
+        } else {
+            //if the contribution doesnt has a geojson use contribution or working group geojson
+            if(c.getLocation() != null) {
+                Logger.debug("Contribution has not geoJson");
+                if(c.getType().equals(ContributionTypes.IDEA) && rs.getCampaign().getLocation()!=null) {
+                    Logger.debug("Using campaign geoJson");
+                    c.getLocation().setGeoJson(rs.getCampaign().getLocation().getGeoJson());
+                } else if(c.getType().equals(ContributionTypes.PROPOSAL)) {
+                    List<Location> locations = rs.getWorkingGroupResources().getLocations();
+                    if(!locations.isEmpty() && locations.get(0).getGeoJson() != null) {
+                        Logger.debug("Using WG geoJson");
+                        c.getLocation().setGeoJson(locations.get(0).getGeoJson());
+                    } else if(rs.getCampaign().getLocation() != null){
+                        Logger.debug("Using campaign geoJson");
+                        c.getLocation().setGeoJson(rs.getCampaign().getLocation().getGeoJson());
+                    }
+                }
+            }
+            Logger.debug("Using none geoJson");
+        }
     }
 }
