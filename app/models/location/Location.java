@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import delegates.NotificationsDelegate;
 import enums.NotificationEventName;
 import enums.ResourceSpaceTypes;
@@ -28,6 +29,7 @@ import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import utils.services.NominatimWrapper;
 
 @Entity
@@ -37,7 +39,8 @@ public class Location extends Model {
 	@Id
 	@GeneratedValue
 	private Long locationId;
-	@JsonView(Views.Public.class)
+	@Column(name = "place_name", columnDefinition = "text")
+	@JsonView(Views.Public.class)	
 	private String placeName; // "1969 calle de alberto aguilera en la coruña"
 	@JsonView(Views.Public.class)
 	private String street; //: "1969 calle de alberto aguilera",
