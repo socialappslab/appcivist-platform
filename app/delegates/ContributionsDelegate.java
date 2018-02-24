@@ -164,6 +164,9 @@ public class ContributionsDelegate {
                     case "by_author":
                         rawQuery += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
                         break;
+                    case "by_location":                    	
+                    	rawQuery += "join location l on l.location_id = t0.location_location_id \n ";
+                    	break;                        
                     case "theme":
                         rawQuery += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         break;
@@ -201,6 +204,7 @@ public class ContributionsDelegate {
                             intervalStatus = true;
                         }
                         break;
+                        
                 }
             }
             rawQuery += sorting;
@@ -235,6 +239,11 @@ public class ContributionsDelegate {
                                 Expr.ilike("t0.text", "%" + ((String)value).toLowerCase() + "%"));
                         where.add(expression);
                         break;
+                    case "by_location":                    	
+                    	Expression expr = Expr.and(Expr.isNotNull("l.place_name"), 
+                    			Expr.ilike("l.place_name", "%" + ((String)value).toLowerCase() + "%"));
+                    	where.add(expr);
+                    	break;                        
                     case "theme":
                         List<Integer> themes = (List)value;
                         Expression p = null;
@@ -284,7 +293,7 @@ public class ContributionsDelegate {
                 }
             }            
         }
-        where.add(Expr.not(Expr.eq("removed",true)));
+        where.add(Expr.not(Expr.eq("removed",true)));        
         List<Contribution> contributions;
         if(page != null && pageSize != null){
             contributions = where.findPagedList(page, pageSize).getList();
