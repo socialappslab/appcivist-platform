@@ -18,7 +18,6 @@ import play.libs.Json;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
-import providers.MyUsernamePasswordAuthProvider;
 import service.BusComponent;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
@@ -53,12 +52,25 @@ public class NotificationsDelegate {
     private static String THEMES = "THEMES";
     private static String RESOURCES = "RESOURCES";
     private static String UNSUSCRIBE_URL = "UNSUSCRIBE_URL";
-    private static String NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
-            "-template-no-activity.html";
-    private static String NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
+    private static String MAIL_TEMPLATES_DIRECTORY = "conf/signals-notification-templates/";
+    private static String NEWSLETTER_MAIL_TEMPLATES_DIRECTORY = MAIL_TEMPLATES_DIRECTORY + "newsletters-templates/";
+    private static String NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME = NEWSLETTER_MAIL_TEMPLATES_DIRECTORY  +
+            "newsletter-backend-template-no-activity.html";
+    private static String NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME = NEWSLETTER_MAIL_TEMPLATES_DIRECTORY + "newsletter-backend" +
             "-template-with-activity.html";
-    private static String NEWSLETTER_PROPOSAL_TEMPLATE_NAME = "conf/newsletters-templates/newsletter-backend" +
+    private static String NEWSLETTER_PROPOSAL_TEMPLATE_NAME = NEWSLETTER_MAIL_TEMPLATES_DIRECTORY + "newsletter-backend" +
             "-template-proposal-stage.html";
+
+    private static String NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME_MAIL =  NEWSLETTER_MAIL_TEMPLATES_DIRECTORY+ "mail/newsletter-backend" +
+            "-template-no-activity.html";
+    private static String NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME_MAIL = NEWSLETTER_MAIL_TEMPLATES_DIRECTORY + "mail/newsletter-backend" +
+            "-template-with-activity.html";
+    private static String NEWSLETTER_PROPOSAL_TEMPLATE_NAME_MAIL = NEWSLETTER_MAIL_TEMPLATES_DIRECTORY + "mail/newsletter-backend" +
+            "-template-proposal-stage.html";
+
+
+    private  static  String REGULAR_MAIL_TEMPLATE = MAIL_TEMPLATES_DIRECTORY + "regular-templates/regular.html";
+
     private static String LI = "<li style ='background-color: #efefef;\n" +
             "        padding: 1rem 2rem;\n" +
             "        margin-bottom: 1rem;'>";
@@ -633,20 +645,25 @@ public class NotificationsDelegate {
         data.put("notificationDate", notificationDate);
         data.put("associatedUser", associatedUser);
         data.put("signaled", false);
+        try {
+            if (subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
 
-        if (subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
-            try {
-                Map<String, Object> template = getNewsletterTemplate(originType, UUID.fromString(origin.toString()), userParam);
-                if(template.get("richText") != null) {
-                    notificationEvent.setRichText(String.valueOf(template.get("richText")));
-                    template.remove("richText");
-                }
-                data.put("template", template);
+                    Map<String, Object> template = getNewsletterTemplate(originType, UUID.fromString(origin.toString()), userParam);
+                    if(template.get("richText") != null) {
+                        notificationEvent.setRichText(String.valueOf(template.get("richText")));
+                        template.remove("richText");
+                    }
+                    if(template.get("richTextMail") != null) {
+                        notificationEvent.setRichTextMail(String.valueOf(template.get("richTextMail")));
+                        template.remove("richTextMail");
+                    }
+                    data.put("template", template);
 
-            } catch (IOException e) {
-                Logger.error("Error creating the rich text for the notification");
-                e.printStackTrace();
+
             }
+        } catch (IOException e) {
+            Logger.error("Error creating the rich text for the notification");
+            e.printStackTrace();
         }
 
 
@@ -658,6 +675,10 @@ public class NotificationsDelegate {
         NotificationSignalTransfer newNotificationSignal = null;
         try {
             newNotificationSignal = prepareNotificationSignal(notificationEvent);
+            if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
+                String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(), newNotificationSignal.getText());
+                notificationEvent.setRichTextMail(richTextMail);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             TransferResponseStatus responseBody = new TransferResponseStatus();
@@ -670,6 +691,7 @@ public class NotificationsDelegate {
         List<Long> notificatedUsers = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
+        Logger.debug(subscriptions.size() + " subscriptions found");
         for (Subscription sub : subscriptions) {
             //subscription.ignoredEventsList[signal.eventName] === null OR false
             if (sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
@@ -679,6 +701,7 @@ public class NotificationsDelegate {
                 // and create the message to send as follow (see signals.js => processMatch):
                 if (sub.getDefaultService() == null) {
                     User user = User.findByUUID(UUID.fromString(sub.getUserId()));
+                    Logger.info("Notificated user: " + user.getName());
                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                     notificationEvent.addNotificationEventSignalUser(userSignal);
                     notificatedUsers.add(user.getUserId());
@@ -732,7 +755,7 @@ public class NotificationsDelegate {
             Boolean rabbitIsActive = Play.application().configuration().getBoolean("appcivist.services.rabbitmq.active");
             if(rabbitIsActive !=null && rabbitIsActive) {
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
-                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichText());
+                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichTextMail());
                 notificationEvent.getData().put("signaled", true);
                 notificationEvent.update();
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
@@ -1202,6 +1225,18 @@ public class NotificationsDelegate {
         return null;
     }
 
+
+
+    private static String getRegularMailToSend(String title, String description) throws IOException {
+        File file = Play.application().getFile(REGULAR_MAIL_TEMPLATE);
+        LocalDate now = new LocalDate();
+        String content = new String(Files.readAllBytes(Paths.get(file.toString())));
+        content = content.replaceAll("REGULAR_TITLE", title);
+        content = content.replaceAll("REGULAR_DESCRIPTION", description);
+        content = content.replaceAll("DATE", now.getDayOfMonth() +" " + now.toString("MMM"));
+        return content;
+    }
+
     /**
      * Returns a Map object with the template of the newsletter acording to the type of
      * {@link Campaign}
@@ -1233,21 +1268,28 @@ public class NotificationsDelegate {
                 //Campaign without Activity
                 if (notificationEventSignals.isEmpty()) {
                     File file = Play.application().getFile(NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME);
+                    File fileMail = Play.application().getFile(NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME_MAIL);
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
-                    content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle());
-                    content = content.replaceAll(DATE, week);
-                    content = content.replaceAll("UNSUSCRIBE_URL",unsuscribeUrl);
+                    String contentMail = new String(Files.readAllBytes(Paths.get(fileMail.toString())));
+                    content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
+                            .replaceAll(UNSUSCRIBE_URL,unsuscribeUrl);
+                    contentMail = contentMail.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
+                            .replaceAll(UNSUSCRIBE_URL,unsuscribeUrl);
                     toRet.put("campaignNewsletterDescription",campaign.getGoal());
                     if(campaign.getGoal() != null) {
                         content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
+                        contentMail = contentMail.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
                     } else {
                         content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getTitle());
+                        contentMail = contentMail.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getTitle());
                     }
                     if (stage!=null) {
                         toRet.put("stageName", stage.name());
                         content = content.replaceAll("STAGE_NAME",stage.name());
+                        contentMail = contentMail.replaceAll("STAGE_NAME",stage.name());
                     } else {
                         content = content.replaceAll("STAGE_NAME","");
+                        contentMail = contentMail.replaceAll("STAGE_NAME","");
                     }
                     List<String> themes = campaign.getThemes().stream()
                             .filter(theme -> theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED))
@@ -1258,6 +1300,7 @@ public class NotificationsDelegate {
                         themesString.append(LI).append(theme).append("</li>");
                     }
                     content = content.replaceAll(THEMES, themesString.toString());
+                    contentMail = contentMail.replaceAll(THEMES, themesString.toString());
                     List<String> workingGroups = campaign.getWorkingGroups().stream().map(WorkingGroup::getName)
                             .collect(Collectors.toList());
                     toRet.put("workingGroups", workingGroups);
@@ -1266,6 +1309,7 @@ public class NotificationsDelegate {
                         wgString.append(LI).append(wg).append("</li>");
                     }
                     content = content.replaceAll(WORKING_GROUPS, wgString.toString());
+                    contentMail = contentMail.replaceAll(WORKING_GROUPS, wgString.toString());
                     List<Map<String, Object>> resourcesFormated = new ArrayList<>();
                     StringBuilder resources = new StringBuilder();
                     for(Resource con: campaign.getResourceList()) {
@@ -1278,17 +1322,22 @@ public class NotificationsDelegate {
                     }
                     toRet.put("resources", resourcesFormated);
                     content = content.replaceAll(RESOURCES, resources.toString());
+                    contentMail = contentMail.replaceAll(RESOURCES, resources.toString());
                     toRet.put("richText",content);
+                    toRet.put("richTextMail",contentMail);
                 //Campaign in Idea Collection Stage
                 } else if (stage == null) {
                     return toRet;
                 } else if (stage.equals(ComponentTypes.IDEAS)) {
                     File file = Play.application().getFile(NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME);
+                    File fileMail = Play.application().getFile(NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME_MAIL);
+                    List<String> contents = new ArrayList<>();
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
-                    content = content.replaceAll(CAMPAIGN_NAME, campaign.getTitle());
-                    content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
-                    content = content.replaceAll(DATE, week);
-                    content = content.replaceAll("UNSUSCRIBE_URL",unsuscribeUrl);
+                    String contentMail = new String(Files.readAllBytes(Paths.get(fileMail.toString())));
+                    content = content.replaceAll(CAMPAIGN_NAME, campaign.getTitle()).replaceAll(CAMPAIGN_DESCRIPTION,
+                            campaign.getGoal()).replaceAll(DATE, week).replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
+                    contentMail = contentMail.replaceAll(CAMPAIGN_NAME, campaign.getTitle()).replaceAll(CAMPAIGN_DESCRIPTION,
+                            campaign.getGoal()).replaceAll(DATE, week).replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
                     List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
                             newsletterFrequency);
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
@@ -1304,10 +1353,11 @@ public class NotificationsDelegate {
 
                     }
                     toRet.put("newIdeas", contributionsFormated);
-                    content = content.replaceAll(NEW_IDEAS_NUMBER, String.valueOf(contributionsFormated.size()));
-                    content = content.replaceAll(NEW_IDEAS_TEXT, contributionsString.toString());
-
-                    List<NotificationEventSignal> updatedIdeas = NotificationEventSignal
+                    content = content.replaceAll(NEW_IDEAS_NUMBER, String.valueOf(contributionsFormated.size()))
+                            .replaceAll(NEW_IDEAS_TEXT, contributionsString.toString());
+                    contentMail = contentMail.replaceAll(NEW_IDEAS_NUMBER, String.valueOf(contributionsFormated.size()))
+                            .replaceAll(NEW_IDEAS_TEXT, contributionsString.toString());
+                  List<NotificationEventSignal> updatedIdeas = NotificationEventSignal
                             .findLatestIdeasByOriginUuid(spaceID.toString(), newsletterFrequency);
                     List<String> updatedIdeasFormat = updatedIdeas.stream().map(NotificationEventSignal
                             ::getTitle)
@@ -1318,14 +1368,19 @@ public class NotificationsDelegate {
                         updatesString.append(LI).append(update).append("</li>");
                     }
                     content = content.replaceAll(UPDATES, updatesString.toString());
+                    contentMail = contentMail.replaceAll(UPDATES, updatesString.toString());
                     toRet.put("richText", content);
+                    toRet.put("richTextMail", contentMail);
                     //Campaign in Proposal Stage
                 } else if(stage.equals(ComponentTypes.PROPOSALS)) {
                     File file = Play.application().getFile(NEWSLETTER_PROPOSAL_TEMPLATE_NAME);
+                    File fileMail = Play.application().getFile(NEWSLETTER_PROPOSAL_TEMPLATE_NAME_MAIL);
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
-                    content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle());
-                    content = content.replaceAll(DATE, week);
-                    content = content.replaceAll("UNSUSCRIBE_URL",unsuscribeUrl);
+                    String contentMail = new String(Files.readAllBytes(Paths.get(fileMail.toString())));
+                    content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
+                            .replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
+                    contentMail = contentMail.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
+                            .replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
                     List<Map<String, Object>> developingProposals = new ArrayList<>();
                     List<String> updates = new ArrayList<>();
@@ -1364,9 +1419,13 @@ public class NotificationsDelegate {
                             toRet.put("newProposals", contributionsFormated);
                             toRet.put("developingProposals", developingProposals);
                             content = content.replaceAll("PROPOSAL_NUMBER",
-                                        String.valueOf(contributionsFormated.size()));
-                            content = content.replaceAll(PROPOSAL_NEW, contributionsString.toString());
-                            content = content.replaceAll(PROPOSAL_DEVELOPING, developingString.toString());
+                                        String.valueOf(contributionsFormated.size()))
+                                    .replaceAll(PROPOSAL_NEW, contributionsString.toString())
+                                    .replaceAll(PROPOSAL_DEVELOPING, developingString.toString());
+                            contentMail = contentMail.replaceAll("PROPOSAL_NUMBER",
+                                    String.valueOf(contributionsFormated.size()))
+                                    .replaceAll(PROPOSAL_NEW, contributionsString.toString())
+                                    .replaceAll(PROPOSAL_DEVELOPING, developingString.toString());
 
                             break;
                         } else {
@@ -1383,7 +1442,9 @@ public class NotificationsDelegate {
                                 .append(update).append("</li>");
                     }
                     content = content.replaceAll(UPDATES, updatesString.toString());
+                    contentMail = contentMail.replaceAll(UPDATES, updatesString.toString());
                     toRet.put("richText", content);
+                    toRet.put("richTextMail", contentMail);
                     toRet.put("updatedWG", updates);
                 }
                 break;
