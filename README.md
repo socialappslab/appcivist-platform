@@ -36,7 +36,7 @@ Contributions from [City of Vallejo](http://www.ci.vallejo.ca.us/), and [Partici
 
 # License
 
-All the components of this software are provided under a dual license model designed to meet the development and distribution needs of both open source projects and commercial usage. 
+All the components of this software are provided under a dual license model designed to meet the development and distribution needs of both open source projects and commercial use. 
 
 For open source projects, AppCivist is distributed under the terms of the [Social Apps Lab Open Source License](LICENSE). If you intend to use this software for commercial purposes, contact the project members presented in the next section.
 
