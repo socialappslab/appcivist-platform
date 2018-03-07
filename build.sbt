@@ -32,8 +32,8 @@ libraryDependencies ++= Seq(
   "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0",
   "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
   "commons-io" % "commons-io" % "2.4",
-  "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),       
-  "io.swagger" % "swagger-core" % "1.5.8" withSources() withJavadoc(),        
+  "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),
+  "io.swagger" % "swagger-core" % "1.5.8" withSources() withJavadoc(),
   "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
   "io.swagger" %% "swagger-play2" % "1.5.2" withSources() withJavadoc(), 
   "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc(), 
@@ -52,7 +52,8 @@ libraryDependencies ++= Seq(
   "com.github.opendevl" % "json2flat" % "1.0.3",
   "org.apache.poi" % "poi-ooxml" % "3.17",
   "com.google.api-client" % "google-api-client" % "1.23.0",
-  "com.rabbitmq" % "amqp-client" % "5.1.1"
+  "com.rabbitmq" % "amqp-client" % "5.1.1",
+  "de.grundid.opendatalab" % "geojson-jackson" % "1.8" excludeAll( ExclusionRule(organization = "com.fasterxml.jackson.core") )
 
 )
 

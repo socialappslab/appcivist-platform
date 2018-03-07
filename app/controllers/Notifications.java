@@ -154,6 +154,7 @@ public class Notifications extends Controller {
                 ignoredEvents.put(EventKeys.UPDATED_CAMPAIGN_CONFIGS, true);
                 sub.setIgnoredEvents(ignoredEvents);
             }
+            Subscription.setDisabledServices(sub);
             Logger.info("New subscription USER ID: " + sub.getUserId());
             Logger.info("New subscription SPACE ID: " + sub.getSpaceId());
             Logger.info("New subscription SPACE TYPE: " + sub.getSpaceType());

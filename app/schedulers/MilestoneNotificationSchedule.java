@@ -10,6 +10,7 @@ import models.ResourceSpace;
 import scala.concurrent.ExecutionContext;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -74,6 +75,7 @@ public class MilestoneNotificationSchedule extends DailySchedule {
 
     public void createNotifications(List<ComponentMilestone> milestones, NotificationEventName eventName) {
         //Milestones that are due in one week
+        List<Long> resourcesIds = new ArrayList<>();
         for (ComponentMilestone mile : milestones) {
             //Find Parent Campaign
             for (ResourceSpace space : mile.getContainingSpaces()) {
@@ -82,6 +84,10 @@ public class MilestoneNotificationSchedule extends DailySchedule {
                     for (ResourceSpace parent : space.getComponent().getContainingSpaces()) {
                         //signalNotification(ResourceSpaceTypes originType, NotificationEventName eventName,
                         //models.AppCivistBaseModel origin, AppCivistBaseModel resource)
+                        if(resourcesIds.contains(parent.getResourceSpaceId())) {
+                            continue;
+                        }
+                        resourcesIds.add(parent.getResourceSpaceId());
                         System.out.println("Parent of: " + mile.getUuidAsString() + " is " + parent.getType());
                         NotificationsDelegate.signalNotification(parent.getType(),
                                 eventName, parent.getCampaign(), mile, SubscriptionTypes.REGULAR, null);

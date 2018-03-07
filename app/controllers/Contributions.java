@@ -257,6 +257,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
             @ApiParam(name = "by_text", value = "String") String byText,
+            @ApiParam(name = "by_location", value = "String") String byLocation,
             @ApiParam(name = "groups", value = "List") List<Integer> byGroup,
             @ApiParam(name = "themes", value = "List") List<Integer> byTheme,
             @ApiParam(name = "all", value = "Boolean") String all,
@@ -291,6 +292,9 @@ public class Contributions extends Controller {
         }
         if (byText != null && !byText.isEmpty()) {
             conditions.put("by_text", byText);
+        }
+        if (byLocation != null && !byLocation.isEmpty()) {
+            conditions.put("by_location", byLocation);
         }
         if (authorId != null && authorId != 0) {
             conditions.put("by_author", authorId);
@@ -2785,7 +2789,7 @@ public class Contributions extends Controller {
             //emergent themes in themeListEmergent to associate to campaign or wg
         }
 
-        Contribution.create(newContrib);
+        Contribution.create(newContrib, containerResourceSpace);
         newContrib.refresh();
 
 //        // Add contribution to workingGroupAuthors resource spaces
@@ -3090,7 +3094,7 @@ public class Contributions extends Controller {
                         c.setExistingResources(resources);
                     }
 
-                    Contribution.create(c);
+                    Contribution.create(c,null);
 
                     // Feedback support
                     if (cell.length == 9) {
@@ -3461,7 +3465,7 @@ public class Contributions extends Controller {
                         Logger.info("Adding contribution to campaign...");
                         ResourceSpace resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
                         c.getContainingSpaces().add(resourceSpace);
-                        Contribution.create(c);
+                        Contribution.create(c, resourceSpace);
                         ContributionHistory.createHistoricFromContribution(c);
 
                     }

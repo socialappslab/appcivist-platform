@@ -693,8 +693,7 @@ public class MyUsernamePasswordAuthProvider
         });
     }
 
-	public static void sendNewsletterEmail(String mail, String template) {
-		final String subject = "New Newsletter";
+	public static void sendNewsletterEmail(String subject, String mail, String template) {
 		final Body body = new Body(null, template);
 
 		Mailer mailer = Mailer.getCustomMailer(PlayAuthenticate.getConfiguration().getConfig("password").getConfig(

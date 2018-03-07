@@ -59,6 +59,9 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 	@Column(name = "rich_text")
 	private String richText;
 
+	@Transient
+	private String richTextMail;
+
 	public Long getId() {
 		return id;
 	}
@@ -245,5 +248,13 @@ public class NotificationEventSignal extends AppCivistBaseModel {
 
 	public static void update(Long id) {
 		find.ref(id).update();
+	}
+
+	public String getRichTextMail() {
+		return richTextMail;
+	}
+
+	public void setRichTextMail(String richTextMail) {
+		this.richTextMail = richTextMail;
 	}
 }

@@ -9,8 +9,10 @@ import enums.SubscriptionTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.transfer.NotificationSignalTransfer;
+import play.Logger;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +64,8 @@ public class Subscription extends Model {
     private String defaultIdentity = null;
 
     public static Finder<Long, Subscription> find = new Finder<>(Subscription.class);
+
+    public static List<String> subscriptionServices = Arrays.asList( "email", "facebook-messenger", "sms", "slack", "twitter-message");
 
     public Subscription() {
         super();
@@ -223,6 +227,9 @@ public class Subscription extends Model {
     * subscription.subscriptionType === signal.signalType
     * subscription.ignoredEventsList[signal.eventName] === null OR false
          */
+        Logger.debug("spacetype " + signal.getSpaceType());
+        Logger.debug("spaceId " + signal.getSpaceId());
+        Logger.debug("sub type " + signal.getSignalType());
         com.avaje.ebean.Query<Subscription> q = find.where()
                 .eq("spaceType",signal.getSpaceType())
                 .eq("spaceId", signal.getSpaceId())
@@ -230,6 +237,23 @@ public class Subscription extends Model {
                 .query();
         List<Subscription> membs = q.findList();
         return membs;
+    }
+
+    public static Subscription findBySignalAndUser(NotificationSignalTransfer signal, String userId) {
+        /*
+            * subscription.spaceType === signal.spaceType
+    * subscription.spaceId === signal.spaceId
+    * subscription.subscriptionType === signal.signalType
+    * subscription.ignoredEventsList[signal.eventName] === null OR false
+         */
+        com.avaje.ebean.Query<Subscription> q = find.where()
+                .eq("spaceType",signal.getSpaceType())
+                .eq("spaceId", signal.getSpaceId())
+                .eq("subscriptionType",signal.getSignalType())
+                .eq("userId",userId)
+                .query();
+        List<Subscription> membs = q.findList();
+        return membs.isEmpty() ? null : membs.get(0);
     }
 
     public static List<Subscription> findBySubscriptionAndSpaceType(SubscriptionTypes type, ResourceSpaceTypes space1,
@@ -255,4 +279,20 @@ public class Subscription extends Model {
         old.refresh();
         return old;
     }
+
+    public static void setDisabledServices(Subscription sub) {
+        if (sub.getDisabledServices() == null || sub.getDisabledServices().isEmpty()) {
+            HashMap<String, Boolean> disabledServices = new HashMap<String, Boolean>();
+            for(String service: Subscription.subscriptionServices) {
+                if (sub.getSubscriptionType()!= null && sub.getSubscriptionType().equals(SubscriptionTypes.NEWSLETTER) && service.equals("email")) {
+                    disabledServices.put(service, false);
+
+                } else {
+                    disabledServices.put(service, true);
+                }
+            }
+            sub.setDisabledServices(disabledServices);
+        }
+    }
+
 }
