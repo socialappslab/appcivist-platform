@@ -673,9 +673,9 @@ String uuidAsString, List<Component> phases) {
 	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	public Date getStartDate() {
-		List<Component> components = this.resources.getComponents(); 
+		List<Component> components = this.resources.getComponents();
 		if (components != null && !components.isEmpty()) {
-			Collections.sort(components,new Component());
+			Collections.sort(components,Comparator.comparing(Component::getStartDate));
 			Component firstPhase = components.get(0);
 			return firstPhase.getStartDate();
 		}
