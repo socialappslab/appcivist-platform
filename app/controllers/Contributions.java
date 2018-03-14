@@ -397,14 +397,17 @@ public class Contributions extends Controller {
                                     aRet.add(getPadFile(contribution, extendedTextFormat, format));
                                 }
                             }
+                            Logger.info("EXPORT: Preparing ZIP file for exported contributions...");
                             User user = User.findByAuthUserIdentity(PlayAuthenticate
                                     .getUser(session()));
                             String fileName = "contribution" + new Date().getTime() + ".zip";
                             String path = Play.application().path().getAbsolutePath() +
                                     Play.application().configuration().getString("application.contributionFilesPath") + fileName;
                             File zip = new File(path);
+                            Logger.info("EXPORT: Packing export in "+path);
                             Packager.packZip(zip, aRet);
                             String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
+                            Logger.info("EXPORT: Preparing email to send "+url);
                             MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
                             provider.sendZipContributionFile(url, user.getEmail());
                         } catch (DocumentException e) {
@@ -477,7 +480,6 @@ public class Contributions extends Controller {
                                 new TransferResponseStatus("There was an internal error: " + e.getMessage())));
                     }
             }
-
         } else {
             Logger.debug("Contribution in "+format+" will be produced in promise to sent by email (includeExtendedText = "+includeExtendedText);
             F.Promise.promise(() -> {
@@ -501,6 +503,7 @@ public class Contributions extends Controller {
                         }
                 }
                 try {
+                    Logger.info("EXPORT: Preparing ZIP file for export");
                     if (includeExtendedText.toUpperCase().equals("TRUE")) {
                         Logger.info("Extended text included");
                         aRet.add(getPadFile(contribution, extendedTextFormat, format));
@@ -516,7 +519,7 @@ public class Contributions extends Controller {
                     }
 
                     File zip = new File(path);
-                    Logger.info("Packing exported contribution in zip File: "+path);
+                    Logger.info("EXPORT: Packing exported contribution in zip File: "+path);
                     Packager.packZip(zip, aRet);
                     String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
                     MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
@@ -4455,6 +4458,7 @@ public class Contributions extends Controller {
                     document.add(new Paragraph(key + ": " + value));
                 }
                 document.close();
+                Logger.debug("EXPORT: File "+fileName+".pdf was succesfully created");
                 break;
 
             case "TXT":
@@ -4471,6 +4475,7 @@ public class Contributions extends Controller {
                     writer.write(newLine);
                 }
                 writer.close();
+                Logger.debug("EXPORT: File "+fileName+".txt was succesfully created");
                 break;
             case "RTF":
                 tempFile = new File(fileName+".rtf");
@@ -4505,6 +4510,7 @@ public class Contributions extends Controller {
                 String text = head + detail;
                 document.add(new Paragraph(text));
                 document.close();
+                Logger.debug("EXPORT: File "+fileName+".rtf was succesfully created");
                 break;
             case "DOC":
                 tempFile = new File(fileName+".doc");
@@ -4522,6 +4528,7 @@ public class Contributions extends Controller {
                 doc.write(out);
                 //Close document
                 out.close();
+                Logger.debug("EXPORT: File "+fileName+".doc was succesfully created");
                 break;
         }
         return tempFile;
