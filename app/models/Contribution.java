@@ -82,11 +82,13 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Comment explaining why a contribution is moderated (e.g., deleted, changed status, etc.)", position=6)
     private String moderationComment;
 
+    @JsonView({Views.Public.class, Views.Report.class})
     @Column(name = "source")
     private String source;
 
+    @JsonView({Views.Public.class, Views.Report.class})
     @Column(name = "source_url", columnDefinition = "text")
-    private String sourceUrl;    
+    private String sourceUrl;
 
     @OneToOne(cascade = CascadeType.ALL)
     @Index
