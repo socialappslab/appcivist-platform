@@ -494,6 +494,7 @@ public class Contributions extends Controller {
                             aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, format));
                             break;
                         } catch (DocumentException e) {
+                            Logger.info("DocumentException when exporting file");
                             e.printStackTrace();
                             return internalServerError(Json.toJson(
                                     new TransferResponseStatus("There was an internal error: " + e.getMessage())));
@@ -501,7 +502,7 @@ public class Contributions extends Controller {
                 }
                 try {
                     if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                        Logger.debug("Extended text included");
+                        Logger.info("Extended text included");
                         aRet.add(getPadFile(contribution, extendedTextFormat, format));
                     }
                     User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
@@ -515,17 +516,17 @@ public class Contributions extends Controller {
                     }
 
                     File zip = new File(path);
-                    Logger.debug("Packing exported contribution in zip File: "+path);
+                    Logger.info("Packing exported contribution in zip File: "+path);
                     Packager.packZip(zip, aRet);
                     String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
                     MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
                     provider.sendZipContributionFile(url, user.getEmail());
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Logger.debug("Error in export Promise: "+e.getMessage());
+                    Logger.info("Error in export Promise: "+e.getMessage());
                 } catch (GeneralSecurityException e) {
                     e.printStackTrace();
-                    Logger.debug("Error in export Promise: "+e.getMessage());
+                    Logger.info("Error in export Promise: "+e.getMessage());
                 }
                 return Optional.ofNullable(null);
             });
