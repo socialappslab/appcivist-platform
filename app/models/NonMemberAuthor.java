@@ -50,9 +50,11 @@ public class NonMemberAuthor extends AppCivistBaseModel {
     private Integer age;
 
     @Column(name = "source")
+    @JsonView(Views.Public.class)
     private String source;
 
     @Column(name = "source_url", columnDefinition = "text")
+    @JsonView(Views.Public.class)
     private String sourceUrl;
 
     @Column(name = "publishContact", columnDefinition = "boolean")
