@@ -202,3 +202,19 @@ appcivist.configuration.missing=Configurations not found in local.conf {0}
 resourceSpace.type=Missing resource space type: {0}
 contribution.previous.proposal.document=Previous proposal document
 contribution.etherpad.words=words
+
+### Mail notifications
+mail.notification.unsubscribe=Unsubscribe
+mail.notification.new_activity=New Activity
+mail.notification.date_text=Weekly Newsletter
+mail.notification.campaign_description_text=Campaign Description
+mail.notification.stage_name_text=is gattering contributions for the following themes:
+mail.notification.campaign_name_text=has the following working groups:
+mail.notification.more_information_text=More information about the campaign can be found in the following resources:
+mail.notification.campaign_description_text.no_activity=This campaign is currently in the idea collection stage. Submit one now!
+mail.notification.new_proposal_text=Your working group {0} has submitted {1} new proposals:
+mail.notification.new_ideas_number_text=new ideas have been submitted last week:
+mail.notification.updates_text=Here are the updates from the ideas you follow:
+mail.notification.campaign_description_text.proposal=This campaign is currently in the proposal creation stage
+mail.notification.proposal_developing_text=Your working group {0} is currently developing the following proposals:
+mail.notification.updates_text.proposal=Summary of other working groups
