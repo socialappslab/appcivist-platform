@@ -344,6 +344,7 @@ public class NotificationsDelegate {
         String resourceText = "";
         Date resourceDate = new Date();
         String associatedUser = "";
+        Long resourceId = null;
 
         Boolean originIsResourceSpace = false;
         if (origin instanceof ResourceSpace) {
@@ -403,6 +404,7 @@ public class NotificationsDelegate {
                 resourceText = ((Contribution) resource).getText();
                 resourceDate = resource.getCreation();
                 resourceType = ((Contribution) resource).getType().toString();
+                resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 int numAuthors = ((Contribution) resource).getAuthors().size();
@@ -419,6 +421,7 @@ public class NotificationsDelegate {
                 resourceText = ((Contribution) resource).getText();
                 resourceDate = resource.getLastUpdate();
                 resourceType = ((Contribution) resource).getType().toString();
+                resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 numAuthors = ((Contribution) resource).getAuthors().size();
@@ -441,6 +444,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getCreation();
                 resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                 title = "[AppCivist] New " + resourceType + " in " + originName;
@@ -453,6 +457,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
@@ -462,6 +467,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((WorkingGroup) resource).getUuid();
                 resourceTitle = ((WorkingGroup) resource).getName();
                 resourceText = ((WorkingGroup) resource).getText();
+                resourceId = ((WorkingGroup) resource).getGroupId();
                 resourceDate = resource.getCreation();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] New " + resourceType + " in " + originName;
@@ -471,6 +477,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((WorkingGroup) resource).getUuid();
                 resourceTitle = ((WorkingGroup) resource).getName();
                 resourceText = ((WorkingGroup) resource).getText();
+                resourceId = ((WorkingGroup) resource).getGroupId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
@@ -490,6 +497,7 @@ public class NotificationsDelegate {
                 resourceText = lastBallot.getNotes();
                 resourceDate = lastBallot.getCreatedAt();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
+                resourceId = lastBallot.getId();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 //TODO: how to get the associatedUser
                 associatedUser = "";
@@ -505,6 +513,7 @@ public class NotificationsDelegate {
                 resourceText = ulastBallot.getNotes();
                 resourceDate = ulastBallot.getCreatedAt();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
+                resourceId = ulastBallot.getId();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 //TODO: how to get the associatedUser
                 associatedUser = "";
@@ -519,6 +528,7 @@ public class NotificationsDelegate {
                 resourceText = ((ComponentMilestone) resource).getDescription();
                 resourceDate = ((ComponentMilestone) resource).getDate();
                 resourceType = "MILESTONE";
+                resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
                 break;
             case MILESTONE_UPCOMING_IN_A_WEEK:
@@ -527,12 +537,14 @@ public class NotificationsDelegate {
                 resourceText = ((ComponentMilestone) resource).getDescription();
                 resourceDate = ((ComponentMilestone) resource).getDate();
                 resourceType = "MILESTONE";
+                resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 break;
             case MILESTONE_UPCOMING_IN_A_DAY:
                 resourceUuid = ((ComponentMilestone) resource).getUuid();
                 resourceTitle = ((ComponentMilestone) resource).getTitle();
                 resourceText = ((ComponentMilestone) resource).getDescription();
                 resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 resourceType = "MILESTONE";
                 break;
             case MEMBER_JOINED:
@@ -545,6 +557,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
@@ -552,6 +565,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
@@ -559,6 +573,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
@@ -566,6 +581,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
@@ -573,6 +589,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
@@ -580,6 +597,7 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
                 break;
@@ -589,6 +607,7 @@ public class NotificationsDelegate {
                         resourceUuid = ((Campaign) resource).getUuid();
                         resourceTitle = ((Campaign) resource).getTitle();
                         resourceText = ((Campaign) resource).getGoal();
+                        resourceId = ((Campaign) resource).getCampaignId();
                         resourceDate = resource.getLastUpdate();
                         resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                         title = "[AppCivist] New Newsletter for " + resourceType;
@@ -597,6 +616,7 @@ public class NotificationsDelegate {
                         resourceUuid = ((WorkingGroup) resource).getUuid();
                         resourceTitle = ((WorkingGroup) resource).getName();
                         resourceText = ((WorkingGroup) resource).getText();
+                        resourceId = ((WorkingGroup) resource).getGroupId();
                         resourceDate = resource.getCreation();
                         resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                         title = "[AppCivist] New Newsletter for " + resourceType;
@@ -605,8 +625,8 @@ public class NotificationsDelegate {
             default:
                 break;
         }
-        Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
-        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam);
+        Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ","+resourceId+")");
+        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam, resourceId);
 
     }
 
@@ -622,7 +642,8 @@ public class NotificationsDelegate {
                                             String resourceType,
                                             String associatedUser,
                                             SubscriptionTypes subscriptionType,
-                                            User userParam) {
+                                            User userParam,
+                                            Long resourceID) {
         // 1. Prepare the notification event data
         NotificationEventSignal notificationEvent = new NotificationEventSignal();
         notificationEvent.setSpaceType(originType);
