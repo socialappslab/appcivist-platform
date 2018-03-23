@@ -186,3 +186,19 @@ notification.title.message.new.assembly=Nuevo Mensaje para Asamblea
 notification.title.message.reply.assembly=Nueva Respuesta para Asamblea
 contribution.previous.proposal.document=Documento de propuesta anterior
 contribution.etherpad.words=palabras
+
+### Mail notifications
+mail.notification.unsubscribe=Desuscribirse
+mail.notification.new_activity=Nueva Actividad
+mail.notification.date_text=Notificación Semanal
+mail.notification.campaign_description_text=Descripción de la Campaña
+mail.notification.stage_name_text=está recogiendo contribuciones para los siguientes temas:
+mail.notification.campaign_name_text=tiene los siguientes grupos de trabajo:
+mail.notification.more_information_text=Más información sobre la campaña puede encontrarse en:
+mail.notification.campaign_description_text.no_activity=Esta campaña está actualmente en la etapa de recolección de ideas. ¡Evía una ahora!
+mail.notification.new_ideas_number_text= nuevas ideas han sido enviadas la semana pasada:
+mail.notification.updates_text=Aquí están las actualizaciones de las ideas que sigues:
+mail.notification.campaign_description_text.proposal=Esta campaña está actualmente en la etapa de creación de propuestas
+mail.notification.new_proposal_text=Tu grupo de trabajo {0} ha enviado {1} nuevas propuestas:
+mail.notification.proposal_developing_text=Tu grupo de trabajo {0} está desarrollando actualmente las siguientes propuestas:
+mail.notification.updates_text.proposal=Resumen de los otros grupos de trabajo
