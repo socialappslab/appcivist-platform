@@ -68,7 +68,7 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	@JsonView(Views.Public.class)
 	private int timeline;
 	@Transient 
-	private Boolean linked;
+	private Boolean linked = false;
 
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="fromComponent", fetch=FetchType.LAZY)
 	@JsonBackReference
