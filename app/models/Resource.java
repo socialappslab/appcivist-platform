@@ -380,4 +380,9 @@ public class Resource extends AppCivistBaseModel {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+    public static Long getIdByUUID(UUID uuid) {
+		Resource r = find.where().eq("uuid",uuid.toString()).findUnique();
+		return r.getResourceId();
+	}
 }

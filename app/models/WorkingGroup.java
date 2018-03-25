@@ -110,7 +110,14 @@ public class WorkingGroup extends AppCivistBaseModel {
  	@JsonIgnore
  	@OneToMany(cascade = CascadeType.REMOVE, mappedBy="workingGroup",fetch=FetchType.LAZY)
  	private List<MembershipGroup> members;
-	//Mixin to show memberships in public view
+
+    public static Long getIdByUUID(UUID uuid) {
+		WorkingGroup g = find.where().eq("uuid",uuid.toString()).findUnique();
+		return g.getGroupId();
+
+	}
+
+    //Mixin to show memberships in public view
 	public static abstract class MembeshipsVisibleMixin {
 		@JsonView(Views.Public.class)
 		@JsonIgnore(false)

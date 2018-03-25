@@ -520,6 +520,11 @@ String uuidAsString, List<Component> phases) {
 		return assemblyIds;
 	}
 
+	public static Long getIdByUUID(UUID uuid) {
+		Campaign c = find.where().eq("uuid",uuid.toString()).findUnique();
+		return c.getCampaignId();
+	}
+
 	public static abstract class AssembliesVisibleMixin {
 
 		@JsonView(Views.Public.class)
