@@ -1355,7 +1355,8 @@ public class Assemblies extends Controller {
         // For users without account: generate pass (see the test to generate passwords) and return this in the response
 
         Integer passIndex = random.nextInt(25);
-        String pass = seedPasswords[passIndex] + new BigInteger(20, secureRandom).toString(32);
+//        String pass = seedPasswords[passIndex] + new BigInteger(20, secureRandom).toString(32);
+        String pass = "@ppcivist";
         MyLoginUsernamePasswordAuthUser authUser =
                 new MyLoginUsernamePasswordAuthUser(pass, u.getEmail());
         // Hash a password for the first time
@@ -1413,12 +1414,12 @@ public class Assemblies extends Controller {
     }
 
     private static Membership createMembership(User u, User creator, AppCivistBaseModel target, String targetType, String role) {
-        List<SecurityRole> roles = new ArrayList<>();
-        roles.add(SecurityRole.read(new Long(4))); // Member role
+	    List<SecurityRole> roles = new ArrayList<>();
+        roles.add(SecurityRole.findByName("MEMBER")); // Member role
         if (role.equals("COORDINATOR")) {
-            roles.add(SecurityRole.read(new Long(3)));
+            roles.add(SecurityRole.findByName("COORDINATOR"));
         } else if (role.equals("MODERATOR")) {
-            roles.add(SecurityRole.read(new Long(7)));
+            roles.add(SecurityRole.findByName("COORDINATOR"));
         }
         if (targetType.equals("ASSEMBLY")) {
             Assembly a = ((Assembly) target);
