@@ -353,7 +353,13 @@ public class WorkingGroup extends AppCivistBaseModel {
 			}
 		}
 
-		workingGroup.setStatus(WorkingGroupStatus.DRAFT);
+		// 6. Add creator as a coordinator
+        try {
+            WorkingGroup.createMembership(workingGroup.getGroupId());
+        } catch (MembershipCreationException e) {
+		    return workingGroup;
+        }
+        workingGroup.setStatus(WorkingGroupStatus.PUBLISHED);
 		workingGroup.update();
 		workingGroup.refresh();
 		return workingGroup;
