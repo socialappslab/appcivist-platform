@@ -13,6 +13,7 @@ import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 import play.Logger;
 import play.Play;
+import play.i18n.Lang;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.libs.ws.WSResponse;
@@ -40,18 +41,6 @@ import static enums.ResourceSpaceTypes.*;
 public class NotificationsDelegate {
 
     public static HashMap<NotificationEventName, String> eventsTitleByType = new HashMap<>();
-    private static String CAMPAIGN_NAME = "CAMPAIGN_NAME";
-    private static String CAMPAIGN_DESCRIPTION = "CAMPAIGN_DESCRIPTION";
-    private static String PROPOSAL_NEW = "PROPOSAL_NEW";
-    private static String PROPOSAL_DEVELOPING = "PROPOSAL_DEVELOPING";
-    private static String WORKING_GROUPS = "WORKING_GROUP";
-    private static String UPDATES = "UPDATES";
-    private static String DATE = "DATE";
-    private static String NEW_IDEAS_NUMBER = "NEW_IDEAS_NUMBER";
-    private static String NEW_IDEAS_TEXT = "NEW_IDEAS_TEXT";
-    private static String THEMES = "THEMES";
-    private static String RESOURCES = "RESOURCES";
-    private static String UNSUSCRIBE_URL = "UNSUSCRIBE_URL";
     private static String MAIL_TEMPLATES_DIRECTORY = "conf/signals-notification-templates/";
     private static String NEWSLETTER_MAIL_TEMPLATES_DIRECTORY = MAIL_TEMPLATES_DIRECTORY + "newsletters-templates/";
     private static String NEWSLETTER_NO_ACTIVITY_TEMPLATE_NAME = NEWSLETTER_MAIL_TEMPLATES_DIRECTORY  +
@@ -344,7 +333,8 @@ public class NotificationsDelegate {
         String resourceText = "";
         Date resourceDate = new Date();
         String associatedUser = "";
-
+        Long resourceId = null;
+        Map<String, Long> urls = new HashMap<>();
         Boolean originIsResourceSpace = false;
         if (origin instanceof ResourceSpace) {
             originIsResourceSpace = true;
@@ -403,10 +393,14 @@ public class NotificationsDelegate {
                 resourceText = ((Contribution) resource).getText();
                 resourceDate = resource.getCreation();
                 resourceType = ((Contribution) resource).getType().toString();
+                resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 int numAuthors = ((Contribution) resource).getAuthors().size();
                 associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
+                Contribution contribution = (Contribution) resource;
+                setContributionUrl(contribution, urls);
+
                 break;
             case UPDATED_CONTRIBUTION_IDEA:
             case UPDATED_CONTRIBUTION_PROPOSAL:
@@ -419,10 +413,12 @@ public class NotificationsDelegate {
                 resourceText = ((Contribution) resource).getText();
                 resourceDate = resource.getLastUpdate();
                 resourceType = ((Contribution) resource).getType().toString();
+                resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 numAuthors = ((Contribution) resource).getAuthors().size();
                 associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
+                setContributionUrl((Contribution) resource, urls);
                 break;
 //			case NEW_CONTRIBUTION_FEEDBACK:
 //			case UPDATED_CONTRIBUTION_FEEDBACK:
@@ -441,10 +437,12 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getCreation();
                 resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 Logger.info("Title: " + title);
+                setCampaignUrl(((Campaign) resource).getCampaignId(), urls);
                 // TODO: add creator to campaign associatedUser = ((Campaign) resource).getCreator().getName();
                 break;
             case NEW_CONTRIBUTION_FEEDBACK:
@@ -453,24 +451,29 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
+                setCampaignUrl(((Campaign) resource).getCampaignId(), urls);
                 // TODO: add creator to campaign associatedUser = ((Campaign) resource).getCreator().getName();
                 break;
             case NEW_WORKING_GROUP:
                 resourceUuid = ((WorkingGroup) resource).getUuid();
                 resourceTitle = ((WorkingGroup) resource).getName();
                 resourceText = ((WorkingGroup) resource).getText();
+                resourceId = ((WorkingGroup) resource).getGroupId();
                 resourceDate = resource.getCreation();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 associatedUser = ((WorkingGroup) resource).getCreator().getName();
+                setWorkingGroupUrl(resourceId, urls);
                 break;
             case UPDATED_WORKING_GROUP:
                 resourceUuid = ((WorkingGroup) resource).getUuid();
                 resourceTitle = ((WorkingGroup) resource).getName();
                 resourceText = ((WorkingGroup) resource).getText();
+                resourceId = ((WorkingGroup) resource).getGroupId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
@@ -479,22 +482,9 @@ public class NotificationsDelegate {
                 } else {
                     associatedUser = "";
                 }
+                setWorkingGroupUrl(resourceId, urls);
                 break;
             case NEW_VOTING_BALLOT:
-                Logger.info("NEW_VOTING_BALLOT");
-                WorkingGroup wg = (WorkingGroup) resource;
-                //TODO: HOW TO KNOW WHAT BALLOT IS THE LAST
-                Ballot lastBallot = wg.getBallots().get(wg.getBallots().size() - 1);
-                resourceUuid = lastBallot.getUuid();
-                resourceTitle = lastBallot.getDecisionType();
-                resourceText = lastBallot.getNotes();
-                resourceDate = lastBallot.getCreatedAt();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                title = "[AppCivist] Updated " + resourceType + " in " + originName;
-                //TODO: how to get the associatedUser
-                associatedUser = "";
-                Logger.info("DATOS NOTIFICACION( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
-                break;
             case UPDATED_VOTING_BALLOT:
 //				// TODO: how to describe updated ballots that are not descendants of AppCivistBaseModel
                 WorkingGroup uwg = (WorkingGroup) resource;
@@ -505,6 +495,7 @@ public class NotificationsDelegate {
                 resourceText = ulastBallot.getNotes();
                 resourceDate = ulastBallot.getCreatedAt();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
+                resourceId = ulastBallot.getId();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 //TODO: how to get the associatedUser
                 associatedUser = "";
@@ -514,26 +505,20 @@ public class NotificationsDelegate {
             case UPDATED_MILESTONE:
             case MILESTONE_PASSED:
             case MILESTONE_UPCOMING:
-                resourceUuid = ((ComponentMilestone) resource).getUuid();
-                resourceTitle = ((ComponentMilestone) resource).getTitle();
-                resourceText = ((ComponentMilestone) resource).getDescription();
-                resourceDate = ((ComponentMilestone) resource).getDate();
-                resourceType = "MILESTONE";
-                // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
-                break;
             case MILESTONE_UPCOMING_IN_A_WEEK:
-                resourceUuid = ((ComponentMilestone) resource).getUuid();
-                resourceTitle = ((ComponentMilestone) resource).getTitle();
-                resourceText = ((ComponentMilestone) resource).getDescription();
-                resourceDate = ((ComponentMilestone) resource).getDate();
-                resourceType = "MILESTONE";
-                break;
             case MILESTONE_UPCOMING_IN_A_DAY:
+                // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
                 resourceUuid = ((ComponentMilestone) resource).getUuid();
                 resourceTitle = ((ComponentMilestone) resource).getTitle();
                 resourceText = ((ComponentMilestone) resource).getDescription();
                 resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 resourceType = "MILESTONE";
+                try {
+                    setCampaignUrl(((ComponentMilestone) resource).getContainingSpaces().get(0).getCampaign().getCampaignId(), urls);
+                } catch (Exception e) {
+                    Logger.error("Error setting milestone campaign id: none campaign foung");
+                }
                 break;
             case MEMBER_JOINED:
                 break;
@@ -542,46 +527,18 @@ public class NotificationsDelegate {
             case UPDATED_CONTRIBUTION_HISTORY:
                 break;
             case BALLOT_UPCOMING_IN_A_DAY:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_UPCOMING_IN_A_WEEK:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_UPCOMING_IN_A_MONTH:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_ENDING_IN_A_DAY:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_ENDING_IN_A_WEEK:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_ENDING_IN_A_MONTH:
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
+                setCampaignUrl(resourceId, urls);
                 break;
             case NEWSLETTER:
                 switch (originType) {
@@ -589,25 +546,52 @@ public class NotificationsDelegate {
                         resourceUuid = ((Campaign) resource).getUuid();
                         resourceTitle = ((Campaign) resource).getTitle();
                         resourceText = ((Campaign) resource).getGoal();
+                        resourceId = ((Campaign) resource).getCampaignId();
                         resourceDate = resource.getLastUpdate();
                         resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                         title = "[AppCivist] New Newsletter for " + resourceType;
+                        setCampaignUrl(resourceId, urls);
                         break;
                     case WORKING_GROUP:
                         resourceUuid = ((WorkingGroup) resource).getUuid();
                         resourceTitle = ((WorkingGroup) resource).getName();
                         resourceText = ((WorkingGroup) resource).getText();
+                        resourceId = ((WorkingGroup) resource).getGroupId();
                         resourceDate = resource.getCreation();
                         resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                         title = "[AppCivist] New Newsletter for " + resourceType;
+                        setWorkingGroupUrl(resourceId, urls);
                         break;
                 }
             default:
                 break;
         }
-        Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
-        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam);
+        Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ","+resourceId+")");
+        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam, resourceId, urls);
 
+    }
+
+    private static void setContributionUrl(Contribution contribution, Map<String, Long> urls) {
+        urls.put("contributionId", contribution.getContributionId());
+        if (!contribution.getWorkingGroups().isEmpty()) {
+            setWorkingGroupUrl(contribution.getWorkingGroups().get(0).getGroupId(), urls);
+        }
+    }
+
+    private static void setWorkingGroupUrl(Long workingGroupId, Map<String, Long> urls) {
+        WorkingGroup workingGroup = WorkingGroup.read(workingGroupId);
+        urls.put("workingGroupId", workingGroupId);
+        if(!workingGroup.getCampaigns().isEmpty()) {
+            setCampaignUrl(workingGroup.getCampaigns().get(0), urls);
+        }
+    }
+
+    private static void setCampaignUrl(Long campaignId, Map<String, Long> urls) {
+        urls.put("campaignId", campaignId);
+        Campaign campaign = Campaign.find.byId(campaignId);
+        if(!campaign.getAssemblies().isEmpty()){
+            urls.put("assemblyId", campaign.getAssemblies().get(0));
+        }
     }
 
     // TODO: signalNotification for non AppCivistBaseModel Resources: VotingBallot
@@ -622,7 +606,8 @@ public class NotificationsDelegate {
                                             String resourceType,
                                             String associatedUser,
                                             SubscriptionTypes subscriptionType,
-                                            User userParam) {
+                                            User userParam,
+                                            Long resourceID, Map<String, Long> urls) {
         // 1. Prepare the notification event data
         NotificationEventSignal notificationEvent = new NotificationEventSignal();
         notificationEvent.setSpaceType(originType);
@@ -645,6 +630,7 @@ public class NotificationsDelegate {
         data.put("notificationDate", notificationDate);
         data.put("associatedUser", associatedUser);
         data.put("signaled", false);
+        data.put("originIds", urls);
         try {
             if (subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
 
@@ -676,7 +662,10 @@ public class NotificationsDelegate {
         try {
             newNotificationSignal = prepareNotificationSignal(notificationEvent);
             if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
-                String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(), newNotificationSignal.getText());
+                String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
+                lang = lang == null ? Lang.defaultLang().code() : lang;
+                String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
+                        newNotificationSignal.getText(), lang);
                 notificationEvent.setRichTextMail(richTextMail);
             }
         } catch (Exception e) {
@@ -1227,13 +1216,18 @@ public class NotificationsDelegate {
 
 
 
-    private static String getRegularMailToSend(String title, String description) throws IOException {
+    private static String getRegularMailToSend(String title, String description, String lang) throws IOException {
         File file = Play.application().getFile(REGULAR_MAIL_TEMPLATE);
         LocalDate now = new LocalDate();
         String content = new String(Files.readAllBytes(Paths.get(file.toString())));
         content = content.replaceAll("REGULAR_TITLE", title);
         content = content.replaceAll("REGULAR_DESCRIPTION", description);
         content = content.replaceAll("DATE", now.getDayOfMonth() +" " + now.toString("MMM"));
+        content = content.replaceAll("YEAR", String.valueOf(now.getYear()));
+        content = content.replaceAll("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
+                "mail.notification.unsubscribe"));
+        content = content.replaceAll("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
+                "mail.notification.new_activity"));
         return content;
     }
 
@@ -1245,7 +1239,20 @@ public class NotificationsDelegate {
      * @param user
      * @return
      */
-    private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType, UUID spaceID, User user) throws IOException {
+    private static Map<String, Object> getNewsletterTemplate(ResourceSpaceTypes spaceType,
+                                                             UUID spaceID, User user) throws IOException {
+        String CAMPAIGN_NAME = "\\{\\{CAMPAIGN_NAME}}";
+        String CAMPAIGN_DESCRIPTION = "\\{\\{CAMPAIGN_DESCRIPTION}}";
+        String PROPOSAL_NEW = "\\{\\{PROPOSAL_NEW}}";
+        String PROPOSAL_DEVELOPING = "\\{\\{PROPOSAL_DEVELOPING}}";
+        String WORKING_GROUPS = "\\{\\{WORKING_GROUP}}";
+        String UPDATES = "\\{\\{UPDATES}}";
+        String DATE = "\\{\\{DATE}}";
+        String NEW_IDEAS_NUMBER = "\\{\\{NEW_IDEAS_NUMBER}}";
+        String NEW_IDEAS_TEXT = "\\{\\{NEW_IDEAS_TEXT}}";
+        String THEMES = "\\{\\{THEMES}}";
+        String RESOURCES = "\\{\\{RESOURCES}}";
+        String UNSUSCRIBE_URL = "\\{\\{UNSUSCRIBE_URL}}";
         Map<String, Object> toRet = new HashMap<>();
         Integer newsletterFrequency = getNewsletterFrequency(spaceID);
         LocalDate now = new LocalDate();
@@ -1253,10 +1260,13 @@ public class NotificationsDelegate {
         LocalDate friday = now.withDayOfWeek(DateTimeConstants.FRIDAY);
         String week = monday.getDayOfMonth() + " " + monday.toString("MMM")
                 + " - " + friday.getDayOfMonth() + " " + friday.toString("MMM");
+        String year = String.valueOf(now.getYear());
         String unsuscribeUrl = Play.application().configuration().getString("appcivist.newsletter.unsuscribeUrl");
         if(unsuscribeUrl == null) {
             unsuscribeUrl = "";
         }
+        String lang = user == null ? Lang.defaultLang().code() : user.getLang();
+        lang = lang == null ? Lang.defaultLang().code() : lang;
         switch (spaceType) {
             case CAMPAIGN:
                 Campaign campaign = Campaign.readByUUID(spaceID);
@@ -1274,7 +1284,19 @@ public class NotificationsDelegate {
                     content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
                             .replaceAll(UNSUSCRIBE_URL,unsuscribeUrl);
                     contentMail = contentMail.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
-                            .replaceAll(UNSUSCRIBE_URL,unsuscribeUrl);
+                            .replaceAll(UNSUSCRIBE_URL,unsuscribeUrl).replace("{{DATE_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.date_text"))
+                            .replace("{{CAMPAIGN_DESCRIPTION_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.campaign_description_text"))
+                            .replace("{{STAGE_NAME_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.stage_name_text"))
+                            .replace("{{CAMPAIGN_NAME_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.campaign_name_text"))
+                            .replace("{{MORE_INFORMATION_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.more_information_text"))
+                            .replace("{{VISIT_BUTTON_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.unsubscribe"))
+                            .replace("{{YEAR}}", year);
                     toRet.put("campaignNewsletterDescription",campaign.getGoal());
                     if(campaign.getGoal() != null) {
                         content = content.replaceAll(CAMPAIGN_DESCRIPTION, campaign.getGoal());
@@ -1331,13 +1353,25 @@ public class NotificationsDelegate {
                 } else if (stage.equals(ComponentTypes.IDEAS)) {
                     File file = Play.application().getFile(NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME);
                     File fileMail = Play.application().getFile(NEWSLETTER_WITH_ACTIVITY_TEMPLATE_NAME_MAIL);
-                    List<String> contents = new ArrayList<>();
                     String content = new String(Files.readAllBytes(Paths.get(file.toString())));
                     String contentMail = new String(Files.readAllBytes(Paths.get(fileMail.toString())));
                     content = content.replaceAll(CAMPAIGN_NAME, campaign.getTitle()).replaceAll(CAMPAIGN_DESCRIPTION,
                             campaign.getGoal()).replaceAll(DATE, week).replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
                     contentMail = contentMail.replaceAll(CAMPAIGN_NAME, campaign.getTitle()).replaceAll(CAMPAIGN_DESCRIPTION,
-                            campaign.getGoal()).replaceAll(DATE, week).replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
+                            campaign.getGoal()).replaceAll(DATE, week).replaceAll(UNSUSCRIBE_URL, unsuscribeUrl)
+                            .replace("{{DATE_TEXT}}",
+                            Messages.get(Lang.forCode(lang), "mail.notification.date_text"))
+                            .replace("{{VISIT_BUTTON_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.unsubscribe"))
+                            .replace("{{YEAR}}", year)
+                            .replace("{{NEW_IDEAS_NUMBER_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.new_ideas_number_text"))
+                            .replace("{{CAMPAIGN_DESCRIPTION_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.campaign_description_text.no_activity"))
+                            .replace("{{UPDATES_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.updates_text"))
+                            .replace("{{UPDATES_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.updates_text"));
                     List<Contribution> contributions = Contribution.findLatestContributionIdeas(campaign.getResources(),
                             newsletterFrequency);
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
@@ -1380,7 +1414,14 @@ public class NotificationsDelegate {
                     content = content.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
                             .replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
                     contentMail = contentMail.replaceAll(CAMPAIGN_NAME,campaign.getTitle()).replaceAll(DATE, week)
-                            .replaceAll(UNSUSCRIBE_URL, unsuscribeUrl);
+                            .replaceAll(UNSUSCRIBE_URL, unsuscribeUrl)
+                            .replace("{{DATE_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.date_text"))
+                            .replace("{{VISIT_BUTTON_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.unsubscribe"))
+                            .replace("{{YEAR}}", year)
+                            .replace("{{CAMPAIGN_DESCRIPTION_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.date_text"));
                     List<Map<String, Object>> contributionsFormated = new ArrayList<>();
                     List<Map<String, Object>> developingProposals = new ArrayList<>();
                     List<String> updates = new ArrayList<>();
@@ -1391,6 +1432,7 @@ public class NotificationsDelegate {
                                 .anyMatch(t -> t.getUser().getUserId().equals(user.getUserId()))) {
                             toRet.put("workingGroupName", wg.getName());
                             content = content.replaceAll(WORKING_GROUPS, wg.getName());
+
                             for(Contribution proposal: wg.getProposals()) {
                                 Calendar calendar = Calendar.getInstance();
                                 calendar.add(Calendar.DAY_OF_MONTH, - newsletterFrequency);
@@ -1426,6 +1468,11 @@ public class NotificationsDelegate {
                                     String.valueOf(contributionsFormated.size()))
                                     .replaceAll(PROPOSAL_NEW, contributionsString.toString())
                                     .replaceAll(PROPOSAL_DEVELOPING, developingString.toString());
+                            contentMail = contentMail.replace("{{CAMPAIGN_DESCRIPTION_TEXT}}",
+                                    Messages.get(Lang.forCode(lang), "mail.notification.new_proposal_text",
+                                    wg.getName(), String.valueOf(contributionsFormated.size())))
+                                    .replace("{{UPDATES_TEXT}}", Messages.get(Lang.forCode(lang),
+                                    "mail.notification.proposal_developing_text", wg.getName()));
 
                             break;
                         } else {
