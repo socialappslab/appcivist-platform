@@ -333,7 +333,8 @@ public class NotificationsDelegate {
         String resourceText = "";
         Date resourceDate = new Date();
         String associatedUser = "";
-
+        Long resourceId = null;
+        Map<String, Long> urls = new HashMap<>();
         Boolean originIsResourceSpace = false;
         if (origin instanceof ResourceSpace) {
             originIsResourceSpace = true;
@@ -392,10 +393,14 @@ public class NotificationsDelegate {
                 resourceText = ((Contribution) resource).getText();
                 resourceDate = resource.getCreation();
                 resourceType = ((Contribution) resource).getType().toString();
+                resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 int numAuthors = ((Contribution) resource).getAuthors().size();
                 associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
+                Contribution contribution = (Contribution) resource;
+                setContributionUrl(contribution, urls);
+
                 break;
             case UPDATED_CONTRIBUTION_IDEA:
             case UPDATED_CONTRIBUTION_PROPOSAL:
@@ -408,10 +413,12 @@ public class NotificationsDelegate {
                 resourceText = ((Contribution) resource).getText();
                 resourceDate = resource.getLastUpdate();
                 resourceType = ((Contribution) resource).getType().toString();
+                resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 numAuthors = ((Contribution) resource).getAuthors().size();
                 associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
+                setContributionUrl((Contribution) resource, urls);
                 break;
 //			case NEW_CONTRIBUTION_FEEDBACK:
 //			case UPDATED_CONTRIBUTION_FEEDBACK:
@@ -430,10 +437,12 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getCreation();
                 resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 Logger.info("Title: " + title);
+                setCampaignUrl(((Campaign) resource).getCampaignId(), urls);
                 // TODO: add creator to campaign associatedUser = ((Campaign) resource).getCreator().getName();
                 break;
             case NEW_CONTRIBUTION_FEEDBACK:
@@ -442,24 +451,29 @@ public class NotificationsDelegate {
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
+                setCampaignUrl(((Campaign) resource).getCampaignId(), urls);
                 // TODO: add creator to campaign associatedUser = ((Campaign) resource).getCreator().getName();
                 break;
             case NEW_WORKING_GROUP:
                 resourceUuid = ((WorkingGroup) resource).getUuid();
                 resourceTitle = ((WorkingGroup) resource).getName();
                 resourceText = ((WorkingGroup) resource).getText();
+                resourceId = ((WorkingGroup) resource).getGroupId();
                 resourceDate = resource.getCreation();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 associatedUser = ((WorkingGroup) resource).getCreator().getName();
+                setWorkingGroupUrl(resourceId, urls);
                 break;
             case UPDATED_WORKING_GROUP:
                 resourceUuid = ((WorkingGroup) resource).getUuid();
                 resourceTitle = ((WorkingGroup) resource).getName();
                 resourceText = ((WorkingGroup) resource).getText();
+                resourceId = ((WorkingGroup) resource).getGroupId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
@@ -468,22 +482,9 @@ public class NotificationsDelegate {
                 } else {
                     associatedUser = "";
                 }
+                setWorkingGroupUrl(resourceId, urls);
                 break;
             case NEW_VOTING_BALLOT:
-                Logger.info("NEW_VOTING_BALLOT");
-                WorkingGroup wg = (WorkingGroup) resource;
-                //TODO: HOW TO KNOW WHAT BALLOT IS THE LAST
-                Ballot lastBallot = wg.getBallots().get(wg.getBallots().size() - 1);
-                resourceUuid = lastBallot.getUuid();
-                resourceTitle = lastBallot.getDecisionType();
-                resourceText = lastBallot.getNotes();
-                resourceDate = lastBallot.getCreatedAt();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                title = "[AppCivist] Updated " + resourceType + " in " + originName;
-                //TODO: how to get the associatedUser
-                associatedUser = "";
-                Logger.info("DATOS NOTIFICACION( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
-                break;
             case UPDATED_VOTING_BALLOT:
 //				// TODO: how to describe updated ballots that are not descendants of AppCivistBaseModel
                 WorkingGroup uwg = (WorkingGroup) resource;
@@ -494,6 +495,7 @@ public class NotificationsDelegate {
                 resourceText = ulastBallot.getNotes();
                 resourceDate = ulastBallot.getCreatedAt();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
+                resourceId = ulastBallot.getId();
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 //TODO: how to get the associatedUser
                 associatedUser = "";
@@ -503,26 +505,20 @@ public class NotificationsDelegate {
             case UPDATED_MILESTONE:
             case MILESTONE_PASSED:
             case MILESTONE_UPCOMING:
-                resourceUuid = ((ComponentMilestone) resource).getUuid();
-                resourceTitle = ((ComponentMilestone) resource).getTitle();
-                resourceText = ((ComponentMilestone) resource).getDescription();
-                resourceDate = ((ComponentMilestone) resource).getDate();
-                resourceType = "MILESTONE";
-                // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
-                break;
             case MILESTONE_UPCOMING_IN_A_WEEK:
-                resourceUuid = ((ComponentMilestone) resource).getUuid();
-                resourceTitle = ((ComponentMilestone) resource).getTitle();
-                resourceText = ((ComponentMilestone) resource).getDescription();
-                resourceDate = ((ComponentMilestone) resource).getDate();
-                resourceType = "MILESTONE";
-                break;
             case MILESTONE_UPCOMING_IN_A_DAY:
+                // TODO: add creator to milestones associatedUser = ((ComponentMilestone) resource).getCreator().getName();
                 resourceUuid = ((ComponentMilestone) resource).getUuid();
                 resourceTitle = ((ComponentMilestone) resource).getTitle();
                 resourceText = ((ComponentMilestone) resource).getDescription();
                 resourceDate = ((ComponentMilestone) resource).getDate();
+                resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 resourceType = "MILESTONE";
+                try {
+                    setCampaignUrl(((ComponentMilestone) resource).getContainingSpaces().get(0).getCampaign().getCampaignId(), urls);
+                } catch (Exception e) {
+                    Logger.error("Error setting milestone campaign id: none campaign foung");
+                }
                 break;
             case MEMBER_JOINED:
                 break;
@@ -531,46 +527,18 @@ public class NotificationsDelegate {
             case UPDATED_CONTRIBUTION_HISTORY:
                 break;
             case BALLOT_UPCOMING_IN_A_DAY:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_UPCOMING_IN_A_WEEK:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_UPCOMING_IN_A_MONTH:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_ENDING_IN_A_DAY:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_ENDING_IN_A_WEEK:
-                resourceUuid = ((Campaign) resource).getUuid();
-                resourceTitle = ((Campaign) resource).getTitle();
-                resourceText = ((Campaign) resource).getGoal();
-                resourceDate = resource.getLastUpdate();
-                resourceType = AppcivistResourceTypes.BALLOT.toString();
-                break;
             case BALLOT_ENDING_IN_A_MONTH:
                 resourceUuid = ((Campaign) resource).getUuid();
                 resourceTitle = ((Campaign) resource).getTitle();
                 resourceText = ((Campaign) resource).getGoal();
+                resourceId = ((Campaign) resource).getCampaignId();
                 resourceDate = resource.getLastUpdate();
                 resourceType = AppcivistResourceTypes.BALLOT.toString();
+                setCampaignUrl(resourceId, urls);
                 break;
             case NEWSLETTER:
                 switch (originType) {
@@ -578,25 +546,52 @@ public class NotificationsDelegate {
                         resourceUuid = ((Campaign) resource).getUuid();
                         resourceTitle = ((Campaign) resource).getTitle();
                         resourceText = ((Campaign) resource).getGoal();
+                        resourceId = ((Campaign) resource).getCampaignId();
                         resourceDate = resource.getLastUpdate();
                         resourceType = AppcivistResourceTypes.CAMPAIGN.toString();
                         title = "[AppCivist] New Newsletter for " + resourceType;
+                        setCampaignUrl(resourceId, urls);
                         break;
                     case WORKING_GROUP:
                         resourceUuid = ((WorkingGroup) resource).getUuid();
                         resourceTitle = ((WorkingGroup) resource).getName();
                         resourceText = ((WorkingGroup) resource).getText();
+                        resourceId = ((WorkingGroup) resource).getGroupId();
                         resourceDate = resource.getCreation();
                         resourceType = AppcivistResourceTypes.WORKING_GROUP.toString();
                         title = "[AppCivist] New Newsletter for " + resourceType;
+                        setWorkingGroupUrl(resourceId, urls);
                         break;
                 }
             default:
                 break;
         }
-        Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ")");
-        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam);
+        Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ","+resourceId+")");
+        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam, resourceId, urls);
 
+    }
+
+    private static void setContributionUrl(Contribution contribution, Map<String, Long> urls) {
+        urls.put("contributionId", contribution.getContributionId());
+        if (!contribution.getWorkingGroups().isEmpty()) {
+            setWorkingGroupUrl(contribution.getWorkingGroups().get(0).getGroupId(), urls);
+        }
+    }
+
+    private static void setWorkingGroupUrl(Long workingGroupId, Map<String, Long> urls) {
+        WorkingGroup workingGroup = WorkingGroup.read(workingGroupId);
+        urls.put("workingGroupId", workingGroupId);
+        if(!workingGroup.getCampaigns().isEmpty()) {
+            setCampaignUrl(workingGroup.getCampaigns().get(0), urls);
+        }
+    }
+
+    private static void setCampaignUrl(Long campaignId, Map<String, Long> urls) {
+        urls.put("campaignId", campaignId);
+        Campaign campaign = Campaign.find.byId(campaignId);
+        if(!campaign.getAssemblies().isEmpty()){
+            urls.put("assemblyId", campaign.getAssemblies().get(0));
+        }
     }
 
     // TODO: signalNotification for non AppCivistBaseModel Resources: VotingBallot
@@ -611,7 +606,8 @@ public class NotificationsDelegate {
                                             String resourceType,
                                             String associatedUser,
                                             SubscriptionTypes subscriptionType,
-                                            User userParam) {
+                                            User userParam,
+                                            Long resourceID, Map<String, Long> urls) {
         // 1. Prepare the notification event data
         NotificationEventSignal notificationEvent = new NotificationEventSignal();
         notificationEvent.setSpaceType(originType);
@@ -634,6 +630,7 @@ public class NotificationsDelegate {
         data.put("notificationDate", notificationDate);
         data.put("associatedUser", associatedUser);
         data.put("signaled", false);
+        data.put("originIds", urls);
         try {
             if (subscriptionType.equals(SubscriptionTypes.NEWSLETTER)) {
 
