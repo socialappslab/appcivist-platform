@@ -1213,6 +1213,61 @@ public class Assemblies extends Controller {
 
 
 	/**
+	 * GET      /assembly/:aid/id?type=[campaign, group, contribution, resource, theme]&uuid=resource_uuid getIdOfResourceInAssembly
+	 *
+	 * @param aid
+     * @param type
+     * @param uuid
+	 * @return
+	 */
+	@ApiOperation(httpMethod = "GET", response = Long.class, produces = "application/json", value = "Get numerical ID of reource in an assembly")
+	@ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+	public static Result getIdOfResourceInAssembly(
+			@ApiParam(name = "aid", value = "Assembly ID") Long aid,
+			@ApiParam(name = "type", value = "Type of entity") String type,
+			@ApiParam(name = "uuid", value = "UUID of entity") String uuid) {
+
+		Long id = new Long(0);
+
+		switch (type.toLowerCase()) {
+			case "assembly":
+				id = Assembly.getIdByUUID(UUID.fromString(uuid));
+				break;
+			case "campaign":
+				id = Campaign.getIdByUUID(UUID.fromString(uuid));
+				break;
+			case "contribution":
+				id = Contribution.getIdByUUID(UUID.fromString(uuid));
+				break;
+			case "group":
+				id = WorkingGroup.getIdByUUID(UUID.fromString(uuid));
+				break;
+			case "resource":
+				id = Resource.getIdByUUID(UUID.fromString(uuid));
+				break;
+			default:
+				break;
+		}
+
+		if (id == 0) {
+			TransferResponseStatus r = new TransferResponseStatus();
+			r.setStatusMessage("Entity with that UUID does not exist under this assembly");
+			r.setResponseStatus(ResponseStatus.NODATA);
+			return notFound(Json.toJson(r));
+		}
+
+        TransferResponseStatus r = new TransferResponseStatus();
+        r.setStatusMessage("Found ID");
+        r.setResponseStatus(ResponseStatus.OK);
+        r.setNewResourceId(id);
+		return ok(Json.toJson(r));
+	}
+
+
+	/**
 	 * POST      /assembly/:aid/campaign/:cid/group/:gid/member
 	 *
 	 * @param aid

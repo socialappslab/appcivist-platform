@@ -1597,4 +1597,9 @@ public class Contribution extends AppCivistBaseModel {
             Logger.debug("Using none geoJson");
         }
     }
+
+    public static Long getIdByUUID(UUID uuid) {
+        Contribution c = find.where().eq("uuid",uuid.toString()).findUnique();
+        return c.getContributionId();
+    }
 }

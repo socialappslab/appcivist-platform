@@ -1,5 +1,6 @@
 package models;
 
+import com.avaje.ebean.*;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -877,5 +878,10 @@ public class Assembly extends AppCivistBaseModel {
 		}
 		newAssembly.setWorkingGroups(wgLoaded);
 		return newAssembly;
+	}
+
+    public static Long getIdByUUID(UUID uuid) {
+		Assembly a = find.where().eq("uuid",uuid.toString()).findUnique();
+		return a.getAssemblyId();
 	}
 }

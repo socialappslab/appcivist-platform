@@ -111,6 +111,7 @@ POST      /api/notification/events/:type                                        
 # API operations to manage Assemblies and entities that related to it 
 GET       /api/assembly                                                          controllers.Assemblies.findAssemblies(query ?="", filter ?= "", shortname ?= "")
 POST      /api/assembly                                                          controllers.Assemblies.createAssembly(templates ?= "", invitations?="false")
+GET       /api/assembly/:id/id                                                   controllers.Assemblies.getIdOfResourceInAssembly(id: Long, type ?= "campaign", uuid ?= "")
 GET       /api/assembly/:id                                                      controllers.Assemblies.findAssembly(id: Long)
 PUT       /api/assembly/:id                                                      controllers.Assemblies.updateAssembly(id: Long)
 PUT       /api/assembly/:id/resources                                            controllers.Assemblies.createAssemblyResources(id: Long)
@@ -123,7 +124,7 @@ GET       /api/assembly/:id/membership/:status                                  
 GET       /api/assembly/:aid/user/:uid                                           controllers.Assemblies.isUserMemberOfAssembly(aid: Long, uid: Long)
 POST      /api/assembly/:id/invitations                                          controllers.Assemblies.inviteNewMembers(id: Long)
 GET       /api/assembly/:aid/linked                                              controllers.Assemblies.findAssembliesLinked(aid: Long)
-GET       /api/assembly/:aid/public                                              controllers.Assemblies.getListedLinkedAssemblyProfile(aid: Long) 
+GET       /api/assembly/:aid/public                                              controllers.Assemblies.getListedLinkedAssemblyProfile(aid: Long)
 
 # Assembly: contribution templates API
 GET       /api/assembly/:aid/contribution/template                               controllers.Assemblies.findContributionTemplatesInAssembly(aid: Long)
