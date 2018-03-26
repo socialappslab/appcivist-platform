@@ -4021,7 +4021,13 @@ public class Contributions extends Controller {
             if (padStoredKey!=null) {
                 etherpadApiKey = padStoredKey;
             }
+            Logger.info("Etherpad Server in conf file: "+etherpadServerUrl);
 
+            if (etherpadServerUrl==null) {
+                etherpadServerUrl = "http://etherpad.appcivist.org";
+            }
+            Logger.info("Etherpad Server we will use: "+etherpadServerUrl);
+            Logger.info("Reading from etherpad: "+parts);
             if (!etherpadServerUrl.equals(parts[0])) {
                 etherpadServerUrl = parts[0];
                 if (padStoredKey==null && etherpadServerUrl.equals(etherpadProductionServerUrl)) {
