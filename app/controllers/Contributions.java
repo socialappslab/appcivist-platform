@@ -243,7 +243,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution contribution = Contribution.read(contributionId);
-        if(contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+        if(contribution.getExtendedTextPad() !=null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
             User user = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
             PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
