@@ -977,10 +977,12 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public Config getConfigByKey(String key) {
-		List<Config> matchingConfigs = this.configs.stream().filter(p -> p.getKey().equals(key)).collect(Collectors.toList());
-		if (matchingConfigs != null && !matchingConfigs.isEmpty()) {
-			return matchingConfigs.get(0);
-		} 
+		if (configs!=null) {
+			List<Config> matchingConfigs = this.configs.stream().filter(p -> p.getKey().equals(key)).collect(Collectors.toList());
+			if (matchingConfigs != null && !matchingConfigs.isEmpty()) {
+				return matchingConfigs.get(0);
+			}
+		}
 		return null;
 	}
 
