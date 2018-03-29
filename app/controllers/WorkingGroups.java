@@ -36,6 +36,7 @@ import play.twirl.api.Content;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.services.EtherpadWrapper;
+import utils.services.PeerDocWrapper;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -934,33 +935,41 @@ public class WorkingGroups extends Controller {
             @ApiParam(name = "gid", value = "Working Group ID") Long gid,
             @ApiParam(name = "pid", value = "Contribution ID") Long pid) {
 
+        Integer newRevision = null;
         try {
             Contribution proposal = Contribution.read(pid);
+            if(proposal.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+                User user = User.findByAuthUserIdentity(PlayAuthenticate
+                        .getUser(session()));
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                peerDocWrapper.publish(proposal.getExtendedTextPad());
+                newRevision = 1;
+            } else {
 
-            String etherpadServerUrl = Play
-                    .application()
-                    .configuration()
-                    .getString(
-                            "appcivist.services.etherpad.default.serverBaseUrl");
-            String etherpadApiKey = Play.application().configuration()
-                    .getString("appcivist.services.etherpad.default.apiKey");
-            EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+                String etherpadServerUrl = Play
+                        .application()
+                        .configuration()
+                        .getString(
+                                "appcivist.services.etherpad.default.serverBaseUrl");
+                String etherpadApiKey = Play.application().configuration()
+                        .getString("appcivist.services.etherpad.default.apiKey");
+                EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
 
-            Integer newRevision = null;
-            try {
-                //Let's save the revision with no number, so etherpad can generate one by itself
-                wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());
-                Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
-                JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
-                //Integer newRevision = null;
-                if (savedRevisions != null && !savedRevisions.isEmpty()) {
-                    newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
-                    proposal.addRevisionToContributionPublishHistory(newRevision);
+
+                try {
+                    //Let's save the revision with no number, so etherpad can generate one by itself
+                    wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());
+                    Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());
+                    JSONArray savedRevisions = (JSONArray) revisions.get("savedRevisions");
+                    //Integer newRevision = null;
+                    if (savedRevisions != null && !savedRevisions.isEmpty()) {
+                        newRevision = ((Long) savedRevisions.get(savedRevisions.size() - 1)).intValue();
+                        proposal.addRevisionToContributionPublishHistory(newRevision);
+                    }
+                } catch (Exception e) {
+                    newRevision = 0;
                 }
-            } catch (Exception e) {
-                newRevision = 0;
             }
-
             proposal.setStatus(ContributionStatus.PUBLISHED);
             proposal.update();
 
