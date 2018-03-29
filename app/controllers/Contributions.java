@@ -1348,6 +1348,7 @@ public class Contributions extends Controller {
                     Config conf = campaign.getResources().getConfigByKey(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR);
                     if(conf.getValue().equals(ResourceTypes.PEERDOC.name())) {
                         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
+                        Logger.info("Creating PEERDOC for contribution "+c.getContributionId());
                         peerDocWrapper.createPad(c, campaign.getResources().getResourceSpaceUuid());
                     }
                 }

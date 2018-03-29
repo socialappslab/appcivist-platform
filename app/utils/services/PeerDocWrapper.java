@@ -55,6 +55,7 @@ public class PeerDocWrapper {
 
         String padId = UUID.randomUUID().toString();
         String url = getPeerDocUrl();
+        Logger.info("Creating PEERDOC Resource ("+padId+") with URL =  con"+url);
         createResourceAndUpdateContribution(padId, null, url, resourceSpaceConfigsUUID, c,
                 ResourceTypes.PEERDOC, false, null);
         Map<String, String> aRet = new HashMap<>();
