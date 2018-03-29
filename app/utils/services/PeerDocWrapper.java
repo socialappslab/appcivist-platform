@@ -68,7 +68,7 @@ public class PeerDocWrapper {
             InvalidAlgorithmParameterException {
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document?user="+userEncrypted);
-        Logger.info("NOTIFICATION: Creating document in PeerDoc: " + holder.getUrl());
+        Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
         return getPeerDocServerUrl()+response.asJson().get("path").asText();
