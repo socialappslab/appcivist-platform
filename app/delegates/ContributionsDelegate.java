@@ -387,7 +387,7 @@ public class ContributionsDelegate {
         return null;
     }
 
-    private static void createResourceAndUpdateContribution(String padId,
+    public static void createResourceAndUpdateContribution(String padId,
                                                             String readId, String readurl,
                                                             UUID resourceSpaceConfigsUUID,
                                                             Contribution c,
