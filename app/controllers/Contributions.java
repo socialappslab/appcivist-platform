@@ -56,12 +56,19 @@ import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.Packager;
 import utils.services.EtherpadWrapper;
+import utils.services.PeerDocWrapper;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -236,6 +243,21 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution contribution = Contribution.read(contributionId);
+        if(contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+            User user = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+            try {
+                contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
+                        .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
+            } catch (Exception e) {
+                return internalServerError(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.SERVERERROR,
+                                "Error reading contribution stats: " + e.getMessage())));
+            }
+
+        }
         return ok(Json.toJson(contribution));
     }
 
@@ -1320,6 +1342,16 @@ public class Contributions extends Controller {
                 } else {
                     c = createContribution(newContribution, author, type, template, rs);                    
                 }
+
+                if (c.getType().equals(ContributionTypes.PROPOSAL)) {
+                    Campaign campaign = Campaign.read(sid);
+                    Config conf = campaign.getResources().getConfigByKey(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR);
+                    if(conf.getValue().equals(ResourceTypes.PEERDOC.name())) {
+                        PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
+                        peerDocWrapper.createPad(c, campaign.getResources().getResourceSpaceUuid());
+                    }
+                }
+
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
                 e.printStackTrace();
@@ -4234,7 +4266,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid,
-            @ApiParam(name = "typeDocument", value = "Type of document", allowableValues = "gdoc, etherpad") String typeDocument,
+            @ApiParam(name = "typeDocument", value = "Type of document",
+                    allowableValues = "gdoc, etherpad, peerdoc") String typeDocument,
             @ApiParam(name = "contributionTemplateId", value = "Contribution template ID") Long contributionTemplateId,
             @ApiParam(name = "resourceTemplateId", value = "Resource ID") Long resourceTemplateId) {
 
@@ -4281,6 +4314,13 @@ public class Contributions extends Controller {
                     etherpadServerUrl = body.get("gdocLink").asText();
                 }
                 resourceTypes = ResourceTypes.GDOC;
+            }
+
+            if(typeDocument.equals("peerdoc")) {
+                User user = User.findByAuthUserIdentity(PlayAuthenticate
+                        .getUser(session()));
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
             }
 
             boolean storeKey = false;
