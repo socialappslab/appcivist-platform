@@ -711,7 +711,7 @@ public class NotificationsDelegate {
                         //Get configuration CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION
                         User user = member.getUser();
 
-                        if (!notificatedUsers.contains(user.getUserId())) {// if not already notified
+                        if (notificatedUsers!=null && user !=null && !notificatedUsers.contains(user.getUserId())) {// if not already notified
                             Config config = Config.findByUser(user.getUuid(), UserProfileConfigsTypes.CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION);
 
                             //If auto subscription is active

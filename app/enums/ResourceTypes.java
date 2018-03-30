@@ -20,5 +20,6 @@ public enum ResourceTypes {
 	FILE, 
 	AUDIO,
 	CONTRIBUTION_TEMPLATE, 
-	GDOC
+	GDOC,
+	PEERDOC
 }

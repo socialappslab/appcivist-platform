@@ -48,12 +48,14 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_PROPOSAL_DEFAULT_STATUS = "appcivist.campaign.proposal-default-status"; // NEW or PUBLISHED
 	public static final String APPCIVIST_CAMPAIGN_FEEDBACK_HIDDEN_FIELDS = "appcivist.campaign.feedback.hidden-fields"; // EMPTY DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_HIDDEN_FIELDS = "appcivist.campaign.contribution.hidden-fields"; // EMPTY DEFAULT
-	public static final String APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS = "appcivist.campaign.enable-ideas-during-proposals"; // FALSE DEFAULT
+	public static final String APPCIVIST_CAMPAIGN_ENABLE_IDEAS_DURING_PROPOSALS = "appcivist.campaign.enable-ideas-during-proposals"; // FALSE DEFAULT, if TRUE, ideas can be also added during a PROPOSALS phase
 	public static final String APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT= "appcivist.campaign.open-idea-section-default"; // FALSE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES = "appcivsit.campaign.allow-emergent-themes"; // TRUE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS = "appcivist.campaign.allow-anonymous-ideas"; // FALSE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY = "appcivist.campaign.newsletter-frecuency";
+	public static final String APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR = "appcivist.force-collaborative-editor"; // PEERDOC or ETHERPAD, will force propsoal creation process to already create the proposal document in the selected service
 	public static final String APPCIVIST_CAMPAIGN_ENABLE_GROUP_AUTHORSHIP = "appcivist.campaign.enable-group-authorship";
+	public static final String APPCIVIST_CAMPAIGN_DISABLE_PROPOSAL_DISCUSSIONS = "appcivist.campaign.disable-proposal-discussions"; // if TRUE, the comment sections in the proposal page is disabled
 
 	//Add the configuration to the default templates for creating campaigns
 	
