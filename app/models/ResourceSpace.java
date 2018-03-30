@@ -507,6 +507,10 @@ public class ResourceSpace extends AppCivistBaseModel {
 		this.contributions = contributions;
 	}
 
+	public Boolean isContributionInSpace(Long id) {
+		List<Contribution> result = this.contributions.stream().filter(c -> c.getContributionId() == id).collect(Collectors.toList());
+        return result !=null ? result.size()>0 : false;
+	}
 
 	public List<ContributionHistory> getContributionHistories() {
 		if(this.contributionHistories==null)
@@ -913,7 +917,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 
 	public List<Resource> getResourcesFilteredByType(ResourceTypes type) {
-		return this.resources.stream()
+			return this.resources.stream()
 				.filter(r -> r.getResourceType() == type )
 				.collect(Collectors.toList());
 	}
