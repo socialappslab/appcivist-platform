@@ -31,6 +31,8 @@ public class Organization extends AppCivistBaseModel {
 	@OneToOne(cascade = CascadeType.ALL)
 	@JsonIgnoreProperties({"creator", "resourceId", "location", "resourceType"})
 	private Resource logo;
+	@JsonView(Views.Public.class)
+	private String url;
 
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "organizations")
@@ -133,5 +135,11 @@ public class Organization extends AppCivistBaseModel {
 	}
 
 
+    public String getUrl() {
+        return url;
+    }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
 }
