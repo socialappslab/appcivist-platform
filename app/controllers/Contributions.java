@@ -1351,7 +1351,24 @@ public class Contributions extends Controller {
                         peerDocWrapper.createPad(c, rs.getResourceSpaceUuid());
                     }
                 }
+                c.refresh();
+                if (c != null) {
+                    rs.getContributions().add(c);
+                    rs.update();
+                }
 
+                // Add contribution to workingGroupAuthors resource spaces
+                for (WorkingGroup wgroup: newContribution.getWorkingGroupAuthors()) {
+                    WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
+                    ResourceSpace gRs = g.getResources();
+                    if (!gRs.isContributionInSpace(c.getContributionId())
+                            && (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
+                                || (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
+                                    && !gRs.getResourceSpaceId().equals(rs.getResourceSpaceId())))) {
+                        gRs.getContributions().add(c);
+                        gRs.update();
+                    }
+                }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
                 e.printStackTrace();
@@ -1362,41 +1379,23 @@ public class Contributions extends Controller {
                                 "Error when creating Contribution: " + e.toString())));
             }
             Ebean.commitTransaction();
-            c.refresh();
-            if (c != null) {
-                rs.getContributions().add(c);
-                rs.update();
-            }
 
-            // Add contribution to workingGroupAuthors resource spaces
-            for (WorkingGroup wgroup: newContribution.getWorkingGroupAuthors()) {
-                WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
-                ResourceSpace gRs = g.getResources();
-                if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) ||
-                        (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) && !gRs.getResourceSpaceId().equals(rs.getResourceSpaceId()))) {
-                    gRs.getContributions().add(c);
-                    gRs.update();
-                }
-            }
-
+            // Signal a notification asynchronously
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
-            if (c.getType().equals(ContributionTypes.IDEA) ||
-                    c.getType().equals(ContributionTypes.PROPOSAL)) {
-                try {
-                    NotificationsDelegate.createNotificationEventsByType(
-                            ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
-                } catch (ConfigurationException e) {
-                    Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                } catch (Exception e) {
-                    Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
+            Promise.promise(() -> {
+                if (c.getType().equals(ContributionTypes.IDEA) ||
+                        c.getType().equals(ContributionTypes.PROPOSAL)) {
+                    try {
+                        NotificationsDelegate.createNotificationEventsByType(
+                                ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
+                    } catch (ConfigurationException e) {
+                        Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
+                    } catch (Exception e) {
+                        Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
+                    }
                 }
-            }
-/*
-            Promise.promise( () -> {
-                ContributionsDelegate.updateCommentCounters(c, "+");
-                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
-            });*/
-
+                return Optional.ofNullable(null);
+            });
             return ok(Json.toJson(c));
         }
     }
