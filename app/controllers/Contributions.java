@@ -1353,21 +1353,10 @@ public class Contributions extends Controller {
                 }
                 c.refresh();
                 if (c != null) {
+                    Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
+                    c.getContainingSpaces().add(rs);
                     rs.getContributions().add(c);
                     rs.update();
-                }
-
-                // Add contribution to workingGroupAuthors resource spaces
-                for (WorkingGroup wgroup: newContribution.getWorkingGroupAuthors()) {
-                    WorkingGroup g = WorkingGroup.read(wgroup.getGroupId());
-                    ResourceSpace gRs = g.getResources();
-                    if (!gRs.isContributionInSpace(c.getContributionId())
-                            && (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
-                                || (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
-                                    && !gRs.getResourceSpaceId().equals(rs.getResourceSpaceId())))) {
-                        gRs.getContributions().add(c);
-                        gRs.update();
-                    }
                 }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
@@ -2832,6 +2821,7 @@ public class Contributions extends Controller {
 
         Contribution.create(newContrib, containerResourceSpace);
         newContrib.refresh();
+        Logger.info("Contribution created with id = "+newContrib.getContributionId());
 
 //        // Add contribution to workingGroupAuthors resource spaces
 //        for (WorkingGroup wgroup: workingGroupAuthorsLoaded) {

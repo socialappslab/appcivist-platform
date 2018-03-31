@@ -313,14 +313,12 @@ public class BeanPersistAdapter implements BeanPersistController {
     private void updateContributionStatusAudit(BeanPersistRequest<?> request) {
         F.Promise.promise(() -> {
             try {
-
-
-            Contribution contribution = (Contribution) request.getBean();
-            ContributionStatusAudit last = ContributionStatusAudit.getLastByContribution(contribution);
-            if(last == null || !last.getStatus().equals(contribution.getStatus())) {
-                Logger.info("Creating or updating contribution status audit");
-                ContributionStatusAudit.newStatus(contribution);
-            }
+                Contribution contribution = (Contribution) request.getBean();
+                ContributionStatusAudit last = ContributionStatusAudit.getLastByContribution(contribution);
+                if(last == null || !last.getStatus().equals(contribution.getStatus())) {
+                    Logger.info("Creating or updating contribution status audit");
+                    ContributionStatusAudit.newStatus(contribution);
+                }
             } catch (Exception e) {
                 Logger.error("Error creating audit "+e.getMessage());
             }
