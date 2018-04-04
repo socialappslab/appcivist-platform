@@ -966,9 +966,9 @@ public class Contribution extends AppCivistBaseModel {
 
         // 5. Add contribution to working group authors
         for (WorkingGroup workingGroup : workingGroupAuthors) {
-            workingGroup.addContribution(c);
-            workingGroup.update();
-            workingGroup.refresh();
+            workingGroup.getResources().addContribution(c);
+            c.containingSpaces.add(workingGroup.getResources());
+            workingGroup.getResources().update();
         }
 
         c.refresh();
