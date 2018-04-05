@@ -11,9 +11,9 @@ import service.PlayAuthenticateLocal;
 
 import javax.inject.Inject;
 import javax.naming.Context;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.*;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -81,36 +81,28 @@ public class LdapAuthProvider extends BasicAuthProvider {
         environment.put(Context.SECURITY_AUTHENTICATION, "simple");
         environment.put(Context.SECURITY_PRINCIPAL, dn);
         environment.put(Context.SECURITY_CREDENTIALS, ldapLogin.getPassword());
-        boolean auth;
         try
         {
             DirContext authContext =
                     new InitialDirContext(environment);
-            auth = true;
-
-            // user is authenticated
 
         } catch (NamingException ex)
         {
             throw new AuthException("Wrong Password or Username");
         }
-
-        if (auth) {
-            return new AuthUser() {
+         return new AuthUser() {
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public String getId() {
-                    return "1";
+                    return ldapLogin.getUsername();
                 }
 
                 @Override
                 public String getProvider() {
-                    return "ldap";
+                    return PROVIDER_KEY;
                 }
             };
-        }
-        return null;
     }
 
     public static class LdapConfig {

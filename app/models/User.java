@@ -481,6 +481,11 @@ public class User extends AppCivistBaseModel implements Subject {
 		user.active = true;
 		Long userId = null;
 
+		//if user doesnt have an email --ldap case
+		if(user.getEmail() == null) {
+			user.setEmail(authUser.getId()+"@ldap.com");
+		}
+
 		/*
 		 * 2. Second, we will try to see if the email is sent and find if the
 		 * user is already part of the system
@@ -543,7 +548,9 @@ public class User extends AppCivistBaseModel implements Subject {
 		 * TODO add username to the signup form
 		 */
 		user.setUsername(user.getEmail());
-		
+		if (user.getEmail().equals(authUser.getId()+"@ldap.com")) {
+			user.setUsername(authUser.getId());
+		}
 		/*
 		 * 8. Set language of user
 		 */

@@ -5,6 +5,7 @@ import static play.libs.Json.toJson;
 
 import com.feth.play.module.pa.user.AuthUserIdentity;
 import enums.ResourceTypes;
+import exceptions.MembershipCreationException;
 import http.Headers;
 
 import java.util.*;
@@ -43,6 +44,7 @@ import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.services.SocialIdeationWrapper;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
@@ -290,17 +292,59 @@ public class Users extends Controller {
         return r;
       }
     } else if(provider.equals("ldap")) {
-
       Assembly assembly = Assembly.readByUUID(auuid);
-//      if (assembly != null) {
+      if (assembly == null) {
+        return badRequest();
+      }
         final Form<LdapAuthProvider.LdapLogin> filledForm = LdapAuthProvider.LOGIN_FORM
                 .bindFromRequest();
-        Logger.info("REQUEST: Login Form => " + filledForm.toString());
-        LdapAuthProvider.LdapConfig ldapConfig = new LdapAuthProvider.LdapConfig();
+      User user = User.findByUserName(filledForm.get().getUsername());
+      boolean isMember = false;
+      if (user != null) {
+        for (MembershipAssembly ma : assembly.getMemberships()) {
+          if (ma.getUser().getUserId().equals(user.getUserId())) {
+            isMember = true;
+            break;
+          }
+        }
+        if (!isMember) {
+          return badRequest();
+        }
+      }
+      LdapAuthProvider.LdapConfig ldapConfig = new LdapAuthProvider.LdapConfig();
+      for(Config config: assembly.getConfigs()) {
+        if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER)) {
+          ldapConfig.setUrl(config.getValue());
+        }
+        if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT)) {
+          ldapConfig.setPort(Integer.valueOf(config.getValue()));
+        }
+        if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN)) {
+          ldapConfig.setDc(config.getValue());
+        }
+      }
+      if (ldapConfig.getPort() == 0 || ldapConfig.getUrl() == null) {
+        return badRequest();
+      }
+      Logger.info("REQUEST: Login Form => " + filledForm.toString());
+
         ldapConfig.setDc("dc=example,dc=com");
         ldapConfig.setPort(389);
         ldapConfig.setUrl("ldap://ldap.forumsys.com");
-        return LdapAuthProvider.handleLogin(ctx(), ldapConfig);
+        Result result = LdapAuthProvider.handleLogin(ctx(), ldapConfig);
+       //if the user was created just in the login, we update their land and
+      // create the membership
+        if(user == null) {
+          user = User.findByUserName(filledForm.get().getUsername());
+          user.setLanguage(assembly.getLang());
+          assembly.setCreator(user);
+          try {
+            Assembly.createMembership(assembly);
+          } catch (MembershipCreationException e) {
+            Logger.error("Error creating the assembly membership");
+          }
+        }
+        return result;
   //    }
     }
     return null;
