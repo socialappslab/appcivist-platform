@@ -210,6 +210,8 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<Long> assignToContributions;
 
+    @Transient
+    private String errorsInExtendedTextPad;
     /*
      * The following fields are specific to each type of contribution
      */
@@ -1601,5 +1603,13 @@ public class Contribution extends AppCivistBaseModel {
     public static Long getIdByUUID(UUID uuid) {
         Contribution c = find.where().eq("uuid",uuid.toString()).findUnique();
         return c.getContributionId();
+    }
+
+    public String getErrorsInExtendedTextPad() {
+        return errorsInExtendedTextPad;
+    }
+
+    public void setErrorsInExtendedTextPad(String errorsInExtendedTextPad) {
+        this.errorsInExtendedTextPad = errorsInExtendedTextPad;
     }
 }

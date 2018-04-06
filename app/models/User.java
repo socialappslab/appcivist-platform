@@ -666,7 +666,7 @@ public class User extends AppCivistBaseModel implements Subject {
 		return user;
 	}
 
-	private static String getDefaultProfilePictureURL(String email) throws HashGenerationException {
+	public static String getDefaultProfilePictureURL(String email) throws HashGenerationException {
 		String userMd5Hash = HashGeneratorUtils.generateMD5(email);
 		String gravatarURL = GlobalData.GRAVATAR_BASE_URL+userMd5Hash+"?d=identicon";
 		return gravatarURL;

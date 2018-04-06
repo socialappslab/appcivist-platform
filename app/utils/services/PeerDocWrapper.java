@@ -16,6 +16,7 @@ import play.libs.Json;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
+import utils.security.HashGenerationException;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
@@ -51,7 +52,7 @@ public class PeerDocWrapper {
 
     public Map<String, String> createPad(Contribution c, UUID resourceSpaceConfigsUUID) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, MalformedURLException {
+            InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException {
 
         String padId = UUID.randomUUID().toString();
         String url = getPeerDocUrl();
@@ -59,13 +60,13 @@ public class PeerDocWrapper {
         createResourceAndUpdateContribution(padId, null, url, resourceSpaceConfigsUUID, c,
                 ResourceTypes.PEERDOC, false, null);
         Map<String, String> aRet = new HashMap<>();
-        aRet.put("path", getPeerDocUrl());
+        aRet.put("path", url);
         return aRet;
     }
 
     private String getPeerDocUrl() throws NoSuchPaddingException, UnsupportedEncodingException, InvalidKeyException,
             NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException {
+            InvalidAlgorithmParameterException, HashGenerationException {
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document?user="+userEncrypted);
         Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
@@ -85,7 +86,7 @@ public class PeerDocWrapper {
 
     public void publish(Resource resource) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException {
+            InvalidAlgorithmParameterException, HashGenerationException {
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
@@ -96,7 +97,7 @@ public class PeerDocWrapper {
     public String encrypt() throws NoSuchAlgorithmException,
             NoSuchPaddingException, InvalidAlgorithmParameterException,
             InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
-            UnsupportedEncodingException {
+            UnsupportedEncodingException, HashGenerationException {
         byte [] key = hexStringToByteArray(getKeyHex());
         byte [] nonce = new byte[NONCE_LENGTH];
         byte [] iv = new byte[IV_LENGTH];
@@ -125,10 +126,14 @@ public class PeerDocWrapper {
                 .replaceAll("AAAAAAAAAAAAAAAAAAAAA", "");
     }
 
-    private String userToUserData(User user, byte [] nonce) {
+    private String userToUserData(User user, byte [] nonce) throws HashGenerationException {
         UserPeerDoc userPeerDoc = new UserPeerDoc();
         Logger.info(user.getEmail());
-        userPeerDoc.setAvatar(user.getProfilePic().getUrlAsString());
+        if(user.getProfilePic() != null) {
+            userPeerDoc.setAvatar(user.getProfilePic().getUrlAsString());
+        } else {
+            userPeerDoc.setAvatar(User.getDefaultProfilePictureURL(user.getEmail()));
+        }
         userPeerDoc.setUsername(user.getUsername());
         userPeerDoc.setEmail(user.getEmail());
         userPeerDoc.setId(user.getUserId());
