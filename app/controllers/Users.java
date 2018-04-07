@@ -294,7 +294,8 @@ public class Users extends Controller {
     } else if(provider.equals("ldap")) {
       Assembly assembly = Assembly.readByUUID(auuid);
       if (assembly == null) {
-        return badRequest();
+        return badRequest(Json.toJson(TransferResponseStatus
+                .badMessage("Ldap provider must be used with an assembly","")));
       }
         final Form<LdapAuthProvider.LdapLogin> filledForm = LdapAuthProvider.LOGIN_FORM
                 .bindFromRequest();
@@ -308,11 +309,13 @@ public class Users extends Controller {
           }
         }
         if (!isMember) {
-          return badRequest();
+          return badRequest(Json.toJson(TransferResponseStatus
+                  .badMessage("The user exists and is not member of the current assembly","")));
         }
       }
       LdapAuthProvider.LdapConfig ldapConfig = new LdapAuthProvider.LdapConfig();
       for(Config config: assembly.getConfigs()) {
+        Logger.info(config.getKey());
         if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER)) {
           ldapConfig.setUrl(config.getValue());
         }
@@ -324,22 +327,23 @@ public class Users extends Controller {
         }
       }
       if (ldapConfig.getPort() == 0 || ldapConfig.getUrl() == null) {
-        return badRequest();
+        return badRequest(Json.toJson(TransferResponseStatus
+                .badMessage("No ldap configuration found in the current assembly","")));
       }
       Logger.info("REQUEST: Login Form => " + filledForm.toString());
 
-        ldapConfig.setDc("dc=example,dc=com");
-        ldapConfig.setPort(389);
-        ldapConfig.setUrl("ldap://ldap.forumsys.com");
         Result result = LdapAuthProvider.handleLogin(ctx(), ldapConfig);
-       //if the user was created just in the login, we update their land and
+       Logger.info(result.toString());
+        //if the user was created just in the login, we update their land and
       // create the membership
-        if(user == null) {
+        if(result.status() == 200 && user == null) {
           user = User.findByUserName(filledForm.get().getUsername());
           user.setLanguage(assembly.getLang());
+          user.update();
           assembly.setCreator(user);
           try {
             Assembly.createMembership(assembly);
+            assembly.update();
           } catch (MembershipCreationException e) {
             Logger.error("Error creating the assembly membership");
           }

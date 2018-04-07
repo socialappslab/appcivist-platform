@@ -4,6 +4,7 @@ import com.feth.play.module.pa.exceptions.AuthException;
 import com.feth.play.module.pa.providers.wwwauth.basic.BasicAuthProvider;
 import com.feth.play.module.pa.user.AuthUser;
 import play.Application;
+import play.Logger;
 import play.data.Form;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -88,6 +89,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
         } catch (NamingException ex)
         {
+            Logger.error("Ldap auth error "  + ex);
             throw new AuthException("Wrong Password or Username");
         }
          return new AuthUser() {
