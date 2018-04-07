@@ -945,18 +945,17 @@ public class WorkingGroups extends Controller {
                 peerDocWrapper.publish(proposal.getExtendedTextPad());
                 newRevision = 1;
             } else {
-
-                String etherpadServerUrl = Play
-                        .application()
-                        .configuration()
-                        .getString(
-                                "appcivist.services.etherpad.default.serverBaseUrl");
-                String etherpadApiKey = Play.application().configuration()
-                        .getString("appcivist.services.etherpad.default.apiKey");
-                EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
-
-
                 try {
+                    String etherpadServerUrl = Play
+                            .application()
+                            .configuration()
+                            .getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+                    String etherpadApiKey = Play.application().configuration()
+                            .getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
+                    Logger.info("Etherpad Server URL: "+etherpadServerUrl);
+                    Logger.info("Etherpad Server URL: "+etherpadApiKey);
+                    EtherpadWrapper wrapper = new EtherpadWrapper(etherpadServerUrl, etherpadApiKey);
+
                     //Let's save the revision with no number, so etherpad can generate one by itself
                     wrapper.getEtherpadClient().saveRevision(proposal.getExtendedTextPad().getPadId());
                     Map revisions = wrapper.getEtherpadClient().listSavedRevisions(proposal.getExtendedTextPad().getPadId());

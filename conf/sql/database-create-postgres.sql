@@ -1672,6 +1672,8 @@ CREATE TEXT SEARCH CONFIGURATION "fr-fr" ( COPY = french );
 ALTER TEXT SEARCH CONFIGURATION "fr-fr" ALTER MAPPING
 FOR hword, hword_part, word WITH unaccent, french_stem;
 
+
+
 alter table non_member_author add column lang varchar(255);
 alter table non_member_author add column creation timestamp;
 alter table non_member_author add column last_update timestamp;
@@ -2404,3 +2406,24 @@ ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY
 
 --69.sql
 ALTER TABLE "public"."organization" ADD COLUMN "url" text;
+
+-- 70.sql
+CREATE TEXT SEARCH CONFIGURATION "pt-br" ( COPY = portuguese );
+ALTER TEXT SEARCH CONFIGURATION "pt-br" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, portuguese_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "fr-ca" ( COPY = french );
+ALTER TEXT SEARCH CONFIGURATION "fr-ca" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, french_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "de-de" ( COPY = german );
+ALTER TEXT SEARCH CONFIGURATION "de-de" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, german_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "pt" ( COPY = portuguese );
+ALTER TEXT SEARCH CONFIGURATION "pt" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, portuguese_stem;
+
+CREATE TEXT SEARCH CONFIGURATION "de" ( COPY = german );
+ALTER TEXT SEARCH CONFIGURATION "de" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, german_stem;
