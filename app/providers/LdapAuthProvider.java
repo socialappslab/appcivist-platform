@@ -86,25 +86,81 @@ public class LdapAuthProvider extends BasicAuthProvider {
         {
             DirContext authContext =
                     new InitialDirContext(environment);
-
+            LdapAuthUser ldapAuthUser = new LdapAuthUser();
+            getCnAndMail(authContext, ldapLogin.getUsername(), base, ldapAuthUser);
+            ldapAuthUser.setId(ldapLogin.getUsername());
+            return ldapAuthUser;
         } catch (NamingException ex)
         {
             Logger.error("Ldap auth error "  + ex);
             throw new AuthException("Wrong Password or Username");
         }
-         return new AuthUser() {
-                private static final long serialVersionUID = 1L;
 
-                @Override
-                public String getId() {
-                    return ldapLogin.getUsername();
-                }
+    }
 
-                @Override
-                public String getProvider() {
-                    return PROVIDER_KEY;
-                }
-            };
+    private void getCnAndMail(DirContext ctx, String username, String base, LdapAuthUser user) throws NamingException {
+        SearchControls constraints = new SearchControls();
+        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration results = ctx.search(base, "(id="+username+")", constraints);
+        String MY_ATTRS[] = { "cn", "mail" };
+        while (results != null && results.hasMore()) {
+            SearchResult sr = (SearchResult) results.next();
+            String dn = sr.getName() + ", " + base;
+            System.out.println("Distinguished Name is " + dn);
+            Attributes ar = ctx.getAttributes(dn, MY_ATTRS);
+            Attribute cn = ar.get("cn");
+            if (cn == null) {
+                user.setCn(null);
+            } else {
+                user.setCn(String.valueOf(cn.getAll().nextElement()));
+            }
+            Attribute mail = ar.get("mail");
+            if (mail == null) {
+                user.setMail(null);
+            } else {
+                user.setMail(String.valueOf(mail.getAll().nextElement()));
+            }
+
+        }
+    }
+
+    public class LdapAuthUser extends AuthUser {
+
+        String id;
+        String mail;
+        String cn;
+
+        public String getMail() {
+            return mail;
+        }
+
+        public void setMail(String mail) {
+            this.mail = mail;
+        }
+
+        public String getCn() {
+            return cn;
+        }
+
+        public void setCn(String cn) {
+            this.cn = cn;
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String getProvider() {
+            return PROVIDER_KEY;
+        }
+
+        public void setId(String id){
+            this.id = id;
+        }
+
+
     }
 
     public static class LdapConfig {

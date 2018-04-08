@@ -34,10 +34,7 @@ import play.Play;
 import play.db.ebean.Transactional;
 import play.i18n.Lang;
 import play.mvc.Http.Context;
-import providers.ExistingGroupSignupIdentity;
-import providers.GroupSignupIdentity;
-import providers.InvitationSignupIdentity;
-import providers.LanguageSignupIdentity;
+import providers.*;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.security.HashGenerationException;
@@ -481,9 +478,16 @@ public class User extends AppCivistBaseModel implements Subject {
 		user.active = true;
 		Long userId = null;
 
-		//if user doesnt have an email --ldap case
-		if(user.getEmail() == null) {
-			user.setEmail(authUser.getId()+"@ldap.com");
+		//--ldap case
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
+			if (user.getEmail() == null) {
+				user.setEmail(authUser.getId() + "@ldap.com");
+			} else {
+				user.setEmail(ldapAuthUser.getMail());
+			}
+			user.setName(ldapAuthUser.getCn());
+			user.setUsername(ldapAuthUser.getId());
 		}
 
 		/*
@@ -547,10 +551,10 @@ public class User extends AppCivistBaseModel implements Subject {
 		 * 7. Generate the username
 		 * TODO add username to the signup form
 		 */
-		user.setUsername(user.getEmail());
-		if (user.getEmail().equals(authUser.getId()+"@ldap.com")) {
-			user.setUsername(authUser.getId());
+		if (!(authUser instanceof LdapAuthProvider.LdapAuthUser)) {
+			user.setUsername(user.getEmail());
 		}
+
 		/*
 		 * 8. Set language of user
 		 */
