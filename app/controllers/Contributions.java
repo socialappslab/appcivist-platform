@@ -251,10 +251,8 @@ public class Contributions extends Controller {
                 contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
                         .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
             } catch (Exception e) {
-                return internalServerError(Json
-                        .toJson(new TransferResponseStatus(
-                                ResponseStatus.SERVERERROR,
-                                "Error reading contribution stats: " + e.getMessage())));
+                contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
+                return ok(Json.toJson(contribution));
             }
 
         }
@@ -4323,7 +4321,14 @@ public class Contributions extends Controller {
                 User user = User.findByAuthUserIdentity(PlayAuthenticate
                         .getUser(session()));
                 PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
-                return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
+                try {
+                    return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
+                } catch (Exception e) {
+                    Map<String, String> errors = new HashMap<>();
+                    errors.put("error", "Error creating the pad> " + e.getMessage());
+                    errors.put("path", "");
+                    return internalServerError(Json.toJson(errors));
+                }
             }
 
             boolean storeKey = false;
