@@ -170,7 +170,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			} else if (o instanceof Result) {
 				return (Result) o;
 			} else if (o instanceof AuthUser) {
-
+				Logger.info("Instance of AuthUser");
 				final AuthUser newUser = (AuthUser) o;
 				final Session session = context.session();
 
@@ -202,6 +202,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				// deactivated/deleted,
 				// so this is a signup, not a link
 				if (isLoggedIn) {
+					Logger.info("Is logged in");
 					oldIdentity = getUserService().getLocalIdentity(oldUser);
 					isLoggedIn &= oldIdentity != null;
 					if (!isLoggedIn) {
@@ -222,7 +223,9 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				if (isLinked && !isLoggedIn) {
 					// 1. -> Login
 					loginUser = newUser;
+					Logger.info("Is linked and not logged in");
 				} else if (isLinked && isLoggedIn) {
+					Logger.info("Is linked and logged in");
 					// 2. -> Merge
 
 					// merge the two identities and return the AuthUser we want
@@ -261,6 +264,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 					}
 
 				} else if (!isLinked && !isLoggedIn) {
+					Logger.info("Is not linked and not logged in");
 					// 3. -> Signup
 						Ebean.beginTransaction();
 						loginUser = signupUser(newUser);

@@ -3,12 +3,17 @@ package providers;
 import com.feth.play.module.pa.exceptions.AuthException;
 import com.feth.play.module.pa.providers.wwwauth.basic.BasicAuthProvider;
 import com.feth.play.module.pa.user.AuthUser;
+import models.Assembly;
+import models.Config;
+import models.transfer.TransferResponseStatus;
 import play.Application;
 import play.Logger;
 import play.data.Form;
+import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import service.PlayAuthenticateLocal;
+import utils.GlobalDataConfigKeys;
 
 import javax.inject.Inject;
 import javax.naming.Context;
@@ -61,6 +66,26 @@ public class LdapAuthProvider extends BasicAuthProvider {
         }
     }
 
+
+    private void setConfig(LdapConfig ldapConfig) throws AuthException {
+        for(Config config: ldapConfig.getAssembly().getConfigs()) {
+            Logger.info(config.getKey());
+            if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER)) {
+                ldapConfig.setUrl(config.getValue());
+            }
+            if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT)) {
+                ldapConfig.setPort(Integer.valueOf(config.getValue()));
+            }
+            if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN)) {
+                ldapConfig.setDc(config.getValue());
+            }
+        }
+        if (ldapConfig.getPort() == 0 || ldapConfig.getUrl() == null) {
+            throw new AuthException("No ldap configuration found in the assembly");
+        }
+
+    }
+
     @Override
     public Object authenticate(Http.Context context, Object payload) throws AuthException {
 
@@ -68,6 +93,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
         final Form<LdapLogin> filledForm = LOGIN_FORM.bindFromRequest();
         LdapLogin ldapLogin = filledForm.get();
         LdapConfig ldapConfig = (LdapConfig) payload;
+        setConfig(ldapConfig);
         //String base = "dc=example,dc=com";
         String base = ldapConfig.getDc();
         String dn = "uid=" + ldapLogin.getUsername() + "," + base;
@@ -88,7 +114,9 @@ public class LdapAuthProvider extends BasicAuthProvider {
                     new InitialDirContext(environment);
             LdapAuthUser ldapAuthUser = new LdapAuthUser();
             getCnAndMail(authContext, ldapLogin.getUsername(), base, ldapAuthUser);
-            ldapAuthUser.setId(ldapLogin.getUsername());
+            ldapAuthUser.setId(ldapAuthUser.getMail());
+            ldapAuthUser.setAssembly(ldapConfig.getAssembly());
+            Logger.info("User CN " + ldapAuthUser.getCn());
             return ldapAuthUser;
         } catch (NamingException ex)
         {
@@ -101,12 +129,12 @@ public class LdapAuthProvider extends BasicAuthProvider {
     private void getCnAndMail(DirContext ctx, String username, String base, LdapAuthUser user) throws NamingException {
         SearchControls constraints = new SearchControls();
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration results = ctx.search(base, "(id="+username+")", constraints);
+        NamingEnumeration results = ctx.search(base, "(uid="+username+")", constraints);
         String MY_ATTRS[] = { "cn", "mail" };
         while (results != null && results.hasMore()) {
             SearchResult sr = (SearchResult) results.next();
             String dn = sr.getName() + ", " + base;
-            System.out.println("Distinguished Name is " + dn);
+            Logger.info("Distinguished Name is " + dn);
             Attributes ar = ctx.getAttributes(dn, MY_ATTRS);
             Attribute cn = ar.get("cn");
             if (cn == null) {
@@ -126,9 +154,18 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
     public class LdapAuthUser extends AuthUser {
 
-        String id;
-        String mail;
-        String cn;
+        private String id;
+        private String mail;
+        private String cn;
+        private Assembly assembly;
+
+        public Assembly getAssembly() {
+            return assembly;
+        }
+
+        public void setAssembly(Assembly assembly) {
+            this.assembly = assembly;
+        }
 
         public String getMail() {
             return mail;
@@ -167,6 +204,16 @@ public class LdapAuthProvider extends BasicAuthProvider {
         private String url;
         private int port;
         private String dc;
+        private Assembly assembly;
+
+
+        public Assembly getAssembly() {
+            return assembly;
+        }
+
+        public void setAssembly(Assembly assembly) {
+            this.assembly = assembly;
+        }
 
         public String getUrl() {
             return url;

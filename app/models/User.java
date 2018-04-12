@@ -30,6 +30,7 @@ import javax.persistence.Transient;
 import models.TokenAction.Type;
 import models.misc.Views;
 import models.transfer.AssemblyTransfer;
+import play.Logger;
 import play.Play;
 import play.db.ebean.Transactional;
 import play.i18n.Lang;
@@ -434,6 +435,7 @@ public class User extends AppCivistBaseModel implements Subject {
 		if (identity == null) {
 			return null;
 		}
+		Logger.info("ID " + identity.getId());
 		if (identity instanceof UsernamePasswordAuthUser) {
 			return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
 		} else {
@@ -464,6 +466,7 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 
 	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException, TokenNotValidException, MembershipCreationException {
+		Logger.info("Creating from auth user");
 		/*
 		 * 0. Zero step, create a new User instance
 		 */
@@ -481,13 +484,15 @@ public class User extends AppCivistBaseModel implements Subject {
 		//--ldap case
 		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
 			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
-			if (user.getEmail() == null) {
+			if (ldapAuthUser.getMail() == null) {
 				user.setEmail(authUser.getId() + "@ldap.com");
 			} else {
 				user.setEmail(ldapAuthUser.getMail());
 			}
 			user.setName(ldapAuthUser.getCn());
 			user.setUsername(ldapAuthUser.getId());
+			Logger.info("Creating LDAP user " + ldapAuthUser.getId());
+			user.setLanguage(ldapAuthUser.getAssembly().getLang());
 		}
 
 		/*
@@ -673,7 +678,16 @@ public class User extends AppCivistBaseModel implements Subject {
 			}
 		}
 
-		
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			Assembly assembly = ((LdapAuthProvider.LdapAuthUser) authUser).getAssembly();
+			assembly.setCreator(user);
+			try {
+				Assembly.createMembership(assembly);
+			} catch (MembershipCreationException e) {
+				Logger.error("Error creating the assembly membership");
+			}
+		}
+
 		return user;
 	}
 

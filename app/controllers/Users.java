@@ -314,42 +314,12 @@ public class Users extends Controller {
         }
       }
       LdapAuthProvider.LdapConfig ldapConfig = new LdapAuthProvider.LdapConfig();
-      for(Config config: assembly.getConfigs()) {
-        Logger.info(config.getKey());
-        if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER)) {
-          ldapConfig.setUrl(config.getValue());
-        }
-        if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT)) {
-          ldapConfig.setPort(Integer.valueOf(config.getValue()));
-        }
-        if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN)) {
-          ldapConfig.setDc(config.getValue());
-        }
-      }
-      if (ldapConfig.getPort() == 0 || ldapConfig.getUrl() == null) {
-        return badRequest(Json.toJson(TransferResponseStatus
-                .badMessage("No ldap configuration found in the current assembly","")));
-      }
+      ldapConfig.setAssembly(assembly);
       Logger.info("REQUEST: Login Form => " + filledForm.toString());
+      Result result = LdapAuthProvider.handleLogin(ctx(), ldapConfig);
+      Logger.info(result.toString());
+      return result;
 
-        Result result = LdapAuthProvider.handleLogin(ctx(), ldapConfig);
-       Logger.info(result.toString());
-        //if the user was created just in the login, we update their land and
-      // create the membership
-        if(result.status() == 200 && user == null) {
-          user = User.findByUserName(filledForm.get().getUsername());
-          user.setLanguage(assembly.getLang());
-          user.update();
-          assembly.setCreator(user);
-          try {
-            Assembly.createMembership(assembly);
-            assembly.update();
-          } catch (MembershipCreationException e) {
-            Logger.error("Error creating the assembly membership");
-          }
-        }
-        return result;
-  //    }
     }
     return null;
 
