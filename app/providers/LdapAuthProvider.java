@@ -5,6 +5,7 @@ import com.feth.play.module.pa.providers.wwwauth.basic.BasicAuthProvider;
 import com.feth.play.module.pa.user.AuthUser;
 import models.Assembly;
 import models.Config;
+import models.Membership;
 import models.transfer.TransferResponseStatus;
 import play.Application;
 import play.Logger;
@@ -21,6 +22,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -66,8 +68,71 @@ public class LdapAuthProvider extends BasicAuthProvider {
         }
     }
 
+    public static List<LdapAuthUser> getMemberLdapUsers(Assembly assembly, String cnsearch) throws AuthException, NamingException {
+        LdapConfig ldapConfig = new LdapConfig();
+        ldapConfig.setAssembly(assembly);
+        setConfig(ldapConfig, true);
+        return getLdapUsers(ldapConfig, cnsearch);
 
-    private void setConfig(LdapConfig ldapConfig) throws AuthException {
+    }
+
+    private static List<LdapAuthUser> getLdapUsers(LdapConfig ldapConfig, String cnserach) throws NamingException {
+        String ldapURL = ldapConfig.getUrl() + ":" + ldapConfig.getPort();
+        Hashtable<String, String> environment =
+                new Hashtable<String, String>();
+        environment.put(Context.INITIAL_CONTEXT_FACTORY,
+                "com.sun.jndi.ldap.LdapCtxFactory");
+        environment.put(Context.PROVIDER_URL, ldapURL);
+        environment.put(Context.SECURITY_AUTHENTICATION, "simple");
+        environment.put(Context.SECURITY_PRINCIPAL, ldapConfig.getAdminDN());
+        environment.put(Context.SECURITY_CREDENTIALS, ldapConfig.getAdminpass());
+        DirContext context =
+                new InitialDirContext(environment);
+        SearchControls searchCtrls = new SearchControls();
+        searchCtrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        String[] attributes = { "cn", "mail" };
+        searchCtrls.setReturningAttributes(attributes);
+        String filter = "&(objectClass=*)(accountstatus=active)";
+        if(cnserach != null) {
+            filter = "("+filter+"(cn=*"+cnserach+"*))";
+        } else {
+            filter = "("+filter+")";
+        }
+        NamingEnumeration values = context.search(ldapConfig.getDc(),filter,searchCtrls);
+        List<LdapAuthUser>  aRet = new ArrayList<>();
+        while (values.hasMoreElements())
+        {
+            LdapAuthUser user = new LdapAuthUser();
+
+            SearchResult result = (SearchResult) values.next();
+            Attributes attribs = result.getAttributes();
+
+            if (null != attribs)
+            {
+
+                Attribute cn =  attribs.get("cn");
+                if (cn == null) {
+                   user.setCn(null);
+                } else {
+                    user.setCn(String.valueOf(cn.getAll().next()));
+                }
+                Attribute mail = attribs.get("mail");
+                if (mail == null) {
+                    user.setMail(null);
+                } else {
+                    user.setMail(String.valueOf(mail.getAll().next()));
+                }
+            }
+            aRet.add(user);
+        }
+        Logger.info(aRet.size() + " users found");
+        context.close();
+        return aRet;
+
+    }
+
+
+    private static void setConfig(LdapConfig ldapConfig, Boolean loadAdmin) throws AuthException {
         for(Config config: ldapConfig.getAssembly().getConfigs()) {
             Logger.info(config.getKey());
             if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER)) {
@@ -78,6 +143,14 @@ public class LdapAuthProvider extends BasicAuthProvider {
             }
             if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN)) {
                 ldapConfig.setDc(config.getValue());
+            }
+            if(loadAdmin) {
+                if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_DN)) {
+                    ldapConfig.setAdminDN(config.getValue());
+                }
+                if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_PASS)) {
+                    ldapConfig.setAdminpass(config.getValue());
+                }
             }
         }
         if (ldapConfig.getPort() == 0 || ldapConfig.getUrl() == null) {
@@ -93,7 +166,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
         final Form<LdapLogin> filledForm = LOGIN_FORM.bindFromRequest();
         LdapLogin ldapLogin = filledForm.get();
         LdapConfig ldapConfig = (LdapConfig) payload;
-        setConfig(ldapConfig);
+        setConfig(ldapConfig, false);
         //String base = "dc=example,dc=com";
         String base = ldapConfig.getDc();
         String dn = "uid=" + ldapLogin.getUsername() + "," + base;
@@ -152,7 +225,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
         }
     }
 
-    public class LdapAuthUser extends AuthUser {
+    public static class LdapAuthUser extends AuthUser {
 
         private String id;
         private String mail;
@@ -205,7 +278,25 @@ public class LdapAuthProvider extends BasicAuthProvider {
         private int port;
         private String dc;
         private Assembly assembly;
+        private String adminpass;
+        private String adminDN;
 
+
+        public String getAdminpass() {
+            return adminpass;
+        }
+
+        public void setAdminpass(String adminpass) {
+            this.adminpass = adminpass;
+        }
+
+        public String getAdminDN() {
+            return adminDN;
+        }
+
+        public void setAdminDN(String adminDN) {
+            this.adminDN = adminDN;
+        }
 
         public Assembly getAssembly() {
             return assembly;

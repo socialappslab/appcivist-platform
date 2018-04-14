@@ -38,6 +38,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER = "appcivist.assembly.authentication.ldap.server";
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT = "appcivist.assembly.authentication.ldap.port";
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN = "appcivist.assembly.authentication.ldap.dn";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_DN = "appcivist.assembly.authentication.ldap.admin.dn";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_PASS = "appcivist.assembly.authentication.ldap.admin.pass";
 
 	// Campaign Level Configuration Keys
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.campaign.contribution-type-principal"; // what type of contribution is the displayed at the center of the page if a timeline with components is disabled (e.g., these campaigns is centered around PROPOSALS or IDEAS)    

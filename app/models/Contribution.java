@@ -473,6 +473,10 @@ public class Contribution extends AppCivistBaseModel {
         this.contributionFeedbacks = contributionFeedbacks;
     }
 
+    public static List<Contribution> getByNoMemberAuthorMail(String email) {
+        return find.where().eq("nonMemberAuthors.email", email).findList();
+    }
+
     @Transient
     public void setFirstAuthor(User u) {
         u.setProviders(null);

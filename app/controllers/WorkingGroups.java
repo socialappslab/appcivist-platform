@@ -33,6 +33,7 @@ import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.With;
 import play.twirl.api.Content;
+import providers.LdapAuthProvider;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.services.EtherpadWrapper;
@@ -599,10 +600,27 @@ public class WorkingGroups extends Controller {
     public static Result listMembershipsWithStatus(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "gid", value = "Working Group ID") Long gid,
-            @ApiParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true) String status) {
+            @ApiParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true) String status,
+            String ldap,
+            String ldapserach) {
+
+        Map<String, List> aRet = new HashMap<>();
         List<Membership> m = MembershipGroup.findByAssemblyIdGroupIdAndStatus(aid, gid, status);
-        if (m != null && !m.isEmpty())
-            return ok(Json.toJson(m));
+        aRet.put("members", m);
+
+        if(ldap.equals("true")) {
+            Assembly assembly = Assembly.read(aid);
+            try {
+                aRet.put("ldap", LdapAuthProvider.getMemberLdapUsers(assembly, ldapserach));
+            } catch (Exception e) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Error: "+e.getMessage());
+                return internalServerError(Json.toJson(responseBody));
+            }
+        }
+
+        if (!aRet.get("members").isEmpty() || (ldap.equals("true") && !aRet.get("ldap").isEmpty()))
+            return ok(Json.toJson(aRet));
         return notFound(Json.toJson(new TransferResponseStatus(
                 "No memberships with status '" + status + "' in Working Group '"
                         + gid + "'")));
