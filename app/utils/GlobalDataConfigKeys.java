@@ -30,6 +30,10 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION = "appcivist.assembly.enable-social-ideation"; // FALSE DEFAULT
 	public static final String APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS = "appcivist.assembly.auto-membership-working-groups"; // Name of groups separated by comma
 	public static final String APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS_ALL = "appcivist.assembly.auto-membership-working-groups-all"; // Default FALSE
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER = "appcivist.assembly.authentication.ldap.server";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT = "appcivist.assembly.authentication.ldap.port";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN = "appcivist.assembly.authentication.ldap.dn";
+
 	// Campaign Level Configuration Keys
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.campaign.contribution-type-principal"; // what type of contribution is the displayed at the center of the page if a timeline with components is disabled (e.g., these campaigns is centered around PROPOSALS or IDEAS)    
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPES = "appcivist.campaign.contribution-types"; // and array that contains the list of contribution TYPES collected in this campaign (IDEA, PROPOSAL, NOTE, etc.)  

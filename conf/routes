@@ -40,7 +40,7 @@ PUT       /api/user/:uid/profile                                                
 DELETE    /api/user/:uid                                                         controllers.Users.deleteUser(uid: Long) 
 DELETE    /api/user/:uid/force                                                   controllers.Users.deleteUserForce(uid: Long) 
 POST      /api/user/signup                                                       controllers.Users.doSignup() 
-POST      /api/user/login                                                        controllers.Users.doLogin() 
+POST      /api/user/login                                                        controllers.Users.doLogin(provider ?= "password", assembly:java.util.UUID?=null)
 POST      /api/user/logout                                                       controllers.Users.doLogout()
 GET       /api/user/verify                                                       controllers.Users.verifyEmail
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 

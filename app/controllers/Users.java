@@ -5,6 +5,7 @@ import static play.libs.Json.toJson;
 
 import com.feth.play.module.pa.user.AuthUserIdentity;
 import enums.ResourceTypes;
+import exceptions.MembershipCreationException;
 import http.Headers;
 
 import java.util.*;
@@ -15,6 +16,7 @@ import models.TokenAction.Type;
 import models.misc.S3File;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.data.DynamicForm;
 import play.data.format.Formats.NonEmpty;
@@ -33,6 +35,7 @@ import play.mvc.Security;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.With;
+import providers.LdapAuthProvider;
 import providers.MyLoginUsernamePasswordAuthUser;
 import providers.MyUsernamePasswordAuthProvider;
 import providers.MyUsernamePasswordAuthProvider.MyIdentity;
@@ -41,6 +44,7 @@ import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.services.SocialIdeationWrapper;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
@@ -262,25 +266,62 @@ public class Users extends Controller {
   @ApiResponses(value = {
       @ApiResponse(code = 404, message = "User not found", response = TransferResponseStatus.class),
       @ApiResponse(code = 400, message = "Request has errors", response = TransferResponseStatus.class) })
-  @ApiImplicitParams({ @ApiImplicitParam(name = "login_form", value = "User's Login Credentials", dataType = "providers.MyLogin", paramType = "body") })
-  public static Result doLogin() throws InstantiationException,
+  @ApiImplicitParams({ @ApiImplicitParam(name = "login_form", value = "User's Login Credentials",
+          paramType = "body") })
+  public static Result doLogin(
+          @ApiParam(name = "provider", value = "provider") String provider,
+          @ApiParam(name = "assembly", value = "Assembly UUID") UUID auuid
+  ) throws InstantiationException,
       IllegalAccessException {
     com.feth.play.module.pa.controllers.Authenticate.noCache(response());
     Logger.info("REQUEST: Login => " + ctx().request());
-    final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
-        .bindFromRequest();
-    Logger.info("REQUEST: Login Form => " + filledForm.toString());
-    if (filledForm.hasErrors()) {
-      // User did not fill everything properly
-      // TODO: return badRequest(login.render(filledForm));
-      return badRequest(Json.toJson(TransferResponseStatus.badMessage(
-          Messages.get("playauthenticate.login.form-has-errors"),
-          filledForm.errorsAsJson().toString())));
-    } else {
-      // Everything was filled
-      Result r = MyUsernamePasswordAuthProvider.handleLogin(ctx());
-      return r;
+    if(provider.equals("password")) {
+      final Form<MyLogin> filledForm = MyUsernamePasswordAuthProvider.LOGIN_FORM
+          .bindFromRequest();
+      Logger.info("REQUEST: Login Form => " + filledForm.toString());
+      if (filledForm.hasErrors()) {
+        // User did not fill everything properly
+        // TODO: return badRequest(login.render(filledForm));
+        return badRequest(Json.toJson(TransferResponseStatus.badMessage(
+            Messages.get("playauthenticate.login.form-has-errors"),
+            filledForm.errorsAsJson().toString())));
+      } else {
+        // Everything was filled
+
+        Result r = MyUsernamePasswordAuthProvider.handleLogin(ctx());
+        return r;
+      }
+    } else if(provider.equals("ldap")) {
+      Assembly assembly = Assembly.readByUUID(auuid);
+      if (assembly == null) {
+        return badRequest(Json.toJson(TransferResponseStatus
+                .badMessage("Ldap provider must be used with an assembly","")));
+      }
+        final Form<LdapAuthProvider.LdapLogin> filledForm = LdapAuthProvider.LOGIN_FORM
+                .bindFromRequest();
+      User user = User.findByUserName(filledForm.get().getUsername());
+      boolean isMember = false;
+      if (user != null) {
+        for (MembershipAssembly ma : assembly.getMemberships()) {
+          if (ma.getUser().getUserId().equals(user.getUserId())) {
+            isMember = true;
+            break;
+          }
+        }
+        if (!isMember) {
+          return badRequest(Json.toJson(TransferResponseStatus
+                  .badMessage("The user exists and is not member of the current assembly","")));
+        }
+      }
+      LdapAuthProvider.LdapConfig ldapConfig = new LdapAuthProvider.LdapConfig();
+      ldapConfig.setAssembly(assembly);
+      Logger.info("REQUEST: Login Form => " + filledForm.toString());
+      Result result = LdapAuthProvider.handleLogin(ctx(), ldapConfig);
+      Logger.info(result.toString());
+      return result;
+
     }
+    return null;
 
   }
 
