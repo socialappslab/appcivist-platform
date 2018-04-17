@@ -32,6 +32,7 @@ import models.misc.Views;
 import models.transfer.AssemblyTransfer;
 import play.Logger;
 import play.Play;
+import play.api.libs.iteratee.Cont;
 import play.db.ebean.Transactional;
 import play.i18n.Lang;
 import play.mvc.Http.Context;
@@ -686,6 +687,16 @@ public class User extends AppCivistBaseModel implements Subject {
 			} catch (MembershipCreationException e) {
 				Logger.error("Error creating the assembly membership");
 			}
+			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
+			for(Contribution contribution: contributions) {
+				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
+					NonMemberAuthor.delete(nonMemberAuthor.getId());
+
+				}
+				contribution.addAuthor(user);
+				contribution.update();
+			}
+
 		}
 
 		return user;

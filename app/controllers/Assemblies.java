@@ -1,31 +1,24 @@
 package controllers;
 
-import static play.data.Form.form;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.feth.play.module.mail.Mailer;
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.AssembliesDelegate;
+import delegates.MembershipsDelegate;
+import delegates.NotificationsDelegate;
+import delegates.ResourcesDelegate;
 import enums.*;
+import exceptions.ConfigurationException;
+import exceptions.MembershipCreationException;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URL;
-import java.security.SecureRandom;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
 import models.transfer.*;
@@ -36,31 +29,22 @@ import play.libs.F;
 import play.libs.Json;
 import play.mvc.*;
 import play.twirl.api.Content;
+import providers.LdapAuthProvider;
 import providers.MyLoginUsernamePasswordAuthUser;
-import providers.MyUsernamePasswordAuthProvider;
-import security.AssemblyDynamicResourceHandler;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 import utils.LogActions;
 import utils.Pair;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.Group;
-import be.objectify.deadbolt.java.actions.Restrict;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import delegates.AssembliesDelegate;
-import delegates.MembershipsDelegate;
-import delegates.NotificationsDelegate;
-import delegates.ResourcesDelegate;
-import exceptions.ConfigurationException;
-import exceptions.MembershipCreationException;
 
 import javax.persistence.EntityNotFoundException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static play.data.Form.form;
 
 @Api(value = "01 assembly: Assembly Making", position=1, description = "Assembly Making endpoints: creating assemblies, listing assemblies and inviting people to join")
 @With(Headers.class)
@@ -695,10 +679,25 @@ public class Assemblies extends Controller {
 			@ApiImplicitParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true, paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result listMembershipsWithStatus(Long id, String status) {
+	public static Result listMembershipsWithStatus(Long id, String status, String ldap, String ldapserach) {
+
+		Map<String, List> aRet = new HashMap<>();
 		List<Membership> m = MembershipAssembly.findByAssemblyIdAndStatus(id,status);
-		if (m != null && !m.isEmpty())
-			return ok(Json.toJson(m));
+		aRet.put("members", m);
+
+		if(ldap.equals("true")) {
+			Assembly assembly = Assembly.read(id);
+			try {
+				aRet.put("ldap", LdapAuthProvider.getMemberLdapUsers(assembly, ldapserach));
+			} catch (Exception e) {
+				TransferResponseStatus responseBody = new TransferResponseStatus();
+				responseBody.setStatusMessage("Error: "+e.getMessage());
+				return internalServerError(Json.toJson(responseBody));
+			}
+		}
+
+		if (!aRet.get("members").isEmpty() || (ldap.equals("true") && !aRet.get("ldap").isEmpty()))
+			return ok(Json.toJson(aRet));
 		return notFound(Json.toJson(new TransferResponseStatus(
 				"No memberships with status '" + status + "' in Assembly '"
 						+ id + "'")));

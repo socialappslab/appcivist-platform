@@ -2638,6 +2638,73 @@ public class Contributions extends Controller {
 	        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         }
 
+        // If contribution is a proposal and there is no working group associated as author,
+        // create one automatically with the creator as coordinator
+
+        // Create group if not provided
+        Config requireWGConfig = containerResourceSpace.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_REQUIRE_GROUP_AUTHORSHIP);
+        Config autoCreateWGConfig = containerResourceSpace.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_CREATE_GROUP_ON_NEW_PROPOSALS);
+        Boolean requireWG = requireWGConfig != null ? requireWGConfig.getValue().toLowerCase() == "true" : false;
+        Boolean autoCreateWG = autoCreateWGConfig != null ? autoCreateWGConfig.getValue().toLowerCase() == "true" : false;
+        Boolean createWG = false;
+        List<WorkingGroup> workingGroupAuthors = newContrib.getWorkingGroupAuthors();
+        String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
+        if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
+            WorkingGroup wg = workingGroupAuthors.get(0);
+            if (wg.getGroupId() == null) {
+                // if proposal contains the definition of a new WG, set workingGroupAuthors to null and create the group
+                newWorkingGroupName = wg.getName();
+                workingGroupAuthors = null;
+                newContrib.setWorkingGroupAuthors(null);
+                createWG = true; // the proposal has info for a new WG
+            } else {
+                // if the proposal contains one or more WGs as authoring groups
+                for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
+                    WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
+                    workingGroupAuthorsLoaded.add(contact);
+                }
+                newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
+            }
+        }
+
+        // If the proposal does not define an existing WG and
+        // -- it contains the definition for a new group,
+        // -- or the resource space requires a WG and it is configured to allow automatic creation
+        // then create the WG
+        WorkingGroup newWorkingGroup = new WorkingGroup();
+        Boolean workingGroupIsNew = true;
+        if (workingGroupAuthors==null || workingGroupAuthors.isEmpty()) {
+            if (createWG || (requireWG && autoCreateWG)) {
+                // if the resource space allows automatically creating the WG
+                newWorkingGroup.setCreator(author);
+                newWorkingGroup.setName(newWorkingGroupName);
+                newWorkingGroup.setLang(author.getLanguage());
+                newWorkingGroup.setExistingThemes(newContrib.getExistingThemes());
+                newWorkingGroup.setListed(false);
+                newWorkingGroup
+                        .setInvitationEmail("Hello! You have been invited to be a member of the "
+                                + "Working Group \"" + newWorkingGroup.getName() + "\" in AppCivist. "
+                                + "If you are interested, follow the link attached to this "
+                                + "invitation to accept it. If you are not interested, you "
+                                + "can just ignore this message");
+                newWorkingGroup.setMajorityThreshold("simple");
+                newWorkingGroup.setBlockMajority(false);
+
+                WorkingGroupProfile newWGProfile = new WorkingGroupProfile();
+                newWGProfile.setIcon("https://s3-us-west-1.amazonaws.com/appcivist-files/icons/justicia-140.png");
+                newWGProfile.setManagementType(ManagementTypes.COORDINATED_AND_MODERATED);
+                newWGProfile.setSupportedMembership(SupportedMembershipRegistration.INVITATION_AND_REQUEST);
+                newWorkingGroup.setProfile(newWGProfile);
+                newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+                containerResourceSpace.addWorkingGroup(newWorkingGroup);
+                newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
+                workingGroupAuthorsLoaded.add(newWorkingGroup);
+            } else if (requireWG && !autoCreateWG) {
+                // if WGs are required on proposals, the proposal doesn't have one and automatic creation is disabled,
+                // throw a configuration exception
+                throw new ConfigurationException("A working groups is required in this space. Automatic creation of it is disabled. Contact your administrator");
+            }
+        }
 
         Boolean addIdeaToProposals = false;
         String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
@@ -2729,58 +2796,6 @@ public class Contributions extends Controller {
         // Get list of BRAINSTORMING contributions that inspire the new one
         List<Contribution> inspirations = newContrib.getAssociatedContributions();
 
-        // If contribution is a proposal and there is no working group associated as author,
-        // create one automatically with the creator as coordinator
-        List<WorkingGroup> workingGroupAuthors = newContrib
-                .getWorkingGroupAuthors();
-        String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
-        if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
-            WorkingGroup wg = workingGroupAuthors.get(0);
-            if (wg.getGroupId() == null) {
-                newWorkingGroupName = wg.getName();
-                workingGroupAuthors = null;
-                newContrib.setWorkingGroupAuthors(null);
-            }
-            for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
-                WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
-                workingGroupAuthorsLoaded.add(contact);
-            }
-            newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
-        }
-
-        WorkingGroup newWorkingGroup = new WorkingGroup();
-        Boolean workingGroupIsNew = false;
-        if (newContrib.getType().equals(ContributionTypes.PROPOSAL)
-                && (workingGroupAuthors == null || workingGroupAuthors
-                .isEmpty())) {
-            workingGroupIsNew = true;
-            newWorkingGroup.setCreator(author);
-            newWorkingGroup.setName(newWorkingGroupName);
-            newWorkingGroup.setLang(author.getLanguage());
-            newWorkingGroup.setExistingThemes(newContrib.getExistingThemes());
-            newWorkingGroup.setListed(false);
-            newWorkingGroup
-                    .setInvitationEmail("Hello! You have been invited to be a member of the "
-                            + "Working Group \"" + newWorkingGroup.getName() + "\" in AppCivist. "
-                            + "If you are interested, follow the link attached to this "
-                            + "invitation to accept it. If you are not interested, you "
-                            + "can just ignore this message");
-            newWorkingGroup.setMajorityThreshold("simple");
-            newWorkingGroup.setBlockMajority(false);
-
-            WorkingGroupProfile newWGProfile = new WorkingGroupProfile();
-            newWGProfile.setIcon("https://s3-us-west-1.amazonaws.com/appcivist-files/icons/justicia-140.png");
-            newWGProfile.setManagementType(ManagementTypes.COORDINATED_AND_MODERATED);
-            newWGProfile.setSupportedMembership(SupportedMembershipRegistration.INVITATION_AND_REQUEST);
-
-            newWorkingGroup.setProfile(newWGProfile);
-            newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-
-            containerResourceSpace.addWorkingGroup(newWorkingGroup);
-
-            newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
-        }
-
         List<User> authorsLoaded = new ArrayList<User>();
         Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
         for (User user: newContrib.getAuthors()) {
@@ -2821,12 +2836,6 @@ public class Contributions extends Controller {
         newContrib.refresh();
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
 
-//        // Add contribution to workingGroupAuthors resource spaces
-//        for (WorkingGroup wgroup: workingGroupAuthorsLoaded) {
-//            wgroup.getResources().getContributions().add(newContrib);
-//            wgroup.getResources().update();
-//        }
-
         //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
@@ -2842,8 +2851,7 @@ public class Contributions extends Controller {
             // commenters of the
             // each brainstorming contributions
             if (!inspirations.isEmpty() && workingGroupIsNew) {
-                inviteCommentersInInspirationList(inspirations, newContrib,
-                        newWorkingGroup);
+                inviteCommentersInInspirationList(inspirations, newContrib, newWorkingGroup);
             }
         }
 
@@ -2851,8 +2859,7 @@ public class Contributions extends Controller {
         if (containerResourceSpace != null && (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)
                 || containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP))) {
             List<Theme> themeListEmergentCpWg = new ArrayList<Theme>();
-            for (Theme theme: themeListEmergent
-                 ) {
+            for (Theme theme: themeListEmergent) {
                 if(theme.getType().equals(ThemeTypes.EMERGENT)){
                     themeListEmergentCpWg.add(theme);
                 }
@@ -2862,13 +2869,13 @@ public class Contributions extends Controller {
             containerResourceSpace.refresh();
         }
 
-        if(addIdeaToProposals){
+        if(addIdeaToProposals) {
             List<Long> assignToContributions = newContrib.getAssignToContributions();
             List<Contribution> contributionList = new ArrayList<Contribution>();
             if (assignToContributions != null) {
 	            for (Long cid : assignToContributions) {
 	                Contribution contribution = Contribution.read(cid);
-	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)) {
 	                    contributionList.add(contribution);
 	                }
 	            }
@@ -2877,6 +2884,7 @@ public class Contributions extends Controller {
             newContrib.getResourceSpace().update();
             newContrib.getResourceSpace().refresh();
         }
+
         ContributionStatusAudit.create(newContrib);
 
         return newContrib;

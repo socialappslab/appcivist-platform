@@ -18,6 +18,11 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_INSTANCE_INSTANCE_DOMAIN = "appcivist.instance.domain"; 	//:** domain registered to the instance (when Signing in, the server will determine the principal //assembly associated to the user by reading the domain from where the request is coming from)
 	public static final String APPCIVIST_INSTANCE_INSTANCE_THEME = "appcivist.instance.theme";	//:** a URL that points to a CSS files that will overwrite the color scheme of the site for this assembly
 
+	// AppCivist General Configuration Keys, applicable to any resource space
+	public static final String APPCIVIST_REQUIRE_GROUP_AUTHORSHIP = "appcivist.campaign.require-group-authorship"; // Default is FALSE, if TRUE, proposals must be related to a WG on creation
+	public static final String APPCIVIST_CREATE_GROUP_ON_NEW_PROPOSALS = "appcivist.campaign.create-group-new-proposals"; // Default is FALSE, if TRUE, proposals WG are automatically created if the proposal does not have one
+
+
 	// Assembly Level Configuration Keys
 	public static final String APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS = "appcivist.assembly.disable-new-memberships"; // only coordinators can add new members to the assembly, by uploading users for them.   
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_FORUM = "appcivist.assembly.enable-forum"; // if TRUE, an assembly page will be the home page after signing in (this assembly page has not been designed yet)
@@ -33,6 +38,8 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER = "appcivist.assembly.authentication.ldap.server";
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT = "appcivist.assembly.authentication.ldap.port";
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN = "appcivist.assembly.authentication.ldap.dn";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_DN = "appcivist.assembly.authentication.ldap.admin.dn";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_PASS = "appcivist.assembly.authentication.ldap.admin.pass";
 
 	// Campaign Level Configuration Keys
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.campaign.contribution-type-principal"; // what type of contribution is the displayed at the center of the page if a timeline with components is disabled (e.g., these campaigns is centered around PROPOSALS or IDEAS)    
@@ -58,7 +65,6 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS = "appcivist.campaign.allow-anonymous-ideas"; // FALSE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY = "appcivist.campaign.newsletter-frecuency";
 	public static final String APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR = "appcivist.force-collaborative-editor"; // PEERDOC or ETHERPAD, will force propsoal creation process to already create the proposal document in the selected service
-	public static final String APPCIVIST_CAMPAIGN_ENABLE_GROUP_AUTHORSHIP = "appcivist.campaign.enable-group-authorship";
 	public static final String APPCIVIST_CAMPAIGN_DISABLE_PROPOSAL_DISCUSSIONS = "appcivist.campaign.disable-proposal-discussions"; // if TRUE, the comment sections in the proposal page is disabled
 
 	//Add the configuration to the default templates for creating campaigns
