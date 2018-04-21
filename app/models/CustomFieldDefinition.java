@@ -1,14 +1,15 @@
 package models;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonView;
 import enums.EntityTypes;
 import enums.LimitTypes;
 import io.swagger.annotations.ApiModel;
 import models.misc.Views;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,6 +58,10 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 	@Column(name="limit_type")
 	@Enumerated(EnumType.STRING)
 	private LimitTypes limitType;
+
+	@JsonView(Views.Public.class)
+	@Column(name="entity_part", columnDefinition="text")
+	private String entityPart;
 
 	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "customFieldDefinitions")
@@ -227,5 +232,13 @@ public class CustomFieldDefinition extends AppCivistBaseModel {
 
 	public void setCustomFieldValueOptions(List<CustomFieldValueOption> customFieldValueOptions) {
 		this.customFieldValueOptions = customFieldValueOptions;
+	}
+
+	public String getEntityPart() {
+		return entityPart;
+	}
+
+	public void setEntityPart(String entityPart) {
+		this.entityPart = entityPart;
 	}
 }
