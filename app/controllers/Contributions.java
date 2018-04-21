@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.mail.Mailer;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.github.opendevl.JFlat;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -36,7 +35,6 @@ import models.misc.Views;
 import models.transfer.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.http.util.TextUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -58,17 +56,11 @@ import utils.Packager;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -4325,7 +4317,7 @@ public class Contributions extends Controller {
                     return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
                 } catch (Exception e) {
                     Map<String, String> errors = new HashMap<>();
-                    errors.put("error", "Error creating the pad> " + e.getMessage());
+                    errors.put("error", "Error creating the pad " + e.getMessage());
                     errors.put("path", "");
                     return internalServerError(Json.toJson(errors));
                 }
@@ -4346,9 +4338,9 @@ public class Contributions extends Controller {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", "Error creating the pad " + e.getMessage());
+            return internalServerError(Json.toJson(errors));
         }
         return ok("ok");
 
