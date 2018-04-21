@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.mail.Mailer;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.github.opendevl.JFlat;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -36,7 +35,6 @@ import models.misc.Views;
 import models.transfer.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.http.util.TextUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -58,17 +56,11 @@ import utils.Packager;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -2536,6 +2528,26 @@ public class Contributions extends Controller {
      * Non-exposed methods: creation methods
      */
 
+
+    private static void sendNonMemberAddMail(List<NonMemberAuthor> nonMemberAuthors, String contributionUUID) {
+        String url = Play.application().configuration().getString("application.uiUrl") + "/api/public/contribution/"+ contributionUUID;
+        String bodyTextLdap = Messages.get("mail.notification.add.nonmember.ldap", url);
+        String bodyText = Messages.get("mail.notification.add.nonmember", url);
+        String subject = Messages.get("mail.notification.add.nonmember.subject");
+        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+        for(NonMemberAuthor author: nonMemberAuthors) {
+            if(author.getEmail() != null) {
+                MembershipInvitation membershipInvitation = new MembershipInvitation();
+                membershipInvitation.setEmail(author.getEmail());
+                if (author.getSource()!= null && author.getSource().equals("ldap")) {
+                    provider.sendInvitationByEmail(membershipInvitation, bodyTextLdap, subject);
+                } else {
+                    provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
+                }
+            }
+        }
+    }
+
     /**
      * This method is reused by all other contribution creation methods to centralize its logic
      *
@@ -2556,10 +2568,10 @@ public class Contributions extends Controller {
 
         newContrib.setType(type);
         List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
-
+        List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
         // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
-            List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
+
             for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
                 nonMemberAuthor.save();
                 nonMemberAuthor.refresh();
@@ -2835,7 +2847,10 @@ public class Contributions extends Controller {
         Contribution.create(newContrib, containerResourceSpace);
         newContrib.refresh();
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
-
+        F.Promise.promise(() -> {
+                    sendNonMemberAddMail(nonMemberAuthors, newContrib.getUuidAsString());
+                    return Optional.ofNullable(null);
+        });
         //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {

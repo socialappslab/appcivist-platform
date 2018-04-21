@@ -218,3 +218,7 @@ mail.notification.updates_text=Here are the updates from the ideas you follow:
 mail.notification.campaign_description_text.proposal=This campaign is currently in the proposal creation stage
 mail.notification.proposal_developing_text=Your working group {0} is currently developing the following proposals:
 mail.notification.updates_text.proposal=Summary of other working groups
+
+mail.notification.add.nonmember.ldap=You have been invited to collaborate on the {0} proposal, you can access Appcivist using your LDAP credentials and collaborate on it.
+mail.notification.add.nonmember=You have been invited to collaborate on the {0} proposal.
+mail.notification.add.nonmember.subject=[APPCIVIST] New collaboration invitation
