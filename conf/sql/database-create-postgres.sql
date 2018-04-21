@@ -2427,3 +2427,9 @@ FOR hword, hword_part, word WITH unaccent, portuguese_stem;
 CREATE TEXT SEARCH CONFIGURATION "de" ( COPY = german );
 ALTER TEXT SEARCH CONFIGURATION "de" ALTER MAPPING
 FOR hword, hword_part, word WITH unaccent, german_stem;
+
+--71.sql
+ALTER TABLE contribution
+DROP CONSTRAINT ck_contrinution_contrinbutoin_status;
+ALTER TABLE contribution
+ADD CONSTRAINT ck_contribution_contribution_status CHECK (status::text = ANY (ARRAY['DRAFT'::character varying::text, 'PUBLISHED'::character varying::text, 'ARCHIVED'::character varying::text, 'EXCLUDED'::character varying::text, 'PUBLIC_DRAFT'::character varying::text]))
