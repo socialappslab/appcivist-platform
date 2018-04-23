@@ -202,3 +202,5 @@ mail.notification.campaign_description_text.proposal=Esta campaña está actualm
 mail.notification.new_proposal_text=Tu grupo de trabajo {0} ha enviado {1} nuevas propuestas:
 mail.notification.proposal_developing_text=Tu grupo de trabajo {0} está desarrollando actualmente las siguientes propuestas:
 mail.notification.updates_text.proposal=Resumen de los otros grupos de trabajo
+
+contribution.unauthorized.creation = No se puede agregar un nuevo {0} en este espacio porque esta actualmente en estado DRAFT privado
