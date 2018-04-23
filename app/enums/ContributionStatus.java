@@ -8,5 +8,6 @@ public enum ContributionStatus {
 	ARCHIVED, 
 	MODERATED, 
 	INBALLOT,
-	SELECTED
+	SELECTED,
+	PUBLIC_DRAFT
 }

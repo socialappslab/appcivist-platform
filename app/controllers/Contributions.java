@@ -326,7 +326,7 @@ public class Contributions extends Controller {
         if (status != null && !status.isEmpty()) {
             conditions.put("status", status);
         } else if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-            conditions.put("status", "PUBLISHED,INBALLOT,SELECTED");
+            conditions.put("status", "PUBLISHED,INBALLOT,SELECTED,PUBLIC_DRAFT");
         }
         try {
             if (statusEndDate != null && !statusEndDate.isEmpty()) {
@@ -1051,7 +1051,7 @@ public class Contributions extends Controller {
             if (status != null && !status.isEmpty()) {
                 conditions.put("status",status);
             } else {
-                conditions.put("status","PUBLISHED,INBALLOT,SELECTED");
+                conditions.put("status","PUBLISHED,INBALLOT,SELECTED,PUBLIC_DRAFT");
             }
 
             PaginatedContribution pag = new PaginatedContribution();
@@ -1270,6 +1270,20 @@ public class Contributions extends Controller {
                 type = ContributionTypes.COMMENT;
             }
 
+            ResourceSpace rs = ResourceSpace.read(sid);
+
+            if (newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
+                boolean unauth = checkRsDraftState(rs);
+                if (unauth) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            rs.getType()));
+                    return unauthorized(Json.toJson(responseBody));
+                }
+            }
+
             //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
             if (newContribution.getType().equals(ContributionTypes.IDEA) 
 			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
@@ -1298,7 +1312,7 @@ public class Contributions extends Controller {
                 }
             }
 
-            ResourceSpace rs = ResourceSpace.read(sid);
+
             ContributionTemplate template = null;
 
             if (rs != null && newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -3271,7 +3285,6 @@ public class Contributions extends Controller {
         }
         if (resourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
             Campaign campaign = resourceSpace.getCampaign();
-
             return importContributions(null, campaign.getCampaignId(), type, createThemes);
         } else {
             return badRequest(Json.toJson(new TransferResponseStatus("Not implemented")));
@@ -3644,6 +3657,18 @@ public class Contributions extends Controller {
 
             ResourceSpace resourceSpace = ResourceSpace.readByUUID(UUID.fromString(uuid));
 
+            if (newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
+                boolean unauth = checkRsDraftState(resourceSpace);
+                if (unauth) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            resourceSpace.getType()));
+                    return unauthorized(Json.toJson(responseBody));
+                }
+            }
+
             ContributionTemplate template = null;
             Contribution c;
             try {
@@ -3698,6 +3723,16 @@ public class Contributions extends Controller {
             ContributionTemplate template = null;
             Contribution c;
             Contribution inContribution = Contribution.readByUUID(UUID.fromString(uuid));
+
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    inContribution.getStatus().equals(ContributionStatus.DRAFT)) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "contribution.unauthorized.creation",
+                        ResourceSpaceTypes.CONTRIBUTION));
+                return unauthorized(Json.toJson(responseBody));
+            }
             try {
                 c = createContribution(newContribution, null, type, template, inContribution.getResourceSpace());
                 if (type.equals(ContributionTypes.COMMENT) || type.equals(ContributionTypes.DISCUSSION)) {
@@ -3765,6 +3800,16 @@ public class Contributions extends Controller {
 
             Campaign campaign = Campaign.readByUUID(UUID.fromString(uuid));
 
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    campaign.getStatus().equals(CampaignStatus.DRAFT)) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "contribution.unauthorized.creation",
+                        ResourceSpaceTypes.CAMPAIGN));
+                return unauthorized(Json.toJson(responseBody));
+            }
+
             ContributionTemplate template = null;
             Contribution c;
             try {
@@ -3829,6 +3874,16 @@ public class Contributions extends Controller {
             }
 
             WorkingGroup wgroup = WorkingGroup.readByUUID(UUID.fromString(uuid));
+
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    wgroup.getStatus().equals(WorkingGroupStatus.DRAFT)) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "contribution.unauthorized.creation",
+                        ResourceSpaceTypes.WORKING_GROUP));
+                return unauthorized(Json.toJson(responseBody));
+            }
 
             ContributionTemplate template = null;
             Contribution c;
@@ -3896,6 +3951,15 @@ public class Contributions extends Controller {
             ContributionTemplate template = null;
 
             Assembly assembly = Assembly.readByUUID(UUID.fromString(uuid));
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    assembly.getStatus().equals(AssemblyStatus.DRAFT)) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            ResourceSpaceTypes.ASSEMBLY));
+                    return unauthorized(Json.toJson(responseBody));
+            }
 
             Contribution c;
             try {
@@ -4590,6 +4654,23 @@ public class Contributions extends Controller {
         }
     }
 
+    private static boolean checkRsDraftState(ResourceSpace rs) {
+        boolean unauth = false;
+        if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY) &&
+                rs.getAssemblyResources().getStatus().equals(AssemblyStatus.DRAFT)) {
+            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN) &&
+                rs.getCampaign().getStatus().equals(CampaignStatus.DRAFT)) {
+            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
+                rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
+            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION) &&
+                rs.getContribution().getStatus().equals(ContributionStatus.DRAFT)) {
+            unauth = true;
+        }
+        return unauth;
+    }
 
 }
 

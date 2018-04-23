@@ -218,3 +218,5 @@ mail.notification.updates_text=Here are the updates from the ideas you follow:
 mail.notification.campaign_description_text.proposal=This campaign is currently in the proposal creation stage
 mail.notification.proposal_developing_text=Your working group {0} is currently developing the following proposals:
 mail.notification.updates_text.proposal=Summary of other working groups
+
+contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
