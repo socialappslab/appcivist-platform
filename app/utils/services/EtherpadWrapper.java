@@ -7,6 +7,7 @@ import java.util.Map;
 import play.Logger;
 import play.Play;
 import net.gjerull.etherpad.client.EPLiteClient;
+import utils.GlobalData;
 
 @SuppressWarnings({"unchecked","unused"})
 public class EtherpadWrapper {
@@ -18,8 +19,8 @@ public class EtherpadWrapper {
 	public static final String PAD_PATH_URL = "/p";
 	
 	public EtherpadWrapper() {
-		this.etherpadServerUrl = Play.application().configuration().getString("appcivist.services.etherpad.default.serverBaseUrl");
-		this.etherpadApiKey = Play.application().configuration().getString("appcivist.services.etherpad.default.apiKey");
+		this.etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
+		this.etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 		this.client = new EPLiteClient(this.etherpadServerUrl, this.etherpadApiKey);
 	}
 
@@ -33,9 +34,9 @@ public class EtherpadWrapper {
 					.application()
 					.configuration()
 					.getString(
-							"appcivist.services.etherpad.default.serverBaseUrl");
+							GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
 			this.etherpadApiKey = Play.application().configuration()
-					.getString("appcivist.services.etherpad.default.apiKey");
+					.getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 		}
 
 		this.client = new EPLiteClient(this.etherpadServerUrl, this.etherpadApiKey);

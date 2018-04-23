@@ -4381,7 +4381,7 @@ public class Contributions extends Controller {
                     return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
                 } catch (Exception e) {
                     Map<String, String> errors = new HashMap<>();
-                    errors.put("error", "Error creating the pad> " + e.getMessage());
+                    errors.put("error", "Error creating the pad " + e.getMessage());
                     errors.put("path", "");
                     return internalServerError(Json.toJson(errors));
                 }
@@ -4402,9 +4402,9 @@ public class Contributions extends Controller {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", "Error creating the pad " + e.getMessage());
+            return internalServerError(Json.toJson(errors));
         }
         return ok("ok");
 

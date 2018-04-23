@@ -103,7 +103,7 @@ public class GlobalData {
 	// General
 	public static final String CONFIG_ETHERPAD_SERVER = "component.proposal-making.etherpad-server";
 	public static final String CONFIG_ETHERPAD_API_KEY = "component.proposal-making.etherpad-api-key";
-	public static final String CONFIG_APPCIVIST_ETHERPAD_SERVER = "appcivist.services.etherpad.default.serverBaseUrl";
+	public static final String CONFIG_APPCIVIST_ETHERPAD_SERVER = "appcivist.services.etherpad.default.serverBaseurl";
 	public static final String CONFIG_APPCIVIST_ETHERPAD_API_KEY = "appcivist.services.etherpad.default.apiKey";
 	public static final String CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_SERVER = "appcivist.services.etherpad.appcivist.serverBaseUrl";
 	public static final String CONFIG_APPCIVIST_PRODUCTION_ETHERPAD_API_KEY = "appcivist.services.etherpad.appcivist.apiKey";
