@@ -194,7 +194,16 @@ public class LdapAuthProvider extends BasicAuthProvider {
         } catch (NamingException ex)
         {
             Logger.error("Ldap auth error "  + ex);
-            throw new AuthException("Wrong Password or Username");
+
+            if (ex.getRootCause()!=null) {
+                if (ex.getRootCause().getMessage() == "Operation timed out") {
+                    throw new AuthException("LDAP Server did not respond");
+                } else {
+                    throw new AuthException(ex.getRootCause().getMessage());
+                }
+            } else {
+                throw new AuthException("Wrong Password or Username");
+            }
         }
 
     }
