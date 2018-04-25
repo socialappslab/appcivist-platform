@@ -40,6 +40,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN = "appcivist.assembly.authentication.ldap.dn";
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_DN = "appcivist.assembly.authentication.ldap.admin.dn";
 	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_PASS = "appcivist.assembly.authentication.ldap.admin.pass";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_MAIL = "appcivist.assembly.authentication.ldap.admin.mail";
 	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_FORGOT_URL = "appcivist.assembly.authentication.forgot-url";
 	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_SINGUP_URL = "appcivist.assembly.authentication.signup-url";
 	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_REGISTRATION_TITLE = "appcivist.assembly.authentication.registration-title";
