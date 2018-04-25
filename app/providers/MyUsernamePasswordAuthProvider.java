@@ -15,12 +15,8 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 
 import com.feth.play.module.mail.Mailer;
-import models.LinkedAccount;
-import models.Membership;
-import models.MembershipInvitation;
-import models.TokenAction;
+import models.*;
 import models.TokenAction.Type;
-import models.User;
 import models.transfer.AssemblyTransfer;
 import models.transfer.InvitationTransfer;
 import play.Application;
@@ -38,6 +34,7 @@ import play.mvc.Http.Context;
 import play.mvc.Result;
 import service.PlayAuthenticateLocal;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.security.HashGenerationException;
 
 import com.avaje.ebean.Ebean;
@@ -727,6 +724,22 @@ public class MyUsernamePasswordAuthProvider
 		final String subject = invitationSubject;
 		final Body body = new Body(invitationEmail,invitationEmail);
 		mailer.sendMail(subject, body, invitation.getEmail());
+	}
+
+	public void sendLdapFakeMailEmail(String url, String username, Assembly assembly) {
+		String mail = null;
+		for(Config config: assembly.getConfigs()) {
+			if(config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_MAIL)) {
+				mail = config.getValue();
+			}
+		}
+		if(mail != null) {
+			final String subject = "[APPCIVIST] New ldap user created without email";
+			final Body body = new Body("The user " + username + " was created without having an email. The email " + url + " was used");
+			mailer.sendMail(subject, body, mail);
+		} else {
+			Logger.warn("None admin ldap mail configured");
+		}
 	}
 	
 	public void sendInvitationByEmail(final MembershipInvitation invitation, String invitationEmailTxt,String invitationEmailHTML, String invitationSubject) {
