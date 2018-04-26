@@ -79,6 +79,9 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_FAQ_URL = "appcivist.campaign.faq-url";
 	public static final String APPCIVIST_CAMPAIGN_THEMES_NUMBER_LIMIT = "appcivist.campaign.themes-number-limit";
 	public static final String APPCIVIST_CAMPAIGN_THEMES_EXTENDED_DESCRIPTION_URL = "appcivist.campaign.themes.extended-description-url";
+	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT = "appcivist.campaign.research-consent-text";
+	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT_APPROVE = "appcivist.campaign.research-consent-text-approve";
+	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT_REJECT = "appcivist.campaign.research-consent-text-reject";
 
 	//Add the configuration to the default templates for creating campaigns
 	
