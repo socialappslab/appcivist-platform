@@ -188,6 +188,10 @@ public class LdapAuthProvider extends BasicAuthProvider {
             LdapAuthUser ldapAuthUser = new LdapAuthUser();
             getCnAndMail(authContext, ldapLogin.getUsername(), base, ldapAuthUser);
             ldapAuthUser.setId(ldapAuthUser.getMail());
+            ldapAuthUser.setUser(ldapLogin.getUsername());
+            if(ldapAuthUser.getId() == null) {
+                ldapAuthUser.setId(ldapLogin.getUsername()+"@ldap.com");
+            }
             ldapAuthUser.setAssembly(ldapConfig.getAssembly());
             Logger.info("User CN " + ldapAuthUser.getCn());
             return ldapAuthUser;
@@ -237,6 +241,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
     public static class LdapAuthUser extends AuthUser {
 
         private String id;
+        private String user;
         private String mail;
         private String cn;
         private Assembly assembly;
@@ -250,6 +255,14 @@ public class LdapAuthProvider extends BasicAuthProvider {
         @Override
         public long expires() {
             return expiration;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
         }
 
         public Assembly getAssembly() {
