@@ -240,6 +240,17 @@ public class LdapAuthProvider extends BasicAuthProvider {
         private String mail;
         private String cn;
         private Assembly assembly;
+        final static long SESSION_TIMEOUT = 24 * 14 * 3600;
+        private long expiration;
+
+        LdapAuthUser() {
+            expiration = System.currentTimeMillis() + 1000 * SESSION_TIMEOUT;
+        }
+
+        @Override
+        public long expires() {
+            return expiration;
+        }
 
         public Assembly getAssembly() {
             return assembly;
