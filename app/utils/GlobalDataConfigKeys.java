@@ -78,6 +78,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_DISABLE_PROPOSAL_DISCUSSIONS = "appcivist.campaign.disable-proposal-discussions"; // if TRUE, the comment sections in the proposal page is disabled
 	public static final String APPCIVIST_CAMPAIGN_FAQ_URL = "appcivist.campaign.faq-url";
 	public static final String APPCIVIST_CAMPAIGN_THEMES_NUMBER_LIMIT = "appcivist.campaign.themes-number-limit";
+	public static final String APPCIVIST_CAMPAIGN_THEMES_EXTENDED_DESCRIPTION_URL = "appcivist.campaign.themes.extended-description-url";
 
 	//Add the configuration to the default templates for creating campaigns
 	
