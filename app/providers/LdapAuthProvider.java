@@ -6,6 +6,7 @@ import com.feth.play.module.pa.user.AuthUser;
 import models.Assembly;
 import models.Config;
 import models.Membership;
+import models.User;
 import models.transfer.TransferResponseStatus;
 import play.Application;
 import play.Logger;
@@ -109,7 +110,6 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
             if (null != attribs)
             {
-
                 Attribute cn =  attribs.get("cn");
                 if (cn == null) {
                    user.setCn(null);
@@ -120,7 +120,18 @@ public class LdapAuthProvider extends BasicAuthProvider {
                 if (mail == null) {
                     user.setMail(null);
                 } else {
-                    user.setMail(String.valueOf(mail.getAll().next()));
+                    String email = String.valueOf(mail.getAll().next());
+                    user.setMail(email);
+
+                    // add user information if this user is already a member of the assembly
+                    try {
+                        User appcivistUser = User.findByEmail(email);
+                        if(appcivistUser!=null) {
+                            user.setId(appcivistUser.getUserId()+"");
+                        }
+                    } catch (Exception e) {
+                        Logger.info("Ignoring error while searching ldap user email: "+e.getMessage());
+                    }
                 }
             }
             aRet.add(user);
