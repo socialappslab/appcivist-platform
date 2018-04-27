@@ -921,6 +921,7 @@ String uuidAsString, List<Component> phases) {
 		    e = e.ilike("title","%"+query+"%");
         }
 
+        e.orderBy("themeId");
 		if (pageSize==null) {
 			return e.findList();
 		} else {
