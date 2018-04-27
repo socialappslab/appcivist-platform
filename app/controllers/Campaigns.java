@@ -167,13 +167,20 @@ public class Campaigns extends Controller {
             @ApiParam(name = "uid", value = "User ID") Long uid,
             @ApiParam(name = "answer", value = "Consent answer") Boolean answer) {
         try {
-            Logger.info("Reading user's consent"+uid);
-            CampaignParticipation cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, uid);
-            Logger.debug("Creating user consent if does not exist");
-            if (cp==null) {
-                CampaignParticipation.createIfNotExist(User.read(uid),Campaign.read(campaignId));
-                cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, uid);
+
+            Campaign campaign = Campaign.find.byId(campaignId);
+            if(campaign == null) {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Campaign does not exist")));
             }
+
+            User user = User.find.byId(uid);
+            if(user == null) {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "User does not exist")));
+            }
+
+            Logger.info("Reading user's consent"+uid);
+            Logger.debug("Creating user consent if does not exist");
+            CampaignParticipation cp = CampaignParticipation.createIfNotExist(user, campaign);
             cp.setUserProvidedConsent(true);
             cp.setUserConsent(answer);
             Logger.debug("Updating user consent");

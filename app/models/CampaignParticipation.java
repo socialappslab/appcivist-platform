@@ -17,6 +17,11 @@ import java.util.List;
 @ApiModel(value="Campaign Participation", description="Relation between an user and a campaign")
 public class CampaignParticipation extends Model {
 
+    @Id
+    @GeneratedValue
+    private Long campaignParticipationId;
+
+
     @ManyToOne(fetch= FetchType.EAGER, cascade= CascadeType.ALL)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private User user;
@@ -56,7 +61,7 @@ public class CampaignParticipation extends Model {
         return find.where().eq("campaign.campaignId", cid).eq("user.userId", uid).findUnique();
     }
 
-    public static void createIfNotExist(User user, Campaign campaign) {
+    public static CampaignParticipation createIfNotExist(User user, Campaign campaign) {
         if(find.where().eq("user", user).eq("campaign", campaign).findList().isEmpty()) {
             CampaignParticipation campaignParticipation = new CampaignParticipation();
             campaignParticipation.setCampaign(campaign);
@@ -66,6 +71,8 @@ public class CampaignParticipation extends Model {
             campaignParticipation.setCreationDate(new Date());
             campaignParticipation.save();
         }
+
+        return getByCampaignAndUser(campaign, user).get(0);
     }
 
     public User getUser() {
@@ -106,5 +113,13 @@ public class CampaignParticipation extends Model {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Long getCampaignParticipationId() {
+        return campaignParticipationId;
+    }
+
+    public void setCampaignParticipationId(Long campaignParticipationId) {
+        this.campaignParticipationId = campaignParticipationId;
     }
 }

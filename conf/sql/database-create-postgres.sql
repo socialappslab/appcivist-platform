@@ -3136,3 +3136,9 @@ create table campaign_participation (
     constraint fk_campaign_participation_user foreign key (user_user_id) references appcivist_user (user_id),
     constraint fk_campaign_participation_campaign foreign key (campaign_campaign_id) references campaign (campaign_id)
 );
+
+--77.sql
+alter table campaign_participation drop CONSTRAINT pk_campaign_participation;
+alter TABLE campaign_participation add COLUMN campaign_participation_id bigserial;
+UPDATE campaign_participation SET campaign_participation_id=nextval('campaign_participation_campaign_participation_id_seq');
+alter TABLE campaign_participation add CONSTRAINT pk_campaign_participation primary key (campaign_participation_id);
