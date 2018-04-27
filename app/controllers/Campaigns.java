@@ -1,16 +1,37 @@
 package controllers;
 
-import static play.data.Form.form;
-
-import enums.*;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.CampaignDelegate;
+import delegates.ResourcesDelegate;
+import enums.ComponentMilestoneTypes;
+import enums.ContributionTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import models.*;
+import models.misc.Views;
+import models.transfer.*;
+import org.dozer.DozerBeanMapper;
+import play.Logger;
+import play.Play;
+import play.data.Form;
+import play.i18n.Messages;
+import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Results;
+import play.mvc.With;
+import play.twirl.api.Content;
+import security.SecurityModelConstants;
+import utils.GlobalData;
 
 import java.io.InputStream;
 import java.sql.Timestamp;
@@ -20,38 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import models.*;
-import models.misc.Views;
-import models.transfer.*;
-import org.dozer.DozerBeanMapper;
-import play.Logger;
-import play.Play;
-import play.data.Form;
-import play.i18n.Messages;
-import play.libs.F.Promise;
-import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Results;
-import play.mvc.With;
-import play.twirl.api.Content;
-import security.SecurityModelConstants;
-import utils.GlobalData;
-import utils.LogActions;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import delegates.CampaignDelegate;
-import delegates.NotificationsDelegate;
-import delegates.ResourcesDelegate;
-import exceptions.ConfigurationException;
+import static play.data.Form.form;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -117,9 +107,16 @@ public class Campaigns extends Controller {
     public static Result findCampaignByAssemblyId(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        User user = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
         Campaign campaign = Campaign.read(campaignId);
-        return campaign != null ? ok(Json.toJson(campaign)) : ok(Json
-                .toJson(new TransferResponseStatus("No campaign found")));
+        if(campaign != null) {
+            CampaignParticipation.createIfNotExist(user, campaign);
+            return ok(Json.toJson(campaign));
+        } else {
+            return ok(Json.toJson(new TransferResponseStatus("No campaign found")));
+        }
+
     }
 
     /**
