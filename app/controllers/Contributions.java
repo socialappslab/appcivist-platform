@@ -1365,12 +1365,17 @@ public class Contributions extends Controller {
                 }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
-                e.printStackTrace();
-                Logger.error(e.getStackTrace().toString());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                pw.close();
+                String sStackTrace = sw.toString();
+                Logger.error(e.getMessage());
+                Logger.error(sStackTrace);
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
-                                "Error when creating Contribution: " + e.toString())));
+                                "Error when creating Contribution: " + e.getMessage())));
             }
             Ebean.commitTransaction();
 
