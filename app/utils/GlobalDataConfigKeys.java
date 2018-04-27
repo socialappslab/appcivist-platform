@@ -22,7 +22,6 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_REQUIRE_GROUP_AUTHORSHIP = "appcivist.campaign.require-group-authorship"; // Default is FALSE, if TRUE, proposals must be related to a WG on creation
 	public static final String APPCIVIST_CREATE_GROUP_ON_NEW_PROPOSALS = "appcivist.campaign.create-group-new-proposals"; // Default is FALSE, if TRUE, proposals WG are automatically created if the proposal does not have one
 
-
 	// Assembly Level Configuration Keys
 	public static final String APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS = "appcivist.assembly.disable-new-memberships"; // only coordinators can add new members to the assembly, by uploading users for them.   
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_FORUM = "appcivist.assembly.enable-forum"; // if TRUE, an assembly page will be the home page after signing in (this assembly page has not been designed yet)
@@ -82,6 +81,9 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT = "appcivist.campaign.research-consent-text";
 	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT_APPROVE = "appcivist.campaign.research-consent-text-approve";
 	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT_REJECT = "appcivist.campaign.research-consent-text-reject";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_DEFAULT_TITLE = "appcivist.campaign.contribution.default-title";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_DEFAULT_DESCRIPTION = "appcivist.campaign.contribution.default-description";
+
 
 	//Add the configuration to the default templates for creating campaigns
 	
