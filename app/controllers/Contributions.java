@@ -85,6 +85,7 @@ public class Contributions extends Controller {
     public static final String CONTRIBUTION_ID_PARAM = "{contribution_id}";
     public static final String EXTENDED_PAD_NAME = "contribution_doc_"+ CONTRIBUTION_ID_PARAM;
     public static final String CONTRIBUTION_FILE_NAME = "contribution_"+ CONTRIBUTION_ID_PARAM;
+    public static final Form<NonMemberAuthor> NON_MEMBER_AUTHORS_FORM = form(NonMemberAuthor.class);
 
     private static BufferedReader br;
 
@@ -1285,12 +1286,12 @@ public class Contributions extends Controller {
             }
 
             //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
-            if (newContribution.getType().equals(ContributionTypes.IDEA) 
-			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
-			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
+            if (newContribution.getType().equals(ContributionTypes.IDEA)
+			|| newContribution.getType().equals(ContributionTypes.PROPOSAL)
+			|| newContribution.getType().equals(ContributionTypes.DISCUSSION)
 			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
             	Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
-            	if (result == -1){ 
+            	if (result == -1){
                     Logger.info("Missing Social Ideation Headers");
             		return badRequest("Missing Social Ideation Headers");
             	} else if (result == 1){
@@ -1306,7 +1307,7 @@ public class Contributions extends Controller {
                             non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
                             non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                             non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
-                        }     
+                        }
                         newContribution.setNonMemberAuthor(non_member_author);
                     }
                 }
@@ -1344,7 +1345,7 @@ public class Contributions extends Controller {
                 } else if (non_member_author != null) {
                     c = createContribution(newContribution, null, type, template, rs);
                 } else {
-                    c = createContribution(newContribution, author, type, template, rs);                    
+                    c = createContribution(newContribution, author, type, template, rs);
                 }
 
                 if (c.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -1765,9 +1766,9 @@ public class Contributions extends Controller {
                 return notFound(Json.toJson(new TransferResponseStatus(
                         "No campaign with id: " + caid )));
             }
-            
+
             Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
-            if (result == -1){ 
+            if (result == -1){
                 Logger.info("Missing Social Ideation Headers");
                 return badRequest("Missing Social Ideation Headers");
             } else if (result == 1){
@@ -1783,7 +1784,7 @@ public class Contributions extends Controller {
                         non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
                         non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
-                    }     
+                    }
                 }
             }
 
@@ -2086,7 +2087,7 @@ public class Contributions extends Controller {
 //                    field.set(existingContribution, field.get(newContribution));
 //	            }
 //				existingContribution.setContextUserId(author.getUserId());
-//				
+//
 //				Contribution.update(existingContribution);
 	            Contribution updatedContribution = Contribution.readAndUpdate(newContribution, contributionId, author.getUserId());
 				ResourceSpace rs = Assembly.read(aid).getResources();
@@ -2440,6 +2441,58 @@ public class Contributions extends Controller {
     }
 
     /**
+     * POST  /api/contribution/:uuid/nonmemberauthors
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Add a non member author to a contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.NonMemberAuthor", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result addNonMemberAuthorToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+        try {
+            NonMemberAuthor author = NON_MEMBER_AUTHORS_FORM.bindFromRequest().get();
+            // Check if there is already a user for the email in the form
+            User user = User.findByEmail(author.getEmail());
+            boolean authorExist = false;
+            boolean userExist = false;
+            if (user !=null) {
+                authorExist = contribution.getAuthors().contains(user);
+                userExist = true;
+            } else {
+                authorExist = contribution.getNonMemberAuthors().contains(author);
+            }
+
+            if (!authorExist && !userExist) {
+                // create the non member author and add it to the contribution
+                author = NonMemberAuthor.create(author);
+                contribution.getNonMemberAuthors().add(author);
+                contribution.update();
+                return ok(Json.toJson(author));
+            } else if (authorExist && !userExist) {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Non Member Author already in contribution")));
+            } else if (!authorExist && userExist) {
+                // add it as author
+                contribution.getAuthors().add(user);
+                contribution.update();
+                return ok(Json.toJson(user));
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Author already in contribution")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
+
+    /**
      * DELETE  /api/contribution/:uuid/themes/:tid
      *
      * @param uuid
@@ -2477,10 +2530,9 @@ public class Contributions extends Controller {
      * @param auuid
      * @return
      */
-    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Add a author to a contribution")
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete an author from a contribution")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.User", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result deleteAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
@@ -2507,6 +2559,41 @@ public class Contributions extends Controller {
         }
     }
 
+    /**
+     * DELETE  /api/contribution/:uuid/nonmemberauthors/:auuid
+     *
+     * @param uuid
+     * @param auuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete a non member author from a contribution")
+    @ApiResponses(value = {@ApiResponse(code = NOT_FOUND, message = "Non Member Author or contribution was not found ", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result deleteNonMemberAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
+                                                      @ApiParam(name = "auuid", value = "Non Member Author's Id (Long)") Long nmaid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+
+        try {
+            NonMemberAuthor author = NonMemberAuthor.read(nmaid);
+            boolean authorExist = contribution.getNonMemberAuthors().contains(author);
+            if(authorExist) {
+                contribution.getNonMemberAuthors().remove(author);
+                contribution.update();
+                return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, "Non Member Author was Removed")));
+            }else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
     /**
      * GET  /api/contributions
      *
@@ -2594,7 +2681,7 @@ public class Contributions extends Controller {
             newContrib.setNonMemberAuthors(nonMemberAuthors);
             newContrib.setNonMemberAuthor(nonMemberAuthors.get(0));
         }
-        
+
         // Add author to the proposal and use its Lang as the language of the Proposal
         // TODO: derive language from the text
         if (author != null) {
@@ -2625,7 +2712,7 @@ public class Contributions extends Controller {
                 return Optional.ofNullable(null);
             });
         }
-        
+
         // If still there is no language, try first the first NonMemberAuthor and then the Campaign, WG, and Assembly, in that order
         if (newContrib.getLang() == null){
             if (newContrib.getNonMemberAuthor() != null && newContrib.getNonMemberAuthor().getLang()!=null) {
@@ -2646,20 +2733,20 @@ public class Contributions extends Controller {
         }
 
 
-        if(type != null 
+        if(type != null
         		&& (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
 	        if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
 	            // read etherpad server url from config file
 	            Logger.info("Etherpad URL was not configured");
 	            etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
 	        }
-	
+
 	        if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
 	            // read etherpad server url from config file
 	            Logger.info("Etherpad API Key was not configured");
 	            etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 	        }
-	
+
 	        Logger.info("Using Etherpad server at: " + etherpadServerUrl);
 	        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         }
@@ -2735,7 +2822,7 @@ public class Contributions extends Controller {
         Boolean addIdeaToProposals = false;
         String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
         Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) 
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)
         		&& type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign();
 
@@ -2778,7 +2865,7 @@ public class Contributions extends Controller {
 	                        }
 	                    }
 	    			}
-        		} 
+        		}
         	}
         	// If the configuration is not defined, get the defaults values
         	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {

@@ -295,8 +295,10 @@ PUT       /api/contribution/pad                                                 
 
 POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
+POST      /api/contribution/:uuid/nonmemberauthors                               controllers.Contributions.addNonMemberAuthorToContribution(uuid: java.util.UUID)
 DELETE    /api/contribution/:uuid/themes/:tid                                    controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
 DELETE    /api/contribution/:uuid/authors/:auuid                                 controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
+DELETE    /api/contribution/:uuid/nonmemberauthors/:nmaid                        controllers.Contributions.deleteNonMemberAuthorFromContribution(uuid: java.util.UUID, nmaid: Long)
 
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
