@@ -3789,18 +3789,17 @@ public class Contributions extends Controller {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
         if (ContributionStatus.valueOf(upStatus) != null) {
-            c.setStatus(ContributionStatus.valueOf(upStatus));
-            c.update();
-            User user = User.findByAuthUserIdentity(PlayAuthenticate
-                    .getUser(session()));
+            User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
             PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
             try {
                 peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
             } catch (Exception e) {
                 Map<String, String> errors = new HashMap<>();
-                errors.put("error", "Error updating the pad " + e.getMessage());
+                errors.put("error", "Error updating the pad: " + e.getMessage());
                 return internalServerError(Json.toJson(errors));
             }
+            c.setStatus(ContributionStatus.valueOf(upStatus));
+            c.update();
             return ok(Json.toJson(c));
         } else {
             return badRequest(Json.toJson(new TransferResponseStatus("The status is not valid")));

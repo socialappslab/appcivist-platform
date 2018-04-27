@@ -102,32 +102,41 @@ public class PeerDocWrapper {
 
     public void changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, HashGenerationException {
-
+            InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError{
         Resource resource = null;
         if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
             resource = contribution.getExtendedTextPad();
         }
         if(resource == null) {
+            Logger.info("Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Changing status as usual.");
             return;
         }
+        ContributionStatus currentStatus = contribution.getStatus();
+
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
-        WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
-        String peerDocStatus;
+        WSRequest holder = getWSHolder("/document/share/"+documentId+"?user="+userEncrypted);
+        Map<String, Boolean> peerDocVisibility = new HashMap<>();
         switch (status) {
             case PUBLIC_DRAFT:
-                peerDocStatus = PeerDocStatus.PUBLIC.name();
+                if (!currentStatus.equals(ContributionStatus.PUBLISHED)) {
+                    peerDocVisibility.put("visibility", true);
+                } else {
+                    throw new PeerdocServerError("Published proposals can go back to DRAFT statuses");
+                }
                 break;
             case DRAFT:
-                peerDocStatus = PeerDocStatus.PRIVATE.name();
+                if (!currentStatus.equals(ContributionStatus.PUBLISHED)) {
+                    peerDocVisibility.put("visibility", false);
+                } else {
+                    throw new PeerdocServerError("Published proposals can go back to DRAFT statuses");
+                }
                 break;
             default:
-                peerDocStatus = PeerDocStatus.PUBLISHED.name();
+                holder =  getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
                 break;
         }
-        Map<String, String> peerDocVisibility = new HashMap<>();
-        peerDocVisibility.put("visibility", peerDocStatus);
+
         holder.setBody(Json.toJson(peerDocVisibility));
         F.Promise<WSResponse> promise = wsSend(holder);
         promise.get(DEFAULT_TIMEOUT);
