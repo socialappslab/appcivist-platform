@@ -27,27 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import models.Assembly;
-import models.AssemblyProfile;
-import models.Ballot;
-import models.BallotCandidate;
-import models.Campaign;
-import models.Component;
-import models.ComponentMilestone;
-import models.Config;
-import models.Contribution;
-import models.CustomFieldDefinition;
-import models.CustomFieldValue;
-import models.CustomFieldValueOption;
-import models.MembershipAssembly;
-import models.MembershipGroup;
-import models.NonMemberAuthor;
-import models.Resource;
-import models.ResourceSpace;
-import models.ResourceSpaceAssociationHistory;
-import models.Theme;
-import models.User;
-import models.WorkingGroup;
+import models.*;
 import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.BallotTransfer;
@@ -1482,6 +1462,9 @@ public class Spaces extends Controller {
                     .toJson(new TransferResponseStatus("No resource space found with id "+sid)));
         } else {
             Campaign campaign = Campaign.read(cid);
+            User user = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            CampaignParticipation.createIfNotExist(user, campaign);
             return ok(Json.toJson(campaign));
         }
     }
