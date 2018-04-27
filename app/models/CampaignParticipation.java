@@ -30,6 +30,10 @@ public class CampaignParticipation extends Model {
     @Column(name = "user_consent")
     private Boolean userConsent;
 
+    @JsonView(Views.Public.class)
+    @Column(name = "user_provided_consent")
+    private Boolean userProvidedConsent;
+
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
     @ApiModelProperty(name="creation_date", value="Date in which this resource was created", notes="By default set to NOW")
     @JsonView(Views.Public.class)
@@ -40,8 +44,16 @@ public class CampaignParticipation extends Model {
     public static Model.Finder<Long, CampaignParticipation> find = new Model.Finder<>(CampaignParticipation.class);
 
     public static List<CampaignParticipation> getByCampaign(Campaign campaign) {
-
         return find.where().eq("campaign", campaign).findList();
+    }
+
+    public static List<CampaignParticipation> getByCampaignAndUser(Campaign campaign, User user) {
+        return find.where().eq("campaign", campaign).eq("user", user).findList();
+    }
+
+
+    public static CampaignParticipation getByCampaignAndUserIds(Long cid, Long uid) {
+        return find.where().eq("campaign.campaignId", cid).eq("user.userId", uid).findUnique();
     }
 
     public static void createIfNotExist(User user, Campaign campaign) {
@@ -49,7 +61,8 @@ public class CampaignParticipation extends Model {
             CampaignParticipation campaignParticipation = new CampaignParticipation();
             campaignParticipation.setCampaign(campaign);
             campaignParticipation.setUser(user);
-            campaignParticipation.setUserConsent(true);
+            campaignParticipation.setUserConsent(false);
+            campaignParticipation.setUserProvidedConsent(false);
             campaignParticipation.setCreationDate(new Date());
             campaignParticipation.save();
         }
@@ -77,6 +90,14 @@ public class CampaignParticipation extends Model {
 
     public void setUserConsent(Boolean userConsent) {
         this.userConsent = userConsent;
+    }
+
+    public Boolean getUserProvidedConsent() {
+        return userProvidedConsent;
+    }
+
+    public void setUserProvidedConsent(Boolean userProvidedConsent) {
+        this.userProvidedConsent = userProvidedConsent;
     }
 
     public Date getCreationDate() {

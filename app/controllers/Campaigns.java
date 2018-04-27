@@ -120,6 +120,69 @@ public class Campaigns extends Controller {
     }
 
     /**
+     * GET /api/assembly/:aid/campaign/:cid/consent
+     * Get current consent answer to campaign
+     *
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CampaignParticipation.class, produces = "application/json", value = "Read User's consent to participate of campaign")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No consent found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result getConsentToParticipateInCampaign(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        try {
+            User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+            CampaignParticipation cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, user.getUserId());
+            if (cp != null) {
+                return ok(Json.toJson(cp));
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Consent does not exist yet")));
+            }
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,e.getMessage())));
+        }
+    }
+
+    /**
+     * PUT /api/assembly/:aid/campaign/:cid/consent/:answer
+     * Provide consent answer to campaign
+     *
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CampaignParticipation.class, produces = "application/json", value = "Provide Consent to Participate of Campaign")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result provideConsentToParticipateInCampaign(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+            @ApiParam(name = "answer", value = "Consent answer") Boolean answer) {
+        try {
+            User user = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            CampaignParticipation cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, user.getUserId());
+            if (cp==null) {
+                CampaignParticipation.createIfNotExist(user,Campaign.read(campaignId));
+            }
+            cp.setUserProvidedConsent(true);
+            cp.setUserConsent(answer);
+            cp.update();
+            cp.refresh();
+            return ok(Json.toJson(cp));
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,e.getMessage())));
+        }
+    }
+
+    /**
      * GET       /api/campaign/:uuid
      *
      * @param uuid
