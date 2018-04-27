@@ -675,11 +675,13 @@ public class Assemblies extends Controller {
 	@ApiOperation(httpMethod = "GET", response = Membership.class, responseContainer="List", produces = "application/json", value = "Get Assembly Memberships by ID and status", notes = "Only for MEMBERS of the assembly")
 	@ApiResponses(value = { @ApiResponse(code = 404, message = "No assembly found", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "id", value = "Assembly id", dataType = "Long", paramType = "path"),
-			@ApiImplicitParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true, paramType = "path"),
 			@ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
 	@Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
-	public static Result listMembershipsWithStatus(Long id, String status, String ldap, String ldapserach) {
+	public static Result listMembershipsWithStatus(
+			@ApiParam(name = "id", value = "Assembly ID") Long id,
+			@ApiParam(name = "status", value = "Status of membership invitation or request") String status,
+			@ApiParam(name = "ldap", value = "Include LDAP users") String ldap,
+			@ApiParam(name = "ldapsearch", value = "Status of membership invitation or request") String ldapsearch) {
 
 		Map<String, List> aRet = new HashMap<>();
 		List<Membership> m = MembershipAssembly.findByAssemblyIdAndStatus(id,status);
@@ -688,7 +690,7 @@ public class Assemblies extends Controller {
 		if(ldap.equals("true")) {
 			Assembly assembly = Assembly.read(id);
 			try {
-				aRet.put("ldap", LdapAuthProvider.getMemberLdapUsers(assembly, ldapserach));
+				aRet.put("ldap", LdapAuthProvider.getMemberLdapUsers(assembly, ldapsearch));
 			} catch (Exception e) {
 				TransferResponseStatus responseBody = new TransferResponseStatus();
 				responseBody.setStatusMessage("Error: "+e.getMessage());

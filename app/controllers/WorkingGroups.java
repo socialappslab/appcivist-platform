@@ -601,8 +601,8 @@ public class WorkingGroups extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "gid", value = "Working Group ID") Long gid,
             @ApiParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true) String status,
-            String ldap,
-            String ldapserach) {
+            @ApiParam(name = "ldap", value = "Include LDAP users") String ldap,
+            @ApiParam(name = "ldapsearch", value = "Status of membership invitation or request") String ldapsearch) {
 
         Map<String, List> aRet = new HashMap<>();
         List<Membership> m = MembershipGroup.findByAssemblyIdGroupIdAndStatus(aid, gid, status);
@@ -611,7 +611,7 @@ public class WorkingGroups extends Controller {
         if(ldap.equals("true")) {
             Assembly assembly = Assembly.read(aid);
             try {
-                aRet.put("ldap", LdapAuthProvider.getMemberLdapUsers(assembly, ldapserach));
+                aRet.put("ldap", LdapAuthProvider.getMemberLdapUsers(assembly, ldapsearch));
             } catch (Exception e) {
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage("Error: "+e.getMessage());
