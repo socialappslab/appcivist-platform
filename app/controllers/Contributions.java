@@ -1156,22 +1156,47 @@ public class Contributions extends Controller {
     }
 
     /**
-     * GET       /api/assembly/:aid/contribution/:cid
+     * PUT       /api/assembly/:aid/contribution/:cid
      *
      * @param peerDocId
      * @return
      */
-    @ApiOperation(httpMethod = "GET", response = Contribution.class,  produces = "application/json", value = "Get contribution by peerDocId")
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class,  produces = "application/json", value = "PUT contribution and title by PeerDocId")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
-    public static Result getContributionByPeerDocId(
-            @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId) throws Exception {
-        Contribution contribution = Contribution.getByPeerDocId(peerDocId);
-        if(contribution!=null) {
-            return ok(Json.toJson(contribution));
-        } else {
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result putContributionByPeerDocId(
+            @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
+            @ApiParam(name = "title", value = "New Title") String title,
+            @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
+        try {
+            Contribution contribution = Contribution.getByPeerDocId(peerDocId);
+            if(contribution!=null) {
+                contribution.setTitle(title);
+                DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
+                Date date = format.parse(lastUpdate);
+                contribution.setLastUpdate(date);
+                contribution.update();
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setResponseStatus(ResponseStatus.OK);
+                responseBody.setStatusMessage("Contribution updated");
+                return ok(Json.toJson(responseBody));
+            } else {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setResponseStatus(ResponseStatus.NODATA);
+                responseBody.setStatusMessage("No contribution found for the given peerDocId");
+                return notFound(Json.toJson(responseBody));
+            }
+        } catch (Exception e) {
             TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage("Not contribution found for the given peerdocId");
-            return notFound(Json.toJson(responseBody));
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+            responseBody.setStatusMessage("There was an error with your request: "+e.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            String sStackTrace = sw.toString();
+            responseBody.setErrorTrace(sStackTrace);
+            return internalServerError(Json.toJson(responseBody));
         }
     }
 
