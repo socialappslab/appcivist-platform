@@ -91,6 +91,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
                 new InitialDirContext(environment);
         SearchControls searchCtrls = new SearchControls();
         searchCtrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        searchCtrls.setCountLimit(50);
         String[] attributes = { "cn", "mail" };
         searchCtrls.setReturningAttributes(attributes);
         String filter = "&(objectClass=*)(accountstatus=active)";
