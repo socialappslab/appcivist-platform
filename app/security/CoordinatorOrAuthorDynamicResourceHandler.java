@@ -59,7 +59,7 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 								// if user is not author, we ask if the user is coordinator of one of the spaces
 								// in which it has been added
 								if (allowed[0] == false) {
-                                    Logger.debug("User is not author of contribution = " + contributionId);
+                                    Logger.debug("AUTHORIZATION:User is not author of contribution = " + contributionId);
 
                                     Long assemblyId = null;
 									Assembly a = null;
@@ -72,35 +72,37 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 									// we look at all the resource spaces that contain the contribution
 									// if the user is a coordinator of any of them, we will return a positive authorization
 									List<ResourceSpace> containingSpaces = contribution.getContainingSpaces();
-                                    Logger.debug("Contribution has been added to this number of spaces = " + containingSpaces!=null ? containingSpaces.size()+"" : "0");
+                                    Logger.debug("AUTHORIZATION:Contribution has been added to this number of spaces = " + containingSpaces!=null ? containingSpaces.size()+"" : "0");
                                     for (ResourceSpace s : containingSpaces) {
 										if (s.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
 											Campaign c = s.getCampaign();
+                                            Logger.debug("AUTHORIZATION: Checking assemblies of campaign = " + c.getCampaignId());
 											List<Long> assemblyIds = c.getAssemblies();
                                             for (Long aid : assemblyIds) {
-                                                Logger.debug("Checking if user is coordinator of assembly = " + aid);
+                                                Logger.debug("AUTHORIZATION: Checking if user is coordinator of assembly = " + aid);
 												a = Assembly.read(aid);
 												if (a != null) {
 													m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), aid);
 													ap = a.getProfile();
 												}
-												Boolean assemblyNotOpen = true;
+												Boolean assemblyIsOpen = false;
 												if (ap != null) {
-													assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+													assemblyIsOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
 												}
-												if (m != null && assemblyNotOpen) {
-													Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
+												if (m != null && !assemblyIsOpen) {
+													Logger.debug("AUTHORIZATION: Checking if user is Coordinator");
 													List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-													allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                                    allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
 													if (allowed[0]) {
-                                                        Logger.debug("User is coordinator of assembly = " + aid);
+                                                        Logger.debug("AUTHORIZATION: User is coordinator of assembly = " + aid);
 														assemblyId = aid;
 														break;
-													} else {
-                                                        Logger.debug("User is NOT coordinator of assembly = " + aid);
-                                                    }
-												} else {
-                                                    Logger.debug("Assembly is not OPEN or user has no membership in it = " + aid);
+													}
+                                                } else if (assemblyIsOpen) {
+												    // If assemblyIsOpen, then only authors are allowed to edit, there are no coordinators
+                                                    Logger.debug("AUTHORIZATION: Assembly is OPEN. There are no coordinators of assembly = " + aid);
+                                                } else if (m == null) {
+                                                    Logger.debug("AUTHORIZATION: User is NOT member of assembly = " + aid);
                                                 }
 											}
 											if (allowed[0]) {
@@ -109,59 +111,65 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 										} else if (s.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
 											a = s.getAssemblyResources();
 											assemblyId = a.getAssemblyId();
-                                            Logger.debug("Checking if user is coordinator of assembly = " + assemblyId);
+                                            Logger.debug("AUTHORIZATION: Checking if user is coordinator of assembly = " + assemblyId);
 											if (a != null) {
 												m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
 												ap = a.getProfile();
 											}
-											Boolean assemblyNotOpen = true;
+											Boolean assemblyIsOpen = false;
 											if (ap != null) {
-												assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
+												assemblyIsOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
 											}
-											if (m != null && assemblyNotOpen) {
-                                                Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
+											if (m != null && !assemblyIsOpen) {
+                                                Logger.debug("AUTHORIZATION: Checking if user is Coordinator");
 												List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
 												allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
 												if (allowed[0]) {
-                                                    Logger.debug("User is coordinator of assembly = " + assemblyId);
+                                                    Logger.debug("AUTHORIZATION: User is coordinator of assembly = " + assemblyId);
                                                 } else {
-                                                    Logger.debug("User is NOT coordinator of assembly = " + assemblyId);
+                                                    Logger.debug("AUTHORIZATION: User is NOT coordinator of assembly = " + assemblyId);
                                                 }
-											} else {
-                                                Logger.debug("Assembly is not OPEN or user has no membership in it = " + assemblyId);
+											} else if (assemblyIsOpen) {
+                                                // If assemblyIsOpen, then only authors are allowed to edit, there are no coordinators
+                                                Logger.debug("AUTHORIZATION: Assembly is OPEN. There are no coordinators of assembly = " + assemblyId);
+                                            } else if (m == null) {
+                                                Logger.debug("AUTHORIZATION: User is NOT member of assembly = " + assemblyId);
                                             }
 										} else if (s.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
                                             wg = s.getWorkingGroupResources();
 											groupId = wg.getGroupId();
-                                            Logger.debug("Checking if user is coordinator of group = " + groupId);
+                                            Logger.debug("AUTHORIZATION: Checking if user is coordinator of group = " + groupId);
 											if (wg != null) {
 												m = MembershipGroup.findByUserAndGroupId(u.getUserId(), groupId);
 												wgp = wg.getProfile();
 											}
-											Boolean groupNotOpen = true;
+											Boolean groupIsOpen = false;
 											if (ap != null) {
-												groupNotOpen = wgp.getManagementType().equals(ManagementTypes.OPEN);
+												groupIsOpen = wgp.getManagementType().equals(ManagementTypes.OPEN);
 											}
-											if (m != null && groupNotOpen) {
+											if (m != null && !groupIsOpen) {
 												Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
 												List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
 												allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
 												if (allowed[0]) {
-                                                    Logger.debug("User is coordinator of group = " + groupId);
+                                                    Logger.debug("AUTHORIZATION: User is coordinator of group = " + groupId);
                                                 } else {
-                                                    Logger.debug("User is NOT coordinator of group = " + groupId);
+                                                    Logger.debug("AUTHORIZATION: User is NOT coordinator of group = " + groupId);
                                                 }
-											} else {
-                                                Logger.debug("Group is not OPEN or user has no membership in it = " + groupId);
+											} else if (groupIsOpen) {
+                                                // If assemblyIsOpen, then only authors are allowed to edit, there are no coordinators
+                                                Logger.debug("AUTHORIZATION: Group is OPEN. There are no coordinators of group = " + groupId);
+                                            } else if (m == null) {
+                                                Logger.debug("AUTHORIZATION: User is NOT member of group = " + groupId);
                                             }
 										}
 									}
 									if (containingSpaces!=null && containingSpaces.size() == 0) {
-                                        Logger.debug("Contribution is no resource space");
+                                        Logger.debug("AUTHORIZATION: Contribution is no resource space");
                                     }
 								}
 							} else {
-                                Logger.debug("AUTHORIZATION --> FALSE");
+                                Logger.debug("AUTHORIZATION: FALSE");
                                 allowed[0] = false;
 							}
 						});
