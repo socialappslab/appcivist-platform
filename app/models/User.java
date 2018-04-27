@@ -573,6 +573,21 @@ public class User extends AppCivistBaseModel implements Subject {
 		}
 
 		UserProfile userProfile = new UserProfile(user, null, "", "",  "", null, "");
+
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			String [] fullName = user.getName().split(" ");
+			if(fullName.length > 2) {
+				userProfile.setName(fullName[0]);
+				userProfile.setMiddleName(fullName[1]);
+				userProfile.setLastName(fullName[2]);
+			} else if(fullName.length > 1) {
+				userProfile.setName(fullName[0]);
+				userProfile.setLastName(fullName[1]);
+			} else {
+				userProfile.setName(fullName[0]);
+			}
+		}
+
 		userProfile.save();
 
 		/*

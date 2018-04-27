@@ -1156,6 +1156,26 @@ public class Contributions extends Controller {
     }
 
     /**
+     * GET       /api/assembly/:aid/contribution/:cid
+     *
+     * @param peerDocId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = Contribution.class,  produces = "application/json", value = "Get contribution by peerDocId")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionByPeerDocId(
+            @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId) throws Exception {
+        Contribution contribution = Contribution.getByPeerDocId(peerDocId);
+        if(contribution!=null) {
+            return ok(Json.toJson(contribution));
+        } else {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("Not contribution found for the given peerdocId");
+            return notFound(Json.toJson(responseBody));
+        }
+    }
+
+    /**
      * POST       /api/contribution/history
      *
      * @return
@@ -3746,6 +3766,16 @@ public class Contributions extends Controller {
         if (ContributionStatus.valueOf(upStatus) != null) {
             c.setStatus(ContributionStatus.valueOf(upStatus));
             c.update();
+            User user = User.findByAuthUserIdentity(PlayAuthenticate
+                    .getUser(session()));
+            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+            try {
+                peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            } catch (Exception e) {
+                Map<String, String> errors = new HashMap<>();
+                errors.put("error", "Error updating the pad " + e.getMessage());
+                return internalServerError(Json.toJson(errors));
+            }
             return ok(Json.toJson(c));
         } else {
             return badRequest(Json.toJson(new TransferResponseStatus("The status is not valid")));

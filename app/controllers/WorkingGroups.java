@@ -956,7 +956,7 @@ public class WorkingGroups extends Controller {
         Integer newRevision = null;
         try {
             Contribution proposal = Contribution.read(pid);
-            if(proposal.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+            if(proposal.getExtendedTextPad() != null && proposal.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
                 User user = User.findByAuthUserIdentity(PlayAuthenticate
                         .getUser(session()));
                 PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);

@@ -1,15 +1,12 @@
 package utils.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import enums.ContributionStatus;
+import enums.PeerDocStatus;
 import enums.ResourceTypes;
 import exceptions.PeerdocServerError;
-import io.apigee.trireme.core.NodeException;
-import io.apigee.trireme.core.ScriptStatus;
 import models.Contribution;
 import models.Resource;
 import models.User;
-import io.apigee.trireme.core.NodeEnvironment;
-import io.apigee.trireme.core.NodeScript;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -19,21 +16,22 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utils.security.HashGenerationException;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static delegates.ContributionsDelegate.createResourceAndUpdateContribution;
-import static javax.ws.rs.core.Response.ok;
 
 /**
  * Created by yohanna on 25/03/18.
@@ -73,9 +71,9 @@ public class PeerDocWrapper {
         Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
-        Logger.debug("Peerdoc Server response: "+response !=null ? response.asJson().toString() : "[no response]");
+        Logger.debug("Peerdoc Server response: "+ response.asJson().toString());
         String peerDocUrl = getPeerDocServerUrl();
-        if (response!=null && response.asJson().get("path") != null) {
+        if (response.asJson().get("path") != null) {
             String responsePath = response.asJson().get("path").asText();
             return peerDocUrl + responsePath;
         } else {
@@ -98,6 +96,39 @@ public class PeerDocWrapper {
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
+        F.Promise<WSResponse> promise = wsSend(holder);
+        promise.get(DEFAULT_TIMEOUT);
+    }
+
+    public void changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
+            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
+            InvalidAlgorithmParameterException, HashGenerationException {
+
+        Resource resource = null;
+        if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+            resource = contribution.getExtendedTextPad();
+        }
+        if(resource == null) {
+            return;
+        }
+        String documentId = resource.getUrlAsString().split("document/")[1];
+        String userEncrypted = encrypt();
+        WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
+        String peerDocStatus;
+        switch (status) {
+            case PUBLIC_DRAFT:
+                peerDocStatus = PeerDocStatus.PUBLIC.name();
+                break;
+            case DRAFT:
+                peerDocStatus = PeerDocStatus.PRIVATE.name();
+                break;
+            default:
+                peerDocStatus = PeerDocStatus.PUBLISHED.name();
+                break;
+        }
+        Map<String, String> peerDocVisibility = new HashMap<>();
+        peerDocVisibility.put("visibility", peerDocStatus);
+        holder.setBody(Json.toJson(peerDocVisibility));
         F.Promise<WSResponse> promise = wsSend(holder);
         promise.get(DEFAULT_TIMEOUT);
     }
