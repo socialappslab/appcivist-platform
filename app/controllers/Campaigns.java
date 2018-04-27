@@ -160,20 +160,23 @@ public class Campaigns extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    @Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
     public static Result provideConsentToParticipateInCampaign(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+            @ApiParam(name = "uid", value = "User ID") Long uid,
             @ApiParam(name = "answer", value = "Consent answer") Boolean answer) {
         try {
-            User user = User.findByAuthUserIdentity(PlayAuthenticate
-                    .getUser(session()));
-            CampaignParticipation cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, user.getUserId());
+            Logger.info("Reading user's consent"+uid);
+            CampaignParticipation cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, uid);
+            Logger.debug("Creating user consent if does not exist");
             if (cp==null) {
-                CampaignParticipation.createIfNotExist(user,Campaign.read(campaignId));
+                CampaignParticipation.createIfNotExist(User.read(uid),Campaign.read(campaignId));
+                cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, uid);
             }
             cp.setUserProvidedConsent(true);
             cp.setUserConsent(answer);
+            Logger.debug("Updating user consent");
             cp.update();
             cp.refresh();
             return ok(Json.toJson(cp));

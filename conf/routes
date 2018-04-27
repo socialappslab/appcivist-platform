@@ -234,7 +234,7 @@ GET       /api/assembly/:aid/campaign/:cid/timeline                             
 PUT       /api/assembly/:aid/campaign/:cid/description                           controllers.Campaigns.updateCampaignDescription(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/group/:gid/description                controllers.Campaigns.updateCampaignGroupDescription(aid: Long, cid: Long, gid: Long)
 GET       /api/assembly/:aid/campaign/:cid/consent                               controllers.Campaigns.getConsentToParticipateInCampaign(aid: Long, cid: Long)
-PUT       /api/assembly/:aid/campaign/:cid/consent/:answer                       controllers.Campaigns.provideConsentToParticipateInCampaign(aid: Long, cid: Long, answer: Boolean)
+PUT       /api/assembly/:aid/campaign/:cid/consent/user/:uid/:answer             controllers.Campaigns.provideConsentToParticipateInCampaign(aid: Long, cid: Long, uid: Long, answer: Boolean)
 
 ##################################################################################################################################################################
 # CampaignComponent API
