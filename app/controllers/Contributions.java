@@ -462,7 +462,8 @@ public class Contributions extends Controller {
                     String format,
             @ApiParam(name = "includeExtendedText", value = "Include or not extended text") String includeExtendedText,
             @ApiParam(name = "extendedTextFormat", value = "Include or not extended text", allowableValues =
-                    "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat) {
+                    "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat,
+            @ApiParam(name = "flat", value = "Flat version of the campaign") String flat) {
         Logger.debug("Finding Contribution "+cid+" in Resource Space "+sid);
         ResourceSpace rs = ResourceSpace.findByContribution(sid, cid);
         if (rs == null) {
@@ -471,6 +472,17 @@ public class Contributions extends Controller {
         }
 
         Contribution contribution = Contribution.read(cid);
+        if(flat.equals("true")) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+            Map<String, Object> aRet = new HashMap<>();
+            aRet.put("title",contribution.getTitle());
+            aRet.put("text", contribution.getText());
+            aRet.put("creation", dateFormat.format(contribution.getCreation()));
+            if(contribution.getLastUpdate() != null) {
+                aRet.put("lastUpdate", dateFormat.format(contribution.getLastUpdate()));
+            }
+            return ok(Json.toJson(aRet));
+        }
         contribution.setCustomFieldValues(CustomFieldValue.findAllByTargetUUID(contribution.getUuidAsString()));
         List<Contribution> contributions = new ArrayList<>();
         contributions.add(contribution);
