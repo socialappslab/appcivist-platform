@@ -2,6 +2,7 @@ package utils.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import enums.ResourceTypes;
+import exceptions.PeerdocServerError;
 import io.apigee.trireme.core.NodeException;
 import io.apigee.trireme.core.ScriptStatus;
 import models.Contribution;
@@ -52,7 +53,7 @@ public class PeerDocWrapper {
 
     public Map<String, String> createPad(Contribution c, UUID resourceSpaceConfigsUUID) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException {
+            InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException, PeerdocServerError {
 
         String padId = UUID.randomUUID().toString();
         String url = getPeerDocUrl();
@@ -66,13 +67,20 @@ public class PeerDocWrapper {
 
     private String getPeerDocUrl() throws NoSuchPaddingException, UnsupportedEncodingException, InvalidKeyException,
             NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, HashGenerationException {
+            InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError {
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document?user="+userEncrypted);
         Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
-        return getPeerDocServerUrl()+response.asJson().get("path").asText();
+        Logger.debug("Peerdoc Server response: "+response !=null ? response.asJson().toString() : "[no response]");
+        String peerDocUrl = getPeerDocServerUrl();
+        if (response!=null && response.asJson().get("path") != null) {
+            String responsePath = response.asJson().get("path").asText();
+            return peerDocUrl + responsePath;
+        } else {
+            throw new PeerdocServerError("Response from PeerDoc was empty");
+        }
 
     }
 
