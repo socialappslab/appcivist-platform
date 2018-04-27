@@ -59,7 +59,9 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 								// if user is not author, we ask if the user is coordinator of one of the spaces
 								// in which it has been added
 								if (allowed[0] == false) {
-									Long assemblyId = null;
+                                    Logger.debug("User is not author of contribution = " + contributionId);
+
+                                    Long assemblyId = null;
 									Assembly a = null;
 									AssemblyProfile ap = null;
 									Long groupId = null;
@@ -70,11 +72,13 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 									// we look at all the resource spaces that contain the contribution
 									// if the user is a coordinator of any of them, we will return a positive authorization
 									List<ResourceSpace> containingSpaces = contribution.getContainingSpaces();
-									for (ResourceSpace s : containingSpaces) {
+                                    Logger.debug("Contribution has been added to this number of spaces = " + containingSpaces!=null ? containingSpaces.size()+"" : "0");
+                                    for (ResourceSpace s : containingSpaces) {
 										if (s.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
 											Campaign c = s.getCampaign();
 											List<Long> assemblyIds = c.getAssemblies();
-											for (Long aid : assemblyIds) {
+                                            for (Long aid : assemblyIds) {
+                                                Logger.debug("Checking if user is coordinator of assembly = " + aid);
 												a = Assembly.read(aid);
 												if (a != null) {
 													m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), aid);
@@ -89,10 +93,15 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 													List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
 													allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
 													if (allowed[0]) {
+                                                        Logger.debug("User is coordinator of assembly = " + aid);
 														assemblyId = aid;
 														break;
-													}
-												}
+													} else {
+                                                        Logger.debug("User is NOT coordinator of assembly = " + aid);
+                                                    }
+												} else {
+                                                    Logger.debug("Assembly is not OPEN or user has no membership in it = " + aid);
+                                                }
 											}
 											if (allowed[0]) {
 												break;
@@ -100,6 +109,7 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 										} else if (s.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
 											a = s.getAssemblyResources();
 											assemblyId = a.getAssemblyId();
+                                            Logger.debug("Checking if user is coordinator of assembly = " + assemblyId);
 											if (a != null) {
 												m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
 												ap = a.getProfile();
@@ -109,13 +119,21 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 												assemblyNotOpen = ap.getManagementType().equals(ManagementTypes.OPEN);
 											}
 											if (m != null && assemblyNotOpen) {
-												Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
+                                                Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
 												List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
 												allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-											}
+												if (allowed[0]) {
+                                                    Logger.debug("User is coordinator of assembly = " + assemblyId);
+                                                } else {
+                                                    Logger.debug("User is NOT coordinator of assembly = " + assemblyId);
+                                                }
+											} else {
+                                                Logger.debug("Assembly is not OPEN or user has no membership in it = " + assemblyId);
+                                            }
 										} else if (s.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-											wg = s.getWorkingGroupResources();
+                                            wg = s.getWorkingGroupResources();
 											groupId = wg.getGroupId();
+                                            Logger.debug("Checking if user is coordinator of group = " + groupId);
 											if (wg != null) {
 												m = MembershipGroup.findByUserAndGroupId(u.getUserId(), groupId);
 												wgp = wg.getProfile();
@@ -128,12 +146,23 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 												Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
 												List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
 												allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-											}
+												if (allowed[0]) {
+                                                    Logger.debug("User is coordinator of group = " + groupId);
+                                                } else {
+                                                    Logger.debug("User is NOT coordinator of group = " + groupId);
+                                                }
+											} else {
+                                                Logger.debug("Group is not OPEN or user has no membership in it = " + groupId);
+                                            }
 										}
 									}
+									if (containingSpaces!=null && containingSpaces.size() == 0) {
+                                        Logger.debug("Contribution is no resource space");
+                                    }
 								}
 							} else {
-								allowed[0] = false;
+                                Logger.debug("AUTHORIZATION --> FALSE");
+                                allowed[0] = false;
 							}
 						});
 					}
