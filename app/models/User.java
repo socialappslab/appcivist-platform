@@ -493,6 +493,8 @@ public class User extends AppCivistBaseModel implements Subject {
 			user.setName(ldapAuthUser.getCn());
 			Logger.info("Creating LDAP user " + user.getEmail());
 			user.setLanguage(ldapAuthUser.getAssembly().getLang());
+			userId = User.findByEmail(user.getEmail()) != null ? User
+					.findByEmail(user.getEmail()).getUserId() : null;
 		}
 
 		/*
@@ -588,7 +590,9 @@ public class User extends AppCivistBaseModel implements Subject {
 			}
 		}
 
-		userProfile.save();
+		if(userId == null) {
+			userProfile.save();
+		}
 
 		/*
 		 * 9. Create the new user
@@ -698,7 +702,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			try {
 				Assembly.createMembership(assembly);
 			} catch (MembershipCreationException e) {
-				Logger.error("Error creating the assembly membership");
+				Logger.error("Membership already exists");
 			}
 			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
 			for(Contribution contribution: contributions) {
@@ -709,7 +713,9 @@ public class User extends AppCivistBaseModel implements Subject {
 				contribution.addAuthor(user);
 				contribution.update();
 			}
-
+			if(userId != null) {
+				LinkedAccount.create(authUser);
+			}
 		}
 
 		return user;
