@@ -589,6 +589,26 @@ public class Assembly extends AppCivistBaseModel {
 
     }
 
+	public static void createMembershipMemberOnly(Assembly a) throws MembershipCreationException {
+		// 5. Add the creator as a members with roles MEMBER
+		MembershipAssembly ma = new MembershipAssembly();
+		ma.setAssembly(a);
+		ma.setCreator(a.getCreator());
+		ma.setUser(a.getCreator());
+		ma.setStatus(MembershipStatus.ACCEPTED);
+		ma.setLang(a.getLang());
+
+		List<SecurityRole> roles = new ArrayList<SecurityRole>();
+		roles.add(SecurityRole.findByName("MEMBER"));
+		ma.setRoles(roles);
+		MembershipAssembly.create(ma);
+		if (a.getUrl() == null || a.getUrl() == "") {
+			a.setUrl(GlobalData.APPCIVIST_ASSEMBLY_BASE_URL + "/"
+					+ a.getAssemblyId());
+		}
+	}
+
+
 	public static void createResources(Assembly a) {
         // 1. Check first for existing entities in ManyToMany relationships.
         // Save them for later update
