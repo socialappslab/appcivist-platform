@@ -236,16 +236,26 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution contribution = Contribution.read(contributionId);
-        if(contribution.getExtendedTextPad() !=null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+        if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
             User user = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
-            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
-            try {
-                contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
-                        .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
-            } catch (Exception e) {
-                contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
-                return ok(Json.toJson(contribution));
+            boolean isAuthor = false;
+            for(User userC: contribution.getAuthors()) {
+                if(userC.getUserId().equals(user.getUserId())) {
+                    isAuthor = true;
+                }
+            }
+            //only return de extendedTextPad if the user is the author of the contribution
+            if (isAuthor) {
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                try {
+                    contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
+                            .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
+
+                } catch (Exception e) {
+                    contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
+                    return ok(Json.toJson(contribution));
+                }
             }
 
         }
