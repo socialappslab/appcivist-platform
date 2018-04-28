@@ -696,7 +696,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			Assembly assembly = ((LdapAuthProvider.LdapAuthUser) authUser).getAssembly();
 			assembly.setCreator(user);
 			try {
-				Assembly.createMembership(assembly);
+				Assembly.createMembershipMemberOnly(assembly);
 			} catch (MembershipCreationException e) {
 				Logger.error("Error creating the assembly membership");
 			}
