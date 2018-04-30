@@ -4571,10 +4571,18 @@ public class Contributions extends Controller {
                 try {
                     return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
                 } catch (Exception e) {
-                    Map<String, String> errors = new HashMap<>();
-                    errors.put("error", "Error creating the pad " + e.getMessage());
-                    errors.put("path", "");
-                    return internalServerError(Json.toJson(errors));
+                    TransferResponseStatus response = new TransferResponseStatus();
+                    response.setResponseStatus(ResponseStatus.SERVERERROR);
+                    response.setStatusMessage(e.getMessage());
+                    Logger.error("PEERDOC: A problem occurred while getting PEERDOC document: '"+ e.getMessage());
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    String trace = sw.toString();
+                    e.printStackTrace(pw);
+                    Logger.debug("PEERDO: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
+                    response.setErrorTrace(trace);
+                    response.setNewResourceURL("");
+                    return internalServerError(Json.toJson(response));
                 }
             }
 
