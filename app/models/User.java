@@ -495,6 +495,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			user.setLanguage(ldapAuthUser.getAssembly().getLang());
 			userId = User.findByEmail(user.getEmail()) != null ? User
 					.findByEmail(user.getEmail()).getUserId() : null;
+			user.setUserId(userId);
 		}
 
 		/*
@@ -714,7 +715,15 @@ public class User extends AppCivistBaseModel implements Subject {
 				contribution.update();
 			}
 			if(userId != null) {
+				Logger.info("Creating a new liked account");
 				LinkedAccount.create(authUser);
+				LinkedAccount linkedAccount = new LinkedAccount();
+				linkedAccount.setProviderKey(authUser.getProvider());
+				linkedAccount.setProviderUserId(authUser.getId());
+				linkedAccount.setUser(User.findByUserId(userId));
+				linkedAccount.save();
+				linkedAccount.refresh();
+				Logger.info("New liked account created");
 			}
 		}
 
