@@ -78,7 +78,12 @@ public class PeerDocWrapper {
         Logger.debug("Reading path from Peerdoc response...");
         com.fasterxml.jackson.databind.JsonNode pathNode = jn.get("path");
         String path = pathNode.toString();
+        path.trim();
+        path = path.replace("\"","");
+        Logger.debug("peerDocUrl = " + peerDocUrl);
         Logger.debug("Path = " + path);
+        String peerdocPath = peerDocUrl + path;
+        Logger.debug("Path = " + peerdocPath);
         if (path != null) {
             return peerDocUrl + path;
         } else {
