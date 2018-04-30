@@ -433,6 +433,7 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 
 	public static User findByAuthUserIdentity(final AuthUserIdentity identity) {
+		Logger.debug("AUTH: Looking user by auth identity = "+identity);
 		if (identity == null) {
 			return null;
 		}

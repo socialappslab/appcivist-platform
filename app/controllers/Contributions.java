@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.user.AuthUser;
 import com.github.opendevl.JFlat;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
@@ -40,6 +41,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import play.Logger;
 import play.Play;
+import play.api.mvc.Session;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F;
@@ -49,6 +51,7 @@ import play.mvc.*;
 import play.twirl.api.Content;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
+import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.LogActions;
@@ -3792,6 +3795,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result updateContributionStatus(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid,
@@ -3799,7 +3803,12 @@ public class Contributions extends Controller {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
         if (ContributionStatus.valueOf(upStatus) != null) {
-            User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+            Http.Session s = session();
+            Logger.debug("Session = "+(s != null ? s : "[no session found]"));
+            AuthUser u = PlayAuthenticateLocal.getUser(s);
+            Logger.debug("AuthUser = "+(u != null ? u.getId() : "[no user found]"));
+            User user = User.findByAuthUserIdentity(u);
+            Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
             PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
             try {
                 peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
