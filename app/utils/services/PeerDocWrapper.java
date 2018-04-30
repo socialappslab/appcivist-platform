@@ -72,6 +72,7 @@ public class PeerDocWrapper {
         Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
+        Logger.debug("PEERDOC: response from server => "+response.toString());
         com.fasterxml.jackson.databind.JsonNode jn = response.asJson();
         Logger.debug("Peerdoc Server response: "+ jn.toString());
         String peerDocUrl = getPeerDocServerUrl();
@@ -118,13 +119,14 @@ public class PeerDocWrapper {
             resource = contribution.getExtendedTextPad();
         }
         if(resource == null) {
-            Logger.info("Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Changing status as usual.");
+            Logger.info("PEERDOC: Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Changing status as usual.");
             return;
         }
         ContributionStatus currentStatus = contribution.getStatus();
 
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
+        Logger.info("PEERDOC: preparing request to send...");
         WSRequest holder = getWSHolder("/document/share/"+documentId+"?user="+userEncrypted);
         Map<String, Boolean> peerDocVisibility = new HashMap<>();
         switch (status) {
@@ -147,6 +149,7 @@ public class PeerDocWrapper {
                 break;
         }
 
+        Logger.info("PEERDOC: sending request with following data => "+peerDocVisibility.toString());
         holder.setBody(Json.toJson(peerDocVisibility));
         F.Promise<WSResponse> promise = wsSend(holder);
         promise.get(DEFAULT_TIMEOUT);
@@ -262,6 +265,7 @@ public class PeerDocWrapper {
         holder.setMethod("POST");
         return holder;
     }
+
     private F.Promise<WSResponse> wsSend(WSRequest holder) {
         F.Promise<WSResponse> promise = holder.execute().map(
                 new F.Function<WSResponse, WSResponse>() {

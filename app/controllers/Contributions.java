@@ -3804,9 +3804,18 @@ public class Contributions extends Controller {
             try {
                 peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
             } catch (Exception e) {
-                Map<String, String> errors = new HashMap<>();
-                errors.put("error", "Error updating the pad: " + e.getMessage());
-                return internalServerError(Json.toJson(errors));
+                TransferResponseStatus response = new TransferResponseStatus();
+                response.setResponseStatus(ResponseStatus.SERVERERROR);
+                response.setStatusMessage(e.getMessage());
+                Logger.error("PEERDOC: A problem occurred while updating PEERDOC status: '"+ e.getMessage());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                String trace = sw.toString();
+                Logger.debug("PEERDOC: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
+                response.setErrorTrace(trace);
+                response.setNewResourceURL("");
+                return internalServerError(Json.toJson(response));
             }
             c.setStatus(ContributionStatus.valueOf(upStatus));
             c.update();
