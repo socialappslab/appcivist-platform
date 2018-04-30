@@ -72,10 +72,12 @@ public class PeerDocWrapper {
         Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
-        Logger.debug("Peerdoc Server response: "+ response.asJson().toString());
+        com.fasterxml.jackson.databind.JsonNode jn = response.asJson();
+        Logger.debug("Peerdoc Server response: "+ jn.toString());
         String peerDocUrl = getPeerDocServerUrl();
         Logger.debug("Reading path from Peerdoc response...");
-        String path = response.asJson().get("path").asText();
+        com.fasterxml.jackson.databind.JsonNode pathNode = jn.get("path");
+        String path = pathNode.toString();
         Logger.debug("Path = " + path);
         if (path != null) {
             return peerDocUrl + path;
