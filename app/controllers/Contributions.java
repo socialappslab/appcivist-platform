@@ -4577,9 +4577,9 @@ public class Contributions extends Controller {
                     Logger.error("PEERDOC: A problem occurred while getting PEERDOC document: '"+ e.getMessage());
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
-                    String trace = sw.toString();
                     e.printStackTrace(pw);
-                    Logger.debug("PEERDO: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
+                    String trace = sw.toString();
+                    Logger.debug("PEERDOC: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
                     response.setErrorTrace(trace);
                     response.setNewResourceURL("");
                     return internalServerError(Json.toJson(response));

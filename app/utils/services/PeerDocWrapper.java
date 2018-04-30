@@ -7,6 +7,7 @@ import exceptions.PeerdocServerError;
 import models.Contribution;
 import models.Resource;
 import models.User;
+import org.codehaus.jackson.JsonNode;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -73,9 +74,11 @@ public class PeerDocWrapper {
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
         Logger.debug("Peerdoc Server response: "+ response.asJson().toString());
         String peerDocUrl = getPeerDocServerUrl();
-        if (response.asJson().get("path") != null) {
-            String responsePath = response.asJson().get("path").asText();
-            return peerDocUrl + responsePath;
+        Logger.debug("Reading path from Peerdoc response...");
+        String path = response.asJson().get("path").asText();
+        Logger.debug("Path = " + path);
+        if (path != null) {
+            return peerDocUrl + path;
         } else {
             throw new PeerdocServerError("Response from PeerDoc was empty");
         }
