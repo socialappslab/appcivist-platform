@@ -52,7 +52,6 @@ public class Contribution extends AppCivistBaseModel {
     private String title;
 
     @JsonView({Views.Public.class, Views.Report.class})
-    @Required
     @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
