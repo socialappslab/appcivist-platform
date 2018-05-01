@@ -494,6 +494,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			user.setName(ldapAuthUser.getCn());
 			Logger.info("Creating LDAP user " + user.getEmail());
 			user.setLanguage(ldapAuthUser.getAssembly().getLang());
+			user.setLang(ldapAuthUser.getAssembly().getLang());
 			userId = User.findByEmail(user.getEmail()) != null ? User
 					.findByEmail(user.getEmail()).getUserId() : null;
 			user.setUserId(userId);
