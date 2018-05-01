@@ -31,6 +31,7 @@ import utils.GlobalDataConfigKeys;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@Where(clause = "removed=false")
 @ApiModel(value="WorkingGroup", description="Model reprensenting Working Groups within an Assembly")
 public class WorkingGroup extends AppCivistBaseModel {
 	@Id
