@@ -1,14 +1,13 @@
 package utils.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import enums.ContributionStatus;
+import enums.PeerDocStatus;
 import enums.ResourceTypes;
-import io.apigee.trireme.core.NodeException;
-import io.apigee.trireme.core.ScriptStatus;
+import exceptions.PeerdocServerError;
 import models.Contribution;
 import models.Resource;
 import models.User;
-import io.apigee.trireme.core.NodeEnvironment;
-import io.apigee.trireme.core.NodeScript;
+import org.codehaus.jackson.JsonNode;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -18,21 +17,22 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utils.security.HashGenerationException;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static delegates.ContributionsDelegate.createResourceAndUpdateContribution;
-import static javax.ws.rs.core.Response.ok;
 
 /**
  * Created by yohanna on 25/03/18.
@@ -52,7 +52,7 @@ public class PeerDocWrapper {
 
     public Map<String, String> createPad(Contribution c, UUID resourceSpaceConfigsUUID) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException {
+            InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException, PeerdocServerError {
 
         String padId = UUID.randomUUID().toString();
         String url = getPeerDocUrl();
@@ -66,13 +66,30 @@ public class PeerDocWrapper {
 
     private String getPeerDocUrl() throws NoSuchPaddingException, UnsupportedEncodingException, InvalidKeyException,
             NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, HashGenerationException {
+            InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError {
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document?user="+userEncrypted);
         Logger.info("NOTIFICATION: Getting document URL in PeerDoc: " + holder.getUrl());
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse response = promise.get(DEFAULT_TIMEOUT);
-        return getPeerDocServerUrl()+response.asJson().get("path").asText();
+        Logger.debug("PEERDOC: response from server => "+response.toString());
+        com.fasterxml.jackson.databind.JsonNode jn = response.asJson();
+        Logger.debug("Peerdoc Server response: "+ jn.toString());
+        String peerDocUrl = getPeerDocServerUrl();
+        Logger.debug("Reading path from Peerdoc response...");
+        com.fasterxml.jackson.databind.JsonNode pathNode = jn.get("path");
+        String path = pathNode.toString();
+        path.trim();
+        path = path.replace("\"","");
+        Logger.debug("peerDocUrl = " + peerDocUrl);
+        Logger.debug("Path = " + path);
+        String peerdocPath = peerDocUrl + path;
+        Logger.debug("Path = " + peerdocPath);
+        if (path != null) {
+            return peerDocUrl + path;
+        } else {
+            throw new PeerdocServerError("Response from PeerDoc was empty");
+        }
 
     }
 
@@ -90,6 +107,50 @@ public class PeerDocWrapper {
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
+        F.Promise<WSResponse> promise = wsSend(holder);
+        promise.get(DEFAULT_TIMEOUT);
+    }
+
+    public void changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
+            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
+            InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError{
+        Resource resource = null;
+        if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+            resource = contribution.getExtendedTextPad();
+        }
+        if(resource == null) {
+            Logger.info("PEERDOC: Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Changing status as usual.");
+            return;
+        }
+        ContributionStatus currentStatus = contribution.getStatus();
+
+        String documentId = resource.getUrlAsString().split("document/")[1];
+        String userEncrypted = encrypt();
+        Logger.info("PEERDOC: preparing request to send...");
+        WSRequest holder = getWSHolder("/document/share/"+documentId+"?user="+userEncrypted);
+        Map<String, Boolean> peerDocVisibility = new HashMap<>();
+        switch (status) {
+            case PUBLIC_DRAFT:
+                if (!currentStatus.equals(ContributionStatus.PUBLISHED)) {
+                    peerDocVisibility.put("visibility", true);
+                } else {
+                    throw new PeerdocServerError("Published proposals can go back to DRAFT statuses");
+                }
+                break;
+            case DRAFT:
+                if (!currentStatus.equals(ContributionStatus.PUBLISHED)) {
+                    peerDocVisibility.put("visibility", false);
+                } else {
+                    throw new PeerdocServerError("Published proposals can go back to DRAFT statuses");
+                }
+                break;
+            default:
+                holder =  getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
+                break;
+        }
+
+        Logger.info("PEERDOC: sending request with following data => "+peerDocVisibility.toString());
+        holder.setBody(Json.toJson(peerDocVisibility));
         F.Promise<WSResponse> promise = wsSend(holder);
         promise.get(DEFAULT_TIMEOUT);
     }
@@ -204,6 +265,7 @@ public class PeerDocWrapper {
         holder.setMethod("POST");
         return holder;
     }
+
     private F.Promise<WSResponse> wsSend(WSRequest holder) {
         F.Promise<WSResponse> promise = holder.execute().map(
                 new F.Function<WSResponse, WSResponse>() {

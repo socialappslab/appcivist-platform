@@ -16,6 +16,7 @@ import org.geojson.FeatureCollection;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import play.Logger;
+import play.Play;
 import play.data.validation.Constraints.Required;
 import utils.LocationUtilities;
 
@@ -51,7 +52,6 @@ public class Contribution extends AppCivistBaseModel {
     private String title;
 
     @JsonView({Views.Public.class, Views.Report.class})
-    @Required
     @ApiModelProperty(value="Text describing the contribution", position=3)
     @Column(name = "text", columnDefinition = "text")
     private String text;
@@ -471,6 +471,21 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setContributionFeedbacks(List<ContributionFeedback> contributionFeedbacks) {
         this.contributionFeedbacks = contributionFeedbacks;
+    }
+
+    public static List<Contribution> getByNoMemberAuthorMail(String email) {
+        return find.where().eq("nonMemberAuthors.email", email).findList();
+    }
+
+    public static Contribution getByPeerDocId(String peerdocId) {
+
+        List<Contribution> contributions = find.where().contains("extendedTextPad.url", peerdocId).findList();
+        if(!contributions.isEmpty()) {
+            return contributions.get(0);
+        } else {
+            return null;
+        }
+
     }
 
     @Transient

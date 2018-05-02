@@ -30,14 +30,13 @@ import javax.persistence.Transient;
 import models.TokenAction.Type;
 import models.misc.Views;
 import models.transfer.AssemblyTransfer;
+import play.Logger;
 import play.Play;
+import play.api.libs.iteratee.Cont;
 import play.db.ebean.Transactional;
 import play.i18n.Lang;
 import play.mvc.Http.Context;
-import providers.ExistingGroupSignupIdentity;
-import providers.GroupSignupIdentity;
-import providers.InvitationSignupIdentity;
-import providers.LanguageSignupIdentity;
+import providers.*;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.security.HashGenerationException;
@@ -434,9 +433,11 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 
 	public static User findByAuthUserIdentity(final AuthUserIdentity identity) {
+		Logger.debug("AUTH: Looking user by auth identity = "+identity);
 		if (identity == null) {
 			return null;
 		}
+		Logger.info("ID " + identity.getId());
 		if (identity instanceof UsernamePasswordAuthUser) {
 			return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
 		} else {
@@ -467,6 +468,7 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 
 	public static User createFromAuthUser(final AuthUser authUser) throws HashGenerationException, MalformedURLException, TokenNotValidException, MembershipCreationException {
+		Logger.info("Creating from auth user");
 		/*
 		 * 0. Zero step, create a new User instance
 		 */
@@ -480,6 +482,23 @@ public class User extends AppCivistBaseModel implements Subject {
 		user.linkedAccounts = Collections.singletonList(LinkedAccount.create(authUser));
 		user.active = true;
 		Long userId = null;
+
+		//--ldap case
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
+			user.setEmail(ldapAuthUser.getId());
+			if (user.getEmail().endsWith("@ldap.com")) {
+				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+				provider.sendLdapFakeMailEmail(user.getEmail(), ldapAuthUser.getUser(), ldapAuthUser.getAssembly());
+			}
+			user.setName(ldapAuthUser.getCn());
+			Logger.info("Creating LDAP user " + user.getEmail());
+			user.setLanguage(ldapAuthUser.getAssembly().getLang());
+			user.setLang(ldapAuthUser.getAssembly().getLang());
+			userId = User.findByEmail(user.getEmail()) != null ? User
+					.findByEmail(user.getEmail()).getUserId() : null;
+			user.setUserId(userId);
+		}
 
 		/*
 		 * 2. Second, we will try to see if the email is sent and find if the
@@ -542,8 +561,9 @@ public class User extends AppCivistBaseModel implements Subject {
 		 * 7. Generate the username
 		 * TODO add username to the signup form
 		 */
+
 		user.setUsername(user.getEmail());
-		
+
 		/*
 		 * 8. Set language of user
 		 */
@@ -558,7 +578,24 @@ public class User extends AppCivistBaseModel implements Subject {
 		}
 
 		UserProfile userProfile = new UserProfile(user, null, "", "",  "", null, "");
-		userProfile.save();
+
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			String [] fullName = user.getName().split(" ");
+			if(fullName.length > 2) {
+				userProfile.setName(fullName[0]);
+				userProfile.setMiddleName(fullName[1]);
+				userProfile.setLastName(fullName[2]);
+			} else if(fullName.length > 1) {
+				userProfile.setName(fullName[0]);
+				userProfile.setLastName(fullName[1]);
+			} else {
+				userProfile.setName(fullName[0]);
+			}
+		}
+
+		if(userId == null) {
+			userProfile.save();
+		}
 
 		/*
 		 * 9. Create the new user
@@ -662,7 +699,36 @@ public class User extends AppCivistBaseModel implements Subject {
 			}
 		}
 
-		
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			Assembly assembly = ((LdapAuthProvider.LdapAuthUser) authUser).getAssembly();
+			assembly.setCreator(user);
+			try {
+				Assembly.createMembershipMemberOnly(assembly);
+			} catch (MembershipCreationException e) {
+				Logger.error("Membership already exists");
+			}
+			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
+			for(Contribution contribution: contributions) {
+				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
+					NonMemberAuthor.delete(nonMemberAuthor.getId());
+
+				}
+				contribution.addAuthor(user);
+				contribution.update();
+			}
+			if(userId != null) {
+				Logger.info("Creating a new liked account");
+				LinkedAccount.create(authUser);
+				LinkedAccount linkedAccount = new LinkedAccount();
+				linkedAccount.setProviderKey(authUser.getProvider());
+				linkedAccount.setProviderUserId(authUser.getId());
+				linkedAccount.setUser(User.findByUserId(userId));
+				linkedAccount.save();
+				linkedAccount.refresh();
+				Logger.info("New liked account created");
+			}
+		}
+
 		return user;
 	}
 

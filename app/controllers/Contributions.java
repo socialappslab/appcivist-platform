@@ -10,8 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feth.play.module.mail.Mailer;
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.user.AuthUser;
 import com.github.opendevl.JFlat;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
@@ -36,12 +36,12 @@ import models.misc.Views;
 import models.transfer.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.http.util.TextUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import play.Logger;
 import play.Play;
+import play.api.mvc.Session;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F;
@@ -51,6 +51,7 @@ import play.mvc.*;
 import play.twirl.api.Content;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
+import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.LogActions;
@@ -58,17 +59,11 @@ import utils.Packager;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -93,6 +88,7 @@ public class Contributions extends Controller {
     public static final String CONTRIBUTION_ID_PARAM = "{contribution_id}";
     public static final String EXTENDED_PAD_NAME = "contribution_doc_"+ CONTRIBUTION_ID_PARAM;
     public static final String CONTRIBUTION_FILE_NAME = "contribution_"+ CONTRIBUTION_ID_PARAM;
+    public static final Form<NonMemberAuthor> NON_MEMBER_AUTHORS_FORM = form(NonMemberAuthor.class);
 
     private static BufferedReader br;
 
@@ -243,16 +239,26 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
         Contribution contribution = Contribution.read(contributionId);
-        if(contribution.getExtendedTextPad() !=null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+        if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
             User user = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
-            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
-            try {
-                contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
-                        .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
-            } catch (Exception e) {
-                contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
-                return ok(Json.toJson(contribution));
+            boolean isAuthor = false;
+            for(User userC: contribution.getAuthors()) {
+                if(userC.getUserId().equals(user.getUserId())) {
+                    isAuthor = true;
+                }
+            }
+            //only return de extendedTextPad if the user is the author of the contribution
+            if (isAuthor) {
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                try {
+                    contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
+                            .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
+
+                } catch (Exception e) {
+                    contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
+                    return ok(Json.toJson(contribution));
+                }
             }
 
         }
@@ -334,7 +340,7 @@ public class Contributions extends Controller {
         if (status != null && !status.isEmpty()) {
             conditions.put("status", status);
         } else if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-            conditions.put("status", "PUBLISHED,INBALLOT,SELECTED");
+            conditions.put("status", "PUBLISHED,INBALLOT,SELECTED,PUBLIC_DRAFT");
         }
         try {
             if (statusEndDate != null && !statusEndDate.isEmpty()) {
@@ -469,7 +475,8 @@ public class Contributions extends Controller {
                     String format,
             @ApiParam(name = "includeExtendedText", value = "Include or not extended text") String includeExtendedText,
             @ApiParam(name = "extendedTextFormat", value = "Include or not extended text", allowableValues =
-                    "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat) {
+                    "JSON,CSV,TXT,PDF,RTF,DOC") String extendedTextFormat,
+            @ApiParam(name = "flat", value = "Flat version of the campaign") String flat) {
         Logger.debug("Finding Contribution "+cid+" in Resource Space "+sid);
         ResourceSpace rs = ResourceSpace.findByContribution(sid, cid);
         if (rs == null) {
@@ -478,6 +485,17 @@ public class Contributions extends Controller {
         }
 
         Contribution contribution = Contribution.read(cid);
+        if(flat.equals("true")) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+            Map<String, Object> aRet = new HashMap<>();
+            aRet.put("title",contribution.getTitle());
+            aRet.put("text", contribution.getText());
+            aRet.put("creation", dateFormat.format(contribution.getCreation()));
+            if(contribution.getLastUpdate() != null) {
+                aRet.put("lastUpdate", dateFormat.format(contribution.getLastUpdate()));
+            }
+            return ok(Json.toJson(aRet));
+        }
         contribution.setCustomFieldValues(CustomFieldValue.findAllByTargetUUID(contribution.getUuidAsString()));
         List<Contribution> contributions = new ArrayList<>();
         contributions.add(contribution);
@@ -1059,7 +1077,7 @@ public class Contributions extends Controller {
             if (status != null && !status.isEmpty()) {
                 conditions.put("status",status);
             } else {
-                conditions.put("status","PUBLISHED,INBALLOT,SELECTED");
+                conditions.put("status","PUBLISHED,INBALLOT,SELECTED,PUBLIC_DRAFT");
             }
 
             PaginatedContribution pag = new PaginatedContribution();
@@ -1148,6 +1166,51 @@ public class Contributions extends Controller {
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) throws Exception {
         List<ContributionHistory> contributionHistories = ContributionHistory.getContributionsHistory(contributionId);
         return ok(Json.toJson(contributionHistories));
+    }
+
+    /**
+     * PUT       /api/assembly/:aid/contribution/:cid
+     *
+     * @param peerDocId
+     * @return
+     */
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class,  produces = "application/json", value = "PUT contribution and title by PeerDocId")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result putContributionByPeerDocId(
+            @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
+            @ApiParam(name = "title", value = "New Title") String title,
+            @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
+        try {
+            Contribution contribution = Contribution.getByPeerDocId(peerDocId);
+            if(contribution!=null) {
+                contribution.setTitle(title);
+                DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
+                Date date = format.parse(lastUpdate);
+                contribution.setLastUpdate(date);
+                contribution.update();
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setResponseStatus(ResponseStatus.OK);
+                responseBody.setStatusMessage("Contribution updated");
+                return ok(Json.toJson(responseBody));
+            } else {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setResponseStatus(ResponseStatus.NODATA);
+                responseBody.setStatusMessage("No contribution found for the given peerDocId");
+                return notFound(Json.toJson(responseBody));
+            }
+        } catch (Exception e) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+            responseBody.setStatusMessage("There was an error with your request: "+e.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            String sStackTrace = sw.toString();
+            responseBody.setErrorTrace(sStackTrace);
+            return internalServerError(Json.toJson(responseBody));
+        }
     }
 
     /**
@@ -1278,13 +1341,27 @@ public class Contributions extends Controller {
                 type = ContributionTypes.COMMENT;
             }
 
+            ResourceSpace rs = ResourceSpace.read(sid);
+
+            if (newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
+                boolean unauth = checkRsDraftState(rs);
+                if (unauth) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            rs.getType()));
+                    return unauthorized(Json.toJson(responseBody));
+                }
+            }
+
             //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
-            if (newContribution.getType().equals(ContributionTypes.IDEA) 
-			|| newContribution.getType().equals(ContributionTypes.PROPOSAL) 
-			|| newContribution.getType().equals(ContributionTypes.DISCUSSION) 
+            if (newContribution.getType().equals(ContributionTypes.IDEA)
+			|| newContribution.getType().equals(ContributionTypes.PROPOSAL)
+			|| newContribution.getType().equals(ContributionTypes.DISCUSSION)
 			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
             	Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
-            	if (result == -1){ 
+            	if (result == -1){
                     Logger.info("Missing Social Ideation Headers");
             		return badRequest("Missing Social Ideation Headers");
             	} else if (result == 1){
@@ -1300,13 +1377,13 @@ public class Contributions extends Controller {
                             non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
                             non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                             non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
-                        }     
+                        }
                         newContribution.setNonMemberAuthor(non_member_author);
                     }
                 }
             }
 
-            ResourceSpace rs = ResourceSpace.read(sid);
+
             ContributionTemplate template = null;
 
             if (rs != null && newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -1338,7 +1415,7 @@ public class Contributions extends Controller {
                 } else if (non_member_author != null) {
                     c = createContribution(newContribution, null, type, template, rs);
                 } else {
-                    c = createContribution(newContribution, author, type, template, rs);                    
+                    c = createContribution(newContribution, author, type, template, rs);
                 }
 
                 if (c.getType().equals(ContributionTypes.PROPOSAL)) {
@@ -1358,12 +1435,17 @@ public class Contributions extends Controller {
                 }
             } catch (Exception e) {
                 Ebean.rollbackTransaction();
-                e.printStackTrace();
-                Logger.error(e.getStackTrace().toString());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                pw.close();
+                String sStackTrace = sw.toString();
+                Logger.error(e.getMessage());
+                Logger.error(sStackTrace);
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
-                                "Error when creating Contribution: " + e.toString())));
+                                "Error when creating Contribution: " + e.getMessage())));
             }
             Ebean.commitTransaction();
 
@@ -1759,9 +1841,9 @@ public class Contributions extends Controller {
                 return notFound(Json.toJson(new TransferResponseStatus(
                         "No campaign with id: " + caid )));
             }
-            
+
             Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
-            if (result == -1){ 
+            if (result == -1){
                 Logger.info("Missing Social Ideation Headers");
                 return badRequest("Missing Social Ideation Headers");
             } else if (result == 1){
@@ -1777,7 +1859,7 @@ public class Contributions extends Controller {
                         non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
                         non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
-                    }     
+                    }
                 }
             }
 
@@ -2080,7 +2162,7 @@ public class Contributions extends Controller {
 //                    field.set(existingContribution, field.get(newContribution));
 //	            }
 //				existingContribution.setContextUserId(author.getUserId());
-//				
+//
 //				Contribution.update(existingContribution);
 	            Contribution updatedContribution = Contribution.readAndUpdate(newContribution, contributionId, author.getUserId());
 				ResourceSpace rs = Assembly.read(aid).getResources();
@@ -2434,6 +2516,58 @@ public class Contributions extends Controller {
     }
 
     /**
+     * POST  /api/contribution/:uuid/nonmemberauthors
+     *
+     * @param uuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Add a non member author to a contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.NonMemberAuthor", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result addNonMemberAuthorToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+        try {
+            NonMemberAuthor author = NON_MEMBER_AUTHORS_FORM.bindFromRequest().get();
+            // Check if there is already a user for the email in the form
+            User user = User.findByEmail(author.getEmail());
+            boolean authorExist = false;
+            boolean userExist = false;
+            if (user !=null) {
+                authorExist = contribution.getAuthors().contains(user);
+                userExist = true;
+            } else {
+                authorExist = contribution.getNonMemberAuthors().contains(author);
+            }
+
+            if (!authorExist && !userExist) {
+                // create the non member author and add it to the contribution
+                author = NonMemberAuthor.create(author);
+                contribution.getNonMemberAuthors().add(author);
+                contribution.update();
+                return ok(Json.toJson(author));
+            } else if (authorExist && !userExist) {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Non Member Author already in contribution")));
+            } else if (!authorExist && userExist) {
+                // add it as author
+                contribution.getAuthors().add(user);
+                contribution.update();
+                return ok(Json.toJson(user));
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Author already in contribution")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
+
+    /**
      * DELETE  /api/contribution/:uuid/themes/:tid
      *
      * @param uuid
@@ -2471,10 +2605,9 @@ public class Contributions extends Controller {
      * @param auuid
      * @return
      */
-    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Add a author to a contribution")
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete an author from a contribution")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authors objects", value = "Authors to add to the contribution", dataType = "models.User", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result deleteAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
@@ -2501,6 +2634,41 @@ public class Contributions extends Controller {
         }
     }
 
+    /**
+     * DELETE  /api/contribution/:uuid/nonmemberauthors/:auuid
+     *
+     * @param uuid
+     * @param auuid
+     * @return
+     */
+    @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete a non member author from a contribution")
+    @ApiResponses(value = {@ApiResponse(code = NOT_FOUND, message = "Non Member Author or contribution was not found ", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    public static Result deleteNonMemberAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
+                                                      @ApiParam(name = "auuid", value = "Non Member Author's Id (Long)") Long nmaid) {
+        Contribution contribution;
+        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        contribution = Contribution.readByUUID(uuid);
+
+        try {
+            NonMemberAuthor author = NonMemberAuthor.read(nmaid);
+            boolean authorExist = contribution.getNonMemberAuthors().contains(author);
+            if(authorExist) {
+                contribution.getNonMemberAuthors().remove(author);
+                contribution.update();
+                return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, "Non Member Author was Removed")));
+            }else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
+        }
+    }
     /**
      * GET  /api/contributions
      *
@@ -2536,6 +2704,26 @@ public class Contributions extends Controller {
      * Non-exposed methods: creation methods
      */
 
+
+    private static void sendNonMemberAddMail(List<NonMemberAuthor> nonMemberAuthors, String contributionUUID) {
+        String url = Play.application().configuration().getString("application.uiUrl") + "/api/public/contribution/"+ contributionUUID;
+        String bodyTextLdap = Messages.get("mail.notification.add.nonmember.ldap", url);
+        String bodyText = Messages.get("mail.notification.add.nonmember", url);
+        String subject = Messages.get("mail.notification.add.nonmember.subject");
+        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+        for(NonMemberAuthor author: nonMemberAuthors) {
+            if(author.getEmail() != null) {
+                MembershipInvitation membershipInvitation = new MembershipInvitation();
+                membershipInvitation.setEmail(author.getEmail());
+                if (author.getSource()!= null && author.getSource().equals("ldap")) {
+                    provider.sendInvitationByEmail(membershipInvitation, bodyTextLdap, subject);
+                } else {
+                    provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
+                }
+            }
+        }
+    }
+
     /**
      * This method is reused by all other contribution creation methods to centralize its logic
      *
@@ -2556,10 +2744,10 @@ public class Contributions extends Controller {
 
         newContrib.setType(type);
         List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
-
+        List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
         // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
-            List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
+
             for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
                 nonMemberAuthor.save();
                 nonMemberAuthor.refresh();
@@ -2568,7 +2756,7 @@ public class Contributions extends Controller {
             newContrib.setNonMemberAuthors(nonMemberAuthors);
             newContrib.setNonMemberAuthor(nonMemberAuthors.get(0));
         }
-        
+
         // Add author to the proposal and use its Lang as the language of the Proposal
         // TODO: derive language from the text
         if (author != null) {
@@ -2599,7 +2787,7 @@ public class Contributions extends Controller {
                 return Optional.ofNullable(null);
             });
         }
-        
+
         // If still there is no language, try first the first NonMemberAuthor and then the Campaign, WG, and Assembly, in that order
         if (newContrib.getLang() == null){
             if (newContrib.getNonMemberAuthor() != null && newContrib.getNonMemberAuthor().getLang()!=null) {
@@ -2620,29 +2808,96 @@ public class Contributions extends Controller {
         }
 
 
-        if(type != null 
+        if(type != null
         		&& (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE))) {
 	        if (etherpadServerUrl == null || etherpadServerUrl.isEmpty()) {
 	            // read etherpad server url from config file
 	            Logger.info("Etherpad URL was not configured");
 	            etherpadServerUrl = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_SERVER);
 	        }
-	
+
 	        if (etherpadApiKey == null || etherpadApiKey.isEmpty()) {
 	            // read etherpad server url from config file
 	            Logger.info("Etherpad API Key was not configured");
 	            etherpadApiKey = Play.application().configuration().getString(GlobalData.CONFIG_APPCIVIST_ETHERPAD_API_KEY);
 	        }
-	
+
 	        Logger.info("Using Etherpad server at: " + etherpadServerUrl);
 	        Logger.debug("Using Etherpad API Key: " + etherpadApiKey);
         }
 
+        // If contribution is a proposal and there is no working group associated as author,
+        // create one automatically with the creator as coordinator
+
+        // Create group if not provided
+        Config requireWGConfig = containerResourceSpace.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_REQUIRE_GROUP_AUTHORSHIP);
+        Config autoCreateWGConfig = containerResourceSpace.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_CREATE_GROUP_ON_NEW_PROPOSALS);
+        Boolean requireWG = requireWGConfig != null ? requireWGConfig.getValue().toLowerCase() == "true" : false;
+        Boolean autoCreateWG = autoCreateWGConfig != null ? autoCreateWGConfig.getValue().toLowerCase() == "true" : false;
+        Boolean createWG = false;
+        List<WorkingGroup> workingGroupAuthors = newContrib.getWorkingGroupAuthors();
+        String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
+        if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
+            WorkingGroup wg = workingGroupAuthors.get(0);
+            if (wg.getGroupId() == null) {
+                // if proposal contains the definition of a new WG, set workingGroupAuthors to null and create the group
+                newWorkingGroupName = wg.getName();
+                workingGroupAuthors = null;
+                newContrib.setWorkingGroupAuthors(null);
+                createWG = true; // the proposal has info for a new WG
+            } else {
+                // if the proposal contains one or more WGs as authoring groups
+                for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
+                    WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
+                    workingGroupAuthorsLoaded.add(contact);
+                }
+                newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
+            }
+        }
+
+        // If the proposal does not define an existing WG and
+        // -- it contains the definition for a new group,
+        // -- or the resource space requires a WG and it is configured to allow automatic creation
+        // then create the WG
+        WorkingGroup newWorkingGroup = new WorkingGroup();
+        Boolean workingGroupIsNew = true;
+        if (workingGroupAuthors==null || workingGroupAuthors.isEmpty()) {
+            if (createWG || (requireWG && autoCreateWG)) {
+                // if the resource space allows automatically creating the WG
+                newWorkingGroup.setCreator(author);
+                newWorkingGroup.setName(newWorkingGroupName);
+                newWorkingGroup.setLang(author.getLanguage());
+                newWorkingGroup.setExistingThemes(newContrib.getExistingThemes());
+                newWorkingGroup.setListed(false);
+                newWorkingGroup
+                        .setInvitationEmail("Hello! You have been invited to be a member of the "
+                                + "Working Group \"" + newWorkingGroup.getName() + "\" in AppCivist. "
+                                + "If you are interested, follow the link attached to this "
+                                + "invitation to accept it. If you are not interested, you "
+                                + "can just ignore this message");
+                newWorkingGroup.setMajorityThreshold("simple");
+                newWorkingGroup.setBlockMajority(false);
+
+                WorkingGroupProfile newWGProfile = new WorkingGroupProfile();
+                newWGProfile.setIcon("https://s3-us-west-1.amazonaws.com/appcivist-files/icons/justicia-140.png");
+                newWGProfile.setManagementType(ManagementTypes.COORDINATED_AND_MODERATED);
+                newWGProfile.setSupportedMembership(SupportedMembershipRegistration.INVITATION_AND_REQUEST);
+                newWorkingGroup.setProfile(newWGProfile);
+                newWorkingGroup = WorkingGroup.create(newWorkingGroup);
+                containerResourceSpace.addWorkingGroup(newWorkingGroup);
+                newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
+                workingGroupAuthorsLoaded.add(newWorkingGroup);
+            } else if (requireWG && !autoCreateWG) {
+                // if WGs are required on proposals, the proposal doesn't have one and automatic creation is disabled,
+                // throw a configuration exception
+                throw new ConfigurationException("A working groups is required in this space. Automatic creation of it is disabled. Contact your administrator");
+            }
+        }
 
         Boolean addIdeaToProposals = false;
         String allowEmergentDefault = GlobalDataConfigKeys.CONFIG_DEFAULTS.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES);
         Boolean allowEmergent = allowEmergentDefault != null && allowEmergentDefault.equals("TRUE");
-        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN) 
+        if (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)
         		&& type != null && (type.equals(ContributionTypes.PROPOSAL) || type.equals(ContributionTypes.NOTE) || type.equals(ContributionTypes.IDEA))) {
             Campaign c = containerResourceSpace.getCampaign();
 
@@ -2685,7 +2940,7 @@ public class Contributions extends Controller {
 	                        }
 	                    }
 	    			}
-        		} 
+        		}
         	}
         	// If the configuration is not defined, get the defaults values
         	if (newContrib.getStatus() == null && hasStatusConfig == 0 && type.equals(ContributionTypes.PROPOSAL)) {
@@ -2729,58 +2984,6 @@ public class Contributions extends Controller {
         // Get list of BRAINSTORMING contributions that inspire the new one
         List<Contribution> inspirations = newContrib.getAssociatedContributions();
 
-        // If contribution is a proposal and there is no working group associated as author,
-        // create one automatically with the creator as coordinator
-        List<WorkingGroup> workingGroupAuthors = newContrib
-                .getWorkingGroupAuthors();
-        String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
-        if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
-            WorkingGroup wg = workingGroupAuthors.get(0);
-            if (wg.getGroupId() == null) {
-                newWorkingGroupName = wg.getName();
-                workingGroupAuthors = null;
-                newContrib.setWorkingGroupAuthors(null);
-            }
-            for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
-                WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
-                workingGroupAuthorsLoaded.add(contact);
-            }
-            newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
-        }
-
-        WorkingGroup newWorkingGroup = new WorkingGroup();
-        Boolean workingGroupIsNew = false;
-        if (newContrib.getType().equals(ContributionTypes.PROPOSAL)
-                && (workingGroupAuthors == null || workingGroupAuthors
-                .isEmpty())) {
-            workingGroupIsNew = true;
-            newWorkingGroup.setCreator(author);
-            newWorkingGroup.setName(newWorkingGroupName);
-            newWorkingGroup.setLang(author.getLanguage());
-            newWorkingGroup.setExistingThemes(newContrib.getExistingThemes());
-            newWorkingGroup.setListed(false);
-            newWorkingGroup
-                    .setInvitationEmail("Hello! You have been invited to be a member of the "
-                            + "Working Group \"" + newWorkingGroup.getName() + "\" in AppCivist. "
-                            + "If you are interested, follow the link attached to this "
-                            + "invitation to accept it. If you are not interested, you "
-                            + "can just ignore this message");
-            newWorkingGroup.setMajorityThreshold("simple");
-            newWorkingGroup.setBlockMajority(false);
-
-            WorkingGroupProfile newWGProfile = new WorkingGroupProfile();
-            newWGProfile.setIcon("https://s3-us-west-1.amazonaws.com/appcivist-files/icons/justicia-140.png");
-            newWGProfile.setManagementType(ManagementTypes.COORDINATED_AND_MODERATED);
-            newWGProfile.setSupportedMembership(SupportedMembershipRegistration.INVITATION_AND_REQUEST);
-
-            newWorkingGroup.setProfile(newWGProfile);
-            newWorkingGroup = WorkingGroup.create(newWorkingGroup);
-
-            containerResourceSpace.addWorkingGroup(newWorkingGroup);
-
-            newContrib.getWorkingGroupAuthors().add(newWorkingGroup);
-        }
-
         List<User> authorsLoaded = new ArrayList<User>();
         Map<Long,Boolean> authorAlreadyAdded = new HashMap<>();
         for (User user: newContrib.getAuthors()) {
@@ -2820,13 +3023,10 @@ public class Contributions extends Controller {
         Contribution.create(newContrib, containerResourceSpace);
         newContrib.refresh();
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
-
-//        // Add contribution to workingGroupAuthors resource spaces
-//        for (WorkingGroup wgroup: workingGroupAuthorsLoaded) {
-//            wgroup.getResources().getContributions().add(newContrib);
-//            wgroup.getResources().update();
-//        }
-
+        F.Promise.promise(() -> {
+                    sendNonMemberAddMail(nonMemberAuthors, newContrib.getUuidAsString());
+                    return Optional.ofNullable(null);
+        });
         //Previously we also asked the associated contribution to be PROPOSAL,
         //but now any type of contribution can be associated to another
         if (inspirations != null && !inspirations.isEmpty()) {
@@ -2842,8 +3042,7 @@ public class Contributions extends Controller {
             // commenters of the
             // each brainstorming contributions
             if (!inspirations.isEmpty() && workingGroupIsNew) {
-                inviteCommentersInInspirationList(inspirations, newContrib,
-                        newWorkingGroup);
+                inviteCommentersInInspirationList(inspirations, newContrib, newWorkingGroup);
             }
         }
 
@@ -2851,8 +3050,7 @@ public class Contributions extends Controller {
         if (containerResourceSpace != null && (containerResourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)
                 || containerResourceSpace.getType().equals(ResourceSpaceTypes.WORKING_GROUP))) {
             List<Theme> themeListEmergentCpWg = new ArrayList<Theme>();
-            for (Theme theme: themeListEmergent
-                 ) {
+            for (Theme theme: themeListEmergent) {
                 if(theme.getType().equals(ThemeTypes.EMERGENT)){
                     themeListEmergentCpWg.add(theme);
                 }
@@ -2862,13 +3060,13 @@ public class Contributions extends Controller {
             containerResourceSpace.refresh();
         }
 
-        if(addIdeaToProposals){
+        if(addIdeaToProposals) {
             List<Long> assignToContributions = newContrib.getAssignToContributions();
             List<Contribution> contributionList = new ArrayList<Contribution>();
             if (assignToContributions != null) {
 	            for (Long cid : assignToContributions) {
 	                Contribution contribution = Contribution.read(cid);
-	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)){
+	                if (contribution.getType().equals(ContributionTypes.PROPOSAL)) {
 	                    contributionList.add(contribution);
 	                }
 	            }
@@ -2877,6 +3075,7 @@ public class Contributions extends Controller {
             newContrib.getResourceSpace().update();
             newContrib.getResourceSpace().refresh();
         }
+
         ContributionStatusAudit.create(newContrib);
 
         return newContrib;
@@ -3271,7 +3470,6 @@ public class Contributions extends Controller {
         }
         if (resourceSpace.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
             Campaign campaign = resourceSpace.getCampaign();
-
             return importContributions(null, campaign.getCampaignId(), type, createThemes);
         } else {
             return badRequest(Json.toJson(new TransferResponseStatus("Not implemented")));
@@ -3541,6 +3739,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result createContributionPad(
             @ApiParam(name = "aid", value = "Assembly ID") String aid,
             @ApiParam(name = "cid", value = "Contribution ID") String cid) {
@@ -3578,6 +3777,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No resource found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result confirmContributionPad(
             @ApiParam(name = "rid", value = "Resource (that represents that PAD) ID") Long rid) {
         Resource res = ResourcesDelegate.confirmResource(rid);
@@ -3597,6 +3797,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result updateContributionStatus(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid,
@@ -3604,6 +3805,29 @@ public class Contributions extends Controller {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
         if (ContributionStatus.valueOf(upStatus) != null) {
+            Http.Session s = session();
+            Logger.debug("Session = "+(s != null ? s : "[no session found]"));
+            AuthUser u = PlayAuthenticateLocal.getUser(s);
+            Logger.debug("AuthUser = "+(u != null ? u.getId() : "[no user found]"));
+            User user = User.findByAuthUserIdentity(u);
+            Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
+            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+            try {
+                peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            } catch (Exception e) {
+                TransferResponseStatus response = new TransferResponseStatus();
+                response.setResponseStatus(ResponseStatus.SERVERERROR);
+                response.setStatusMessage(e.getMessage());
+                Logger.error("PEERDOC: A problem occurred while updating PEERDOC status: '"+ e.getMessage());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                String trace = sw.toString();
+                Logger.debug("PEERDOC: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
+                response.setErrorTrace(trace);
+                response.setNewResourceURL("");
+                return internalServerError(Json.toJson(response));
+            }
             c.setStatus(ContributionStatus.valueOf(upStatus));
             c.update();
             return ok(Json.toJson(c));
@@ -3643,6 +3867,18 @@ public class Contributions extends Controller {
             }
 
             ResourceSpace resourceSpace = ResourceSpace.readByUUID(UUID.fromString(uuid));
+
+            if (newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
+                boolean unauth = checkRsDraftState(resourceSpace);
+                if (unauth) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            resourceSpace.getType()));
+                    return unauthorized(Json.toJson(responseBody));
+                }
+            }
 
             ContributionTemplate template = null;
             Contribution c;
@@ -3698,6 +3934,16 @@ public class Contributions extends Controller {
             ContributionTemplate template = null;
             Contribution c;
             Contribution inContribution = Contribution.readByUUID(UUID.fromString(uuid));
+
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    inContribution.getStatus().equals(ContributionStatus.DRAFT)) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "contribution.unauthorized.creation",
+                        ResourceSpaceTypes.CONTRIBUTION));
+                return unauthorized(Json.toJson(responseBody));
+            }
             try {
                 c = createContribution(newContribution, null, type, template, inContribution.getResourceSpace());
                 if (type.equals(ContributionTypes.COMMENT) || type.equals(ContributionTypes.DISCUSSION)) {
@@ -3765,6 +4011,16 @@ public class Contributions extends Controller {
 
             Campaign campaign = Campaign.readByUUID(UUID.fromString(uuid));
 
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    campaign.getStatus().equals(CampaignStatus.DRAFT)) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "contribution.unauthorized.creation",
+                        ResourceSpaceTypes.CAMPAIGN));
+                return unauthorized(Json.toJson(responseBody));
+            }
+
             ContributionTemplate template = null;
             Contribution c;
             try {
@@ -3829,6 +4085,16 @@ public class Contributions extends Controller {
             }
 
             WorkingGroup wgroup = WorkingGroup.readByUUID(UUID.fromString(uuid));
+
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    wgroup.getStatus().equals(WorkingGroupStatus.DRAFT)) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage(Messages.get(
+                        "contribution.unauthorized.creation",
+                        ResourceSpaceTypes.WORKING_GROUP));
+                return unauthorized(Json.toJson(responseBody));
+            }
 
             ContributionTemplate template = null;
             Contribution c;
@@ -3896,6 +4162,15 @@ public class Contributions extends Controller {
             ContributionTemplate template = null;
 
             Assembly assembly = Assembly.readByUUID(UUID.fromString(uuid));
+            if ((newContribution.getType().equals(ContributionTypes.COMMENT)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) &&
+                    assembly.getStatus().equals(AssemblyStatus.DRAFT)) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            ResourceSpaceTypes.ASSEMBLY));
+                    return unauthorized(Json.toJson(responseBody));
+            }
 
             Contribution c;
             try {
@@ -4316,10 +4591,18 @@ public class Contributions extends Controller {
                 try {
                     return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
                 } catch (Exception e) {
-                    Map<String, String> errors = new HashMap<>();
-                    errors.put("error", "Error creating the pad> " + e.getMessage());
-                    errors.put("path", "");
-                    return internalServerError(Json.toJson(errors));
+                    TransferResponseStatus response = new TransferResponseStatus();
+                    response.setResponseStatus(ResponseStatus.SERVERERROR);
+                    response.setStatusMessage(e.getMessage());
+                    Logger.error("PEERDOC: A problem occurred while getting PEERDOC document: '"+ e.getMessage());
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    String trace = sw.toString();
+                    Logger.debug("PEERDOC: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
+                    response.setErrorTrace(trace);
+                    response.setNewResourceURL("");
+                    return internalServerError(Json.toJson(response));
                 }
             }
 
@@ -4338,9 +4621,9 @@ public class Contributions extends Controller {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest(Json.toJson(Json
-                    .toJson(new TransferResponseStatus("Error processing request"))));
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", "Error creating the pad " + e.getMessage());
+            return internalServerError(Json.toJson(errors));
         }
         return ok("ok");
 
@@ -4590,6 +4873,23 @@ public class Contributions extends Controller {
         }
     }
 
+    private static boolean checkRsDraftState(ResourceSpace rs) {
+        boolean unauth = false;
+        if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY) &&
+                rs.getAssemblyResources().getStatus().equals(AssemblyStatus.DRAFT)) {
+            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN) &&
+                rs.getCampaign().getStatus().equals(CampaignStatus.DRAFT)) {
+            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
+                rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
+            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION) &&
+                rs.getContribution().getStatus().equals(ContributionStatus.DRAFT)) {
+            unauth = true;
+        }
+        return unauth;
+    }
 
 }
 

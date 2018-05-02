@@ -1,41 +1,17 @@
 package models;
 
-import com.avaje.ebean.Query;
-import io.swagger.annotations.ApiModel;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
-
-import models.misc.Views;
-
 import com.avaje.ebean.ExpressionList;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.avaje.ebean.Query;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonView;
-
 import enums.ComponentTypes;
 import enums.ResourceSpaceTypes;
+import io.swagger.annotations.ApiModel;
+import models.misc.Views;
 import play.Logger;
+
+import javax.persistence.*;
+import java.util.*;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -69,6 +45,10 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 	private int timeline;
 	@Transient 
 	private Boolean linked = false;
+	@Column(name = "instructions", columnDefinition = "text")
+	@JsonView(Views.Public.class)
+	private String instructions;
+
 
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="fromComponent", fetch=FetchType.LAZY)
 	@JsonBackReference
@@ -263,6 +243,14 @@ public class Component extends AppCivistBaseModel implements Comparator<Componen
 
 	public ComponentDefinition getDefinition() {
 		return definition;
+	}
+
+	public String getInstructions() {
+		return instructions;
+	}
+
+	public void setInstructions(String instructions) {
+		this.instructions = instructions;
 	}
 
 	public void setDefinition(ComponentDefinition definition) {

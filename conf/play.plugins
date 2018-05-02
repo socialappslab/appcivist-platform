@@ -2,3 +2,4 @@
 2500:providers.MyUsernamePasswordAuthProvider
 10010:com.feth.play.module.pa.providers.oauth2.google.GoogleAuthProvider
 10020:service.facebook.FacebookAuthProviderLocal
+2600:providers.LdapAuthProvider

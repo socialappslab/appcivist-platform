@@ -18,6 +18,10 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_INSTANCE_INSTANCE_DOMAIN = "appcivist.instance.domain"; 	//:** domain registered to the instance (when Signing in, the server will determine the principal //assembly associated to the user by reading the domain from where the request is coming from)
 	public static final String APPCIVIST_INSTANCE_INSTANCE_THEME = "appcivist.instance.theme";	//:** a URL that points to a CSS files that will overwrite the color scheme of the site for this assembly
 
+	// AppCivist General Configuration Keys, applicable to any resource space
+	public static final String APPCIVIST_REQUIRE_GROUP_AUTHORSHIP = "appcivist.campaign.require-group-authorship"; // Default is FALSE, if TRUE, proposals must be related to a WG on creation
+	public static final String APPCIVIST_CREATE_GROUP_ON_NEW_PROPOSALS = "appcivist.campaign.create-group-new-proposals"; // Default is FALSE, if TRUE, proposals WG are automatically created if the proposal does not have one
+
 	// Assembly Level Configuration Keys
 	public static final String APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS = "appcivist.assembly.disable-new-memberships"; // only coordinators can add new members to the assembly, by uploading users for them.   
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_FORUM = "appcivist.assembly.enable-forum"; // if TRUE, an assembly page will be the home page after signing in (this assembly page has not been designed yet)
@@ -30,6 +34,22 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_ENABLE_SOCIAL_IDEATION = "appcivist.assembly.enable-social-ideation"; // FALSE DEFAULT
 	public static final String APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS = "appcivist.assembly.auto-membership-working-groups"; // Name of groups separated by comma
 	public static final String APPCIVIST_ASSEMBLY_AUTO_MEMBERSHIP_WORKING_GROUPS_ALL = "appcivist.assembly.auto-membership-working-groups-all"; // Default FALSE
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER = "appcivist.assembly.authentication.ldap.server";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_PORT = "appcivist.assembly.authentication.ldap.port";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_DN = "appcivist.assembly.authentication.ldap.dn";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_DN = "appcivist.assembly.authentication.ldap.admin.dn";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_PASS = "appcivist.assembly.authentication.ldap.admin.pass";
+	public static final String APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_ADMIN_MAIL = "appcivist.assembly.authentication.ldap.admin.mail";
+	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_FORGOT_URL = "appcivist.assembly.authentication.forgot-url";
+	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_SINGUP_URL = "appcivist.assembly.authentication.signup-url";
+	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_REGISTRATION_TITLE = "appcivist.assembly.authentication.registration-title";
+	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_USERNAME_PLACEHOLDER = "appcivist.assembly.authentication.username-placeholder";
+	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_PASSWORD_PLACEHOLDER = "appcivist.assembly.authentication.password-placeholder";
+	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_SINGUP_TITLE = "appcivist.assembly.authentication.signup-title";
+
+
+
+
 	// Campaign Level Configuration Keys
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPE_PRINCIPAL = "appcivist.campaign.contribution-type-principal"; // what type of contribution is the displayed at the center of the page if a timeline with components is disabled (e.g., these campaigns is centered around PROPOSALS or IDEAS)    
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_TYPES = "appcivist.campaign.contribution-types"; // and array that contains the list of contribution TYPES collected in this campaign (IDEA, PROPOSAL, NOTE, etc.)  
@@ -54,8 +74,16 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS = "appcivist.campaign.allow-anonymous-ideas"; // FALSE DEFAULT
 	public static final String APPCIVIST_CAMPAIGN_NEWSLETTER_FRECUENCY = "appcivist.campaign.newsletter-frecuency";
 	public static final String APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR = "appcivist.force-collaborative-editor"; // PEERDOC or ETHERPAD, will force propsoal creation process to already create the proposal document in the selected service
-	public static final String APPCIVIST_CAMPAIGN_ENABLE_GROUP_AUTHORSHIP = "appcivist.campaign.enable-group-authorship";
 	public static final String APPCIVIST_CAMPAIGN_DISABLE_PROPOSAL_DISCUSSIONS = "appcivist.campaign.disable-proposal-discussions"; // if TRUE, the comment sections in the proposal page is disabled
+	public static final String APPCIVIST_CAMPAIGN_FAQ_URL = "appcivist.campaign.faq-url";
+	public static final String APPCIVIST_CAMPAIGN_THEMES_NUMBER_LIMIT = "appcivist.campaign.themes-number-limit";
+	public static final String APPCIVIST_CAMPAIGN_THEMES_EXTENDED_DESCRIPTION_URL = "appcivist.campaign.themes.extended-description-url";
+	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT = "appcivist.campaign.research-consent-text";
+	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT_APPROVE = "appcivist.campaign.research-consent-text-approve";
+	public static final String APPCIVIST_CAMPAIGN_RESEARCH_CONSENT_TEXT_REJECT = "appcivist.campaign.research-consent-text-reject";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_DEFAULT_TITLE = "appcivist.campaign.contribution.default-title";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_DEFAULT_DESCRIPTION = "appcivist.campaign.contribution.default-description";
+
 
 	//Add the configuration to the default templates for creating campaigns
 	
@@ -112,6 +140,7 @@ public class GlobalDataConfigKeys {
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_OPEN_IDEA_SECTION_DEFAULT, "FALSE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ALLOW_EMERGENT_THEMES, "TRUE");
 		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_ALLOW_ANONYMOUS_IDEAS, "FALSE");
+		CONFIG_DEFAULTS.put(APPCIVIST_CAMPAIGN_THEMES_NUMBER_LIMIT, "0");
 		
 		// Component Level Configuration Default Values
 		CONFIG_DEFAULTS.put(APPCIVIST_COMPONENT_CONTRIBUTION_TYPE_PRINCIPAL,"PROPOSAL"); 
