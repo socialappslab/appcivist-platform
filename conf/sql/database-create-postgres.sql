@@ -3062,7 +3062,7 @@ INSERT INTO "public"."config"
     "key", "value", "config_target", "target_uuid")
 VALUES
   (   now_date, now_date, target_assembly_lang, 'FALSE',
-      config_key, config_value, 'assembly', target_assembly_uuid)
+      config_key, config_value, 'ASSEMBLY', target_assembly_uuid)
 RETURNING "uuid" INTO new_config_uuid;
 
 RAISE NOTICE 'Associating (config, %) to (assembly, rs id) => (%,%)',
