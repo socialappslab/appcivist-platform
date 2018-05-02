@@ -302,7 +302,9 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				return Controller.internalServerError(toJson(response));
 			}
 		} catch (final AuthException e) {
-			Ebean.rollbackTransaction();
+			if(Ebean.currentTransaction() != null) {
+				Ebean.rollbackTransaction();
+			}
 			final Call c = getResolver().onException(e);
 			if (c != null) {
 				// TODO Solve avoiding redirects
