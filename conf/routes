@@ -40,7 +40,7 @@ PUT       /api/user/:uid/profile                                                
 DELETE    /api/user/:uid                                                         controllers.Users.deleteUser(uid: Long) 
 DELETE    /api/user/:uid/force                                                   controllers.Users.deleteUserForce(uid: Long) 
 POST      /api/user/signup                                                       controllers.Users.doSignup() 
-POST      /api/user/login                                                        controllers.Users.doLogin() 
+POST      /api/user/login                                                        controllers.Users.doLogin(provider ?= "password", assembly:java.util.UUID?=null)
 POST      /api/user/logout                                                       controllers.Users.doLogout()
 GET       /api/user/verify                                                       controllers.Users.verifyEmail
 GET       /api/user/verify/:token                                                controllers.Users.verify(token: String) 
@@ -120,7 +120,7 @@ PUT       /api/assembly/:id/membership                                          
 POST      /api/assembly/:id/assembly                                             controllers.Assemblies.createAssemblyInAssembly(id: Long, templates ?= "", invitations?="false")
 DELETE    /api/assembly/:id                                                      controllers.Assemblies.deleteAssembly(id: Long)
 POST      /api/assembly/:id/membership/:type                                     controllers.Assemblies.createAssemblyMembership(id: Long, type: String)
-GET       /api/assembly/:id/membership/:status                                   controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String)
+GET       /api/assembly/:id/membership/:status                                   controllers.Assemblies.listMembershipsWithStatus(id: Long, status: String, ldap?="false", ldapsearch ?= null)
 GET       /api/assembly/:aid/user/:uid                                           controllers.Assemblies.isUserMemberOfAssembly(aid: Long, uid: Long)
 POST      /api/assembly/:id/invitations                                          controllers.Assemblies.inviteNewMembers(id: Long)
 GET       /api/assembly/:aid/linked                                              controllers.Assemblies.findAssembliesLinked(aid: Long)
@@ -160,7 +160,7 @@ POST      /api/assembly/:aid/campaign/:cid/group                                
 DELETE    /api/assembly/:aid/group/:gid                                          controllers.WorkingGroups.deleteWorkingGroup(aid: Long, gid: Long)
 POST      /api/assembly/:aid/group/:id/membership/:type                          controllers.WorkingGroups.createGroupMembership(aid: Long, id: Long, type: String)  
 GET       /api/assembly/:aid/group/:id/membership                                controllers.WorkingGroups.listMemberships(aid: Long, id: Long)
-GET       /api/assembly/:aid/group/:id/membership/:status                        controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String)
+GET       /api/assembly/:aid/group/:id/membership/:status                        controllers.WorkingGroups.listMembershipsWithStatus(aid: Long, id: Long, status: String, ldap?="false", ldapsearch ?= null)
 GET       /api/assembly/:aid/group/:gid/user/:uid                                controllers.WorkingGroups.isUserMemberOfGroup(aid: Long, gid: Long, uid: Long)
 GET       /api/assembly/:aid/group/:gid/proposals                                controllers.WorkingGroups.listWorkingGroupProposals(aid: Long, gid: Long) 
 GET       /api/assembly/:aid/group/:gid/contributions                            controllers.WorkingGroups.listWorkingGroupContributions(aid: Long, gid: Long) 
@@ -233,6 +233,8 @@ GET       /api/assembly/:aid/campaign/:cid/groups                               
 GET       /api/assembly/:aid/campaign/:cid/timeline                              controllers.Campaigns.listCampaignTimeline(aid: Long, cid: Long, all: String ?= null, page:Integer?=0, pageSize:Integer?=16)
 PUT       /api/assembly/:aid/campaign/:cid/description                           controllers.Campaigns.updateCampaignDescription(aid: Long, cid: Long)
 PUT       /api/assembly/:aid/campaign/:cid/group/:gid/description                controllers.Campaigns.updateCampaignGroupDescription(aid: Long, cid: Long, gid: Long)
+GET       /api/assembly/:aid/campaign/:cid/consent                               controllers.Campaigns.getConsentToParticipateInCampaign(aid: Long, cid: Long)
+PUT       /api/assembly/:aid/campaign/:cid/consent/user/:uid/:answer             controllers.Campaigns.provideConsentToParticipateInCampaign(aid: Long, cid: Long, uid: Long, answer: Boolean)
 
 ##################################################################################################################################################################
 # CampaignComponent API
@@ -250,6 +252,7 @@ GET       /api/assembly/:aid/campaign/:cid/contribution                         
 GET       /api/assembly/:aid/group/:gid/contribution                             controllers.Contributions.findAssemblyGroupContributions(aid: Long, gid: Long, space?="forum", type?="")
 GET       /api/assembly/:aid/contribution/:cid                                   controllers.Contributions.findContribution(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/history                           controllers.Contributions.getContributionsChangeHistory(aid: Long, cid: Long)
+PUT       /api/contribution/:pdi                                                 controllers.Contributions.putContributionByPeerDocId(pdi: String, title?="", lastActivity?="")
 POST      /api/contribution/clean/history                                        controllers.Contributions.deleteUnchangedContributionHistories()
 POST      /api/contribution/clean/feedback                                       controllers.Contributions.cleanUnarchivedContributionFeedbacks()
 POST      /api/contribution/history                                              controllers.Contributions.createHistories()
@@ -295,8 +298,10 @@ PUT       /api/contribution/pad                                                 
 
 POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
+POST      /api/contribution/:uuid/nonmemberauthors                               controllers.Contributions.addNonMemberAuthorToContribution(uuid: java.util.UUID)
 DELETE    /api/contribution/:uuid/themes/:tid                                    controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
 DELETE    /api/contribution/:uuid/authors/:auuid                                 controllers.Contributions.deleteAuthorFromContribution(uuid: java.util.UUID, auuid: java.util.UUID)
+DELETE    /api/contribution/:uuid/nonmemberauthors/:nmaid                        controllers.Contributions.deleteNonMemberAuthorFromContribution(uuid: java.util.UUID, nmaid: Long)
 
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
@@ -363,7 +368,7 @@ GET       /api/space/:sid/config/:uuid                                          
 GET       /api/space/:sid/config                                                 controllers.Configs.findSpaceConfigs(sid: Long)
 PUT       /api/space/:sid/config/:uuid                                           controllers.Spaces.updateSpaceCampaignConfig(sid: Long, uuid: java.util.UUID)
 PUT       /api/space/:sid/config                                                 controllers.Configs.updateSpaceConfig(sid: Long)
-GET       /api/space/:sid/contribution/:cid                                      controllers.Contributions.findResourceSpaceContributionById(sid: Long, cid: Long, format?="JSON", includeExtendedText?="false", extendedTextFormat?="")
+GET       /api/space/:sid/contribution/:cid                                      controllers.Contributions.findResourceSpaceContributionById(sid: Long, cid: Long, format?="JSON", includeExtendedText?="false", extendedTextFormat?="", flat?="false")
 GET       /api/space/:sid/contribution                                           controllers.Contributions.findResourceSpaceContributions(sid: Long, type?="", by_text?="", by_location?="", groups: java.util.List[Integer] ?=null, themes: java.util.List[Integer] ?=null, all: String ?= null, by_author:Integer?= null, page:Integer?=0, pageSize:Integer?=null, sorting?="", random: String ?= null, status: String?="", format?="JSON", includeExtendedText?="false", extendedTextFormat?="", collectionFileFormat?="CSV", selectedContributions: java.util.List[String], statusStartDate: String ?= null, statusEndDate: String ?= null)
 GET       /api/space/:sid/resource/:rid                                          controllers.Campaigns.listSpaceResourcesById(sid: Long, rid: Long)
 GET       /api/space/:sid/resource                                               controllers.Campaigns.listSpaceResources(sid: Long)

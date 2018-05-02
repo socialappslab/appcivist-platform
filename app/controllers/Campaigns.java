@@ -1,16 +1,37 @@
 package controllers;
 
-import static play.data.Form.form;
-
-import enums.*;
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.CampaignDelegate;
+import delegates.ResourcesDelegate;
+import enums.ComponentMilestoneTypes;
+import enums.ContributionTypes;
+import enums.ResourceTypes;
+import enums.ResponseStatus;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import models.*;
+import models.misc.Views;
+import models.transfer.*;
+import org.dozer.DozerBeanMapper;
+import play.Logger;
+import play.Play;
+import play.data.Form;
+import play.i18n.Messages;
+import play.libs.Json;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Results;
+import play.mvc.With;
+import play.twirl.api.Content;
+import security.SecurityModelConstants;
+import utils.GlobalData;
 
 import java.io.InputStream;
 import java.sql.Timestamp;
@@ -20,38 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import models.*;
-import models.misc.Views;
-import models.transfer.*;
-import org.dozer.DozerBeanMapper;
-import play.Logger;
-import play.Play;
-import play.data.Form;
-import play.i18n.Messages;
-import play.libs.F.Promise;
-import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Results;
-import play.mvc.With;
-import play.twirl.api.Content;
-import security.SecurityModelConstants;
-import utils.GlobalData;
-import utils.LogActions;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
-
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.feth.play.module.pa.PlayAuthenticate;
-
-import delegates.CampaignDelegate;
-import delegates.NotificationsDelegate;
-import delegates.ResourcesDelegate;
-import exceptions.ConfigurationException;
+import static play.data.Form.form;
 
 @Api(value = "03 campaign: Campaign Management", description = "Campaign Making Service: create and manage assembly campaigns")
 @With(Headers.class)
@@ -117,9 +107,89 @@ public class Campaigns extends Controller {
     public static Result findCampaignByAssemblyId(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        User user = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
         Campaign campaign = Campaign.read(campaignId);
-        return campaign != null ? ok(Json.toJson(campaign)) : ok(Json
-                .toJson(new TransferResponseStatus("No campaign found")));
+        if(campaign != null) {
+            CampaignParticipation.createIfNotExist(user, campaign);
+            return ok(Json.toJson(campaign));
+        } else {
+            return ok(Json.toJson(new TransferResponseStatus("No campaign found")));
+        }
+
+    }
+
+    /**
+     * GET /api/assembly/:aid/campaign/:cid/consent
+     * Get current consent answer to campaign
+     *
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CampaignParticipation.class, produces = "application/json", value = "Read User's consent to participate of campaign")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No consent found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result getConsentToParticipateInCampaign(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId) {
+        try {
+            User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+            CampaignParticipation cp = CampaignParticipation.getByCampaignAndUserIds(campaignId, user.getUserId());
+            if (cp != null) {
+                return ok(Json.toJson(cp));
+            } else {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Consent does not exist yet")));
+            }
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,e.getMessage())));
+        }
+    }
+
+    /**
+     * PUT /api/assembly/:aid/campaign/:cid/consent/:answer
+     * Provide consent answer to campaign
+     *
+     * @param aid
+     * @param campaignId
+     * @return
+     */
+    @ApiOperation(httpMethod = "GET", response = CampaignParticipation.class, produces = "application/json", value = "Provide Consent to Participate of Campaign")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "OnlyMeAndAdmin", meta = SecurityModelConstants.USER_RESOURCE_PATH)
+    public static Result provideConsentToParticipateInCampaign(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long campaignId,
+            @ApiParam(name = "uid", value = "User ID") Long uid,
+            @ApiParam(name = "answer", value = "Consent answer") Boolean answer) {
+        try {
+
+            Campaign campaign = Campaign.find.byId(campaignId);
+            if(campaign == null) {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Campaign does not exist")));
+            }
+
+            User user = User.find.byId(uid);
+            if(user == null) {
+                return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "User does not exist")));
+            }
+
+            Logger.info("Reading user's consent"+uid);
+            Logger.debug("Creating user consent if does not exist");
+            CampaignParticipation cp = CampaignParticipation.createIfNotExist(user, campaign);
+            cp.setUserProvidedConsent(true);
+            cp.setUserConsent(answer);
+            Logger.debug("Updating user consent");
+            cp.update();
+            cp.refresh();
+            return ok(Json.toJson(cp));
+        } catch (Exception e) {
+            return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,e.getMessage())));
+        }
     }
 
     /**

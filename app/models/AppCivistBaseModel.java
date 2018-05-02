@@ -36,6 +36,7 @@ public class AppCivistBaseModel extends Model {
 	
 	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm a z")
 	@ApiModelProperty(name="lastUpdate", value="Date in which this resource was last updated", notes="By default set to NOW")
+	@JsonView(Views.Public.class)
 	private Date lastUpdate = new Date(); // by Default, the creation is NOW
 	
 	@JsonView(Views.Public.class)

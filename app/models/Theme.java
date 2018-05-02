@@ -46,7 +46,8 @@ public class Theme extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     @Enumerated(EnumType.STRING)
     private ThemeTypes type = ThemeTypes.EMERGENT;
-    
+    @JsonView(Views.Public.class)
+    private String url;
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "themes", cascade = CascadeType.ALL)
@@ -117,6 +118,14 @@ public class Theme extends AppCivistBaseModel {
         this.containingSpaces = containingSpaces;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+    
     /*
      * Basic Data operations
      */
