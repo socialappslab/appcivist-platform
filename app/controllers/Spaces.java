@@ -2795,7 +2795,7 @@ public class Spaces extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header"),
             @ApiImplicitParam(name = "Resource Object", value = "The new Resource in JSON", dataType = "models.Resource", paramType = "body")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
     public static Result addSpaceResources(@ApiParam(name = "sid", value = "ResourceSpace ID") Long sid) {
         User creator = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
