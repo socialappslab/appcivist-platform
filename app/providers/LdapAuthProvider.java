@@ -5,13 +5,10 @@ import com.feth.play.module.pa.providers.wwwauth.basic.BasicAuthProvider;
 import com.feth.play.module.pa.user.AuthUser;
 import models.Assembly;
 import models.Config;
-import models.Membership;
 import models.User;
-import models.transfer.TransferResponseStatus;
 import play.Application;
 import play.Logger;
 import play.data.Form;
-import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import service.PlayAuthenticateLocal;
@@ -23,7 +20,6 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -146,7 +142,6 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
     private static void setConfig(LdapConfig ldapConfig, Boolean loadAdmin) throws AuthException {
         for(Config config: ldapConfig.getAssembly().getConfigs()) {
-            Logger.info(config.getKey());
             if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_LDAP_AUTHENTICATION_SERVER)) {
                 ldapConfig.setUrl(config.getValue());
             }

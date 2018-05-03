@@ -54,7 +54,7 @@ public class NewsletterCreatorSchedule extends DailySchedule {
                         WorkingGroup workingGroup = rs.getWorkingGroupResources();
                         NotificationsDelegate.newNewsletterInWorkingGroup(workingGroup, UUID.fromString(sub.getUserId()));
                     }
-                } catch (ConfigurationException e) {
+                } catch (Exception e) {
                     Logger.error("Error creating newsletter", e);
                 }
             }
