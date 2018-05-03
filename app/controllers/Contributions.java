@@ -1183,11 +1183,21 @@ public class Contributions extends Controller {
             @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
         try {
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
+            if(title.isEmpty() && lastUpdate.isEmpty()) {
+                TransferResponseStatus responseBody = new TransferResponseStatus();
+                responseBody.setStatusMessage("Nothing to update");
+                return badRequest(Json.toJson(responseBody));
+            }
             if(contribution!=null) {
-                contribution.setTitle(title);
-                DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
-                Date date = format.parse(lastUpdate);
-                contribution.setLastUpdate(date);
+                if (!title.isEmpty()) {
+                    contribution.setTitle(title);
+                }
+                if(!lastUpdate.isEmpty()) {
+                    lastUpdate =  java.net.URLDecoder.decode(lastUpdate, "UTF-8");
+                    DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
+                    Date date = format.parse(lastUpdate);
+                    contribution.setLastUpdate(date);
+                }
                 contribution.update();
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setResponseStatus(ResponseStatus.OK);
@@ -1199,18 +1209,29 @@ public class Contributions extends Controller {
                 responseBody.setStatusMessage("No contribution found for the given peerDocId");
                 return notFound(Json.toJson(responseBody));
             }
-        } catch (Exception e) {
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-            responseBody.setStatusMessage("There was an error with your request: "+e.getMessage());
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            pw.close();
-            String sStackTrace = sw.toString();
-            responseBody.setErrorTrace(sStackTrace);
+        } catch (ParseException e) {
+            TransferResponseStatus responseBody = getErrorMessage(e,
+                    "Error parsing the lastUpdate date, the expected format is YYYY-MM-DD HH:mm:ss");
             return internalServerError(Json.toJson(responseBody));
         }
+          catch (Exception e) {
+            TransferResponseStatus responseBody = getErrorMessage(e,
+                    "There was an error with you request " + e.getMessage());
+            return internalServerError(Json.toJson(responseBody));
+        }
+    }
+
+    private static TransferResponseStatus getErrorMessage(Exception e, String message) {
+        TransferResponseStatus responseBody = new TransferResponseStatus();
+        responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+        responseBody.setStatusMessage(message);
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        pw.close();
+        String sStackTrace = sw.toString();
+        responseBody.setErrorTrace(sStackTrace);
+        return responseBody;
     }
 
     /**
