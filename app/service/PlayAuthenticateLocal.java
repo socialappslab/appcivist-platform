@@ -303,7 +303,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			}
 		} catch (final AuthException e) {
 			if(Ebean.currentTransaction() != null) {
-				Ebean.rollbackTransaction();
+				Ebean.endTransaction();
 			}
 			final Call c = getResolver().onException(e);
 			if (c != null) {
