@@ -41,7 +41,6 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import play.Logger;
 import play.Play;
-import play.api.mvc.Session;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F;
@@ -1180,10 +1179,11 @@ public class Contributions extends Controller {
     public static Result putContributionByPeerDocId(
             @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
             @ApiParam(name = "title", value = "New Title") String title,
+            @ApiParam(name = "description", value = "New Description") String description,
             @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
         try {
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
-            if(title.isEmpty() && lastUpdate.isEmpty()) {
+            if(title.isEmpty() && lastUpdate.isEmpty() && description.isEmpty()) {
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage("Nothing to update");
                 return badRequest(Json.toJson(responseBody));
@@ -1192,6 +1192,10 @@ public class Contributions extends Controller {
                 if (!title.isEmpty()) {
                     contribution.setTitle(title);
                 }
+                if (!description.isEmpty()) {
+                    contribution.setText(description);
+                }
+
                 if(!lastUpdate.isEmpty()) {
                     lastUpdate =  java.net.URLDecoder.decode(lastUpdate, "UTF-8");
                     DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
