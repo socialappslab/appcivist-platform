@@ -252,7 +252,7 @@ GET       /api/assembly/:aid/campaign/:cid/contribution                         
 GET       /api/assembly/:aid/group/:gid/contribution                             controllers.Contributions.findAssemblyGroupContributions(aid: Long, gid: Long, space?="forum", type?="")
 GET       /api/assembly/:aid/contribution/:cid                                   controllers.Contributions.findContribution(aid: Long, cid: Long)
 GET       /api/assembly/:aid/contribution/:cid/history                           controllers.Contributions.getContributionsChangeHistory(aid: Long, cid: Long)
-PUT       /api/contribution/:pdi                                                 controllers.Contributions.putContributionByPeerDocId(pdi: String, title?="", lastActivity?="")
+PUT       /api/contribution/:pdi                                                 controllers.Contributions.putContributionByPeerDocId(pdi: String, title?="", description?="",lastActivity?="")
 POST      /api/contribution/clean/history                                        controllers.Contributions.deleteUnchangedContributionHistories()
 POST      /api/contribution/clean/feedback                                       controllers.Contributions.cleanUnarchivedContributionFeedbacks()
 POST      /api/contribution/history                                              controllers.Contributions.createHistories()
