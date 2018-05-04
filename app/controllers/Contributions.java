@@ -485,7 +485,7 @@ public class Contributions extends Controller {
 
         Contribution contribution = Contribution.read(cid);
         if(flat.equals("true")) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
             Map<String, Object> aRet = new HashMap<>();
             aRet.put("title",contribution.getTitle());
             aRet.put("text", contribution.getText());
@@ -2149,7 +2149,8 @@ public class Contributions extends Controller {
      * @param contributionId
      * @return
      */
-    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update contribution in Assembly")
+    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json",
+            value = "Update contribution in Assembly", notes = "The lastUpdate date must be in YYYY-MM-DD HH:mm:ss format")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
