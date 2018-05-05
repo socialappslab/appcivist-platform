@@ -1,41 +1,25 @@
 package controllers;
 
 
-import static play.data.Form.form;
-
+import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.feth.play.module.pa.PlayAuthenticate;
+import delegates.NotificationsDelegate;
 import enums.*;
 import http.Headers;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-
+import io.swagger.annotations.*;
 import models.*;
 import models.misc.ThemeStats;
 import models.misc.Views;
 import models.transfer.BallotTransfer;
 import models.transfer.ThemeListTransfer;
 import models.transfer.TransferResponseStatus;
-
 import org.apache.commons.io.FileUtils;
-
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -47,20 +31,18 @@ import play.mvc.Results;
 import play.mvc.With;
 import play.twirl.api.Content;
 import security.SecurityModelConstants;
-import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.LogActions;
-import be.objectify.deadbolt.java.actions.Dynamic;
-import be.objectify.deadbolt.java.actions.SubjectPresent;
 
-import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.feth.play.module.pa.PlayAuthenticate;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
 
-import delegates.NotificationsDelegate;
+import static play.data.Form.form;
 
 @Api(value = "09 space: resource space management", description = "Resource space management")
 @With(Headers.class)
@@ -2933,6 +2915,47 @@ public class Spaces extends Controller {
                 resourceSpace.update();
                 return ok(Json.toJson(newResource));
             }
+        }
+    }
+
+    @ApiOperation(produces="application/json", value="Simple search of uuid by object id", httpMethod="GET")
+    public static Result getUUIDByIdAndType(
+            @ApiParam(name = "type", value = "Object type",
+                    allowableValues = "assembly,campaign,contribution,group,resource") String type,
+            @ApiParam(name = "id", value = "Object id") Long id) {
+
+        UUID aRet = null;
+        AppCivistBaseModel object;
+        switch (type) {
+            case "assembly":
+                object = Assembly.findById(id);
+                aRet = object == null ? null: ((Assembly) object).getUuid();
+                break;
+            case "campaign":
+                object = Campaign.find.byId(id);
+                aRet = object == null ? null: ((Campaign) object).getUuid();
+                break;
+            case "contribution":
+                object = Contribution.find.byId(id);
+                aRet = object == null ? null: ((Contribution) object).getUuid();
+                break;
+            case "group":
+                object = WorkingGroup.find.byId(id);
+                aRet = object == null ? null: ((WorkingGroup) object).getUuid();
+                break;
+            case "resource":
+                object = Resource.find.byId(id);
+                aRet = object == null ? null: ((Resource) object).getUuid();
+                break;
+        }
+
+        if(aRet != null) {
+            Map<String, UUID> objectAret = new HashMap<>();
+            objectAret.put("uuid", aRet);
+            return ok(Json.toJson(objectAret));
+        } else {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No object found with id "+id)));
         }
     }
 }
