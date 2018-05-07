@@ -1,5 +1,6 @@
 package models;
 
+import enums.ResourceTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -155,6 +156,13 @@ public class AppCivistBaseModel extends Model {
 
 	@PreUpdate
 	public void onUpdate() {
+		if (this instanceof Contribution) {
+			Contribution contribution = (Contribution) this;
+			if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+				Logger.info("Skiping onupdate contribution, peerdoc type");
+				return;
+			}
+		}
 		this.lastUpdate = new Date();
 	}
 }

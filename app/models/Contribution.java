@@ -322,9 +322,6 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<UUID> campaignUuids;
 
-    @Transient
-    private boolean peerdoc;
-
     /**
      * This field will help assign contributions to working groups.
      **/
@@ -1629,19 +1626,5 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setErrorsInExtendedTextPad(String errorsInExtendedTextPad) {
         this.errorsInExtendedTextPad = errorsInExtendedTextPad;
-    }
-
-    @PreUpdate
-    @Override
-    public void onUpdate() {
-        Logger.info("VALUE");
-    }
-
-    public boolean isPeerdoc() {
-        return peerdoc;
-    }
-
-    public void setPeerdoc(boolean peerdoc) {
-        this.peerdoc = peerdoc;
     }
 }

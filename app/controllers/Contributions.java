@@ -1207,8 +1207,6 @@ public class Contributions extends Controller {
                     DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
                     DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
                     Date date = format.parse(lastUpdate);
-                    contribution.setPeerdoc(false);
-                    Logger.info("DATE " + bdFormat.format(date));
                     Date toDb = bdFormat.parse(bdFormat.format(date));
                     contribution.setLastUpdate(toDb);
                 }
