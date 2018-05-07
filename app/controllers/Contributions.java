@@ -41,7 +41,6 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import play.Logger;
 import play.Play;
-import play.api.mvc.Session;
 import play.data.Form;
 import play.i18n.Messages;
 import play.libs.F;
@@ -486,7 +485,7 @@ public class Contributions extends Controller {
 
         Contribution contribution = Contribution.read(cid);
         if(flat.equals("true")) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
             Map<String, Object> aRet = new HashMap<>();
             aRet.put("title",contribution.getTitle());
             aRet.put("text", contribution.getText());
@@ -1180,10 +1179,11 @@ public class Contributions extends Controller {
     public static Result putContributionByPeerDocId(
             @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
             @ApiParam(name = "title", value = "New Title") String title,
+            @ApiParam(name = "description", value = "New Description") String description,
             @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
         try {
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
-            if(title.isEmpty() && lastUpdate.isEmpty()) {
+            if(title.isEmpty() && lastUpdate.isEmpty() && description.isEmpty()) {
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage("Nothing to update");
                 return badRequest(Json.toJson(responseBody));
@@ -1192,6 +1192,10 @@ public class Contributions extends Controller {
                 if (!title.isEmpty()) {
                     contribution.setTitle(title);
                 }
+                if (!description.isEmpty()) {
+                    contribution.setText(description);
+                }
+
                 if(!lastUpdate.isEmpty()) {
                     lastUpdate =  java.net.URLDecoder.decode(lastUpdate, "UTF-8");
                     DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
@@ -2145,7 +2149,8 @@ public class Contributions extends Controller {
      * @param contributionId
      * @return
      */
-    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json", value = "Update contribution in Assembly")
+    @ApiOperation(httpMethod = "PUT", response = Contribution.class, produces = "application/json",
+            value = "Update contribution in Assembly", notes = "The lastUpdate date must be in YYYY-MM-DD HH:mm:ss format")
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Contribution object", value = "Body of Contribution in JSON", required = true, dataType = "models.Contribution", paramType = "body"),
