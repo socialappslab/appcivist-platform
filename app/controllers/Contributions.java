@@ -485,15 +485,21 @@ public class Contributions extends Controller {
 
         Contribution contribution = Contribution.read(cid);
         if(flat.equals("true")) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
-            Map<String, Object> aRet = new HashMap<>();
-            aRet.put("title",contribution.getTitle());
-            aRet.put("text", contribution.getText());
-            aRet.put("creation", dateFormat.format(contribution.getCreation()));
-            if(contribution.getLastUpdate() != null) {
-                aRet.put("lastUpdate", dateFormat.format(contribution.getLastUpdate()));
+            try {
+                DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                Map<String, Object> aRet = new HashMap<>();
+                aRet.put("title", contribution.getTitle());
+                aRet.put("text", contribution.getText());
+                aRet.put("creation", bdFormat.format(contribution.getCreation()));
+                if (contribution.getLastUpdate() != null) {
+                    aRet.put("lastUpdate", bdFormat.format(contribution.getLastUpdate()));
+                }
+                return ok(Json.toJson(aRet));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ok();
             }
-            return ok(Json.toJson(aRet));
         }
         contribution.setCustomFieldValues(CustomFieldValue.findAllByTargetUUID(contribution.getUuidAsString()));
         List<Contribution> contributions = new ArrayList<>();
@@ -1198,9 +1204,13 @@ public class Contributions extends Controller {
 
                 if(!lastUpdate.isEmpty()) {
                     lastUpdate =  java.net.URLDecoder.decode(lastUpdate, "UTF-8");
-                    DateFormat format = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss", Locale.ENGLISH);
+                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+                    DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
                     Date date = format.parse(lastUpdate);
-                    contribution.setLastUpdate(date);
+                    contribution.setPeerdoc(false);
+                    Logger.info("DATE " + bdFormat.format(date));
+                    Date toDb = bdFormat.parse(bdFormat.format(date));
+                    contribution.setLastUpdate(toDb);
                 }
                 contribution.update();
                 TransferResponseStatus responseBody = new TransferResponseStatus();
