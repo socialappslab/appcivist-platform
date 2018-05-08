@@ -2584,6 +2584,12 @@ public class Contributions extends Controller {
                 author = NonMemberAuthor.create(author);
                 contribution.getNonMemberAuthors().add(author);
                 contribution.update();
+                List<NonMemberAuthor> authors = new ArrayList<>();
+                authors.add(author);
+                F.Promise.promise(() -> {
+                    sendNonMemberAddMail(authors, contribution.getUuidAsString());
+                    return Optional.ofNullable(null);
+                });
                 return ok(Json.toJson(author));
             } else if (authorExist && !userExist) {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Non Member Author already in contribution")));
@@ -2591,6 +2597,7 @@ public class Contributions extends Controller {
                 // add it as author
                 contribution.getAuthors().add(user);
                 contribution.update();
+
                 return ok(Json.toJson(user));
             } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Author already in contribution")));
