@@ -512,25 +512,42 @@ public class ContributionsDelegate {
                 parent = Contribution.findByForumResourceSpaceId(rs.getResourceSpaceId());
                 anonymous = 1;
             }
-            if (parent != null){
+            if (parent != null) {
             	Integer totalComments = parent.getTotalComments();
+
                 if (anonymous==0){
                     commentCount = parent.getCommentCount();
-                    if (op == "+"){
+                    if (op.equals("+")) {
                         parent.setCommentCount(commentCount + 1);
                         parent.setTotalComments(totalComments + 1);
                     } else {
-                        parent.setCommentCount(commentCount - 1);
-                        parent.setTotalComments(totalComments - 1);
+                        if(commentCount > 0) {
+                            parent.setCommentCount(commentCount - 1);
+                        } else {
+                            parent.setCommentCount(0);
+                        }
+                        if(totalComments > 0) {
+                            parent.setTotalComments(totalComments - 1);
+                        } else {
+                            parent.setTotalComments(0);
+                        }
                     }
                 } else {
                     commentCount = parent.getForumCommentCount();
-                    if (op == "+"){
+                    if (op.equals("+")){
                         parent.setForumCommentCount(commentCount + 1);
                         parent.setTotalComments(totalComments + 1);
                     } else {
-                        parent.setForumCommentCount(commentCount - 1);
-                        parent.setTotalComments(totalComments - 1);
+                        if(commentCount > 0) {
+                            parent.setForumCommentCount(commentCount - 1);
+                        } else {
+                            parent.setForumCommentCount(0);
+                        }
+                        if(totalComments > 0) {
+                            parent.setTotalComments(totalComments - 1);
+                        } else {
+                            parent.setTotalComments(0);
+                        }
                     }
                 }
                 parent.update();
