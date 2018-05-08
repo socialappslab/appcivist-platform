@@ -2538,6 +2538,10 @@ public class Contributions extends Controller {
             if(!authorExist) {
                 contribution.getAuthors().add(author);
                 contribution.update();
+                F.Promise.promise(() -> {
+                    sendMemberAddMail(author, contribution.getUuidAsString());
+                    return Optional.ofNullable(null);
+                });
                 return ok(Json.toJson(contribution));
             }else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Author already in contribution")));
@@ -2679,7 +2683,7 @@ public class Contributions extends Controller {
      * DELETE  /api/contribution/:uuid/nonmemberauthors/:auuid
      *
      * @param uuid
-     * @param auuid
+     * @param nmaid
      * @return
      */
     @ApiOperation(httpMethod = "DELETE", response = Contribution.class, produces = "application/json", value = "Delete a non member author from a contribution")
@@ -2762,6 +2766,18 @@ public class Contributions extends Controller {
                     provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
                 }
             }
+        }
+    }
+
+    private static void sendMemberAddMail(User author, String contributionUUID) {
+        String url = Play.application().configuration().getString("application.uiUrl") + "/api/public/contribution/"+ contributionUUID;
+        String bodyText = Messages.get("mail.notification.add.nonmember", url);
+        String subject = Messages.get("mail.notification.add.nonmember.subject");
+        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+        if(author.getEmail() != null) {
+            MembershipInvitation membershipInvitation = new MembershipInvitation();
+            membershipInvitation.setEmail(author.getEmail());
+            provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
         }
     }
 
