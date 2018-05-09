@@ -16,7 +16,6 @@ import org.geojson.FeatureCollection;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import play.Logger;
-import play.Play;
 import play.data.validation.Constraints.Required;
 import utils.LocationUtilities;
 
@@ -1618,6 +1617,10 @@ public class Contribution extends AppCivistBaseModel {
     public static Long getIdByUUID(UUID uuid) {
         Contribution c = find.where().eq("uuid",uuid.toString()).findUnique();
         return c.getContributionId();
+    }
+
+    public static Contribution getByUUID(UUID uuid) {
+        return find.where().eq("uuid",uuid.toString()).findUnique();
     }
 
     public String getErrorsInExtendedTextPad() {

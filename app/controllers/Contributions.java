@@ -42,6 +42,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import play.Logger;
 import play.Play;
 import play.data.Form;
+import play.i18n.Lang;
 import play.i18n.Messages;
 import play.libs.F;
 import play.libs.F.Promise;
@@ -2750,17 +2751,73 @@ public class Contributions extends Controller {
      */
 
 
+    private static String getContributionMailUrl(String contributionUUID) {
+        String url = Play.application().configuration().getString("application.uiUrl") + "/v2/p/assembly/{auuid}/campaign/{cuuid}/contribution/{conuuid}";
+        Contribution contribution = Contribution.getByUUID(UUID.fromString(contributionUUID));
+        String auuid = Assembly.findById(contribution.getAssemblyId()).getUuidAsString();
+        String cuuid = contribution.getCampaignUuids().get(0).toString();
+        return url.replace("{auuid}", auuid)
+                .replace("{cuuid}", cuuid)
+                .replace("conuuid", contributionUUID);
+
+
+
+
+    }
+
+    private static String getMemberAuthorTemplate(String contributionUUID) {
+        Contribution contribution = Contribution.getByUUID(UUID.fromString(contributionUUID));
+        Campaign campaign = Campaign.find.byId(contribution.getCampaignIds().get(0));
+        String template = null;
+        for(Config config: campaign.getConfigs()) {
+            if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_AUTHORSHIP_INVITATION_EMAIL_TEMPLATE)) {
+                template = config.getValue();
+            }
+        }
+        return template;
+    }
+
+    private static Lang getMailLang(String lang, String contributionUUID) {
+        Lang aRet = Lang.forCode(lang);
+        if(lang == null) {
+            Contribution contribution = Contribution.getByUUID(UUID.fromString(contributionUUID));
+            Campaign campaign = Campaign.find.byId(contribution.getCampaignIds().get(0));
+            aRet = campaign.getLang() == null ? null : Lang.forCode(campaign.getLang());
+            if (aRet == null) {
+                Assembly assembly = Assembly.findById(contribution.getAssemblyId());
+                aRet = assembly.getLang() == null ? null : Lang.forCode(assembly.getLang());
+            }
+        }
+
+        return aRet;
+    }
+
     private static void sendNonMemberAddMail(List<NonMemberAuthor> nonMemberAuthors, String contributionUUID) {
-        String url = Play.application().configuration().getString("application.uiUrl") + "/api/public/contribution/"+ contributionUUID;
-        String bodyTextLdap = Messages.get("mail.notification.add.nonmember.ldap", url);
-        String bodyText = Messages.get("mail.notification.add.nonmember", url);
-        String subject = Messages.get("mail.notification.add.nonmember.subject");
+        String url = getContributionMailUrl(contributionUUID);
+        String template = getMemberAuthorTemplate(contributionUUID);
         MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
         for(NonMemberAuthor author: nonMemberAuthors) {
             if(author.getEmail() != null) {
+                Lang lang = getMailLang(author.getLang(), contributionUUID);
+                String bodyTextLdap;
+                String bodyText;
+                String subject;
+                if(lang == null) {
+                    bodyTextLdap = Messages.get("mail.notification.add.nonmember.ldap", url);
+                    bodyText = Messages.get("mail.notification.add.nonmember", url);
+                    subject = Messages.get("mail.notification.add.nonmember.subject");
+                } else {
+                    bodyTextLdap = Messages.get(lang,"mail.notification.add.nonmember.ldap", url);
+                    bodyText = Messages.get(lang,"mail.notification.add.nonmember", url);
+                    subject = Messages.get(lang,"mail.notification.add.nonmember.subject");
+                }
                 MembershipInvitation membershipInvitation = new MembershipInvitation();
                 membershipInvitation.setEmail(author.getEmail());
-                if (author.getSource()!= null && author.getSource().equals("ldap")) {
+                if(template != null) {
+                    template = template.replace("[link]", url);
+                    provider.sendInvitationByEmail(membershipInvitation, template, subject);
+                }
+                else if (author.getSource()!= null && author.getSource().equals("ldap")) {
                     provider.sendInvitationByEmail(membershipInvitation, bodyTextLdap, subject);
                 } else {
                     provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
@@ -2770,9 +2827,21 @@ public class Contributions extends Controller {
     }
 
     private static void sendMemberAddMail(User author, String contributionUUID) {
-        String url = Play.application().configuration().getString("application.uiUrl") + "/api/public/contribution/"+ contributionUUID;
-        String bodyText = Messages.get("mail.notification.add.nonmember", url);
-        String subject = Messages.get("mail.notification.add.nonmember.subject");
+        String url = getContributionMailUrl(contributionUUID);
+        String template = getMemberAuthorTemplate(contributionUUID);
+        Lang lang = getMailLang(author.getLang(), contributionUUID);
+        String bodyText;
+        String subject;
+        if(lang == null) {
+            bodyText = Messages.get("mail.notification.add.nonmember", url);
+            subject = Messages.get("mail.notification.add.nonmember.subject");
+        } else {
+            bodyText = Messages.get(lang, "mail.notification.add.nonmember", url);
+            subject = Messages.get(lang, "mail.notification.add.nonmember.subject");
+        }
+        if (template != null) {
+            bodyText = template.replace("[link]", url);
+        }
         MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
         if(author.getEmail() != null) {
             MembershipInvitation membershipInvitation = new MembershipInvitation();
