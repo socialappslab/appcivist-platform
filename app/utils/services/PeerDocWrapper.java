@@ -199,6 +199,7 @@ public class PeerDocWrapper {
         userPeerDoc.setEmail(user.getEmail());
         userPeerDoc.setId(user.getUserId());
         userPeerDoc.setNonce(Base64.getEncoder().encodeToString(nonce));
+        userPeerDoc.setLanguage(user.getLanguage());
         return Json.toJson(userPeerDoc).toString();
     }
 
@@ -208,6 +209,7 @@ public class PeerDocWrapper {
         String email;
         Long id;
         String nonce;
+        String language;
 
         public String getAvatar() {
             return avatar;
@@ -247,6 +249,14 @@ public class PeerDocWrapper {
 
         public void setNonce(String nonce) {
             this.nonce = nonce;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public void setLanguage(String language) {
+            this.language = language;
         }
     }
 
