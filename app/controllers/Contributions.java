@@ -3930,6 +3930,15 @@ public class Contributions extends Controller {
             @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
+        if(upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
+            Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
+            List<String> requirements;
+            for(Config config: campaing.getConfigs()) {
+                if(config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ)) {
+                    requirements = Arrays.asList(config.getValue().split(","));
+                }
+            }
+        }
         if (ContributionStatus.valueOf(upStatus) != null) {
             Http.Session s = session();
             Logger.debug("Session = "+(s != null ? s : "[no session found]"));
