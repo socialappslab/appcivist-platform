@@ -1,13 +1,12 @@
 package utils.services;
 
 import enums.ContributionStatus;
-import enums.PeerDocStatus;
 import enums.ResourceTypes;
 import exceptions.PeerdocServerError;
 import models.Contribution;
+import models.NonMemberAuthor;
 import models.Resource;
 import models.User;
-import org.codehaus.jackson.JsonNode;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -111,13 +110,49 @@ public class PeerDocWrapper {
         promise.get(DEFAULT_TIMEOUT);
     }
 
-    public void changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
-            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError{
+    public void updatePeerdocPermissions(Contribution contribution) throws NoSuchPaddingException,
+            UnsupportedEncodingException, InvalidKeyException, NoSuchAlgorithmException,
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,
+            HashGenerationException {
+        Resource resource = getPeerdocByContribution(contribution);
+        if(resource == null) {
+            Logger.info("PEERDOC: Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Not updating permissions");
+            return;
+        }
+        String documentId = resource.getUrlAsString().split("document/")[1];
+        String userEncrypted = encrypt();
+        WSRequest holder = getWSHolder("/document/share/"+documentId+"?user="+userEncrypted);
+        Map<String, List<UserPeerDoc>> editObject = new HashMap<>();
+        Map<String, Object> toSend = new HashMap<>();
+        editObject.put("edit", new ArrayList<>());
+        for(User user: contribution.getAuthors()) {
+            editObject.get("edit").add(userToUserPeerdoc(user, null));
+        }
+        for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
+            UserPeerDoc userPeerDoc = new UserPeerDoc();
+            userPeerDoc.setEmail(nonMemberAuthor.getEmail());
+            userPeerDoc.setId(nonMemberAuthor.getId());
+            userPeerDoc.setLanguage(nonMemberAuthor.getLang());
+        }
+        toSend.put("token_users", editObject);
+        holder.setBody(Json.toJson(toSend));
+        F.Promise<WSResponse> promise = wsSend(holder);
+        promise.get(DEFAULT_TIMEOUT);
+    }
+
+    private Resource getPeerdocByContribution(Contribution contribution) {
         Resource resource = null;
         if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
             resource = contribution.getExtendedTextPad();
         }
+        return resource;
+    }
+
+    public void changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
+            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
+            InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError{
+        Resource resource = getPeerdocByContribution(contribution);
+
         if(resource == null) {
             Logger.info("PEERDOC: Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Changing status as usual.");
             return;
@@ -188,6 +223,11 @@ public class PeerDocWrapper {
     }
 
     private String userToUserData(User user, byte [] nonce) throws HashGenerationException {
+        UserPeerDoc userPeerDoc = userToUserPeerdoc(user, nonce);
+        return Json.toJson(userPeerDoc).toString();
+    }
+
+    private UserPeerDoc userToUserPeerdoc(User user, byte [] nonce) throws HashGenerationException {
         UserPeerDoc userPeerDoc = new UserPeerDoc();
         Logger.info(user.getEmail());
         if(user.getProfilePic() != null) {
@@ -198,10 +238,13 @@ public class PeerDocWrapper {
         userPeerDoc.setUsername(user.getUsername());
         userPeerDoc.setEmail(user.getEmail());
         userPeerDoc.setId(user.getUserId());
-        userPeerDoc.setNonce(Base64.getEncoder().encodeToString(nonce));
+        if(nonce != null) {
+            userPeerDoc.setNonce(Base64.getEncoder().encodeToString(nonce));
+        }
         userPeerDoc.setLanguage(user.getLanguage());
-        return Json.toJson(userPeerDoc).toString();
+        return userPeerDoc;
     }
+
 
     private class UserPeerDoc {
         String avatar;

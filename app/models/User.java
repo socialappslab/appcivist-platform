@@ -1,49 +1,7 @@
 package models;
 
-import enums.MembershipStatus;
-import io.swagger.annotations.ApiModel;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
-import models.TokenAction.Type;
-import models.misc.Views;
-import models.transfer.AssemblyTransfer;
-import play.Logger;
-import play.Play;
-import play.api.libs.iteratee.Cont;
-import play.db.ebean.Transactional;
-import play.i18n.Lang;
-import play.mvc.Http.Context;
-import providers.*;
-import utils.GlobalData;
-import utils.GlobalDataConfigKeys;
-import utils.security.HashGenerationException;
-import utils.security.HashGeneratorUtils;
 import be.objectify.deadbolt.core.models.Permission;
 import be.objectify.deadbolt.core.models.Subject;
-
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Where;
@@ -54,17 +12,35 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
-import com.feth.play.module.pa.user.AuthUser;
-import com.feth.play.module.pa.user.AuthUserIdentity;
-import com.feth.play.module.pa.user.EmailIdentity;
-import com.feth.play.module.pa.user.NameIdentity;
-import com.feth.play.module.pa.user.PicturedIdentity;
-
+import com.feth.play.module.pa.user.*;
+import controllers.Contributions;
 import controllers.Users;
 import delegates.AssembliesDelegate;
+import enums.MembershipStatus;
 import enums.MyRoles;
 import exceptions.MembershipCreationException;
 import exceptions.TokenNotValidException;
+import io.swagger.annotations.ApiModel;
+import models.TokenAction.Type;
+import models.misc.Views;
+import models.transfer.AssemblyTransfer;
+import play.Logger;
+import play.Play;
+import play.db.ebean.Transactional;
+import play.i18n.Lang;
+import play.libs.F;
+import play.mvc.Http.Context;
+import providers.*;
+import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
+import utils.security.HashGenerationException;
+import utils.security.HashGeneratorUtils;
+import utils.services.PeerDocWrapper;
+
+import javax.persistence.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -715,6 +691,13 @@ public class User extends AppCivistBaseModel implements Subject {
 				}
 				contribution.addAuthor(user);
 				contribution.update();
+				contribution.refresh();
+				F.Promise.promise(() -> {
+					Contributions.sendNonMemberAddMail(contribution.getNonMemberAuthors(), contribution.getUuidAsString());
+					PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+					peerDocWrapper.updatePeerdocPermissions(contribution);
+					return Optional.ofNullable(null);
+				});
 			}
 			if(userId != null) {
 				Logger.info("Creating a new liked account");
