@@ -174,3 +174,14 @@ membership.request.email.subject=Petición para unirse a AppCivist {0}
 membership.confirmation.email.subject=Bienvenido a AppCivist {0}
 contribution.previous.proposal.document=Documento di proposta precedente
 contribution.etherpad.words=parole
+
+mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través “Mis {2}”. Link: {4}
+mail.notification.add.nonmember.subject=[AppCivist] Invitación para colaborar
+
+contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
+
+appcivist.contribution = contribución
+appcivist.contribution.proposal = propuesta
+appcivist.contribution.idea = idea
+appcivist.contribution.proposals = propuestas
+appcivist.contribution.ideas = ideas
