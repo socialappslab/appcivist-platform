@@ -203,7 +203,7 @@ mail.notification.new_proposal_text=Tu grupo de trabajo {0} ha enviado {1} nueva
 mail.notification.proposal_developing_text=Tu grupo de trabajo {0} está desarrollando actualmente las siguientes propuestas:
 mail.notification.updates_text.proposal=Resumen de los otros grupos de trabajo
 
-mail.notification.add.nonmember=Você foi convidado a colaborar em uma {0} para o processo participativo {1}. Acesse o site da campanha com o link abaixo e faça o login. Depois de logado, clique em “Minhas {2}” para ver a {0} e colaborar. Link: {3}
+mail.notification.add.nonmember=Você foi convidado a colaborar em uma {0} para o processo participativo {1}. Acesse o site da campanha com o link abaixo e faça o login. Depois de logado, clique em “Minhas {2}” para ver a {3} e colaborar. Link: {4}
 mail.notification.add.nonmember.subject=[AppCivist] Invitação para collaborar
 
 contribution.unauthorized.creation = No se puede agregar un nuevo {0} en este espacio porque esta actualmente en estado DRAFT privado

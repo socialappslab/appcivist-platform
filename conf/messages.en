@@ -219,11 +219,10 @@ mail.notification.campaign_description_text.proposal=This campaign is currently 
 mail.notification.proposal_developing_text=Your working group {0} is currently developing the following proposals:
 mail.notification.updates_text.proposal=Summary of other working groups
 
-mail.notification.add.nonmember=You have been invited to collaborate on the {0} connected to the link below for the participatory process {1}. Access the campaign site with this link and login. After login, click on “My {2}” to see the {0} and collaborate. Link: {3}
-mail.notification.add.nonmember.subject=[AppCivist] New collaboration invitation
+mail.notification.add.nonmember=You have been invited to collaborate on the {0} connected to the link below for the participatory process {1}. Access the campaign site with this link and login. After login, click on “My {2}” to see the {3} and collaborate. Link: {4}
+mail.notification.add.nonmember.subject=[AppCivist] Invitation to collaborate
 
 contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
-
 
 appcivist.contribution = contribution
 appcivist.contribution.proposal = proposal
