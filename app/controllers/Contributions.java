@@ -2539,8 +2539,11 @@ public class Contributions extends Controller {
             if(!authorExist) {
                 contribution.getAuthors().add(author);
                 contribution.update();
+                contribution.refresh();
                 F.Promise.promise(() -> {
                     sendMemberAddMail(author, contribution.getUuidAsString());
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive);
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
                     return Optional.ofNullable(null);
                 });
                 return ok(Json.toJson(contribution));
@@ -2589,10 +2592,13 @@ public class Contributions extends Controller {
                 author = NonMemberAuthor.create(author);
                 contribution.getNonMemberAuthors().add(author);
                 contribution.update();
+                contribution.refresh();
                 List<NonMemberAuthor> authors = new ArrayList<>();
                 authors.add(author);
                 F.Promise.promise(() -> {
                     sendNonMemberAddMail(authors, contribution.getUuidAsString());
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
                     return Optional.ofNullable(null);
                 });
                 return ok(Json.toJson(author));
@@ -2602,6 +2608,13 @@ public class Contributions extends Controller {
                 // add it as author
                 contribution.getAuthors().add(user);
                 contribution.update();
+                contribution.refresh();
+                F.Promise.promise(() -> {
+                    sendMemberAddMail(user, contribution.getUuidAsString());
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
+                    return Optional.ofNullable(null);
+                });
 
                 return ok(Json.toJson(user));
             } else {
@@ -2669,6 +2682,12 @@ public class Contributions extends Controller {
             if(authorExist) {
                 contribution.getAuthors().remove(author);
                 contribution.update();
+                contribution.refresh();
+                F.Promise.promise(() -> {
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
+                    return Optional.ofNullable(null);
+                });
                 return ok(Json.toJson(contribution));
             }else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
@@ -2705,6 +2724,12 @@ public class Contributions extends Controller {
             if(authorExist) {
                 contribution.getNonMemberAuthors().remove(author);
                 contribution.update();
+                contribution.refresh();
+                F.Promise.promise(() -> {
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
+                    return Optional.ofNullable(null);
+                });
                 return ok(Json.toJson(new TransferResponseStatus(ResponseStatus.OK, "Non Member Author was Removed")));
             }else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
@@ -2792,7 +2817,7 @@ public class Contributions extends Controller {
         return aRet;
     }
 
-    private static void sendNonMemberAddMail(List<NonMemberAuthor> nonMemberAuthors, String contributionUUID) {
+    public static void sendNonMemberAddMail(List<NonMemberAuthor> nonMemberAuthors, String contributionUUID) {
         String url = getContributionMailUrl(contributionUUID);
         String template = getMemberAuthorTemplate(contributionUUID);
         MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
@@ -2866,7 +2891,8 @@ public class Contributions extends Controller {
      */
     public static Contribution createContribution(Contribution newContrib,
                                                   User author, ContributionTypes type, String etherpadServerUrl, String etherpadApiKey,
-                                                  ContributionTemplate t, ResourceSpace containerResourceSpace) throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException, ConfigurationException {
+                                                  ContributionTemplate t, ResourceSpace containerResourceSpace)
+            throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException, ConfigurationException {
 
         newContrib.setType(type);
         List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
@@ -3151,6 +3177,8 @@ public class Contributions extends Controller {
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
         F.Promise.promise(() -> {
                     sendNonMemberAddMail(nonMemberAuthors, newContrib.getUuidAsString());
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
+                    peerDocWrapper.updatePeerdocPermissions(newContrib);
                     return Optional.ofNullable(null);
         });
         //Previously we also asked the associated contribution to be PROPOSAL,
