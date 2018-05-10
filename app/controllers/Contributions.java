@@ -2792,7 +2792,7 @@ public class Contributions extends Controller {
             auuid = a.getUuidAsString();
             url = Play.application().configuration().getString("application.uiUrl")
                     + "/p/assembly/{auuid}/contribution/{conuuid}";
-            url.replace("{auuid}", auuid).replace("{conuuid}", conuuid);
+            url = url.replace("{auuid}", auuid).replace("{conuuid}", conuuid);
         } else if (c!=null) { // contribution is in the namespace of the campaign
             Long aid = c.getAssemblies().get(0);
             Assembly campaignAssembly = Assembly.read(aid);
@@ -2804,12 +2804,12 @@ public class Contributions extends Controller {
                 guuid = wgs.get(0).getUuid().toString();
                 url = Play.application().configuration().getString("application.uiUrl")
                         + "/p/assembly/{auuid}/campaign/{cuuid}/group/{guuid}/contribution/{conuuid}";
-                url.replace("{auuid}", auuid)
+                url = url.replace("{auuid}", auuid)
                         .replace("{cuuid}", cuuid)
                         .replace("{guuid}", guuid)
                         .replace("{conuuid}", conuuid);
             } else {
-                url.replace("{auuid}", auuid)
+                url = url.replace("{auuid}", auuid)
                         .replace("{cuuid}", cuuid)
                         .replace("{conuuid}", conuuid);
             }
@@ -2823,13 +2823,13 @@ public class Contributions extends Controller {
             guuid = wg.getUuid().toString();
             url = Play.application().configuration().getString("application.uiUrl")
                     + "/p/assembly/{auuid}/campaign/{cuuid}/group/{guuid}/contribution/{conuuid}";
-            url.replace("{auuid}", auuid)
+            url = url.replace("{auuid}", auuid)
                     .replace("{cuuid}", cuuid)
                     .replace("{guuid}", guuid)
                     .replace("{conuuid}", conuuid);
         } else {
             url = Play.application().configuration().getString("application.uiUrl") + "/p/contribution/{conuuid}";
-            url.replace("{conuuid}", conuuid);
+            url = url.replace("{conuuid}", conuuid);
         }
         return url;
     }
@@ -2910,10 +2910,11 @@ public class Contributions extends Controller {
                 + "cType = " + cType
                 + ", initiativeName=" + initiativeName
                 + ", initiativeLang=" + initiativeLang
-                + ", url=" +url
+                + ", url=" + url
                 +", containingResourceSpaceType=" + container.getType()
-                +", author =" + memberAuthor.toString()
-                +", nonMemberAuthor=" + nonMemberAuthors.toString());
+                +", author =" + (memberAuthor !=null ? memberAuthor.toString() : "")
+                +", nonMemberAuthor=" + (nonMemberAuthors!=null ? nonMemberAuthors.toString() : ""));
+
         if (memberAuthor!=null) {
             sendMailToAuthor(memberAuthor.getLang(), memberAuthor.getEmail(), contribution, initiativeLang, cTypeKey,
                     cTypePluralKey, initiativeName, url, template);
@@ -2938,9 +2939,10 @@ public class Contributions extends Controller {
         }
         String bodyText;
         String subject;
+        ctx().changeLang(lang);
         String cTypeTranslated = Messages.get(lang, cTypeKey);
         String cTypePluralTranslated = Messages.get(lang, cTypePluralKey);
-        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypePluralTranslated, url);
+        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypePluralTranslated, cTypeTranslated, url);
         subject = Messages.get(lang,"mail.notification.add.nonmember.subject");
         MembershipInvitation membershipInvitation = new MembershipInvitation();
         membershipInvitation.setEmail(authorEmail);
