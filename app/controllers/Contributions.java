@@ -2611,7 +2611,7 @@ public class Contributions extends Controller {
                 contribution.update();
                 contribution.refresh();
                 F.Promise.promise(() -> {
-                    sendMemberAddMail(user, contribution.getUuidAsString());
+                    sendAuthorAddedMail(user, null, contribution, contribution.getContainingSpaces().get(0));
                     PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
                     peerDocWrapper.updatePeerdocPermissions(contribution);
                     return Optional.ofNullable(null);
@@ -2862,8 +2862,8 @@ public class Contributions extends Controller {
         return aRet;
     }
 
-    private static void sendAuthorAddedMail(User memberAuthor, List<NonMemberAuthor> nonMemberAuthors,
-                                            Contribution contribution, ResourceSpace container) {
+    public static void sendAuthorAddedMail(User memberAuthor, List<NonMemberAuthor> nonMemberAuthors,
+                                           Contribution contribution, ResourceSpace container) {
         Logger.debug("Preparing email to send to added author(s)...");
         String contributionUUID = contribution.getUuidAsString();
         Assembly containerAssembly = null; // ToDo: personalize emails for contributions in assemblies

@@ -693,7 +693,7 @@ public class User extends AppCivistBaseModel implements Subject {
 				contribution.update();
 				contribution.refresh();
 				F.Promise.promise(() -> {
-					Contributions.sendNonMemberAddMail(contribution.getNonMemberAuthors(), contribution.getUuidAsString());
+					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution, contribution.getContainingSpaces().get(0));
 					PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
 					peerDocWrapper.updatePeerdocPermissions(contribution);
 					return Optional.ofNullable(null);
