@@ -46,14 +46,16 @@ playauthenticate.reset_password.message.success.manual_login=Your password has b
 playauthenticate.change_password.error.passwords_not_same=Passwords do not match.
 playauthenticate.change_password.success=Password has been changed successfully.
 
-playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
-playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
-playauthenticate.password.signup.error.missing_lang=Missing language
+playauthenticate.password.signup.error.passwords_not_same=Las passwords no coinciden
+playauthenticate.password.login.unknown_user_or_pw=Usuario o password desconocidos
+playauthenticate.password.signup.error.missing_lang=Falta elegir un idioma
 playauthenticate.password.signup.error.password_null=Password not provided.
+playauthenticate.password.signup.error.password_repeat_null=Password not repeated.
 
-playauthenticate.password.verify_signup.subject=AppCivist: Complete your signup
-playauthenticate.password.verify_email.subject=AppCivist: Confirm your e-mail address
-playauthenticate.password.reset_email.subject=AppCivist: How to reset your password
+
+playauthenticate.password.verify_signup.subject=AppCivist: Completa tu subscripción
+playauthenticate.password.verify_email.subject=AppCivist: Confirma tu dirección de correo electrónico
+playauthenticate.password.reset_email.subject=AppCivist: Como recuperar tu password
 
 # play-authenticate: Additional translations
 
@@ -70,7 +72,7 @@ playauthenticate.signup.title=Signup
 playauthenticate.signup.name=Your name
 playauthenticate.signup.now=Sign up now
 playauthenticate.signup.oauth=or sign up using one of the following providers:
-playauthenticate.signup.form-has-errors=The signup form had errors. Either your email is invalid, your passwords don't match or something is missing.
+playauthenticate.signup.form-has-errors=El formulario de registro tiene errores. Puede ser que el email sea inválido, las passwords no coincidan o la información no sea completa.
 
 playauthenticate.verify.account.title=E-mail verification required
 playauthenticate.verify.account.before=Before setting a password, you need to
@@ -145,88 +147,68 @@ playauthenticate.index.intro_2=This is a template for a simple application with 
 playauthenticate.index.intro_3=Check the main navigation above for simple page examples including supported authentication features.
 playauthenticate.index.heading=Heading
 playauthenticate.index.details=View details
-
 # play-authenticate - sample: Restricted page
 playauthenticate.restricted.secrets=Secrets, everywhere!
 
 ### --- play-authenticate END
 
 ### --- AppCivist Messages
-groups.creation.success = The working group {0} has been created with success by {1}
-groups.creation.error = The working group was not created. There was a problem with the request: {0}
-assemblies.creation.success = The assembly {0} has been created with success by {1}
-assemblies.creation.error = The assembly was not created. There was a problem with the request: {0}
-roles.creation.success = The role {0} has been created with success by {1}
-roles.creation.error = The role was not created. There was a problem with the request: {0}
-configs.creation.success = The config {0} has been created with success by {1}
-configs.creation.error = The config was not created. There was a problem with the request: {0}
-campaign.creation.success = The campaign {0} has been created with success by {1}
-campaign.creation.error = The campaign was not created. There was a problem with the request: {0}
-campaign.phase.creation.success = The campaign phase {0} has been created with success by {1}
-campaign.phase.creation.error = The campaign phase was not created. There was a problem with the request: {0}
-contribution.creation.success = The contribution {0} has been created with success by {1}
-contribution.creation.error = The contribution was not created. There was a problem with the request: {0}
-membership.invitation.creation.success = The invitation to membership {0} has been created with success by {1}
-membership.invitation.creation.error = The invitation to membership was not created. There was a problem with the request: {0}
-membership.invitation.creation.unauthorized = The membership could not be created because user is not authorized
-membership.invitation.email.message = Membership invitation
-membership.invitation.email.subject=Invitation to join {0} in AppCivist
-membership.invitation.email.link = To accept the invitation, follow this link
-membership.request.email.subject=Request to join an AppCivist {0}
-membership.confirmation.email.subject=Welcome to this AppCivist {0}
+groups.creation.success = El grupo de trabajo {0} ha sido creado con exito por {1}
+groups.creation.error = El grupo de trabajo no fue creado. Hubo un problema con la peticion: {0}
+assemblies.creation.success = La asamblea {0} ha sido creada con exito por {1}
+assemblies.creation.error = La asamblea no fue creada. Hubo un problema con la peticion: {0}
+roles.creation.success = El rol {0} ha sido creado con exito por {1}
+roles.creation.error = El rol no fue creado. Hubo un problema con la peticion: {0}
+config.creation.success = La config {0} ha sido creada con exito por {1}
+config.creation.error = La config no fue creada. Hubo un problema con la peticion: {0}
+campaign.creation.success = La campaña {0} ha sido creada con exito por {1}
+campaign.creation.error = La campaña no fue creada. Hubo un problema con la peticion: {0}
+campaign.phase.creation.success = La fase de campaña {0} ha sido creada con exito por {1}
+campaign.phase.creation.error = La fase de campaña no fue creada. Hubo un problema con la peticion: {0}
+membership.invitation.creation.success = La invitacion a la membresia {0} ha sido creada con exito por {1}
+membership.invitation.creation.error = La invitacion a la membresia no fue creada. Hubo un problema con la peticion: {0}
+membership.invitation.email.message = Invitacion para membresia
+membership.invitation.creation.unauthorized = La membresía no pudo ser creada porque el usuario no está autorizado
+membership.invitation.email.subject=Invitación para unirse a AppCivist {0}
+membership.request.email.subject=Petición para unirse a AppCivist {0}
+membership.confirmation.email.subject=Bienvenido a AppCivist {0}
 
-notification.title.assembly.update=Assembly Update
-notification.title.group.update=Working Group Update
-notification.title.contribution.update=Contribution Update
-notification.title.campaign.update=Campaign Update
-notification.title.campaign.update.milestone=Upcoming Milestone
-notification.title.campaign.update.milestone_passed=Milestone Passed
-notification.title.message.new=New Message
-notification.title.message.reply=New Reply
-notification.title.message.new.group=New Working Group Message
-notification.title.message.reply.group=New Working Group Reply
-notification.title.message.new.assembly=New Assembly Message
-notification.title.message.reply.assembly=New Assembly Reply
-
-notification.description.assembly.forum.contribution={0} posted a new contribution in the forum of assembly '{1}'
-notification.description.group.forum.contribution={0} posted a new contribution in the forum of working group '{1}'
-notification.description.contribution.comment={0} commented your contribution '{1}'
-notification.description.campaign.contribution={0} posted a new contribution in campaign '{1}'
-notification.description.campaign.upcoming.milestone={0} due date approaching ({4}) for {1} {3}
-notification.description.campaign.upcoming.milestone_passed={0} just passed (due date was {4}) for {1} {2}
-notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
-notification.description.general.resource_updated={0} of {1} '{2}' was updated by {3}
-notification.description.general=There are news related to a {0} in {1} '{2}'
-
-appcivist.configuration.missing=Configurations not found in local.conf {0}
-resourceSpace.type=Missing resource space type: {0}
-contribution.previous.proposal.document=Previous proposal document
-contribution.etherpad.words=words
+notification.title.assembly.update=Nuevo en Asamblea
+notification.title.group.update=Nuevo en Grupo de Trabajo
+notification.title.contribution.update=Nuevo en Contribución
+notification.title.campaign.update=Nuevo en Campaña
+notification.title.campaign.update.milestone=Próximos Plazos
+notification.title.message.new=Nuevo Mensaje
+notification.title.message.reply=Nueva Respuesta
+notification.title.message.new.group=Nuevo Mensaje para Grupo de Trabajo
+notification.title.message.reply.group=Nueva Respuesta para Grupo de Trabajo
+notification.title.message.new.assembly=Nuevo Mensaje para Asamblea
+notification.title.message.reply.assembly=Nueva Respuesta para Asamblea
+contribution.previous.proposal.document=Documento de propuesta anterior
+contribution.etherpad.words=palabras
 
 ### Mail notifications
-mail.notification.unsubscribe=Unsubscribe
-mail.notification.new_activity=New Activity
-mail.notification.date_text=Weekly Newsletter
-mail.notification.campaign_description_text=Campaign Description
-mail.notification.stage_name_text=is gattering contributions for the following themes:
-mail.notification.campaign_name_text=has the following working groups:
-mail.notification.more_information_text=More information about the campaign can be found in the following resources:
-mail.notification.campaign_description_text.no_activity=This campaign is currently in the idea collection stage. Submit one now!
-mail.notification.new_proposal_text=Your working group {0} has submitted {1} new proposals:
-mail.notification.new_ideas_number_text=new ideas have been submitted last week:
-mail.notification.updates_text=Here are the updates from the ideas you follow:
-mail.notification.campaign_description_text.proposal=This campaign is currently in the proposal creation stage
-mail.notification.proposal_developing_text=Your working group {0} is currently developing the following proposals:
-mail.notification.updates_text.proposal=Summary of other working groups
+mail.notification.unsubscribe=Desuscribirse
+mail.notification.new_activity=Nueva Actividad
+mail.notification.date_text=Notificación Semanal
+mail.notification.campaign_description_text=Descripción de la Campaña
+mail.notification.stage_name_text=está recogiendo contribuciones para los siguientes temas:
+mail.notification.campaign_name_text=tiene los siguientes grupos de trabajo:
+mail.notification.more_information_text=Más información sobre la campaña puede encontrarse en:
+mail.notification.campaign_description_text.no_activity=Esta campaña está actualmente en la etapa de recolección de ideas. ¡Evía una ahora!
+mail.notification.new_ideas_number_text= nuevas ideas han sido enviadas la semana pasada:
+mail.notification.updates_text=Aquí están las actualizaciones de las ideas que sigues:
+mail.notification.campaign_description_text.proposal=Esta campaña está actualmente en la etapa de creación de propuestas
+mail.notification.new_proposal_text=Tu grupo de trabajo {0} ha enviado {1} nuevas propuestas:
+mail.notification.proposal_developing_text=Tu grupo de trabajo {0} está desarrollando actualmente las siguientes propuestas:
+mail.notification.updates_text.proposal=Resumen de los otros grupos de trabajo
+mail.notification.add.nonmember=Você foi convidado a colaborar em uma {0} para o processo participativo {1}. Acesse o site da campanha com o link abaixo e faça o login. Depois de logado, clique em “Minhas {2}” para ver a {0} e colaborar. Link: {3}
+mail.notification.add.nonmember.subject=[AppCivist] Invitação para collaborar
 
-mail.notification.add.nonmember=You have been invited to collaborate on the {0} connected to the link below for the participatory process {1}. Access the campaign site with this link and login. After login, click on “My {2}” to see the {0} and collaborate. Link: {3}
-mail.notification.add.nonmember.subject=[AppCivist] New collaboration invitation
+contribution.unauthorized.creation = No se puede agregar un nuevo {0} en este espacio porque esta actualmente en estado DRAFT privado
 
-contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
-
-
-appcivist.contribution = contribution
-appcivist.contribution.proposal = proposal
-appcivist.contribution.idea = idea
-appcivist.contribution.proposals = proposals
-appcivist.contribution.ideas = ideas
+appcivist.contribution = contribuçao
+appcivist.contribution.proposal = proposta
+appcivist.contribution.idea = ideia
+appcivist.contribution.proposals = propostas
+appcivist.contribution.ideas = ideias

@@ -30,6 +30,7 @@ import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 import http.Headers;
 import io.swagger.annotations.*;
+import jdk.nashorn.internal.objects.Global;
 import models.*;
 import models.location.Location;
 import models.misc.Views;
@@ -2540,7 +2541,7 @@ public class Contributions extends Controller {
                 contribution.getAuthors().add(author);
                 contribution.update();
                 F.Promise.promise(() -> {
-                    sendMemberAddMail(author, contribution.getUuidAsString());
+                    sendAuthorAddedMail(author, null, contribution, contribution.getContainingSpaces().get(0));
                     return Optional.ofNullable(null);
                 });
                 return ok(Json.toJson(contribution));
@@ -2592,7 +2593,7 @@ public class Contributions extends Controller {
                 List<NonMemberAuthor> authors = new ArrayList<>();
                 authors.add(author);
                 F.Promise.promise(() -> {
-                    sendNonMemberAddMail(authors, contribution.getUuidAsString());
+                    sendAuthorAddedMail(null, authors, contribution, contribution.getContainingSpaces().get(0));
                     return Optional.ofNullable(null);
                 });
                 return ok(Json.toJson(author));
@@ -2751,23 +2752,64 @@ public class Contributions extends Controller {
      */
 
 
-    private static String getContributionMailUrl(String contributionUUID) {
-        String url = Play.application().configuration().getString("application.uiUrl") + "/v2/p/assembly/{auuid}/campaign/{cuuid}/contribution/{conuuid}";
-        Contribution contribution = Contribution.getByUUID(UUID.fromString(contributionUUID));
-        String auuid = Assembly.findById(contribution.getAssemblyId()).getUuidAsString();
-        String cuuid = contribution.getCampaignUuids().get(0).toString();
-        return url.replace("{auuid}", auuid)
-                .replace("{cuuid}", cuuid)
-                .replace("conuuid", contributionUUID);
+    // ToDo: check if is not possible to get assembly, campaign and other ids directly from the referrer
+    private static String getContributionMailUrl(Contribution contribution, Assembly a, Campaign c, WorkingGroup wg) {
 
+        String contributionUUID = contribution.getUuidAsString();
+        String auuid = null;
+        String cuuid = null;
+        String guuid = null;
+        String conuuid = contributionUUID;
+        String url = Play.application().configuration().getString("application.uiUrl")
+                + "/p/assembly/{auuid}/campaign/{cuuid}/contribution/{conuuid}";
 
-
-
+        if (a!=null) { // contribution was inserted in an assembly, return only the
+            auuid = a.getUuidAsString();
+            url = Play.application().configuration().getString("application.uiUrl")
+                    + "/p/assembly/{auuid}/contribution/{conuuid}";
+            url.replace("{auuid}", auuid).replace("{conuuid}", conuuid);
+        } else if (c!=null) { // contribution is in the namespace of the campaign
+            Long aid = c.getAssemblies().get(0);
+            Assembly campaignAssembly = Assembly.read(aid);
+            auuid = campaignAssembly.getUuidAsString();
+            cuuid = c.getUuidAsString();
+            // check if contribution has a wg
+            List<WorkingGroup> wgs = contribution.getWorkingGroupAuthors();
+            if (wgs !=null && wgs.size()>0) {
+                guuid = wgs.get(0).getUuid().toString();
+                url = Play.application().configuration().getString("application.uiUrl")
+                        + "/p/assembly/{auuid}/campaign/{cuuid}/group/{guuid}/contribution/{conuuid}";
+                url.replace("{auuid}", auuid)
+                        .replace("{cuuid}", cuuid)
+                        .replace("{guuid}", guuid)
+                        .replace("{conuuid}", conuuid);
+            } else {
+                url.replace("{auuid}", auuid)
+                        .replace("{cuuid}", cuuid)
+                        .replace("{conuuid}", conuuid);
+            }
+        } else if (wg!=null) {
+            Long cid = wg.getCampaigns().get(0);
+            Campaign gCampaign = Campaign.read(cid);
+            Long aid = gCampaign.getAssemblies().get(0);
+            Assembly campaignAssembly = Assembly.read(aid);
+            auuid = campaignAssembly.getUuidAsString();
+            cuuid = gCampaign.getUuidAsString();
+            guuid = wg.getUuid().toString();
+            url = Play.application().configuration().getString("application.uiUrl")
+                    + "/p/assembly/{auuid}/campaign/{cuuid}/group/{guuid}/contribution/{conuuid}";
+            url.replace("{auuid}", auuid)
+                    .replace("{cuuid}", cuuid)
+                    .replace("{guuid}", guuid)
+                    .replace("{conuuid}", conuuid);
+        } else {
+            url = Play.application().configuration().getString("application.uiUrl") + "/p/contribution/{conuuid}";
+            url.replace("{conuuid}", conuuid);
+        }
+        return url;
     }
 
-    private static String getMemberAuthorTemplate(String contributionUUID) {
-        Contribution contribution = Contribution.getByUUID(UUID.fromString(contributionUUID));
-        Campaign campaign = Campaign.find.byId(contribution.getCampaignIds().get(0));
+    private static String getMemberAuthorTemplate(Contribution contribution, Campaign campaign) {
         String template = null;
         for(Config config: campaign.getConfigs()) {
             if (config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_AUTHORSHIP_INVITATION_EMAIL_TEMPLATE)) {
@@ -2777,75 +2819,111 @@ public class Contributions extends Controller {
         return template;
     }
 
-    private static Lang getMailLang(String lang, String contributionUUID) {
+    private static Lang getMailLang(String lang, Contribution contribution, String initiativeLang) {
         Lang aRet = Lang.forCode(lang);
         if(lang == null) {
-            Contribution contribution = Contribution.getByUUID(UUID.fromString(contributionUUID));
-            Campaign campaign = Campaign.find.byId(contribution.getCampaignIds().get(0));
-            aRet = campaign.getLang() == null ? null : Lang.forCode(campaign.getLang());
-            if (aRet == null) {
-                Assembly assembly = Assembly.findById(contribution.getAssemblyId());
-                aRet = assembly.getLang() == null ? null : Lang.forCode(assembly.getLang());
+            if (initiativeLang == null) {
+                Campaign campaign = Campaign.find.byId(contribution.getCampaignIds().get(0));
+                aRet = campaign.getLang() == null ? null : Lang.forCode(campaign.getLang());
+                if (aRet == null) {
+                    Assembly assembly = Assembly.findById(contribution.getAssemblyId());
+                    aRet = assembly.getLang() == null ? null : Lang.forCode(assembly.getLang());
+                }
+            } else {
+                aRet = Lang.forCode(initiativeLang);
             }
         }
 
         return aRet;
     }
 
-    private static void sendNonMemberAddMail(List<NonMemberAuthor> nonMemberAuthors, String contributionUUID) {
-        String url = getContributionMailUrl(contributionUUID);
-        String template = getMemberAuthorTemplate(contributionUUID);
-        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-        for(NonMemberAuthor author: nonMemberAuthors) {
-            if(author.getEmail() != null) {
-                Lang lang = getMailLang(author.getLang(), contributionUUID);
-                String bodyTextLdap;
-                String bodyText;
-                String subject;
-                if(lang == null) {
-                    bodyTextLdap = Messages.get("mail.notification.add.nonmember.ldap", url);
-                    bodyText = Messages.get("mail.notification.add.nonmember", url);
-                    subject = Messages.get("mail.notification.add.nonmember.subject");
-                } else {
-                    bodyTextLdap = Messages.get(lang,"mail.notification.add.nonmember.ldap", url);
-                    bodyText = Messages.get(lang,"mail.notification.add.nonmember", url);
-                    subject = Messages.get(lang,"mail.notification.add.nonmember.subject");
-                }
-                MembershipInvitation membershipInvitation = new MembershipInvitation();
-                membershipInvitation.setEmail(author.getEmail());
-                if(template != null) {
-                    template = template.replace("[link]", url);
-                    provider.sendInvitationByEmail(membershipInvitation, template, subject);
-                }
-                else if (author.getSource()!= null && author.getSource().equals("ldap")) {
-                    provider.sendInvitationByEmail(membershipInvitation, bodyTextLdap, subject);
-                } else {
-                    provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
+    private static void sendAuthorAddedMail(User memberAuthor, List<NonMemberAuthor> nonMemberAuthors,
+                                            Contribution contribution, ResourceSpace container) {
+        Logger.debug("Preparing email to send to added author(s)...");
+        String contributionUUID = contribution.getUuidAsString();
+        Assembly containerAssembly = null; // ToDo: personalize emails for contributions in assemblies
+        Campaign containerCampaign= null;
+        WorkingGroup containerGroup = null; // ToDo: personalize emails for contributions in wgs
+        Contribution containerContribution = null; // ToDo: personalize emails for contributions in other contributions
+
+        // Get container object
+        if (container.getType().equals(ResourceSpaceTypes.ASSEMBLY)) {
+            containerAssembly = container.getAssemblyResources();
+        } else if (container.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+            containerCampaign = container.getCampaign();
+        } else if (container.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+            containerGroup = container.getWorkingGroupResources();
+        } else {
+            containerContribution = container.getContribution();
+        }
+
+        String template = null;
+        if (containerCampaign != null) {
+            template = getMemberAuthorTemplate(contribution, containerCampaign);
+        }
+
+        Logger.debug("Preparing parameters...");
+        // Email parameters
+        String cType = contribution.getType().toString().toLowerCase();
+        String cTypeKey = "appcivist.contribution."+cType;
+        String cTypePluralKey = cTypeKey+"s";
+
+        String initiativeName =
+                containerAssembly != null ? containerAssembly.getShortname() :
+                        containerCampaign != null ? containerCampaign.getShortname() :
+                                containerGroup !=null ? containerGroup.getName() :
+                                        containerContribution!=null ? containerContribution.getTitle() : "";
+        String initiativeLang =
+                containerAssembly != null ? containerAssembly.getLang() :
+                        containerCampaign != null ? containerCampaign.getLang() :
+                                containerGroup !=null ? containerGroup.getLang() :
+                                        containerContribution!=null ? containerContribution.getLang() : null;
+        String url = getContributionMailUrl(contribution, containerAssembly, containerCampaign, containerGroup);
+
+
+        Logger.debug("Email to send with the following params: "
+                + "cType = " + cType
+                + ", initiativeName=" + initiativeName
+                + ", initiativeLang=" + initiativeLang
+                + ", url=" +url
+                +", containingResourceSpaceType=" + container.getType()
+                +", author =" + memberAuthor.toString()
+                +", nonMemberAuthor=" + nonMemberAuthors.toString());
+        if (memberAuthor!=null) {
+            sendMailToAuthor(memberAuthor.getLang(), memberAuthor.getEmail(), contribution, initiativeLang, cTypeKey,
+                    cTypePluralKey, initiativeName, url, template);
+        }
+
+        if (nonMemberAuthors !=null) {
+            for(NonMemberAuthor author: nonMemberAuthors) {
+                if(author.getEmail() != null) {
+                    sendMailToAuthor(author.getLang(), author.getEmail(), contribution, initiativeLang, cTypeKey,
+                            cTypePluralKey, initiativeName, url, template);
                 }
             }
         }
     }
 
-    private static void sendMemberAddMail(User author, String contributionUUID) {
-        String url = getContributionMailUrl(contributionUUID);
-        String template = getMemberAuthorTemplate(contributionUUID);
-        Lang lang = getMailLang(author.getLang(), contributionUUID);
+    private static void sendMailToAuthor(String authorLang, String authorEmail, Contribution contribution,
+                                         String initiativeLang, String cTypeKey, String cTypePluralKey,
+                                         String initiativeName, String url, String template) {
+        Lang lang = getMailLang(authorLang, contribution, initiativeLang);
+        if (lang == null) {
+            lang = Lang.forCode(Messages.get(GlobalData.DEFAULT_LANGUAGE));
+        }
         String bodyText;
         String subject;
-        if(lang == null) {
-            bodyText = Messages.get("mail.notification.add.nonmember", url);
-            subject = Messages.get("mail.notification.add.nonmember.subject");
-        } else {
-            bodyText = Messages.get(lang, "mail.notification.add.nonmember", url);
-            subject = Messages.get(lang, "mail.notification.add.nonmember.subject");
-        }
-        if (template != null) {
-            bodyText = template.replace("[link]", url);
-        }
+        String cTypeTranslated = Messages.get(lang, cTypeKey);
+        String cTypePluralTranslated = Messages.get(lang, cTypePluralKey);
+        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypePluralTranslated, url);
+        subject = Messages.get(lang,"mail.notification.add.nonmember.subject");
+        MembershipInvitation membershipInvitation = new MembershipInvitation();
+        membershipInvitation.setEmail(authorEmail);
         MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-        if(author.getEmail() != null) {
-            MembershipInvitation membershipInvitation = new MembershipInvitation();
-            membershipInvitation.setEmail(author.getEmail());
+        if(template != null) {
+            template = template.replace("[link]", url);
+            provider.sendInvitationByEmail(membershipInvitation, template, subject);
+        } else {
             provider.sendInvitationByEmail(membershipInvitation, bodyText, subject);
         }
     }
@@ -3150,7 +3228,7 @@ public class Contributions extends Controller {
         newContrib.refresh();
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
         F.Promise.promise(() -> {
-                    sendNonMemberAddMail(nonMemberAuthors, newContrib.getUuidAsString());
+            sendAuthorAddedMail(null, nonMemberAuthors, newContrib, containerResourceSpace);
                     return Optional.ofNullable(null);
         });
         //Previously we also asked the associated contribution to be PROPOSAL,
