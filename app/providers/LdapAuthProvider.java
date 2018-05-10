@@ -19,6 +19,7 @@ import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -65,7 +66,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
         }
     }
 
-    public static List<LdapAuthUser> getMemberLdapUsers(Assembly assembly, String cnsearch) throws AuthException, NamingException {
+    public static List<LdapAuthUser> getMemberLdapUsers(Assembly assembly, String cnsearch) throws AuthException, NamingException, UnsupportedEncodingException {
         LdapConfig ldapConfig = new LdapConfig();
         ldapConfig.setAssembly(assembly);
         setConfig(ldapConfig, true);
@@ -73,7 +74,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
     }
 
-    private static List<LdapAuthUser> getLdapUsers(LdapConfig ldapConfig, String cnserach) throws NamingException {
+    private static List<LdapAuthUser> getLdapUsers(LdapConfig ldapConfig, String cnserach) throws NamingException, UnsupportedEncodingException {
         String ldapURL = ldapConfig.getUrl() + ":" + ldapConfig.getPort();
         Hashtable<String, String> environment =
                 new Hashtable<String, String>();
@@ -90,13 +91,18 @@ public class LdapAuthProvider extends BasicAuthProvider {
         searchCtrls.setCountLimit(50);
         String[] attributes = { "cn", "mail" };
         searchCtrls.setReturningAttributes(attributes);
-        String filter = "&(objectClass=*)(accountstatus=active)";
+        StringBuilder filter = new StringBuilder("&(objectClass=*)(accountstatus=active)");
         if(cnserach != null) {
-            filter = "("+filter+"(cn=*"+cnserach+"*))";
+            cnserach =  java.net.URLDecoder.decode(cnserach, "UTF-8");
+            filter = new StringBuilder("(" + filter + "(cn=");
+            for(String word : cnserach.split(" ")) {
+                filter.append("*").append(word);
+            }
+            filter.append("*))");
         } else {
-            filter = "("+filter+")";
+            filter = new StringBuilder("(" + filter + ")");
         }
-        NamingEnumeration values = context.search(ldapConfig.getDc(),filter,searchCtrls);
+        NamingEnumeration values = context.search(ldapConfig.getDc(), filter.toString(),searchCtrls);
         List<LdapAuthUser>  aRet = new ArrayList<>();
         while (values.hasMoreElements())
         {
@@ -131,7 +137,9 @@ public class LdapAuthProvider extends BasicAuthProvider {
                     }
                 }
             }
-            aRet.add(user);
+            if(User.findByEmail(user.getMail()) == null) {
+                aRet.add(user);
+            }
         }
         Logger.info(aRet.size() + " users found");
         context.close();
