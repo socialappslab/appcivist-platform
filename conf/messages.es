@@ -205,7 +205,7 @@ mail.notification.updates_text.proposal=Resumen de los otros grupos de trabajo
 
 contribution.unauthorized.creation = No se puede agregar un nuevo {0} en este espacio porque esta actualmente en estado DRAFT privado
 
-mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través “Mis {2}”. Si no quieres formar parte de esta proposta, elimine su nombre de la lista de autores o contacte al autor principal. Link: {4}
+mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través "Mis {2}". Si no quieres formar parte de esta proposta, elimine su nombre de la lista de autores o contacte al autor principal. Link: {4}
 mail.notification.add.nonmember.subject=[AppCivist] Invitación para colaborar
 
 contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT

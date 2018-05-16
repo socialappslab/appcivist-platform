@@ -174,7 +174,7 @@ membership.confirmation.email.subject=Bienvenido a AppCivist {0}
 appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly
 contribution.etherpad.words=parole
 
-mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través “Mis {2}”. Se você não deseja ser autor desta proposta, delete seu nome da lista de autores. Link: {4}
+mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través "Mis {2}". Se você não deseja ser autor desta proposta, delete seu nome da lista de autores. Link: {4}
 mail.notification.add.nonmember.subject=[AppCivist] Invitación para colaborar
 
 contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
