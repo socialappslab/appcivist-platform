@@ -3143,5 +3143,10 @@ alter TABLE campaign_participation add COLUMN campaign_participation_id bigseria
 UPDATE campaign_participation SET campaign_participation_id=nextval('campaign_participation_campaign_participation_id_seq');
 alter TABLE campaign_participation add CONSTRAINT pk_campaign_participation primary key (campaign_participation_id);
 
---78.sql
+-- 78.sql
 UPDATE public.contribution SET comment_count = 0 WHERE comment_count < 0;
+
+-- 79.sql
+CREATE TEXT SEARCH CONFIGURATION "es-py" ( COPY = spanish );
+ALTER TEXT SEARCH CONFIGURATION "es-py" ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, spanish_stem;
