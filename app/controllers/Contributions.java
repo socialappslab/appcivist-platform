@@ -3930,14 +3930,18 @@ public class Contributions extends Controller {
             @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
-        if(upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
-            Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
-            List<String> requirements;
-            for(Config config: campaing.getConfigs()) {
-                if(config.getKey().equals(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ)) {
-                    requirements = Arrays.asList(config.getValue().split(","));
-                }
-            }
+        boolean checkStatus = true;
+        if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
+            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
+                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ);
+        }
+        if (upStatus.equals(ContributionStatus.PUBLISHED.name())) {
+            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
+                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
+        }
+        if(!checkStatus) {
+            return badRequest(Json.toJson(new TransferResponseStatus("You must to complete all the " +
+                    "required custom fields before changing to " + upStatus + " status")));
         }
         if (ContributionStatus.valueOf(upStatus) != null) {
             Http.Session s = session();
@@ -5025,6 +5029,42 @@ public class Contributions extends Controller {
         }
         return unauth;
     }
+    private static boolean checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
+        List<String> requirements = new ArrayList<>();
+        if(upStatus.equals(cs.name())) {
+            Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
+            for(Config config: campaing.getConfigs()) {
+                if(config.getKey().equals(configKey)) {
+                    requirements = Arrays.asList(config.getValue().split(","));
+                }
+            }
+        }
+        List<String> customFields = new ArrayList<>();
+        int count = 0;
+        if(!requirements.isEmpty()) {
+            for(String requirement: requirements) {
+                String output = requirement.substring(0, 1).toUpperCase() + requirement.substring(1);
+                try {
+                    Contribution.class.getMethod("get" + output);
+                } catch (NoSuchMethodException e) {
+                    customFields.add(requirement);
+                }
+            }
+        } else {
+            return true;
+        }
+        if (customFields.isEmpty()) {
+            return true;
+        }
+        for(CustomFieldValue customFieldValue: c.getResourceSpace().getCustomFieldValues()) {
+            for(String requirement: customFields) {
+                if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement)) {
+                    count +=1;
+                }
+            }
+        }
+        return count == customFields.size();
+    }
 
 }
 
@@ -5074,4 +5114,6 @@ class PaginatedContribution {
     public void setList(List<Contribution> list) {
         this.list = list;
     }
+
+
 }
