@@ -3930,7 +3930,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
-        boolean checkStatus = true;
+        String checkStatus = null;
         if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
             checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
                     GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ);
@@ -3939,9 +3939,9 @@ public class Contributions extends Controller {
             checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
                     GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
         }
-        if(!checkStatus) {
+        if(checkStatus != null) {
             return badRequest(Json.toJson(new TransferResponseStatus("You must to complete all the " +
-                    "required custom fields before changing to " + upStatus + " status")));
+                    "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
         }
         if (ContributionStatus.valueOf(upStatus) != null) {
             Http.Session s = session();
@@ -5029,7 +5029,8 @@ public class Contributions extends Controller {
         }
         return unauth;
     }
-    private static boolean checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
+    private static String checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
+        String aRet = null;
         List<String> requirements = new ArrayList<>();
         if(upStatus.equals(cs.name())) {
             Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
@@ -5040,7 +5041,6 @@ public class Contributions extends Controller {
             }
         }
         List<String> customFields = new ArrayList<>();
-        int count = 0;
         if(!requirements.isEmpty()) {
             for(String requirement: requirements) {
                 String output = requirement.substring(0, 1).toUpperCase() + requirement.substring(1);
@@ -5051,19 +5051,20 @@ public class Contributions extends Controller {
                 }
             }
         } else {
-            return true;
+            return null;
         }
         if (customFields.isEmpty()) {
-            return true;
+            return null;
         }
+        List<String> custom = new ArrayList<>(customFields);
         for(CustomFieldValue customFieldValue: c.getResourceSpace().getCustomFieldValues()) {
             for(String requirement: customFields) {
                 if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement)) {
-                    count +=1;
+                    custom.remove(requirement);
                 }
             }
         }
-        return count == customFields.size();
+        return custom.toString();
     }
 
 }
