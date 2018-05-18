@@ -684,10 +684,14 @@ public class User extends AppCivistBaseModel implements Subject {
 				Logger.error("Membership already exists");
 			}
 			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
+			NonMemberAuthor toDelete = null;
 			for(Contribution contribution: contributions) {
 				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
-					NonMemberAuthor.delete(nonMemberAuthor.getId());
+					toDelete = nonMemberAuthor;
 
+				}
+				if(toDelete != null) {
+					contribution.getNonMemberAuthors().remove(toDelete);
 				}
 				contribution.addAuthor(user);
 				contribution.update();
