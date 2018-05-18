@@ -227,6 +227,7 @@ public class MyUsernamePasswordAuthProvider
 			user.setUserId(newUser.getUserId());
 		} catch (Exception e) {
 			if(Ebean.currentTransaction() != null) {
+				Logger.debug("Ending transaction");
 				Ebean.endTransaction();
 			}
 			e.printStackTrace();
