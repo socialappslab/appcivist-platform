@@ -225,28 +225,13 @@ public class MyUsernamePasswordAuthProvider
 		try {
 			newUser = User.createFromAuthUser(user);
 			user.setUserId(newUser.getUserId());
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			if(Ebean.currentTransaction() != null) {
-				Ebean.currentTransaction().rollback();
-			}
-			e.printStackTrace();
-		} catch (HashGenerationException e) {
-			if(Ebean.currentTransaction() != null) {
-				Ebean.currentTransaction().rollback();
-			}
-			e.printStackTrace();
-		} catch (TokenNotValidException e) {
-			if(Ebean.currentTransaction() != null) {
-				Ebean.currentTransaction().rollback();
-			}
-			e.printStackTrace();
-		} catch (MembershipCreationException e) {
-			if(Ebean.currentTransaction() != null) {
-				Ebean.currentTransaction().rollback();
+				Ebean.endTransaction();
 			}
 			e.printStackTrace();
 		}
-		
+
 		// TODO verify that the email is correct and valid
 		// Usually the email should be verified before allowing login, however
 		// if you return

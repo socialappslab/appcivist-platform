@@ -3150,3 +3150,9 @@ UPDATE public.contribution SET comment_count = 0 WHERE comment_count < 0;
 CREATE TEXT SEARCH CONFIGURATION "es-py" ( COPY = spanish );
 ALTER TEXT SEARCH CONFIGURATION "es-py" ALTER MAPPING
 FOR hword, hword_part, word WITH unaccent, spanish_stem;
+
+-- 80.sql
+alter table contribution_non_member_author drop constraint fk_contribution_non_member_author_02;
+alter table contribution_non_member_author   add CONSTRAINT fk_contribution_non_member_author_02 FOREIGN KEY (non_member_author_id)
+      REFERENCES public.non_member_author (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE;
