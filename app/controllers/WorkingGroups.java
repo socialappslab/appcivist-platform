@@ -5,11 +5,9 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
-import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.WorkingGroupsDelegate;
 import enums.*;
@@ -19,7 +17,10 @@ import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
-import models.transfer.*;
+import models.transfer.InvitationTransfer;
+import models.transfer.MembershipTransfer;
+import models.transfer.TransferResponseStatus;
+import models.transfer.WorkingGroupSummaryTransfer;
 import org.json.simple.JSONArray;
 import play.Logger;
 import play.Play;
@@ -290,16 +291,17 @@ public class WorkingGroups extends Controller {
                     Promise.promise(() -> {
                         return NotificationsDelegate.signalNotification(ResourceSpaceTypes.ASSEMBLY, NotificationEventName.NEW_WORKING_GROUP, assembly, finalNewWorkingGroup);
                     });*/
+                    Ebean.commitTransaction();
 
                 } catch (Exception e) {
-                    Ebean.rollbackTransaction();
                     e.printStackTrace();
                     Logger.info("Error creating Working Group: " + e.getMessage());
                     responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
                     responseBody.setStatusMessage("Error creating Working Group: " + e.getMessage());
                     return internalServerError(Json.toJson(responseBody));
+                } finally {
+                    Ebean.endTransaction();
                 }
-                Ebean.commitTransaction();
             }
             return ok(Json.toJson(newWorkingGroup));
         }
@@ -378,15 +380,16 @@ public class WorkingGroups extends Controller {
                             MembershipInvitation.create(invitation, groupCreator, newWorkingGroup);
                         }
                     }
-
+                    Ebean.commitTransaction();
                 } catch (Exception e) {
-                    Ebean.rollbackTransaction();
                     Logger.info("Error creating Working Group: " + e.getLocalizedMessage());
                     responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
                     responseBody.setStatusMessage("Error creating Working Group: " + e.getMessage());
                     return internalServerError(Json.toJson(responseBody));
                 }
-                Ebean.commitTransaction();
+                finally {
+                    Ebean.endTransaction();
+                }
             }
             return ok(Json.toJson(newWorkingGroup));
         }

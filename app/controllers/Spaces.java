@@ -1786,15 +1786,18 @@ public class Spaces extends Controller {
                 resourceSpace.update();
                 NotificationsDelegate.createNotificationEventsByType(
                         ResourceSpaceTypes.ASSEMBLY.toString(), newAssembly.getUuid());
+                Ebean.commitTransaction();
+
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
+
                 Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
                         newAssembly.getName()));
                 return internalServerError(Json.toJson(responseBody));
+            } finally {
+                Ebean.endTransaction();
             }
-            Ebean.commitTransaction();
 
             responseBody.setNewResourceId(newAssembly.getAssemblyId());
             responseBody.setStatusMessage(Messages.get(
@@ -2875,10 +2878,11 @@ public class Spaces extends Controller {
                     Ebean.commitTransaction();
                     return ok(Json.toJson(createdThemes));
                 } catch (Exception e) {
-                    Ebean.rollbackTransaction();
                     TransferResponseStatus responseBody = new TransferResponseStatus();
                     responseBody.setStatusMessage("Could not create themes. "+e.getLocalizedMessage());
                     return internalServerError(Json.toJson(responseBody));
+                } finally {
+                    Ebean.endTransaction();
                 }
             }
         }

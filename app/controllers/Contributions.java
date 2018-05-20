@@ -1468,8 +1468,10 @@ public class Contributions extends Controller {
                     rs.getContributions().add(c);
                     rs.update();
                 }
+                Ebean.commitTransaction();
+
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
+                Ebean.endTransaction();
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 e.printStackTrace(pw);
@@ -1482,7 +1484,6 @@ public class Contributions extends Controller {
                                 ResponseStatus.SERVERERROR,
                                 "Error when creating Contribution: " + e.getMessage())));
             }
-            Ebean.commitTransaction();
 
             // Signal a notification asynchronously
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
@@ -1977,17 +1978,18 @@ public class Contributions extends Controller {
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
                 ContributionHistory.createHistoricFromContribution(contribution);
+                Ebean.commitTransaction();
 
             } catch (Exception e) {
                 Promise.promise(() -> {
                     Logger.error(LogActions.exceptionStackTraceToString(e));
                     return true;
                 });
-                Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
+            } finally {
+                Ebean.endTransaction();
             }
 
-            Ebean.commitTransaction();
             return ok(Json.toJson(updatedStats));
         }
     }
@@ -2114,17 +2116,18 @@ public class Contributions extends Controller {
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
                 ContributionHistory.createHistoricFromContribution(contribution);
-
+                Ebean.commitTransaction();
             } catch (Exception e) {
                 Promise.promise(() -> {
                     Logger.error(LogActions.exceptionStackTraceToString(e));
                     return true;
                 });
-                Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
             }
+            finally {
+                Ebean.endTransaction();
+            }
 
-            Ebean.commitTransaction();
             return ok(Json.toJson(updatedStats));
         }
     }
@@ -3931,13 +3934,14 @@ public class Contributions extends Controller {
 
                     }
                 } catch (Exception e) {
-                    Ebean.rollbackTransaction();
                     Logger.error(e.getClass() + ": " + e.getMessage());
                     e.printStackTrace();
                     return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,
                             "Tried to import contributions of type: " + type + "\n"
                                     + "Tried parsing with column separator: " + cvsSplitBy + "\n"
                                     + e.getClass() + ": " + e.getMessage())));
+                } finally {
+                    Ebean.endTransaction();
                 }
                 Ebean.commitTransaction();
 
