@@ -325,6 +325,10 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 					// return Controller.internalServerError();
 				}
 			}
+		} finally {
+			if(Ebean.currentTransaction() != null) {
+				Ebean.endTransaction();
+			}
 		}
 	}
 	
