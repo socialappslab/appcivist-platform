@@ -562,7 +562,6 @@ public class Campaigns extends Controller {
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
                         newCampaignForm.errorsAsJson()));
-                Ebean.rollbackTransaction();
                 return badRequest(Json.toJson(responseBody));
             } else {
                 CampaignTransfer campaignTransfer = newCampaignForm.get();
@@ -637,7 +636,7 @@ public class Campaigns extends Controller {
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
                         newCampaignForm.errorsAsJson()));
-                Ebean.rollbackTransaction();
+                Ebean.endTransaction();
                 return badRequest(Json.toJson(responseBody));
             } else {
                 CampaignTransfer campaignTransfer = newCampaignForm.get();
@@ -669,9 +668,10 @@ public class Campaigns extends Controller {
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.CAMPAIGN_CREATE_MSG_ERROR,
                     "There was an internal error: " + e.getMessage()));
-            Ebean.rollbackTransaction();
             e.printStackTrace();
             return internalServerError(Json.toJson(responseBody));
+        } finally {
+            Ebean.endTransaction();
         }
     }
 

@@ -122,7 +122,6 @@ public class Memberships extends Controller {
             Ebean.commitTransaction();
             return ok(Json.toJson(m));
         } catch (MembershipCreationException e) {
-            Ebean.rollbackTransaction();
             TransferResponseStatus responseBody = new TransferResponseStatus();
             responseBody.setStatusMessage(Messages.get(
                     GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
@@ -139,6 +138,8 @@ public class Memberships extends Controller {
                 return internalServerError(e.getResponse());
             else
                 return unauthorized(e.getResponse());*/
+        } finally {
+            Ebean.endTransaction();
         }
     }
 
@@ -401,16 +402,18 @@ public class Memberships extends Controller {
                 newInvitation.setTargetId(aid);
                 newInvitation.setTargetType("ASSEMBLY");
                 mi = createAndSendInvitation(requestor, newInvitation);
+                Ebean.commitTransaction();
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
+
                 e.printStackTrace();
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
                         e.getMessage()));
                 return internalServerError(Json.toJson(responseBody));
+            } finally {
+                Ebean.endTransaction();
             }
-            Ebean.commitTransaction();
             return ok(Json.toJson(mi));
         }
     }
@@ -472,15 +475,16 @@ public class Memberships extends Controller {
                 newInvitation.setTargetId(gid);
                 newInvitation.setTargetType("GROUP");
                 mi = createAndSendInvitation(requestor, newInvitation);
+                Ebean.commitTransaction();
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
                         e.getMessage()));
                 return internalServerError(Json.toJson(responseBody));
+            } finally {
+                Ebean.endTransaction();
             }
-            Ebean.commitTransaction();
             return ok(Json.toJson(mi));
         }
     }
@@ -506,7 +510,7 @@ public class Memberships extends Controller {
         final TokenAction ta = Users.tokenIsValid(token.toString(),
                 Type.MEMBERSHIP_INVITATION);
         if (ta == null) {
-            Ebean.rollbackTransaction();
+            Ebean.endTransaction();
             return badRequest(Json.toJson(TransferResponseStatus.badMessage(
                     Messages.get("playauthenticate.token.error.message"),
                     "Token is null")));
@@ -517,7 +521,7 @@ public class Memberships extends Controller {
         if (mi.getUserId() != null) {
             invitedUser = User.read(mi.getUserId());
         } else {
-            Ebean.rollbackTransaction();
+            Ebean.endTransaction();
             return internalServerError(Json.toJson(TransferResponseStatus
                     .badMessage("User has not signuped yet", "")));
         }
@@ -527,14 +531,16 @@ public class Memberships extends Controller {
             try {
                 MembershipInvitation.acceptAndCreateMembershipByToken(mi,
                         invitedUser);
+                Ebean.commitTransaction();
+
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
                 e.printStackTrace();
                 return internalServerError(Json.toJson(TransferResponseStatus
                         .badMessage(Messages.get("Error has occurred: "),
                                 e.getMessage())));
+            } finally {
+                Ebean.endTransaction();
             }
-            Ebean.commitTransaction();
             return ok(Json.toJson("DONE"));
         } else {
             Ebean.commitTransaction();
