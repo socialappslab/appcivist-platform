@@ -95,7 +95,7 @@ GET       /api/public/space/:suuid/subscription/:identifier                     
 POST      /api/public/space/:suuid/subscription/:identifier                      controllers.Subscriptions.subscribeByResourceSpaceUUIDAndIdentifier(suuid: String, identifier: String)
 PUT       /api/public/space/:suuid/subscription/:identifier                      controllers.Subscriptions.updateByResourceSpaceUUIDAndIdentifier(suuid: String, identifier: String)
 DELETE    /api/public/space/:suuid/subscription/:identifier                      controllers.Subscriptions.unsuscribeByResourceSpaceUUIDAndIdentifier(suuid: String, identifier: String)
-
+POST      /api/space/:sid/signal                                                 controllers.Notifications.createNotificationSignalEvent(sid: Long)
 
 ##################################################################################################################################################################
 # Notifications Service Proxy -OLD

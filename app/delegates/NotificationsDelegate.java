@@ -567,7 +567,7 @@ public class NotificationsDelegate {
                 break;
         }
         Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ","+resourceId+")");
-        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam, resourceId, urls);
+        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam, resourceId, urls, false);
 
     }
 
@@ -607,7 +607,8 @@ public class NotificationsDelegate {
                                             String associatedUser,
                                             SubscriptionTypes subscriptionType,
                                             User userParam,
-                                            Long resourceID, Map<String, Long> urls) {
+                                            Long resourceID, Map<String, Long> urls,
+                                            boolean ownTextAndTitle) {
         // 1. Prepare the notification event data
         NotificationEventSignal notificationEvent = new NotificationEventSignal();
         notificationEvent.setSpaceType(originType);
@@ -661,12 +662,17 @@ public class NotificationsDelegate {
         NotificationSignalTransfer newNotificationSignal = null;
         try {
             newNotificationSignal = prepareNotificationSignal(notificationEvent);
-            if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
-                String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
-                lang = lang == null ? Lang.defaultLang().code() : lang;
-                String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
-                        newNotificationSignal.getText(), lang);
-                notificationEvent.setRichTextMail(richTextMail);
+            if(!ownTextAndTitle) {
+                if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
+                    String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
+                    lang = lang == null ? Lang.defaultLang().code() : lang;
+                    String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
+                            newNotificationSignal.getText(), lang);
+                    notificationEvent.setRichTextMail(richTextMail);
+                }
+            } else {
+                notificationEvent.setRichTextMail(text);
+                notificationEvent.setTitle(title);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -744,7 +750,8 @@ public class NotificationsDelegate {
             Boolean rabbitIsActive = Play.application().configuration().getBoolean("appcivist.services.rabbitmq.active");
             if(rabbitIsActive !=null && rabbitIsActive) {
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
-                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers, notificationEvent.getRichTextMail());
+                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
+                        notificationEvent.getRichTextMail(), ownTextAndTitle);
                 notificationEvent.getData().put("signaled", true);
                 notificationEvent.update();
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));

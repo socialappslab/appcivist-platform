@@ -46,7 +46,7 @@ public class BusComponent {
     }
 
     public static void sendToRabbit(NotificationSignalTransfer notificationSignalTransfer, List<Long> notifiedUsers,
-                                    String richText) throws IOException, TimeoutException {
+                                    String richText, boolean ownTitle) throws IOException, TimeoutException {
         Channel channel = getConnection().createChannel();
         Map<String, String> toSend = new HashMap<>();
         toSend.put("title", notificationSignalTransfer.getTitle());
@@ -54,7 +54,11 @@ public class BusComponent {
         toSend.put("resourceSpaceUUID", notificationSignalTransfer.getSpaceId());
         String message;
         for (Long user: notifiedUsers) {
-            sendSignalMail(user, richText, notificationSignalTransfer);
+            if(ownTitle) {
+                sendSignalMail(user, richText, notificationSignalTransfer, notificationSignalTransfer.getTitle());
+            } else {
+                sendSignalMail(user, richText, notificationSignalTransfer, null);
+            }
             message = Json.toJson(toSend).toString();
             channel.exchangeDeclare(EXCHANGE, "direct");
             channel.queueDeclare(user.toString(), false, false, false, null);
@@ -65,7 +69,8 @@ public class BusComponent {
 
     }
 
-    private static void sendSignalMail(Long userId, String body, NotificationSignalTransfer notificationSignalTransfer) {
+    private static void sendSignalMail(Long userId, String body,
+                                       NotificationSignalTransfer notificationSignalTransfer, String title) {
         User fullUser = User.findByUserId(userId);
 
         Logger.debug("Sending mail to "+ fullUser.getEmail());
@@ -90,6 +95,9 @@ public class BusComponent {
                     && subscription.getDisabledServices().get("email") != null) {
                 send = !subscription.getDisabledServices().get("email");
             }
+        }
+        if(title != null) {
+            subject = title;
         }
         if(send) {
             MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,mail, body);
