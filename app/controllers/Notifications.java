@@ -134,7 +134,7 @@ public class Notifications extends Controller {
         if(author == null) {
             return unauthorized(Json.toJson(new TransferResponseStatus(
                     ResponseStatus.UNAUTHORIZED,
-                    "User unauthorized")));
+                    "User unauthorized. Not found")));
         }
         if(resourceSpace == null) {
             return notFound(Json.toJson(new TransferResponseStatus("No resource space found for the given id")));
@@ -143,7 +143,7 @@ public class Notifications extends Controller {
         if(!ResourceSpace.isCoordinatorResourceSpace(author,resourceSpace)){
             return unauthorized(Json.toJson(new TransferResponseStatus(
                     ResponseStatus.UNAUTHORIZED,
-                    "User unauthorized")));
+                    "User is not Coordinator")));
         }
         NotificationSignalTransfer toCreate = NOTIFICATION_SIGNAL_TRANSFER_FORM.bindFromRequest().get();
         return NotificationsDelegate.signalNotification(resourceSpace.getUuid(), resourceSpace.getType(),

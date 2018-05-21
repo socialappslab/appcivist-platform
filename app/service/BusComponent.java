@@ -38,9 +38,9 @@ public class BusComponent {
             factory.setPassword(PASS);
             factory.setConnectionTimeout(0);
             factory.setHandshakeTimeout(20000);
-            Logger.info("Trying to connect to rabbit ");
+            Logger.info("Trying to connect to rabbit:  " + HOST + ":" + PORT + " User: " + USER + " PASS: " + PASS);
             connection = factory.newConnection();
-            Logger.debug("Connection successful");
+            Logger.info("Connection successful");
         }
         return connection;
     }
