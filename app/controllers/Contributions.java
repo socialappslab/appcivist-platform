@@ -4042,16 +4042,16 @@ public class Contributions extends Controller {
             @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
-        String checkStatus = null;
+        List<String> checkStatus = null;
         if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
             checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
                     GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ);
         }
         if (upStatus.equals(ContributionStatus.PUBLISHED.name())) {
-            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
+            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLISHED,
                     GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
         }
-        if(checkStatus != null) {
+        if(checkStatus != null && !checkStatus.isEmpty()) {
             return badRequest(Json.toJson(new TransferResponseStatus("You must to complete all the " +
                     "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
         }
@@ -5141,8 +5141,7 @@ public class Contributions extends Controller {
         }
         return unauth;
     }
-    private static String checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
-        String aRet = null;
+    private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
         List<String> requirements = new ArrayList<>();
         if(upStatus.equals(cs.name())) {
             Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
@@ -5152,6 +5151,7 @@ public class Contributions extends Controller {
                 }
             }
         }
+        Logger.info("Requirements config: " + requirements);
         List<String> customFields = new ArrayList<>();
         if(!requirements.isEmpty()) {
             for(String requirement: requirements) {
@@ -5168,15 +5168,17 @@ public class Contributions extends Controller {
         if (customFields.isEmpty()) {
             return null;
         }
+        Logger.info("required custom fields: " + customFields);
         List<String> custom = new ArrayList<>(customFields);
         for(CustomFieldValue customFieldValue: c.getResourceSpace().getCustomFieldValues()) {
             for(String requirement: customFields) {
                 if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement)) {
                     custom.remove(requirement);
+                    Logger.info(custom +" field is present");
                 }
             }
         }
-        return custom.toString();
+        return custom;
     }
 
 }
