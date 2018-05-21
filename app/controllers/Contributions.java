@@ -5172,9 +5172,9 @@ public class Contributions extends Controller {
         List<String> custom = new ArrayList<>(customFields);
         for(CustomFieldValue customFieldValue: c.getResourceSpace().getCustomFieldValues()) {
             for(String requirement: customFields) {
-                if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement)) {
+                if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement) && (customFieldValue.getValue() != null)) {
                     custom.remove(requirement);
-                    Logger.info(custom +" field is present");
+                    Logger.info(requirement +" field is present");
                 }
             }
         }
