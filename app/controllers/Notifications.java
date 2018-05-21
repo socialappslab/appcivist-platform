@@ -133,6 +133,9 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result createNotificationSignalEvent(Long sid) {
         ResourceSpace resourceSpace = ResourceSpace.find.byId(sid);
+        if(resourceSpace == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("No resource space found for the given id")));
+        }
         User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
         if(!ResourceSpace.isCoordinatorResourceSpace(author,resourceSpace)){
             return unauthorized(Json.toJson(new TransferResponseStatus(
