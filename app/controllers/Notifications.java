@@ -3,10 +3,7 @@ package controllers;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
-
 import delegates.NotificationsDelegate;
 import enums.*;
 import exceptions.ConfigurationException;
@@ -23,7 +20,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
-import scala.tools.nsc.backend.icode.Primitives;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 
@@ -131,12 +127,19 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "NotificationEventSignal Object", value = "Body of NotificationEventSignal in JSON. Only title and text needed",
                     required = true, dataType = "models.transfer.NotificationSignalTransfer", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({ @Group(GlobalData.USER_ROLE) })
     public static Result createNotificationSignalEvent(Long sid) {
         ResourceSpace resourceSpace = ResourceSpace.find.byId(sid);
+        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        if(author == null) {
+            return unauthorized(Json.toJson(new TransferResponseStatus(
+                    ResponseStatus.UNAUTHORIZED,
+                    "User unauthorized")));
+        }
         if(resourceSpace == null) {
             return notFound(Json.toJson(new TransferResponseStatus("No resource space found for the given id")));
         }
-        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+
         if(!ResourceSpace.isCoordinatorResourceSpace(author,resourceSpace)){
             return unauthorized(Json.toJson(new TransferResponseStatus(
                     ResponseStatus.UNAUTHORIZED,
