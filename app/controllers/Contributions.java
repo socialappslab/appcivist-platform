@@ -30,7 +30,6 @@ import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 import http.Headers;
 import io.swagger.annotations.*;
-import jdk.nashorn.internal.objects.Global;
 import models.*;
 import models.location.Location;
 import models.misc.Views;
@@ -3713,6 +3712,31 @@ public class Contributions extends Controller {
         }
     }
 
+
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
+            notes = "CSV format: the values must be separated by coma (;).")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result importContributionComments(
+            @ApiParam(name = "aid", value = "Assembly id") Long aid,
+            @ApiParam(name = "cid", value = "Campaign id") Long cid) {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        Campaign campaign = Campaign.read(cid);
+        if(campaign == null || uploadFilePart == null) {
+            String errorMessage = uploadFilePart == null ? "Missing import file" : "Campaign does not exist";
+            Logger.error(errorMessage);
+            return badRequest(
+                    Json.toJson(
+                            new TransferResponseStatus(ResponseStatus.SERVERERROR, errorMessage)));
+        }
+
+        return ok();
+
+        }
         /**
          * POST      /api/assembly/:aid/campaign/:cid/contribution/import
          * Import ideas file
