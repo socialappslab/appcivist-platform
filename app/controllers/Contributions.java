@@ -30,11 +30,12 @@ import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 import http.Headers;
 import io.swagger.annotations.*;
-import jdk.nashorn.internal.objects.Global;
 import models.*;
 import models.location.Location;
 import models.misc.Views;
 import models.transfer.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -3698,7 +3699,7 @@ public class Contributions extends Controller {
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributionsResourceSpace(
             @ApiParam(name = "sid", value = "Resource Space id") Long sid,
-            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type,
+            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
             @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
 
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
@@ -3713,6 +3714,64 @@ public class Contributions extends Controller {
         }
     }
 
+
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
+            notes = "CSV format: the values must be separated by coma (;).")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result importContributionFeedbacks(
+            @ApiParam(name = "aid", value = "Resource Space id") Long sid) {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        ResourceSpace resourceSpace = ResourceSpace.find.byId(sid);
+        if(resourceSpace == null || uploadFilePart == null ||  resourceSpace.getCampaign() == null) {
+            String errorMessage = uploadFilePart == null ? "Missing import file" : "Campaign does not exist";
+            Logger.error(errorMessage);
+            return badRequest(
+                    Json.toJson(
+                            new TransferResponseStatus(ResponseStatus.SERVERERROR, errorMessage)));
+        }
+        try {
+            Reader in = new FileReader(uploadFilePart.getFile());
+            Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+            Ebean.beginTransaction();
+            for (CSVRecord record : records) {
+                String sourceCode = record.get("code");
+                String source = record.get("source_code");
+                String name = record.get("name");
+                Integer vote = Integer.valueOf(record.get("vote"));
+                Contribution contribution = Contribution.findBySourceCodeAndSource(source, sourceCode);
+                if(contribution == null) {
+                    throw new Exception("No contribution found for the code " + source + " and source "+ sourceCode);
+                }
+                ContributionFeedback contributionFeedback = new ContributionFeedback();
+                contributionFeedback.setContribution(contribution);
+                if(vote.equals(1)) {
+                    contributionFeedback.setUp(true);
+                } else {
+                    contributionFeedback.setDown(true);
+                }
+                NonMemberAuthor nonMemberAuthor = createNonMemberImport(name, null, null, contribution);
+                contributionFeedback.setNonMemberAuthor(nonMemberAuthor);
+                contributionFeedback.save();
+            }
+            Ebean.commitTransaction();
+        } catch (Exception e) {
+            Logger.error(e.getMessage());
+            return internalServerError(
+                    Json.toJson(
+                            new TransferResponseStatus(ResponseStatus.SERVERERROR,
+                                    "Tried to import feedbacks: "
+                                            + e.getClass() + ": " + e.getMessage())));
+        } finally {
+            Ebean.endTransaction();
+        }
+
+        return ok();
+    }
         /**
          * POST      /api/assembly/:aid/campaign/:cid/contribution/import
          * Import ideas file
@@ -3727,11 +3786,11 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+ //   @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
             @ApiParam(name = "aid", value = "Assembly id") Long aid,
             @ApiParam(name = "cid", value = "Campaign id") Long cid,
-            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type,
+            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
             @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
@@ -3741,7 +3800,7 @@ public class Contributions extends Controller {
             createThemes = false;
         }
 
-        if(! (type.equals("IDEA") || type.equals("PROPOSAL")) ) {
+        if(! (type.equals("IDEA") || type.equals("PROPOSAL") || type.equals("COMMENT")) ) {
             return badRequest(Json.toJson(new TransferResponseStatus("Not supported Contribution Type: " + type)));
         }
 
@@ -3759,12 +3818,19 @@ public class Contributions extends Controller {
                         String[] cell = line.split(cvsSplitBy);
                         Contribution c = new Contribution();
 
-                        if (type.equals("IDEA")) {
-                            Logger.info("SETTING IDEA");
-                            c.setType(ContributionTypes.IDEA);
-                        } else if (type.equals("PROPOSAL")) {
-                            Logger.info("SETTING PROPOSAL");
-                            c.setType(ContributionTypes.PROPOSAL);
+                        switch (type) {
+                            case "IDEA":
+                                Logger.info("SETTING IDEA");
+                                c.setType(ContributionTypes.IDEA);
+                                break;
+                            case "PROPOSAL":
+                                Logger.info("SETTING PROPOSAL");
+                                c.setType(ContributionTypes.PROPOSAL);
+                                break;
+                            case "COMMENT":
+                                Logger.info("SETTING COMMENT");
+                                c.setType(ContributionTypes.COMMENT);
+                                break;
                         }
 
                         // Supported Format:
@@ -3894,47 +3960,31 @@ public class Contributions extends Controller {
                                 String author = cell[index];
                                 String phone = (cell.length > index + 1) ? cell[index + 1] : "";
                                 String email = (cell.length > index + 2) ? cell[index + 2] : "";
-
-                                boolean createNewMember = false;
-                                if (author != null && !author.equals("")) {
+                                if(author!= null && !author.isEmpty()) {
                                     c.setFirstAuthorName(author);
-                                    List<User> authors = User.findByName(author);
-                                    // If more than one user matches the name
-                                    // criteria, we'll skip the author set up
-                                    if (authors != null && authors.size() == 1) {
-                                        c.getAuthors().add(authors.get(0));
-                                        Logger.info("The author was FOUND!");
-                                    } else {
-                                        createNewMember = true;
-                                    }
                                 }
-
-                                if (createNewMember) {
-                                    Logger.info("Importing => non member author => " + author);
-                                    // Create a non member author
-                                    NonMemberAuthor nma = new NonMemberAuthor();
-                                    nma.setName(author);
-                                    nma.setPhone(phone);
-                                    nma.setEmail(email);
-                                    nma.save();
-
-                                    c.getNonMemberAuthors().add(nma);
-                                }
-
+                                createNonMemberImport(author, phone, email, c);
                             }
 
                         }
-
+                        ResourceSpace resourceSpace;
                         // Create the contribution
-                        Logger.info("Adding contribution to campaign...");
-                        ResourceSpace resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                        if(type.equals("COMMENT")) {
+                            Contribution origin = Contribution.findBySourceCodeAndSource(c.getSource(), c.getSourceCode());
+                            if(origin == null) {
+                                throw new Exception("No contribution found for the source: "+ c.getSource() + " and source code: "+ c.getSourceCode());
+                            }
+                            resourceSpace = origin.getResourceSpace();
+                            c.setSourceCode(null);
+                        } else {
+                            Logger.info("Adding contribution to campaign...");
+                            resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                        }
                         c.getContainingSpaces().add(resourceSpace);
                         Contribution.create(c, resourceSpace);
-                        ContributionHistory.createHistoricFromContribution(c);
-
                     }
+                    Ebean.commitTransaction();
                 } catch (Exception e) {
-                    Logger.error(e.getClass() + ": " + e.getMessage());
                     e.printStackTrace();
                     return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,
                             "Tried to import contributions of type: " + type + "\n"
@@ -3943,7 +3993,6 @@ public class Contributions extends Controller {
                 } finally {
                     Ebean.endTransaction();
                 }
-                Ebean.commitTransaction();
 
             } catch (Exception e) {
                 Logger.error(e.getMessage());
@@ -5179,6 +5228,43 @@ public class Contributions extends Controller {
             }
         }
         return custom;
+    }
+
+    private static NonMemberAuthor createNonMemberImport(String author, String phone, String email,
+                                              Contribution c) {
+
+        boolean createNewMember = false;
+        if (author != null && !author.equals("")) {
+            List<User> authors = User.findByName(author);
+            // If more than one user matches the name
+            // criteria, we'll skip the author set up
+            if (authors != null && authors.size() == 1) {
+                c.getAuthors().add(authors.get(0));
+                Logger.info("The author was FOUND!");
+            } else {
+                List<NonMemberAuthor> nonMemberAuthors = NonMemberAuthor.find.where().eq("name", author).findList();
+                if (nonMemberAuthors.isEmpty()) {
+                    createNewMember = true;
+                } else {
+                    Logger.info("Non member author was FOUND!");
+                    return nonMemberAuthors.get(0);
+                }
+            }
+        }
+
+        if (createNewMember) {
+            Logger.info("Importing => non member author => " + author);
+            // Create a non member author
+            NonMemberAuthor nma = new NonMemberAuthor();
+            nma.setName(author);
+            nma.setPhone(phone);
+            nma.setEmail(email);
+            nma.save();
+            nma.refresh();
+            c.getNonMemberAuthors().add(nma);
+            return nma;
+        }
+        return null;
     }
 
 }
