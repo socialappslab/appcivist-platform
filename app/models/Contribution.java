@@ -959,12 +959,13 @@ public class Contribution extends AppCivistBaseModel {
         geoJsonLogic(c, rs);
 
         c.save();
-
+        c.refresh();
         // 3. Add existing entities in relationships to the manytomany resources
         // then update
         ResourceSpace cResSpace = c.getResourceSpace();
-        if (themes != null && !themes.isEmpty())
+        if (themes != null && !themes.isEmpty()) {
             cResSpace.getThemes().addAll(themes);
+        }
         if (associatedMilestones != null && !associatedMilestones.isEmpty())
             cResSpace.getMilestones().addAll(associatedMilestones);
         if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
@@ -977,9 +978,10 @@ public class Contribution extends AppCivistBaseModel {
             cResSpace.getResources().addAll(existingResources);
         if (existingThemes != null && !existingThemes.isEmpty())
             cResSpace.getThemes().addAll(existingThemes);
-
+        Set<Theme> themesA = new HashSet<>(cResSpace.getThemes());
+        cResSpace.getThemes().clear();
+        cResSpace.getThemes().addAll(themesA);
         cResSpace.update();
-
         // 5. Add contribution to working group authors
         for (WorkingGroup workingGroup : workingGroupAuthors) {
             workingGroup.getResources().addContribution(c);
@@ -1194,6 +1196,19 @@ public class Contribution extends AppCivistBaseModel {
                 .eq("containingSpaces.resourceSpaceId", resourceSpaceId)
                 .eq("contributionId", contributionId).eq("type", type)
                 .findUnique();
+    }
+
+    public static Contribution findBySourceCodeAndSource(String source,
+                                               String sourceCode) {
+        List<Contribution> contributions =  find.where()
+                .eq("source", source)
+                .eq("sourceCode", sourceCode)
+                .findList();
+        if(contributions.isEmpty()) {
+            return null;
+        } else {
+            return contributions.get(0);
+        }
     }
 
     public static List<Contribution> readListByContainingSpaceAndType(

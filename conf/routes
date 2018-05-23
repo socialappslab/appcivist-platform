@@ -306,7 +306,6 @@ DELETE    /api/contribution/:uuid/nonmemberauthors/:nmaid                       
 #import/export contributions, type=IDEA
 #POST      /api/assembly/:aid/campaign/:cid/contribution/import            controllers.Contributions.importContributionsOld(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/import                   controllers.Contributions.importContributions(aid: Long, cid: Long, type?="", createThemes: Boolean ?=false)
-POST      /api/assembly/:aid/campaign/:cid/contribution/import-comments          controllers.Contributions.importContributionComments(aid: Long, cid: Long)
 
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad", contributionTemplateId: java.lang.Long ?=null, resourceTemplateId: java.lang.Long ?=null)
@@ -407,7 +406,7 @@ DELETE    /api/space/:sid/campaign/:cid                                         
 DELETE    /api/space/:sid/resource/:rid                                          controllers.Spaces.deleteSpaceResource(sid: Long, rid: Long)
 DELETE    /api/space/:sid/theme/:tid                                             controllers.Spaces.deleteSpaceTheme(sid: Long, tid: Long)
 POST      /api/space/:sid/import                                                 controllers.Contributions.importContributionsResourceSpace(sid: Long, type?="", createThemes: Boolean ?=false)
-
+POST      /api/space/:sid/import-comment-feedback                                controllers.Contributions.importContributionFeedbacks(sid: Long)
 ##################################################################################################################################################################
 # Public Common API
 # Endpoints that are available to Non-Members
