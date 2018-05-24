@@ -86,6 +86,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_AUTHORSHIP_INVITATION_EMAIL_TEMPLATE = "appcivist.campaign.authorship-invitation-email-template";
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.public_draft.status-requirements";
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ = "appcivist.campaign.contribution.published.status-requirements";
+	public static final String APPCIVIST_CAMPAIGN_ACCESSIBILITY_URL = "appcivist.campaign.accessibility.url"; //link to a URL explaining accessibility issues in connection with an campaign
 
 	//Add the configuration to the default templates for creating campaigns
 	
