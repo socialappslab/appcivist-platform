@@ -1,19 +1,16 @@
 package delegates;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-
+import com.avaje.ebean.*;
+import enums.ConfigTargets;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
+import enums.ResourceTypes;
 import models.*;
 import net.gjerull.etherpad.client.EPLiteException;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.dozer.DozerBeanMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import play.Logger;
 import play.Play;
 import play.i18n.Lang;
@@ -22,19 +19,10 @@ import play.mvc.Http;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Expr;
-import com.avaje.ebean.Expression;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Model;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.RawSql;
-import com.avaje.ebean.RawSqlBuilder;
-
-import enums.ConfigTargets;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ResourceTypes;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 public class ContributionsDelegate {
 
@@ -277,6 +265,19 @@ public class ContributionsDelegate {
                     case "selectedContributions":
                         List<String> selected = (List)value;
                         where.in("t0.uuid", selected);
+                        break;
+                    case "excludeCreatedByUser":
+                        List<Long> excludeUsers = (List)value;
+                        previous = null;
+                        for(Long g : excludeUsers){
+                            e = Expr.ne("t0.creator_user_id", g);
+                            if(previous == null){
+                                previous = e;
+                            }else{
+                                previous = Expr.or(previous, e);
+                            }
+                        }
+                        where.add(previous);
                         break;
                     case "statusEndDate":
                         where.add(Expr.le("csa.status_end_date", value));
