@@ -304,7 +304,8 @@ public class Contributions extends Controller {
                     allowableValues = "JSON,CSV") String collectionFileFormat,
             @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions,
             @ApiParam(name = "statusStartDate", value = "String") String statusStartDate,
-            @ApiParam(name = "statusEndDate", value = "String") String statusEndDate) {
+            @ApiParam(name = "statusEndDate", value = "String") String statusEndDate,
+            @ApiParam(name = "excludeCreatedByUser", value = "Array of created users to exclude IDs to get") List<Long>  excludeCreatedByUser) {
 
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
@@ -329,6 +330,9 @@ public class Contributions extends Controller {
         }
         if (byGroup != null && !byGroup.isEmpty()) {
             conditions.put("group", byGroup);
+        }
+        if (excludeCreatedByUser != null && !excludeCreatedByUser.isEmpty()) {
+            conditions.put("excludeCreatedByUser", excludeCreatedByUser);
         }
         if (byTheme != null && !byTheme.isEmpty()) {
             conditions.put("theme", byTheme);

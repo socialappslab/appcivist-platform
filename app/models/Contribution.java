@@ -98,6 +98,10 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    @JsonView(Views.Public.class)
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User creator;
+
     @JsonView({Views.Public.class, Views.Report.class})
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "contribution_non_member_author",
@@ -1627,6 +1631,14 @@ public class Contribution extends AppCivistBaseModel {
             }
             Logger.debug("Using none geoJson");
         }
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
     }
 
     public static Long getIdByUUID(UUID uuid) {
