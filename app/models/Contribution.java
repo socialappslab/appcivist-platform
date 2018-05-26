@@ -1643,7 +1643,7 @@ public class Contribution extends AppCivistBaseModel {
 
     public static Long getIdByUUID(UUID uuid) {
         Contribution c = find.where().eq("uuid",uuid.toString()).findUnique();
-        return c.getContributionId();
+        return c == null ? null : c.getContributionId();
     }
 
     public static Contribution getByUUID(UUID uuid) {

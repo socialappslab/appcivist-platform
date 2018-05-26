@@ -1,28 +1,23 @@
 package models;
 
+import com.avaje.ebean.annotation.Index;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonView;
-
+import enums.ResourceTypes;
 import io.swagger.annotations.ApiModel;
+import models.location.Location;
+import models.misc.Views;
+import utils.services.EtherpadWrapper;
 
+import javax.persistence.*;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import javax.persistence.*;
-
-import models.misc.Views;
-import utils.services.EtherpadWrapper;
-import models.location.Location;
-
-import com.avaje.ebean.annotation.Index;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import enums.ResourceTypes;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -383,6 +378,6 @@ public class Resource extends AppCivistBaseModel {
 
     public static Long getIdByUUID(UUID uuid) {
 		Resource r = find.where().eq("uuid",uuid.toString()).findUnique();
-		return r.getResourceId();
+		return r == null ? null : r.getResourceId();
 	}
 }
