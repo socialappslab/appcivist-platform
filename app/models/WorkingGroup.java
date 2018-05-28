@@ -1,33 +1,25 @@
 package models;
 
-import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.*;
-import enums.*;
-import io.swagger.annotations.ApiModel;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.persistence.*;
-
-import models.location.Location;
-import models.misc.Views;
-import play.Logger;
-import utils.GlobalData;
-import models.transfer.InvitationTransfer;
-
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.annotation.Where;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
+import enums.*;
 import exceptions.MembershipCreationException;
+import io.swagger.annotations.ApiModel;
+import models.location.Location;
+import models.misc.Views;
+import models.transfer.InvitationTransfer;
+import play.Logger;
+import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
+
+import javax.persistence.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonInclude(Include.NON_EMPTY)
@@ -114,7 +106,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 
     public static Long getIdByUUID(UUID uuid) {
 		WorkingGroup g = find.where().eq("uuid",uuid.toString()).findUnique();
-		return g.getGroupId();
+		return g == null ? null : g.getGroupId();
 
 	}
 

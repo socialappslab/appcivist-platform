@@ -472,3 +472,4 @@ GET       /api/public/assembly/:aid/group/:gid                                  
 # Update Language
 POST      /api/contribution/language                                             controllers.Contributions.updateAllContributionLanguages()
 GET       /api/uuid                                                              controllers.Spaces.getUUIDByIdAndType(type: String, id : Long)
+GET       /api/id                                                                controllers.Spaces.getIdByUUIdAndType(type: String, uuid : java.util.UUID)

@@ -1,6 +1,5 @@
 package models;
 
-import com.avaje.ebean.*;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
@@ -17,7 +16,6 @@ import exceptions.MembershipCreationException;
 import io.swagger.annotations.ApiModel;
 import models.location.Location;
 import models.misc.Views;
-import play.Logger;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 import utils.GlobalData;
@@ -902,6 +900,6 @@ public class Assembly extends AppCivistBaseModel {
 
     public static Long getIdByUUID(UUID uuid) {
 		Assembly a = find.where().eq("uuid",uuid.toString()).findUnique();
-		return a.getAssemblyId();
+		return a == null ? null : a.getAssemblyId();
 	}
 }
