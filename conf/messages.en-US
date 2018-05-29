@@ -203,8 +203,9 @@ notification.description.general=There are news related to a {0} in {1} '{2}'
 
 appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly
 contribution.etherpad.words=words
-mail.notification.add.nonmember=You have been invited to collaborate on the {0} connected to the link below for the participatory process {1}. Access the campaign site with this link and login. After login, click on "My {2}" to see the {3} and collaborate. If you do not want to be an author of this proposal, delete your name from the list of authors. Link: {4}
-mail.notification.add.nonmember.subject=[AppCivist] Invitation to collaborate
+
+mail.notification.add.nonmember=You have been invited to collaborate on a {0} for the participatory process {1}. If you would like to contribute, click on the link below to go to this {2}, login, and start editing and/or commenting. If you don’t want to contribute, don’t login. If you don’t want your name even shared on the {3}, click on the link, login, and delete it. If you are unable to open the link by clicking on it, please copy and paste it into your browser. Link: {4}
+mail.notification.add.nonmember.subject=[AppCivist] Invitation to collaborate on {0}
 
 contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
 
