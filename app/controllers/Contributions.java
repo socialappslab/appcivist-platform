@@ -2950,8 +2950,8 @@ public class Contributions extends Controller {
         ctx().changeLang(lang);
         String cTypeTranslated = Messages.get(lang, cTypeKey);
         String cTypePluralTranslated = Messages.get(lang, cTypePluralKey);
-        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypePluralTranslated, cTypeTranslated, url);
-        subject = Messages.get(lang,"mail.notification.add.nonmember.subject");
+        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypeTranslated, cTypeTranslated, url);
+        subject = Messages.get(lang,"mail.notification.add.nonmember.subject" , initiativeName);
         MembershipInvitation membershipInvitation = new MembershipInvitation();
         membershipInvitation.setEmail(authorEmail);
         MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
