@@ -220,7 +220,7 @@ mail.notification.campaign_description_text.proposal=Esta campanha atualmente es
 mail.notification.proposal_developing_text=Seu grupo de trabalho {0} está atualmente desenvolvendo as seguintes propostas:
 mail.notification.updates_text.proposal=Sumário de outros grupos de trabalho
 
-mail.notification.add.nonmember=Você foi convidado a colaborar em uma {0} para o processo participativo {1}. Se quiser conhecer a {2}, clique no link abaixo, faça login e comece a contribuir, editando e/ou comentando a {3}. Se você não deseja contribuir, não entre para editar. Se você não quer nem ao menos ver seu nome compartilhado na {3}, clique no link, faça login e delete seu nome. Se você não conseguir abrir o link clicando nele, copie e cole no browser de seu computador para acessar. Link: {4}
+mail.notification.add.nonmember=Você foi convidado a colaborar em uma {0} para o processo participativo {1}. Se quiser conhecer a {2}, clique no link abaixo, faça login e comece a contribuir, editando e/ou comentando a {3}. Se você não deseja contribuir, não entre para editar. Se você não quer nem ao menos ver seu nome compartilhado na {3}, clique no link, faça login e delete seu nome. Se você não conseguir abrir o link clicando nele, copie e cole no browser de seu computador para acessar. Link: <a href="{4}">{4}</a>
 mail.notification.add.nonmember.subject=Convite para colaborar no {0}
 
 contribution.unauthorized.creation = Não é possível um postar um novo {0} neste espaço porque atualmente é um RASCUNHO privado
