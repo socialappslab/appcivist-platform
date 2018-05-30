@@ -3001,6 +3001,7 @@ public class Contributions extends Controller {
         // TODO: derive language from the text
         if (author != null) {
             newContrib.addAuthor(author);
+            newContrib.setCreator(author);
             newContrib.setContextUserId(author.getUserId());
             newContrib.setLang(author.getLanguage());
             F.Promise.promise(() -> {
