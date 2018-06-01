@@ -305,10 +305,16 @@ public class Contributions extends Controller {
             @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions,
             @ApiParam(name = "statusStartDate", value = "String") String statusStartDate,
             @ApiParam(name = "statusEndDate", value = "String") String statusEndDate,
-            @ApiParam(name = "excludeCreatedByUser", value = "Array of created users to exclude IDs to get") List<Long>  excludeCreatedByUser) {
+            @ApiParam(name = "excludeCreatedByUser", value = "Array of created users to exclude IDs to get") List<Long>  excludeCreatedByUser,
+            @ApiParam(name = "createdByOnly", value = "Include or not only creators authors" , defaultValue = "false") String createdByOnly)
+    {
 
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+        }
+        boolean creatorOnly = false;
+        if(createdByOnly != null && createdByOnly.equals("true")) {
+            creatorOnly = true;
         }
         ResourceSpace rs = ResourceSpace.read(sid);
         List<Contribution> contributions;
@@ -366,18 +372,18 @@ public class Contributions extends Controller {
 
         PaginatedContribution pag = new PaginatedContribution();
         if (all != null) {
-            contributions = ContributionsDelegate.findContributions(conditions, null, null);
+            contributions = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
             return contributions != null ? ok(Json.toJson(contributions))
                     : notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
-            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
             if (random != null && random.equals("true")) {
                 int totalRows = contribs.size();
                 int totalPages = (totalRows + pageSize - 1) / pageSize;
                 page = RandomUtils.nextInt(0, totalPages);
             }
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
             pag.setPage(page);
@@ -1094,15 +1100,15 @@ public class Contributions extends Controller {
 
             PaginatedContribution pag = new PaginatedContribution();
             if (all != null) {
-                contributions = ContributionsDelegate.findContributions(conditions, null, null);
+                contributions = ContributionsDelegate.findContributions(conditions, null, null, false);
             } else {
-                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
+                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, false);
                 if(random != null && random.equals("true")){
                     int totalRows = contribs.size();
                     int totalPages = (totalRows+pageSize-1) / pageSize;
                     page = RandomUtils.nextInt(0,totalPages);
                 }
-                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, false);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());
                 pag.setPage(page);
