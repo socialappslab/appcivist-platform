@@ -377,7 +377,7 @@ public class Contributions extends Controller {
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
-            if ( sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
+            if ( sorting != null && !sorting.isEmpty() && sorting.equals("random") ) {
                 int totalRows = contribs.size();
                 int totalPages = (totalRows + pageSize - 1) / pageSize;
                 page = RandomUtils.nextInt(0, totalPages);
@@ -1065,7 +1065,6 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random,
             @ApiParam(name = "status", value = "Status of Contributions", defaultValue = "") String status) { // DRAFT, NEW, PUBLISHED, INBALLOT, SELECTED, EXCLUDED,ARCHIVED,MODERATED,
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
@@ -1088,7 +1087,7 @@ public class Contributions extends Controller {
             if (byTheme != null && !byTheme.isEmpty()) {
                 conditions.put("theme", byTheme);
             }
-            if (sorting != null && !sorting.isEmpty()) {
+            if (sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
                 conditions.put("sorting", sorting);
             }
             if (status != null && !status.isEmpty()) {
@@ -1102,7 +1101,7 @@ public class Contributions extends Controller {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null, false);
             } else {
                 List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, false);
-                if(random != null && random.equals("true")){
+                if(sorting != null && !sorting.isEmpty() && sorting.equals("random") ){
                     int totalRows = contribs.size();
                     int totalPages = (totalRows+pageSize-1) / pageSize;
                     page = RandomUtils.nextInt(0,totalPages);
