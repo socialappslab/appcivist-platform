@@ -292,7 +292,9 @@ public class Contributions extends Controller {
             @ApiParam(name = "by_author", value = "Author ID") Integer authorId,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals", allowableValues = "") String sorting,
+            @ApiParam(name = "sorting", value = "Ordering of proposals",
+                    allowableValues = "date_asc, date_desc, random, popularity_asc, popularity_desc, most_commented_asc, most_commented_desc, most_commented_public_asc, most_commented_public_desc, most_commented_members_asc, most_commented_members_desc")
+                    String sorting,
             @ApiParam(name = "status", value = "String") String status,
             @ApiParam(name = "format", value = "Export format", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC")
                     String format,
