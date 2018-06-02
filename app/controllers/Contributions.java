@@ -292,8 +292,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "by_author", value = "Author ID") Integer authorId,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random,
+            @ApiParam(name = "sorting", value = "Ordering of proposals", allowableValues = "") String sorting,
             @ApiParam(name = "status", value = "String") String status,
             @ApiParam(name = "format", value = "Export format", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC")
                     String format,
@@ -305,10 +304,16 @@ public class Contributions extends Controller {
             @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions,
             @ApiParam(name = "statusStartDate", value = "String") String statusStartDate,
             @ApiParam(name = "statusEndDate", value = "String") String statusEndDate,
-            @ApiParam(name = "excludeCreatedByUser", value = "Array of created users to exclude IDs to get") List<Long>  excludeCreatedByUser) {
+            @ApiParam(name = "excludeCreatedByUser", value = "Array of created users to exclude IDs to get") List<Long>  excludeCreatedByUser,
+            @ApiParam(name = "createdByOnly", value = "Include or not only creators authors" , defaultValue = "false") String createdByOnly)
+    {
 
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+        }
+        boolean creatorOnly = false;
+        if(createdByOnly != null && createdByOnly.equals("true")) {
+            creatorOnly = true;
         }
         ResourceSpace rs = ResourceSpace.read(sid);
         List<Contribution> contributions;
@@ -366,18 +371,18 @@ public class Contributions extends Controller {
 
         PaginatedContribution pag = new PaginatedContribution();
         if (all != null) {
-            contributions = ContributionsDelegate.findContributions(conditions, null, null);
+            contributions = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
             return contributions != null ? ok(Json.toJson(contributions))
                     : notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
-            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
-            if (random != null && random.equals("true")) {
+            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
+            if ( sorting != null && !sorting.isEmpty() && sorting.equals("random") ) {
                 int totalRows = contribs.size();
                 int totalPages = (totalRows + pageSize - 1) / pageSize;
                 page = RandomUtils.nextInt(0, totalPages);
             }
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
             pag.setPage(page);
@@ -1060,7 +1065,6 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random,
             @ApiParam(name = "status", value = "Status of Contributions", defaultValue = "") String status) { // DRAFT, NEW, PUBLISHED, INBALLOT, SELECTED, EXCLUDED,ARCHIVED,MODERATED,
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
@@ -1083,7 +1087,7 @@ public class Contributions extends Controller {
             if (byTheme != null && !byTheme.isEmpty()) {
                 conditions.put("theme", byTheme);
             }
-            if (sorting != null && !sorting.isEmpty()) {
+            if (sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
                 conditions.put("sorting", sorting);
             }
             if (status != null && !status.isEmpty()) {
@@ -1094,15 +1098,15 @@ public class Contributions extends Controller {
 
             PaginatedContribution pag = new PaginatedContribution();
             if (all != null) {
-                contributions = ContributionsDelegate.findContributions(conditions, null, null);
+                contributions = ContributionsDelegate.findContributions(conditions, null, null, false);
             } else {
-                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
-                if(random != null && random.equals("true")){
+                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, false);
+                if(sorting != null && !sorting.isEmpty() && sorting.equals("random") ){
                     int totalRows = contribs.size();
                     int totalPages = (totalRows+pageSize-1) / pageSize;
                     page = RandomUtils.nextInt(0,totalPages);
                 }
-                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, false);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());
                 pag.setPage(page);
