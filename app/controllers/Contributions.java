@@ -292,8 +292,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "by_author", value = "Author ID") Integer authorId,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random,
+            @ApiParam(name = "sorting", value = "Ordering of proposals", allowableValues = "") String sorting,
             @ApiParam(name = "status", value = "String") String status,
             @ApiParam(name = "format", value = "Export format", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC")
                     String format,
@@ -378,7 +377,7 @@ public class Contributions extends Controller {
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
-            if (random != null && random.equals("true")) {
+            if ( sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
                 int totalRows = contribs.size();
                 int totalPages = (totalRows + pageSize - 1) / pageSize;
                 page = RandomUtils.nextInt(0, totalPages);
