@@ -387,7 +387,6 @@ public class User extends AppCivistBaseModel implements Subject {
 		return LinkedAccount.findByProviderKey(this, providerKey);
 	}
 
-	@Transactional
 	public static void verify(final User unverified) {
 		// You might want to wrap this into a transaction
 		// Model..em().getTransaction()
