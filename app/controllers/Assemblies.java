@@ -200,12 +200,13 @@ public class Assemblies extends Controller {
             return ok(Json.toJson(AssembliesDelegate.createMembership(id)));
         } catch (MembershipCreationException e) {
             e.printStackTrace();
-            Ebean.rollbackTransaction();
             return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
                     Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
                             e.getMessage()), "")));
 
-        }
+        } finally {
+			Ebean.endTransaction();
+		}
     }
     @ApiOperation(httpMethod = "PUT", response = CampaignTransfer.class, produces = "application/json", value = "Change assembly status to PUBLISHED", notes = "Only for COORDINATORS.")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
@@ -299,10 +300,11 @@ public class Assemblies extends Controller {
 				} catch (Exception e) {
 					Logger.error(e.getStackTrace().toString());
 					e.printStackTrace();
-					Ebean.rollbackTransaction();
 					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
 							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
 									e.getMessage()), "")));
+				} finally {
+					Ebean.endTransaction();
 				}
 			} else {
 				return internalServerError(Json
@@ -362,10 +364,11 @@ public class Assemblies extends Controller {
 					return ok(Json.toJson(created));
 				} catch (Exception e) {
 					Logger.error(LogActions.exceptionStackTraceToString(e));
-					Ebean.rollbackTransaction();
 					return internalServerError(Json.toJson(TransferResponseStatus.errorMessage(
 							Messages.get(GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
 									e.getMessage()), "")));
+				} finally {
+					Ebean.endTransaction();
 				}
 			} else {
 				return badRequest(Json.toJson("Assembly " + id + " is not a principal assembly"));
@@ -511,16 +514,17 @@ public class Assemblies extends Controller {
 
 				NotificationsDelegate.createNotificationEventsByType(
 						ResourceSpaceTypes.ASSEMBLY.toString(), newAssembly.getUuid());
+				Ebean.commitTransaction();
 
 			} catch (Exception e) {
-				Ebean.rollbackTransaction();
 				Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
 				responseBody.setStatusMessage(Messages.get(
 						GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
 						newAssembly.getName()));
 				return internalServerError(Json.toJson(responseBody));
+			} finally {
+				Ebean.endTransaction();
 			}
-			Ebean.commitTransaction();
 
 			responseBody.setNewResourceId(newAssembly.getAssemblyId());
 			responseBody.setStatusMessage(Messages.get(
@@ -770,12 +774,13 @@ public class Assemblies extends Controller {
 					Ebean.commitTransaction();
 					results.add(result);
 				} catch (MembershipCreationException e) {
-					Ebean.rollbackTransaction();
 					TransferResponseStatus responseBody = new TransferResponseStatus();
 					responseBody.setStatusMessage(Messages.get(
 							GlobalData.MEMBERSHIP_INVITATION_CREATE_MSG_ERROR,
 							"Error: "+e.getMessage()));
 					return internalServerError(Json.toJson(responseBody));
+				} finally {
+					Ebean.endTransaction();
 				}
 			}
 			return ok(Json.toJson(results));
@@ -1333,16 +1338,16 @@ public class Assemblies extends Controller {
                 }
                 Ebean.commitTransaction();
             } catch (EntityNotFoundException e) {
-                Ebean.rollbackTransaction();
                 e.printStackTrace();
                 Logger.error(e.getLocalizedMessage());
                 return internalServerError("The working group doesn't exist");
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
                 e.printStackTrace();
                 Logger.error(e.getLocalizedMessage());
                 return internalServerError("Error reading the CSV file");
-            }
+            } finally {
+				Ebean.endTransaction();
+			}
         }
 		return ok(Json.toJson(an));
 	}

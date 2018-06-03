@@ -4,6 +4,7 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
 import enums.ConfigTargets;
@@ -652,7 +653,19 @@ public class Users extends Controller {
       // TODO return badRequest(no_token_or_invalid.render());
     }
     final String email = ta.targetUser.getEmail();
-    User.verify(ta.targetUser);
+
+    Ebean.beginTransaction();
+      try {
+          User.verify(ta.targetUser);
+          Ebean.commitTransaction();
+      } catch (Exception e) {
+          TransferResponseStatus responseBody = new TransferResponseStatus();
+          responseBody.setStatusMessage("Verify emailtransaction fail");
+          return internalServerError(Json.toJson(responseBody));
+      } finally {
+          Ebean.endTransaction();
+      }
+
     flash(Application.FLASH_MESSAGE_KEY,
         Messages.get("playauthenticate.verify_email.success", email));
     // if (Application.getLocalUser(session()) != null) {

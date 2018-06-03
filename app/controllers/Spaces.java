@@ -2,6 +2,8 @@ package controllers;
 
 
 import be.objectify.deadbolt.java.actions.Dynamic;
+import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1786,15 +1788,18 @@ public class Spaces extends Controller {
                 resourceSpace.update();
                 NotificationsDelegate.createNotificationEventsByType(
                         ResourceSpaceTypes.ASSEMBLY.toString(), newAssembly.getUuid());
+                Ebean.commitTransaction();
+
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
+
                 Logger.error("Error updating assembly: "+LogActions.exceptionStackTraceToString(e));
                 responseBody.setStatusMessage(Messages.get(
                         GlobalData.ASSEMBLY_CREATE_MSG_ERROR,
                         newAssembly.getName()));
                 return internalServerError(Json.toJson(responseBody));
+            } finally {
+                Ebean.endTransaction();
             }
-            Ebean.commitTransaction();
 
             responseBody.setNewResourceId(newAssembly.getAssemblyId());
             responseBody.setStatusMessage(Messages.get(
@@ -2875,10 +2880,11 @@ public class Spaces extends Controller {
                     Ebean.commitTransaction();
                     return ok(Json.toJson(createdThemes));
                 } catch (Exception e) {
-                    Ebean.rollbackTransaction();
                     TransferResponseStatus responseBody = new TransferResponseStatus();
                     responseBody.setStatusMessage("Could not create themes. "+e.getLocalizedMessage());
                     return internalServerError(Json.toJson(responseBody));
+                } finally {
+                    Ebean.endTransaction();
                 }
             }
         }
@@ -2956,6 +2962,45 @@ public class Spaces extends Controller {
         } else {
             return notFound(Json
                     .toJson(new TransferResponseStatus("No object found with id "+id)));
+        }
+    }
+
+    @ApiOperation(produces="application/json", value="Simple search of uuid by object id", httpMethod="GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key",
+                    dataType = "String", paramType = "header")})
+    @Restrict({@Group(GlobalData.USER_ROLE)})
+    public static Result getIdByUUIdAndType(
+
+            @ApiParam(name = "type", value = "Object type",
+                    allowableValues = "assembly,campaign,contribution,group,resource") String type,
+            @ApiParam(name = "uuid", value = "Object uuid") UUID uuid) {
+        Long aRet = null;
+        switch (type) {
+            case "assembly":
+                aRet = Assembly.getIdByUUID(uuid);
+                break;
+            case "campaign":
+                aRet = Campaign.getIdByUUID(uuid);
+                break;
+            case "contribution":
+                aRet = Contribution.getIdByUUID(uuid);
+                break;
+            case "group":
+                aRet = WorkingGroup.getIdByUUID(uuid);
+                break;
+            case "resource":
+                aRet = Resource.getIdByUUID(uuid);
+                break;
+        }
+
+        if(aRet != null) {
+            Map<String, Long> objectAret = new HashMap<>();
+            objectAret.put("id", aRet);
+            return ok(Json.toJson(objectAret));
+        } else {
+            return notFound(Json
+                    .toJson(new TransferResponseStatus("No object found with uuid "+uuid)));
         }
     }
 }

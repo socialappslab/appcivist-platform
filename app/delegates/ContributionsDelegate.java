@@ -1,19 +1,16 @@
 package delegates;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-
+import com.avaje.ebean.*;
+import enums.ConfigTargets;
+import enums.ContributionStatus;
+import enums.ContributionTypes;
+import enums.ResourceTypes;
 import models.*;
 import net.gjerull.etherpad.client.EPLiteException;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.dozer.DozerBeanMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import play.Logger;
 import play.Play;
 import play.i18n.Lang;
@@ -22,19 +19,10 @@ import play.mvc.Http;
 import utils.TextUtils;
 import utils.services.EtherpadWrapper;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Expr;
-import com.avaje.ebean.Expression;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Model;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.RawSql;
-import com.avaje.ebean.RawSqlBuilder;
-
-import enums.ConfigTargets;
-import enums.ContributionStatus;
-import enums.ContributionTypes;
-import enums.ResourceTypes;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 public class ContributionsDelegate {
 
@@ -138,7 +126,8 @@ public class ContributionsDelegate {
         }
     }
 
-    public static List<Contribution> findContributions(Map<String, Object> conditions, Integer page, Integer pageSize){
+    public static List<Contribution> findContributions(Map<String, Object> conditions, Integer page, Integer pageSize,
+                                                       boolean creatorOnly){
 
         ExpressionList<Contribution> where = null;
         String rawQuery = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal,\n " +
@@ -162,7 +151,9 @@ public class ContributionsDelegate {
                                 "join resource_space rs on rs.resource_space_id = rsc.resource_space_resource_space_id\n ";
                         break;
                     case "by_author":
-                        rawQuery += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
+                        if(!creatorOnly) {
+                            rawQuery += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
+                        }
                         break;
                     case "by_location":                    	
                     	rawQuery += "join location l on l.location_id = t0.location_location_id \n ";
@@ -232,7 +223,11 @@ public class ContributionsDelegate {
                         where.add(Expr.eq("rs.resource_space_id", value));
                         break;
                     case "by_author":
-                        where.add(Expr.eq("auth.appcivist_user_user_id", value));
+                        if(!creatorOnly) {
+                            where.add(Expr.eq("auth.appcivist_user_user_id", value));
+                        } else {
+                            where.add(Expr.eq("t0.creator_user_id", value));
+                        }
                         break;
                     case "by_text":
                         Expression expression = Expr.or(Expr.ilike("t0.title", "%" + ((String)value).toLowerCase() + "%"),
@@ -277,6 +272,19 @@ public class ContributionsDelegate {
                     case "selectedContributions":
                         List<String> selected = (List)value;
                         where.in("t0.uuid", selected);
+                        break;
+                    case "excludeCreatedByUser":
+                        List<Long> excludeUsers = (List)value;
+                        previous = null;
+                        for(Long g : excludeUsers){
+                            e = Expr.ne("t0.creator_user_id", g);
+                            if(previous == null){
+                                previous = e;
+                            }else{
+                                previous = Expr.or(previous, e);
+                            }
+                        }
+                        where.add(previous);
                         break;
                     case "statusEndDate":
                         where.add(Expr.le("csa.status_end_date", value));

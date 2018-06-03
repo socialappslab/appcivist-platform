@@ -30,11 +30,12 @@ import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
 import http.Headers;
 import io.swagger.annotations.*;
-import jdk.nashorn.internal.objects.Global;
 import models.*;
 import models.location.Location;
 import models.misc.Views;
 import models.transfer.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -291,8 +292,9 @@ public class Contributions extends Controller {
             @ApiParam(name = "by_author", value = "Author ID") Integer authorId,
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
-            @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random,
+            @ApiParam(name = "sorting", value = "Ordering of proposals",
+                    allowableValues = "date_asc, date_desc, random, popularity_asc, popularity_desc, most_commented_asc, most_commented_desc, most_commented_public_asc, most_commented_public_desc, most_commented_members_asc, most_commented_members_desc")
+                    String sorting,
             @ApiParam(name = "status", value = "String") String status,
             @ApiParam(name = "format", value = "Export format", allowableValues = "JSON,CSV,TXT,PDF,RTF,DOC")
                     String format,
@@ -303,10 +305,17 @@ public class Contributions extends Controller {
                     allowableValues = "JSON,CSV") String collectionFileFormat,
             @ApiParam(name = "selectedContributions", value = "Array of contribution IDs to get") List<String> selectedContributions,
             @ApiParam(name = "statusStartDate", value = "String") String statusStartDate,
-            @ApiParam(name = "statusEndDate", value = "String") String statusEndDate) {
+            @ApiParam(name = "statusEndDate", value = "String") String statusEndDate,
+            @ApiParam(name = "excludeCreatedByUser", value = "Array of created users to exclude IDs to get") List<Long>  excludeCreatedByUser,
+            @ApiParam(name = "createdByOnly", value = "Include or not only creators authors" , defaultValue = "false") String createdByOnly)
+    {
 
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
+        }
+        boolean creatorOnly = false;
+        if(createdByOnly != null && createdByOnly.equals("true")) {
+            creatorOnly = true;
         }
         ResourceSpace rs = ResourceSpace.read(sid);
         List<Contribution> contributions;
@@ -328,6 +337,9 @@ public class Contributions extends Controller {
         }
         if (byGroup != null && !byGroup.isEmpty()) {
             conditions.put("group", byGroup);
+        }
+        if (excludeCreatedByUser != null && !excludeCreatedByUser.isEmpty()) {
+            conditions.put("excludeCreatedByUser", excludeCreatedByUser);
         }
         if (byTheme != null && !byTheme.isEmpty()) {
             conditions.put("theme", byTheme);
@@ -361,18 +373,18 @@ public class Contributions extends Controller {
 
         PaginatedContribution pag = new PaginatedContribution();
         if (all != null) {
-            contributions = ContributionsDelegate.findContributions(conditions, null, null);
+            contributions = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
             return contributions != null ? ok(Json.toJson(contributions))
                     : notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
-            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
-            if (random != null && random.equals("true")) {
+            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
+            if ( sorting != null && !sorting.isEmpty() && sorting.equals("random") ) {
                 int totalRows = contribs.size();
                 int totalPages = (totalRows + pageSize - 1) / pageSize;
                 page = RandomUtils.nextInt(0, totalPages);
             }
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
             pag.setPage(page);
@@ -1055,7 +1067,6 @@ public class Contributions extends Controller {
             @ApiParam(name = "page", value = "Page", defaultValue = "0") Integer page,
             @ApiParam(name = "pageSize", value = "Number of elements per page") Integer pageSize,
             @ApiParam(name = "sorting", value = "Ordering of proposals") String sorting,
-            @ApiParam(name = "random", value = "Boolean") String random,
             @ApiParam(name = "status", value = "Status of Contributions", defaultValue = "") String status) { // DRAFT, NEW, PUBLISHED, INBALLOT, SELECTED, EXCLUDED,ARCHIVED,MODERATED,
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
@@ -1078,7 +1089,7 @@ public class Contributions extends Controller {
             if (byTheme != null && !byTheme.isEmpty()) {
                 conditions.put("theme", byTheme);
             }
-            if (sorting != null && !sorting.isEmpty()) {
+            if (sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
                 conditions.put("sorting", sorting);
             }
             if (status != null && !status.isEmpty()) {
@@ -1089,15 +1100,15 @@ public class Contributions extends Controller {
 
             PaginatedContribution pag = new PaginatedContribution();
             if (all != null) {
-                contributions = ContributionsDelegate.findContributions(conditions, null, null);
+                contributions = ContributionsDelegate.findContributions(conditions, null, null, false);
             } else {
-                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null);
-                if(random != null && random.equals("true")){
+                List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, false);
+                if(sorting != null && !sorting.isEmpty() && sorting.equals("random") ){
                     int totalRows = contribs.size();
                     int totalPages = (totalRows+pageSize-1) / pageSize;
                     page = RandomUtils.nextInt(0,totalPages);
                 }
-                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize);
+                contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, false);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());
                 pag.setPage(page);
@@ -1190,47 +1201,57 @@ public class Contributions extends Controller {
             @ApiParam(name = "description", value = "New Description") String description,
             @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
         try {
+            Logger.info("Updating contribution from external service based on document ID: " + peerDocId);
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
             if(title.isEmpty() && lastUpdate.isEmpty() && description.isEmpty()) {
+                Logger.info("All parameters are empty. Nothing to update");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage("Nothing to update");
                 return badRequest(Json.toJson(responseBody));
             }
             if(contribution!=null) {
+                Logger.info("Contribution found: " + contribution.getContributionId());
                 if (!title.isEmpty()) {
+                    Logger.debug("Updating title to: " + title);
                     contribution.setTitle(title);
                 }
                 if (!description.isEmpty()) {
+                    Logger.debug("Updating description to: " + description);
                     contribution.setText(description);
                 }
 
                 if(!lastUpdate.isEmpty()) {
+                    Logger.debug("Updating lastUpdate to: " + lastUpdate);
                     lastUpdate =  java.net.URLDecoder.decode(lastUpdate, "UTF-8");
                     DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
                     DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
                     Date date = format.parse(lastUpdate);
                     Date toDb = bdFormat.parse(bdFormat.format(date));
+                    Logger.debug("Formatted lastUpdate: " + toDb.toString());
                     contribution.setLastUpdate(toDb);
                 }
                 contribution.update();
+                Logger.info("Contribution updated!");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setResponseStatus(ResponseStatus.OK);
                 responseBody.setStatusMessage("Contribution updated");
                 return ok(Json.toJson(responseBody));
             } else {
+                Logger.info("No contribution found for document ID");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setResponseStatus(ResponseStatus.NODATA);
                 responseBody.setStatusMessage("No contribution found for the given peerDocId");
                 return notFound(Json.toJson(responseBody));
             }
         } catch (ParseException e) {
-            TransferResponseStatus responseBody = getErrorMessage(e,
-                    "Error parsing the lastUpdate date, the expected format is YYYY-MM-DD HH:mm:ss");
+            String msg = "Error parsing the lastUpdate date, the expected format is YYYY-MM-DD HH:mm:ss";
+            Logger.info(msg);
+            TransferResponseStatus responseBody = getErrorMessage(e,msg);
             return internalServerError(Json.toJson(responseBody));
-        }
-          catch (Exception e) {
-            TransferResponseStatus responseBody = getErrorMessage(e,
-                    "There was an error with you request " + e.getMessage());
+        } catch (Exception e) {
+            String msg = "There was an error with you request " + e.getMessage();
+            Logger.info(msg);
+            TransferResponseStatus responseBody = getErrorMessage(e,msg);
             return internalServerError(Json.toJson(responseBody));
         }
     }
@@ -1468,8 +1489,10 @@ public class Contributions extends Controller {
                     rs.getContributions().add(c);
                     rs.update();
                 }
+                Ebean.commitTransaction();
+
             } catch (Exception e) {
-                Ebean.rollbackTransaction();
+                Ebean.endTransaction();
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 e.printStackTrace(pw);
@@ -1482,7 +1505,6 @@ public class Contributions extends Controller {
                                 ResponseStatus.SERVERERROR,
                                 "Error when creating Contribution: " + e.getMessage())));
             }
-            Ebean.commitTransaction();
 
             // Signal a notification asynchronously
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
@@ -1977,17 +1999,18 @@ public class Contributions extends Controller {
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
                 ContributionHistory.createHistoricFromContribution(contribution);
+                Ebean.commitTransaction();
 
             } catch (Exception e) {
                 Promise.promise(() -> {
                     Logger.error(LogActions.exceptionStackTraceToString(e));
                     return true;
                 });
-                Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
+            } finally {
+                Ebean.endTransaction();
             }
 
-            Ebean.commitTransaction();
             return ok(Json.toJson(updatedStats));
         }
     }
@@ -2114,17 +2137,18 @@ public class Contributions extends Controller {
                 contribution.setPopularity(new Long(updatedStats.getUps() - updatedStats.getDowns()).intValue());
                 contribution.update();
                 ContributionHistory.createHistoricFromContribution(contribution);
-
+                Ebean.commitTransaction();
             } catch (Exception e) {
                 Promise.promise(() -> {
                     Logger.error(LogActions.exceptionStackTraceToString(e));
                     return true;
                 });
-                Ebean.rollbackTransaction();
                 return contributionFeedbackError(feedback, e.getLocalizedMessage());
             }
+            finally {
+                Ebean.endTransaction();
+            }
 
-            Ebean.commitTransaction();
             return ok(Json.toJson(updatedStats));
         }
     }
@@ -2942,8 +2966,8 @@ public class Contributions extends Controller {
         ctx().changeLang(lang);
         String cTypeTranslated = Messages.get(lang, cTypeKey);
         String cTypePluralTranslated = Messages.get(lang, cTypePluralKey);
-        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypePluralTranslated, cTypeTranslated, url);
-        subject = Messages.get(lang,"mail.notification.add.nonmember.subject");
+        bodyText = Messages.get(lang,"mail.notification.add.nonmember", cTypeTranslated, initiativeName, cTypeTranslated, cTypeTranslated, url);
+        subject = Messages.get(lang,"mail.notification.add.nonmember.subject" , initiativeName);
         MembershipInvitation membershipInvitation = new MembershipInvitation();
         membershipInvitation.setEmail(authorEmail);
         MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
@@ -2993,6 +3017,7 @@ public class Contributions extends Controller {
         // TODO: derive language from the text
         if (author != null) {
             newContrib.addAuthor(author);
+            newContrib.setCreator(author);
             newContrib.setContextUserId(author.getUserId());
             newContrib.setLang(author.getLanguage());
             F.Promise.promise(() -> {
@@ -3695,7 +3720,7 @@ public class Contributions extends Controller {
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributionsResourceSpace(
             @ApiParam(name = "sid", value = "Resource Space id") Long sid,
-            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type,
+            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
             @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
 
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
@@ -3710,6 +3735,64 @@ public class Contributions extends Controller {
         }
     }
 
+
+    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
+            notes = "CSV format: the values must be separated by coma (;).")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result importContributionFeedbacks(
+            @ApiParam(name = "aid", value = "Resource Space id") Long sid) {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        ResourceSpace resourceSpace = ResourceSpace.find.byId(sid);
+        if(resourceSpace == null || uploadFilePart == null ||  resourceSpace.getCampaign() == null) {
+            String errorMessage = uploadFilePart == null ? "Missing import file" : "Campaign does not exist";
+            Logger.error(errorMessage);
+            return badRequest(
+                    Json.toJson(
+                            new TransferResponseStatus(ResponseStatus.SERVERERROR, errorMessage)));
+        }
+        try {
+            Reader in = new FileReader(uploadFilePart.getFile());
+            Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+            Ebean.beginTransaction();
+            for (CSVRecord record : records) {
+                String sourceCode = record.get("code");
+                String source = record.get("source_code");
+                String name = record.get("name");
+                Integer vote = Integer.valueOf(record.get("vote"));
+                Contribution contribution = Contribution.findBySourceCodeAndSource(source, sourceCode);
+                if(contribution == null) {
+                    throw new Exception("No contribution found for the code " + source + " and source "+ sourceCode);
+                }
+                ContributionFeedback contributionFeedback = new ContributionFeedback();
+                contributionFeedback.setContribution(contribution);
+                if(vote.equals(1)) {
+                    contributionFeedback.setUp(true);
+                } else {
+                    contributionFeedback.setDown(true);
+                }
+                NonMemberAuthor nonMemberAuthor = createNonMemberImport(name, null, null, contribution);
+                contributionFeedback.setNonMemberAuthor(nonMemberAuthor);
+                contributionFeedback.save();
+            }
+            Ebean.commitTransaction();
+        } catch (Exception e) {
+            Logger.error(e.getMessage());
+            return internalServerError(
+                    Json.toJson(
+                            new TransferResponseStatus(ResponseStatus.SERVERERROR,
+                                    "Tried to import feedbacks: "
+                                            + e.getClass() + ": " + e.getMessage())));
+        } finally {
+            Ebean.endTransaction();
+        }
+
+        return ok();
+    }
         /**
          * POST      /api/assembly/:aid/campaign/:cid/contribution/import
          * Import ideas file
@@ -3724,11 +3807,11 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+ //   @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
             @ApiParam(name = "aid", value = "Assembly id") Long aid,
             @ApiParam(name = "cid", value = "Campaign id") Long cid,
-            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL", defaultValue = "IDEA") String type,
+            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
             @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
@@ -3738,7 +3821,7 @@ public class Contributions extends Controller {
             createThemes = false;
         }
 
-        if(! (type.equals("IDEA") || type.equals("PROPOSAL")) ) {
+        if(! (type.equals("IDEA") || type.equals("PROPOSAL") || type.equals("COMMENT")) ) {
             return badRequest(Json.toJson(new TransferResponseStatus("Not supported Contribution Type: " + type)));
         }
 
@@ -3756,12 +3839,19 @@ public class Contributions extends Controller {
                         String[] cell = line.split(cvsSplitBy);
                         Contribution c = new Contribution();
 
-                        if (type.equals("IDEA")) {
-                            Logger.info("SETTING IDEA");
-                            c.setType(ContributionTypes.IDEA);
-                        } else if (type.equals("PROPOSAL")) {
-                            Logger.info("SETTING PROPOSAL");
-                            c.setType(ContributionTypes.PROPOSAL);
+                        switch (type) {
+                            case "IDEA":
+                                Logger.info("SETTING IDEA");
+                                c.setType(ContributionTypes.IDEA);
+                                break;
+                            case "PROPOSAL":
+                                Logger.info("SETTING PROPOSAL");
+                                c.setType(ContributionTypes.PROPOSAL);
+                                break;
+                            case "COMMENT":
+                                Logger.info("SETTING COMMENT");
+                                c.setType(ContributionTypes.COMMENT);
+                                break;
                         }
 
                         // Supported Format:
@@ -3891,55 +3981,39 @@ public class Contributions extends Controller {
                                 String author = cell[index];
                                 String phone = (cell.length > index + 1) ? cell[index + 1] : "";
                                 String email = (cell.length > index + 2) ? cell[index + 2] : "";
-
-                                boolean createNewMember = false;
-                                if (author != null && !author.equals("")) {
+                                if(author!= null && !author.isEmpty()) {
                                     c.setFirstAuthorName(author);
-                                    List<User> authors = User.findByName(author);
-                                    // If more than one user matches the name
-                                    // criteria, we'll skip the author set up
-                                    if (authors != null && authors.size() == 1) {
-                                        c.getAuthors().add(authors.get(0));
-                                        Logger.info("The author was FOUND!");
-                                    } else {
-                                        createNewMember = true;
-                                    }
                                 }
-
-                                if (createNewMember) {
-                                    Logger.info("Importing => non member author => " + author);
-                                    // Create a non member author
-                                    NonMemberAuthor nma = new NonMemberAuthor();
-                                    nma.setName(author);
-                                    nma.setPhone(phone);
-                                    nma.setEmail(email);
-                                    nma.save();
-
-                                    c.getNonMemberAuthors().add(nma);
-                                }
-
+                                createNonMemberImport(author, phone, email, c);
                             }
 
                         }
-
+                        ResourceSpace resourceSpace;
                         // Create the contribution
-                        Logger.info("Adding contribution to campaign...");
-                        ResourceSpace resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                        if(type.equals("COMMENT")) {
+                            Contribution origin = Contribution.findBySourceCodeAndSource(c.getSource(), c.getSourceCode());
+                            if(origin == null) {
+                                throw new Exception("No contribution found for the source: "+ c.getSource() + " and source code: "+ c.getSourceCode());
+                            }
+                            resourceSpace = origin.getResourceSpace();
+                            c.setSourceCode(null);
+                        } else {
+                            Logger.info("Adding contribution to campaign...");
+                            resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                        }
                         c.getContainingSpaces().add(resourceSpace);
                         Contribution.create(c, resourceSpace);
-                        ContributionHistory.createHistoricFromContribution(c);
-
                     }
+                    Ebean.commitTransaction();
                 } catch (Exception e) {
-                    Ebean.rollbackTransaction();
-                    Logger.error(e.getClass() + ": " + e.getMessage());
                     e.printStackTrace();
                     return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,
                             "Tried to import contributions of type: " + type + "\n"
                                     + "Tried parsing with column separator: " + cvsSplitBy + "\n"
                                     + e.getClass() + ": " + e.getMessage())));
+                } finally {
+                    Ebean.endTransaction();
                 }
-                Ebean.commitTransaction();
 
             } catch (Exception e) {
                 Logger.error(e.getMessage());
@@ -4038,6 +4112,19 @@ public class Contributions extends Controller {
             @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
         Contribution c = Contribution.read(cid);
         String upStatus = status.toUpperCase();
+        List<String> checkStatus = null;
+        if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
+            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
+                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ);
+        }
+        if (upStatus.equals(ContributionStatus.PUBLISHED.name())) {
+            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLISHED,
+                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
+        }
+        if(checkStatus != null && !checkStatus.isEmpty()) {
+            return badRequest(Json.toJson(new TransferResponseStatus("You must to complete all the " +
+                    "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
+        }
         if (ContributionStatus.valueOf(upStatus) != null) {
             Http.Session s = session();
             Logger.debug("Session = "+(s != null ? s : "[no session found]"));
@@ -5124,6 +5211,82 @@ public class Contributions extends Controller {
         }
         return unauth;
     }
+    private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
+        List<String> requirements = new ArrayList<>();
+        if(upStatus.equals(cs.name())) {
+            Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
+            for(Config config: campaing.getConfigs()) {
+                if(config.getKey().equals(configKey)) {
+                    requirements = Arrays.asList(config.getValue().split(","));
+                }
+            }
+        }
+        Logger.info("Requirements config: " + requirements);
+        List<String> customFields = new ArrayList<>();
+        if(!requirements.isEmpty()) {
+            for(String requirement: requirements) {
+                String output = requirement.substring(0, 1).toUpperCase() + requirement.substring(1);
+                try {
+                    Contribution.class.getMethod("get" + output);
+                } catch (NoSuchMethodException e) {
+                    customFields.add(requirement);
+                }
+            }
+        } else {
+            return null;
+        }
+        if (customFields.isEmpty()) {
+            return null;
+        }
+        Logger.info("required custom fields: " + customFields);
+        List<String> custom = new ArrayList<>(customFields);
+        for(CustomFieldValue customFieldValue: c.getResourceSpace().getCustomFieldValues()) {
+            for(String requirement: customFields) {
+                if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement) && (customFieldValue.getValue() != null)) {
+                    custom.remove(requirement);
+                    Logger.info(requirement +" field is present");
+                }
+            }
+        }
+        return custom;
+    }
+
+    private static NonMemberAuthor createNonMemberImport(String author, String phone, String email,
+                                              Contribution c) {
+
+        boolean createNewMember = false;
+        if (author != null && !author.equals("")) {
+            List<User> authors = User.findByName(author);
+            // If more than one user matches the name
+            // criteria, we'll skip the author set up
+            if (authors != null && authors.size() == 1) {
+                c.getAuthors().add(authors.get(0));
+                Logger.info("The author was FOUND!");
+            } else {
+                List<NonMemberAuthor> nonMemberAuthors = NonMemberAuthor.find.where().eq("name", author).findList();
+                if (nonMemberAuthors.isEmpty()) {
+                    createNewMember = true;
+                } else {
+                    Logger.info("Non member author was FOUND!");
+                    return nonMemberAuthors.get(0);
+                }
+            }
+        }
+
+        if (createNewMember) {
+            Logger.info("Importing => non member author => " + author);
+            // Create a non member author
+            NonMemberAuthor nma = new NonMemberAuthor();
+            nma.setName(author);
+            nma.setPhone(phone);
+            nma.setEmail(email);
+            nma.save();
+            nma.refresh();
+            c.getNonMemberAuthors().add(nma);
+            return nma;
+        }
+        return null;
+    }
 
 }
 
@@ -5173,4 +5336,6 @@ class PaginatedContribution {
     public void setList(List<Contribution> list) {
         this.list = list;
     }
+
+
 }

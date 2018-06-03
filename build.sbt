@@ -53,7 +53,8 @@ libraryDependencies ++= Seq(
   "org.apache.poi" % "poi-ooxml" % "3.17",
   "com.google.api-client" % "google-api-client" % "1.23.0",
   "com.rabbitmq" % "amqp-client" % "5.1.1",
-  "de.grundid.opendatalab" % "geojson-jackson" % "1.8" excludeAll( ExclusionRule(organization = "com.fasterxml.jackson.core") )
+  "de.grundid.opendatalab" % "geojson-jackson" % "1.8" excludeAll( ExclusionRule(organization = "com.fasterxml.jackson.core") ),
+  "org.apache.commons" % "commons-csv" % "1.5"
 
 )
 

@@ -521,8 +521,8 @@ String uuidAsString, List<Component> phases) {
 	}
 
 	public static Long getIdByUUID(UUID uuid) {
-		Campaign c = find.where().eq("uuid",uuid.toString()).findUnique();
-		return c.getCampaignId();
+		Campaign c = find.where().eq("uuid", uuid.toString()).findUnique();
+		return c == null ? null : c.getCampaignId();
 	}
 
 	public static abstract class AssembliesVisibleMixin {

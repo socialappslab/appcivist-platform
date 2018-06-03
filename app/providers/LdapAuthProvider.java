@@ -5,6 +5,7 @@ import com.feth.play.module.pa.providers.wwwauth.basic.BasicAuthProvider;
 import com.feth.play.module.pa.user.AuthUser;
 import models.Assembly;
 import models.Config;
+import models.MembershipAssembly;
 import models.User;
 import play.Application;
 import play.Logger;
@@ -74,7 +75,8 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
     }
 
-    private static List<LdapAuthUser> getLdapUsers(LdapConfig ldapConfig, String cnserach) throws NamingException, UnsupportedEncodingException {
+    private static List<LdapAuthUser> getLdapUsers(LdapConfig ldapConfig,
+                                                   String cnserach) throws NamingException, UnsupportedEncodingException {
         String ldapURL = ldapConfig.getUrl() + ":" + ldapConfig.getPort();
         Hashtable<String, String> environment =
                 new Hashtable<String, String>();
@@ -139,6 +141,11 @@ public class LdapAuthProvider extends BasicAuthProvider {
             }
             if(User.findByEmail(user.getMail()) == null) {
                 aRet.add(user);
+            } else {
+                if(MembershipAssembly.findByUserAndAssembly(User.findByEmail(user.getMail()),
+                        ldapConfig.getAssembly()) == null) {
+                    aRet.add(user);
+                }
             }
         }
         Logger.info(aRet.size() + " users found");

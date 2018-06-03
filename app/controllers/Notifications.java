@@ -3,15 +3,9 @@ package controllers;
 import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.feth.play.module.pa.PlayAuthenticate;
-
 import delegates.NotificationsDelegate;
-import enums.AppcivistNotificationTypes;
-import enums.AppcivistResourceTypes;
-import enums.NotificationEventName;
-import enums.SubscriptionTypes;
+import enums.*;
 import exceptions.ConfigurationException;
 import http.Headers;
 import io.swagger.annotations.*;
@@ -26,7 +20,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
-import scala.tools.nsc.backend.icode.Primitives;
 import security.SecurityModelConstants;
 import utils.GlobalData;
 
@@ -65,6 +58,7 @@ public class Notifications extends Controller {
     final private static String NOTIFICATION_DESCRIPTION_UPCOMING_MILESTONE = "notification.description.campaign.upcoming.milestone";
 
     public static final Form<NotificationSubscriptionTransfer> SUBSCRIPTION_FORM = form(NotificationSubscriptionTransfer.class);
+    public static final Form<NotificationSignalTransfer> NOTIFICATION_SIGNAL_TRANSFER_FORM = form(NotificationSignalTransfer.class);
     public static final Form<Subscription>  SUBSCRIPTION_FORM_NEW = form(Subscription.class);
 
 
@@ -126,7 +120,41 @@ public class Notifications extends Controller {
         }
     }*/
 
-    @ApiOperation(response = Subscription.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
+
+    @ApiOperation(response = NotificationEventSignal.class, produces = "application/json", value = "Create a notification signal event by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "NotificationEventSignal Object", value = "Body of NotificationEventSignal in JSON. Only title and text needed",
+                    required = true, dataType = "models.transfer.NotificationSignalTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Restrict({ @Group(GlobalData.USER_ROLE) })
+    public static Result createNotificationSignalEvent(Long sid) {
+        ResourceSpace resourceSpace = ResourceSpace.find.byId(sid);
+        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        if(author == null) {
+            return unauthorized(Json.toJson(new TransferResponseStatus(
+                    ResponseStatus.UNAUTHORIZED,
+                    "User unauthorized. Not found")));
+        }
+        if(resourceSpace == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("No resource space found for the given id")));
+        }
+
+        if(!ResourceSpace.isCoordinatorResourceSpace(author,resourceSpace)){
+            return unauthorized(Json.toJson(new TransferResponseStatus(
+                    ResponseStatus.UNAUTHORIZED,
+                    "User is not Coordinator")));
+        }
+        NotificationSignalTransfer toCreate = NOTIFICATION_SIGNAL_TRANSFER_FORM.bindFromRequest().get();
+        return NotificationsDelegate.signalNotification(resourceSpace.getUuid(), resourceSpace.getType(),
+                resourceSpace.getName(), NotificationEventName.NEW_COORDINATOR_SIGNAL, toCreate.getTitle(),
+                toCreate.getText(), resourceSpace.getUuid(), toCreate.getTitle(), toCreate.getText(), new Date(),
+                resourceSpace.getType().name(), null, SubscriptionTypes.REGULAR,
+                null, resourceSpace.getResourceSpaceId(), null, true);
+    }
+
+
+        @ApiOperation(response = Subscription.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),

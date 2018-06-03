@@ -98,6 +98,10 @@ public class Contribution extends AppCivistBaseModel {
     @ApiModelProperty(value="Author associated to the contribution when it is not an AppCivist User", position=7)
     private NonMemberAuthor nonMemberAuthor;
 
+    @JsonView(Views.Public.class)
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User creator;
+
     @JsonView({Views.Public.class, Views.Report.class})
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "contribution_non_member_author",
@@ -959,12 +963,13 @@ public class Contribution extends AppCivistBaseModel {
         geoJsonLogic(c, rs);
 
         c.save();
-
+        c.refresh();
         // 3. Add existing entities in relationships to the manytomany resources
         // then update
         ResourceSpace cResSpace = c.getResourceSpace();
-        if (themes != null && !themes.isEmpty())
+        if (themes != null && !themes.isEmpty()) {
             cResSpace.getThemes().addAll(themes);
+        }
         if (associatedMilestones != null && !associatedMilestones.isEmpty())
             cResSpace.getMilestones().addAll(associatedMilestones);
         if (existingWorkingGroups != null && !existingWorkingGroups.isEmpty())
@@ -977,9 +982,10 @@ public class Contribution extends AppCivistBaseModel {
             cResSpace.getResources().addAll(existingResources);
         if (existingThemes != null && !existingThemes.isEmpty())
             cResSpace.getThemes().addAll(existingThemes);
-
+        Set<Theme> themesA = new HashSet<>(cResSpace.getThemes());
+        cResSpace.getThemes().clear();
+        cResSpace.getThemes().addAll(themesA);
         cResSpace.update();
-
         // 5. Add contribution to working group authors
         for (WorkingGroup workingGroup : workingGroupAuthors) {
             workingGroup.getResources().addContribution(c);
@@ -1194,6 +1200,19 @@ public class Contribution extends AppCivistBaseModel {
                 .eq("containingSpaces.resourceSpaceId", resourceSpaceId)
                 .eq("contributionId", contributionId).eq("type", type)
                 .findUnique();
+    }
+
+    public static Contribution findBySourceCodeAndSource(String source,
+                                               String sourceCode) {
+        List<Contribution> contributions =  find.where()
+                .eq("source", source)
+                .eq("sourceCode", sourceCode)
+                .findList();
+        if(contributions.isEmpty()) {
+            return null;
+        } else {
+            return contributions.get(0);
+        }
     }
 
     public static List<Contribution> readListByContainingSpaceAndType(
@@ -1614,9 +1633,17 @@ public class Contribution extends AppCivistBaseModel {
         }
     }
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
     public static Long getIdByUUID(UUID uuid) {
         Contribution c = find.where().eq("uuid",uuid.toString()).findUnique();
-        return c.getContributionId();
+        return c == null ? null : c.getContributionId();
     }
 
     public static Contribution getByUUID(UUID uuid) {
