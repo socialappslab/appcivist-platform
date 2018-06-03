@@ -1201,47 +1201,57 @@ public class Contributions extends Controller {
             @ApiParam(name = "description", value = "New Description") String description,
             @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
         try {
+            Logger.info("Updating contribution from external service based on document ID: " + peerDocId);
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
             if(title.isEmpty() && lastUpdate.isEmpty() && description.isEmpty()) {
+                Logger.info("All parameters are empty. Nothing to update");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setStatusMessage("Nothing to update");
                 return badRequest(Json.toJson(responseBody));
             }
             if(contribution!=null) {
+                Logger.info("Contribution found: " + contribution.getContributionId());
                 if (!title.isEmpty()) {
+                    Logger.debug("Updating title to: " + title);
                     contribution.setTitle(title);
                 }
                 if (!description.isEmpty()) {
+                    Logger.debug("Updating description to: " + description);
                     contribution.setText(description);
                 }
 
                 if(!lastUpdate.isEmpty()) {
+                    Logger.debug("Updating lastUpdate to: " + lastUpdate);
                     lastUpdate =  java.net.URLDecoder.decode(lastUpdate, "UTF-8");
                     DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
                     DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
                     Date date = format.parse(lastUpdate);
                     Date toDb = bdFormat.parse(bdFormat.format(date));
+                    Logger.debug("Formatted lastUpdate: " + toDb.toString());
                     contribution.setLastUpdate(toDb);
                 }
                 contribution.update();
+                Logger.info("Contribution updated!");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setResponseStatus(ResponseStatus.OK);
                 responseBody.setStatusMessage("Contribution updated");
                 return ok(Json.toJson(responseBody));
             } else {
+                Logger.info("No contribution found for document ID");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setResponseStatus(ResponseStatus.NODATA);
                 responseBody.setStatusMessage("No contribution found for the given peerDocId");
                 return notFound(Json.toJson(responseBody));
             }
         } catch (ParseException e) {
-            TransferResponseStatus responseBody = getErrorMessage(e,
-                    "Error parsing the lastUpdate date, the expected format is YYYY-MM-DD HH:mm:ss");
+            String msg = "Error parsing the lastUpdate date, the expected format is YYYY-MM-DD HH:mm:ss";
+            Logger.info(msg);
+            TransferResponseStatus responseBody = getErrorMessage(e,msg);
             return internalServerError(Json.toJson(responseBody));
-        }
-          catch (Exception e) {
-            TransferResponseStatus responseBody = getErrorMessage(e,
-                    "There was an error with you request " + e.getMessage());
+        } catch (Exception e) {
+            String msg = "There was an error with you request " + e.getMessage();
+            Logger.info(msg);
+            TransferResponseStatus responseBody = getErrorMessage(e,msg);
             return internalServerError(Json.toJson(responseBody));
         }
     }
