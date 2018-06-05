@@ -3,6 +3,7 @@ package providers;
 import com.feth.play.module.pa.exceptions.AuthException;
 import com.feth.play.module.pa.providers.wwwauth.basic.BasicAuthProvider;
 import com.feth.play.module.pa.user.AuthUser;
+import com.feth.play.module.pa.user.AuthUserIdentity;
 import models.Assembly;
 import models.Config;
 import models.MembershipAssembly;
@@ -91,7 +92,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
         SearchControls searchCtrls = new SearchControls();
         searchCtrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         searchCtrls.setCountLimit(50);
-        String[] attributes = { "cn", "mail" };
+        String[] attributes = { "cn", "mail","uid" };
         searchCtrls.setReturningAttributes(attributes);
         StringBuilder filter = new StringBuilder("&(objectClass=*)(accountstatus=active)");
         if(cnserach != null) {
@@ -130,20 +131,44 @@ public class LdapAuthProvider extends BasicAuthProvider {
 
                     // add user information if this user is already a member of the assembly
                     try {
-                        User appcivistUser = User.findByEmail(email);
+                        LdapAuthUser identityToSearch = new LdapAuthUser();
+                        identityToSearch.setId(email);
+                        User appcivistUser = User.findByAuthUserIdentity(identityToSearch);
+
                         if(appcivistUser!=null) {
                             user.setId(appcivistUser.getUserId()+"");
                         }
+
                     } catch (Exception e) {
                         Logger.info("Ignoring error while searching ldap user email: "+e.getMessage());
                     }
                 }
+                Attribute username = attribs.get("uid");
+                String userNameLdap = String.valueOf(username.getAll().next());
+                user.setUser(userNameLdap);
+                if(user.getId() == null) {
+                    LdapAuthUser identityToSearch = new LdapAuthUser();
+                    identityToSearch.setId(userNameLdap);
+                    User appcivistUser = User.findByAuthUserIdentity(identityToSearch);
+                    if(appcivistUser!=null) {
+                        user.setId(appcivistUser.getUserId()+"");
+                    }
+                }
+
             }
-            if(User.findByEmail(user.getMail()) == null) {
+            // Search if the user already exists in appcivist
+            LdapAuthUser identityToSearch = new LdapAuthUser();
+            identityToSearch.setId(user.getMail());
+            User userExist = User.findByAuthUserIdentity(identityToSearch);
+            identityToSearch.setId(user.getUser());
+            User userExistByUsername = User.findByAuthUserIdentity(identityToSearch);
+            if(userExist == null && userExistByUsername == null) {
                 aRet.add(user);
             } else {
-                if(MembershipAssembly.findByUserAndAssembly(User.findByEmail(user.getMail()),
-                        ldapConfig.getAssembly()) == null) {
+                if((userExist != null && MembershipAssembly.findByUserAndAssembly(userExist,
+                        ldapConfig.getAssembly()) == null)  || (userExistByUsername != null &&
+                        MembershipAssembly.findByUserAndAssembly(userExistByUsername,
+                                ldapConfig.getAssembly()) == null)) {
                     aRet.add(user);
                 }
             }
@@ -209,7 +234,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
                     new InitialDirContext(environment);
             LdapAuthUser ldapAuthUser = new LdapAuthUser();
             getCnAndMail(authContext, ldapLogin.getUsername(), base, ldapAuthUser);
-            ldapAuthUser.setId(ldapAuthUser.getMail());
+            ldapAuthUser.setId(ldapLogin.getUsername());
             ldapAuthUser.setUser(ldapLogin.getUsername());
             if(ldapAuthUser.getId() == null) {
                 ldapAuthUser.setId(ldapLogin.getUsername()+"@ldap.com");
@@ -270,7 +295,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
         final static long SESSION_TIMEOUT = 24 * 14 * 3600;
         private long expiration;
 
-        LdapAuthUser() {
+        public LdapAuthUser() {
             expiration = System.currentTimeMillis() + 1000 * SESSION_TIMEOUT;
         }
 

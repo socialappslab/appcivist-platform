@@ -1199,7 +1199,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
             @ApiParam(name = "title", value = "New Title") String title,
             @ApiParam(name = "description", value = "New Description") String description,
-            @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
+            @ApiParam(name = "lastActivity", value = "Last activity") String lastUpdate) throws Exception {
         try {
             Logger.info("Updating contribution from external service based on document ID: " + peerDocId);
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
