@@ -5,6 +5,7 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -2510,25 +2511,32 @@ public class Contributions extends Controller {
     @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result addThemeToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
         Contribution contribution;
-        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
         contribution = Contribution.readByUUID(uuid);
 
         try {
             // We have to save themes without ID first
             List<Theme> themes = THEMES_FORM.bindFromRequest().get().getThemes();
             List<Theme> newThemes = themes.stream().filter(t -> t.getThemeId() == null).collect(Collectors.toList());
-            newThemes.forEach(t -> {
-                t.save();
-            });
-            contribution.setThemes(themes);
+            List<Theme> toSave = new ArrayList<>();
+            //Create theme of type `EMERGENT` only if another theme with the same title and type does not exist yet,
+            // otherwise reuse the theme
+            for (Theme theme : newThemes) {
+                if(theme.getType().equals(ThemeTypes.EMERGENT) && !Theme.findByTitleAndType(theme.getTitle(),
+                        theme.getType()).isEmpty()) {
+                    Logger.info("Theme "+ theme.getTitle()+" already exist, discarding ");
+                } else {
+                    toSave.add(theme);
+                }
+            }
+            toSave.forEach(Model::save);
+            contribution.setThemes(toSave);
             contribution.update();
 
             // add newThemes to compaings
             contribution.getCampaignIds().forEach(id -> {
                 Campaign campaign = Campaign.find.byId(id);
                 List<Theme> campaignThemes = campaign.getThemes();
-                campaignThemes.addAll(newThemes);
+                campaignThemes.addAll(toSave);
                 campaign.setThemes(campaignThemes);
                 campaign.update();
             });
@@ -2667,8 +2675,7 @@ public class Contributions extends Controller {
     public static Result deleteThemeFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
                                                      @ApiParam(name = "tid", value = "Theme's Id") Long tid) {
         Contribution contribution;
-        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
+
         contribution = Contribution.readByUUID(uuid);
 
         try {
