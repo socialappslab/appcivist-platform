@@ -461,13 +461,13 @@ public class User extends AppCivistBaseModel implements Subject {
 		//--ldap case
 		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
 			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
-			user.setEmail(ldapAuthUser.getId());
+			user.setEmail(ldapAuthUser.getMail());
 			if (user.getEmail().endsWith("@ldap.com")) {
 				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
 				provider.sendLdapFakeMailEmail(user.getEmail(), ldapAuthUser.getUser(), ldapAuthUser.getAssembly());
 			}
 			user.setName(ldapAuthUser.getCn());
-			Logger.info("Creating LDAP user " + user.getEmail());
+			Logger.info("Creating LDAP user " + user.getUsername());
 			user.setLanguage(ldapAuthUser.getAssembly().getLang());
 			user.setLang(ldapAuthUser.getAssembly().getLang());
 			userId = User.findByEmail(user.getEmail()) != null ? User
@@ -537,8 +537,11 @@ public class User extends AppCivistBaseModel implements Subject {
 		 * TODO add username to the signup form
 		 */
 
-		user.setUsername(user.getEmail());
-
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			user.setUsername(((LdapAuthProvider.LdapAuthUser) authUser).getUser());
+		} else {
+			user.setUsername(user.getEmail());
+		}
 		/*
 		 * 8. Set language of user
 		 */
