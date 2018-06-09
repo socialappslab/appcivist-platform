@@ -2509,7 +2509,9 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "Theme objects", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
-    public static Result addThemeToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
+    public static Result addThemeToContribution(
+            @ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
+            @ApiParam(name = "replace", value = "Replace current list of themes", defaultValue = "true") Boolean replace) {
         Contribution contribution;
         contribution = Contribution.readByUUID(uuid);
 
@@ -2551,19 +2553,30 @@ public class Contributions extends Controller {
                 campaignRS.getThemes().addAll(toCreate);
                 campaign.update();
             });
-            List<Theme> contributionThemes = contributionRS.getThemes();
-            contributionThemes.addAll(toCreate);
+            List<Theme> unifiedThemes = new ArrayList<>();
+            List<Theme> existing = themes.stream().filter(t -> t.getThemeId()!=null).collect(Collectors.toList());
 
-            // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
-            List<Theme> newExistingThemes =
-                    themes.stream().filter(
-                            t -> t.getThemeId() != null
-                                    && !contributionThemes.stream()
+            if (replace) {
+                // use setThemes rather than add
+                unifiedThemes = toCreate;
+                Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
+                unifiedThemes.addAll(existing);
+                Logger.info("Replacing original list of themes...");
+                contributionRS.setThemes(unifiedThemes);
+            } else {
+                List<Theme> contributionThemes = contributionRS.getThemes();
+                contributionThemes.addAll(toCreate);
+                // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
+                List<Theme> newExistingThemes =
+                        existing.stream().filter(
+                                t -> !contributionThemes.stream()
                                         .filter(o -> o.getThemeId().equals(t.getThemeId()))
                                         .findFirst().isPresent()).collect(Collectors.toList());
-            Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
-            toAdd.addAll(newExistingThemes);
-            contributionThemes.addAll(toAdd);
+                Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
+                toAdd.addAll(newExistingThemes);
+                Logger.info("Expanding original list of themes...");
+                contributionThemes.addAll(toAdd);
+            }
             contributionRS.update();
             return ok(Json.toJson(contributionRS.getThemes()));
         } catch (Exception e) {

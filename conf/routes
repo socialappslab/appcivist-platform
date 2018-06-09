@@ -296,7 +296,7 @@ PUT       /api/assembly/:aid/contributions/popularity                           
 POST      /api/contribution/pad                                                  controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                                  controllers.Contributions.confirmContributionPad(rid: Long)
 
-POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID)
+POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID, replace: java.lang.Boolean ?= true)
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
 POST      /api/contribution/:uuid/nonmemberauthors                               controllers.Contributions.addNonMemberAuthorToContribution(uuid: java.util.UUID)
 DELETE    /api/contribution/:uuid/themes/:tid                                    controllers.Contributions.deleteThemeFromContribution(uuid: java.util.UUID, tid: Long)
