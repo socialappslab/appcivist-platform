@@ -2551,16 +2551,29 @@ public class Contributions extends Controller {
                 campaignRS.getThemes().addAll(toCreate);
                 campaign.update();
             });
+            List<Theme> contributionThemes = contributionRS.getThemes();
+            contributionThemes.addAll(toCreate);
+
             // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
-            List<Theme> existingThemes = themes.stream().filter(t -> t.getThemeId() != null).collect(Collectors.toList());
-            Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes back to the contribution...");
-            toAdd.addAll(existingThemes);
-            contributionRS.getThemes().addAll(toCreate);
-            contributionRS.getThemes().addAll(toAdd);
+            List<Theme> newExistingThemes =
+                    themes.stream().filter(
+                            t -> t.getThemeId() != null
+                                    && !contributionThemes.stream()
+                                        .filter(o -> o.getThemeId().equals(t.getThemeId()))
+                                        .findFirst().isPresent()).collect(Collectors.toList());
+            Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
+            toAdd.addAll(newExistingThemes);
+            contributionThemes.addAll(toAdd);
             contributionRS.update();
             return ok(Json.toJson(contributionRS.getThemes()));
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.info("Exception occurred while trying to add themes: "+e.getLocalizedMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            String sStackTrace = sw.toString();
+            Logger.debug("Error trace: "+sStackTrace);
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
         }
     }
