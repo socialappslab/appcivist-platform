@@ -2551,20 +2551,17 @@ public class Contributions extends Controller {
                 ResourceSpace campaignRS = campaign.getResources();
                 campaignRS.getThemes();
                 campaignRS.getThemes().addAll(toCreate);
-                campaign.update();
+                campaignRS.update();
             });
-            List<Theme> unifiedThemes = new ArrayList<>();
             List<Theme> existing = themes.stream().filter(t -> t.getThemeId()!=null).collect(Collectors.toList());
+            List<Theme> contributionThemes = contributionRS.getThemes();
 
             if (replace) {
-                // use setThemes rather than add
-                unifiedThemes = toCreate;
+                contribution.setThemes(existing);
+                contribution.update();
                 Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
-                unifiedThemes.addAll(existing);
-                Logger.info("Replacing original list of themes...");
-                contributionRS.setThemes(unifiedThemes);
+                contributionThemes.addAll(toCreate);
             } else {
-                List<Theme> contributionThemes = contributionRS.getThemes();
                 contributionThemes.addAll(toCreate);
                 // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
                 List<Theme> newExistingThemes =
