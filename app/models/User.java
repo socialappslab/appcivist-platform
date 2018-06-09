@@ -461,7 +461,11 @@ public class User extends AppCivistBaseModel implements Subject {
 		//--ldap case
 		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
 			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
-			user.setEmail(ldapAuthUser.getMail());
+			if (ldapAuthUser.getMail() != null) {
+				user.setEmail(ldapAuthUser.getUser()+"@ldap.com");
+			} else {
+				user.setEmail(ldapAuthUser.getMail());
+			}
 			if (user.getEmail() != null && user.getEmail().endsWith("@ldap.com")) {
 				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
 				provider.sendLdapFakeMailEmail(user.getEmail(), ldapAuthUser.getUser(), ldapAuthUser.getAssembly());
@@ -728,10 +732,15 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 	
 	private static Resource getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
-		String picture = getDefaultProfilePictureURL(user.getEmail());
+		String identity = user.getUuidAsString();
+		String userEmail = user.getEmail();
+		if (userEmail) {
+			identity = userEmail;
+		}
+		String picture = getDefaultProfilePictureURL(identity);
 		String large = picture+"&s=128";
 		String medium = picture+"&s=64";
-		String thumbnail = picture+"&s=32"; 
+		String thumbnail = picture+"&s=32";
 		Resource profilePicResource = new Resource(user, new URL(picture), new URL(large), new URL(medium), new URL(thumbnail));
 		return profilePicResource;
 	}
