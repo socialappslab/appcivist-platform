@@ -734,7 +734,7 @@ public class User extends AppCivistBaseModel implements Subject {
 	private static Resource getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
 		String identity = user.getUuidAsString();
 		String userEmail = user.getEmail();
-		if (userEmail) {
+		if (userEmail != null) {
 			identity = userEmail;
 		}
 		String picture = getDefaultProfilePictureURL(identity);
