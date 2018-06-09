@@ -2553,6 +2553,8 @@ public class Contributions extends Controller {
             });
             // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
             List<Theme> existingThemes = themes.stream().filter(t -> t.getThemeId() != null).collect(Collectors.toList());
+            Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes back to the contribution...");
+            toAdd.addAll(existingThemes);
             contributionRS.getThemes().addAll(toCreate);
             contributionRS.getThemes().addAll(toAdd);
             contributionRS.update();
