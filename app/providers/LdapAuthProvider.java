@@ -277,7 +277,7 @@ public class LdapAuthProvider extends BasicAuthProvider {
             }
             Attribute mail = ar.get("mail");
             if (mail == null) {
-                user.setMail(null);
+                user.setMail(username+"@ldap.com");
             } else {
                 user.setMail(String.valueOf(mail.getAll().nextElement()));
             }

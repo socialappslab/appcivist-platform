@@ -412,10 +412,12 @@ public class User extends AppCivistBaseModel implements Subject {
 		if (identity == null) {
 			return null;
 		}
-		Logger.info("ID " + identity.getId());
+		Logger.info("AUTH: ID found " + identity.getId());
 		if (identity instanceof UsernamePasswordAuthUser) {
-			return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
+            Logger.info("AUTH: Identity is linked account of type Password");
+            return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
 		} else {
+            Logger.info("AUTH: Identity IS NOT linked account of type Password");
 			return findAuthUserByIdentity(identity).findUnique();
 		}
 	}

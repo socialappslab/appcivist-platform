@@ -220,11 +220,10 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 
 				//See if there is already an appcivist user with the linked account provider id that matches
 				// the ldap username.
-				Object loginIdentity = getUserService().getLocalIdentity(
-						newUser);
+				Object loginIdentity = getUserService().getLocalIdentity(newUser);
 
 				if(newUser instanceof LdapAuthProvider.LdapAuthUser && loginIdentity == null) {
-					Logger.info("Sing in from a ldap user, linked account with ldap username not found");
+					Logger.info("Sign in from a ldap user, linked account with ldap username not found");
 					LdapAuthProvider.LdapAuthUser identityToSearch = new LdapAuthProvider.LdapAuthUser();
 					LdapAuthProvider.LdapAuthUser ldapUser = (LdapAuthProvider.LdapAuthUser) newUser;
 					identityToSearch.setId(ldapUser.getMail());
