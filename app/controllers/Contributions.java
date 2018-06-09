@@ -2560,7 +2560,8 @@ public class Contributions extends Controller {
                 contribution.setThemes(existing);
                 contribution.update();
                 Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
-                contributionThemes.addAll(toCreate);
+                contribution.getThemes().addAll(toCreate);
+                contribution.update();
             } else {
                 contributionThemes.addAll(toCreate);
                 // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
@@ -2568,13 +2569,13 @@ public class Contributions extends Controller {
                         existing.stream().filter(
                                 t -> !contributionThemes.stream()
                                         .filter(o -> o.getThemeId().equals(t.getThemeId()))
-                                        .findFirst().isPresent()).collect(Collectors.toList());
+                                            .findFirst().isPresent()).collect(Collectors.toList());
                 Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
                 toAdd.addAll(newExistingThemes);
                 Logger.info("Expanding original list of themes...");
                 contributionThemes.addAll(toAdd);
+                contributionRS.update();
             }
-            contributionRS.update();
             return ok(Json.toJson(contributionRS.getThemes()));
         } catch (Exception e) {
             Logger.info("Exception occurred while trying to add themes: "+e.getLocalizedMessage());
