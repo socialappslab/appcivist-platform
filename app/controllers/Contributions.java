@@ -2557,10 +2557,9 @@ public class Contributions extends Controller {
             List<Theme> contributionThemes = contributionRS.getThemes();
 
             if (replace) {
-                contribution.setThemes(existing);
-                contribution.update();
                 Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
-                contribution.getThemes().addAll(toCreate);
+                // the list under toCreate should already be included because on creation, they got their themeIds
+                contribution.setThemes(existing);
                 contribution.update();
             } else {
                 contributionThemes.addAll(toCreate);
