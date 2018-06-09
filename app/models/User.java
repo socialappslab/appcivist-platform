@@ -462,7 +462,7 @@ public class User extends AppCivistBaseModel implements Subject {
 		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
 			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
 			user.setEmail(ldapAuthUser.getMail());
-			if (user.getEmail().endsWith("@ldap.com")) {
+			if (user.getEmail() != null && user.getEmail().endsWith("@ldap.com")) {
 				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
 				provider.sendLdapFakeMailEmail(user.getEmail(), ldapAuthUser.getUser(), ldapAuthUser.getAssembly());
 			}
