@@ -2534,6 +2534,7 @@ public class Contributions extends Controller {
     public static ResourceSpace addTheme(Contribution contribution, List<Theme> themes, boolean replace) {
         List<Theme> toCreate = new ArrayList<>();
         List<Theme> toAdd = new ArrayList<>();
+        List<Theme> toAddToCampaign = new ArrayList<>();
         ResourceSpace contributionRS = contribution.getResourceSpace();
 
         // Step 1: create new EMERGENT themes
@@ -2549,6 +2550,7 @@ public class Contributions extends Controller {
                     Theme reusedTheme = existing.get(0);
                     Logger.info("Theme "+ theme.getTitle()+" already exist and is EMERGENT, reusing existing with ID "+reusedTheme.getThemeId()+" created on "+reusedTheme.getCreation());
                     toAdd.add(reusedTheme);
+                    toAddToCampaign.add(reusedTheme);
                 } else {
                     toCreate.add(theme);
                     Logger.info("Theme "+ theme.getTitle()+" is a new EMERGENT theme/keyword, creating!");
@@ -2564,11 +2566,21 @@ public class Contributions extends Controller {
         contribution.getCampaignIds().forEach(id -> {
             Campaign campaign = Campaign.find.byId(id);
             ResourceSpace campaignRS = campaign.getResources();
-            campaignRS.getThemes();
+            List<Theme> campaignThemes = campaignRS.getThemes();
             campaignRS.getThemes().addAll(toCreate);
+            List<Theme> addToCampaignIfNotAddedYet =
+                    toAddToCampaign.stream().filter(
+                            t -> campaignThemes.stream()
+                                    .noneMatch(o -> o.getThemeId().equals(t.getThemeId()))).collect(Collectors.toList());
+            campaignRS.getThemes().addAll(addToCampaignIfNotAddedYet);
             campaignRS.update();
         });
         List<Theme> existing = themes.stream().filter(t -> t.getThemeId()!=null).collect(Collectors.toList());
+        List<Theme> addToExistingIfNotAddedYet =
+                toAddToCampaign.stream().filter(
+                        t -> existing.stream()
+                                .noneMatch(o -> o.getThemeId().equals(t.getThemeId()))).collect(Collectors.toList());
+        existing.addAll(addToExistingIfNotAddedYet); // add to existing the themes that were added as new but actually existed in another campaign
         List<Theme> contributionThemes = contributionRS.getThemes();
 
         if (replace) {
