@@ -159,4 +159,9 @@ public class Theme extends AppCivistBaseModel {
 	public static List<Theme> findByTitle(String t) {
 		return find.where().eq("title",t).findList();
 	}
+
+    public static List<Theme> findByTitleAndType(String t, ThemeTypes type) {
+        return find.where().eq("title",t)
+                .eq("type", type).findList();
+    }
 }
