@@ -2741,7 +2741,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    @Dynamic(value = "OnlyMeAndCoordinatorOfAssembly", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result deleteAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
                                                       @ApiParam(name = "auuid", value = "Author's Universal Id (UUID)") UUID auuid) {
         Contribution contribution;
