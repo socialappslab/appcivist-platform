@@ -2870,12 +2870,18 @@ public class Spaces extends Controller {
                 List<Theme> themes = themesList.getThemes();
                 try {
                     List<Theme> createdThemes = new ArrayList<>();
-                    for (Theme t : themes) {
-                        t.setContextUserId(creator.getUserId());
-                        t = Theme.create(t);
-                        resourceSpace.getThemes().add(t);
-                        resourceSpace.update();
-                        createdThemes.add(t);
+                    if(resourceSpace.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+                        ResourceSpace updated = Contributions.addTheme(resourceSpace.getContribution(),
+                                themes, false);
+                        createdThemes = updated.getThemes();
+                    } else {
+                        for (Theme t : themes) {
+                            t.setContextUserId(creator.getUserId());
+                            t = Theme.create(t);
+                            resourceSpace.getThemes().add(t);
+                            resourceSpace.update();
+                            createdThemes.add(t);
+                        }
                     }
                     Ebean.commitTransaction();
                     return ok(Json.toJson(createdThemes));
