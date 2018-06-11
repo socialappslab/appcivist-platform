@@ -201,7 +201,7 @@ public class MembershipGroup extends Membership {
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();
 		if (nameQuery != null && !nameQuery.isEmpty())
-			q = q.where().ilike("user.name", nameQuery).query();
+			q = q.where().ilike("user.name", "%"+nameQuery.toLowerCase()+"%").query();
 		return q.findList();
 	}
 	
