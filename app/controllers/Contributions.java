@@ -2517,64 +2517,7 @@ public class Contributions extends Controller {
 
         try {
             List<Theme> themes = THEMES_FORM.bindFromRequest().get().getThemes();
-            List<Theme> toCreate = new ArrayList<>();
-            List<Theme> toAdd = new ArrayList<>();
-            ResourceSpace contributionRS = contribution.getResourceSpace();
-
-            // Step 1: create new EMERGENT themes
-            // - Create theme of type `EMERGENT` only if another theme with the same title and type does not exist yet,
-            // - Otherwise reuse the theme. Do not allow new `OFFICIAL_PRE_DEFINED` themes.
-            List<Theme> newThemes = themes.stream().filter(t -> t.getThemeId() == null).collect(Collectors.toList());
-            for (Theme theme : newThemes) {
-                // If the theme EMERGENT, reuse, do not duplicate
-                if(theme.getType().equals(ThemeTypes.EMERGENT)) {
-                    List<Theme> existing = Theme.findByTitleAndType(theme.getTitle(), theme.getType());
-                    if (existing !=null && !existing.isEmpty()) {
-                        // reuse existing
-                        Theme reusedTheme = existing.get(0);
-                        Logger.info("Theme "+ theme.getTitle()+" already exist and is EMERGENT, reusing existing with ID "+reusedTheme.getThemeId()+" created on "+reusedTheme.getCreation());
-                        toAdd.add(reusedTheme);
-                    } else {
-                        toCreate.add(theme);
-                        Logger.info("Theme "+ theme.getTitle()+" is a new EMERGENT theme/keyword, creating!");
-                    }
-                } else {
-                    Logger.info("Theme "+ theme.getTitle()+" is a new theme, but its type IS NOT EMERGENT, discarding!");
-                }
-            }
-            Logger.info("Creating new EMERGENT themes...");
-            toCreate.forEach(Model::save);
-            Logger.info("Adding new EMERGENT themes to parent campaigns...");
-            // add newThemes to compaings
-            contribution.getCampaignIds().forEach(id -> {
-                Campaign campaign = Campaign.find.byId(id);
-                ResourceSpace campaignRS = campaign.getResources();
-                campaignRS.getThemes();
-                campaignRS.getThemes().addAll(toCreate);
-                campaignRS.update();
-            });
-            List<Theme> existing = themes.stream().filter(t -> t.getThemeId()!=null).collect(Collectors.toList());
-            List<Theme> contributionThemes = contributionRS.getThemes();
-
-            if (replace) {
-                Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
-                // the list under toCreate should already be included because on creation, they got their themeIds
-                contribution.setThemes(existing);
-                contribution.update();
-            } else {
-                contributionThemes.addAll(toCreate);
-                // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
-                List<Theme> newExistingThemes =
-                        existing.stream().filter(
-                                t -> !contributionThemes.stream()
-                                        .filter(o -> o.getThemeId().equals(t.getThemeId()))
-                                            .findFirst().isPresent()).collect(Collectors.toList());
-                Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
-                toAdd.addAll(newExistingThemes);
-                Logger.info("Expanding original list of themes...");
-                contributionThemes.addAll(toAdd);
-                contributionRS.update();
-            }
+            ResourceSpace contributionRS = addTheme(contribution, themes, replace);
             return ok(Json.toJson(contributionRS.getThemes()));
         } catch (Exception e) {
             Logger.info("Exception occurred while trying to add themes: "+e.getLocalizedMessage());
@@ -2586,6 +2529,67 @@ public class Contributions extends Controller {
             Logger.debug("Error trace: "+sStackTrace);
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
         }
+    }
+
+    public static ResourceSpace addTheme(Contribution contribution, List<Theme> themes, boolean replace) {
+        List<Theme> toCreate = new ArrayList<>();
+        List<Theme> toAdd = new ArrayList<>();
+        ResourceSpace contributionRS = contribution.getResourceSpace();
+
+        // Step 1: create new EMERGENT themes
+        // - Create theme of type `EMERGENT` only if another theme with the same title and type does not exist yet,
+        // - Otherwise reuse the theme. Do not allow new `OFFICIAL_PRE_DEFINED` themes.
+        List<Theme> newThemes = themes.stream().filter(t -> t.getThemeId() == null).collect(Collectors.toList());
+        for (Theme theme : newThemes) {
+            // If the theme EMERGENT, reuse, do not duplicate
+            if(theme.getType().equals(ThemeTypes.EMERGENT)) {
+                List<Theme> existing = Theme.findByTitleAndType(theme.getTitle(), theme.getType());
+                if (existing !=null && !existing.isEmpty()) {
+                    // reuse existing
+                    Theme reusedTheme = existing.get(0);
+                    Logger.info("Theme "+ theme.getTitle()+" already exist and is EMERGENT, reusing existing with ID "+reusedTheme.getThemeId()+" created on "+reusedTheme.getCreation());
+                    toAdd.add(reusedTheme);
+                } else {
+                    toCreate.add(theme);
+                    Logger.info("Theme "+ theme.getTitle()+" is a new EMERGENT theme/keyword, creating!");
+                }
+            } else {
+                Logger.info("Theme "+ theme.getTitle()+" is a new theme, but its type IS NOT EMERGENT, discarding!");
+            }
+        }
+        Logger.info("Creating new EMERGENT themes...");
+        toCreate.forEach(Model::save);
+        Logger.info("Adding new EMERGENT themes to parent campaigns...");
+        // add newThemes to compaings
+        contribution.getCampaignIds().forEach(id -> {
+            Campaign campaign = Campaign.find.byId(id);
+            ResourceSpace campaignRS = campaign.getResources();
+            campaignRS.getThemes();
+            campaignRS.getThemes().addAll(toCreate);
+            campaignRS.update();
+        });
+        List<Theme> existing = themes.stream().filter(t -> t.getThemeId()!=null).collect(Collectors.toList());
+        List<Theme> contributionThemes = contributionRS.getThemes();
+
+        if (replace) {
+            Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
+            // the list under toCreate should already be included because on creation, they got their themeIds
+            contribution.setThemes(existing);
+            contribution.update();
+        } else {
+            contributionThemes.addAll(toCreate);
+            // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
+            List<Theme> newExistingThemes =
+                    existing.stream().filter(
+                            t -> contributionThemes.stream()
+                                    .noneMatch(o -> o.getThemeId().equals(t.getThemeId()))).collect(Collectors.toList());
+            Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
+            toAdd.addAll(newExistingThemes);
+            Logger.info("Expanding original list of themes...");
+            contributionThemes.addAll(toAdd);
+            contributionRS.update();
+        }
+        return contributionRS;
     }
 
     /**
