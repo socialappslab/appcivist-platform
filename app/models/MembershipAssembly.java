@@ -139,6 +139,7 @@ public class MembershipAssembly extends Membership {
 		if (status != null && !status.isEmpty()
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();
+		q = q.where().eq("user.removed",false).query();
 		return q.findList();
 	}
 
@@ -151,6 +152,7 @@ public class MembershipAssembly extends Membership {
 			q = q.where().eq("status", status.toUpperCase()).query();
 		if (nameQuery != null && !nameQuery.isEmpty())
 			q = q.where().ilike("user.name", "%"+nameQuery.toLowerCase()+"%").query();
+		q = q.where().eq("user.removed",false).query();
 		return q.findList();
 	}
 	
