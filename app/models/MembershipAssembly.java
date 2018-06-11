@@ -93,6 +93,7 @@ public class MembershipAssembly extends Membership {
 		return find.where().eq("user", user).eq("assembly", target)
 				.findUnique();
 	}
+
 	/**
 	 * Find a membership record for userId and assemblyId
 	 * 
@@ -138,6 +139,18 @@ public class MembershipAssembly extends Membership {
 		if (status != null && !status.isEmpty()
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();
+		return q.findList();
+	}
+
+	public static List<Membership> findByAssemblyIdStatusAndNameQuery(Long id,
+															 String status,
+															 String nameQuery) {
+		Query<Membership> q = find.where().eq("assembly.assemblyId", id).query();
+		if (status != null && !status.isEmpty()
+				&& !status.toUpperCase().equals("ALL"))
+			q = q.where().eq("status", status.toUpperCase()).query();
+		if (nameQuery != null && !nameQuery.isEmpty())
+			q = q.where().ilike("user.name", nameQuery).query();
 		return q.findList();
 	}
 	

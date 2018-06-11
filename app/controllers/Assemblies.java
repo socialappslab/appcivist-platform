@@ -685,10 +685,11 @@ public class Assemblies extends Controller {
 			@ApiParam(name = "id", value = "Assembly ID") Long id,
 			@ApiParam(name = "status", value = "Status of membership invitation or request") String status,
 			@ApiParam(name = "ldap", value = "Include LDAP users") String ldap,
-			@ApiParam(name = "ldapsearch", value = "Status of membership invitation or request") String ldapsearch) {
+			@ApiParam(name = "ldapsearch", value = "Search string to apply to potential members from external LDAP server") String ldapsearch,
+			@ApiParam(name = "query", value = "Name query on memberships") String query) {
 
 		Map<String, List> aRet = new HashMap<>();
-		List<Membership> m = MembershipAssembly.findByAssemblyIdAndStatus(id,status);
+		List<Membership> m = MembershipAssembly.findByAssemblyIdStatusAndNameQuery(id,status, query);
 		aRet.put("members", m);
 
 		if(ldap.equals("true")) {
