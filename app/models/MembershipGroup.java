@@ -188,7 +188,23 @@ public class MembershipGroup extends Membership {
 		if (status != null && !status.isEmpty()
 				&& !status.toUpperCase().equals("ALL"))
 			q = q.where().eq("status", status.toUpperCase()).query();
-		return q.findList();		
+        q = q.where().eq("user.removed",false).query();
+        return q.findList();
+	}
+
+
+	public static List<Membership> findByAssemblyIdGroupIdStatusAndNameQuery(Long id,
+																			 Long gid,
+																			 String status,
+																	  		 String nameQuery) {
+		Query<Membership> q = find.where().eq("workingGroup.groupId", gid).query();
+		if (status != null && !status.isEmpty()
+				&& !status.toUpperCase().equals("ALL"))
+			q = q.where().eq("status", status.toUpperCase()).query();
+		if (nameQuery != null && !nameQuery.isEmpty())
+			q = q.where().ilike("user.name", "%"+nameQuery.toLowerCase()+"%").query();
+        q = q.where().eq("user.removed",false).query();
+        return q.findList();
 	}
 	
 	public boolean alreadyExists() {

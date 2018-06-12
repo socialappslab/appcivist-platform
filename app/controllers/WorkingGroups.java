@@ -605,10 +605,13 @@ public class WorkingGroups extends Controller {
             @ApiParam(name = "gid", value = "Working Group ID") Long gid,
             @ApiParam(name = "status", value = "Status of membership invitation or request", allowableValues = "REQUESTED, INVITED, FOLLOWING, ALL", required = true) String status,
             @ApiParam(name = "ldap", value = "Include LDAP users") String ldap,
-            @ApiParam(name = "ldapsearch", value = "Status of membership invitation or request") String ldapsearch) {
+            @ApiParam(name = "ldapsearch", value = "Search string to apply to potential members from external LDAP server") String ldapsearch,
+            @ApiParam(name = "query", value = "Name query on memberships") String query) {
+
+        // TODO: apply query to appcivist memberships
 
         Map<String, List> aRet = new HashMap<>();
-        List<Membership> m = MembershipGroup.findByAssemblyIdGroupIdAndStatus(aid, gid, status);
+        List<Membership> m = MembershipGroup.findByAssemblyIdGroupIdStatusAndNameQuery(aid, gid, status, query);
         aRet.put("members", m);
 
         if(ldap.equals("true")) {

@@ -3161,3 +3161,88 @@ alter table contribution_non_member_author   add CONSTRAINT fk_contribution_non_
 ALTER TABLE contribution ADD column creator_user_id bigint;
 ALTER TABLE contribution ADD constraint fk_contribution_user foreign key (creator_user_id) references appcivist_user (user_id);
 UPDATE contribution set creator_user_id = (select appcivist_user_user_id from contribution_appcivist_user where contribution_contribution_id = contribution_id limit 1);
+
+-- 82.sql
+CREATE OR REPLACE FUNCTION update_duplicate_users()
+  RETURNS void AS
+$BODY$
+DECLARE
+    r appcivist_user%rowtype;
+    oldest appcivist_user%rowtype;
+BEGIN
+    FOR r IN
+        (select * from appcivist_user ou
+	join linked_account la on la.user_id = ou.user_id
+	where (select count(*) from appcivist_user inr
+	where inr.email = ou.email) > 1 order by email, ou.user_id)
+    LOOP
+        IF oldest IS NULL or (r.email <> oldest.email) THEN
+            oldest = r;
+            raise notice 'A mantener: %', oldest.user_id;
+        else
+	   raise notice 'A actualizar: %', r.user_id;
+	   update linked_account set user_id = oldest.user_id where user_id = r.user_id;
+	   update membership set creator_user_id = oldest.user_id where creator_user_id = r.user_id;
+	   update contribution set creator_user_id = oldest.user_id where creator_user_id = r.user_id;
+	   update contribution_appcivist_user set appcivist_user_user_id = oldest.user_id
+		where appcivist_user_user_id = r.user_id and (select count(*) from contribution_appcivist_user where
+		appcivist_user_user_id = oldest.user_id ) = 0;
+	   update assembly set creator_user_id = oldest.user_id where creator_user_id = r.user_id;
+	   update campaign set creator_user_id = oldest.user_id where creator_user_id = r.user_id;
+	   update campaign_participation set user_user_id = oldest.user_id where user_user_id = r.user_id;
+	   update membership_invitation set creator_user_id = oldest.user_id where creator_user_id = r.user_id;
+	   update notification_event_signal_user set user_user_id = oldest.user_id where user_user_id = r.user_id;
+	   update subscription set user_id = oldest.uuid where user_id = r.uuid;
+	   update working_group set creator_user_id = oldest.user_id where creator_user_id = r.user_id;
+	   update appcivist_user set removed = true, email = r.email || '.invalid' where user_id = r.user_id;
+
+        end if;
+
+    END LOOP;
+    RETURN;
+END
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+ALTER FUNCTION update_duplicate_users()
+  OWNER TO postgres;
+
+select * from update_duplicate_users();
+
+-- 83.sql
+CREATE OR REPLACE FUNCTION update_duplicate_themes()
+  RETURNS void AS
+$BODY$
+DECLARE
+    r theme%rowtype;
+    oldest theme%rowtype;
+BEGIN
+    FOR r IN
+        (select * from theme ou
+	where (select count(*) from theme inr
+	where inr.title = ou.title and inr.type = 'EMERGENT') > 1 AND type = 'EMERGENT' order by title, creation)
+    LOOP
+        IF oldest IS NULL or (r.title <> oldest.title) THEN
+            oldest = r;
+            raise notice 'A mantener: %', oldest.theme_id;
+        else
+	   raise notice 'A actualizar: %', r.theme_id;
+	   update resource_space_theme set theme_theme_id = oldest.theme_id where theme_theme_id = r.theme_id  and (select count(*) from theme where
+		theme_id = oldest.theme_id ) = 0;
+	   delete from resource_space_theme where theme_theme_id = r.theme_id;
+	   delete from theme where theme_id = r.theme_id;
+     
+        end if;
+
+    END LOOP;
+    RETURN;
+END
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+ALTER FUNCTION update_duplicate_themes()
+  OWNER TO postgres;
+
+select * from update_duplicate_themes();

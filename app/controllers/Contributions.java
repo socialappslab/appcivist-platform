@@ -5,6 +5,7 @@ import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1199,7 +1200,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
             @ApiParam(name = "title", value = "New Title") String title,
             @ApiParam(name = "description", value = "New Description") String description,
-            @ApiParam(name = "lastUpdate", value = "Last activity") String lastUpdate) throws Exception {
+            @ApiParam(name = "lastActivity", value = "Last activity") String lastUpdate) throws Exception {
         try {
             Logger.info("Updating contribution from external service based on document ID: " + peerDocId);
             Contribution contribution = Contribution.getByPeerDocId(peerDocId);
@@ -2425,7 +2426,7 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "PUT", response = String.class, produces = "application/json", value = "Logical removal of contribution in Assembly")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     //@Dynamic(value = "ModeratorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result softDeleteContribution(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
@@ -2508,35 +2509,99 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "Theme objects", value = "Themes to add to the contribution", dataType = "models.transfer.ThemeListTransfer", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
-    public static Result addThemeToContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid) {
+    public static Result addThemeToContribution(
+            @ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
+            @ApiParam(name = "replace", value = "Replace current list of themes", defaultValue = "true") Boolean replace) {
         Contribution contribution;
-        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
         contribution = Contribution.readByUUID(uuid);
 
         try {
-            // We have to save themes without ID first
             List<Theme> themes = THEMES_FORM.bindFromRequest().get().getThemes();
-            List<Theme> newThemes = themes.stream().filter(t -> t.getThemeId() == null).collect(Collectors.toList());
-            newThemes.forEach(t -> {
-                t.save();
-            });
-            contribution.setThemes(themes);
-            contribution.update();
-
-            // add newThemes to compaings
-            contribution.getCampaignIds().forEach(id -> {
-                Campaign campaign = Campaign.find.byId(id);
-                List<Theme> campaignThemes = campaign.getThemes();
-                campaignThemes.addAll(newThemes);
-                campaign.setThemes(campaignThemes);
-                campaign.update();
-            });
-            return ok(Json.toJson(themes));
+            ResourceSpace contributionRS = addTheme(contribution, themes, replace);
+            return ok(Json.toJson(contributionRS.getThemes()));
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.info("Exception occurred while trying to add themes: "+e.getLocalizedMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            String sStackTrace = sw.toString();
+            Logger.debug("Error trace: "+sStackTrace);
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with the given uuid")));
         }
+    }
+
+    public static ResourceSpace addTheme(Contribution contribution, List<Theme> themes, boolean replace) {
+        List<Theme> toCreate = new ArrayList<>();
+        List<Theme> toAdd = new ArrayList<>();
+        List<Theme> toAddToCampaign = new ArrayList<>();
+        ResourceSpace contributionRS = contribution.getResourceSpace();
+
+        // Step 1: create new EMERGENT themes
+        // - Create theme of type `EMERGENT` only if another theme with the same title and type does not exist yet,
+        // - Otherwise reuse the theme. Do not allow new `OFFICIAL_PRE_DEFINED` themes.
+        List<Theme> newThemes = themes.stream().filter(t -> t.getThemeId() == null).collect(Collectors.toList());
+        for (Theme theme : newThemes) {
+            // If the theme EMERGENT, reuse, do not duplicate
+            if(theme.getType().equals(ThemeTypes.EMERGENT)) {
+                List<Theme> existing = Theme.findByTitleAndType(theme.getTitle(), theme.getType());
+                if (existing !=null && !existing.isEmpty()) {
+                    // reuse existing
+                    Theme reusedTheme = existing.get(0);
+                    Logger.info("Theme "+ theme.getTitle()+" already exist and is EMERGENT, reusing existing with ID "+reusedTheme.getThemeId()+" created on "+reusedTheme.getCreation());
+                    toAdd.add(reusedTheme);
+                    toAddToCampaign.add(reusedTheme);
+                } else {
+                    toCreate.add(theme);
+                    Logger.info("Theme "+ theme.getTitle()+" is a new EMERGENT theme/keyword, creating!");
+                }
+            } else {
+                Logger.info("Theme "+ theme.getTitle()+" is a new theme, but its type IS NOT EMERGENT, discarding!");
+            }
+        }
+        Logger.info("Creating new EMERGENT themes...");
+        toCreate.forEach(Model::save);
+        Logger.info("Adding new EMERGENT themes to parent campaigns...");
+        // add newThemes to compaings
+        contribution.getCampaignIds().forEach(id -> {
+            Campaign campaign = Campaign.find.byId(id);
+            ResourceSpace campaignRS = campaign.getResources();
+            List<Theme> campaignThemes = campaignRS.getThemes();
+            campaignRS.getThemes().addAll(toCreate);
+            List<Theme> addToCampaignIfNotAddedYet =
+                    toAddToCampaign.stream().filter(
+                            t -> campaignThemes.stream()
+                                    .noneMatch(o -> o.getThemeId().equals(t.getThemeId()))).collect(Collectors.toList());
+            campaignRS.getThemes().addAll(addToCampaignIfNotAddedYet);
+            campaignRS.update();
+        });
+        List<Theme> existing = themes.stream().filter(t -> t.getThemeId()!=null).collect(Collectors.toList());
+        List<Theme> addToExistingIfNotAddedYet =
+                toAddToCampaign.stream().filter(
+                        t -> existing.stream()
+                                .noneMatch(o -> o.getThemeId().equals(t.getThemeId()))).collect(Collectors.toList());
+        existing.addAll(addToExistingIfNotAddedYet); // add to existing the themes that were added as new but actually existed in another campaign
+        List<Theme> contributionThemes = contributionRS.getThemes();
+
+        if (replace) {
+            Logger.info("Adding existing EMERGENT and OFFICIAL_PRE_DEFINED themes to the unified list of themes...");
+            // the list under toCreate should already be included because on creation, they got their themeIds
+            contribution.setThemes(existing);
+            contribution.update();
+        } else {
+            contributionThemes.addAll(toCreate);
+            // Step 2: if there are existing thems in the list, make sure they are added only if they were not added before
+            List<Theme> newExistingThemes =
+                    existing.stream().filter(
+                            t -> contributionThemes.stream()
+                                    .noneMatch(o -> o.getThemeId().equals(t.getThemeId()))).collect(Collectors.toList());
+            Logger.info("Adding new existing EMERGENT and OFFICIAL_PRE_DEFINED themes to contribution...");
+            toAdd.addAll(newExistingThemes);
+            Logger.info("Expanding original list of themes...");
+            contributionThemes.addAll(toAdd);
+            contributionRS.update();
+        }
+        return contributionRS;
     }
 
     /**
@@ -2667,8 +2732,7 @@ public class Contributions extends Controller {
     public static Result deleteThemeFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
                                                      @ApiParam(name = "tid", value = "Theme's Id") Long tid) {
         Contribution contribution;
-        User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
+
         contribution = Contribution.readByUUID(uuid);
 
         try {
@@ -2693,7 +2757,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
+    @Dynamic(value = "OnlyMeAndCoordinatorOfAssembly", meta = SecurityModelConstants.CONTRIBUTION_RESOURCE_PATH)
     public static Result deleteAuthorFromContribution(@ApiParam(name = "uuid", value = "Contribution's Universal Id (UUID)") UUID uuid,
                                                       @ApiParam(name = "auuid", value = "Author's Universal Id (UUID)") UUID auuid) {
         Contribution contribution;

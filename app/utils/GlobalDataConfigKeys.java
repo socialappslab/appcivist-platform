@@ -87,6 +87,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.public_draft.status-requirements";
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ = "appcivist.campaign.contribution.published.status-requirements";
 	public static final String APPCIVIST_CAMPAIGN_ACCESSIBILITY_URL = "appcivist.campaign.accessibility.url"; //link to a URL explaining accessibility issues in connection with an campaign
+	public static final String APPCIVIST_CAMPAIGN_KEYWORDS_LIMIT ="appcivist.campaign.keywords.limit";
 
 	//Add the configuration to the default templates for creating campaigns
 	

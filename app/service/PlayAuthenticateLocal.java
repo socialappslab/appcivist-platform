@@ -4,6 +4,8 @@ import static play.libs.Json.toJson;
 
 import java.io.UnsupportedEncodingException;
 
+import models.LinkedAccount;
+import models.User;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.api.libs.Crypto;
@@ -14,6 +16,7 @@ import play.mvc.Controller;
 import play.mvc.Http.Context;
 import play.mvc.Http.Session;
 import play.mvc.Result;
+import providers.LdapAuthProvider;
 import providers.MyUsernamePasswordAuthProvider;
 
 import com.avaje.ebean.Ebean;
@@ -204,7 +207,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 				if (isLoggedIn) {
 					Logger.info("Is logged in");
 					oldIdentity = getUserService().getLocalIdentity(oldUser);
-					isLoggedIn &= oldIdentity != null;
+					isLoggedIn = oldIdentity != null;
 					if (!isLoggedIn) {
 						// if isLoggedIn is false here, then the local user has
 						// been deleted/deactivated
@@ -215,8 +218,28 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 					}
 				}
 
-				final Object loginIdentity = getUserService().getLocalIdentity(
-						newUser);
+				//See if there is already an appcivist user with the linked account provider id that matches
+				// the ldap username.
+				Object loginIdentity = getUserService().getLocalIdentity(newUser);
+
+				if(newUser instanceof LdapAuthProvider.LdapAuthUser && loginIdentity == null) {
+					Logger.info("Sign in from a ldap user, linked account with ldap username not found");
+					LdapAuthProvider.LdapAuthUser identityToSearch = new LdapAuthProvider.LdapAuthUser();
+					LdapAuthProvider.LdapAuthUser ldapUser = (LdapAuthProvider.LdapAuthUser) newUser;
+					identityToSearch.setId(ldapUser.getMail());
+					loginIdentity = User.findByAuthUserIdentity(identityToSearch);
+					//If (2) is success, let's update the provider id to be the ldap username (which is what
+					// we actually use to sign in). This is in order to progressively cleanup the linked account
+					// records of those who signed up already.
+					if(loginIdentity != null) {
+						Logger.info("Ldap linkend account with mail as id found, updating");
+						LinkedAccount linkedAccount = LinkedAccount.findByProviderKey((User) loginIdentity, "ldap");
+						linkedAccount.setProviderUserId(ldapUser.getId());
+						linkedAccount.update();
+						linkedAccount.refresh();
+					}
+				}
+
 				final boolean isLinked = loginIdentity != null;
 
 				final AuthUser loginUser;
@@ -224,7 +247,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 					// 1. -> Login
 					loginUser = newUser;
 					Logger.info("Is linked and not logged in");
-				} else if (isLinked && isLoggedIn) {
+				} else if (isLinked) {
 					Logger.info("Is linked and logged in");
 					// 2. -> Merge
 
@@ -263,7 +286,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 						loginUser = newUser;
 					}
 
-				} else if (!isLinked && !isLoggedIn) {
+				} else if (!isLoggedIn) {
 					Logger.info("Is not linked and not logged in");
 					// 3. -> Signup
 						Ebean.beginTransaction();

@@ -2198,6 +2198,7 @@ public class Spaces extends Controller {
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No Contribution found", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
     public static Result deleteSpaceContribution(@ApiParam(name = "sid", value = "Space ID") Long sid,
                                               @ApiParam(name = "cid", value = "Contribution ID") Long cid) {
         ResourceSpace resourceSpace = ResourceSpace.findByContribution(sid, cid);
@@ -2870,12 +2871,18 @@ public class Spaces extends Controller {
                 List<Theme> themes = themesList.getThemes();
                 try {
                     List<Theme> createdThemes = new ArrayList<>();
-                    for (Theme t : themes) {
-                        t.setContextUserId(creator.getUserId());
-                        t = Theme.create(t);
-                        resourceSpace.getThemes().add(t);
-                        resourceSpace.update();
-                        createdThemes.add(t);
+                    if(resourceSpace.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+                        ResourceSpace updated = Contributions.addTheme(resourceSpace.getContribution(),
+                                themes, false);
+                        createdThemes = updated.getThemes();
+                    } else {
+                        for (Theme t : themes) {
+                            t.setContextUserId(creator.getUserId());
+                            t = Theme.create(t);
+                            resourceSpace.getThemes().add(t);
+                            resourceSpace.update();
+                            createdThemes.add(t);
+                        }
                     }
                     Ebean.commitTransaction();
                     return ok(Json.toJson(createdThemes));

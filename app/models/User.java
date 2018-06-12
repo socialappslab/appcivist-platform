@@ -412,10 +412,12 @@ public class User extends AppCivistBaseModel implements Subject {
 		if (identity == null) {
 			return null;
 		}
-		Logger.info("ID " + identity.getId());
+		Logger.info("AUTH: ID found " + identity.getId());
 		if (identity instanceof UsernamePasswordAuthUser) {
-			return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
+            Logger.info("AUTH: Identity is linked account of type Password");
+            return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
 		} else {
+            Logger.info("AUTH: Identity IS NOT linked account of type Password");
 			return findAuthUserByIdentity(identity).findUnique();
 		}
 	}
@@ -461,13 +463,17 @@ public class User extends AppCivistBaseModel implements Subject {
 		//--ldap case
 		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
 			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
-			user.setEmail(ldapAuthUser.getId());
-			if (user.getEmail().endsWith("@ldap.com")) {
+			if (ldapAuthUser.getMail() != null) {
+				user.setEmail(ldapAuthUser.getUser()+"@ldap.com");
+			} else {
+				user.setEmail(ldapAuthUser.getMail());
+			}
+			if (user.getEmail() != null && user.getEmail().endsWith("@ldap.com")) {
 				MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
 				provider.sendLdapFakeMailEmail(user.getEmail(), ldapAuthUser.getUser(), ldapAuthUser.getAssembly());
 			}
 			user.setName(ldapAuthUser.getCn());
-			Logger.info("Creating LDAP user " + user.getEmail());
+			Logger.info("Creating LDAP user " + user.getUsername());
 			user.setLanguage(ldapAuthUser.getAssembly().getLang());
 			user.setLang(ldapAuthUser.getAssembly().getLang());
 			userId = User.findByEmail(user.getEmail()) != null ? User
@@ -537,8 +543,11 @@ public class User extends AppCivistBaseModel implements Subject {
 		 * TODO add username to the signup form
 		 */
 
-		user.setUsername(user.getEmail());
-
+		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
+			user.setUsername(((LdapAuthProvider.LdapAuthUser) authUser).getUser());
+		} else {
+			user.setUsername(user.getEmail());
+		}
 		/*
 		 * 8. Set language of user
 		 */
@@ -725,10 +734,15 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 	
 	private static Resource getDefaultProfilePictureResource(User user) throws HashGenerationException, MalformedURLException {
-		String picture = getDefaultProfilePictureURL(user.getEmail());
+		String identity = user.getUuidAsString();
+		String userEmail = user.getEmail();
+		if (userEmail != null) {
+			identity = userEmail;
+		}
+		String picture = getDefaultProfilePictureURL(identity);
 		String large = picture+"&s=128";
 		String medium = picture+"&s=64";
-		String thumbnail = picture+"&s=32"; 
+		String thumbnail = picture+"&s=32";
 		Resource profilePicResource = new Resource(user, new URL(picture), new URL(large), new URL(medium), new URL(thumbnail));
 		return profilePicResource;
 	}
