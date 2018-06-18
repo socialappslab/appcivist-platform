@@ -2691,7 +2691,7 @@ public class Spaces extends Controller {
             @ApiParam(name = "format", value = "Export format", allowableValues = "CSV") String format) {
         ResourceSpace resourceSpace = ResourceSpace.read(sid);
         
-        if(resourceSpace!=null && resourceSpace.getResourceSpaceId()==sid) {
+        if(resourceSpace!=null && resourceSpace.getResourceSpaceId().equals(sid)) {
             List<HashMap<String, String>> hashMapList = new ArrayList<HashMap<String, String>>();
             List<CustomFieldDefinition> definitions = resourceSpace.getCustomFieldDefinitions();
             List<Contribution> contributionList = resourceSpace.getContributions();
@@ -2701,12 +2701,14 @@ public class Spaces extends Controller {
                     nonMemberIds.add(author.getId());
                 }
             }
+            Logger.info(nonMemberIds.size() + " non members found");
             Iterator<Long> iterator = nonMemberIds.iterator();
             while (iterator.hasNext()) {
                 Long authorId = iterator.next();
                 NonMemberAuthor author = NonMemberAuthor.read(authorId);
                 iterator.remove();
-                HashMap<String, String> nonMemberAuthorsMap = new HashMap<String, String>();
+                //linked hash map to preserve the insert order
+                HashMap<String, String> nonMemberAuthorsMap = new LinkedHashMap<String, String>();
                 nonMemberAuthorsMap.put("name", author.getName() == null ? "" : author.getName());
                 nonMemberAuthorsMap.put("email", author.getEmail() == null ? "" : author.getEmail());
                 nonMemberAuthorsMap.put("phone", author.getPhone() == null ? "" : author.getPhone());
