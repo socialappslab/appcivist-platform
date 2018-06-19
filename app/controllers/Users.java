@@ -156,6 +156,7 @@ public class Users extends Controller {
     final User localUser = getLocalUser(session());
     if (localUser != null) {
       Logger.debug("Loggedin user: " + Json.toJson(localUser));
+      localUser.setProfile(UserProfile.readByUserId(localUser.getUserId()));
       return ok(Json.toJson(localUser));
     } else
       return notFound(Json.toJson(TransferResponseStatus.noDataMessage(
