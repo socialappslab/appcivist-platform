@@ -153,6 +153,9 @@ public class UserProfile extends AppCivistBaseModel {
 	}
 
 	public String getUuidAsString() {
+		if(uuid == null) {
+			return null;
+		}
 		return uuid.toString();
 	}
 

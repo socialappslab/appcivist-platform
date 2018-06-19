@@ -76,6 +76,9 @@ public class User extends AppCivistBaseModel implements Subject {
 	// TODO create a transfer model for user and place the session key only there
 	@Transient
 	private String sessionKey;
+	@JsonView(Views.Public.class)
+	@Transient
+	private UserProfile profile;
 
 	/*
 	 * Relationships
@@ -823,5 +826,13 @@ public class User extends AppCivistBaseModel implements Subject {
    		final Lang lang = Lang.preferred(Context.current().request().acceptLanguages());
    		final String langCode = userLangCode !=null ? userLangCode : lang.code();   
    		Context.current().changeLang(langCode);
+	}
+
+	public UserProfile getProfile() {
+		return profile;
+	}
+
+	public void setProfile(UserProfile profile) {
+		this.profile = profile;
 	}
 }
