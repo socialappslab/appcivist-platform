@@ -3839,9 +3839,20 @@ public class Contributions extends Controller {
                 } else {
                     contributionFeedback.setDown(true);
                 }
-                NonMemberAuthor nonMemberAuthor = createNonMemberImport(name, null, null, contribution);
-                contributionFeedback.setNonMemberAuthor(nonMemberAuthor);
+
                 contributionFeedback.save();
+
+                HashMap<String,Object> authors = processAuthorsInImport(name, null, null, contribution);
+                if (authors!=null) {
+                    User userAuthor = (User) authors.get("user");
+                    if (userAuthor==null) {
+                        NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) authors.get("nonUser");
+                        contributionFeedback.setNonMemberAuthor(nonMemberAuthor);
+                    } else {
+                        contributionFeedback.setUserId(userAuthor.getUserId());
+                    }
+                    contributionFeedback.update();
+                }
             }
             Ebean.commitTransaction();
         } catch (Exception e) {
@@ -4037,6 +4048,9 @@ public class Contributions extends Controller {
                             }
                         }
 
+                        List<NonMemberAuthor> existingNonMemberAuthors = new ArrayList<>();
+                        List<User> existingUserAuthors = new ArrayList<>();
+
                         // TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
                         if (cell.length > 9) {
                             // SET author name, email and phone
@@ -4045,12 +4059,18 @@ public class Contributions extends Controller {
                                 String author = cell[index];
                                 String phone = (cell.length > index + 1) ? cell[index + 1] : "";
                                 String email = (cell.length > index + 2) ? cell[index + 2] : "";
-                                if(author!= null && !author.isEmpty()) {
-                                    c.setFirstAuthorName(author);
-                                }
-                                createNonMemberImport(author, phone, email, c);
-                            }
 
+                                HashMap<String,Object> authors = processAuthorsInImport(author, phone, email, c);
+                                if (authors!=null) {
+                                    User userAuthor = (User) authors.get("user");
+                                    if (userAuthor==null) {
+                                        NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) authors.get("nonUser");
+                                        existingNonMemberAuthors.add(nonMemberAuthor);
+                                    } else {
+                                        existingUserAuthors.add(userAuthor);
+                                    }
+                                }
+                            }
                         }
                         ResourceSpace resourceSpace;
                         // Create the contribution
@@ -4067,6 +4087,19 @@ public class Contributions extends Controller {
                         }
                         c.getContainingSpaces().add(resourceSpace);
                         Contribution.create(c, resourceSpace);
+                        c.refresh();
+                        Boolean updateContribution = false;
+                        if (existingNonMemberAuthors!=null && existingNonMemberAuthors.size()>0) {
+                            c.getNonMemberAuthors().addAll(existingNonMemberAuthors);
+                            updateContribution = true;
+                        }
+                        if (existingUserAuthors!=null && existingUserAuthors.size()>0) {
+                            c.getAuthors().addAll(existingUserAuthors);
+                            updateContribution = true;
+                        }
+                        if (updateContribution) {
+                            c.update();
+                        }
                     }
                     Ebean.commitTransaction();
                 } catch (Exception e) {
@@ -5315,39 +5348,51 @@ public class Contributions extends Controller {
         return custom;
     }
 
-    private static NonMemberAuthor createNonMemberImport(String author, String phone, String email,
-                                              Contribution c) {
+    private static HashMap<String,Object> processAuthorsInImport(String name, String phone, String email,
+                                                                 Contribution c) {
+        HashMap<String, Object> authors = new HashMap<>();
 
         boolean createNewMember = false;
-        if (author != null && !author.equals("")) {
-            List<User> authors = User.findByName(author);
+
+        User existingUserAuthor = null;
+        // Try to find first an user by the email
+        if (email !=null && !email.equals("")) {
+            existingUserAuthor = User.findByEmail(email);
+        }
+
+        if (existingUserAuthor == null && name != null && !name.equals("")) {
+            List<User> existingUserAuthors = User.findByName(name);
             // If more than one user matches the name
             // criteria, we'll skip the author set up
-            if (authors != null && authors.size() == 1) {
-                c.getAuthors().add(authors.get(0));
+            if (existingUserAuthors != null && existingUserAuthors.size() == 1) {
                 Logger.info("The author was FOUND!");
+                authors.put("user",existingUserAuthors.get(0));
             } else {
-                List<NonMemberAuthor> nonMemberAuthors = NonMemberAuthor.find.where().eq("name", author).findList();
+                List<NonMemberAuthor> nonMemberAuthors = NonMemberAuthor.find.where().eq("name", name).findList();
                 if (nonMemberAuthors.isEmpty()) {
                     createNewMember = true;
                 } else {
                     Logger.info("Non member author was FOUND!");
-                    return nonMemberAuthors.get(0);
+                    NonMemberAuthor nma = nonMemberAuthors.get(0);
+                    authors.put("nonUser",nma);
+                    return authors;
                 }
             }
+        } else {
+            authors.put("user",existingUserAuthor);
+            return authors;
         }
 
         if (createNewMember) {
-            Logger.info("Importing => non member author => " + author);
+            Logger.info("Importing => non member author => " + name);
             // Create a non member author
             NonMemberAuthor nma = new NonMemberAuthor();
-            nma.setName(author);
+            nma.setName(name);
             nma.setPhone(phone);
             nma.setEmail(email);
             nma.save();
             nma.refresh();
-            c.getNonMemberAuthors().add(nma);
-            return nma;
+            return authors;
         }
         return null;
     }
