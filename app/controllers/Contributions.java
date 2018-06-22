@@ -5392,6 +5392,7 @@ public class Contributions extends Controller {
             nma.setEmail(email);
             nma.save();
             nma.refresh();
+            authors.put("nonUser",nma);
             return authors;
         }
         return null;
