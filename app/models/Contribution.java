@@ -752,8 +752,20 @@ public class Contribution extends AppCivistBaseModel {
                 : null;
     }
 
+    // Returns the cover or the first image in the list of attachments
     public Resource getCover() {
-        return cover;
+        if (cover!=null) {
+            return cover;
+        } else {
+            List<Resource> pics = this.getAttachments().stream()
+                    .filter(p -> p.getResourceType() == ResourceTypes.PICTURE)
+                    .collect(Collectors.toList());
+            if (pics!=null && pics.size()>0) {
+                return pics.get(0);
+            } else {
+                return null;
+            }
+        }
     }
 
     public void setCover(Resource cover) {
