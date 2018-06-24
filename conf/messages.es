@@ -213,3 +213,5 @@ appcivist.contribution.proposal = propuesta
 appcivist.contribution.idea = idea
 appcivist.contribution.proposals = propuestas
 appcivist.contribution.ideas = ideas
+
+appcivist.contribution.change.status = Debe completar todos los campos requeridos: {0} antes de pasar al estado {1}

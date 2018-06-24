@@ -4220,7 +4220,15 @@ public class Contributions extends Controller {
                     GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
         }
         if(checkStatus != null && !checkStatus.isEmpty()) {
-            return badRequest(Json.toJson(new TransferResponseStatus("You must to complete all the " +
+            String lang = c.getLang();
+            if(lang != null)  {
+                Messages.get(Lang.forCode(c.getLang()),"appcivist.contribution.change.status",
+                        checkStatus, upStatus);
+            } else {
+                Messages.get("appcivist.contribution.change.status", checkStatus, upStatus);
+            }
+
+            return badRequest(Json.toJson(new TransferResponseStatus("You must complete all the " +
                     "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
         }
         if (ContributionStatus.valueOf(upStatus) != null) {

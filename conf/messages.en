@@ -229,3 +229,5 @@ appcivist.contribution.proposal = proposal
 appcivist.contribution.idea = idea
 appcivist.contribution.proposals = proposals
 appcivist.contribution.ideas = ideas
+
+appcivist.contribution.change.status = You must complete all the required fields: {0} before changing to {1} status
