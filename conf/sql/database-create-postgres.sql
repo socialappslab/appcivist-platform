@@ -3246,3 +3246,6 @@ ALTER FUNCTION update_duplicate_themes()
   OWNER TO postgres;
 
 select * from update_duplicate_themes();
+
+-- 84.sql
+alter TABLE appcivist_user add COLUMN email_updated boolean;

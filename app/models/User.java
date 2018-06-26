@@ -73,6 +73,9 @@ public class User extends AppCivistBaseModel implements Subject {
 	private Resource profilePic;
 	@Column
 	private boolean active = true;
+	@Column(name = "email_updated")
+	@JsonView(Views.Public.class)
+	private Boolean emailUpdated;
 	// TODO create a transfer model for user and place the session key only there
 	@Transient
 	private String sessionKey;
@@ -834,5 +837,13 @@ public class User extends AppCivistBaseModel implements Subject {
 
 	public void setProfile(UserProfile profile) {
 		this.profile = profile;
+	}
+
+	public Boolean getEmailUpdated() {
+		return emailUpdated;
+	}
+
+	public void setEmailUpdated(Boolean emailUpdated) {
+		this.emailUpdated = emailUpdated;
 	}
 }

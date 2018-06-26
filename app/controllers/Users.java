@@ -408,6 +408,18 @@ public class Users extends Controller {
         }
         updatedUser.setRoles(roles);
       }
+      //if email changes send verification email again
+      if(!updatedUser.getEmail().equals(oldUser.getEmail())) {
+        Logger.info("Email change, sending verification email");
+        updatedUser.setEmailVerified(false);
+        updatedUser.setEmailUpdated(true);
+        flash(Application.FLASH_MESSAGE_KEY, Messages.get(
+                "playauthenticate.verify_email.message.instructions_sent",
+                updatedUser.getEmail()));
+        MyUsernamePasswordAuthProvider.getProvider()
+                .sendVerifyEmailMailingAfterSignup(updatedUser, ctx(),false);
+
+      }
       updatedUser.update();
       Logger.info("Updating User");
       Logger.debug("=> " + updatedUserForm.toString());
