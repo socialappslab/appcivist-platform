@@ -312,6 +312,7 @@ public class Spaces extends Controller {
                 newCustomFieldDefinition.setContextUserId(creator.getUserId());
                 newCustomFieldDefinition = CustomFieldDefinition.create(newCustomFieldDefinition);
                 resourceSpace.getCustomFieldDefinitions().add(newCustomFieldDefinition);
+                resourceSpace.setLastUpdate(new Date());
                 resourceSpace.update();
                 return ok(Json.toJson(newCustomFieldDefinition));
             }
@@ -343,6 +344,7 @@ public class Spaces extends Controller {
                         .toJson(new TransferResponseStatus("No custom field definition found with id "+cfid)));
             }
             resourceSpace.getCustomFieldDefinitions().remove(customFieldDefinition);
+            resourceSpace.setLastUpdate(new Date());
             resourceSpace.update();
             resourceSpace.refresh();
             customFieldDefinition.softRemove();
@@ -401,6 +403,7 @@ public class Spaces extends Controller {
                 }
                 newCustomFieldDefinition.update();
                 resourceSpace.getCustomFieldDefinitions().add(newCustomFieldDefinition);
+                resourceSpace.setLastUpdate(new Date());
                 resourceSpace.update();
                 return ok(Json.toJson(newCustomFieldDefinition));
             }

@@ -2537,7 +2537,10 @@ public class Contributions extends Controller {
         List<Theme> toAdd = new ArrayList<>();
         List<Theme> toAddToCampaign = new ArrayList<>();
         ResourceSpace contributionRS = contribution.getResourceSpace();
-
+        Logger.info("Updating contribution last update date...");
+        contribution.setLastUpdate(new Date());
+        contribution.update();
+        contribution.refresh();
         // Step 1: create new EMERGENT themes
         // - Create theme of type `EMERGENT` only if another theme with the same title and type does not exist yet,
         // - Otherwise reuse the theme. Do not allow new `OFFICIAL_PRE_DEFINED` themes.
@@ -2629,6 +2632,7 @@ public class Contributions extends Controller {
             boolean authorExist = contribution.getAuthors().contains(author);
             if(!authorExist) {
                 contribution.getAuthors().add(author);
+                contribution.setLastUpdate(new Date());
                 contribution.update();
                 contribution.refresh();
                 F.Promise.promise(() -> {
@@ -2677,7 +2681,7 @@ public class Contributions extends Controller {
             } else {
                 authorExist = contribution.getNonMemberAuthors().contains(author);
             }
-
+            contribution.setLastUpdate(new Date());
             if (!authorExist && !userExist) {
                 // create the non member author and add it to the contribution
                 author = NonMemberAuthor.create(author);
@@ -2738,6 +2742,7 @@ public class Contributions extends Controller {
 
         try {
             Theme theme = Theme.read(tid);
+            contribution.setLastUpdate(new Date());
             contribution.getThemes().remove(theme);
             contribution.update();
             return ok(Json.toJson(contribution));
@@ -2768,6 +2773,7 @@ public class Contributions extends Controller {
 
         try {
             User author = User.findByUUID(auuid);
+            contribution.setLastUpdate(new Date());
             boolean authorExist = contribution.getAuthors().contains(author);
             if(authorExist) {
                 contribution.getAuthors().remove(author);
@@ -2809,6 +2815,7 @@ public class Contributions extends Controller {
         contribution = Contribution.readByUUID(uuid);
 
         try {
+            contribution.setLastUpdate(new Date());
             NonMemberAuthor author = NonMemberAuthor.read(nmaid);
             boolean authorExist = contribution.getNonMemberAuthors().contains(author);
             if(authorExist) {
