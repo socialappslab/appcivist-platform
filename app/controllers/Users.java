@@ -14,7 +14,7 @@ import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
 import models.TokenAction.Type;
-import models.misc.S3File;
+import models.misc.AppcivistFile;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.DynamicForm;
@@ -43,6 +43,7 @@ import views.html.ask_merge;
 import views.html.link;
 import views.html.profile;
 
+import java.net.URL;
 import java.util.*;
 
 import static play.data.Form.form;
@@ -433,12 +434,12 @@ public class Users extends Controller {
 
         try{
           Logger.info("Processing profile pic");
-          S3File s3File = new S3File();
-          s3File.name = uploadFilePart.getFilename();
-          s3File.file = uploadFilePart.getFile();
-          s3File.save();
+          AppcivistFile appcivistFile = new AppcivistFile();
+          appcivistFile.name = uploadFilePart.getFilename();
+          appcivistFile.file = uploadFilePart.getFile();
+          appcivistFile.save();
           Resource resource = new Resource();
-          resource.setUrl(s3File.getUrl());
+          resource.setUrl(new URL(appcivistFile.getUrl()));
           resource.setResourceType(ResourceTypes.PICTURE);
           resource.save();
           updatedUser.setProfilePic(resource);

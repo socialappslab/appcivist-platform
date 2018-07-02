@@ -3249,3 +3249,10 @@ select * from update_duplicate_themes();
 
 -- 84.sql
 alter TABLE appcivist_user add COLUMN email_updated boolean;
+
+--85.sql
+
+ALTER TABLE s3file
+RENAME TO appcivist_file;
+alter TABLE appcivist_file add COLUMN target character varying(10) ;
+alter TABLE appcivist_file add COLUMN url character varying(255) ;
