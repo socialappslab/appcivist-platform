@@ -64,6 +64,7 @@ import utils.services.PeerDocWrapper;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -2536,7 +2537,10 @@ public class Contributions extends Controller {
         List<Theme> toAdd = new ArrayList<>();
         List<Theme> toAddToCampaign = new ArrayList<>();
         ResourceSpace contributionRS = contribution.getResourceSpace();
-
+        Logger.info("Updating contribution last update date...");
+        contribution.setLastUpdate(new Date());
+        contribution.update();
+        contribution.refresh();
         // Step 1: create new EMERGENT themes
         // - Create theme of type `EMERGENT` only if another theme with the same title and type does not exist yet,
         // - Otherwise reuse the theme. Do not allow new `OFFICIAL_PRE_DEFINED` themes.
@@ -2628,6 +2632,7 @@ public class Contributions extends Controller {
             boolean authorExist = contribution.getAuthors().contains(author);
             if(!authorExist) {
                 contribution.getAuthors().add(author);
+                contribution.setLastUpdate(new Date());
                 contribution.update();
                 contribution.refresh();
                 F.Promise.promise(() -> {
@@ -2676,7 +2681,7 @@ public class Contributions extends Controller {
             } else {
                 authorExist = contribution.getNonMemberAuthors().contains(author);
             }
-
+            contribution.setLastUpdate(new Date());
             if (!authorExist && !userExist) {
                 // create the non member author and add it to the contribution
                 author = NonMemberAuthor.create(author);
@@ -2737,6 +2742,7 @@ public class Contributions extends Controller {
 
         try {
             Theme theme = Theme.read(tid);
+            contribution.setLastUpdate(new Date());
             contribution.getThemes().remove(theme);
             contribution.update();
             return ok(Json.toJson(contribution));
@@ -2767,6 +2773,7 @@ public class Contributions extends Controller {
 
         try {
             User author = User.findByUUID(auuid);
+            contribution.setLastUpdate(new Date());
             boolean authorExist = contribution.getAuthors().contains(author);
             if(authorExist) {
                 contribution.getAuthors().remove(author);
@@ -2808,6 +2815,7 @@ public class Contributions extends Controller {
         contribution = Contribution.readByUUID(uuid);
 
         try {
+            contribution.setLastUpdate(new Date());
             NonMemberAuthor author = NonMemberAuthor.read(nmaid);
             boolean authorExist = contribution.getNonMemberAuthors().contains(author);
             if(authorExist) {
@@ -4219,7 +4227,15 @@ public class Contributions extends Controller {
                     GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
         }
         if(checkStatus != null && !checkStatus.isEmpty()) {
-            return badRequest(Json.toJson(new TransferResponseStatus("You must to complete all the " +
+            String lang = c.getLang();
+            if(lang != null)  {
+                Messages.get(Lang.forCode(c.getLang()),"appcivist.contribution.change.status",
+                        checkStatus, upStatus);
+            } else {
+                Messages.get("appcivist.contribution.change.status", checkStatus, upStatus);
+            }
+
+            return badRequest(Json.toJson(new TransferResponseStatus("You must complete all the " +
                     "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
         }
         if (ContributionStatus.valueOf(upStatus) != null) {
@@ -5320,19 +5336,69 @@ public class Contributions extends Controller {
         }
         Logger.info("Requirements config: " + requirements);
         List<String> customFields = new ArrayList<>();
+        List<String> contributionFields = new ArrayList<>();
         if(!requirements.isEmpty()) {
             for(String requirement: requirements) {
                 String output = requirement.substring(0, 1).toUpperCase() + requirement.substring(1);
                 try {
-                    Contribution.class.getMethod("get" + output);
-                } catch (NoSuchMethodException e) {
+                    boolean present = false;
+                    switch (requirement) {
+                        case "theme":
+                            for (Theme theme : c.getThemes()) {
+                                if (theme.getType().equals(ThemeTypes.OFFICIAL_PRE_DEFINED)) {
+                                    present = true;
+                                }
+                            }
+                            if (!present) {
+                                contributionFields.add(requirement);
+                            }
+                            break;
+                        case "keyword":
+                            for (Theme theme : c.getThemes()) {
+                                if (theme.getType().equals(ThemeTypes.EMERGENT)) {
+                                    present = true;
+                                }
+                            }
+                            if (!present) {
+                                contributionFields.add(requirement);
+                            }
+                            break;
+                        case "attachment":
+                            if (c.getExistingResources() != null && c.getExistingResources().isEmpty()) {
+                                contributionFields.add(requirement);
+                            }
+                            break;
+                        case "media":
+                            for(Resource resource: c.getExistingResources()) {
+                                if (resource.getResourceType().equals(ResourceTypes.AUDIO) ||
+                                        resource.getResourceType().equals(ResourceTypes.VIDEO)) {
+                                    present = true;
+                                }
+                            }
+                            if(!present) {
+                                contributionFields.add(requirement);
+                            }
+                            break;
+                        case "group":
+                            if(c.getWorkingGroups() != null && c.getWorkingGroups().isEmpty()) {
+                                contributionFields.add(requirement);
+                            }
+                            break;
+
+                        default:
+                            if (Contribution.class.getMethod("get" + output).invoke(c) == null) {
+                            contributionFields.add(requirement);
+                            break;
+                        }
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     customFields.add(requirement);
                 }
             }
         } else {
             return null;
         }
-        if (customFields.isEmpty()) {
+        if (customFields.isEmpty() && contributionFields.isEmpty()) {
             return null;
         }
         Logger.info("required custom fields: " + customFields);
@@ -5345,6 +5411,7 @@ public class Contributions extends Controller {
                 }
             }
         }
+        custom.addAll(contributionFields);
         return custom;
     }
 
