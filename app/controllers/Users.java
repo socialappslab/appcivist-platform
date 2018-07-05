@@ -292,7 +292,7 @@ public class Users extends Controller {
         boolean isMember = false;
         if (user != null) {
           for (MembershipAssembly ma : assembly.getMemberships()) {
-            if (ma.getUser().getUserId().equals(user.getUserId())) {
+            if (ma.getUser() != null && ma.getUser().getUserId().equals(user.getUserId())) {
               isMember = true;
               break;
             }
