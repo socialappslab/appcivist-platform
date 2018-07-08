@@ -38,7 +38,6 @@ import models.transfer.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -381,11 +380,6 @@ public class Contributions extends Controller {
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
-            if ( sorting != null && !sorting.isEmpty() && sorting.equals("random") ) {
-                int totalRows = contribs.size();
-                int totalPages = (totalRows + pageSize - 1) / pageSize;
-                page = RandomUtils.nextInt(0, totalPages);
-            }
             contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
@@ -1091,7 +1085,7 @@ public class Contributions extends Controller {
             if (byTheme != null && !byTheme.isEmpty()) {
                 conditions.put("theme", byTheme);
             }
-            if (sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
+            if (sorting != null && !sorting.isEmpty()) {
                 conditions.put("sorting", sorting);
             }
             if (status != null && !status.isEmpty()) {
@@ -1105,11 +1099,6 @@ public class Contributions extends Controller {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null, false);
             } else {
                 List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, false);
-                if(sorting != null && !sorting.isEmpty() && sorting.equals("random") ){
-                    int totalRows = contribs.size();
-                    int totalPages = (totalRows+pageSize-1) / pageSize;
-                    page = RandomUtils.nextInt(0,totalPages);
-                }
                 contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, false);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());

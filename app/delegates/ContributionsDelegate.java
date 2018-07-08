@@ -169,7 +169,7 @@ public class ContributionsDelegate {
                             sorting +=", popularity asc nulls last";
                         } else if (sortingValue.equals("random")) {
                             // TODO find a way of producing a a REAL random ordering
-                            sorting +=", uuid desc nulls last"; // create the illusion of random ordering
+                            sorting ="random"; // create the illusion of random ordering
                         } else if (sortingValue.equals("date_asc")) {
                             sorting +=", creation asc nulls last";
                         } else if (sortingValue.equals("date_desc")) {
@@ -198,7 +198,9 @@ public class ContributionsDelegate {
                         
                 }
             }
-            rawQuery += sorting;
+            if(!sorting.equals("random")) {
+                rawQuery += sorting;
+            }
             RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
             where = finder.setRawSql(rawSql).where();
 
@@ -304,9 +306,17 @@ public class ContributionsDelegate {
         where.add(Expr.not(Expr.eq("removed",true)));        
         List<Contribution> contributions;
         if(page != null && pageSize != null){
-            contributions = where.findPagedList(page, pageSize).getList();
-        }else{
+            if(sorting.equals("random")) {
+                contributions = where.setMaxRows(pageSize).findList();
+                Collections.shuffle(contributions);
+            } else {
+                contributions = where.findPagedList(page, pageSize).getList();
+            }
+        } else {
             contributions = where.findList();
+            if(sorting.equals("random")) {
+                Collections.shuffle(contributions);
+            }
         }
         return contributions;
 
