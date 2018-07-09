@@ -1106,7 +1106,6 @@ public class Contribution extends AppCivistBaseModel {
         existingContribution.setTitle(newContribution.getTitle());
         existingContribution.setType(newContribution.getType());
         existingContribution.setContextUserId(authorId);
-        existingContribution.setAttachments(newContribution.getAttachments());
         existingContribution.setCover(newContribution.getCover());
 
         return Contribution.update(existingContribution);
