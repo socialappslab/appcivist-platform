@@ -36,6 +36,7 @@ import providers.MyUsernamePasswordAuthProvider.MyLogin;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
+import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.services.SocialIdeationWrapper;
 import views.html.ask_link;
@@ -45,6 +46,7 @@ import views.html.profile;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.*;
 
@@ -403,6 +405,7 @@ public class Users extends Controller {
       User updatedUser = updatedUserForm.get();
       User oldUser = User.read(uid);
       updatedUser.setUserId(uid);
+      Boolean refreshSessionKey = false;
       if(updatedUser != null && updatedUser.getRoles()==null || (updatedUser.getRoles()!=null && updatedUser.getRoles().size()==0)){
         List<SecurityRole> roles = new ArrayList<SecurityRole>();
         for (SecurityRole role : oldUser.getRoles()) {
@@ -421,8 +424,13 @@ public class Users extends Controller {
                 updatedUser.getEmail()));
         MyUsernamePasswordAuthProvider.getProvider()
                 .sendVerifyEmailMailingAfterSignup(updatedUser, ctx(),false);
-
+        refreshSessionKey = true;
       }
+        //if email changes send verification email again
+      if(updatedUser != null && updatedUser.getUsername() != null && !updatedUser.getUsername().equals(oldUser.getUsername())) {
+        refreshSessionKey = true;
+      }
+
       // if updatedUser is null, it is probably because this is only a call to update profile
       if (updatedUser != null && updatedUser.getEmail() != null) {
         updatedUser.update();
@@ -436,7 +444,6 @@ public class Users extends Controller {
         uploadFilePart = body.getFile("profile_pic");
       }
       if (uploadFilePart != null) {
-
         try{
           Logger.info("Processing profile pic");
           AppcivistFile appcivistFile = new AppcivistFile();
@@ -450,27 +457,50 @@ public class Users extends Controller {
           updatedUser.setProfilePic(resource);
           updatedUser.update();
         } catch(Exception e) {
-            Logger.info("---> AppCivist: A problem occurred while saving file ");
+          Logger.info("---> AppCivist: A problem occurred while saving file ");
+          StringWriter sw = new StringWriter();
+          PrintWriter pw = new PrintWriter(sw);
+          e.printStackTrace(pw);
+          Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+          TransferResponseStatus response = new TransferResponseStatus();
+          response.setStatusMessage("Error updating user's picture: "+e.getMessage());
+          response.setErrorTrace(sw.toString());
+          response.setResponseStatus(ResponseStatus.SERVERERROR);
+          return internalServerError(Json.toJson(response));
+        }
+      }
+
+      // if user email or username was updated, and auth user provider is password, make sure to update sessionKey
+      String newSessionKey = "";
+      if (refreshSessionKey) {
+        AuthUser u = PlayAuthenticate.getUser(ctx().session());
+        String provider = u.getProvider();
+        AuthUser au = new MyUsernamePasswordAuthUser(updatedUser,"");
+        String id = updatedUser.getEmail();
+        if (provider != null && provider.equals("password")) {
+          String encoded = "";
+          String signed = "";
+          try {
+            encoded = PlayAuthenticateLocal.getEncodedUserKey(u.expires(),u.getProvider(),id);
+            signed = PlayAuthenticateLocal.getSignedUserKey(encoded);
+            newSessionKey = signed+"-"+encoded;
+            updatedUser.setSessionKey(newSessionKey);
+            PlayAuthenticateLocal.storeUser(ctx().session(),au);
+          } catch (UnsupportedEncodingException e) {
+            Logger.info("A problem occurred while refreshing user's session key");
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
             TransferResponseStatus response = new TransferResponseStatus();
-            response.setStatusMessage("Error updating user's picture: "+e.getMessage());
+            response.setStatusMessage("A problem occurred while refreshing user's session key: "+e.getMessage());
             response.setErrorTrace(sw.toString());
             response.setResponseStatus(ResponseStatus.SERVERERROR);
             return internalServerError(Json.toJson(response));
+          }
         }
-
       }
-
-      TransferResponseStatus responseBody = new TransferResponseStatus();
-      responseBody.setNewResourceId(updatedUser.getUserId());
-      responseBody.setStatusMessage("User " + updatedUser.getUserId()
-          + "updated successfully");
-      responseBody.setNewResourceURL(routes.Users + "/"
-          + updatedUser.getUserId());
-      return ok(Json.toJson(responseBody));
+      return ok(Json.toJson(updatedUser));
     }
   }
 
