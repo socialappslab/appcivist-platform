@@ -72,26 +72,8 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 		String signed = "";
 
 		try {
-			StringBuffer sb = new StringBuffer();
-
-			if (loginUser.expires() != AuthUser.NO_EXPIRATION) {
-				sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.EXPIRES_KEY, "UTF-8"));
-				sb.append("=");
-				sb.append(java.net.URLEncoder.encode(loginUser.expires()+"", "UTF-8"));
-				sb.append("&");
-			}
-			sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.PROVIDER_KEY, "UTF-8"));
-			sb.append("=");
-			sb.append(java.net.URLEncoder.encode(loginUser.getProvider(), "UTF-8"));
-			sb.append("&");
-			sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.USER_KEY, "UTF-8"));
-			sb.append("=");
-			sb.append(java.net.URLEncoder.encode(loginUser.getId(), "UTF-8"));
-			
-			//encoded = java.net.URLEncoder.encode(sb.toString(), "UTF-8");
-			encoded = sb.toString();
-			Crypto cryptoObject = play.Play.application().injector().instanceOf(Crypto.class);
-			signed = cryptoObject.sign(encoded);
+			encoded = getEncodedUserKey(loginUser.expires(),loginUser.getProvider(),loginUser.getId());
+			signed = getSignedUserKey(encoded);
 		} catch (UnsupportedEncodingException e) {
 		    TransferResponseStatus message = new TransferResponseStatus();
 		    message.setResponseStatus(ResponseStatus.SERVERERROR);
@@ -105,7 +87,7 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			Logger.debug("session generated: " + PlayAuthenticateLocal.SESSION_KEY_STRING+"=" + signed + "-"
 					+ encoded);
 		}
-		if(loginUser.getProvider().equals("password")){
+		if(loginUser.getProvider().equals("password")) {
 			models.User user = models.User.findByEmail(loginUser.getId());
 
 			if (payload != null && payload.toString().equals("SIGNUP")) {
@@ -129,6 +111,31 @@ public class PlayAuthenticateLocal extends PlayAuthenticate {
 			user.setSessionKey(signed + "-" + encoded);
 			return Controller.ok(toJson(user));
 		}
+	}
+
+	public static String getEncodedUserKey(long expiration, String provider, String id) throws UnsupportedEncodingException{
+		StringBuffer sb = new StringBuffer();
+
+		if (expiration != AuthUser.NO_EXPIRATION) {
+			sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.EXPIRES_KEY, "UTF-8"));
+			sb.append("=");
+			sb.append(java.net.URLEncoder.encode(expiration+"", "UTF-8"));
+			sb.append("&");
+		}
+		sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.PROVIDER_KEY, "UTF-8"));
+		sb.append("=");
+		sb.append(java.net.URLEncoder.encode(provider, "UTF-8"));
+		sb.append("&");
+		sb.append(java.net.URLEncoder.encode(PlayAuthenticateLocal.USER_KEY, "UTF-8"));
+		sb.append("=");
+		sb.append(java.net.URLEncoder.encode(id, "UTF-8"));
+
+		return sb.toString();
+	}
+
+	public static String getSignedUserKey(String encoded) {
+		Crypto cryptoObject = play.Play.application().injector().instanceOf(Crypto.class);
+		return cryptoObject.sign(encoded);
 	}
 
 	public static Result handleAuthentication(final String provider, final Context context, final Object payload) {
