@@ -17,6 +17,8 @@ import javax.persistence.Transient;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -100,7 +102,12 @@ public class AppcivistFile extends Model {
             try {
                 FileUtils.moveFile(this.file, new File(pathToSave, this.id.toString()));
             } catch (IOException e) {
-                Logger.error("Error saving local file " + pathToSave+this.name);
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                Logger.error("FILESERVER: Error saving local file " + pathToSave+this.id.toString());
+                Logger.debug("FILESERVER: Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+
             }
             this.url =  Play.application().configuration()
                     .getString("application.contributionFiles") + "uploads/" + this.id.toString();
