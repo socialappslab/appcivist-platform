@@ -96,14 +96,14 @@ public class AppcivistFile extends Model {
                 return;
             }
 
-            pathToSave = pathToSave + "uploads";
+            pathToSave = pathToSave + "uploads/";
             try {
-                FileUtils.moveFile(this.file, new File(pathToSave, this.name));
+                FileUtils.moveFile(this.file, new File(pathToSave, this.id.toString()));
             } catch (IOException e) {
                 Logger.error("Error saving local file " + pathToSave+this.name);
             }
             this.url =  Play.application().configuration()
-                    .getString("application.contributionFiles") + "uploads/" + this.name;
+                    .getString("application.contributionFiles") + "uploads/" + this.id.toString();
             this.target = "local";
             super.save();
         }
