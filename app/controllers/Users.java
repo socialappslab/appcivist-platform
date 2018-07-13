@@ -400,7 +400,7 @@ public class Users extends Controller {
       User updatedUser = updatedUserForm.get();
       User oldUser = User.read(uid);
       updatedUser.setUserId(uid);
-      if(updatedUser.getRoles()==null || (updatedUser.getRoles()!=null && updatedUser.getRoles().size()==0)){
+      if(updatedUser != null && updatedUser.getRoles()==null || (updatedUser.getRoles()!=null && updatedUser.getRoles().size()==0)){
         List<SecurityRole> roles = new ArrayList<SecurityRole>();
         for (SecurityRole role : oldUser.getRoles()) {
           SecurityRole roleLoaded = SecurityRole.read(role.getRoleId());
@@ -409,7 +409,7 @@ public class Users extends Controller {
         updatedUser.setRoles(roles);
       }
       //if email changes send verification email again
-      if(!updatedUser.getEmail().equals(oldUser.getEmail())) {
+      if(updatedUser != null && !updatedUser.getEmail().equals(oldUser.getEmail())) {
         Logger.info("Email change, sending verification email");
         updatedUser.setEmailVerified(false);
         updatedUser.setEmailUpdated(true);
@@ -420,9 +420,12 @@ public class Users extends Controller {
                 .sendVerifyEmailMailingAfterSignup(updatedUser, ctx(),false);
 
       }
-      updatedUser.update();
-      Logger.info("Updating User");
-      Logger.debug("=> " + updatedUserForm.toString());
+      // if updatedUser is null, it is probably because this is only a call to update profile
+      if (updatedUser != null) {
+        updatedUser.update();
+        Logger.info("Updating User");
+        Logger.debug("=> " + updatedUserForm.toString());
+      }
 
       Http.MultipartFormData body = request().body().asMultipartFormData();
       Http.MultipartFormData.FilePart uploadFilePart = null;
