@@ -409,7 +409,7 @@ public class Users extends Controller {
         updatedUser.setRoles(roles);
       }
       //if email changes send verification email again
-      if(updatedUser != null && !updatedUser.getEmail().equals(oldUser.getEmail())) {
+      if(updatedUser != null && updatedUser.getEmail() != null && !updatedUser.getEmail().equals(oldUser.getEmail())) {
         Logger.info("Email change, sending verification email");
         updatedUser.setEmailVerified(false);
         updatedUser.setEmailUpdated(true);
@@ -421,7 +421,7 @@ public class Users extends Controller {
 
       }
       // if updatedUser is null, it is probably because this is only a call to update profile
-      if (updatedUser != null) {
+      if (updatedUser != null && updatedUser.getEmail() != null) {
         updatedUser.update();
         Logger.info("Updating User");
         Logger.debug("=> " + updatedUserForm.toString());
