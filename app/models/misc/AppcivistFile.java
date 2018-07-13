@@ -26,7 +26,7 @@ import java.util.UUID;
 public class AppcivistFile extends Model {
 
     @Id
-    public UUID id;
+    public UUID id = UUID.randomUUID();
 
     private String bucket;
 

@@ -43,6 +43,8 @@ import views.html.ask_merge;
 import views.html.link;
 import views.html.profile;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.*;
 
@@ -447,9 +449,17 @@ public class Users extends Controller {
           resource.save();
           updatedUser.setProfilePic(resource);
           updatedUser.update();
-        }catch(Exception e){
-          return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.BADREQUEST,
-              "Error updating user's picture")));
+        } catch(Exception e) {
+            Logger.info("---> AppCivist: A problem occurred while saving file ");
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setStatusMessage("Error updating user's picture: "+e.getMessage());
+            response.setErrorTrace(sw.toString());
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            return internalServerError(Json.toJson(response));
         }
 
       }
