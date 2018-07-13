@@ -425,6 +425,16 @@ public class Users extends Controller {
         MyUsernamePasswordAuthProvider.getProvider()
                 .sendVerifyEmailMailingAfterSignup(updatedUser, ctx(),false);
         refreshSessionKey = true;
+
+        // check that user email is not duplicated
+        User exist = User.findByEmail(updatedUser.getEmail());
+        if (exist!=null) {
+            Logger.info("Duplicated email");
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setStatusMessage("Duplicated email");
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            return internalServerError(Json.toJson(response));
+        }
       }
         //if email changes send verification email again
       if(updatedUser != null && updatedUser.getUsername() != null && !updatedUser.getUsername().equals(oldUser.getUsername())) {
