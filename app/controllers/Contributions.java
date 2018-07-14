@@ -5410,6 +5410,10 @@ public class Contributions extends Controller {
     private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
         List<String> requirements = new ArrayList<>();
         if(upStatus.equals(cs.name())) {
+            if(c.getCampaignIds().size() == 0) {
+                Logger.info("No campaigns found in this contribution");
+                return null;
+            }
             Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
             for(Config config: campaing.getConfigs()) {
                 if(config.getKey().equals(configKey)) {
