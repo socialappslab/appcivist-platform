@@ -1358,6 +1358,13 @@ public class Contribution extends AppCivistBaseModel {
     public static boolean isUserAuthor(User u, Long contributionId) {
         Contribution contribution = read(contributionId);
         Boolean isAuthor = false;
+
+        User creator = contribution.getCreator();
+        // if user is creator return true by default, no need to look into the list of authors
+        if (u.getUserId() == creator.getUserId()) {
+            return true;
+        }
+
         isAuthor = find.where().eq("contributionId", contributionId)
                 .eq("authors.userId", u.getUserId()).findUnique() != null;
         if(!isAuthor) {
