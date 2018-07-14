@@ -99,8 +99,9 @@ public class AppcivistFile extends Model {
             }
 
             pathToSave = pathToSave + "uploads/";
+            String fileName = this.id.toString() + this.file.getName();
             try {
-                FileUtils.moveFile(this.file, new File(pathToSave, this.id.toString()));
+                FileUtils.moveFile(this.file, new File(pathToSave, fileName));
             } catch (IOException e) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
@@ -110,7 +111,7 @@ public class AppcivistFile extends Model {
 
             }
             this.url =  Play.application().configuration()
-                    .getString("application.contributionFiles") + "uploads/" + this.id.toString();
+                    .getString("application.contributionFiles") + "uploads/" + fileName;
             this.target = "local";
             super.save();
         }
