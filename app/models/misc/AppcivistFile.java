@@ -59,6 +59,10 @@ public class AppcivistFile extends Model {
         return id + "/" + name;
     }
 
+    private String getName() {
+        return name;
+    }
+
 
     private void saveS3() throws MalformedURLException {
         S3ComponentImpl s3 = new S3ComponentImpl();
@@ -99,9 +103,13 @@ public class AppcivistFile extends Model {
             }
 
             pathToSave = pathToSave + "uploads/";
-            String fileName = this.id.toString() + this.getActualFileName();
+            String fileName = this.id.toString() + this.getName();
             try {
-                FileUtils.moveFile(this.file, new File(pathToSave, fileName));
+                Logger.error("Temp file: " + this.file.getAbsolutePath());
+                Logger.error("Temp file name: " + this.getName());
+                File dest = new File(pathToSave, fileName);
+                Logger.error("Moving to: " + dest.getAbsolutePath());
+                FileUtils.moveFile(this.file, dest);
             } catch (IOException e) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
