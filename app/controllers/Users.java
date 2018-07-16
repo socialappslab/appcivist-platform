@@ -6,6 +6,7 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.AuthUser;
 import enums.ConfigTargets;
 import enums.ResourceTypes;
@@ -14,7 +15,7 @@ import http.Headers;
 import io.swagger.annotations.*;
 import models.*;
 import models.TokenAction.Type;
-import models.misc.S3File;
+import models.misc.AppcivistFile;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
 import play.data.DynamicForm;
@@ -36,6 +37,7 @@ import providers.MyUsernamePasswordAuthProvider.MyLogin;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 import providers.MyUsernamePasswordAuthUser;
 import security.SecurityModelConstants;
+import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.services.SocialIdeationWrapper;
 import views.html.ask_link;
@@ -43,6 +45,10 @@ import views.html.ask_merge;
 import views.html.link;
 import views.html.profile;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.*;
 
 import static play.data.Form.form;
@@ -400,6 +406,7 @@ public class Users extends Controller {
       User updatedUser = updatedUserForm.get();
       User oldUser = User.read(uid);
       updatedUser.setUserId(uid);
+      Boolean refreshSessionKey = false;
       if(updatedUser != null && updatedUser.getRoles()==null || (updatedUser.getRoles()!=null && updatedUser.getRoles().size()==0)){
         List<SecurityRole> roles = new ArrayList<SecurityRole>();
         for (SecurityRole role : oldUser.getRoles()) {
@@ -418,8 +425,23 @@ public class Users extends Controller {
                 updatedUser.getEmail()));
         MyUsernamePasswordAuthProvider.getProvider()
                 .sendVerifyEmailMailingAfterSignup(updatedUser, ctx(),false);
+        refreshSessionKey = true;
 
+        // check that user email is not duplicated
+        User exist = User.findByEmail(updatedUser.getEmail());
+        if (exist!=null) {
+            Logger.info("Duplicated email");
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setStatusMessage("Duplicated email");
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            return internalServerError(Json.toJson(response));
+        }
       }
+        //if email changes send verification email again
+      if(updatedUser != null && updatedUser.getUsername() != null && !updatedUser.getUsername().equals(oldUser.getUsername())) {
+        refreshSessionKey = true;
+      }
+
       // if updatedUser is null, it is probably because this is only a call to update profile
       if (updatedUser != null && updatedUser.getEmail() != null) {
         updatedUser.update();
@@ -433,33 +455,63 @@ public class Users extends Controller {
         uploadFilePart = body.getFile("profile_pic");
       }
       if (uploadFilePart != null) {
-
         try{
           Logger.info("Processing profile pic");
-          S3File s3File = new S3File();
-          s3File.name = uploadFilePart.getFilename();
-          s3File.file = uploadFilePart.getFile();
-          s3File.save();
+          AppcivistFile appcivistFile = new AppcivistFile();
+          appcivistFile.name = uploadFilePart.getFilename();
+          appcivistFile.file = uploadFilePart.getFile();
+          appcivistFile.save();
           Resource resource = new Resource();
-          resource.setUrl(s3File.getUrl());
+          resource.setUrl(new URL(appcivistFile.getUrl()));
           resource.setResourceType(ResourceTypes.PICTURE);
           resource.save();
           updatedUser.setProfilePic(resource);
           updatedUser.update();
-        }catch(Exception e){
-          return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.BADREQUEST,
-              "Error updating user's picture")));
+        } catch(Exception e) {
+          Logger.info("---> AppCivist: A problem occurred while saving file ");
+          StringWriter sw = new StringWriter();
+          PrintWriter pw = new PrintWriter(sw);
+          e.printStackTrace(pw);
+          Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+          TransferResponseStatus response = new TransferResponseStatus();
+          response.setStatusMessage("Error updating user's picture: "+e.getMessage());
+          response.setErrorTrace(sw.toString());
+          response.setResponseStatus(ResponseStatus.SERVERERROR);
+          return internalServerError(Json.toJson(response));
         }
-
       }
 
-      TransferResponseStatus responseBody = new TransferResponseStatus();
-      responseBody.setNewResourceId(updatedUser.getUserId());
-      responseBody.setStatusMessage("User " + updatedUser.getUserId()
-          + "updated successfully");
-      responseBody.setNewResourceURL(routes.Users + "/"
-          + updatedUser.getUserId());
-      return ok(Json.toJson(responseBody));
+      // if user email or username was updated, and auth user provider is password, make sure to update sessionKey
+      String newSessionKey = "";
+      if (refreshSessionKey) {
+        AuthUser u = PlayAuthenticate.getUser(ctx().session());
+        String provider = u.getProvider();
+        AuthUser au = new MyUsernamePasswordAuthUser(updatedUser,"");
+        String id = updatedUser.getEmail();
+        if (provider != null && provider.equals("password")) {
+          String encoded = "";
+          String signed = "";
+          try {
+            encoded = PlayAuthenticateLocal.getEncodedUserKey(u.expires(),u.getProvider(),id);
+            signed = PlayAuthenticateLocal.getSignedUserKey(encoded);
+            newSessionKey = signed+"-"+encoded;
+            updatedUser.setSessionKey(newSessionKey);
+            PlayAuthenticateLocal.storeUser(ctx().session(),au);
+          } catch (UnsupportedEncodingException e) {
+            Logger.info("A problem occurred while refreshing user's session key");
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setStatusMessage("A problem occurred while refreshing user's session key: "+e.getMessage());
+            response.setErrorTrace(sw.toString());
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            return internalServerError(Json.toJson(response));
+          }
+        }
+      }
+      return ok(Json.toJson(updatedUser));
     }
   }
 
@@ -751,6 +803,11 @@ public class Users extends Controller {
       return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
     } else {
       final User user = Users.getLocalUser(session());
+      if(!(PlayAuthenticate
+              .getUser(session()) instanceof UsernamePasswordAuthUser)) {
+        return notFound(Json.toJson(new TransferResponseStatus("This user used an external " +
+                "authentication service to sign in/sign up. Therefore, AppCivist cannot update the password")));
+      }
       final String newPassword = filledForm.get().password;
       final String oldPassword = filledForm.get().oldPassword;
       MyUsernamePasswordAuthUser passwordOldUser = new MyUsernamePasswordAuthUser(oldPassword);

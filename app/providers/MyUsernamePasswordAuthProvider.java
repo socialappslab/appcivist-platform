@@ -1,20 +1,13 @@
 package providers;
 
-import static play.data.Form.form;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import javax.inject.Inject;
-
+import com.avaje.ebean.Ebean;
 import com.feth.play.module.mail.Mailer;
+import com.feth.play.module.mail.Mailer.Mail.Body;
+import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider;
+import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
+import controllers.Users;
+import controllers.routes;
 import models.*;
 import models.TokenAction.Type;
 import models.transfer.AssemblyTransfer;
@@ -35,18 +28,18 @@ import play.mvc.Result;
 import service.PlayAuthenticateLocal;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
-import utils.security.HashGenerationException;
 
-import com.avaje.ebean.Ebean;
-import com.feth.play.module.mail.Mailer.Mail.Body;
-import com.feth.play.module.pa.PlayAuthenticate;
-import com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider;
-import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
+import javax.inject.Inject;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
-import controllers.Users;
-import controllers.routes;
-import exceptions.MembershipCreationException;
-import exceptions.TokenNotValidException;
+import static play.data.Form.form;
 
 public class MyUsernamePasswordAuthProvider
 		extends
@@ -548,9 +541,11 @@ public class MyUsernamePasswordAuthProvider
 			locale = "de";
 		} else if (Pattern.compile("fr", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
 			locale = "fr";
+		} else if (Pattern.compile("pt", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
+			locale = "pt";
 		}
 
-		String name = user.getName() + " " + user.getName();
+		String name = user.getName();
 		String email = user.getEmail();
 		String templateHtml = "views.html.account.email.verify_email";
 		String templateTxt = "views.txt.account.email.verify_email";

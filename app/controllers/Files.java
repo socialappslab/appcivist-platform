@@ -22,11 +22,9 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.SqlQuery;
 import com.avaje.ebean.SqlRow;
 
-import models.misc.InitialDataConfig;
-import models.misc.S3File;
+import models.misc.AppcivistFile;
 import models.transfer.TransferResponseStatus;
 import play.Logger;
-import play.api.http.MediaType;
 import play.libs.Json;
 import play.libs.Yaml;
 import play.mvc.Controller;
@@ -42,17 +40,17 @@ import enums.ResponseStatus;
 public class Files extends Controller {
 	@ApiOperation(hidden=true, httpMethod="GET", value="List uploaded files")
 	public static Result index() {
-		List<S3File> uploads = S3File.findAll();
+		List<AppcivistFile> uploads = AppcivistFile.findAll();
 		return ok(files.render(uploads));
 	}
 
 	@ApiOperation(hidden=true, httpMethod="GET", value="List uploaded files")
 	public static Result list() {
-		List<S3File> uploads = S3File.findAll();
+		List<AppcivistFile> uploads = AppcivistFile.findAll();
 		return ok(Json.toJson(uploads));
 	}
 	
-	@ApiOperation(httpMethod = "POST", response = S3File.class, produces = "application/json", value = "Upload a file and get its URL")
+	@ApiOperation(httpMethod = "POST", response = AppcivistFile.class, produces = "application/json", value = "Upload a file and get its URL")
 	@ApiResponses(value = { @ApiResponse(code = BAD_REQUEST, message = "File upload error", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "file", value = "File to upload", dataType = "file", paramType = "body"),
@@ -61,11 +59,11 @@ public class Files extends Controller {
 		Http.MultipartFormData body = request().body().asMultipartFormData();
 		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
 		if (uploadFilePart != null) {
-			S3File s3File = new S3File();
-			s3File.name = uploadFilePart.getFilename();
-			s3File.file = uploadFilePart.getFile();
-			s3File.save();
-			return ok(Json.toJson(s3File));
+			AppcivistFile appcivistFile = new AppcivistFile();
+			appcivistFile.name = uploadFilePart.getFilename();
+			appcivistFile.file = uploadFilePart.getFile();
+			appcivistFile.save();
+			return ok(Json.toJson(appcivistFile));
 		} else {
 			return badRequest(Json.toJson(new TransferResponseStatus(ResponseStatus.BADREQUEST,"File upload error, upload file part is null")));
 		}
@@ -75,7 +73,7 @@ public class Files extends Controller {
 //		
 //	}
 	
-	@ApiOperation(httpMethod = "POST", response = S3File.class, consumes="multipart/form-data", produces = "application/json", value = "Upload YML data")
+	@ApiOperation(httpMethod = "POST", response = AppcivistFile.class, consumes="multipart/form-data", produces = "application/json", value = "Upload YML data")
 	@ApiResponses(value = { @ApiResponse(code = BAD_REQUEST, message = "File upload error", response = TransferResponseStatus.class) })
 	@ApiImplicitParams({
         	@ApiImplicitParam(name = "file", value = "File with Data to Upload", dataType = "file", paramType = "form"),

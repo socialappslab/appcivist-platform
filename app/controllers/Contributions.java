@@ -36,9 +36,9 @@ import models.location.Location;
 import models.misc.Views;
 import models.transfer.*;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -69,6 +69,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.text.DateFormat;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -381,11 +382,6 @@ public class Contributions extends Controller {
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
             List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
-            if ( sorting != null && !sorting.isEmpty() && sorting.equals("random") ) {
-                int totalRows = contribs.size();
-                int totalPages = (totalRows + pageSize - 1) / pageSize;
-                page = RandomUtils.nextInt(0, totalPages);
-            }
             contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
             pag.setPageSize(pageSize);
             pag.setTotal(contribs.size());
@@ -403,13 +399,34 @@ public class Contributions extends Controller {
                     if (format.equals("JSON")) {
                         return ok(Json.toJson(pag));
                     }
+
+                    //aca
                     if (format.equals("CSV")) {
-                        JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
                         response().setContentType("application/csv");
                         response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
                         try {
                             File tempFile = File.createTempFile("contributions.csv", ".tmp");
-                            flatMe.json2Sheet().headerSeparator("/").write2csv(tempFile.getAbsolutePath());
+                            CSVPrinter csvFilePrinter = null;
+                            FileWriter fileWriter = new FileWriter(tempFile);
+
+                            int first = 0;
+                            for(Contribution contribution: contributions) {
+                                LinkedHashMap<String, String> contributionMap = getContributionMapToExport(contribution);
+                                if(first == 0) {
+                                    first = 1;
+                                    CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader(contributionMap.keySet().toArray(new String[contributionMap.keySet().size()]));
+                                    csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+                                }
+
+                                for(String key: contributionMap.keySet()) {
+                                    csvFilePrinter.print((contributionMap.get(key)));
+                                }
+                                csvFilePrinter.println();
+                            }
+                            fileWriter.flush();
+                            fileWriter.close();
+                            csvFilePrinter.close();
+
                             return ok(tempFile);
                         } catch (Exception e) {
                             return internalServerError(Json
@@ -419,18 +436,26 @@ public class Contributions extends Controller {
                         }
                     }
 
+                    //if mail will be send we package the files into a zip and send the download link by mail
                 } else {
                     F.Promise.promise(() -> {
                         try {
                             List<File> aRet = new ArrayList<>();
-                            if (format.toUpperCase().equals("JSON") || format.toUpperCase().equals("CSV")) {
-                                aRet.add(getExportFileCsvJson(contributions, true, format));
+                            if (format.toUpperCase().equals("JSON")) {
+                                aRet.add(getExportFileJson(contributions, true, format));
                             } else if (collectionFileFormat != null &&
-                                    (collectionFileFormat.toUpperCase().equals("CSV") || collectionFileFormat.toUpperCase().equals("JSON"))) {
-                                aRet.add(getExportFileCsvJson(contributions, true, collectionFileFormat));
+                                    (collectionFileFormat.toUpperCase().equals("JSON"))) {
+                                aRet.add(getExportFileJson(contributions, true, collectionFileFormat));
+                            } else if (collectionFileFormat != null &&
+                                    (collectionFileFormat.toUpperCase().equals("CSV"))) {
+                                for(Contribution contribution : contributions) {
+                                    aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, collectionFileFormat));
+                                }
                             } else {
-                                aRet.add(getExportFileCsvJson(contributions, true, "JSON"));
-                                aRet.add(getExportFileCsvJson(contributions, true, "CSV"));
+                                aRet.add(getExportFileJson(contributions, true, "JSON"));
+                                for(Contribution contribution : contributions) {
+                                    aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, "CSV"));
+                                }
                             }
                             for (Contribution contribution : contributions) {
                                 aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, format));
@@ -438,6 +463,7 @@ public class Contributions extends Controller {
                                     aRet.add(getPadFile(contribution, extendedTextFormat, format));
                                 }
                             }
+
                             Logger.info("EXPORT: Preparing ZIP file for exported contributions...");
                             User user = User.findByAuthUserIdentity(PlayAuthenticate
                                     .getUser(session()));
@@ -451,7 +477,7 @@ public class Contributions extends Controller {
                             }
 
                             File zip = new File(path);
-                            Logger.info("EXPORT: Packing export in "+path);
+                            Logger.info("EXPORT: Packing export in "+path + "files " + aRet);
                             Packager.packZip(zip, aRet);
                             String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
                             Logger.info("EXPORT: Preparing email to send "+url);
@@ -551,10 +577,7 @@ public class Contributions extends Controller {
                 List<File> aRet = new ArrayList<>();
                 switch (format.toUpperCase()) {
                     case "JSON":
-                        aRet.add(getExportFileCsvJson(contributions, false, format));
-                        break;
-                    case "CSV":
-                        aRet.add(getExportFileCsvJson(contributions, false, format));
+                        aRet.add(getExportFileJson(contributions, false, format));
                         break;
                     default:
                         try {
@@ -1091,7 +1114,7 @@ public class Contributions extends Controller {
             if (byTheme != null && !byTheme.isEmpty()) {
                 conditions.put("theme", byTheme);
             }
-            if (sorting != null && !sorting.isEmpty() && !sorting.equals("random") ) {
+            if (sorting != null && !sorting.isEmpty()) {
                 conditions.put("sorting", sorting);
             }
             if (status != null && !status.isEmpty()) {
@@ -1105,11 +1128,6 @@ public class Contributions extends Controller {
                 contributions = ContributionsDelegate.findContributions(conditions, null, null, false);
             } else {
                 List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, false);
-                if(sorting != null && !sorting.isEmpty() && sorting.equals("random") ){
-                    int totalRows = contribs.size();
-                    int totalPages = (totalRows+pageSize-1) / pageSize;
-                    page = RandomUtils.nextInt(0,totalPages);
-                }
                 contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, false);
                 pag.setPageSize(pageSize);
                 pag.setTotal(contribs.size());
@@ -5109,98 +5127,163 @@ public class Contributions extends Controller {
         return null;
     }
 
-    private static File getExportFileCsvJson(List<Contribution> contributions, Boolean list, String format) throws IOException {
+    private static File getExportFileJson(List<Contribution> contributions, Boolean list, String format) throws IOException {
         String fileName = "/tmp/contributions."+format;
         Logger.debug("Exporting list of contributions "+ (contributions !=null ? contributions.size() : 0) + " to "+format);
         Logger.debug("Saving list of contributions in "+fileName);
         File tempFile = null;
         if (contributions!=null && contributions.size()>0) {
-            switch (format) {
-                case "JSON":
-                    tempFile = new File(fileName + ".json");
-                    FileWriter writer = new FileWriter(tempFile);
-                    if (list) {
-                        writer.write(prettyPrintJsonString(Json.toJson(contributions)));
-                    } else {
-                        writer.write(prettyPrintJsonString(Json.toJson(contributions.get(0))));
-                    }
-                    break;
-                case "CSV":
-                    // TODO: make sure each contribution is just one line with cols beign nestedobjectclass/attribute name
-                    JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
-                    tempFile = new File(fileName + ".csv");
-                    try {
-                        flatMe.json2Sheet().headerSeparator("/").write2csv(tempFile.getAbsolutePath());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-
+            tempFile = new File(fileName + ".json");
+            FileWriter writer = new FileWriter(tempFile);
+            if (list) {
+                writer.write(prettyPrintJsonString(Json.toJson(contributions)));
+            } else {
+                writer.write(prettyPrintJsonString(Json.toJson(contributions.get(0))));
             }
+
         }
         return tempFile;
     }
 
-    private static File getExportFile(Contribution contribution, String includeExtendedText, String extendedTextFormat,
-                                      String format) throws Exception {
-        Logger.debug("Exporting contribution " + (contribution != null ? contribution.getContributionId() : "(null)") + " to " + format);
-        File tempFile = null;
+    private static LinkedHashMap<String, String> getContributionMapToExport(Contribution contribution) {
         LinkedHashMap<String,String> contributionMap = new LinkedHashMap<>();
         Logger.debug("EXPORT: Exporting metadata...");
-        contributionMap.put(contribution.getType().toString(),contribution.getContributionId()+"\n");
-        contributionMap.put("Status",contribution.getStatus()+"\n");
+
+        Format formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        contributionMap.put("Creation", formatter.format(contribution.getCreation()));
+        contributionMap.put("Contribution Id", contribution.getContributionId().toString());
+        contributionMap.put("UUID", contribution.getUuidAsString());
         contributionMap.put("Title",contribution.getTitle());
+        contributionMap.put("Brief Summary", contribution.getPlainText());
+        contributionMap.put("Type", contribution.getType().name());
+        contributionMap.put("Status",contribution.getStatus().name());
+        contributionMap.put("Source", contribution.getSource());
+        contributionMap.put("Source Code", contribution.getSourceCode());
+        contributionMap.put("Source Url", contribution.getSourceUrl());
+        contributionMap.put("Read Only Pad Url", contribution.getReadOnlyPadUrl());
+
+        Logger.debug("EXPORT: Exporting creator...");
+
+        contributionMap.put("Creator/Name", contribution.getCreator().getName());
+        contributionMap.put("Creator/Email", contribution.getCreator().getEmail());
+
+
         Logger.debug("EXPORT: Group author...");
         if (contribution.getWorkingGroupAuthors()!=null && contribution.getWorkingGroupAuthors().size()>0)
             contributionMap.put("Group",contribution.getWorkingGroupAuthors().get(0).getName());
-        String authors = "";
+        StringJoiner authors = new StringJoiner(";");
+        StringJoiner authorsMail = new StringJoiner(";");
         Logger.debug("EXPORT: Exporting user authors...");
         for (User u: contribution.getAuthors()) {
-            authors+=" -"+ u.getName() != null ? u.getName() : u.getEmail()+"\n";
+            authors.add(u.getName());
+            authorsMail.add(u.getEmail());
         }
-        contributionMap.put("\nAuthors","\n"+authors);
+        contributionMap.put("Authors/name", authors.toString());
 
-        String themes = "";
+        contributionMap.put("Authors/email", authorsMail.toString());
+
+        StringJoiner themes = new StringJoiner(";");
         Logger.debug("EXPORT: Exporting themes...");
         for (Theme t: contribution.getOfficialThemes()) {
-            themes += "- " + t.getTitle()+"\n";
+            themes.add(t.getTitle());
         }
-        contributionMap.put("\n\nThemes","\n"+themes);
+        contributionMap.put("Themes", themes.toString());
         Logger.debug("EXPORT: Exporting keywords...");
-        String keywords = "";
-        int keycount = 0;
+        StringJoiner keywords = new StringJoiner(";");
         for (Theme t: contribution.getEmergentThemes()) {
-            keywords += keycount == 0 ? "" : "," + t.getTitle();
-            keycount++;
+            keywords.add(t.getTitle());
         }
-        contributionMap.put("\n\nKeywords",keywords);
-        Logger.debug("EXPORT: Adding brief summary...");
-        contributionMap.put("Brief Summary","\n\n"+contribution.getPlainText());
+        contributionMap.put("Keywords", keywords.toString());
 
         Logger.debug("EXPORT: Adding main document link...");
         contributionMap.put("Main document link", contribution.getExtendedTextPad() !=null ? contribution.getExtendedTextPad().getUrlAsString() : "[no extended document]");
+        contributionMap.put("Main document type", contribution.getExtendedTextPad() !=null ? contribution.getExtendedTextPad().getResourceType().name() : "[no extended document]");
 
         Logger.debug("EXPORT: Adding attachment links...");
-        String attachments = "";
-        int attcount = 0;
+        StringJoiner attachments = new StringJoiner(";");
         for (Resource t: contribution.getResourceSpace().getResources()) {
-            String title = t.getTitle() !=null ? t.getTitle() : t.getName()!=null ? t.getName() : "Attachment "+ ++attcount;
-            attachments += "\n- "+t.getTitle()+": "+t.getUrlAsString();
+            attachments.add(t.getTitle() + " : " + t.getUrlAsString());
         }
-        contributionMap.put("\n\nAttachments and Media", "\n"+attachments);
+        contributionMap.put("Attachments and Media", attachments.toString());
+
+        Logger.debug("EXPORT: Adding contribution feedbacks...");
+        Integer totalUp = 0;
+        Integer totalDown = 0;
+        Integer totalFav = 0;
+        Integer totalFlag = 0;
+        for(ContributionFeedback feedback : contribution.getContributionFeedbacks()) {
+            if (feedback.getUp()) {
+                totalUp += 1;
+            }
+            if (feedback.getDown()) {
+                totalDown += 1;
+            }
+            if (feedback.getFav()) {
+                totalFav += 1;
+            }
+            if (feedback.getFlag()) {
+                totalFlag += 1;
+            }
+        }
+        contributionMap.put("Contribution Feedbacks/Up", totalUp.toString());
+        contributionMap.put("Contribution Feedbacks/Down", totalDown.toString());
+        contributionMap.put("Contribution Feedbacks/Fav", totalFav.toString());
+        contributionMap.put("Contribution Feedbacks/Flag", totalFlag.toString());
 
         Logger.debug("EXPORT: Adding custom fields...");
-        contributionMap.put("\n\nAdditional Information","\n\n");
+        contributionMap.put("Additional Information","");
         int cfcount = 0;
         for (CustomFieldValue t: contribution.getCustomFieldValues()) {
             String fieldName = t.getCustomFieldDefinition().getName();
             String fieldValue = t.getValue();
             contributionMap.put( ++cfcount +". "+fieldName, fieldValue);
         }
+        return contributionMap;
+    }
+
+    private static File getExportFile(Contribution contribution, String includeExtendedText, String extendedTextFormat,
+                                      String format) throws Exception {
+
+        /* fields:
+        contribution:
+         creation, contributionId, uuid, plainText, type, status, source, sourceCode, sourceUrl,
+         readOnlyPadUrl
+        creator:
+            name, email
+        authors:
+            email(s), name(s)
+        themes (OFFICIAL_PREDEFINED):
+            names
+        keywords (EMERGENTS):
+            names
+        extended text pad
+            url, resourceType
+        contribution feedbacks
+            up, down, fav, flag
+        */
+
+        Logger.debug("Exporting contribution " + (contribution != null ? contribution.getContributionId() : "(null)") + " to " + format);
+        File tempFile = null;
+        LinkedHashMap<String,String> contributionMap = getContributionMapToExport(contribution);
         String fileName = "/tmp/" + CONTRIBUTION_FILE_NAME.replace(CONTRIBUTION_ID_PARAM,contribution.getContributionId().toString());
         Logger.debug("Preparing to save temporal file => " + fileName);
-
         switch (format.toUpperCase()) {
+            case "CSV":
+                tempFile = new File(fileName+".csv");
+                CSVPrinter csvFilePrinter;
+                CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader(contributionMap.keySet()
+                        .toArray(new String[contributionMap.keySet().size()]));
+                FileWriter fileWriter = new FileWriter(tempFile);
+                csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+                for(String key: contributionMap.keySet()) {
+                    csvFilePrinter.print(contributionMap.get(key));
+                }
+                fileWriter.flush();
+                fileWriter.close();
+                csvFilePrinter.close();
+                Logger.debug("EXPORT: File "+fileName+".csv was successfully created");
+                break;
+
             case "PDF":
                 tempFile = new File(fileName+".pdf");
                 Logger.debug("EXPORT: Saving contribution in "+fileName+".pdf");
@@ -5253,8 +5336,8 @@ public class Contributions extends Controller {
                 RtfHeaderFooter footer = new RtfHeaderFooter(par);
                 document.setFooter(footer);
                 document.open();
-                String head = "";
-                String detail = "";
+                StringBuilder head = new StringBuilder();
+                StringBuilder detail = new StringBuilder();
                 Iterator it = contributionMap.entrySet().iterator();
                 while (it.hasNext()) {
                     Map.Entry pair = (Map.Entry)it.next();
@@ -5263,14 +5346,14 @@ public class Contributions extends Controller {
                     String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
 
                     if(it.hasNext()) {
-                        head = head + key + "\t";
-                        detail = detail + value + "\t";
+                        head.append(key).append("\t");
+                        detail.append(value).append("\t");
                     }else{
-                        head = head + key + "\n";
-                        detail = detail + value;
+                        head.append(key).append("\n");
+                        detail.append(value);
                     }
                 }
-                String text = head + detail;
+                String text = head + detail.toString();
                 document.add(new Paragraph(text));
                 document.close();
                 Logger.debug("EXPORT: File "+fileName+".rtf was succesfully created");
@@ -5327,6 +5410,10 @@ public class Contributions extends Controller {
     private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
         List<String> requirements = new ArrayList<>();
         if(upStatus.equals(cs.name())) {
+            if(c.getCampaignIds().size() == 0) {
+                Logger.info("No campaigns found in this contribution");
+                return null;
+            }
             Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
             for(Config config: campaing.getConfigs()) {
                 if(config.getKey().equals(configKey)) {

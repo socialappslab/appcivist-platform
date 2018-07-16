@@ -2,6 +2,7 @@ package providers;
 
 import java.util.UUID;
 
+import models.User;
 import models.transfer.AssemblyTransfer;
 import providers.MyUsernamePasswordAuthProvider.MySignup;
 
@@ -64,6 +65,18 @@ public class MyUsernamePasswordAuthUser extends UsernamePasswordAuthUser
 		super(password, email);
 		this.name = null;
 		this.picture=picture;
+	}
+
+	/**
+	 * Used for sessionKey refresh only
+	 * @param user
+	 */
+	public MyUsernamePasswordAuthUser(User user, String password) {
+		super(password,user.getEmail());
+		this.lang = user.getLanguage();
+		this.name = user.getName();
+		this.picture = user.getProfilePic().getUrlAsString();
+		this.userId = user.getUserId();
 	}
 
 	@Override
