@@ -105,10 +105,10 @@ public class AppcivistFile extends Model {
             pathToSave = pathToSave + "uploads/";
             String fileName = this.id.toString() + this.getName();
             try {
-                Logger.error("Temp file: " + this.file.getAbsolutePath());
-                Logger.error("Temp file name: " + this.getName());
+                Logger.debug("Temp file: " + this.file.getAbsolutePath());
+                Logger.debug("Temp file name: " + this.getName());
                 File dest = new File(pathToSave, fileName);
-                Logger.error("Moving to: " + dest.getAbsolutePath());
+                Logger.debug("Moving to: " + dest.getAbsolutePath());
                 FileUtils.moveFile(this.file, dest);
             } catch (IOException e) {
                 StringWriter sw = new StringWriter();
