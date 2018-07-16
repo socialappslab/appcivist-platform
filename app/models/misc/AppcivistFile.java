@@ -99,7 +99,7 @@ public class AppcivistFile extends Model {
             }
 
             pathToSave = pathToSave + "uploads/";
-            String fileName = this.id.toString() + this.file.getName();
+            String fileName = this.id.toString() + this.getActualFileName();
             try {
                 FileUtils.moveFile(this.file, new File(pathToSave, fileName));
             } catch (IOException e) {
