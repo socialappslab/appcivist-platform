@@ -6,6 +6,7 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
 import com.feth.play.module.pa.PlayAuthenticate;
+import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.AuthUser;
 import enums.ConfigTargets;
 import enums.ResourceTypes;
@@ -802,6 +803,11 @@ public class Users extends Controller {
       return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
     } else {
       final User user = Users.getLocalUser(session());
+      if(!(PlayAuthenticate
+              .getUser(session()) instanceof UsernamePasswordAuthUser)) {
+        return notFound(Json.toJson(new TransferResponseStatus("This user used an external " +
+                "authentication service to sign in/sign up. Therefore, AppCivist cannot update the password")));
+      }
       final String newPassword = filledForm.get().password;
       final String oldPassword = filledForm.get().oldPassword;
       MyUsernamePasswordAuthUser passwordOldUser = new MyUsernamePasswordAuthUser(oldPassword);
