@@ -35,7 +35,7 @@ playauthenticate.accounts.merge.success=Contas fundidas com sucesso
 playauthenticate.verify_email.error.already_validated=Seu e-mail já foi validado.
 playauthenticate.verify_email.error.set_email_first=Você precisa definir um endereço de e-mail primeiro.
 playauthenticate.verify_email.message.instructions_sent=Instruções sobre como verificar seu endereço de e-mail foram enviadas para {0}.
-playauthenticate.verify_email.success=Endereço de e-mail ({0}) verificado com sucesso.
+playauthenticate.verify_email.success=Endereço de e-mail ({0}) confirmado com sucesso.
 
 playauthenticate.reset_password.message.instructions_sent=Instruções sobre como redefinir sua senha foram enviadas para {0}.
 playauthenticate.reset_password.message.email_not_verified=Sua conta não foi verificada, ainda. Um e-mail incluindo instruções sobre como verificá-la foi enviado. Tente redefinir a senha após a verificação. playauthenticate.reset_password.message.no_password_account=Seu usuário ainda não foi configurado para uso de senha.
