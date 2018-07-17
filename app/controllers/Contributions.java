@@ -5495,7 +5495,9 @@ public class Contributions extends Controller {
                             break;
 
                         default:
-                            if (Contribution.class.getMethod("get" + output).invoke(c) == null) {
+                            Object object = Contribution.class.getMethod("get" + output).invoke(c);
+                            if (object == null || (object.getClass().isInstance(String.class))
+                                    && ((String) object).trim().isEmpty()) {
                             contributionFields.add(requirement);
                             break;
                         }
@@ -5514,7 +5516,8 @@ public class Contributions extends Controller {
         List<String> custom = new ArrayList<>(customFields);
         for(CustomFieldValue customFieldValue: c.getResourceSpace().getCustomFieldValues()) {
             for(String requirement: customFields) {
-                if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement) && (customFieldValue.getValue() != null)) {
+                if(customFieldValue.getCustomFieldDefinition().getName().equals(requirement)
+                        && (customFieldValue.getValue() != null) && (!customFieldValue.getValue().trim().isEmpty())) {
                     custom.remove(requirement);
                     Logger.info(requirement +" field is present");
                 }
