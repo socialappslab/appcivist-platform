@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
-import com.github.opendevl.JFlat;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpTransport;
@@ -313,6 +312,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "createdByOnly", value = "Include or not only creators authors" , defaultValue = "false") String createdByOnly)
     {
 
+        format = format.toUpperCase();
+        extendedTextFormat = extendedTextFormat.toUpperCase();
         if (pageSize == null) {
             pageSize = GlobalData.DEFAULT_PAGE_SIZE;
         }
@@ -387,30 +388,33 @@ public class Contributions extends Controller {
             pag.setTotal(contribs.size());
             pag.setPage(page);
             pag.setList(contributions);
-            if (contributions == null) {
+            if (contributions == null || contributions.isEmpty()) {
                 notFound(Json.toJson(new TransferResponseStatus(
                         "No contributions for {resource space}: " + sid + ", type=" + type)));
             } else {
                 Boolean sendMail = false;
                 if (!(format.equals("JSON") || format.equals("CSV")) || includeExtendedText.toUpperCase().equals("TRUE")) {
+                    Logger.info("Format is not json or csv and include extendedtext is true, mail will be send");
                     sendMail = true;
                 }
                 if (!sendMail) {
+                    Logger.info("Mail will not send");
                     if (format.equals("JSON")) {
                         return ok(Json.toJson(pag));
                     }
 
-                    //aca
                     if (format.equals("CSV")) {
                         response().setContentType("application/csv");
                         response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
                         try {
+                            Logger.info("Preparing CSV file");
                             File tempFile = File.createTempFile("contributions.csv", ".tmp");
                             CSVPrinter csvFilePrinter = null;
                             FileWriter fileWriter = new FileWriter(tempFile);
 
                             int first = 0;
                             for(Contribution contribution: contributions) {
+                                Logger.info("Creating csv row for contribution " + contribution.getContributionId());
                                 LinkedHashMap<String, String> contributionMap = getContributionMapToExport(contribution);
                                 if(first == 0) {
                                     first = 1;
@@ -425,10 +429,14 @@ public class Contributions extends Controller {
                             }
                             fileWriter.flush();
                             fileWriter.close();
-                            csvFilePrinter.close();
+                            if(csvFilePrinter != null) {
+                                csvFilePrinter.close();
+                            }
 
                             return ok(tempFile);
                         } catch (Exception e) {
+                            Logger.error("Error generating csv file");
+                            e.printStackTrace();
                             return internalServerError(Json
                                     .toJson(new TransferResponseStatus(
                                             ResponseStatus.SERVERERROR,
@@ -438,29 +446,32 @@ public class Contributions extends Controller {
 
                     //if mail will be send we package the files into a zip and send the download link by mail
                 } else {
+                    Logger.info("Packing files to send by email");
+                    String finalFormat = format;
+                    String finalExtendedTextFormat = extendedTextFormat;
                     F.Promise.promise(() -> {
                         try {
                             List<File> aRet = new ArrayList<>();
-                            if (format.toUpperCase().equals("JSON")) {
-                                aRet.add(getExportFileJson(contributions, true, format));
+                            if (finalFormat.toUpperCase().equals("JSON")) {
+                                aRet.add(getExportFileJson(contributions, true, finalFormat));
                             } else if (collectionFileFormat != null &&
                                     (collectionFileFormat.toUpperCase().equals("JSON"))) {
                                 aRet.add(getExportFileJson(contributions, true, collectionFileFormat));
                             } else if (collectionFileFormat != null &&
                                     (collectionFileFormat.toUpperCase().equals("CSV"))) {
                                 for(Contribution contribution : contributions) {
-                                    aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, collectionFileFormat));
+                                    aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, collectionFileFormat));
                                 }
                             } else {
                                 aRet.add(getExportFileJson(contributions, true, "JSON"));
                                 for(Contribution contribution : contributions) {
-                                    aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, "CSV"));
+                                    aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, "CSV"));
                                 }
                             }
                             for (Contribution contribution : contributions) {
-                                aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, format));
+                                aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, finalFormat));
                                 if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                                    aRet.add(getPadFile(contribution, extendedTextFormat, format));
+                                    aRet.add(getPadFile(contribution, finalExtendedTextFormat, finalFormat));
                                 }
                             }
 
@@ -520,6 +531,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "flat", value = "Flat version of the campaign") String flat) {
         Logger.debug("Finding Contribution "+cid+" in Resource Space "+sid);
         ResourceSpace rs = ResourceSpace.findByContribution(sid, cid);
+        format = format.toUpperCase();
         if (rs == null) {
             return notFound(Json
                     .toJson(new TransferResponseStatus("No contribution found with id " + cid + "in space " + sid)));
@@ -560,10 +572,22 @@ public class Contributions extends Controller {
                     response().setContentType("application/csv");
                     response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
                     Logger.debug("Contribution in CSV being produced based on JSON");
-                    JFlat flatMe = new JFlat(Json.toJson(contributions).toString());
                     try {
+                        Logger.info("Preparing CSV file");
                         File tempFile = File.createTempFile("contributions.csv", ".tmp");
-                        flatMe.json2Sheet().headerSeparator("/").write2csv(tempFile.getAbsolutePath());
+                        CSVPrinter csvFilePrinter;
+                        FileWriter fileWriter = new FileWriter(tempFile);
+                        Logger.info("Creating csv row for contribution " + contribution.getContributionId());
+                        LinkedHashMap<String, String> contributionMap = getContributionMapToExport(contribution);
+                        CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader(contributionMap.keySet().toArray(new String[contributionMap.keySet().size()]));
+                        csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+                        for(String key: contributionMap.keySet()) {
+                            csvFilePrinter.print((contributionMap.get(key)));
+                        }
+                        csvFilePrinter.println();
+                        fileWriter.flush();
+                        fileWriter.close();
+                        csvFilePrinter.close();
                         return ok(tempFile);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -573,15 +597,16 @@ public class Contributions extends Controller {
             }
         } else {
             Logger.debug("Contribution in "+format+" will be produced in promise to sent by email (includeExtendedText = "+includeExtendedText);
+            String finalFormat = format;
             F.Promise.promise(() -> {
                 List<File> aRet = new ArrayList<>();
-                switch (format.toUpperCase()) {
+                switch (finalFormat.toUpperCase()) {
                     case "JSON":
-                        aRet.add(getExportFileJson(contributions, false, format));
+                        aRet.add(getExportFileJson(contributions, false, finalFormat));
                         break;
                     default:
                         try {
-                            aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, format));
+                            aRet.add(getExportFile(contribution, includeExtendedText, extendedTextFormat, finalFormat));
                             break;
                         } catch (DocumentException e) {
                             Logger.info("DocumentException when exporting file");
@@ -594,7 +619,7 @@ public class Contributions extends Controller {
                     Logger.info("EXPORT: Preparing ZIP file for export");
                     if (includeExtendedText.toUpperCase().equals("TRUE")) {
                         Logger.info("Extended text included");
-                        aRet.add(getPadFile(contribution, extendedTextFormat, format));
+                        aRet.add(getPadFile(contribution, extendedTextFormat, finalFormat));
                     }
                     User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
                     String fileName = "contribution" + new Date().getTime() + ".zip";
@@ -612,10 +637,7 @@ public class Contributions extends Controller {
                     String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
                     MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
                     provider.sendZipContributionFile(url, user.getEmail());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Logger.info("Error in export Promise: "+e.getMessage());
-                } catch (GeneralSecurityException e) {
+                } catch (IOException | GeneralSecurityException e) {
                     e.printStackTrace();
                     Logger.info("Error in export Promise: "+e.getMessage());
                 }
