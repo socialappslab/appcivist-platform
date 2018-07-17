@@ -1709,6 +1709,7 @@ public class Spaces extends Controller {
                 newContribution.setContributionId(cid);
                 newContribution.setContextUserId(author.getUserId());
                 if(!ResourceSpace.isMemberResourceSpace(author,resourceSpace,newContribution)){
+                    Ebean.endTransaction();
                     return unauthorized(Json.toJson(new TransferResponseStatus(
                             ResponseStatus.UNAUTHORIZED,
                             "User unauthorized")));
