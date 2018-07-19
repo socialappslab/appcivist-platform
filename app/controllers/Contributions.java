@@ -761,15 +761,30 @@ public class Contributions extends Controller {
         try {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getFeedbacksByContribution(coid);
             User user;
+            NonMemberAuthor nma;
 
             for (ContributionFeedback contributionFeedback: feedbacks) {
                 Map<String, Object> info = new HashMap<>();
-                user = User.findByUserId(contributionFeedback.getUserId());
-                info.put("id", user.getUserId());
-                info.put("name", user.getName());
-                if (user.getProfilePic()!=null)
-                    info.put("profilePic", user.getProfilePic().getUrlAsString());
-                contributionFeedback.setUserId(null);
+                Long userId = contributionFeedback.getUserId();
+                if (userId!=null) {
+                    user = User.findByUserId(contributionFeedback.getUserId());
+                    info.put("id", user.getUserId());
+                    info.put("name", user.getName());
+                    if (user.getProfilePic()!=null)
+                        info.put("profilePic", user.getProfilePic().getUrlAsString());
+                    contributionFeedback.setUserId(null);
+                } else {
+                    nma = contributionFeedback.getNonMemberAuthor();
+                    if (nma==null) {
+                        info.put("id", -1);
+                        info.put("name", "");
+                    } else {
+                        info.put("id", nma.getId());
+                        info.put("name", nma.getName());
+                        contributionFeedback.setNonMemberAuthor(null);
+                    }
+                }
+
                 contributionFeedback.setUser(info);
             }
             return ok(Json.toJson(feedbacks));
@@ -3847,14 +3862,21 @@ public class Contributions extends Controller {
         }
     }
 
-
-    @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas",
-            notes = "CSV format: the values must be separated by coma (;).")
+    /**
+     * POST /api/space/:sid/import-comment-feedback
+     * @param sid
+     * @return
+     */
+    @ApiOperation(
+            httpMethod = "POST",
+            consumes = "application/csv",
+            value = "Import CSV of assessments for contributions",
+            notes = "Values must be separated by coma (,). Possible columns: source_code, source, id, uuid, name, phone, email, ups, downs, benefit, feasibility, need, text_assessment. If no id nor uuid is provided, code and source_code are used to identify the contribution")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
     public static Result importContributionFeedbacks(
             @ApiParam(name = "aid", value = "Resource Space id") Long sid) {
         Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -3872,50 +3894,81 @@ public class Contributions extends Controller {
             Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
             Ebean.beginTransaction();
             for (CSVRecord record : records) {
-                String sourceCode = record.get("code");
-                String source = record.get("source_code");
-                String name = record.get("name");
-                Integer vote = Integer.valueOf(record.get("vote"));
-                Contribution contribution = Contribution.findBySourceCodeAndSource(source, sourceCode);
-                if(contribution == null) {
-                    throw new Exception("No contribution found for the code " + source + " and source "+ sourceCode);
-                }
-                ContributionFeedback contributionFeedback = new ContributionFeedback();
-                contributionFeedback.setContribution(contribution);
-                if(vote.equals(1)) {
-                    contributionFeedback.setUp(true);
-                } else {
-                    contributionFeedback.setDown(true);
-                }
-
-                contributionFeedback.save();
-
-                HashMap<String,Object> authors = processAuthorsInImport(name, null, null, contribution);
-                if (authors!=null) {
-                    User userAuthor = (User) authors.get("user");
-                    if (userAuthor==null) {
-                        NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) authors.get("nonUser");
-                        contributionFeedback.setNonMemberAuthor(nonMemberAuthor);
+                Contribution contribution = null;
+                String sourceCode = "";
+                String source = "";
+                // Retrieve contribution for which this assessment is provided
+                String cid = record.get("id");
+                String cuuid = record.get("uuid");
+                if (cid == null || cid.trim().isEmpty()) {
+                    if (cuuid == null || cuuid.trim().isEmpty()) {
+                        sourceCode = record.get("source_code");
+                        source = record.get("source");
+                        contribution = Contribution.findBySourceCodeAndSource(source, sourceCode);
                     } else {
-                        contributionFeedback.setUserId(userAuthor.getUserId());
+                        contribution = Contribution.readByUUID(UUID.fromString(cuuid));
                     }
-                    contributionFeedback.update();
+                } else {
+                    contribution = Contribution.read(Long.parseLong(cid));
+                }
+                if (contribution != null) {
+                    String name = record.get("name");
+                    String phone = record.get("phone");
+                    String email = record.get("email");
+                    String text_assessment = record.get("text_assessment");
+                    String benefit = record.get("benefit");
+                    String feasibility = record.get("feasibility");
+                    String need = record.get("need");
+                    String ups = record.get("ups");
+                    String downs = record.get("downs");
+
+                    ContributionFeedback contributionFeedback = new ContributionFeedback();
+                    contributionFeedback.setContribution(contribution);
+                    contributionFeedback.setType(ContributionFeedbackTypes.IMPORTED);
+                    if (text_assessment != null && !text_assessment.trim().isEmpty())
+                        contributionFeedback.setTextualFeedback(text_assessment);
+                    if (need != null && !need.trim().isEmpty())
+                        contributionFeedback.setNeed(Integer.valueOf(need));
+                    if (feasibility != null && !feasibility.trim().isEmpty())
+                        contributionFeedback.setFeasibility(Integer.valueOf(feasibility));
+                    if (benefit != null && !benefit.trim().isEmpty())
+                        contributionFeedback.setBenefit(Integer.valueOf(benefit));
+
+                    if (ups != null && !ups.trim().isEmpty()) {
+                        processUpDownVotes(contributionFeedback, true, Integer.valueOf(ups), name, phone, email);
+                    }
+
+                    if (downs != null && !downs.trim().isEmpty()) {
+                        processUpDownVotes(contributionFeedback, false, Integer.valueOf(downs), name, phone, email);
+                    }
+
+                    contributionFeedback.save();
+                    HashMap<String,Object> authors = processAuthorsInImport(name, phone, email, contribution);
+                    addAuthorsToFeedback(contributionFeedback,authors);
+                } else {
+                    throw new Exception("No contribution found using [source_code, source, id, uuid] = [" + source + "," + sourceCode + "," + cid + "," + cuuid);
                 }
             }
             Ebean.commitTransaction();
         } catch (Exception e) {
             Logger.error(e.getMessage());
-            return internalServerError(
-                    Json.toJson(
-                            new TransferResponseStatus(ResponseStatus.SERVERERROR,
-                                    "Tried to import feedbacks: "
-                                            + e.getClass() + ": " + e.getMessage())));
+            Logger.error("---> AppCivist: A problem occurred importing feedbacks");
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setStatusMessage("Error importing feedback: "+e.getMessage());
+            response.setErrorTrace(sw.toString());
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            return internalServerError(Json.toJson(response));
         } finally {
             Ebean.endTransaction();
         }
 
         return ok();
     }
+
         /**
          * POST      /api/assembly/:aid/campaign/:cid/contribution/import
          * Import ideas file
@@ -5523,8 +5576,37 @@ public class Contributions extends Controller {
         return custom;
     }
 
-    private static HashMap<String,Object> processAuthorsInImport(String name, String phone, String email,
-                                                                 Contribution c) {
+
+    private static void processUpDownVotes(ContributionFeedback feedback, Boolean isUpVote, Integer votes,
+                                           String name, String phone, String email) {
+        if (isUpVote)
+            feedback.setUp(true);
+        else
+            feedback.setDown(true);
+
+        Integer numberOfVotes = Math.abs(votes) - 1;
+        Boolean multipleVotes = numberOfVotes > 0;
+
+        // create and save additional feedbacks
+        if (multipleVotes) {
+            for (int i = 0; i<numberOfVotes; i++) {
+                ContributionFeedback contributionFeedback = new ContributionFeedback();
+                contributionFeedback.setContribution(feedback.getContribution());
+                contributionFeedback.setType(feedback.getType());
+                if (isUpVote) {
+                    contributionFeedback.setUp(true);
+                } else {
+                    contributionFeedback.setDown(true);
+                }
+                contributionFeedback.save();
+                HashMap<String,Object> authors = processAuthorsInImport(name, phone, email, feedback.getContribution());
+                addAuthorsToFeedback(contributionFeedback,authors);
+            }
+        }
+
+    }
+
+    private static HashMap<String,Object> processAuthorsInImport(String name, String phone, String email, Contribution c) {
         HashMap<String, Object> authors = new HashMap<>();
 
         boolean createNewMember = false;
@@ -5573,7 +5655,22 @@ public class Contributions extends Controller {
         return null;
     }
 
+    private static void addAuthorsToFeedback(ContributionFeedback feedback, HashMap<String,Object> authors) {
+        if (authors!=null) {
+            User userAuthor = (User) authors.get("user");
+            if (userAuthor==null) {
+                NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) authors.get("nonUser");
+                feedback.setNonMemberAuthor(nonMemberAuthor);
+            } else {
+                feedback.setUserId(userAuthor.getUserId());
+            }
+            feedback.update();
+        }
+    }
+
 }
+
+
 
 
 class PaginatedContribution {
