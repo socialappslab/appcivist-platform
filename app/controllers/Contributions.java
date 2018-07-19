@@ -739,15 +739,30 @@ public class Contributions extends Controller {
         try {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getFeedbacksByContribution(coid);
             User user;
+            NonMemberAuthor nma;
 
             for (ContributionFeedback contributionFeedback: feedbacks) {
                 Map<String, Object> info = new HashMap<>();
-                user = User.findByUserId(contributionFeedback.getUserId());
-                info.put("id", user.getUserId());
-                info.put("name", user.getName());
-                if (user.getProfilePic()!=null)
-                    info.put("profilePic", user.getProfilePic().getUrlAsString());
-                contributionFeedback.setUserId(null);
+                Long userId = contributionFeedback.getUserId();
+                if (userId!=null) {
+                    user = User.findByUserId(contributionFeedback.getUserId());
+                    info.put("id", user.getUserId());
+                    info.put("name", user.getName());
+                    if (user.getProfilePic()!=null)
+                        info.put("profilePic", user.getProfilePic().getUrlAsString());
+                    contributionFeedback.setUserId(null);
+                } else {
+                    nma = contributionFeedback.getNonMemberAuthor();
+                    if (nma==null) {
+                        info.put("id", -1);
+                        info.put("name", "");
+                    } else {
+                        info.put("id", nma.getId());
+                        info.put("name", nma.getName());
+                        contributionFeedback.setNonMemberAuthor(null);
+                    }
+                }
+
                 contributionFeedback.setUser(info);
             }
             return ok(Json.toJson(feedbacks));

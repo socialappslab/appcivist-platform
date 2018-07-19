@@ -1218,6 +1218,7 @@ public class Contribution extends AppCivistBaseModel {
         List<Contribution> contributions =  find.where()
                 .eq("source", source)
                 .eq("sourceCode", sourceCode)
+                .eq("removed", false)
                 .findList();
         if(contributions.isEmpty()) {
             return null;
