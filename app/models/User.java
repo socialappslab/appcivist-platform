@@ -846,4 +846,9 @@ public class User extends AppCivistBaseModel implements Subject {
 	public void setEmailUpdated(Boolean emailUpdated) {
 		this.emailUpdated = emailUpdated;
 	}
+
+	@Override
+	public String toString() {
+		return this.getName();
+	}
 }

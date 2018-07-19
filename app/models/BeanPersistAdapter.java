@@ -315,11 +315,12 @@ public class BeanPersistAdapter implements BeanPersistController {
             try {
                 Contribution contribution = (Contribution) request.getBean();
                 ContributionStatusAudit last = ContributionStatusAudit.getLastByContribution(contribution);
-                if(last == null || !last.getStatus().equals(contribution.getStatus())) {
+                if(last == null || contribution.getStatus() == null || !last.getStatus().equals(contribution.getStatus())) {
                     Logger.info("Creating or updating contribution status audit");
                     ContributionStatusAudit.newStatus(contribution);
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 Logger.error("Error creating audit "+e.getMessage());
             }
             return Optional.ofNullable(null);

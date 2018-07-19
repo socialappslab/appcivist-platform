@@ -1362,7 +1362,7 @@ public class Contribution extends AppCivistBaseModel {
 
         User creator = contribution.getCreator();
         // if user is creator return true by default, no need to look into the list of authors
-        if (u.getUserId() == creator.getUserId()) {
+        if (u.getUserId() != null && creator != null && u.getUserId().equals(creator.getUserId())) {
             return true;
         }
 
