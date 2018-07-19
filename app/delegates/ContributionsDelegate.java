@@ -130,11 +130,29 @@ public class ContributionsDelegate {
                                                        boolean creatorOnly){
 
         ExpressionList<Contribution> where = null;
-        String rawQuery = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal,\n " +
-                "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
-                "  t0.moderation_comment, "/*t0.location_location_id, t0.non_member_author_id, */ + "t0.budget, "/*t0.priority,*/+"\n " +
-                "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, " /*t0.extended_text_pad_resource_id,\n"*/ +
-                "  t0.source_code, t0.popularity, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments from contribution t0\n ";
+
+        String rawQueryColumns = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal, \n" +
+                "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index, \n" +
+                "  t0.moderation_comment, t0.budget, \n" +
+                "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, \n" +
+                "  t0.source_code, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments \n";
+
+        String rawQueryVoidPopularityColumn = ",t0.popularity \n";
+
+        String rawQueryFrom = "  from contribution t0 \n ";
+
+        String groupBy = "group by t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal, \n" +
+                "                t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index, \n" +
+                "                t0.moderation_comment, \n" +
+                "                t0.budget, \n" +
+                "                t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, \n" +
+                "                t0.source_code, \n" +
+                "                t0.pinned, \n" +
+                "                t0.comment_count, \n" +
+                "                t0.forum_comment_count, \n" +
+                "                t0.total_comments";
+
+
         String sorting = " order by pinned desc nulls last";
         Boolean intervalStatus = false;
         if(conditions != null){
@@ -142,31 +160,37 @@ public class ContributionsDelegate {
                 Object value = conditions.get(key);
                 switch (key){
                     case "group":
-                        rawQuery += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
+                        rawQueryFrom += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
                                 "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
                                 "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
                         break;
                     case "containingSpaces":
-                        rawQuery += "join resource_space_contributions rsc on rsc.contribution_contribution_id = t0.contribution_id \n " +
+                        rawQueryFrom += "join resource_space_contributions rsc on rsc.contribution_contribution_id = t0.contribution_id \n " +
                                 "join resource_space rs on rs.resource_space_id = rsc.resource_space_resource_space_id\n ";
                         break;
                     case "by_author":
                         if(!creatorOnly) {
-                            rawQuery += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
+                            rawQueryFrom += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
                         }
                         break;
-                    case "by_location":                    	
-                    	rawQuery += "join location l on l.location_id = t0.location_location_id \n ";
+                    case "by_location":
+                        rawQueryFrom += "join location l on l.location_id = t0.location_location_id \n ";
                     	break;                        
                     case "theme":
-                        rawQuery += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
+                        rawQueryFrom += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         break;
                     case "sorting":
                         String sortingValue = (String) value;
-                        if (sortingValue.equals("popularity") || sortingValue.equals("popularity_desc")) {
-                            sorting +=", popularity desc nulls last";
-                        } else if (sortingValue.equals("popularity_asc")) {
-                            sorting +=", popularity asc nulls last";
+                        if (sortingValue.equals("popularity") || sortingValue.equals("popularity_desc") || sortingValue.equals("popularity_asc")) {
+                            if (sortingValue.equals("popularity_asc"))
+                                sorting +=", popularity asc nulls last";
+                            else
+                                sorting +=", popularity desc nulls last";
+                            rawQueryFrom +="join contribution_feedback cf on cf.contribution_id = t0.contribution_id\n";
+                            String popularityCalculation =
+                                    ",count(cf.up) FILTER (WHERE cf.up = true and cf.removed = false and cf.archived = false) " +
+                                            "  - count(cf.down) FILTER (WHERE cf.down = true and cf.removed = false and cf.archived = false) AS popularity\n";
+                            rawQueryColumns += popularityCalculation;
                         } else if (sortingValue.equals("random")) {
                             // TODO find a way of producing a a REAL random ordering
                             sorting ="random"; // create the illusion of random ordering
@@ -191,7 +215,7 @@ public class ContributionsDelegate {
                     case "statusStartDate":
                     case "statusEndDate":
                         if(!intervalStatus) {
-                            rawQuery += "join contribution_status_audit csa on csa.contribution_contribution_id = t0.contribution_id \n ";
+                            rawQueryFrom += "join contribution_status_audit csa on csa.contribution_contribution_id = t0.contribution_id \n ";
                             intervalStatus = true;
                         }
                         break;
@@ -199,11 +223,18 @@ public class ContributionsDelegate {
                 }
             }
             if(!sorting.equals("random")) {
-                rawQuery += sorting;
+                if (sorting.contains("popularity")) {
+                    rawQueryFrom += groupBy;
+                } else {
+                    rawQueryColumns+=rawQueryVoidPopularityColumn;
+                }
+                rawQueryFrom += sorting;
             }
+
+            String rawQuery = rawQueryColumns + rawQueryFrom;
+
             RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
             where = finder.setRawSql(rawSql).where();
-
             for(String key : conditions.keySet()){
                 Object value = conditions.get(key);
                 //We look at the keys, some of them have special treatment
