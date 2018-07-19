@@ -1272,7 +1272,7 @@ public class Contributions extends Controller {
                     Logger.debug("Formatted lastUpdate: " + toDb.toString());
                     contribution.setLastUpdate(toDb);
                 }
-                contribution.update();
+                Contribution.update(contribution);
                 Logger.info("Contribution updated!");
                 TransferResponseStatus responseBody = new TransferResponseStatus();
                 responseBody.setResponseStatus(ResponseStatus.OK);
@@ -4278,36 +4278,32 @@ public class Contributions extends Controller {
             return badRequest(Json.toJson(new TransferResponseStatus("You must complete all the " +
                     "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
         }
-        if (ContributionStatus.valueOf(upStatus) != null) {
-            Http.Session s = session();
-            Logger.debug("Session = "+(s != null ? s : "[no session found]"));
-            AuthUser u = PlayAuthenticateLocal.getUser(s);
-            Logger.debug("AuthUser = "+(u != null ? u.getId() : "[no user found]"));
-            User user = User.findByAuthUserIdentity(u);
-            Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
-            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
-            try {
-                peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
-            } catch (Exception e) {
-                TransferResponseStatus response = new TransferResponseStatus();
-                response.setResponseStatus(ResponseStatus.SERVERERROR);
-                response.setStatusMessage(e.getMessage());
-                Logger.error("PEERDOC: A problem occurred while updating PEERDOC status: '"+ e.getMessage());
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                e.printStackTrace(pw);
-                String trace = sw.toString();
-                Logger.debug("PEERDOC: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
-                response.setErrorTrace(trace);
-                response.setNewResourceURL("");
-                return internalServerError(Json.toJson(response));
-            }
-            c.setStatus(ContributionStatus.valueOf(upStatus));
-            c.update();
-            return ok(Json.toJson(c));
-        } else {
-            return badRequest(Json.toJson(new TransferResponseStatus("The status is not valid")));
+        Http.Session s = session();
+        Logger.debug("Session = "+(s != null ? s : "[no session found]"));
+        AuthUser u = PlayAuthenticateLocal.getUser(s);
+        Logger.debug("AuthUser = "+(u != null ? u.getId() : "[no user found]"));
+        User user = User.findByAuthUserIdentity(u);
+        Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
+        PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+        try {
+            peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+        } catch (Exception e) {
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            response.setStatusMessage(e.getMessage());
+            Logger.error("PEERDOC: A problem occurred while updating PEERDOC status: '"+ e.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String trace = sw.toString();
+            Logger.debug("PEERDOC: Exception stack trace:\n"+e.getStackTrace().toString()+"\nPEERDOC: "+e.getMessage()+"\nPEERDOC: "+trace);
+            response.setErrorTrace(trace);
+            response.setNewResourceURL("");
+            return internalServerError(Json.toJson(response));
         }
+        c.setStatus(ContributionStatus.valueOf(upStatus));
+        Contribution.update(c);
+        return ok(Json.toJson(c));
     }
 
 

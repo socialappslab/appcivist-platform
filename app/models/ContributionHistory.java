@@ -280,6 +280,8 @@ public class ContributionHistory extends AppCivistBaseModel {
         if (contribution.getContainingSpaces() != null) {
             contributionHistory.getRelatedResourceSpaces().addAll(contribution.getContainingSpaces());
         }
+        Logger.info("Contribution " + contribution.getContributionId() + "Before authors : " + contribution.getAuthors());
+        Logger.info("Contribution " + contribution.getContributionId() + " Now authors: " + contributionHistory.getAuthors());
         if (contribution.getAuthors() != null) {
             contributionHistory.getAuthors().addAll(contribution.getAuthors());
         }
