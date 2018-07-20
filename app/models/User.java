@@ -469,7 +469,7 @@ public class User extends AppCivistBaseModel implements Subject {
 		//--ldap case
 		if(authUser instanceof LdapAuthProvider.LdapAuthUser) {
 			LdapAuthProvider.LdapAuthUser ldapAuthUser = (LdapAuthProvider.LdapAuthUser) authUser;
-			if (ldapAuthUser.getMail() != null) {
+			if (ldapAuthUser.getMail() == null) {
 				user.setEmail(ldapAuthUser.getUser()+"@ldap.com");
 			} else {
 				user.setEmail(ldapAuthUser.getMail());
