@@ -3260,3 +3260,28 @@ alter TABLE appcivist_file add COLUMN url character varying(255) ;
 -- 86.sql
 ALTER TABLE contribution_status_audit DROP CONSTRAINT ck_contribution_status_audit_status;
 ALTER TABLE contribution_status_audit ADD CONSTRAINT ck_contribution_status_audit_status CHECK (status::text = ANY (ARRAY['NEW'::character varying::text, 'DRAFT'::character varying::text, 'PUBLISHED'::character varying::text, 'ARCHIVED'::character varying::text, 'EXCLUDED'::character varying::text, 'PUBLIC_DRAFT'::character varying::text, 'MODERATED'::character varying::text, 'INBALLOT'::character varying::text, 'SELECTED'::character varying::text]));
+
+-- 87.sql
+
+insert into contribution_appcivist_user (contribution_contribution_id, appcivist_user_user_id)
+select c.contribution_id, b.user_id from non_member_author a join appcivist_user b on a.email = b.email
+join contribution_non_member_author c on c.non_member_author_id = a.id  except
+select contribution_contribution_id, appcivist_user_user_id from contribution_appcivist_user;
+
+delete  from contribution_non_member_author a where (non_member_author_id, contribution_id)
+in
+                                                   (select c.non_member_author_id, c.contribution_id from non_member_author a join appcivist_user b on a.email = b.email
+join contribution_non_member_author c on c.non_member_author_id = a.id  except
+select contribution_contribution_id, appcivist_user_user_id from contribution_appcivist_user);
+
+
+insert into contribution_appcivist_user (contribution_contribution_id, appcivist_user_user_id)
+select c.contribution_id, b.user_id from non_member_author a join appcivist_user b on a.name = b.name and a.email is null
+join contribution_non_member_author c on c.non_member_author_id = a.id  except
+select contribution_contribution_id, appcivist_user_user_id from contribution_appcivist_user;
+
+delete  from contribution_non_member_author a where (non_member_author_id, contribution_id)
+in
+                                                   (select c.non_member_author_id, c.contribution_id from non_member_author a join appcivist_user b on a.name = b.name and a.email is null
+join contribution_non_member_author c on c.non_member_author_id = a.id  except
+select contribution_contribution_id, appcivist_user_user_id from contribution_appcivist_user);
