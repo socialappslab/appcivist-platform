@@ -389,7 +389,7 @@ public class Contributions extends Controller {
             pag.setPage(page);
             pag.setList(contributions);
             if (contributions == null || contributions.isEmpty()) {
-                notFound(Json.toJson(new TransferResponseStatus(
+                return notFound(Json.toJson(new TransferResponseStatus(
                         "No contributions for {resource space}: " + sid + ", type=" + type)));
             } else {
                 Boolean sendMail = false;

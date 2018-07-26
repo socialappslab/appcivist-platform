@@ -219,6 +219,8 @@ public class MyUsernamePasswordAuthProvider
 			newUser = User.createFromAuthUser(user);
 			user.setUserId(newUser.getUserId());
 		} catch (Exception e) {
+			Logger.error("Error creating user  " + e.getMessage());
+			Logger.error(e.getCause().getMessage());
 			if(Ebean.currentTransaction() != null) {
 				Logger.debug("Ending transaction");
 				Ebean.endTransaction();
