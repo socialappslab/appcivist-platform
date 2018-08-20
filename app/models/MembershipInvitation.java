@@ -266,6 +266,9 @@ public class MembershipInvitation extends AppCivistBaseModel {
 			if (invitation.getModerator())
 				roles.add(SecurityRole.findByName(MyRoles.MODERATOR
 						.getName()));
+			if (invitation.getExpert())
+				roles.add(SecurityRole.findByName(MyRoles.EXPERT
+						.getName()));
 	
 			membershipInvitation.setRoles(roles);
 			membershipInvitation = MembershipInvitation.create(membershipInvitation);

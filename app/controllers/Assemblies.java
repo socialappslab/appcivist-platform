@@ -22,6 +22,8 @@ import io.swagger.annotations.*;
 import models.*;
 import models.misc.Views;
 import models.transfer.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import play.Logger;
 import play.data.Form;
 import play.i18n.Messages;
@@ -37,8 +39,7 @@ import utils.LogActions;
 import utils.Pair;
 
 import javax.persistence.EntityNotFoundException;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.*;
@@ -1167,7 +1168,7 @@ public class Assemblies extends Controller {
 		Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
 		User sessionUser = User.findByAuthUserIdentity(PlayAuthenticate
 				.getUser(session()));
-		Assembly assembly = null;
+		Assembly assembly;
 		ObjectMapper om = new ObjectMapper();
 		ArrayNode an = om.createArrayNode();
 
@@ -1175,34 +1176,26 @@ public class Assemblies extends Controller {
 			try {
 				assembly = Assembly.read(aid);
 				// Read CSV with list of users
-				br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
-				String cvsSplitBy = ",";
-				String line = "";
-				int  lineNumber = 0;
-				while ((line = br.readLine()) != null) {
-                    if (lineNumber==0) {
-                        lineNumber++; // ignore header
-                    } else {
-                        String[] cell = line.split(cvsSplitBy);
-                        if (!line.contains("WebKitFormBoundary") && cell.length == 5) {
-                            User u = User.findByEmail(cell[0]);
-                            // Create account if not exists
-                            if (u == null) {
-                                u = createNewAssemblyUser(cell, om, an);
-                            }
+				Reader reader = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+				Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(CSVHeaders.class).parse(reader);
+				for (CSVRecord record : records) {
 
-                            // If send_invitations==TRUE, send an invitation email to the corresponding email.
-                            // Else create membership
-                            if (sendInvitations.equals("true")) {
-                                if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
-                                    //CREATE invitation and send mail
-                                    InvitationTransfer invitation = createAndSendInvitation(u, sessionUser, assembly, "ASSEMBLY", cell[4]);
-                                }
-                            } else {
-                                createMembership(u, sessionUser, assembly, "ASSEMBLY", cell[4]);
-                            }
-                        }
-                    }
+					User u = User.findByEmail(record.get(CSVHeaders.name));
+					// Create account if not exists
+					if (u == null) {
+						u = createNewAssemblyUser(record, om, an);
+					}
+
+					// If send_invitations==TRUE, send an invitation email to the corresponding email.
+					// Else create membership
+					if (sendInvitations.equals("true")) {
+						if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
+							//CREATE invitation and send mail
+							InvitationTransfer invitation = createAndSendInvitation(u, sessionUser, assembly, "ASSEMBLY", record.get(CSVHeaders.role));
+						}
+					} else {
+						createMembership(u, sessionUser, assembly, "ASSEMBLY", record.get(CSVHeaders.role));
+					}
 				}
 			} catch(EntityNotFoundException e){
 				e.printStackTrace();
@@ -1211,7 +1204,7 @@ public class Assemblies extends Controller {
 			} catch(Exception e){
 				e.printStackTrace();
                 Logger.error(e.getLocalizedMessage());
-                return internalServerError("Error reading the CSV file");
+                return internalServerError("Error reading the CSV file " + e.getMessage());
 			}
 		}
 
@@ -1295,8 +1288,8 @@ public class Assemblies extends Controller {
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         User sessionUser = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
-        WorkingGroup wg = null;
-        Assembly assembly = null;
+        WorkingGroup wg;
+        Assembly assembly;
         ObjectMapper om = new ObjectMapper();
         ArrayNode an = om.createArrayNode();
         if (uploadFilePart != null) {
@@ -1305,20 +1298,14 @@ public class Assemblies extends Controller {
                 wg = WorkingGroup.read(gid);
                 assembly = Assembly.read(aid);
                 // Read CSV with list of users
-                br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
-                String cvsSplitBy = ",";
-                String line = "";
-                int lineNumber = 0;
-                while ((line = br.readLine()) != null) {
-                    if (lineNumber==0) {
-                        lineNumber++; // ignore header
-                    } else {
-                        String[] cell = line.split(cvsSplitBy);
-                        if (!line.contains("WebKitFormBoundary") && cell.length == 5) {
-                            User u = User.findByEmail(cell[0]);
+				Reader in = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+				Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(CSVHeaders.class).withSkipHeaderRecord().parse(in);
+				for (CSVRecord record : records) {
+
+                            User u = User.findByEmail(record.get(CSVHeaders.email));
                             // Create account if not exists
                             if (u == null) {
-                                u = createNewAssemblyUser(cell, om, an);
+                                u = createNewAssemblyUser(record, om, an);
                             }
 
                             // If send_invitations==TRUE, send an invitation email to the corresponding email.
@@ -1326,39 +1313,40 @@ public class Assemblies extends Controller {
                             if (sendInvitations.equals("true")) {
                                 if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
                                     //CREATE invitation and send mail
-                                    InvitationTransfer invitation = createAndSendInvitation(u, sessionUser, wg, "GROUP", cell[4]);
+                                    createAndSendInvitation(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
                                 }
                             } else {
                                 // Create membership (with the group gid)
-                                createMembership(u, sessionUser, wg, "GROUP", cell[4]);
+                                createMembership(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
                                 // Also with the assembly aid
                                 createMembership(u, sessionUser, assembly, "ASSEMBLY", "MEMBER");
                             }
-                        }
-                    }
                 }
                 Ebean.commitTransaction();
             } catch (EntityNotFoundException e) {
                 e.printStackTrace();
                 Logger.error(e.getLocalizedMessage());
                 return internalServerError("The working group doesn't exist");
-            } catch (Exception e) {
-                e.printStackTrace();
-                Logger.error(e.getLocalizedMessage());
-                return internalServerError("Error reading the CSV file");
-            } finally {
+            } catch (MembershipCreationException e) {
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				return internalServerError("File not found " + e.getMessage());
+            } catch (IOException e) {
+            	Logger.error(e.getMessage());
+				return internalServerError("Error reading the csv " + e.getMessage());			}
+			finally {
 				Ebean.endTransaction();
 			}
         }
 		return ok(Json.toJson(an));
 	}
 
-	private static User createNewAssemblyUser(String[] cell, ObjectMapper om, ArrayNode an) {
+	private static User createNewAssemblyUser(CSVRecord record, ObjectMapper om, ArrayNode an) {
         User u = new User();
-        u.setEmail(cell[0]);
-        u.setName(cell[1] + " " + cell[2]);
+        u.setEmail(record.get(CSVHeaders.email));
+        u.setName(record.get(CSVHeaders.name) + " " + record.get(CSVHeaders.lastname));
         u.setUsername(u.getEmail()); // email
-        u.setLanguage(cell[3]);
+        u.setLanguage(record.get("language"));
         // For users without account: generate pass (see the test to generate passwords) and return this in the response
 
         Integer passIndex = random.nextInt(25);
@@ -1376,7 +1364,7 @@ public class Assemblies extends Controller {
         la.setProviderKey("password");
         la.save();
 
-        UserProfile up = new UserProfile(null, null, cell[1], null, cell[2],
+        UserProfile up = new UserProfile(null, null, record.get(CSVHeaders.name), null, record.get(CSVHeaders.lastname),
                 null, null);
         up.setUser(u);
         up.save();
@@ -1401,13 +1389,21 @@ public class Assemblies extends Controller {
         if (role.toUpperCase().equals("COORDINATOR")) {
             invitation.setCoordinator(true);
             invitation.setModerator(false);
+            invitation.setExpert(false);
         } else if (role.toUpperCase().equals("MODERATOR")) {
             invitation.setCoordinator(false);
             invitation.setModerator(true);
-        } else {
+			invitation.setExpert(false);
+
+		} else if (role.toUpperCase().equals("EXPERT")) {
             invitation.setCoordinator(false);
             invitation.setModerator(false);
-        }
+			invitation.setExpert(true);
+        } else {
+			invitation.setCoordinator(false);
+			invitation.setModerator(false);
+			invitation.setExpert(false);
+		}
         if (targetType.equals("ASSEMBLY")) {
             a = ((Assembly) target);
             invitation.setTargetId(a.getAssemblyId());
@@ -1421,13 +1417,21 @@ public class Assemblies extends Controller {
     }
 
     private static Membership createMembership(User u, User creator, AppCivistBaseModel target, String targetType, String role) {
+		role = role.trim();
 	    List<SecurityRole> roles = new ArrayList<>();
         roles.add(SecurityRole.findByName("MEMBER")); // Member role
-        if (role.equals("COORDINATOR")) {
-            roles.add(SecurityRole.findByName("COORDINATOR"));
-        } else if (role.equals("MODERATOR")) {
-            roles.add(SecurityRole.findByName("COORDINATOR"));
-        }
+		Logger.info("Creating role " + role);
+		switch (role) {
+			case "COORDINATOR":
+				roles.add(SecurityRole.findByName("COORDINATOR"));
+				break;
+			case "MODERATOR":
+				roles.add(SecurityRole.findByName("COORDINATOR"));
+				break;
+			case "EXPERT":
+				roles.add(SecurityRole.findByName("EXPERT"));
+				break;
+		}
         if (targetType.equals("ASSEMBLY")) {
             Assembly a = ((Assembly) target);
             MembershipAssembly ma = new MembershipAssembly();
@@ -1446,11 +1450,14 @@ public class Assemblies extends Controller {
             mG.setCreator(creator);
             mG.setMembershipType(targetType.toUpperCase());
             mG.setWorkingGroup(wg);
+			mG.setRoles(roles);
             mG.setStatus(MembershipStatus.ACCEPTED);
             mG.save();
             return mG;
         }
     }
 
-
+	public enum CSVHeaders {
+		email, name, lastname, language, role
+	}
 }
