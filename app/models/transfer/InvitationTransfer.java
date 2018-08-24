@@ -5,6 +5,7 @@ public class InvitationTransfer {
 	private String email; 
 	private Boolean moderator; 
 	private Boolean coordinator;
+	private Boolean expert;
 	private Long targetId;
 	private String targetType;
 	private String invitationEmail;
@@ -59,5 +60,13 @@ public class InvitationTransfer {
 
 	public void setInvitationEmail(String invitationEmail) {
 		this.invitationEmail = invitationEmail;
+	}
+
+	public Boolean getExpert() {
+		return expert;
+	}
+
+	public void setExpert(Boolean expert) {
+		this.expert = expert;
 	}
 }
