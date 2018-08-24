@@ -3285,3 +3285,15 @@ in
                                                    (select c.non_member_author_id, c.contribution_id from non_member_author a join appcivist_user b on a.name = b.name and a.email is null
 join contribution_non_member_author c on c.non_member_author_id = a.id  except
 select contribution_contribution_id, appcivist_user_user_id from contribution_appcivist_user);
+
+-- 89.sql
+
+
+CREATE OR REPLACE FUNCTION change_status_contribution_in_campaign(search_shortname character, date timestamp, target character) RETURNS void AS $$
+    BEGIN
+      update contribution set status = target where contribution_id in (
+      select contribution_id from contribution where contribution_id in (
+      select contribution_contribution_id from resource_space_contributions where resource_space_resource_space_id in (
+      SELECT c.resources_resource_space_id FROM campaign c WHERE c.shortname = search_shortname) and creation < date::timestamp));
+    END;
+    $$ LANGUAGE plpgsql;
