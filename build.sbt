@@ -15,36 +15,36 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 
 libraryDependencies ++= Seq(
   javaJdbc withSources(),
-  "org.avaje.ebeanorm" % "avaje-ebeanorm" % "4.7.3" withSources(),     
-  "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "4.5.3" withSources(),
+  "org.avaje.ebeanorm" % "avaje-ebeanorm" % "4.7.3" withSources() ,
+  "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "4.5.3" withSources() ,
   cache,
   javaWs withSources(), 
-  "javax.xml.bind" % "jaxb-api" % "2.2.12",           // library to support objects-to/from-xml mapping
-  "com.lowagie" % "itext" % "2.1.7",                  // pdf and rtf
-  "com.lowagie" % "itext-rtf" % "2.1.7",                  // pdf and rtf
-  "org.webjars" % "bootstrap" % "3.3.1", 			        // jar-packaged version of twitter bootstrap  
-  "org.webjars" % "angularjs" % "1.3.14",			        // jar-packaged version of twitter angularjs
-  "org.webjars" % "angular-ui-bootstrap" % "0.12.0",  // jar-packaged version of twitter angularjs-ui-bootstrap
-  "org.webjars" % "jquery" % "2.1.3",
-  "com.feth" %% "play-authenticate" % "0.7.0" withSources() withJavadoc(),        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
-  "com.feth" %% "play-easymail" % "0.7.0" withSources() withJavadoc(),        
-  "org.postgresql" % "postgresql" % "9.4-1201-jdbc41", 
-  "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0",
-  "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources(),
+  "javax.xml.bind" % "jaxb-api" % "2.2.12" ,           // library to support objects-to/from-xml mapping
+  "com.lowagie" % "itext" % "2.1.7" ,                  // pdf and rtf
+  "com.lowagie" % "itext-rtf" % "2.1.7" ,                  // pdf and rtf
+  "org.webjars" % "bootstrap" % "3.3.1" , 			        // jar-packaged version of twitter bootstrap
+  "org.webjars" % "angularjs" % "1.3.14" ,			        // jar-packaged version of twitter angularjs
+  "org.webjars" % "angular-ui-bootstrap" % "0.12.0" ,  // jar-packaged version of twitter angularjs-ui-bootstrap
+  "org.webjars" % "jquery" % "2.1.3" ,
+  "com.feth" %% "play-authenticate" % "0.7.0" withSources() withJavadoc() ,        // authentication library that supports Oauth2, Oauth1, OpenID and Simple Auth
+  "com.feth" %% "play-easymail" % "0.7.0" withSources() withJavadoc() ,
+  "org.postgresql" % "postgresql" % "9.4-1201-jdbc41" ,
+  "org.codehaus.jackson" % "jackson-core-asl" % "1.1.0" ,
+  "org.springframework" % "spring-context" % "4.1.6.RELEASE" withSources() ,
   "commons-io" % "commons-io" % "2.4",
   "be.objectify" %% "deadbolt-java" % "2.4.0" withSources() withJavadoc(),
   "io.swagger" % "swagger-core" % "1.5.8" withSources() withJavadoc(),
-  "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),        
-  "io.swagger" %% "swagger-play2" % "1.5.2" withSources() withJavadoc(), 
-  "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc(), 
-  "net.gjerull.etherpad" % "etherpad_lite_client" % "1.2.12" withSources() withJavadoc(), 
-  "com.squareup.retrofit" % "retrofit" % "2.0.0-beta2" withSources() withJavadoc(), 
-  "com.squareup.retrofit" % "converter-gson" % "2.0.0-beta2" withSources() withJavadoc(), 
-  "com.squareup.retrofit" % "adapter-rxjava" % "2.0.0-beta2" withSources() withJavadoc(), 
+  "javax.ws.rs" % "javax.ws.rs-api" % "2.0.1" withSources() withJavadoc(),
+  "io.swagger" %% "swagger-play2" % "1.5.2" withSources() withJavadoc(),
+  "net.sf.dozer" % "dozer" % "5.4.0" withSources() withJavadoc() exclude("org.slf4j", "slf4j-log4j12"),
+  "net.gjerull.etherpad" % "etherpad_lite_client" % "1.2.12" withSources() withJavadoc(),
+  "com.squareup.retrofit" % "retrofit" % "2.0.0-beta2" withSources() withJavadoc(),
+  "com.squareup.retrofit" % "converter-gson" % "2.0.0-beta2" withSources() withJavadoc(),
+  "com.squareup.retrofit" % "adapter-rxjava" % "2.0.0-beta2" withSources() withJavadoc(),
   "org.hamcrest" % "hamcrest-library" % "1.3",
-  "com.novocode" % "junit-interface" % "0.8" % "test->default", 
-  "com.amazonaws" % "aws-java-sdk" % "1.10.42", 
-  "com.zaxxer" % "HikariCP" % "2.4.6", 
+  "com.novocode" % "junit-interface" % "0.8" % "test->default",
+  "com.amazonaws" % "aws-java-sdk" % "1.10.42",
+  "com.zaxxer" % "HikariCP" % "2.4.6",
   "org.jsoup" % "jsoup" % "1.10.2",
   "com.typesafe.akka" %% "akka-actor" % "2.3.11",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.11" % "test",
@@ -52,7 +52,7 @@ libraryDependencies ++= Seq(
   "com.github.opendevl" % "json2flat" % "1.0.3",
   "org.apache.poi" % "poi-ooxml" % "3.17",
   "com.google.api-client" % "google-api-client" % "1.23.0",
-  "com.rabbitmq" % "amqp-client" % "5.1.1",
+  "com.rabbitmq" % "amqp-client" % "5.1.1" ,
   "de.grundid.opendatalab" % "geojson-jackson" % "1.8" excludeAll( ExclusionRule(organization = "com.fasterxml.jackson.core") ),
   "org.apache.commons" % "commons-csv" % "1.5"
 
@@ -60,7 +60,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += evolutions
 libraryDependencies += filters
-
+libraryDependencies += "io.sentry" % "sentry-logback" % "1.7.5"
 resolvers += Resolver.url("Objectify Play Repository", url("http://schaloner.github.com/releases/"))(Resolver.ivyStylePatterns)
 
 resolvers += Resolver.url("play-easymail (release)", url("http://joscha.github.io/play-easymail/repo/releases/"))

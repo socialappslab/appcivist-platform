@@ -415,6 +415,11 @@ public class Users extends Controller {
         }
         updatedUser.setRoles(roles);
       }
+
+      if(updatedUser.getLang() == null || updatedUser.getLang().isEmpty()) {
+        updatedUser.setLang(oldUser.getLang());
+      }
+
       //if email changes send verification email again
       if(updatedUser != null && updatedUser.getEmail() != null && !updatedUser.getEmail().equals(oldUser.getEmail())) {
         Logger.info("Email change, sending verification email");
