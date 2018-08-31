@@ -5545,13 +5545,14 @@ public class Contributions extends Controller {
 
                         default:
                             Object object = Contribution.class.getMethod("get" + output).invoke(c);
-                            if (object == null || (object.getClass().isInstance(String.class))
-                                    && ((String) object).trim().isEmpty()) {
+                            if (object == null || (object instanceof String
+                                    && ((String) object).trim().isEmpty())) {
                             contributionFields.add(requirement);
                             break;
                         }
                     }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    Logger.info("ERROR " + e.getMessage());
                     customFields.add(requirement);
                 }
             }
@@ -5573,6 +5574,7 @@ public class Contributions extends Controller {
             }
         }
         custom.addAll(contributionFields);
+        Logger.info("Required fields: " + custom.toString());
         return custom;
     }
 
