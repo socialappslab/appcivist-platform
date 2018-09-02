@@ -491,6 +491,13 @@ public class Contribution extends AppCivistBaseModel {
 
     }
 
+    public static List<Contribution> getAllWithPeerDoc() {
+
+        return find.where().contains("extendedTextPad.resourceType", ResourceTypes.PEERDOC.name()).findList();
+
+
+    }
+
     @Transient
     public void setFirstAuthor(User u) {
         u.setProviders(null);
