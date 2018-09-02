@@ -54,19 +54,23 @@ import play.twirl.api.Content;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import service.PlayAuthenticateLocal;
-import utils.GlobalData;
-import utils.GlobalDataConfigKeys;
-import utils.LogActions;
-import utils.Packager;
+import utils.*;
+import utils.security.HashGenerationException;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -79,6 +83,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
+import static play.mvc.Results.ok;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -253,8 +258,12 @@ public class Contributions extends Controller {
                 }
             }
             //only return de extendedTextPad if the user is the author of the contribution
+            PeerDocWrapper peerDocWrapper;
             if (isAuthor) {
-                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                peerDocWrapper = new PeerDocWrapper(user);
+            } else {
+                peerDocWrapper = new PeerDocWrapper(null);
+            }
                 try {
                     contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
                             .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
@@ -263,7 +272,7 @@ public class Contributions extends Controller {
                     contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
                     return ok(Json.toJson(contribution));
                 }
-            }
+
 
         }
         return ok(Json.toJson(contribution));
@@ -1040,6 +1049,23 @@ public class Contributions extends Controller {
         Contribution contribution;
         try {
             contribution = Contribution.readByUUID(uuid);
+
+            //if the contribution is published and has a peerdoc, return the peerdoc url without user
+            if(contribution.getStatus().equals(ContributionStatus.PUBLISHED) &&
+                    contribution.getExtendedTextPad() != null
+                    && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(null);
+                    try {
+                        contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
+                                .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
+
+                    } catch (Exception e) {
+                        contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
+                        return ok(Json.toJson(contribution));
+                    }
+                }
+
+
         } catch (Exception e) {
             e.printStackTrace();
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with this uuid")));
@@ -1195,7 +1221,7 @@ public class Contributions extends Controller {
                 }
             };
 
-            return Results.ok(ret);
+            return ok(ret);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -5666,6 +5692,34 @@ public class Contributions extends Controller {
             }
             feedback.update();
         }
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class,  produces = "application/json", value = "PUT update peerdoc permissions " +
+            "for all contribtuions")
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updatePeerDocPermission () {
+
+        List<Contribution> contributionList =  Contribution.getAllWithPeerDoc();
+        Integer contributionCount = 0;
+        for (Contribution contribution : contributionList) {
+            Logger.info("Updating contribution " + contribution.getUuidAsString());
+            for(User user: contribution.getAuthors()) {
+                contributionCount ++;
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                Logger.info("Updating user " + user.getUsername());
+                try {
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
+                } catch (NoSuchPaddingException | InvalidAlgorithmParameterException |
+                        HashGenerationException | BadPaddingException | IllegalBlockSizeException |
+                        NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    Logger.error("Error updating peerdoc permisions " + e.getMessage());
+                }
+            }
+        }
+
+        return ok("Updated " + contributionCount + " contributions of " + contributionList.size());
+
     }
 
 }

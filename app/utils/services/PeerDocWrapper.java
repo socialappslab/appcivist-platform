@@ -194,6 +194,11 @@ public class PeerDocWrapper {
             NoSuchPaddingException, InvalidAlgorithmParameterException,
             InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             UnsupportedEncodingException, HashGenerationException {
+
+        if(this.user == null) {
+            return "";
+        }
+
         byte [] key = hexStringToByteArray(getKeyHex());
         byte [] nonce = new byte[NONCE_LENGTH];
         byte [] iv = new byte[IV_LENGTH];
