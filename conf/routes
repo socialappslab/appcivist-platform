@@ -473,3 +473,5 @@ GET       /api/public/assembly/:aid/group/:gid                                  
 POST      /api/contribution/language                                             controllers.Contributions.updateAllContributionLanguages()
 GET       /api/uuid                                                              controllers.Spaces.getUUIDByIdAndType(type: String, id : Long)
 GET       /api/id                                                                controllers.Spaces.getIdByUUIdAndType(type: String, uuid : java.util.UUID)
+
+PUT       /api/admin/updatepeerdocpermission                                     controllers.Contributions.updatePeerDocPermission()

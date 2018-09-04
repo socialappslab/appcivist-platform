@@ -124,9 +124,9 @@ public class PeerDocWrapper {
         WSRequest holder = getWSHolder("/document/share/"+documentId+"?user="+userEncrypted);
         Map<String, List<UserPeerDoc>> editObject = new HashMap<>();
         Map<String, Object> toSend = new HashMap<>();
-        editObject.put("edit", new ArrayList<>());
+        editObject.put("admin", new ArrayList<>());
         for(User user: contribution.getAuthors()) {
-            editObject.get("edit").add(userToUserPeerdoc(user, null));
+            editObject.get("admin").add(userToUserPeerdoc(user, null));
         }
         for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
             UserPeerDoc userPeerDoc = new UserPeerDoc();
@@ -194,6 +194,11 @@ public class PeerDocWrapper {
             NoSuchPaddingException, InvalidAlgorithmParameterException,
             InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             UnsupportedEncodingException, HashGenerationException {
+
+        if(this.user == null) {
+            return "";
+        }
+
         byte [] key = hexStringToByteArray(getKeyHex());
         byte [] nonce = new byte[NONCE_LENGTH];
         byte [] iv = new byte[IV_LENGTH];

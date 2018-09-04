@@ -63,6 +63,9 @@ public class User extends AppCivistBaseModel implements Subject {
 	@JsonView(Views.Public.class)
 	@Column(unique=true)
 	private String username;
+
+	//Use lang instead
+	@Deprecated
 	private String language = GlobalData.DEFAULT_LANGUAGE;	
 	@Column(name = "email_verified")
 	private Boolean emailVerified;
@@ -192,11 +195,13 @@ public class User extends AppCivistBaseModel implements Subject {
 	}
 
 
+	@Deprecated
 	public String getLanguage() {
 		return language;
 	}
 
 
+	@Deprecated
 	public void setLanguage(String language) {
 		this.language = language;
 	}
