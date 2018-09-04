@@ -417,7 +417,7 @@ GET       /api/public/assembly/:uuid/theme                                      
 GET       /api/public/assembly/:uuid/campaign                                    controllers.Campaigns.findCampaignsByAssemblyUUID(uuid: java.util.UUID, filter?="ongoing")
 GET       /api/public/assembly/name/:shortname                                   controllers.Assemblies.findAssemblyByShortname(shortname: String)
 GET       /api/public/group/:uuid                                                controllers.WorkingGroups.findWorkingGroupByUUID(uuid: java.util.UUID)
-GET       /api/public/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID)
+GET       /api/public/contribution/:uuid                                         controllers.Contributions.findContributionByUUID(uuid: java.util.UUID, flat?="false")
 GET       /api/public/contribution/:uuid/history                                 controllers.Contributions.findContributionHistoryByUUID(uuid: java.util.UUID)
 GET       /api/public/contribution/:couuid/feedback                              controllers.Contributions.readContributionFeedbackPublic(couuid: String, type: String ?= null)
 GET       /api/public/campaign/:uuid                                             controllers.Campaigns.findCampaignByUUID(uuid: java.util.UUID)

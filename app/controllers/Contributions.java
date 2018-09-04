@@ -1035,10 +1035,37 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     // TODO: add API token support, some API enpoints must be available only for registered clients
     public static Result findContributionByUUID(
-            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
+            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid,
+            @ApiParam(name = "flat", value = "Flat version of the contribution") String flat) {
         Contribution contribution;
         try {
             contribution = Contribution.readByUUID(uuid);
+
+            if(flat.equals("true")) {
+                try {
+                    DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                    Map<String, Object> aRet = new HashMap<>();
+                    aRet.put("title", contribution.getTitle());
+                    aRet.put("text", contribution.getText());
+                    aRet.put("creation", bdFormat.format(contribution.getCreation()));
+                    if (contribution.getLastUpdate() != null) {
+                        aRet.put("lastUpdate", bdFormat.format(contribution.getLastUpdate()));
+                    }
+                    return ok(Json.toJson(aRet));
+
+                } catch (Exception e) {
+                    Logger.error(e.getMessage());
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+                    TransferResponseStatus response = new TransferResponseStatus();
+                    response.setStatusMessage("Error: "+e.getMessage());
+                    response.setErrorTrace(sw.toString());
+                    response.setResponseStatus(ResponseStatus.SERVERERROR);
+                    return internalServerError(Json.toJson(response));
+                }
+            }
 
             //if the contribution is published and has a peerdoc, return the peerdoc url without user
             if(contribution.getStatus().equals(ContributionStatus.PUBLISHED) &&
