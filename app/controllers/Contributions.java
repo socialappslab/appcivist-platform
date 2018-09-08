@@ -49,12 +49,18 @@ import play.i18n.Messages;
 import play.libs.F;
 import play.libs.F.Promise;
 import play.libs.Json;
-import play.mvc.*;
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.With;
 import play.twirl.api.Content;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import service.PlayAuthenticateLocal;
-import utils.*;
+import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
+import utils.LogActions;
+import utils.Packager;
 import utils.security.HashGenerationException;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
@@ -83,7 +89,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
-import static play.mvc.Results.ok;
+import static security.CoordinatorOrAuthorDynamicResourceHandler.checkIfCoordinator;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -2308,6 +2314,19 @@ public class Contributions extends Controller {
 			Ebean.beginTransaction();
 			try {
 	            Contribution newContribution = newContributionForm.get();
+
+	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED)) {
+                    final boolean[] allowed = {false};
+                    checkIfCoordinator(newContribution, allowed, author);
+                    if(!allowed[0]) {
+                        TransferResponseStatus responseBody = new TransferResponseStatus();
+                        responseBody.setStatusMessage(Messages.get(
+                                "contribution.unauthorized.creation",
+                                ResourceSpaceTypes.ASSEMBLY));
+                        return unauthorized(Json.toJson(responseBody));
+                    }
+                }
+
 	            newContribution.setContributionId(contributionId);
 	            newContribution.setContextUserId(author.getUserId());
 
@@ -4351,7 +4370,19 @@ public class Contributions extends Controller {
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid,
             @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
+
         Contribution c = Contribution.read(cid);
+        Http.Session s = session();
+        Logger.debug("Session = "+(s != null ? s : "[no session found]"));
+        AuthUser u = PlayAuthenticateLocal.getUser(s);
+        Logger.debug("AuthUser = "+(u != null ? u.getId() : "[no user found]"));
+        User user = User.findByAuthUserIdentity(u);
+
+        if(user == null || (c.getStatus().equals(ContributionStatus.PUBLISHED) &&  !user.isAdmin())) {
+            return badRequest(Json.toJson(new TransferResponseStatus("The contribution is already " +
+                    "published and cannot be changed anymore")));
+        }
+
         String upStatus = status.toUpperCase();
         List<String> checkStatus = null;
         if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
@@ -4374,11 +4405,6 @@ public class Contributions extends Controller {
             return badRequest(Json.toJson(new TransferResponseStatus("You must complete all the " +
                     "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
         }
-        Http.Session s = session();
-        Logger.debug("Session = "+(s != null ? s : "[no session found]"));
-        AuthUser u = PlayAuthenticateLocal.getUser(s);
-        Logger.debug("AuthUser = "+(u != null ? u.getId() : "[no user found]"));
-        User user = User.findByAuthUserIdentity(u);
         Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
         try {
