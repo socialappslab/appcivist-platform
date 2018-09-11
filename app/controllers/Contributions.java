@@ -5155,7 +5155,9 @@ public class Contributions extends Controller {
                         .getUser(session()));
                 PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
                 try {
-                    return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
+                    Map<String,String> response = peerDocWrapper.createPad(contribution, campaign.getResources().getUuid());
+                    response.put("path", response.get("path")+"?user="+peerDocWrapper.encrypt());
+                    return ok(Json.toJson(response));
                 } catch (Exception e) {
                     TransferResponseStatus response = new TransferResponseStatus();
                     response.setResponseStatus(ResponseStatus.SERVERERROR);

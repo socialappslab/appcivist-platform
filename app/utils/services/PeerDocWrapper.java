@@ -49,12 +49,30 @@ public class PeerDocWrapper {
     private static final int AUTH_TAG_LENGTH = 16;
     private static final long DEFAULT_TIMEOUT = 10000;
 
+    /**
+     * Communicates with a PeerDoc Server and creates a PAD, storing the main URL of the peerdoc document
+     * as part of a contribution
+     *
+     * @param c
+     * @param resourceSpaceConfigsUUID
+     * @return
+     * @throws NoSuchPaddingException
+     * @throws UnsupportedEncodingException
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException
+     * @throws InvalidAlgorithmParameterException
+     * @throws MalformedURLException
+     * @throws HashGenerationException
+     * @throws PeerdocServerError
+     */
     public Map<String, String> createPad(Contribution c, UUID resourceSpaceConfigsUUID) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException, PeerdocServerError {
 
         String padId = UUID.randomUUID().toString();
-        String url = getPeerDocUrl()+ "?user=" + encrypt();
+        String url = getPeerDocUrl();
         Logger.info("Creating PEERDOC Resource ("+padId+") with URL =  con"+url);
         createResourceAndUpdateContribution(padId, null, url, resourceSpaceConfigsUUID, c,
                 ResourceTypes.PEERDOC, false, null);
