@@ -491,6 +491,13 @@ public class Contribution extends AppCivistBaseModel {
 
     }
 
+    public static List<Contribution> getAllWithPeerDoc() {
+
+        return find.where().contains("extendedTextPad.resourceType", ResourceTypes.PEERDOC.name()).findList();
+
+
+    }
+
     @Transient
     public void setFirstAuthor(User u) {
         u.setProviders(null);
@@ -1066,10 +1073,12 @@ public class Contribution extends AppCivistBaseModel {
     public static Contribution readAndUpdate(Contribution newContribution,
             Long contributionId, Long authorId) throws IllegalArgumentException, IllegalAccessException {
 
-        newContribution.setText(Jsoup.clean(newContribution.getText(),
+        if (newContribution.getText() != null) {
+            newContribution.setText(Jsoup.clean(newContribution.getText(),
                     Whitelist.basicWithImages()));
-        newContribution.setPlainText(Jsoup.parse(newContribution.getText())
+            newContribution.setPlainText(Jsoup.parse(newContribution.getText())
                     .text());
+        }
 
         Contribution existingContribution = Contribution.read(contributionId);
         

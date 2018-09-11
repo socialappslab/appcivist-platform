@@ -54,19 +54,23 @@ import play.twirl.api.Content;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import service.PlayAuthenticateLocal;
-import utils.GlobalData;
-import utils.GlobalDataConfigKeys;
-import utils.LogActions;
-import utils.Packager;
+import utils.*;
+import utils.security.HashGenerationException;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -79,6 +83,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
+import static play.mvc.Results.ok;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -242,19 +247,14 @@ public class Contributions extends Controller {
     public static Result findContribution(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long contributionId) {
+
         Contribution contribution = Contribution.read(contributionId);
         if(contribution.getExtendedTextPad() != null && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
             User user = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
-            boolean isAuthor = false;
-            for(User userC: contribution.getAuthors()) {
-                if(userC.getUserId().equals(user.getUserId())) {
-                    isAuthor = true;
-                }
-            }
-            //only return de extendedTextPad if the user is the author of the contribution
-            if (isAuthor) {
+
                 PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+
                 try {
                     contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
                             .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
@@ -263,7 +263,6 @@ public class Contributions extends Controller {
                     contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
                     return ok(Json.toJson(contribution));
                 }
-            }
 
         }
         return ok(Json.toJson(contribution));
@@ -1036,10 +1035,54 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution found", response = TransferResponseStatus.class)})
     // TODO: add API token support, some API enpoints must be available only for registered clients
     public static Result findContributionByUUID(
-            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid) {
+            @ApiParam(name = "uuid", value = "Contribution Universal ID") UUID uuid,
+            @ApiParam(name = "flat", value = "Flat version of the contribution") String flat) {
         Contribution contribution;
         try {
             contribution = Contribution.readByUUID(uuid);
+
+            if(flat.equals("true")) {
+                try {
+                    DateFormat bdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                    Map<String, Object> aRet = new HashMap<>();
+                    aRet.put("title", contribution.getTitle());
+                    aRet.put("text", contribution.getText());
+                    aRet.put("creation", bdFormat.format(contribution.getCreation()));
+                    if (contribution.getLastUpdate() != null) {
+                        aRet.put("lastUpdate", bdFormat.format(contribution.getLastUpdate()));
+                    }
+                    return ok(Json.toJson(aRet));
+
+                } catch (Exception e) {
+                    Logger.error(e.getMessage());
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    Logger.debug("Exception: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+                    TransferResponseStatus response = new TransferResponseStatus();
+                    response.setStatusMessage("Error: "+e.getMessage());
+                    response.setErrorTrace(sw.toString());
+                    response.setResponseStatus(ResponseStatus.SERVERERROR);
+                    return internalServerError(Json.toJson(response));
+                }
+            }
+
+            //if the contribution is published and has a peerdoc, return the peerdoc url without user
+            if(contribution.getStatus().equals(ContributionStatus.PUBLISHED) &&
+                    contribution.getExtendedTextPad() != null
+                    && contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(null);
+                    try {
+                        contribution.getExtendedTextPad().setUrl(new URL(contribution.getExtendedTextPad()
+                                .getUrlAsString() + "?user=" + peerDocWrapper.encrypt()));
+
+                    } catch (Exception e) {
+                        contribution.setErrorsInExtendedTextPad("Error reading the pad " + e.getMessage());
+                        return ok(Json.toJson(contribution));
+                    }
+                }
+
+
         } catch (Exception e) {
             e.printStackTrace();
             return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "No contribution with this uuid")));
@@ -1195,7 +1238,7 @@ public class Contributions extends Controller {
                 }
             };
 
-            return Results.ok(ret);
+            return ok(ret);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -5112,7 +5155,9 @@ public class Contributions extends Controller {
                         .getUser(session()));
                 PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
                 try {
-                    return ok(Json.toJson(peerDocWrapper.createPad(contribution, campaign.getResources().getUuid())));
+                    Map<String,String> response = peerDocWrapper.createPad(contribution, campaign.getResources().getUuid());
+                    response.put("path", response.get("path")+"?user="+peerDocWrapper.encrypt());
+                    return ok(Json.toJson(response));
                 } catch (Exception e) {
                     TransferResponseStatus response = new TransferResponseStatus();
                     response.setResponseStatus(ResponseStatus.SERVERERROR);
@@ -5222,12 +5267,12 @@ public class Contributions extends Controller {
 
         Format formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         contributionMap.put("Creation", formatter.format(contribution.getCreation()));
-        contributionMap.put("Contribution Id", contribution.getContributionId().toString());
+        contributionMap.put("Contribution Id", contribution.getContributionId()+"");
         contributionMap.put("UUID", contribution.getUuidAsString());
         contributionMap.put("Title",contribution.getTitle());
         contributionMap.put("Brief Summary", contribution.getPlainText());
-        contributionMap.put("Type", contribution.getType().name());
-        contributionMap.put("Status",contribution.getStatus().name());
+        contributionMap.put("Type", contribution.getType()!=null ? contribution.getType().name() : "NO_TYPE");
+        contributionMap.put("Status",contribution.getStatus() !=null ? contribution.getStatus().name() : "NO_STATUS");
         contributionMap.put("Source", contribution.getSource());
         contributionMap.put("Source Code", contribution.getSourceCode());
         contributionMap.put("Source Url", contribution.getSourceUrl());
@@ -5235,8 +5280,8 @@ public class Contributions extends Controller {
 
         Logger.debug("EXPORT: Exporting creator...");
 
-        contributionMap.put("Creator/Name", contribution.getCreator().getName());
-        contributionMap.put("Creator/Email", contribution.getCreator().getEmail());
+        contributionMap.put("Creator/Name", contribution.getCreator()!=null ? contribution.getCreator().getName() : "NO_CREATOR");
+        contributionMap.put("Creator/Email", contribution.getCreator()!=null ? contribution.getCreator().getEmail() : "NO_CREATOR");
 
 
         Logger.debug("EXPORT: Group author...");
@@ -5440,7 +5485,7 @@ public class Contributions extends Controller {
                     Map.Entry pair = (Map.Entry) o;
                     String key = pair.getKey().toString();
                     String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
-                    run.setText(key + ": " + value);
+                    run.setText(key + ": " + value+"\n");
                 }
                 doc.write(out);
                 //Close document
@@ -5472,9 +5517,11 @@ public class Contributions extends Controller {
         } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
                 rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
             unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION) &&
-                rs.getContribution().getStatus().equals(ContributionStatus.DRAFT)) {
-            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+            unauth = rs.getContribution() != null
+                    ? rs.getContribution().getStatus().equals(ContributionStatus.DRAFT) :
+                        rs.getForumContribution() != null
+                            ? rs.getForumContribution().getStatus().equals(ContributionStatus.DRAFT) : false;
         }
         return unauth;
     }
@@ -5545,13 +5592,14 @@ public class Contributions extends Controller {
 
                         default:
                             Object object = Contribution.class.getMethod("get" + output).invoke(c);
-                            if (object == null || (object.getClass().isInstance(String.class))
-                                    && ((String) object).trim().isEmpty()) {
+                            if (object == null || (object instanceof String
+                                    && ((String) object).trim().isEmpty())) {
                             contributionFields.add(requirement);
                             break;
                         }
                     }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    Logger.info("ERROR " + e.getMessage());
                     customFields.add(requirement);
                 }
             }
@@ -5573,6 +5621,7 @@ public class Contributions extends Controller {
             }
         }
         custom.addAll(contributionFields);
+        Logger.info("Required fields: " + custom.toString());
         return custom;
     }
 
@@ -5666,6 +5715,34 @@ public class Contributions extends Controller {
             }
             feedback.update();
         }
+    }
+
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class,  produces = "application/json", value = "PUT update peerdoc permissions " +
+            "for all contribtuions")
+    @Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result updatePeerDocPermission () {
+
+        List<Contribution> contributionList =  Contribution.getAllWithPeerDoc();
+        Integer contributionCount = 0;
+        for (Contribution contribution : contributionList) {
+            Logger.info("Updating contribution " + contribution.getUuidAsString());
+            for(User user: contribution.getAuthors()) {
+                contributionCount ++;
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                Logger.info("Updating user " + user.getUsername());
+                try {
+                    peerDocWrapper.updatePeerdocPermissions(contribution);
+                } catch (NoSuchPaddingException | InvalidAlgorithmParameterException |
+                        HashGenerationException | BadPaddingException | IllegalBlockSizeException |
+                        NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    Logger.error("Error updating peerdoc permisions " + e.getMessage());
+                }
+            }
+        }
+
+        return ok("Updated " + contributionCount + " contributions of " + contributionList.size());
+
     }
 
 }

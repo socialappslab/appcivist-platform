@@ -49,6 +49,24 @@ public class PeerDocWrapper {
     private static final int AUTH_TAG_LENGTH = 16;
     private static final long DEFAULT_TIMEOUT = 10000;
 
+    /**
+     * Communicates with a PeerDoc Server and creates a PAD, storing the main URL of the peerdoc document
+     * as part of a contribution
+     *
+     * @param c
+     * @param resourceSpaceConfigsUUID
+     * @return
+     * @throws NoSuchPaddingException
+     * @throws UnsupportedEncodingException
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException
+     * @throws InvalidAlgorithmParameterException
+     * @throws MalformedURLException
+     * @throws HashGenerationException
+     * @throws PeerdocServerError
+     */
     public Map<String, String> createPad(Contribution c, UUID resourceSpaceConfigsUUID) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException, PeerdocServerError {
@@ -194,6 +212,11 @@ public class PeerDocWrapper {
             NoSuchPaddingException, InvalidAlgorithmParameterException,
             InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             UnsupportedEncodingException, HashGenerationException {
+
+        if(this.user == null) {
+            return "";
+        }
+
         byte [] key = hexStringToByteArray(getKeyHex());
         byte [] nonce = new byte[NONCE_LENGTH];
         byte [] iv = new byte[IV_LENGTH];
