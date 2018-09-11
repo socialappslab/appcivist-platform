@@ -54,7 +54,7 @@ public class PeerDocWrapper {
             InvalidAlgorithmParameterException, MalformedURLException, HashGenerationException, PeerdocServerError {
 
         String padId = UUID.randomUUID().toString();
-        String url = getPeerDocUrl();
+        String url = getPeerDocUrl()+ "?user=" + encrypt();
         Logger.info("Creating PEERDOC Resource ("+padId+") with URL =  con"+url);
         createResourceAndUpdateContribution(padId, null, url, resourceSpaceConfigsUUID, c,
                 ResourceTypes.PEERDOC, false, null);
