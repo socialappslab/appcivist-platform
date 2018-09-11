@@ -5265,12 +5265,12 @@ public class Contributions extends Controller {
 
         Format formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         contributionMap.put("Creation", formatter.format(contribution.getCreation()));
-        contributionMap.put("Contribution Id", contribution.getContributionId().toString());
+        contributionMap.put("Contribution Id", contribution.getContributionId()+"");
         contributionMap.put("UUID", contribution.getUuidAsString());
         contributionMap.put("Title",contribution.getTitle());
         contributionMap.put("Brief Summary", contribution.getPlainText());
-        contributionMap.put("Type", contribution.getType().name());
-        contributionMap.put("Status",contribution.getStatus().name());
+        contributionMap.put("Type", contribution.getType()!=null ? contribution.getType().name() : "NO_TYPE");
+        contributionMap.put("Status",contribution.getStatus() !=null ? contribution.getStatus().name() : "NO_STATUS");
         contributionMap.put("Source", contribution.getSource());
         contributionMap.put("Source Code", contribution.getSourceCode());
         contributionMap.put("Source Url", contribution.getSourceUrl());
@@ -5278,8 +5278,8 @@ public class Contributions extends Controller {
 
         Logger.debug("EXPORT: Exporting creator...");
 
-        contributionMap.put("Creator/Name", contribution.getCreator().getName());
-        contributionMap.put("Creator/Email", contribution.getCreator().getEmail());
+        contributionMap.put("Creator/Name", contribution.getCreator()!=null ? contribution.getCreator().getName() : "NO_CREATOR");
+        contributionMap.put("Creator/Email", contribution.getCreator()!=null ? contribution.getCreator().getEmail() : "NO_CREATOR");
 
 
         Logger.debug("EXPORT: Group author...");
@@ -5483,7 +5483,7 @@ public class Contributions extends Controller {
                     Map.Entry pair = (Map.Entry) o;
                     String key = pair.getKey().toString();
                     String value = pair.getValue() != null ? pair.getValue().toString() : "\n";
-                    run.setText(key + ": " + value);
+                    run.setText(key + ": " + value+"\n");
                 }
                 doc.write(out);
                 //Close document
