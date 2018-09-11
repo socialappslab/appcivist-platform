@@ -220,6 +220,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
 	@JsonIgnore
+	private Contribution forumContribution;
+
+
+	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
+	@JsonIgnore
 	private Campaign campaignForum;
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
@@ -670,6 +675,10 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	public Contribution getContribution() {
 		return contribution;
+	}
+
+	public Contribution getForumContribution() {
+		return forumContribution;
 	}
 
 	public void setContribution(Contribution contribution) {

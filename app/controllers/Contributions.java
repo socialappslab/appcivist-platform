@@ -5515,9 +5515,11 @@ public class Contributions extends Controller {
         } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
                 rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
             unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION) &&
-                rs.getContribution().getStatus().equals(ContributionStatus.DRAFT)) {
-            unauth = true;
+        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+            unauth = rs.getContribution() != null
+                    ? rs.getContribution().getStatus().equals(ContributionStatus.DRAFT) :
+                        rs.getForumContribution() != null
+                            ? rs.getForumContribution().getStatus().equals(ContributionStatus.DRAFT) : false;
         }
         return unauth;
     }
