@@ -32,6 +32,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 import static delegates.ContributionsDelegate.createResourceAndUpdateContribution;
+import static security.CoordinatorOrAuthorDynamicResourceHandler.checkIfCoordinator;
 
 /**
  * Created by yohanna on 25/03/18.
@@ -136,6 +137,12 @@ public class PeerDocWrapper {
         if(resource == null) {
             Logger.info("PEERDOC: Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Not updating permissions");
             return;
+        }
+        final boolean[] coordinador = {false};
+        checkIfCoordinator(contribution, coordinador, this.user);
+        if(coordinador[0]) {
+            Logger.info("The user is a coordinator, sending the creator of the contribution as peerdoc token");
+            this.setUser(contribution.getCreator());
         }
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();

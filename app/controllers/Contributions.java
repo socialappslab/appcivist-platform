@@ -49,12 +49,18 @@ import play.i18n.Messages;
 import play.libs.F;
 import play.libs.F.Promise;
 import play.libs.Json;
-import play.mvc.*;
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.With;
 import play.twirl.api.Content;
 import providers.MyUsernamePasswordAuthProvider;
 import security.SecurityModelConstants;
 import service.PlayAuthenticateLocal;
-import utils.*;
+import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
+import utils.LogActions;
+import utils.Packager;
 import utils.security.HashGenerationException;
 import utils.services.EtherpadWrapper;
 import utils.services.PeerDocWrapper;
@@ -83,7 +89,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
-import static play.mvc.Results.ok;
 
 @Api(value = "05 contribution: Contribution Making", description = "Contribution Making Service: contributions by citizens to different spaces of civic engagement")
 @With(Headers.class)
@@ -2729,6 +2734,8 @@ public class Contributions extends Controller {
             User author = User.read(user.getUserId());
             boolean authorExist = contribution.getAuthors().contains(author);
             if(!authorExist) {
+
+
                 contribution.getAuthors().add(author);
                 contribution.setLastUpdate(new Date());
                 contribution.update();
