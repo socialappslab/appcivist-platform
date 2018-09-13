@@ -375,131 +375,129 @@ public class Contributions extends Controller {
         }
 
         PaginatedContribution pag = new PaginatedContribution();
+        List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
+        contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
+        pag.setPageSize(pageSize);
+        pag.setTotal(contribs.size());
+        pag.setPage(page);
+
         if (all != null) {
-            contributions = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
-            return contributions != null ? ok(Json.toJson(contributions))
-                    : notFound(Json.toJson(new TransferResponseStatus(
+            pag.setPageSize(pag.getTotal());
+            pag.setPage(0);
+        }
+        pag.setList(contributions);
+        if (contributions == null || contributions.isEmpty()) {
+            return notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
         } else {
-            List<Contribution> contribs = ContributionsDelegate.findContributions(conditions, null, null, creatorOnly);
-            contributions = ContributionsDelegate.findContributions(conditions, page, pageSize, creatorOnly);
-            pag.setPageSize(pageSize);
-            pag.setTotal(contribs.size());
-            pag.setPage(page);
-            pag.setList(contributions);
-            if (contributions == null || contributions.isEmpty()) {
-                return notFound(Json.toJson(new TransferResponseStatus(
-                        "No contributions for {resource space}: " + sid + ", type=" + type)));
+            Boolean sendMail = false;
+            if (!(format.equals("JSON") || format.equals("CSV")) || includeExtendedText.toUpperCase().equals("TRUE")) {
+                Logger.info("Format is not json or csv and include extendedtext is true, mail will be send");
+                sendMail = true;
+            }
+            if (!sendMail) {
+                Logger.info("Mail will not send");
+                if (format.equals("JSON")) {
+                    return ok(Json.toJson(pag));
+                }
+
+                if (format.equals("CSV")) {
+                    response().setContentType("application/csv");
+                    response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
+                    try {
+                        Logger.info("Preparing CSV file");
+                        File tempFile = File.createTempFile("contributions.csv", ".tmp");
+                        CSVPrinter csvFilePrinter = null;
+                        FileWriter fileWriter = new FileWriter(tempFile);
+
+                        int first = 0;
+                        for(Contribution contribution: contributions) {
+                            Logger.info("Creating csv row for contribution " + contribution.getContributionId());
+                            LinkedHashMap<String, String> contributionMap = getContributionMapToExport(contribution);
+                            if(first == 0) {
+                                first = 1;
+                                CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader(contributionMap.keySet().toArray(new String[contributionMap.keySet().size()]));
+                                csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+                            }
+
+                            for(String key: contributionMap.keySet()) {
+                                csvFilePrinter.print((contributionMap.get(key)));
+                            }
+                            csvFilePrinter.println();
+                        }
+                        fileWriter.flush();
+                        fileWriter.close();
+                        if(csvFilePrinter != null) {
+                            csvFilePrinter.close();
+                        }
+
+                        return ok(tempFile);
+                    } catch (Exception e) {
+                        Logger.error("Error generating csv file");
+                        e.printStackTrace();
+                        return internalServerError(Json
+                                .toJson(new TransferResponseStatus(
+                                        ResponseStatus.SERVERERROR,
+                                        "Error reading contribution stats: " + e.getMessage())));
+                    }
+                }
+
+                //if mail will be send we package the files into a zip and send the download link by mail
             } else {
-                Boolean sendMail = false;
-                if (!(format.equals("JSON") || format.equals("CSV")) || includeExtendedText.toUpperCase().equals("TRUE")) {
-                    Logger.info("Format is not json or csv and include extendedtext is true, mail will be send");
-                    sendMail = true;
-                }
-                if (!sendMail) {
-                    Logger.info("Mail will not send");
-                    if (format.equals("JSON")) {
-                        return ok(Json.toJson(pag));
-                    }
-
-                    if (format.equals("CSV")) {
-                        response().setContentType("application/csv");
-                        response().setHeader("Content-disposition", "attachment; filename=proposal.csv");
-                        try {
-                            Logger.info("Preparing CSV file");
-                            File tempFile = File.createTempFile("contributions.csv", ".tmp");
-                            CSVPrinter csvFilePrinter = null;
-                            FileWriter fileWriter = new FileWriter(tempFile);
-
-                            int first = 0;
-                            for(Contribution contribution: contributions) {
-                                Logger.info("Creating csv row for contribution " + contribution.getContributionId());
-                                LinkedHashMap<String, String> contributionMap = getContributionMapToExport(contribution);
-                                if(first == 0) {
-                                    first = 1;
-                                    CSVFormat csvFileFormat = CSVFormat.DEFAULT.withHeader(contributionMap.keySet().toArray(new String[contributionMap.keySet().size()]));
-                                    csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
-                                }
-
-                                for(String key: contributionMap.keySet()) {
-                                    csvFilePrinter.print((contributionMap.get(key)));
-                                }
-                                csvFilePrinter.println();
+                Logger.info("Packing files to send by email");
+                String finalFormat = format;
+                String finalExtendedTextFormat = extendedTextFormat;
+                F.Promise.promise(() -> {
+                    try {
+                        List<File> aRet = new ArrayList<>();
+                        if (finalFormat.toUpperCase().equals("JSON")) {
+                            aRet.add(getExportFileJson(contributions, true, finalFormat));
+                        } else if (collectionFileFormat != null &&
+                                (collectionFileFormat.toUpperCase().equals("JSON"))) {
+                            aRet.add(getExportFileJson(contributions, true, collectionFileFormat));
+                        } else if (collectionFileFormat != null &&
+                                (collectionFileFormat.toUpperCase().equals("CSV"))) {
+                            for(Contribution contribution : contributions) {
+                                aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, collectionFileFormat));
                             }
-                            fileWriter.flush();
-                            fileWriter.close();
-                            if(csvFilePrinter != null) {
-                                csvFilePrinter.close();
+                        } else {
+                            aRet.add(getExportFileJson(contributions, true, "JSON"));
+                            for(Contribution contribution : contributions) {
+                                aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, "CSV"));
                             }
-
-                            return ok(tempFile);
-                        } catch (Exception e) {
-                            Logger.error("Error generating csv file");
-                            e.printStackTrace();
-                            return internalServerError(Json
-                                    .toJson(new TransferResponseStatus(
-                                            ResponseStatus.SERVERERROR,
-                                            "Error reading contribution stats: " + e.getMessage())));
                         }
-                    }
-
-                    //if mail will be send we package the files into a zip and send the download link by mail
-                } else {
-                    Logger.info("Packing files to send by email");
-                    String finalFormat = format;
-                    String finalExtendedTextFormat = extendedTextFormat;
-                    F.Promise.promise(() -> {
-                        try {
-                            List<File> aRet = new ArrayList<>();
-                            if (finalFormat.toUpperCase().equals("JSON")) {
-                                aRet.add(getExportFileJson(contributions, true, finalFormat));
-                            } else if (collectionFileFormat != null &&
-                                    (collectionFileFormat.toUpperCase().equals("JSON"))) {
-                                aRet.add(getExportFileJson(contributions, true, collectionFileFormat));
-                            } else if (collectionFileFormat != null &&
-                                    (collectionFileFormat.toUpperCase().equals("CSV"))) {
-                                for(Contribution contribution : contributions) {
-                                    aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, collectionFileFormat));
-                                }
-                            } else {
-                                aRet.add(getExportFileJson(contributions, true, "JSON"));
-                                for(Contribution contribution : contributions) {
-                                    aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, "CSV"));
-                                }
+                        for (Contribution contribution : contributions) {
+                            aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, finalFormat));
+                            if (includeExtendedText.toUpperCase().equals("TRUE")) {
+                                aRet.add(getPadFile(contribution, finalExtendedTextFormat, finalFormat));
                             }
-                            for (Contribution contribution : contributions) {
-                                aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, finalFormat));
-                                if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                                    aRet.add(getPadFile(contribution, finalExtendedTextFormat, finalFormat));
-                                }
-                            }
-
-                            Logger.info("EXPORT: Preparing ZIP file for exported contributions...");
-                            User user = User.findByAuthUserIdentity(PlayAuthenticate
-                                    .getUser(session()));
-                            String fileName = "contribution" + new Date().getTime() + ".zip";
-
-                            String appBasePath = Play.application().path().getAbsolutePath();
-                            String path = Play.application().configuration().getString("application.contributionFilesPath") + fileName;
-
-                            if (!Play.application().configuration().getBoolean("application.contributionFilesPathIsAbsolute")) {
-                                path = appBasePath + path;
-                            }
-
-                            File zip = new File(path);
-                            Logger.info("EXPORT: Packing export in "+path + "files " + aRet);
-                            Packager.packZip(zip, aRet);
-                            String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
-                            Logger.info("EXPORT: Preparing email to send "+url);
-                            MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
-                            provider.sendZipContributionFile(url, user.getEmail());
-                        } catch (DocumentException e) {
-                            Logger.info(e.getMessage());
-                            Logger.debug(e.getStackTrace().toString());
                         }
-                        return Optional.ofNullable(null);
-                    });
-                }
+
+                        Logger.info("EXPORT: Preparing ZIP file for exported contributions...");
+                        User user = User.findByAuthUserIdentity(PlayAuthenticate
+                                .getUser(session()));
+                        String fileName = "contribution" + new Date().getTime() + ".zip";
+
+                        String appBasePath = Play.application().path().getAbsolutePath();
+                        String path = Play.application().configuration().getString("application.contributionFilesPath") + fileName;
+
+                        if (!Play.application().configuration().getBoolean("application.contributionFilesPathIsAbsolute")) {
+                            path = appBasePath + path;
+                        }
+
+                        File zip = new File(path);
+                        Logger.info("EXPORT: Packing export in "+path + "files " + aRet);
+                        Packager.packZip(zip, aRet);
+                        String url = Play.application().configuration().getString("application.contributionFiles") + fileName;
+                        Logger.info("EXPORT: Preparing email to send "+url);
+                        MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+                        provider.sendZipContributionFile(url, user.getEmail());
+                    } catch (DocumentException e) {
+                        Logger.info(e.getMessage());
+                        Logger.debug(e.getStackTrace().toString());
+                    }
+                    return Optional.ofNullable(null);
+                });
             }
         }
         return ok("The file will be sent to your email when it is ready");
