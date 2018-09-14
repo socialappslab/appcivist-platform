@@ -1433,16 +1433,24 @@ public class Assemblies extends Controller {
 				break;
 		}
         if (targetType.equals("ASSEMBLY") || targetType.equals("GROUP")) {
-            Assembly a = ((Assembly) target);
+
             MembershipAssembly ma = new MembershipAssembly();
             ma.setUser(u);
             ma.setCreator(creator);
 			ma.setMembershipType("ASSEMBLY");
-            ma.setAssembly(a);
-            ma.setStatus(MembershipStatus.ACCEPTED);
-            ma.setRoles(roles);
-            ma.save();
-
+			ma.setStatus(MembershipStatus.ACCEPTED);
+			ma.setRoles(roles);
+			if(targetType.equals("ASSEMBLY")) {
+				Assembly a = ((Assembly) target);
+				ma.setAssembly(a);
+				ma.save();
+			} else {
+				WorkingGroup wg = ((WorkingGroup) target);
+				if(!wg.getAssemblies().isEmpty()) {
+					ma.setAssembly(Assembly.read(wg.getAssemblies().get(0)));
+					ma.save();
+				}
+			}
         }
         if (targetType.equals("GROUP")) {
             WorkingGroup wg = ((WorkingGroup) target);
