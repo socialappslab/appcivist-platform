@@ -703,20 +703,29 @@ public class User extends AppCivistBaseModel implements Subject {
 				Logger.error("Membership already exists");
 			}
 			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
-			NonMemberAuthor toDelete = null;
+			Logger.debug(" " + contributions.size() + " found where the author is no member");
+			NonMemberAuthor toDelete;
 			for(Contribution contribution: contributions) {
+				toDelete = null;
 				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
-					toDelete = nonMemberAuthor;
-
+					if(nonMemberAuthor.getEmail().equals(user.getEmail())) {
+						toDelete = nonMemberAuthor;
+						break;
+					}
 				}
 				if(toDelete != null) {
 					contribution.getNonMemberAuthors().remove(toDelete);
+					contribution.update();
+					contribution.refresh();
+					Logger.debug("Deleting non member " + toDelete.getEmail());
 				}
 				contribution.addAuthor(user);
 				contribution.update();
 				contribution.refresh();
+				Logger.debug("Contribution updated ");
 				F.Promise.promise(() -> {
-					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution, contribution.getContainingSpaces().get(0));
+					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution,
+							contribution.getContainingSpaces().get(0));
 					PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
 					peerDocWrapper.updatePeerdocPermissions(contribution);
 					return Optional.ofNullable(null);

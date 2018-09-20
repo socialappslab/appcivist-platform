@@ -477,7 +477,7 @@ public class Contribution extends AppCivistBaseModel {
     }
 
     public static List<Contribution> getByNoMemberAuthorMail(String email) {
-        return find.where().eq("nonMemberAuthors.email", email).findList();
+        return new ArrayList<>(find.where().eq("nonMemberAuthors.email", email).findSet());
     }
 
     public static Contribution getByPeerDocId(String peerdocId) {
