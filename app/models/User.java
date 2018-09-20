@@ -715,10 +715,14 @@ public class User extends AppCivistBaseModel implements Subject {
 					}
 				}
 				if(toDelete != null) {
-					contribution.getNonMemberAuthors().remove(toDelete);
-					contribution.update();
-					contribution.refresh();
-					Logger.debug("Deleting non member " + toDelete.getEmail());
+					try {
+						contribution.getNonMemberAuthors().remove(toDelete);
+						contribution.update();
+						contribution.refresh();
+						Logger.debug("Deleting non member " + toDelete.getEmail());
+					} catch (Exception e) {
+						Logger.debug("Deleting non member update: Author already exist " + e.getMessage());
+					}
 				}
 				for(User author: contribution.getAuthors()) {
 					if(author.getEmail().equals(user.getEmail())) {
@@ -727,10 +731,14 @@ public class User extends AppCivistBaseModel implements Subject {
 					}
 				}
 				if(!isAuthor) {
-					contribution.addAuthor(user);
-					contribution.update();
-					contribution.refresh();
-					Logger.debug("Contribution updated ");
+					try {
+						contribution.addAuthor(user);
+						contribution.update();
+						contribution.refresh();
+						Logger.debug("Contribution updated ");
+					} catch (Exception e) {
+						Logger.debug("Author already exist " + e.getMessage());
+					}
 				}
 				F.Promise.promise(() -> {
 					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution,
