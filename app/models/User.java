@@ -707,6 +707,7 @@ public class User extends AppCivistBaseModel implements Subject {
 			NonMemberAuthor toDelete;
 			for(Contribution contribution: contributions) {
 				toDelete = null;
+				boolean isAuthor = false;
 				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
 					if(nonMemberAuthor.getEmail().equals(user.getEmail())) {
 						toDelete = nonMemberAuthor;
@@ -719,10 +720,18 @@ public class User extends AppCivistBaseModel implements Subject {
 					contribution.refresh();
 					Logger.debug("Deleting non member " + toDelete.getEmail());
 				}
-				contribution.addAuthor(user);
-				contribution.update();
-				contribution.refresh();
-				Logger.debug("Contribution updated ");
+				for(User author: contribution.getAuthors()) {
+					if(author.getEmail().equals(user.getEmail())) {
+						isAuthor = true;
+						break;
+					}
+				}
+				if(!isAuthor) {
+					contribution.addAuthor(user);
+					contribution.update();
+					contribution.refresh();
+					Logger.debug("Contribution updated ");
+				}
 				F.Promise.promise(() -> {
 					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution,
 							contribution.getContainingSpaces().get(0));
