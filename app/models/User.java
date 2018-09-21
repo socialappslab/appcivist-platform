@@ -26,7 +26,6 @@ import models.misc.Views;
 import models.transfer.AssemblyTransfer;
 import play.Logger;
 import play.Play;
-import play.db.ebean.Transactional;
 import play.i18n.Lang;
 import play.libs.F;
 import play.mvc.Http.Context;
@@ -865,6 +864,10 @@ public class User extends AppCivistBaseModel implements Subject {
    		final Lang lang = Lang.preferred(Context.current().request().acceptLanguages());
    		final String langCode = userLangCode !=null ? userLangCode : lang.code();   
    		Context.current().changeLang(langCode);
+	}
+
+	public boolean isAdmin() {
+		return this.getRoles().stream().anyMatch(o -> o.getName().equals("ADMIN"));
 	}
 
 	public UserProfile getProfile() {
