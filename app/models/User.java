@@ -704,15 +704,18 @@ public class User extends AppCivistBaseModel implements Subject {
 			}
 			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
 			Logger.debug(" " + contributions.size() + " found where the author is no member");
+
+			// Chcek if user is in the list of Non Member Authors (new sign up)
 			NonMemberAuthor toDelete;
 			for(Contribution contribution: contributions) {
 				toDelete = null;
 				boolean isAuthor = false;
 				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
-					if(nonMemberAuthor.getEmail().equals(user.getEmail())) {
-						toDelete = nonMemberAuthor;
-						break;
-					}
+                    String nonMemberEmail = nonMemberAuthor.getEmail();
+                    if (nonMemberEmail !=null && nonMemberEmail.equals(user.getEmail())) {
+                        toDelete = nonMemberAuthor;
+                        break;
+                    }
 				}
 				if(toDelete != null) {
 					try {
@@ -721,15 +724,18 @@ public class User extends AppCivistBaseModel implements Subject {
 						contribution.refresh();
 						Logger.debug("Deleting non member " + toDelete.getEmail());
 					} catch (Exception e) {
-						Logger.debug("Deleting non member update: Author already exist " + e.getMessage());
+						Logger.debug("Deleting non member update: " + e.getMessage());
 					}
 				}
+
+				// Check if user is already in the list of User Authors (previously signed in)
 				for(User author: contribution.getAuthors()) {
 					if(author.getEmail().equals(user.getEmail())) {
 						isAuthor = true;
 						break;
 					}
 				}
+
 				if(!isAuthor) {
 					try {
 						contribution.addAuthor(user);
@@ -741,8 +747,7 @@ public class User extends AppCivistBaseModel implements Subject {
 					}
 				}
 				F.Promise.promise(() -> {
-					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution,
-							contribution.getContainingSpaces().get(0));
+					Contributions.sendAuthorAddedMail(user, null, contribution, contribution.getContainingSpaces().get(0));
 					PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
 					peerDocWrapper.updatePeerdocPermissions(contribution);
 					return Optional.ofNullable(null);
