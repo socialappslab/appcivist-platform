@@ -7,6 +7,7 @@ import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import controllers.Contributions;
 import enums.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -17,7 +18,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import play.Logger;
 import play.data.validation.Constraints.Required;
+import play.libs.F;
 import utils.LocationUtilities;
+import utils.services.PeerDocWrapper;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -1625,6 +1628,59 @@ public class Contribution extends AppCivistBaseModel {
     public void setCustomFieldValues(List<CustomFieldValue> customFieldValues) {
         this.customFieldValues = customFieldValues;
     }
+
+    /**
+     * Given a user, removes it from all contribution where it is a non member
+     * set as author and update peerdoc and send mails
+     * @param user
+     */
+    public static void updateContributionAuthors(User user) {
+        List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
+        List<Long> contributionsId = new ArrayList<>();
+        Logger.debug(" " + contributions.size() + " found where the author is no member");
+        NonMemberAuthor toDelete;
+        for(Contribution contribution: contributions) {
+            contributionsId.add(contribution.getContributionId());
+            toDelete = null;
+            boolean isAuthor = false;
+            for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
+                if(nonMemberAuthor.getEmail().equals(user.getEmail())) {
+                    toDelete = nonMemberAuthor;
+                    break;
+                }
+            }
+            if(toDelete != null) {
+                contribution.getNonMemberAuthors().remove(toDelete);
+                Logger.debug("Deleting non member " + toDelete.getEmail());
+
+            }
+            for(User author: contribution.getAuthors()) {
+                if(author.getEmail().equals(user.getEmail())) {
+                    isAuthor = true;
+                    break;
+                }
+            }
+            if(!isAuthor) {
+                contribution.addAuthor(user);
+                Logger.debug("Contribution updated ");
+            }
+            contribution.update();
+            contribution.refresh();
+        }
+
+        for(Long contributionId: contributionsId) {
+            Contribution contribution = Contribution.read(contributionId);
+            F.Promise.promise(() -> {
+                Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution,
+                        contribution.getContainingSpaces().get(0));
+                PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+                peerDocWrapper.updatePeerdocPermissions(contribution);
+                return Optional.ofNullable(null);
+            });
+        }
+
+    }
+
     private static void geoJsonLogic(Contribution c, ResourceSpace rs) {
         //if the contribution has a geojson
         if(c.getLocation() != null && c.getLocation().getGeoJson() != null) {
