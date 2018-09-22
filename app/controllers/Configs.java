@@ -26,6 +26,7 @@ import play.mvc.Result;
 import play.mvc.With;
 import security.SecurityModelConstants;
 import utils.GlobalData;
+import utils.GlobalDataConfigKeys;
 import utils.services.EntityManagerWrapper;
 
 import java.lang.reflect.Field;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -200,6 +202,23 @@ public class Configs extends Controller {
         } else {
             Config resourceSpaceConfig = Config.read(uuid);
             return ok(Json.toJson(resourceSpaceConfig));
+        }
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = Config.class, produces = "application/json",
+            value = "Get all configs")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No confgis found", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result findConfigsByType(@ApiParam(name = "target", value = "Type of config",
+            allowableValues = "ASSEMBLY, WORKING GROUP, COMPONENT, GENERAL, INSTANCE, CAMPAIGN") String target) {
+
+        if (target != null && !target.isEmpty()) {
+            return ok(Json.toJson(GlobalDataConfigKeys.configList.stream().filter(config -> config.getTarget()
+                    .equals(target)).collect(Collectors.toList())));
+        } else {
+            return ok(Json.toJson(GlobalDataConfigKeys.configList));
         }
     }
 
