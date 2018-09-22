@@ -815,6 +815,10 @@ public class User extends AppCivistBaseModel implements Subject {
    		Context.current().changeLang(langCode);
 	}
 
+	public boolean isAdmin() {
+		return this.getRoles().stream().anyMatch(o -> o.getName().equals("ADMIN"));
+	}
+
 	public UserProfile getProfile() {
 		return profile;
 	}

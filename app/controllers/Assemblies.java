@@ -1416,7 +1416,7 @@ public class Assemblies extends Controller {
         return invitation;
     }
 
-    private static Membership createMembership(User u, User creator, AppCivistBaseModel target, String targetType, String role) {
+    private static void createMembership(User u, User creator, AppCivistBaseModel target, String targetType, String role) {
 		role = role.trim();
 	    List<SecurityRole> roles = new ArrayList<>();
         roles.add(SecurityRole.findByName("MEMBER")); // Member role
@@ -1432,18 +1432,27 @@ public class Assemblies extends Controller {
 				roles.add(SecurityRole.findByName("EXPERT"));
 				break;
 		}
-        if (targetType.equals("ASSEMBLY")) {
-            Assembly a = ((Assembly) target);
+        if (targetType.equals("ASSEMBLY") || targetType.equals("GROUP")) {
+
             MembershipAssembly ma = new MembershipAssembly();
             ma.setUser(u);
             ma.setCreator(creator);
-            ma.setMembershipType(targetType.toUpperCase());
-            ma.setAssembly(a);
-            ma.setStatus(MembershipStatus.ACCEPTED);
-            ma.setRoles(roles);
-            ma.save();
-            return ma;
-        } else {
+			ma.setMembershipType("ASSEMBLY");
+			ma.setStatus(MembershipStatus.ACCEPTED);
+			ma.setRoles(roles);
+			if(targetType.equals("ASSEMBLY")) {
+				Assembly a = ((Assembly) target);
+				ma.setAssembly(a);
+				ma.save();
+			} else {
+				WorkingGroup wg = ((WorkingGroup) target);
+				if(!wg.getAssemblies().isEmpty()) {
+					ma.setAssembly(Assembly.read(wg.getAssemblies().get(0)));
+					ma.save();
+				}
+			}
+        }
+        if (targetType.equals("GROUP")) {
             WorkingGroup wg = ((WorkingGroup) target);
             MembershipGroup mG = new MembershipGroup();
             mG.setUser(u);
@@ -1453,8 +1462,8 @@ public class Assemblies extends Controller {
 			mG.setRoles(roles);
             mG.setStatus(MembershipStatus.ACCEPTED);
             mG.save();
-            return mG;
         }
+
     }
 
 	public enum CSVHeaders {
