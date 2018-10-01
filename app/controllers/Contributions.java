@@ -390,8 +390,12 @@ public class Contributions extends Controller {
         if (all != null) {
             pag.setPageSize(pag.getTotal());
             pag.setPage(0);
+            pag.setList(contribs);
+            contributions.clear();
+            contributions.addAll(contribs);
+        } else {
+            pag.setList(contributions);
         }
-        pag.setList(contributions);
         if (contributions == null || contributions.isEmpty()) {
             return notFound(Json.toJson(new TransferResponseStatus(
                     "No contributions for {resource space}: " + sid + ", type=" + type)));
