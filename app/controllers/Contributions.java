@@ -1597,7 +1597,9 @@ public class Contributions extends Controller {
                     rs.getContributions().add(c);
                     rs.update();
                 }
+                addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
+
 
             } catch (Exception e) {
                 Ebean.endTransaction();
@@ -3529,6 +3531,20 @@ public class Contributions extends Controller {
         ContributionStatusAudit.create(newContrib);
 
         return newContrib;
+    }
+
+    private static void addContributionAuthorsToWG(Contribution contribution, ResourceSpace rs) throws MembershipCreationException {
+
+        if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) || !contribution.getType().equals(ContributionTypes.PROPOSAL)) {
+            return;
+        }
+        WorkingGroup wg = rs.getWorkingGroupResources();
+        for(User user : contribution.getAuthors()) {
+            Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName());
+            List<SecurityRole> roles = new ArrayList<SecurityRole>();
+            roles.add(SecurityRole.findByName("MEMBER"));
+            WorkingGroup.createMembership(wg.getGroupId(), user, roles);
+        }
     }
 
     /**

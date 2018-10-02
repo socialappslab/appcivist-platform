@@ -174,7 +174,11 @@ public class WorkingGroups extends Controller {
             return notFound(Json.toJson(response));
         }
         try {
-            return ok(Json.toJson(WorkingGroup.createMembership(wGroupId)));
+            List<SecurityRole> roles = new ArrayList<SecurityRole>();
+            roles.add(SecurityRole.findByName("MEMBER"));
+            roles.add(SecurityRole.findByName("COORDINATOR"));
+            roles.add(SecurityRole.findByName("MODERATOR"));
+            return ok(Json.toJson(WorkingGroup.createMembership(wGroupId, wg.getCreator(), roles)));
         } catch (MembershipCreationException e) {
             e.printStackTrace();
             Logger.info("Error creating Working Group: " + e.getMessage());
