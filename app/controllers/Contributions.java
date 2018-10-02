@@ -3541,8 +3541,9 @@ public class Contributions extends Controller {
         WorkingGroup wg = rs.getWorkingGroupResources();
         for(User user : contribution.getAuthors()) {
             Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName());
-            wg.setCreator(user);
-            WorkingGroup.createMembership(wg.getGroupId());
+            List<SecurityRole> roles = new ArrayList<SecurityRole>();
+            roles.add(SecurityRole.findByName("MEMBER"));
+            WorkingGroup.createMembership(wg.getGroupId(), user, roles);
         }
     }
 
