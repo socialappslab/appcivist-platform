@@ -140,6 +140,16 @@ public class Contribution extends AppCivistBaseModel {
     @JsonView(Views.Public.class)
     private Integer extendedTextPadResourceNumber;
 
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Contribution> children;
+
+    @JoinColumn(name = "parent_id", referencedColumnName = "contribution_id")
+    @JsonInclude(Include.NON_EMPTY)
+    @JsonView(Views.Public.class)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Contribution parent;
+
     @Transient
     @ApiModelProperty(value="Read only property displaying the first information", readOnly=true)
     private User firstAuthor;
@@ -1740,5 +1750,21 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setErrorsInExtendedTextPad(String errorsInExtendedTextPad) {
         this.errorsInExtendedTextPad = errorsInExtendedTextPad;
+    }
+
+    public List<Contribution> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Contribution> children) {
+        this.children = children;
+    }
+
+    public Contribution getParent() {
+        return parent;
+    }
+
+    public void setParent(Contribution parent) {
+        this.parent = parent;
     }
 }
