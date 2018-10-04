@@ -3315,6 +3315,9 @@ CREATE OR REPLACE FUNCTION change_status_contribution_in_campaign(search_shortna
     END;
     $$ LANGUAGE plpgsql;
 
+-- 90.sql
+ALTER TABLE contribution ADD column parent_id bigint;
+ALTER TABLE contribution ADD constraint fk_contribution_contribution foreign key (parent_id) references contribution (contribution_id);
 -- 91.sql
 ALTER TABLE contribution DROP CONSTRAINT ck_contribution_contribution_status;
 ALTER TABLE contribution ADD CONSTRAINT ck_contribution_contribution_status CHECK (status::text =
