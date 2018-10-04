@@ -3314,3 +3314,7 @@ CREATE OR REPLACE FUNCTION change_status_contribution_in_campaign(search_shortna
       SELECT c.resources_resource_space_id FROM campaign c WHERE c.shortname = search_shortname) and creation < date::timestamp));
     END;
     $$ LANGUAGE plpgsql;
+
+-- 90.sql
+ALTER TABLE contribution ADD column parent_id bigint;
+ALTER TABLE contribution ADD constraint fk_contribution_contribution foreign key (parent_id) references contribution (contribution_id);
