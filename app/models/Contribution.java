@@ -1644,7 +1644,7 @@ public class Contribution extends AppCivistBaseModel {
             toDelete = null;
             boolean isAuthor = false;
             for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
-                if(nonMemberAuthor.getEmail().equals(user.getEmail())) {
+                if(nonMemberAuthor.getEmail() != null && nonMemberAuthor.getEmail().equals(user.getEmail())) {
                     toDelete = nonMemberAuthor;
                     break;
                 }
@@ -1655,7 +1655,7 @@ public class Contribution extends AppCivistBaseModel {
 
             }
             for(User author: contribution.getAuthors()) {
-                if(author.getEmail().equals(user.getEmail())) {
+                if(author.getEmail() != null && author.getEmail().equals(user.getEmail())) {
                     isAuthor = true;
                     break;
                 }
