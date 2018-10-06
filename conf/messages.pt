@@ -232,3 +232,9 @@ appcivist.contribution.proposals = propostas
 appcivist.contribution.ideas = ideias
 
 appcivist.contribution.change.status =Você deve preencher todos os campos obrigatórios: {0} antes de passar para o estado {1}
+
+appcivist.contribution.status.forked_private_draft = Rascunho Privado de Emenda
+appcivist.contribution.status.forked_public_draft = Rascunho Público de Emenda
+appcivist.contribution.status.forked_published = Emenda de Dissenso Publicada
+appcivist.contribution.status.merged_private_draft = Emenda Composta Privada
+appcivist.contribution.status.merged_public_draft = Emenda Composta Pública

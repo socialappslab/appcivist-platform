@@ -231,21 +231,18 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 		return aRet;
 	}
-	public static WorkingGroup createMembership(Long workingGroupId) throws MembershipCreationException {
+	public static WorkingGroup createMembership(Long workingGroupId, User user, List<SecurityRole> roles) throws MembershipCreationException {
 
 		WorkingGroup workingGroup = WorkingGroup.read(workingGroupId);
 		// 6. Add the creator as a members with roles MODERATOR, COORDINATOR and MEMBER
 		MembershipGroup mg = new MembershipGroup();
 		mg.setWorkingGroup(workingGroup);
-		mg.setCreator(workingGroup.getCreator());
-		mg.setUser(workingGroup.getCreator());
+		mg.setCreator(user);
+		mg.setUser(user);
 		mg.setStatus(MembershipStatus.ACCEPTED);
 		mg.setLang(workingGroup.getLang());
 
-		List<SecurityRole> roles = new ArrayList<SecurityRole>();
-		roles.add(SecurityRole.findByName("MEMBER"));
-		roles.add(SecurityRole.findByName("COORDINATOR"));
-		roles.add(SecurityRole.findByName("MODERATOR"));
+
 		mg.setRoles(roles);
 
 		MembershipGroup.create(mg);
@@ -348,7 +345,11 @@ public class WorkingGroup extends AppCivistBaseModel {
 
 		// 6. Add creator as a coordinator
         try {
-            WorkingGroup.createMembership(workingGroup.getGroupId());
+			List<SecurityRole> roles = new ArrayList<SecurityRole>();
+			roles.add(SecurityRole.findByName("MEMBER"));
+			roles.add(SecurityRole.findByName("COORDINATOR"));
+			roles.add(SecurityRole.findByName("MODERATOR"));
+            WorkingGroup.createMembership(workingGroup.getGroupId(), workingGroup.getCreator(), roles);
         } catch (MembershipCreationException e) {
 		    return workingGroup;
         }

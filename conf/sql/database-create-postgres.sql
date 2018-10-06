@@ -3314,3 +3314,16 @@ CREATE OR REPLACE FUNCTION change_status_contribution_in_campaign(search_shortna
       SELECT c.resources_resource_space_id FROM campaign c WHERE c.shortname = search_shortname) and creation < date::timestamp));
     END;
     $$ LANGUAGE plpgsql;
+
+-- 90.sql
+ALTER TABLE contribution ADD column parent_id bigint;
+ALTER TABLE contribution ADD constraint fk_contribution_contribution foreign key (parent_id) references contribution (contribution_id);
+-- 91.sql
+ALTER TABLE contribution DROP CONSTRAINT ck_contribution_contribution_status;
+ALTER TABLE contribution ADD CONSTRAINT ck_contribution_contribution_status CHECK (status::text =
+ANY (ARRAY['NEW'::character varying::text, 'DRAFT'::character varying::text, 'PUBLISHED'::character varying::text,
+'ARCHIVED'::character varying::text, 'EXCLUDED'::character varying::text, 'PUBLIC_DRAFT'::character varying::text,
+'MODERATED'::character varying::text, 'INBALLOT'::character varying::text, 'SELECTED'::character varying::text,
+'FORKED_PRIVATE_DRAFT'::character varying::text, 'FORKED_PUBLIC_DRAFT'::character varying::text,
+'FORKED_PUBLISHED'::character varying::text, 'MERGED_PRIVATE_DRAFT'::character varying::text,
+'MERGED_PUBLIC_DRAFT'::character varying::text]));

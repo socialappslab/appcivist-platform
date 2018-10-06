@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.*;
-import controllers.Contributions;
 import controllers.Users;
 import delegates.AssembliesDelegate;
 import enums.MembershipStatus;
@@ -26,16 +25,13 @@ import models.misc.Views;
 import models.transfer.AssemblyTransfer;
 import play.Logger;
 import play.Play;
-import play.db.ebean.Transactional;
 import play.i18n.Lang;
-import play.libs.F;
 import play.mvc.Http.Context;
 import providers.*;
 import utils.GlobalData;
 import utils.GlobalDataConfigKeys;
 import utils.security.HashGenerationException;
 import utils.security.HashGeneratorUtils;
-import utils.services.PeerDocWrapper;
 
 import javax.persistence.*;
 import java.net.MalformedURLException;
@@ -702,26 +698,9 @@ public class User extends AppCivistBaseModel implements Subject {
 			} catch (MembershipCreationException e) {
 				Logger.error("Membership already exists");
 			}
-			List<Contribution> contributions = Contribution.getByNoMemberAuthorMail(user.getEmail());
-			NonMemberAuthor toDelete = null;
-			for(Contribution contribution: contributions) {
-				for(NonMemberAuthor nonMemberAuthor: contribution.getNonMemberAuthors()) {
-					toDelete = nonMemberAuthor;
 
-				}
-				if(toDelete != null) {
-					contribution.getNonMemberAuthors().remove(toDelete);
-				}
-				contribution.addAuthor(user);
-				contribution.update();
-				contribution.refresh();
-				F.Promise.promise(() -> {
-					Contributions.sendAuthorAddedMail(null, contribution.getNonMemberAuthors(), contribution, contribution.getContainingSpaces().get(0));
-					PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
-					peerDocWrapper.updatePeerdocPermissions(contribution);
-					return Optional.ofNullable(null);
-				});
-			}
+			Contribution.updateContributionAuthors(user);
+
 			if(userId != null) {
 				Logger.info("Creating a new liked account");
 				LinkedAccount.create(authUser);
@@ -834,6 +813,10 @@ public class User extends AppCivistBaseModel implements Subject {
    		final Lang lang = Lang.preferred(Context.current().request().acceptLanguages());
    		final String langCode = userLangCode !=null ? userLangCode : lang.code();   
    		Context.current().changeLang(langCode);
+	}
+
+	public boolean isAdmin() {
+		return this.getRoles().stream().anyMatch(o -> o.getName().equals("ADMIN"));
 	}
 
 	public UserProfile getProfile() {

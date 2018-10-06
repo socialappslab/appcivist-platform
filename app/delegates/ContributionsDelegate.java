@@ -186,7 +186,7 @@ public class ContributionsDelegate {
                                 sorting +=", popularity asc nulls last";
                             else
                                 sorting +=", popularity desc nulls last";
-                            rawQueryFrom +="join contribution_feedback cf on cf.contribution_id = t0.contribution_id\n";
+                            rawQueryFrom +="left join contribution_feedback cf on cf.contribution_id = t0.contribution_id\n";
                             String popularityCalculation =
                                     ",count(cf.up) FILTER (WHERE cf.up = true and cf.removed = false and cf.archived = false) " +
                                             "  - count(cf.down) FILTER (WHERE cf.down = true and cf.removed = false and cf.archived = false) AS popularity\n";
