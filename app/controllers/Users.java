@@ -728,28 +728,28 @@ public class Users extends Controller {
     final String email = ta.targetUser.getEmail();
 
     Ebean.beginTransaction();
-      try {
-          User.verify(ta.targetUser);
-          Ebean.commitTransaction();
-      } catch (Exception e) {
-          TransferResponseStatus responseBody = new TransferResponseStatus();
-          responseBody.setStatusMessage("Verify emailtransaction fail");
-          return internalServerError(Json.toJson(responseBody));
-      } finally {
-          Ebean.endTransaction();
-      }
+    try {
+      User.verify(ta.targetUser);
 
-    flash(Application.FLASH_MESSAGE_KEY,
-        Messages.get("playauthenticate.verify_email.success", email));
-    // if (Application.getLocalUser(session()) != null) {
-    // return redirect(routes.Application.index());
-    // } else {
-    // return ok();
-    // }
-    TokenAction.deleteByUser(ta.targetUser, Type.EMAIL_VERIFICATION);
-    return ok(toJson(TransferResponseStatus.okMessage(
-        Messages.get("playauthenticate.verify_email.success", email),
-        "")));
+      flash(Application.FLASH_MESSAGE_KEY,
+              Messages.get("playauthenticate.verify_email.success", email));
+      // if (Application.getLocalUser(session()) != null) {
+      // return redirect(routes.Application.index());
+      // } else {
+      // return ok();
+      // }
+      TokenAction.deleteByUser(ta.targetUser, Type.EMAIL_VERIFICATION);
+      Ebean.commitTransaction();
+      return ok(toJson(TransferResponseStatus.okMessage(
+                Messages.get("playauthenticate.verify_email.success", email),
+                "")));
+    } catch (Exception e) {
+      TransferResponseStatus responseBody = new TransferResponseStatus();
+      responseBody.setStatusMessage("Verify emailtransaction fail");
+      return internalServerError(Json.toJson(responseBody));
+    } finally {
+        Ebean.endTransaction();
+    }
   }
 
   /**
