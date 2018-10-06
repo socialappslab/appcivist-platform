@@ -92,6 +92,8 @@ public class NotificationsDelegate {
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.updated.contribution.post");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.updated.contribution.feedback");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_HISTORY, "notifications.{{resourceType}}.updated.contribution.history");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_FORK, "notifications.{{resourceType}}.new.fork.contribution");
+        eventsTitleByType.put(NotificationEventName.NEW_CONTRIBUTION_MERGE, "notifications.{{resourceType}}.new.merge.contribution");
         eventsTitleByType.put(NotificationEventName.MILESTONE_PASSED, "notifications.{{resourceType}}.milestone.passed");
         eventsTitleByType.put(NotificationEventName.MILESTONE_UPCOMING, "notifications.{{resourceType}}.upcoming.milestone");
 
@@ -177,7 +179,9 @@ public class NotificationsDelegate {
             NotificationEventName.UPDATED_CONTRIBUTION_COMMENT,
             NotificationEventName.UPDATED_CONTRIBUTION_NOTE,
             NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK,
-            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY
+            NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
+            NotificationEventName.NEW_CONTRIBUTION_FORK,
+            NotificationEventName.NEW_CONTRIBUTION_MERGE
     };
 
     /**
@@ -225,6 +229,14 @@ public class NotificationsDelegate {
         AppCivistBaseModel origin = getOriginByContribution(rs, c);
         AppCivistBaseModel resource = c;
         return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
+    }
+
+    public static Result forkMergeContributionInResourceSpace(ResourceSpace rs, Contribution c,
+                                                              NotificationEventName forkOrMerge) {
+        Logger.info("NOTIFICATION: FORK/MERGE contribution in RESOURCE SPACE of type '" + rs.getType() + "'");
+        ResourceSpaceTypes originType = rs.getType();
+        AppCivistBaseModel origin = getOriginByContribution(rs, c);
+        return signalNotification(originType, forkOrMerge, origin, c, SubscriptionTypes.REGULAR, null);
     }
 
 
@@ -408,6 +420,8 @@ public class NotificationsDelegate {
             case UPDATED_CONTRIBUTION_COMMENT:
             case UPDATED_CONTRIBUTION_NOTE:
             case UPDATED_CONTRIBUTION_FORUM_POST:
+            case NEW_CONTRIBUTION_FORK:
+            case NEW_CONTRIBUTION_MERGE:
                 resourceUuid = ((Contribution) resource).getUuid();
                 resourceTitle = ((Contribution) resource).getTitle();
                 resourceText = ((Contribution) resource).getText();
@@ -416,6 +430,12 @@ public class NotificationsDelegate {
                 resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
+                if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
+                    title = "[AppCivist] The contribution " + resourceTitle + " was forked in " + originName;
+                }
+                if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                    title = "[AppCivist] The contribution " + resourceTitle + " was merged in " + originName;
+                }
                 numAuthors = ((Contribution) resource).getAuthors().size();
                 associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
                 setContributionUrl((Contribution) resource, urls);
@@ -567,7 +587,9 @@ public class NotificationsDelegate {
                 break;
         }
         Logger.info("Sending signalNotification( " + originUUID + ", " + originType + ", " + originName + ", " + eventName + ", " + title + ", " + text + ", " + resourceUuid + ", " + resourceTitle + ", " + resourceText + ", " + resourceDate + ", " + resourceType + ", " + associatedUser + ","+resourceId+")");
-        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid, resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType, userParam, resourceId, urls, false);
+        return signalNotification(originUUID, originType, originName, eventName, title, text, resourceUuid,
+                resourceTitle, resourceText, resourceDate, resourceType, associatedUser, subscriptionType,
+                userParam, resourceId, urls, false);
 
     }
 
@@ -705,6 +727,20 @@ public class NotificationsDelegate {
             }
 
         }
+
+
+        if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
+                (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK))) {
+            Contribution contribution = Contribution.getByUUID(origin);
+            notificatedUsers.add(contribution.getCreator().getUserId());
+            for(User user: contribution.getAuthors()) {
+                if(!notificatedUsers.contains(user.getUserId())) {
+                    notificatedUsers.add(user.getUserId());
+                }
+            }
+        }
+
         //if the spaceType is CAMPAIGN
         if (originType.equals(ResourceSpaceTypes.CAMPAIGN)) {
 
@@ -750,8 +786,14 @@ public class NotificationsDelegate {
             Boolean rabbitIsActive = Play.application().configuration().getBoolean("appcivist.services.rabbitmq.active");
             if(rabbitIsActive !=null && rabbitIsActive) {
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
-                BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
-                        notificationEvent.getRichTextMail(), ownTextAndTitle);
+                if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                    BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
+                            notificationEvent.getRichTextMail(), ownTextAndTitle, true);
+                } else {
+                    BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
+                            notificationEvent.getRichTextMail(), ownTextAndTitle, false);
+                }
                 notificationEvent.getData().put("signaled", true);
                 notificationEvent.update();
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));

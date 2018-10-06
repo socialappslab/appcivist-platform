@@ -4402,26 +4402,31 @@ public class Contributions extends Controller {
         }
 
         String upStatus = status.toUpperCase();
-        List<String> checkStatus = null;
-        if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
-            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
-                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ);
-        }
-        if (upStatus.equals(ContributionStatus.PUBLISHED.name())) {
-            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLISHED,
-                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
-        }
+        List<String> checkStatus = checkContributionRequirementsFields(c, upStatus);
         if(checkStatus != null && !checkStatus.isEmpty()) {
             String lang = c.getLang();
+            String msg;
+            String statusI;
             if(lang != null)  {
-                Messages.get(Lang.forCode(c.getLang()),"appcivist.contribution.change.status",
-                        checkStatus, upStatus);
+                try {
+                    statusI = Messages.get(Lang.forCode(c.getLang()),
+                            "appcivist.contribution.status." + upStatus.toLowerCase());
+                } catch (Exception e) {
+                    statusI = upStatus;
+                }
+                msg = Messages.get(Lang.forCode(c.getLang()),"appcivist.contribution.change.status",
+                        checkStatus, statusI);
             } else {
-                Messages.get("appcivist.contribution.change.status", checkStatus, upStatus);
+                try {
+                    statusI = Messages.get(
+                            "appcivist.contribution.status." + upStatus.toLowerCase());
+                } catch (Exception e) {
+                    statusI = upStatus;
+                }
+                msg = Messages.get("appcivist.contribution.change.status", checkStatus, statusI);
             }
 
-            return badRequest(Json.toJson(new TransferResponseStatus("You must complete all the " +
-                    "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
+            return badRequest(Json.toJson(new TransferResponseStatus(msg)));
         }
         Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
@@ -5569,20 +5574,40 @@ public class Contributions extends Controller {
         }
         return unauth;
     }
-    private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
-        List<String> requirements = new ArrayList<>();
-        if(upStatus.equals(cs.name())) {
-            if(c.getCampaignIds().size() == 0) {
-                Logger.info("No campaigns found in this contribution");
+    private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus) {
+        String configKey;
+        switch (ContributionStatus.valueOf(upStatus)) {
+            case PUBLIC_DRAFT:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ;
+                break;
+            case PUBLISHED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ;
+                break;
+            case FORKED_PUBLIC_DRAFT:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLIC_DRAFT_STATUS_REQ;
+                break;
+            case FORKED_PUBLISHED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ;
+                break;
+            case MERGED_PUBLIC_DRAFT:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ;
+                break;
+            default:
                 return null;
-            }
-            Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
-            for(Config config: campaing.getConfigs()) {
-                if(config.getKey().equals(configKey)) {
-                    requirements = Arrays.asList(config.getValue().split(","));
-                }
+        }
+        List<String> requirements = new ArrayList<>();
+
+        if(c.getCampaignIds().size() == 0) {
+            Logger.info("No campaigns found in this contribution");
+            return null;
+        }
+        Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
+        for(Config config: campaing.getConfigs()) {
+            if(config.getKey().equals(configKey)) {
+                requirements = Arrays.asList(config.getValue().split(","));
             }
         }
+
         Logger.info("Requirements config: " + requirements);
         List<String> customFields = new ArrayList<>();
         List<String> contributionFields = new ArrayList<>();
