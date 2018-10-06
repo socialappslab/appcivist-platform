@@ -215,3 +215,11 @@ appcivist.contribution.proposals = propuestas
 appcivist.contribution.ideas = ideas
 
 appcivist.contribution.change.status = Debe completar todos los campos requeridos: {0} antes de pasar al estado {1}
+
+appcivist.contribution.status.forked_private_draft = Private Draft Amendment
+appcivist.contribution.status.forked_public_draft = Public Draft Amendment
+appcivist.contribution.status.forked_published = Published Dissensus Amendment
+appcivist.contribution.status.merged_private_draft = Merged Private Amendment
+appcivist.contribution.status.merged_public_draft = Merged Public Amendment
+appcivist.contribution.status.public_draft = Public Draft
+appcivist.contribution.status.published = Published
