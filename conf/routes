@@ -296,6 +296,7 @@ PUT       /api/assembly/:aid/contributions/popularity                           
 POST      /api/contribution/pad                                                  controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                                  controllers.Contributions.confirmContributionPad(rid: Long)
 
+GET       /api/contribution/:uuid/proposal                                       controllers.Contributions.getContributionChildrenOrParent(uuid: java.util.UUID, type: String)
 POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID, replace: java.lang.Boolean ?= true)
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
 POST      /api/contribution/:uuid/nonmemberauthors                               controllers.Contributions.addNonMemberAuthorToContribution(uuid: java.util.UUID)

@@ -141,15 +141,30 @@ public class Contributions extends Controller {
                 "No resource space for assembly: " + aid)));
     }
 
-    /**
-     * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
-     *
-     * @param aid
-     * @param cid
-     * @param ciid
-     * @param type
-     * @return
-     */
+
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions childrens or parent by type")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionChildrenOrParent(
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid,
+            @ApiParam(name = "type", value = "Type of contributions",
+                    allowableValues = "FORKS, MERGES, PARENT") String type) {
+
+        List<Contribution> contributions = Contribution.findChildrenOrParents(uuid, type);
+        return contributions != null ? ok(Json.toJson(contributions))
+                : notFound(Json.toJson(new TransferResponseStatus(
+                "No contributions for contribution: " + uuid)));
+    }
+
+        /**
+         * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
+         *
+         * @param aid
+         * @param cid
+         * @param ciid
+         * @param type
+         * @return
+         */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
             produces = "application/json", value = "Get contributions in a component of a campaign within an assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
@@ -2319,7 +2334,10 @@ public class Contributions extends Controller {
 			try {
 	            Contribution newContribution = newContributionForm.get();
 
-	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED)) {
+	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED) ||
+                        newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLISHED) ||
+                        newContribution.getStatus().equals(ContributionStatus.MERGED_PRIVATE_DRAFT) ||
+                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLIC_DRAFT)) {
                     final boolean[] allowed = {false};
                     checkIfCoordinator(newContribution, allowed, author);
                     if(!allowed[0]) {
@@ -2329,6 +2347,20 @@ public class Contributions extends Controller {
                                 ResourceSpaceTypes.ASSEMBLY));
                         return unauthorized(Json.toJson(responseBody));
                     }
+                }
+
+                // Public Draft: all can see and comment; only authors can edit
+                // Forked Public Draft: all can see and comment; only authors can edit
+                // Forked Private Draft: only authors can see, edit, comment
+                if((newContribution.getStatus().equals(ContributionStatus.PUBLIC_DRAFT)
+                       || newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLIC_DRAFT)
+                        || newContribution.getStatus().equals(ContributionStatus.FORKED_PRIVATE_DRAFT)) &&
+                        !newContribution.getAuthors().contains(author)) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            ResourceSpaceTypes.ASSEMBLY));
+                    return unauthorized(Json.toJson(responseBody));
                 }
 
 	            newContribution.setContributionId(contributionId);
@@ -4388,7 +4420,8 @@ public class Contributions extends Controller {
     public static Result updateContributionStatus(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid,
-            @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
+            @ApiParam(name = "status", value = "New Status for the Contribution",
+                    allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
 
         Contribution c = Contribution.read(cid);
         Http.Session s = session();
@@ -4403,6 +4436,14 @@ public class Contributions extends Controller {
         }
 
         String upStatus = status.toUpperCase();
+
+        // Authors of the parent of a fork can merge, and therefore, they are the only ones who can change the status
+        // from FORK_* to MERGE_*.
+        if(upStatus.contains("MERGE") && (c.getParent() !=null && !c.getParent().getAuthors().contains(user))) {
+            return badRequest(Json.toJson(new TransferResponseStatus("Only the author of the parent " +
+                    "contribution can change from FORK to MERGE")));
+        }
+
         List<String> checkStatus = checkContributionRequirementsFields(c, upStatus);
         if(checkStatus != null && !checkStatus.isEmpty()) {
             String lang = c.getLang();
