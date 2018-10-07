@@ -3327,3 +3327,6 @@ ANY (ARRAY['NEW'::character varying::text, 'DRAFT'::character varying::text, 'PU
 'FORKED_PRIVATE_DRAFT'::character varying::text, 'FORKED_PUBLIC_DRAFT'::character varying::text,
 'FORKED_PUBLISHED'::character varying::text, 'MERGED_PRIVATE_DRAFT'::character varying::text,
 'MERGED_PUBLIC_DRAFT'::character varying::text]));
+
+-- 92.sql
+ALTER TABLE contribution ALTER COLUMN status TYPE character varying(20);

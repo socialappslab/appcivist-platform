@@ -1744,6 +1744,29 @@ public class Contribution extends AppCivistBaseModel {
         return find.where().eq("uuid",uuid.toString()).findUnique();
     }
 
+    public static List<Contribution> findChildrenOrParents(UUID cuuid, String type) {
+
+        type = type.toUpperCase();
+        Contribution contribution = Contribution.getByUUID(cuuid);
+        if(contribution == null) {
+            return null;
+        }
+        switch (type) {
+            case "FORKS":
+                return find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .or(Expr.eq("status", ContributionStatus.FORKED_PUBLIC_DRAFT.name()),
+                                Expr.eq("status", ContributionStatus.FORKED_PUBLISHED.name())).findList();
+            case "MERGES":
+                return find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .eq("status", ContributionStatus.MERGED_PUBLIC_DRAFT.name()).findList();
+            case "PARENT":
+                return Collections.singletonList(contribution.getParent());
+            default:
+                return null;
+        }
+
+    }
+
     public String getErrorsInExtendedTextPad() {
         return errorsInExtendedTextPad;
     }
