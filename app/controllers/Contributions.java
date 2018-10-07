@@ -141,15 +141,30 @@ public class Contributions extends Controller {
                 "No resource space for assembly: " + aid)));
     }
 
-    /**
-     * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
-     *
-     * @param aid
-     * @param cid
-     * @param ciid
-     * @param type
-     * @return
-     */
+
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions childrens or parent by type")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionChildrenOrParent(
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid,
+            @ApiParam(name = "type", value = "Type of contributions",
+                    allowableValues = "FORKS, MERGES, PARENT") String type) {
+
+        List<Contribution> contributions = Contribution.findChildrenOrParents(uuid, type);
+        return contributions != null ? ok(Json.toJson(contributions))
+                : notFound(Json.toJson(new TransferResponseStatus(
+                "No contributions for contribution: " + uuid)));
+    }
+
+        /**
+         * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
+         *
+         * @param aid
+         * @param cid
+         * @param ciid
+         * @param type
+         * @return
+         */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
             produces = "application/json", value = "Get contributions in a component of a campaign within an assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
