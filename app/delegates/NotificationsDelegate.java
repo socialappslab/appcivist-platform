@@ -716,8 +716,8 @@ public class NotificationsDelegate {
                 // If subscription does not have a defaultService override,
                 // then iterate the list of enabled identities of the user (where enabled === true),
                 // and create the message to send as follow (see signals.js => processMatch):
-                if (sub.getDefaultService() == null) {
-                    User user = User.findByUUID(UUID.fromString(sub.getUserId()));
+                User user = User.findByUUID(UUID.fromString(sub.getUserId()));
+                if (sub.getDefaultService() == null && user != null) {
                     Logger.info("Notificated user: " + user.getName());
                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                     notificationEvent.addNotificationEventSignalUser(userSignal);
