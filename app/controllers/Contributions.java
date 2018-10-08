@@ -1612,7 +1612,7 @@ public class Contributions extends Controller {
                     rs.getContributions().add(c);
                     rs.update();
                 }
-                addContributionAuthorsToWG(newContribution, rs);
+                Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
 
 
@@ -2140,13 +2140,51 @@ public class Contributions extends Controller {
         }
     }
 
-    /**
-     * PUT       /api/campaign/:cuuid/contribution/:uuid/feedback
-     *
-     * @param cuuid
-     * @param uuid
-     * @return
-     */
+
+
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Fork a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result forkContribution(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
+
+        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        Contribution contribution = Contribution.read(coid);
+        if(contribution == null) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("No contribution found");
+            return notFound(Json.toJson(responseBody));
+        }
+        try {
+            Contribution forked = Contribution.fork(contribution, author);
+            return ok(Json.toJson(forked));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("Error while updating contribution => ",
+                    LogActions.exceptionStackTraceToString(e));
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(e.getMessage());
+            return Controller
+                    .internalServerError(Json.toJson(responseBody));
+        }
+
+    }
+
+
+
+
+        /**
+         * PUT       /api/campaign/:cuuid/contribution/:uuid/feedback
+         *
+         * @param cuuid
+         * @param uuid
+         * @return
+         */
     // TODO: REVIEW to evaluate if removing
     @ApiOperation(httpMethod = "PUT", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json", value = "Update Feedback on a Contribution",
             notes = "Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
@@ -3566,19 +3604,6 @@ public class Contributions extends Controller {
         return newContrib;
     }
 
-    private static void addContributionAuthorsToWG(Contribution contribution, ResourceSpace rs) throws MembershipCreationException {
-
-        if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) || !contribution.getType().equals(ContributionTypes.PROPOSAL)) {
-            return;
-        }
-        WorkingGroup wg = rs.getWorkingGroupResources();
-        for(User user : contribution.getAuthors()) {
-            Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName());
-            List<SecurityRole> roles = new ArrayList<SecurityRole>();
-            roles.add(SecurityRole.findByName("MEMBER"));
-            WorkingGroup.createMembership(wg.getGroupId(), user, roles);
-        }
-    }
 
     /**
      * It looks into the list of comments of the brainstorming contributions that serve as inspiration

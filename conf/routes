@@ -280,6 +280,7 @@ GET       /api/contribution/:coid/body                                          
 
 DELETE    /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.deleteContributionResourceSpace(aid: Long, cid: Long, sid: Long)
 POST      /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.assignContributionResourceSpace(aid: Long, cid: Long, sid: Long)
+POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/contribution       controllers.Contributions.forkContribution(aid: Long, cid: Long, coid: Long)
 POST      /api/assembly/:aid/group/:gid/contribution                             controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
 POST      /api/assembly/:aid/contribution/:cid/comment                           controllers.Contributions.createContributionComment(aid: Long, cid: Long)
 POST      /api/assembly/:aid/contribution/:cid/attachment                        controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
@@ -310,6 +311,9 @@ POST      /api/assembly/:aid/campaign/:cid/contribution/import                  
 
 GET       /api/assembly/:aid/campaign/:cid/contribution/export                   controllers.Contributions.exportContributions(aid: Long, cid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad", contributionTemplateId: java.lang.Long ?=null, resourceTemplateId: java.lang.Long ?=null)
+
+POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/document           controllers.Contributions.createPad(aid: Long, cid: Long, coid: Long, typeDocument?="etherpad", contributionTemplateId: java.lang.Long ?=null, resourceTemplateId: java.lang.Long ?=null)
+
 
 ##################################################################################################################################################################
 # Location endpoints

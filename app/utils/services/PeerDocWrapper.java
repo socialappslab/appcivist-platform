@@ -1,5 +1,6 @@
 package utils.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import enums.ContributionStatus;
 import enums.ResourceTypes;
 import exceptions.PeerdocServerError;
@@ -126,6 +127,23 @@ public class PeerDocWrapper {
         WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
         F.Promise<WSResponse> promise = wsSend(holder);
         promise.get(DEFAULT_TIMEOUT);
+    }
+
+    public JsonNode fork(Resource resource) throws NoSuchPaddingException, UnsupportedEncodingException,
+            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
+            InvalidAlgorithmParameterException, HashGenerationException {
+
+        /* DESCOMENTAR CUANDO SE TENGA LA URL DE PEERDOC
+        String documentId = resource.getUrlAsString().split("document/")[1];
+        String userEncrypted = encrypt();
+        WSRequest holder = getWSHolder("TO DO"+documentId+"?user="+userEncrypted);
+        F.Promise<WSResponse> promise = wsSend(holder);
+        return promise.get(DEFAULT_TIMEOUT).asJson();
+        */
+        Map<String, String> temp = new HashMap<>();
+        temp.put("path", "fakePID");
+
+        return Json.toJson(temp);
     }
 
     public void updatePeerdocPermissions(Contribution contribution) throws NoSuchPaddingException,
