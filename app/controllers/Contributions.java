@@ -2428,7 +2428,6 @@ public class Contributions extends Controller {
 				Ebean.commitTransaction();
 	            return ok(Json.toJson(updatedContribution));
 			} catch (Exception e) {
-				Ebean.endTransaction();
 				e.printStackTrace();
 				Logger.error("Error while updating contribution => ",
 						LogActions.exceptionStackTraceToString(e));
@@ -2436,7 +2435,9 @@ public class Contributions extends Controller {
 				responseBody.setStatusMessage(e.getMessage());
 				return Controller
 						.internalServerError(Json.toJson(responseBody));
-			}
+			} finally {
+                Ebean.endTransaction();
+            }
         }
     }
 

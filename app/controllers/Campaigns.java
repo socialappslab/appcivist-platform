@@ -202,7 +202,6 @@ public class Campaigns extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
     public static Result findCampaignByUUID(@ApiParam(name = "uuid", value = "Campaign Universal ID (UUID)") UUID uuid) {
         try {
-
             Campaign summary = CampaignDelegate.getCampaignSummary(uuid);
             if (summary == null) {
                 return ok(Json
@@ -243,7 +242,6 @@ public class Campaigns extends Controller {
             return badRequest(Json.toJson(Json
                     .toJson(new TransferResponseStatus("Error processing request"+e.getMessage()))));
         }
-
     }
 
     /**
