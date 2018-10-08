@@ -146,6 +146,20 @@ public class PeerDocWrapper {
         return Json.toJson(temp);
     }
 
+    public boolean merge(Contribution parent, Contribution children) throws NoSuchPaddingException, UnsupportedEncodingException,
+            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
+            InvalidAlgorithmParameterException, HashGenerationException {
+
+        /* DESCOMENTAR CUANDO SE TENGA LA URL DE PEERDOC
+        String documentId = resource.getUrlAsString().split("document/")[1];
+        String userEncrypted = encrypt();
+        WSRequest holder = getWSHolder("TO DO"+documentId+"?user="+userEncrypted);
+        F.Promise<WSResponse> promise = wsSend(holder);
+        return promise.get(DEFAULT_TIMEOUT).getStatus() == 200; */
+        return true;
+    }
+
+
     public void updatePeerdocPermissions(Contribution contribution) throws NoSuchPaddingException,
             UnsupportedEncodingException, InvalidKeyException, NoSuchAlgorithmException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException,

@@ -281,6 +281,7 @@ GET       /api/contribution/:coid/body                                          
 DELETE    /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.deleteContributionResourceSpace(aid: Long, cid: Long, sid: Long)
 POST      /api/assembly/:aid/contribution/:cid/space/:sid                        controllers.Contributions.assignContributionResourceSpace(aid: Long, cid: Long, sid: Long)
 POST      /api/assembly/:aid/campaign/:cid/contribution/:coid/contribution       controllers.Contributions.forkContribution(aid: Long, cid: Long, coid: Long)
+
 POST      /api/assembly/:aid/group/:gid/contribution                             controllers.Contributions.createAssemblyGroupContribution(aid: Long, gid: Long, space?="forum")
 POST      /api/assembly/:aid/contribution/:cid/comment                           controllers.Contributions.createContributionComment(aid: Long, cid: Long)
 POST      /api/assembly/:aid/contribution/:cid/attachment                        controllers.Contributions.addAttachmentContribution(aid: Long, cid: Long)
@@ -298,6 +299,9 @@ POST      /api/contribution/pad                                                 
 PUT       /api/contribution/pad                                                  controllers.Contributions.confirmContributionPad(rid: Long)
 
 GET       /api/contribution/:uuid/proposal                                       controllers.Contributions.getContributionChildrenOrParent(uuid: java.util.UUID, type: String)
+PUT       /api/contribution/:cid/proposal/:pid                                    controllers.Contributions.mergeContribution(cid:Long, pid: Long)
+
+
 POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID, replace: java.lang.Boolean ?= true)
 POST      /api/contribution/:uuid/authors                                        controllers.Contributions.addAuthorToContribution(uuid: java.util.UUID)
 POST      /api/contribution/:uuid/nonmemberauthors                               controllers.Contributions.addNonMemberAuthorToContribution(uuid: java.util.UUID)

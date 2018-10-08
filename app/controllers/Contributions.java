@@ -2161,6 +2161,13 @@ public class Contributions extends Controller {
         }
         try {
             Contribution forked = Contribution.fork(contribution, author);
+            if(forked == null) {
+                TransferResponseStatus response = new TransferResponseStatus();
+                response.setResponseStatus(ResponseStatus.SERVERERROR);
+                response.setStatusMessage("No ok response from peerdoc");
+                return internalServerError(Json.toJson(response));
+            }
+
             return ok(Json.toJson(forked));
 
         } catch (Exception e) {
@@ -4459,7 +4466,6 @@ public class Contributions extends Controller {
             return badRequest(Json.toJson(new TransferResponseStatus("The contribution is already " +
                     "published and cannot be changed anymore")));
         }
-
         String upStatus = status.toUpperCase();
 
         // Authors of the parent of a fork can merge, and therefore, they are the only ones who can change the status
@@ -4518,10 +4524,55 @@ public class Contributions extends Controller {
         return ok(Json.toJson(c));
     }
 
+    @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result mergeContribution(
+            @ApiParam(name = "cid", value = "Parent Contribution ID") Long pid,
+            @ApiParam(name = "pid", value = "Fork contribution ID") Long cid) {
 
-    /**
-     *
-     */
+        User user = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Contribution parent = Contribution.read(pid);
+        Contribution child = Contribution.read(cid);
+
+        if((parent.getCreator()!= null && !parent.getCreator().getUserId().equals(user.getUserId()))
+                || !parent.getAuthors().contains(user)) {
+
+            return badRequest(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.UNAUTHORIZED,
+                            "Only authors can merge contributions")));
+        }
+
+        if(parent == null || child == null || child.getParent() == null
+                || !child.getParent().getContributionId().equals(parent.getContributionId())) {
+            return notFound(Json.toJson(new TransferResponseStatus("No contribution found")));
+        }
+        try {
+            Contribution aRet = Contribution.merge(parent, child, user);
+            if(aRet == null) {
+                TransferResponseStatus response = new TransferResponseStatus();
+                response.setResponseStatus(ResponseStatus.SERVERERROR);
+                response.setStatusMessage("No ok response from peerdoc");
+                return internalServerError(Json.toJson(response));
+            }
+            return ok(Json.toJson(Contribution.merge(parent, child, user)));
+        } catch (Exception e) {
+            Logger.error(e.getMessage());
+            e.printStackTrace();
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            response.setStatusMessage(e.getMessage());
+            return internalServerError(Json.toJson(response));
+        }
+    }
+
+
+            /**
+             *
+             */
     /**
      * POST      /api/public/space/:uuid/contribution
      *

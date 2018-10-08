@@ -1850,6 +1850,8 @@ public class Contribution extends AppCivistBaseModel {
                 addContributionAuthorsToWG(newContribution, parent.getWorkingGroupAuthors().get(0).getResources());
             }
 
+            newContribution.refresh();
+            parent.refresh();
             Ebean.commitTransaction();
             F.Promise.promise(() -> {
                 Logger.debug("Sending notification");
@@ -1868,6 +1870,33 @@ public class Contribution extends AppCivistBaseModel {
         }
     }
 
+
+    public static Contribution merge(Contribution parent, Contribution children, User author) throws
+            NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException,
+            IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException,
+            HashGenerationException {
+        Logger.debug("Start forking contribution " + parent.getContributionId());
+        PeerDocWrapper peerDocWrapper  = new PeerDocWrapper(author);
+        if(!peerDocWrapper.merge(parent, children)) {
+            Logger.debug("Non successful response from peerdoc, not merging");
+            return null;
+        }
+        if(children.getStatus().equals(ContributionStatus.FORKED_PUBLISHED)) {
+            children.setStatus(ContributionStatus.MERGED_PUBLIC_DRAFT);
+        } else {
+            children.setStatus(ContributionStatus.MERGED_PRIVATE_DRAFT);
+        }
+        children.update();
+        children.refresh();
+        F.Promise.promise(() -> {
+            Logger.debug("Sending notification");
+            NotificationsDelegate.forkMergeContributionInResourceSpace(parent.getResourceSpace(),
+                    children, NotificationEventName.NEW_CONTRIBUTION_MERGE);
+            return Optional.ofNullable(null);
+        });
+
+        return children;
+    }
 
     public static void addContributionAuthorsToWG(Contribution contribution, ResourceSpace rs) throws MembershipCreationException {
 
