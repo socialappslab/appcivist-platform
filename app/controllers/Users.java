@@ -843,11 +843,25 @@ public class Users extends Controller {
         return badRequest(Json.toJson(Json
             .toJson(new TransferResponseStatus("Invalid token"))));
       }
-      final User user = ta.getTargetUser();
-      final String newPassword = filledForm.get().password;
-      user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
-      TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
-      return ok(Json.toJson("ok"));
+      try {
+        Ebean.beginTransaction();
+        final User user = ta.getTargetUser();
+        final String newPassword = filledForm.get().password;
+        user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
+        TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
+        return ok(Json.toJson("ok"));
+      } catch (Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        Logger.error("Error while changing password: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+        TransferResponseStatus errorResponse = new TransferResponseStatus("Error while changing password");
+        errorResponse.setErrorTrace(sw.toString());
+        errorResponse.setResponseStatus(ResponseStatus.SERVERERROR);
+        return internalServerError(Json.toJson(errorResponse));
+      } finally {
+        Ebean.endTransaction();
+      }
     }
   }
 
