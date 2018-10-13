@@ -1835,12 +1835,18 @@ public class Contribution extends AppCivistBaseModel {
             newContribution.setExtendedTextPad(r);
             newContribution.save();
             Logger.debug("Resource and contribution saved ");
-            newContribution.getResourceSpace().setThemes(parent.getThemes());
-            newContribution.getResourceSpace().setCustomFieldValues(parent.getCustomFieldValues());
+            newContribution.refresh();
+            newContribution.setThemes(new ArrayList<>());
+            newContribution.getThemes().addAll(parent.getThemes());
+            newContribution.setHashtags(new ArrayList<>());
+            newContribution.getHashtags().addAll(parent.getHashtags());
+            newContribution.setCustomFieldValues(new ArrayList<>());
+            newContribution.getCustomFieldValues().addAll(parent.getCustomFieldValues());
             newContribution.setContainingSpaces(new ArrayList<>());
             newContribution.getContainingSpaces().addAll(parent.getContainingSpaces());
 
             parent.getResourceSpace().getContributions().add(newContribution);
+
 
             newContribution.update();
             parent.update();
