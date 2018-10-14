@@ -4534,11 +4534,15 @@ public class Contributions extends Controller {
 
         User user = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
-        Contribution parent = Contribution.read(pid);
-        Contribution child = Contribution.read(cid);
+        Contribution parent = Contribution.find.byId(pid);
+        Contribution child = Contribution.find.byId(cid);
+
+        Logger.debug("USER " +  user);
+        Logger.debug("PARENT " +  parent);
+        Logger.debug("CHILD " +  child);
 
         if((parent.getCreator()!= null && !parent.getCreator().getUserId().equals(user.getUserId()))
-                || !parent.getAuthors().contains(user)) {
+                || parent.getAuthors()!=null && !parent.getAuthors().contains(user)) {
 
             return badRequest(Json
                     .toJson(new TransferResponseStatus(
