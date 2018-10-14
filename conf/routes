@@ -299,7 +299,7 @@ POST      /api/contribution/pad                                                 
 PUT       /api/contribution/pad                                                  controllers.Contributions.confirmContributionPad(rid: Long)
 
 GET       /api/contribution/:uuid/proposal                                       controllers.Contributions.getContributionChildrenOrParent(uuid: java.util.UUID, type: String)
-PUT       /api/contribution/:pid/proposal/:cid                                    controllers.Contributions.mergeContribution(pid:Long, cid: Long)
+PUT       /api/assembly/:aid/contribution/:pid/proposal/:cid                     controllers.Contributions.mergeContribution(aid: Long, pid:Long, cid: Long)
 
 
 POST      /api/contribution/:uuid/themes                                         controllers.Contributions.addThemeToContribution(uuid: java.util.UUID, replace: java.lang.Boolean ?= true)
