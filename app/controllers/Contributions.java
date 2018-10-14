@@ -4529,8 +4529,8 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result mergeContribution(
-            @ApiParam(name = "cid", value = "Parent Contribution ID") Long pid,
-            @ApiParam(name = "pid", value = "Fork contribution ID") Long cid) {
+            @ApiParam(name = "pid", value = "Parent Contribution ID") Long pid,
+            @ApiParam(name = "cid", value = "Fork contribution ID") Long cid) {
 
         User user = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
