@@ -4528,7 +4528,9 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result mergeContribution(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "pid", value = "Parent Contribution ID") Long pid,
             @ApiParam(name = "cid", value = "Fork contribution ID") Long cid) {
 
