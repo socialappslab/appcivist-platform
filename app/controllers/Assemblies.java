@@ -1302,15 +1302,31 @@ public class Assemblies extends Controller {
 				Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(CSVHeaders.class).withSkipHeaderRecord().parse(in);
 				for (CSVRecord record : records) {
 
+							if(!record.isMapped(CSVHeaders.email.name())) {
+								return badRequest(Json.toJson(Json
+										.toJson(new TransferResponseStatus("Error parsing the CSV," +
+												"column email doesn't exist"))));
+							}
                             User u = User.findByEmail(record.get(CSVHeaders.email));
                             // Create account if not exists
                             if (u == null) {
+                            	if(!record.isMapped(CSVHeaders.name.name()) || !record.isMapped(CSVHeaders.lastname.name())
+										|| !record.isMapped(CSVHeaders.language.name())) {
+									return badRequest(Json.toJson(Json
+											.toJson(new TransferResponseStatus("Error parsing the CSV," +
+													"column name, lastname or language doesn't exist"))));
+								}
                                 u = createNewAssemblyUser(record, om, an);
                             }
 
                             // If send_invitations==TRUE, send an invitation email to the corresponding email.
                             // Else create membership
-                            if (sendInvitations.equals("true")) {
+						if(!record.isMapped(CSVHeaders.role.name())) {
+							return badRequest(Json.toJson(Json
+									.toJson(new TransferResponseStatus("Error parsing the CSV," +
+											"column role doesn't exist"))));
+						}
+						if (sendInvitations.equals("true")) {
                                 if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
                                     //CREATE invitation and send mail
                                     createAndSendInvitation(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
@@ -1347,6 +1363,7 @@ public class Assemblies extends Controller {
         u.setName(record.get(CSVHeaders.name) + " " + record.get(CSVHeaders.lastname));
         u.setUsername(u.getEmail()); // email
         u.setLanguage(record.get("language"));
+        u.setLang(record.get("language"));
         // For users without account: generate pass (see the test to generate passwords) and return this in the response
 
         Integer passIndex = random.nextInt(25);
