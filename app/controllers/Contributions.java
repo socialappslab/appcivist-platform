@@ -1606,10 +1606,10 @@ public class Contributions extends Controller {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 e.printStackTrace(pw);
-                pw.close();
                 String sStackTrace = sw.toString();
                 Logger.error(e.getMessage());
                 Logger.error(sStackTrace);
+                pw.close();
                 return internalServerError(Json
                         .toJson(new TransferResponseStatus(
                                 ResponseStatus.SERVERERROR,
