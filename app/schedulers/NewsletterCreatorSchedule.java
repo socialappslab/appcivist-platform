@@ -52,7 +52,9 @@ public class NewsletterCreatorSchedule extends DailySchedule {
                     } else {
                         ResourceSpace rs = ResourceSpace.readByUUID(UUID.fromString(spaceId));
                         WorkingGroup workingGroup = rs.getWorkingGroupResources();
-                        NotificationsDelegate.newNewsletterInWorkingGroup(workingGroup, UUID.fromString(sub.getUserId()));
+                        if(workingGroup != null) {
+                            NotificationsDelegate.newNewsletterInWorkingGroup(workingGroup, UUID.fromString(sub.getUserId()));
+                        }
                     }
                 } catch (Exception e) {
                     Logger.error("Error creating newsletter", e);
