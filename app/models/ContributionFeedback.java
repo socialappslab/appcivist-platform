@@ -351,7 +351,13 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static ContributionFeedback findByContributionAndUserId(Long cid, Long userId) {
-		return find.where().eq("contribution.contributionId", cid).eq("archived", false).eq("userId", userId).findUnique();
+		List<ContributionFeedback> feedbacks =  find.where().eq("contribution.contributionId", cid)
+				.eq("archived", false).eq("userId", userId).findList();
+		if(feedbacks != null && !feedbacks.isEmpty()) {
+			return feedbacks.get(0);
+		} else {
+			return null;
+		}
 	}
 
 	public static Integer getAverageBenefitForContribution(Long contributionId) {
