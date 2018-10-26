@@ -1861,8 +1861,13 @@ public class Contribution extends AppCivistBaseModel {
             Ebean.commitTransaction();
             F.Promise.promise(() -> {
                 Logger.debug("Sending notification");
-                NotificationsDelegate.forkMergeContributionInResourceSpace(parent.getResourceSpace(),
-                        newContribution, NotificationEventName.NEW_CONTRIBUTION_FORK);
+                try {
+                    NotificationsDelegate.forkMergeContributionInResourceSpace(parent.getResourceSpace(),
+                            newContribution, NotificationEventName.NEW_CONTRIBUTION_FORK);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Logger.error(e.getMessage());
+                }
                 return Optional.ofNullable(null);
             });
 

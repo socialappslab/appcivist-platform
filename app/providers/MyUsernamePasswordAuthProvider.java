@@ -678,11 +678,12 @@ public class MyUsernamePasswordAuthProvider
 
 		Mailer mailer = Mailer.getCustomMailer(PlayAuthenticate.getConfiguration().getConfig("password").getConfig(
 				"mail"));
-		Logger.info("Sending " + body.getHtml());
+		Logger.info("MAIL "+ mail);
         F.Promise.promise(() -> {
             try {
                 mailer.sendMail(subject, body, mail);
             } catch (Exception e) {
+            	e.printStackTrace();
                 Logger.debug("Newsletter email not sent.");
                 Logger.debug(e.getMessage());
             }

@@ -430,14 +430,14 @@ public class NotificationsDelegate {
                 resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
-                if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
+                if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
                     title = "[AppCivist] The contribution " + resourceTitle + " was forked in " + originName;
                 }
-                if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
                     title = "[AppCivist] The contribution " + resourceTitle + " was merged in " + originName;
                 }
                 numAuthors = ((Contribution) resource).getAuthors().size();
-                associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
+                associatedUser = ((Contribution) resource).getCreator().getName() + (numAuthors > 1 ? " et. al." : "");
                 setContributionUrl((Contribution) resource, urls);
                 break;
 //			case NEW_CONTRIBUTION_FEEDBACK:
@@ -595,7 +595,7 @@ public class NotificationsDelegate {
 
     private static void setContributionUrl(Contribution contribution, Map<String, Long> urls) {
         urls.put("contributionId", contribution.getContributionId());
-        if (!contribution.getWorkingGroups().isEmpty()) {
+        if (contribution.getWorkingGroups() != null && !contribution.getWorkingGroups().isEmpty()) {
             setWorkingGroupUrl(contribution.getWorkingGroups().get(0).getGroupId(), urls);
         }
     }
@@ -708,7 +708,7 @@ public class NotificationsDelegate {
         List<Long> notificatedUsers = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
-        Logger.debug(subscriptions.size() + " subscriptions found");
+        Logger.info(subscriptions.size() + " subscriptions found");
         for (Subscription sub : subscriptions) {
             //subscription.ignoredEventsList[signal.eventName] === null OR false
             if (sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
@@ -732,7 +732,7 @@ public class NotificationsDelegate {
         if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
                 (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK))) {
-            Contribution contribution = Contribution.getByUUID(origin);
+            Contribution contribution = Contribution.getByUUID(resourceUuid);
             notificatedUsers.add(contribution.getCreator().getUserId());
             for(User user: contribution.getAuthors()) {
                 if(!notificatedUsers.contains(user.getUserId())) {
