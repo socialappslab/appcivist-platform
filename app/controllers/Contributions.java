@@ -4542,9 +4542,11 @@ public class Contributions extends Controller {
         Logger.debug("USER " +  user);
         Logger.debug("PARENT " +  parent);
         Logger.debug("CHILD " +  child);
+        Logger.debug("PARENT CREATOR " + parent.getCreator().getUsername());
+        Logger.debug("PARENT AUTHORS " + parent.getAuthors());
 
         if((parent.getCreator()!= null && !parent.getCreator().getUserId().equals(user.getUserId()))
-                || parent.getAuthors()!=null && !parent.getAuthors().contains(user)) {
+                || (parent.getAuthors()!=null && !parent.getAuthors().contains(user))) {
 
             return badRequest(Json
                     .toJson(new TransferResponseStatus(
