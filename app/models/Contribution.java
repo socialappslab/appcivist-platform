@@ -1916,10 +1916,15 @@ public class Contribution extends AppCivistBaseModel {
         }
         WorkingGroup wg = rs.getWorkingGroupResources();
         for(User user : contribution.getAuthors()) {
-            Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName());
-            List<SecurityRole> roles = new ArrayList<SecurityRole>();
-            roles.add(SecurityRole.findByName("MEMBER"));
-            WorkingGroup.createMembership(wg.getGroupId(), user, roles);
+            List<Membership> m = Membership.findByUser(user,"GROUP");
+            if (m!=null || m.size() == 0) {
+                Logger.debug("Author " + user.getUsername() + " is already a member of " + wg.getName() + "");
+            } else {
+                Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName() + "");
+                List<SecurityRole> roles = new ArrayList<SecurityRole>();
+                roles.add(SecurityRole.findByName("MEMBER"));
+                WorkingGroup.createMembership(wg.getGroupId(), user, roles);
+            }
         }
     }
     public String getErrorsInExtendedTextPad() {
