@@ -74,7 +74,7 @@ public class BusComponent {
                                        boolean alwaysSendMail) {
         User fullUser = User.findByUserId(userId);
 
-        Logger.debug("Sending mail to "+ fullUser.getEmail());
+        Logger.info("Sending mail to "+ fullUser.getEmail());
         boolean send = false;
         String mail = null;
         String subject = "[Appcivist] New Notification";
@@ -100,7 +100,7 @@ public class BusComponent {
         if(title != null) {
             subject = title;
         }
-        if(send || alwaysSendMail) {
+        if((send || alwaysSendMail) && mail != null) {
             MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,mail, body);
         }
     }
