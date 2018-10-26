@@ -3380,3 +3380,6 @@ CREATE OR REPLACE FUNCTION add_proposals_from_theme_to_wg
        end if;
      END;
  $$ LANGUAGE plpgsql;
+
+-- 95.sql
+ALTER TABLE working_group_profile add COLUMN auto_accept_membership boolean default true;

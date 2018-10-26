@@ -1,30 +1,22 @@
 package delegates;
 
-import java.util.List;
-import java.util.UUID;
-
-import models.Assembly;
-import models.Membership;
-import models.MembershipAssembly;
-import models.MembershipGroup;
-import models.SecurityRole;
-import models.User;
-import models.WorkingGroup;
-import models.transfer.TransferResponseStatus;
-
-import org.dozer.DozerBeanMapper;
-
-import play.Play;
-import play.i18n.Messages;
-import providers.MyUsernamePasswordAuthProvider;
-import utils.GlobalData;
-import utils.Pair;
 import controllers.Memberships;
 import enums.MembershipCreationTypes;
 import enums.MembershipStatus;
 import enums.MyRoles;
 import enums.ResponseStatus;
 import exceptions.MembershipCreationException;
+import models.*;
+import models.transfer.TransferResponseStatus;
+import org.dozer.DozerBeanMapper;
+import play.Play;
+import play.i18n.Messages;
+import providers.MyUsernamePasswordAuthProvider;
+import utils.GlobalData;
+import utils.Pair;
+
+import java.util.List;
+import java.util.UUID;
 
 public class MembershipsDelegate {
 
@@ -44,6 +36,8 @@ public class MembershipsDelegate {
 				.equals("GROUP") ? WorkingGroup.read(targetCollectionId) : null;
 		Assembly targetAssembly = targetCollection.toUpperCase().equals(
 				"ASSEMBLY") ? Assembly.read(targetCollectionId) : null;
+		boolean autoAccept = targetWorkingGroup != null && targetWorkingGroup.getProfile() != null &&
+				targetWorkingGroup.getProfile().getAutoAcceptMembership();
 				
 		UUID targetUuid = targetCollection.toUpperCase().equals("ASSEMBLY") ? targetAssembly.getUuid() : targetWorkingGroup.getUuid();
 				
@@ -116,6 +110,9 @@ public class MembershipsDelegate {
 				// 8. Check if the creator is authorized
 				if (userCanInvite) {
 					m.setStatus(MembershipStatus.INVITED);
+					if(autoAccept) {
+						m.setStatus(MembershipStatus.ACCEPTED);
+					}
 					Membership.create(m);
 					m.refresh();
 					MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
@@ -134,11 +131,17 @@ public class MembershipsDelegate {
 			} else if (membershipType.toUpperCase().equals(
 					MembershipCreationTypes.REQUEST.toString())) {
 				m.setStatus(MembershipStatus.REQUESTED);
+				if(autoAccept) {
+					m.setStatus(MembershipStatus.ACCEPTED);
+				}
 				Membership.create(m);
 				return new Pair<Membership, TransferResponseStatus>(m, null);
 			} else if (membershipType.toUpperCase().equals(
 					MembershipCreationTypes.SUBSCRIPTION.toString())) {
 				m.setStatus(MembershipStatus.FOLLOWING);
+				if(autoAccept) {
+					m.setStatus(MembershipStatus.ACCEPTED);
+				}
 				Membership.create(m);
 				return new Pair<Membership, TransferResponseStatus>(m, null);
 			} else {

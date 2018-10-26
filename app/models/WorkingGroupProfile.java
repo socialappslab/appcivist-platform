@@ -46,6 +46,9 @@ public class WorkingGroupProfile extends AppCivistBaseModel {
 	@JsonView(Views.Public.class)
 	private String color = GlobalData.APPCIVIST_WG_DEFAULT_COLOR;
 
+	@JsonView(Views.Public.class)
+	private Boolean autoAcceptMembership;
+
 	// TODO: 
 	/**
 	 * The find property is an static property that facilitates database query creation
@@ -150,5 +153,16 @@ public class WorkingGroupProfile extends AppCivistBaseModel {
 
 	public static WorkingGroupProfile findByAssembly(UUID uuid) {
 		return find.where().eq("assembly.uuid", uuid).findUnique();
-	}		
+	}
+
+	public Boolean getAutoAcceptMembership() {
+		if (autoAcceptMembership == null) {
+			return true;
+		}
+		return autoAcceptMembership;
+	}
+
+	public void setAutoAcceptMembership(Boolean autoAcceptMembership) {
+		this.autoAcceptMembership = autoAcceptMembership;
+	}
 }
