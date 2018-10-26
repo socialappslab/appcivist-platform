@@ -4545,8 +4545,13 @@ public class Contributions extends Controller {
         Logger.debug("PARENT CREATOR " + parent.getCreator().getUsername());
         Logger.debug("PARENT AUTHORS " + parent.getAuthors());
 
-        if((parent.getCreator()!= null && !parent.getCreator().getUserId().equals(user.getUserId()))
-                || (parent.getAuthors()!=null && !parent.getAuthors().contains(user))) {
+
+        boolean isAuthor = Contribution.find.where().eq("contributionId", parent.getContributionId())
+                .eq("authors.userId", user.getUserId()).findUnique() != null;
+        if (!isAuthor) {
+            isAuthor = parent.getCreator()!= null && parent.getCreator().getUserId().equals(user.getUserId());
+        }
+        if(!isAuthor) {
 
             return badRequest(Json
                     .toJson(new TransferResponseStatus(
