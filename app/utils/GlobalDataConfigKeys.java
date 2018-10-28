@@ -96,6 +96,12 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_CAMPAIGN_AUTHORSHIP_INVITATION_EMAIL_TEMPLATE = "appcivist.campaign.authorship-invitation-email-template";
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.public_draft.status-requirements";
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ = "appcivist.campaign.contribution.published.status-requirements";
+
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.forked_public_draft.status-requirements";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ = "appcivist.campaign.contribution.forked_published.status-requirements";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.merged_public_draft.status-requirements";
+
+
 	public static final String APPCIVIST_CAMPAIGN_ACCESSIBILITY_URL = "appcivist.campaign.accessibility.url"; //link to a URL explaining accessibility issues in connection with an campaign
 	public static final String APPCIVIST_CAMPAIGN_KEYWORDS_LIMIT ="appcivist.campaign.keywords.limit";
 
@@ -389,16 +395,12 @@ public class GlobalDataConfigKeys {
 				""));
 		configList.add(new GlobalDataConfig(CAMPAIGN,  APPCIVIST_CAMPAIGN_KEYWORDS_LIMIT,
 				""));
-
-
-
-
-
-
-
-
-
-
+		configList.add(new GlobalDataConfig(CAMPAIGN, 	APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLIC_DRAFT_STATUS_REQ,
+				""));
+		configList.add(new GlobalDataConfig(CAMPAIGN, 	APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ,
+				""));
+		configList.add(new GlobalDataConfig(CAMPAIGN, 	APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ,
+				""));
 	}
 
 }

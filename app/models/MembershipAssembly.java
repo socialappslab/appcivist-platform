@@ -90,8 +90,13 @@ public class MembershipAssembly extends Membership {
 	 * @return
 	 */
 	public static Membership findByUserAndAssembly(User user, Assembly target) {
-		return find.where().eq("user", user).eq("assembly", target)
-				.findUnique();
+		List<Membership> memberships =  find.where().eq("user", user).eq("assembly", target)
+				.findList();
+		if(memberships != null && memberships.size() > 0) {
+			return memberships.get(0);
+		} else {
+			return null;
+		}
 	}
 
 	/**

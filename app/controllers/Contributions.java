@@ -141,15 +141,30 @@ public class Contributions extends Controller {
                 "No resource space for assembly: " + aid)));
     }
 
-    /**
-     * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
-     *
-     * @param aid
-     * @param cid
-     * @param ciid
-     * @param type
-     * @return
-     */
+
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions childrens or parent by type")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionChildrenOrParent(
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid,
+            @ApiParam(name = "type", value = "Type of contributions",
+                    allowableValues = "FORKS, MERGES, PARENT") String type) {
+
+        List<Contribution> contributions = Contribution.findChildrenOrParents(uuid, type);
+        return contributions != null ? ok(Json.toJson(contributions))
+                : notFound(Json.toJson(new TransferResponseStatus(
+                "No contributions for contribution: " + uuid)));
+    }
+
+        /**
+         * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
+         *
+         * @param aid
+         * @param cid
+         * @param ciid
+         * @param type
+         * @return
+         */
     @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
             produces = "application/json", value = "Get contributions in a component of a campaign within an assembly")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
@@ -1597,7 +1612,7 @@ public class Contributions extends Controller {
                     rs.getContributions().add(c);
                     rs.update();
                 }
-                addContributionAuthorsToWG(newContribution, rs);
+                Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
 
 
@@ -2125,13 +2140,58 @@ public class Contributions extends Controller {
         }
     }
 
-    /**
-     * PUT       /api/campaign/:cuuid/contribution/:uuid/feedback
-     *
-     * @param cuuid
-     * @param uuid
-     * @return
-     */
+
+
+    @ApiOperation(httpMethod = "POST", response = Contribution.class, produces = "application/json", value = "Fork a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "Contribution form has errors", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result forkContribution(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "cid", value = "Campaign ID") Long cid,
+            @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
+
+        User author = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+        Contribution contribution = Contribution.read(coid);
+        if(contribution == null) {
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage("No contribution found");
+            return notFound(Json.toJson(responseBody));
+        }
+        try {
+            Contribution forked = Contribution.fork(contribution, author);
+            if(forked == null) {
+                TransferResponseStatus response = new TransferResponseStatus();
+                response.setResponseStatus(ResponseStatus.SERVERERROR);
+                response.setStatusMessage("No ok response from peerdoc");
+                return internalServerError(Json.toJson(response));
+            }
+
+            return ok(Json.toJson(forked));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("Error while updating contribution => ",
+                    LogActions.exceptionStackTraceToString(e));
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(e.getMessage());
+            return Controller
+                    .internalServerError(Json.toJson(responseBody));
+        }
+
+    }
+
+
+
+
+        /**
+         * PUT       /api/campaign/:cuuid/contribution/:uuid/feedback
+         *
+         * @param cuuid
+         * @param uuid
+         * @return
+         */
     // TODO: REVIEW to evaluate if removing
     @ApiOperation(httpMethod = "PUT", response = ContributionFeedback.class, responseContainer = "List", produces = "application/json", value = "Update Feedback on a Contribution",
             notes = "Feedback on a contribution is a summary of its ups/downs/favs (TBD if this endpoint will remain)")
@@ -2319,7 +2379,10 @@ public class Contributions extends Controller {
 			try {
 	            Contribution newContribution = newContributionForm.get();
 
-	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED)) {
+	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED) ||
+                        newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLISHED) ||
+                        newContribution.getStatus().equals(ContributionStatus.MERGED_PRIVATE_DRAFT) ||
+                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLIC_DRAFT)) {
                     final boolean[] allowed = {false};
                     checkIfCoordinator(newContribution, allowed, author);
                     if(!allowed[0]) {
@@ -2329,6 +2392,20 @@ public class Contributions extends Controller {
                                 ResourceSpaceTypes.ASSEMBLY));
                         return unauthorized(Json.toJson(responseBody));
                     }
+                }
+
+                // Public Draft: all can see and comment; only authors can edit
+                // Forked Public Draft: all can see and comment; only authors can edit
+                // Forked Private Draft: only authors can see, edit, comment
+                if((newContribution.getStatus().equals(ContributionStatus.PUBLIC_DRAFT)
+                       || newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLIC_DRAFT)
+                        || newContribution.getStatus().equals(ContributionStatus.FORKED_PRIVATE_DRAFT)) &&
+                        !newContribution.getAuthors().contains(author)) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            ResourceSpaceTypes.ASSEMBLY));
+                    return unauthorized(Json.toJson(responseBody));
                 }
 
 	            newContribution.setContributionId(contributionId);
@@ -3534,19 +3611,6 @@ public class Contributions extends Controller {
         return newContrib;
     }
 
-    private static void addContributionAuthorsToWG(Contribution contribution, ResourceSpace rs) throws MembershipCreationException {
-
-        if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) || !contribution.getType().equals(ContributionTypes.PROPOSAL)) {
-            return;
-        }
-        WorkingGroup wg = rs.getWorkingGroupResources();
-        for(User user : contribution.getAuthors()) {
-            Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName());
-            List<SecurityRole> roles = new ArrayList<SecurityRole>();
-            roles.add(SecurityRole.findByName("MEMBER"));
-            WorkingGroup.createMembership(wg.getGroupId(), user, roles);
-        }
-    }
 
     /**
      * It looks into the list of comments of the brainstorming contributions that serve as inspiration
@@ -4388,7 +4452,8 @@ public class Contributions extends Controller {
     public static Result updateContributionStatus(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Contribution ID") Long cid,
-            @ApiParam(name = "status", value = "New Status for the Contribution", allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
+            @ApiParam(name = "status", value = "New Status for the Contribution",
+                    allowableValues = "NEW,PUBLISHED,EXCLUDED,ARCHIVED") String status) {
 
         Contribution c = Contribution.read(cid);
         Http.Session s = session();
@@ -4401,28 +4466,40 @@ public class Contributions extends Controller {
             return badRequest(Json.toJson(new TransferResponseStatus("The contribution is already " +
                     "published and cannot be changed anymore")));
         }
-
         String upStatus = status.toUpperCase();
-        List<String> checkStatus = null;
-        if (upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
-            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLIC_DRAFT,
-                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ);
+
+        // Authors of the parent of a fork can merge, and therefore, they are the only ones who can change the status
+        // from FORK_* to MERGE_*.
+        if(upStatus.contains("MERGE") && (c.getParent() !=null && !c.getParent().getAuthors().contains(user))) {
+            return badRequest(Json.toJson(new TransferResponseStatus("Only the author of the parent " +
+                    "contribution can change from FORK to MERGE")));
         }
-        if (upStatus.equals(ContributionStatus.PUBLISHED.name())) {
-            checkStatus = checkContributionRequirementsFields(c, upStatus, ContributionStatus.PUBLISHED,
-                    GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ);
-        }
+
+        List<String> checkStatus = checkContributionRequirementsFields(c, upStatus);
         if(checkStatus != null && !checkStatus.isEmpty()) {
             String lang = c.getLang();
+            String msg;
+            String statusI;
             if(lang != null)  {
-                Messages.get(Lang.forCode(c.getLang()),"appcivist.contribution.change.status",
-                        checkStatus, upStatus);
+                try {
+                    statusI = Messages.get(Lang.forCode(c.getLang()),
+                            "appcivist.contribution.status." + upStatus.toLowerCase());
+                } catch (Exception e) {
+                    statusI = upStatus;
+                }
+                msg = Messages.get(Lang.forCode(c.getLang()),"appcivist.contribution.change.status",
+                        checkStatus, statusI);
             } else {
-                Messages.get("appcivist.contribution.change.status", checkStatus, upStatus);
+                try {
+                    statusI = Messages.get(
+                            "appcivist.contribution.status." + upStatus.toLowerCase());
+                } catch (Exception e) {
+                    statusI = upStatus;
+                }
+                msg = Messages.get("appcivist.contribution.change.status", checkStatus, statusI);
             }
 
-            return badRequest(Json.toJson(new TransferResponseStatus("You must complete all the " +
-                    "required custom fields: " + checkStatus +" before changing to " + upStatus + " status")));
+            return badRequest(Json.toJson(new TransferResponseStatus(msg)));
         }
         Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
@@ -4447,10 +4524,68 @@ public class Contributions extends Controller {
         return ok(Json.toJson(c));
     }
 
+    @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")
+    @ApiResponses(value = {@ApiResponse(code = INTERNAL_SERVER_ERROR, message = "Status not valid", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    public static Result mergeContribution(
+            @ApiParam(name = "aid", value = "Assembly ID") Long aid,
+            @ApiParam(name = "pid", value = "Parent Contribution ID") Long pid,
+            @ApiParam(name = "cid", value = "Fork contribution ID") Long cid) {
 
-    /**
-     *
-     */
+        User user = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Contribution parent = Contribution.find.byId(pid);
+        Contribution child = Contribution.find.byId(cid);
+
+        Logger.debug("USER " +  user);
+        Logger.debug("PARENT " +  parent);
+        Logger.debug("CHILD " +  child);
+        Logger.debug("PARENT CREATOR " + parent.getCreator().getUsername());
+        Logger.debug("PARENT AUTHORS " + parent.getAuthors());
+
+
+        boolean isAuthor = Contribution.find.where().eq("contributionId", parent.getContributionId())
+                .eq("authors.userId", user.getUserId()).findUnique() != null;
+        if (!isAuthor) {
+            isAuthor = parent.getCreator()!= null && parent.getCreator().getUserId().equals(user.getUserId());
+        }
+        if(!isAuthor) {
+
+            return badRequest(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.UNAUTHORIZED,
+                            "Only authors can merge contributions")));
+        }
+
+        if(parent == null || child == null || child.getParent() == null
+                || !child.getParent().getContributionId().equals(parent.getContributionId())) {
+            return notFound(Json.toJson(new TransferResponseStatus("No contribution found")));
+        }
+        try {
+            Contribution aRet = Contribution.merge(parent, child, user);
+            if(aRet == null) {
+                TransferResponseStatus response = new TransferResponseStatus();
+                response.setResponseStatus(ResponseStatus.SERVERERROR);
+                response.setStatusMessage("No ok response from peerdoc");
+                return internalServerError(Json.toJson(response));
+            }
+            return ok(Json.toJson(Contribution.merge(parent, child, user)));
+        } catch (Exception e) {
+            Logger.error(e.getMessage());
+            e.printStackTrace();
+            TransferResponseStatus response = new TransferResponseStatus();
+            response.setResponseStatus(ResponseStatus.SERVERERROR);
+            response.setStatusMessage(e.getMessage());
+            return internalServerError(Json.toJson(response));
+        }
+    }
+
+
+            /**
+             *
+             */
     /**
      * POST      /api/public/space/:uuid/contribution
      *
@@ -5570,20 +5705,40 @@ public class Contributions extends Controller {
         }
         return unauth;
     }
-    private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus, ContributionStatus cs, String configKey ) {
-        List<String> requirements = new ArrayList<>();
-        if(upStatus.equals(cs.name())) {
-            if(c.getCampaignIds().size() == 0) {
-                Logger.info("No campaigns found in this contribution");
+    private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus) {
+        String configKey;
+        switch (ContributionStatus.valueOf(upStatus)) {
+            case PUBLIC_DRAFT:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_DRAFT_STATUS_REQ;
+                break;
+            case PUBLISHED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_PUBLIC_STATUS_REQ;
+                break;
+            case FORKED_PUBLIC_DRAFT:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLIC_DRAFT_STATUS_REQ;
+                break;
+            case FORKED_PUBLISHED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ;
+                break;
+            case MERGED_PUBLIC_DRAFT:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ;
+                break;
+            default:
                 return null;
-            }
-            Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
-            for(Config config: campaing.getConfigs()) {
-                if(config.getKey().equals(configKey)) {
-                    requirements = Arrays.asList(config.getValue().split(","));
-                }
+        }
+        List<String> requirements = new ArrayList<>();
+
+        if(c.getCampaignIds().size() == 0) {
+            Logger.info("No campaigns found in this contribution");
+            return null;
+        }
+        Campaign campaing = Campaign.find.byId(c.getCampaignIds().get(0));
+        for(Config config: campaing.getConfigs()) {
+            if(config.getKey().equals(configKey)) {
+                requirements = Arrays.asList(config.getValue().split(","));
             }
         }
+
         Logger.info("Requirements config: " + requirements);
         List<String> customFields = new ArrayList<>();
         List<String> contributionFields = new ArrayList<>();

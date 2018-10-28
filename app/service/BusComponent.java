@@ -46,7 +46,7 @@ public class BusComponent {
     }
 
     public static void sendToRabbit(NotificationSignalTransfer notificationSignalTransfer, List<Long> notifiedUsers,
-                                    String richText, boolean ownTitle) throws IOException, TimeoutException {
+                                    String richText, boolean ownTitle, boolean alwaysSendMail) throws IOException, TimeoutException {
         Channel channel = getConnection().createChannel();
         Map<String, String> toSend = new HashMap<>();
         toSend.put("title", notificationSignalTransfer.getTitle());
@@ -55,9 +55,9 @@ public class BusComponent {
         String message;
         for (Long user: notifiedUsers) {
             if(ownTitle) {
-                sendSignalMail(user, richText, notificationSignalTransfer, notificationSignalTransfer.getTitle());
+                sendSignalMail(user, richText, notificationSignalTransfer, notificationSignalTransfer.getTitle(), alwaysSendMail);
             } else {
-                sendSignalMail(user, richText, notificationSignalTransfer, null);
+                sendSignalMail(user, richText, notificationSignalTransfer, null, alwaysSendMail);
             }
             message = Json.toJson(toSend).toString();
             channel.exchangeDeclare(EXCHANGE, "direct");
@@ -70,10 +70,11 @@ public class BusComponent {
     }
 
     private static void sendSignalMail(Long userId, String body,
-                                       NotificationSignalTransfer notificationSignalTransfer, String title) {
+                                       NotificationSignalTransfer notificationSignalTransfer, String title,
+                                       boolean alwaysSendMail) {
         User fullUser = User.findByUserId(userId);
 
-        Logger.debug("Sending mail to "+ fullUser.getEmail());
+        Logger.info("Sending mail to "+ fullUser.getEmail());
         boolean send = false;
         String mail = null;
         String subject = "[Appcivist] New Notification";
@@ -99,7 +100,7 @@ public class BusComponent {
         if(title != null) {
             subject = title;
         }
-        if(send) {
+        if((send || alwaysSendMail) && mail != null) {
             MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,mail, body);
         }
     }

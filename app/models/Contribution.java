@@ -1,14 +1,18 @@
 package models;
 
+import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.Contributions;
+import delegates.NotificationsDelegate;
 import enums.*;
+import exceptions.MembershipCreationException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.location.Location;
@@ -20,10 +24,20 @@ import play.Logger;
 import play.data.validation.Constraints.Required;
 import play.libs.F;
 import utils.LocationUtilities;
+import utils.security.HashGenerationException;
 import utils.services.PeerDocWrapper;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.persistence.*;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -388,7 +402,7 @@ public class Contribution extends AppCivistBaseModel {
         }
         return null;
     }
-    
+
     public Long getContributionId() {
         return contributionId;
     }
@@ -1744,6 +1758,175 @@ public class Contribution extends AppCivistBaseModel {
         return find.where().eq("uuid",uuid.toString()).findUnique();
     }
 
+    public static List<Contribution> findChildrenOrParents(UUID cuuid, String type) {
+
+        type = type.toUpperCase();
+        Contribution contribution = Contribution.getByUUID(cuuid);
+        if(contribution == null) {
+            return null;
+        }
+        switch (type) {
+            case "FORKS":
+                return find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .or(Expr.eq("status", ContributionStatus.FORKED_PUBLIC_DRAFT.name()),
+                                Expr.eq("status", ContributionStatus.FORKED_PUBLISHED.name())).findList();
+            case "MERGES":
+                return find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .eq("status", ContributionStatus.MERGED_PUBLIC_DRAFT.name()).findList();
+            case "PARENT":
+                return Collections.singletonList(contribution.getParent());
+            default:
+                return null;
+        }
+
+    }
+
+    public static Contribution fork (Contribution parent, User author) throws NoSuchPaddingException,
+            InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException,
+            BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, HashGenerationException, MalformedURLException, MembershipCreationException {
+
+        Logger.debug("Start forking contribution " + parent.getContributionId());
+        PeerDocWrapper peerDocWrapper  = new PeerDocWrapper(author);
+        JsonNode peerdocResponse = peerDocWrapper.fork(parent.getExtendedTextPad());
+        if(peerdocResponse.get("path") == null) {
+            Logger.debug("Non successful response from peerdoc, not forking");
+            return null;
+        }
+        Logger.debug("Successful response from peerdoc " + peerdocResponse.get("path"));
+        try {
+            Ebean.beginTransaction();
+            Contribution newContribution = new Contribution();
+
+            newContribution.setTitle(parent.getTitle());
+            newContribution.setText(parent.getText());
+            newContribution.setPlainText(parent.getPlainText());
+            newContribution.setType(parent.getType());
+            newContribution.setStatus(ContributionStatus.FORKED_PRIVATE_DRAFT);
+            newContribution.setModerationComment(parent.getModerationComment());
+            newContribution.setSource(parent.getSource());
+            newContribution.setSourceUrl(parent.getSourceUrl());
+            newContribution.setLocation(parent.getLocation());
+            newContribution.setCreator(author);
+            newContribution.setAuthors(new ArrayList<>());
+            newContribution.getAuthors().add(author);
+            newContribution.setBudget(parent.getBudget());
+            newContribution.setParent(parent);
+
+            newContribution.setForum(parent.getForum());
+            newContribution.setActionDueDate(parent.getActionDueDate());
+            newContribution.setActionDone(parent.getActionDone());
+            newContribution.setAction(parent.getAction());
+            newContribution.setAssessmentSummary(parent.getAssessmentSummary());
+
+            String padId = UUID.randomUUID().toString();
+
+            Logger.debug("Creating resource ");
+            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + peerdocResponse.get("path")));
+            r.setPadId(padId);
+            r.setResourceType(ResourceTypes.PEERDOC);
+            r.setReadOnlyPadId(null);
+            r.setCreator(author);
+
+            newContribution.setCover(parent.getCover());
+            newContribution.setSourceCode(parent.getSourceCode());
+            newContribution.setLang(parent.getLang());
+
+            r.save();
+            newContribution.setExtendedTextPad(r);
+            newContribution.save();
+            Logger.debug("Resource and contribution saved ");
+            newContribution.refresh();
+            newContribution.setThemes(new ArrayList<>());
+            newContribution.getThemes().addAll(parent.getThemes());
+            newContribution.setHashtags(new ArrayList<>());
+            newContribution.getHashtags().addAll(parent.getHashtags());
+            newContribution.setCustomFieldValues(new ArrayList<>());
+            newContribution.getCustomFieldValues().addAll(parent.getCustomFieldValues());
+            newContribution.setContainingSpaces(new ArrayList<>());
+            newContribution.getContainingSpaces().addAll(parent.getContainingSpaces());
+
+            parent.getResourceSpace().getContributions().add(newContribution);
+
+
+            newContribution.update();
+            parent.update();
+            Logger.debug("Contribution resource spaces saved ");
+            if(parent.getWorkingGroupAuthors() != null && parent.getWorkingGroupAuthors().size() > 0) {
+                Logger.debug("Adding author to working group");
+                addContributionAuthorsToWG(newContribution, parent.getWorkingGroupAuthors().get(0).getResources());
+            }
+
+            newContribution.refresh();
+            parent.refresh();
+            Ebean.commitTransaction();
+            F.Promise.promise(() -> {
+                Logger.debug("Sending notification");
+                try {
+                    NotificationsDelegate.forkMergeContributionInResourceSpace(parent.getResourceSpace(),
+                            newContribution, NotificationEventName.NEW_CONTRIBUTION_FORK);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Logger.error(e.getMessage());
+                }
+                return Optional.ofNullable(null);
+            });
+
+            return newContribution;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.error("Error forking transaction " + e.getMessage());
+            throw e;
+        } finally {
+            Ebean.endTransaction();
+        }
+    }
+
+
+    public static Contribution merge(Contribution parent, Contribution children, User author) throws
+            NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException,
+            IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException,
+            HashGenerationException {
+        Logger.debug("Start forking contribution " + parent.getContributionId());
+        PeerDocWrapper peerDocWrapper  = new PeerDocWrapper(author);
+        if(!peerDocWrapper.merge(parent, children)) {
+            Logger.debug("Non successful response from peerdoc, not merging");
+            return null;
+        }
+        if(children.getStatus().equals(ContributionStatus.FORKED_PUBLISHED)) {
+            children.setStatus(ContributionStatus.MERGED_PUBLIC_DRAFT);
+        } else {
+            children.setStatus(ContributionStatus.MERGED_PRIVATE_DRAFT);
+        }
+        children.update();
+        children.refresh();
+        F.Promise.promise(() -> {
+            Logger.debug("Sending notification");
+            NotificationsDelegate.forkMergeContributionInResourceSpace(parent.getResourceSpace(),
+                    children, NotificationEventName.NEW_CONTRIBUTION_MERGE);
+            return Optional.ofNullable(null);
+        });
+
+        return children;
+    }
+
+    public static void addContributionAuthorsToWG(Contribution contribution, ResourceSpace rs) throws MembershipCreationException {
+
+        if (!rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) || !contribution.getType().equals(ContributionTypes.PROPOSAL)) {
+            return;
+        }
+        WorkingGroup wg = rs.getWorkingGroupResources();
+        for(User user : contribution.getAuthors()) {
+            List<Membership> m = Membership.findByUser(user,"GROUP");
+            if (m!=null || m.size() == 0) {
+                Logger.debug("Author " + user.getUsername() + " is already a member of " + wg.getName() + "");
+            } else {
+                Logger.debug("Adding author " + user.getUsername() + " to working group " + wg.getName() + "");
+                List<SecurityRole> roles = new ArrayList<SecurityRole>();
+                roles.add(SecurityRole.findByName("MEMBER"));
+                WorkingGroup.createMembership(wg.getGroupId(), user, roles);
+            }
+        }
+    }
     public String getErrorsInExtendedTextPad() {
         return errorsInExtendedTextPad;
     }
