@@ -112,6 +112,7 @@ playauthenticate.token.error.title=Erro de Token
 playauthenticate.token.error.message=The given token has either expired or does not exist.
 
 playauthenticate.user.exists.title=Usuário existente
+playauthenticate.user.does.not.exists.title=User does not exists
 playauthenticate.user.exists.message=Este usuário já existe.
 
 

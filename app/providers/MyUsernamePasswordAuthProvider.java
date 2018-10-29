@@ -599,7 +599,6 @@ public class MyUsernamePasswordAuthProvider
 		final String text = getEmailTemplate(
 				"views.html.account.membership.invitation_email", locale, url, token,
 				name, email);
-
 		return new Body(text, html);
 	}	
 	
