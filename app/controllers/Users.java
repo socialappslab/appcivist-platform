@@ -965,53 +965,66 @@ public class Users extends Controller {
       return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
       // TODO return badRequest(password_forgot.render(filledForm));
     } else {
-      // The email address given *BY AN UNKNWON PERSON* to the form - we
-      // should find out if we actually have a user with this email
-      // address and whether password login is enabled for him/her. Also
-      // only send if the email address of the user has been verified.
-      final String email = filledForm.get().email;
-      final String configUrl = filledForm.get().configUrl;
+      try {
+        Ebean.beginTransaction();
+        // The email address given *BY AN UNKNWON PERSON* to the form - we
+        // should find out if we actually have a user with this email
+        // address and whether password login is enabled for him/her. Also
+        // only send if the email address of the user has been verified.
+        final String email = filledForm.get().email;
+        final String configUrl = filledForm.get().configUrl;
 
-      // We don't want to expose whether a given email address is signed
-      // up, so just say an email has been sent, even though it might not
-      // be true - that's protecting our user privacy.
-      flash(Application.FLASH_MESSAGE_KEY,
-          Messages.get(
-              "playauthenticate.reset_password.message.instructions_sent",
-              email));
+        // We don't want to expose whether a given email address is signed
+        // up, so just say an email has been sent, even though it might not
+        // be true - that's protecting our user privacy.
+        flash(Application.FLASH_MESSAGE_KEY,
+                Messages.get(
+                        "playauthenticate.reset_password.message.instructions_sent",
+                        email));
 
-      final User user = User.findByEmail(email);
-      if (user != null) {
-        // yep, we have a user with this email that is active - we do
-        // not know if the user owning that account has requested this
-        // reset, though.
-        final MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
-            .getProvider();
-        // User exists
-        if (user.isEmailVerified()) {
-          provider.sendPasswordResetMailing(user, ctx(),configUrl);
-          // In case you actually want to let (the unknown person)
-          // know whether a user was found/an email was sent, use,
-          // change the flash message
-        } else {
-          // We need to change the message here, otherwise the user
-          // does not understand whats going on - we should not verify
-          // with the password reset, as a "bad" user could then sign
-          // up with a fake email via OAuth and get it verified by an
-          // a unsuspecting user that clicks the link.
-          flash(Application.FLASH_MESSAGE_KEY,
-              Messages.get("playauthenticate.reset_password.message.email_not_verified"));
+        final User user = User.findByEmail(email);
+        if (user != null) {
+          // yep, we have a user with this email that is active - we do
+          // not know if the user owning that account has requested this
+          // reset, though.
+          final MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
+                  .getProvider();
+          // User exists
+          if (user.isEmailVerified()) {
+            provider.sendPasswordResetMailing(user, ctx(), configUrl);
+            // In case you actually want to let (the unknown person)
+            // know whether a user was found/an email was sent, use,
+            // change the flash message
+          } else {
+            // We need to change the message here, otherwise the user
+            // does not understand whats going on - we should not verify
+            // with the password reset, as a "bad" user could then sign
+            // up with a fake email via OAuth and get it verified by an
+            // a unsuspecting user that clicks the link.
+            flash(Application.FLASH_MESSAGE_KEY,
+                    Messages.get("playauthenticate.reset_password.message.email_not_verified"));
 
-          // You might want to re-send the verification email here...
-          provider.sendVerifyEmailMailingAfterSignup(user, ctx(),true);
+            // You might want to re-send the verification email here...
+            provider.sendVerifyEmailMailingAfterSignup(user, ctx(), true);
+          }
+          return ok(Json.toJson("ok"));
         }
-        return ok(Json.toJson("ok"));
+        TransferResponseStatus response = new TransferResponseStatus();
+        response.setResponseStatus(ResponseStatus.NODATA);
+        response.setStatusMessage("User not found with email: "+email);
+        return notFound(Json.toJson(response));
+      } catch (Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        Logger.error("Error while doing forgot password: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
+        TransferResponseStatus errorResponse = new TransferResponseStatus("Error while changing password");
+        errorResponse.setErrorTrace(sw.toString());
+        errorResponse.setResponseStatus(ResponseStatus.SERVERERROR);
+        return internalServerError(Json.toJson(errorResponse));
+      } finally {
+        Ebean.endTransaction();
       }
-
-      TransferResponseStatus response = new TransferResponseStatus();
-      response.setResponseStatus(ResponseStatus.NODATA);
-      response.setStatusMessage("User not found with email: "+email);
-      return notFound(Json.toJson(response));
     }
   }
 

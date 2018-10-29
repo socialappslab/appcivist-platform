@@ -415,25 +415,12 @@ public class MyUsernamePasswordAuthProvider
 		final String langCode = userLangCode !=null ? userLangCode : lang.code();
 		ctx.changeLang(langCode);
 		String locale = langCode;
+        locale = GlobalData.locales.get(locale);
+        if (locale == null || locale == "") {
+            locale = "en";
+        }
 
-		if (locale.equals("it_IT") || locale.equals("it-IT")
-				|| locale.equals("it")) {
-			locale = "it";
-		} else if (locale.equals("es_ES") || locale.equals("es-ES")
-				|| locale.equals("es")) {
-			locale = "es";
-		} else if (locale.equals("en_EN") || locale.equals("en-EN")
-				|| locale.equals("en")) {
-			locale = "en";
-		} else if (locale.equals("de_DE") || locale.equals("de-DE")
-				|| locale.equals("de")) {
-			locale = "de";
-		} else if (locale.equals("fr_FR") || locale.equals("fr-FR")
-				|| locale.equals("fr")) {
-			locale = "fr";
-		}
-
-		final String html = getEmailTemplate(
+        final String html = getEmailTemplate(
 				"views.html.account.email.password_reset", locale, url,
 				token, user.getName(), user.getEmail());
 		final String text = getEmailTemplate(
@@ -533,18 +520,9 @@ public class MyUsernamePasswordAuthProvider
 		ctx.changeLang(lang);
 		String locale = langCode;
 
-		if (Pattern.compile("it", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
-			locale = "it";
-		} else if (Pattern.compile("es", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
-			locale = "es";
-		} else if (Pattern.compile("en", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
+		locale = GlobalData.locales.get(locale);
+		if (locale == null || locale == "") {
 			locale = "en";
-		} else if (Pattern.compile("de", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
-			locale = "de";
-		} else if (Pattern.compile("fr", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
-			locale = "fr";
-		} else if (Pattern.compile("pt", Pattern.CASE_INSENSITIVE).matcher(locale).matches()) {
-			locale = "pt";
 		}
 
 		String name = user.getName();
@@ -632,20 +610,13 @@ public class MyUsernamePasswordAuthProvider
 				+targetCollection.toLowerCase()
 				+"/"+id+"?moderator="+invitation.getModerator()
 				+"&coordinator="+invitation.getCoordinator();
+        String locale = "en";
+        locale = GlobalData.locales.get(locale);
+        if (locale == null || locale == "") {
+            locale = "en";
+        }
 
-		String locale = "en";
-		
-		// Checking if the language is in ISO format e.g., it-IT, it_IT
-		String[] isoLocale = locale.split("-");
-		if(isoLocale!=null && isoLocale.length>0)
-			locale = isoLocale[0]; // we will use only the short code for lang = "it", "es", "en" 
-		else {
-			isoLocale = locale.split("_");
-			if(isoLocale != null && isoLocale.length>0)
-				locale = isoLocale[0];
-		}
-		
-		// TODO: what we do with Users that don't have emails? 
+		// TODO: what we do with Users that don't have emails?
 		String name = invitation.getEmail();
 		String email = invitation.getEmail();
 		final String html = getEmailTemplate(
