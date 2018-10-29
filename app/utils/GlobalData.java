@@ -2,6 +2,9 @@ package utils;
 
 import enums.CampaignTemplatesEnum;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GlobalData {
 	public static final String APPCIVIST_BASE_URL = "/api";
 	public static final String APPCIVIST_ASSEMBLY_BASE_URL = APPCIVIST_BASE_URL+"/assembly";
@@ -122,4 +125,26 @@ public class GlobalData {
 	public static final Integer DEFAULT_PAGE_SIZE = 16;
 
 	public static final String GEOCODING_SERVICE = "appcivist.services.geocoding.service";
+
+
+	public static final Map<String, String> locales = new HashMap<>();
+
+	static {
+		locales.put("en-US", "en");
+		locales.put("en_US", "en");
+		locales.put("es-ES", "es");
+		locales.put("es_ES", "es");
+		locales.put("es-PY", "es");
+		locales.put("es_US", "es");
+		locales.put("pt-BR", "pt");
+		locales.put("pt_BR", "pt");
+		locales.put("it-IT", "it");
+		locales.put("it_IT", "it");
+		locales.put("fr-CA", "fr");
+		locales.put("fr_CA", "fr");
+		locales.put("fr-FR", "fr");
+		locales.put("fr_FR", "fr");
+		locales.put("de-DE", "de");
+		locales.put("de_DE", "de");
+	}
 }

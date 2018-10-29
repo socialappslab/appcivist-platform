@@ -17,6 +17,7 @@ import models.*;
 import models.TokenAction.Type;
 import models.misc.AppcivistFile;
 import models.transfer.TransferResponseStatus;
+import org.h2.value.Transfer;
 import play.Logger;
 import play.data.DynamicForm;
 import play.data.Form;
@@ -827,193 +828,203 @@ public class Users extends Controller {
     }
   }
 
-  @ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
-  @ApiImplicitParams({
-      @ApiImplicitParam(name = "Password Forgot Change Object", value = "User's updated password form", dataType = "controllers.PasswordForgotChange", paramType = "body") })
-  public static Result doChangeForgotPassword() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    final Form<PasswordForgotChange> filledForm = PASSWORD_CHANGE_FORGOT_FORM
-        .bindFromRequest();
-    if (filledForm.hasErrors()) {
-      // User did not select whether to link or not link
-      return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
-    } else {
-      final TokenAction ta = tokenIsValid(filledForm.get().token, Type.PASSWORD_RESET);
-      if (ta == null) {
-        return badRequest(Json.toJson(Json
-            .toJson(new TransferResponseStatus("Invalid token"))));
-      }
-      try {
-        Ebean.beginTransaction();
-        final User user = ta.getTargetUser();
-        final String newPassword = filledForm.get().password;
-        user.changePassword(new MyUsernamePasswordAuthUser(newPassword),true);
-        TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
-        return ok(Json.toJson("ok"));
-      } catch (Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        Logger.error("Error while changing password: "+e.getStackTrace().toString()+" | "+e.getMessage()+" | "+sw.toString());
-        TransferResponseStatus errorResponse = new TransferResponseStatus("Error while changing password");
-        errorResponse.setErrorTrace(sw.toString());
-        errorResponse.setResponseStatus(ResponseStatus.SERVERERROR);
-        return internalServerError(Json.toJson(errorResponse));
-      } finally {
-        Ebean.endTransaction();
-      }
-    }
-  }
-
-  @SubjectPresent
-  public static Result askLink() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    final AuthUser u = PlayAuthenticate.getLinkUser(session());
-    if (u == null) {
-      // account to link could not be found, silently redirect to login
-      return redirect(routes.Application.index());
-    }
-    return ok(ask_link.render(ACCEPT_FORM, u));
-  }
-
-  @SubjectPresent
-  public static Result doLink() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    final AuthUser u = PlayAuthenticate.getLinkUser(session());
-    if (u == null) {
-      // account to link could not be found, silently redirect to login
-      return redirect(routes.Application.index());
-    }
-
-    final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
-    if (filledForm.hasErrors()) {
-      // User did not select whether to link or not link
-      return badRequest(ask_link.render(filledForm, u));
-    } else {
-      // User made a choice :)
-      final boolean link = filledForm.get().accept;
-      if (link) {
-        flash(Application.FLASH_MESSAGE_KEY,
-            Messages.get("playauthenticate.accounts.link.success"));
-      }
-      return PlayAuthenticate.link(ctx(), link);
-    }
-  }
-
-  @SubjectPresent
-  public static Result askMerge() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    // this is the currently logged in user
-    final AuthUser aUser = PlayAuthenticate.getUser(session());
-
-    // this is the user that was selected for a login
-    final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
-    if (bUser == null) {
-      // user to merge with could not be found, silently redirect to login
-      return redirect(routes.Application.index());
-    }
-
-    // You could also get the local user object here via
-    // User.findByAuthUserIdentity(newUser)
-    return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
-  }
-
-  @SubjectPresent
-  public static Result doMerge() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    // this is the currently logged in user
-    final AuthUser aUser = PlayAuthenticate.getUser(session());
-
-    // this is the user that was selected for a login
-    final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
-    if (bUser == null) {
-      // user to merge with could not be found, silently redirect to login
-      return redirect(routes.Application.index());
-    }
-
-    final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
-    if (filledForm.hasErrors()) {
-      // User did not select whether to merge or not merge
-      return badRequest(ask_merge.render(filledForm, aUser, bUser));
-    } else {
-      // User made a choice :)
-      final boolean merge = filledForm.get().accept;
-      if (merge) {
-        flash(Application.FLASH_MESSAGE_KEY,
-            Messages.get("playauthenticate.accounts.merge.success"));
-      }
-      return PlayAuthenticate.merge(ctx(), merge);
-    }
-  }
-
-  public static Result unverified() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-
-    // return the User
-    return ok(toJson(Messages.get("playauthenticate.verify.email.cta")));
-    // TODO return ok(unverified.render());
-  }
-
-  @ApiOperation(httpMethod = "POST", value = "Request a token to change forgot password")
-  @ApiResponses(value = { @ApiResponse(code = 404, message = "User not found") })
-  public static Result doForgotPassword() {
-    com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-    final Form<ResetConfig> filledForm = FORGOT_CONFIG_PASSWORD_FORM
-        .bindFromRequest();
-    if (filledForm.hasErrors()) {
-      // User did not fill in his/her email
-      return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
-      // TODO return badRequest(password_forgot.render(filledForm));
-    } else {
-      // The email address given *BY AN UNKNWON PERSON* to the form - we
-      // should find out if we actually have a user with this email
-      // address and whether password login is enabled for him/her. Also
-      // only send if the email address of the user has been verified.
-      final String email = filledForm.get().email;
-      final String configUrl = filledForm.get().configUrl;
-
-      // We don't want to expose whether a given email address is signed
-      // up, so just say an email has been sent, even though it might not
-      // be true - that's protecting our user privacy.
-      flash(Application.FLASH_MESSAGE_KEY,
-          Messages.get(
-              "playauthenticate.reset_password.message.instructions_sent",
-              email));
-
-      final User user = User.findByEmail(email);
-      if (user != null) {
-        // yep, we have a user with this email that is active - we do
-        // not know if the user owning that account has requested this
-        // reset, though.
-        final MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider
-            .getProvider();
-        // User exists
-        if (user.isEmailVerified()) {
-          provider.sendPasswordResetMailing(user, ctx(),configUrl);
-          // In case you actually want to let (the unknown person)
-          // know whether a user was found/an email was sent, use,
-          // change the flash message
+    @ApiOperation(httpMethod = "POST", produces = "application/html", value = "Changes user's password")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Password Forgot Change Object", value = "User's updated password form", dataType = "controllers.PasswordForgotChange", paramType = "body")})
+    public static Result doChangeForgotPassword() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+        final Form<PasswordForgotChange> filledForm = PASSWORD_CHANGE_FORGOT_FORM
+                .bindFromRequest();
+        if (filledForm.hasErrors()) {
+            // User did not select whether to link or not link
+            return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
         } else {
-          // We need to change the message here, otherwise the user
-          // does not understand whats going on - we should not verify
-          // with the password reset, as a "bad" user could then sign
-          // up with a fake email via OAuth and get it verified by an
-          // a unsuspecting user that clicks the link.
-          flash(Application.FLASH_MESSAGE_KEY,
-              Messages.get("playauthenticate.reset_password.message.email_not_verified"));
-
-          // You might want to re-send the verification email here...
-          provider.sendVerifyEmailMailingAfterSignup(user, ctx(),true);
+            final TokenAction ta = tokenIsValid(filledForm.get().token, Type.PASSWORD_RESET);
+            if (ta == null) {
+                return badRequest(Json.toJson(Json
+                        .toJson(new TransferResponseStatus("Invalid token"))));
+            }
+            try {
+                Ebean.beginTransaction();
+                final User user = ta.getTargetUser();
+                final String newPassword = filledForm.get().password;
+                user.changePassword(new MyUsernamePasswordAuthUser(newPassword), true);
+                TokenAction.deleteByUser(user, Type.PASSWORD_RESET);
+                TransferResponseStatus response = new TransferResponseStatus(Messages.get("playauthenticate.reset_password.message.success.manual_login"));
+                response.setResponseStatus(ResponseStatus.OK);
+                Ebean.commitTransaction();
+                return ok(Json.toJson(response));
+            } catch (Exception e) {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                Logger.error("Error while changing password: " + e.getStackTrace().toString() + " | " + e.getMessage() + " | " + sw.toString());
+                TransferResponseStatus errorResponse = new TransferResponseStatus("Error while changing password");
+                errorResponse.setErrorTrace(sw.toString());
+                errorResponse.setResponseStatus(ResponseStatus.SERVERERROR);
+                return internalServerError(Json.toJson(errorResponse));
+            } finally {
+                Ebean.endTransaction();
+            }
         }
-        return ok(Json.toJson("ok"));
-      }
-
-      TransferResponseStatus response = new TransferResponseStatus();
-      response.setResponseStatus(ResponseStatus.NODATA);
-      response.setStatusMessage("User not found with email: "+email);
-      return notFound(Json.toJson(response));
     }
-  }
+
+    @SubjectPresent
+    public static Result askLink() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+        final AuthUser u = PlayAuthenticate.getLinkUser(session());
+        if (u == null) {
+            // account to link could not be found, silently redirect to login
+            return redirect(routes.Application.index());
+        }
+        return ok(ask_link.render(ACCEPT_FORM, u));
+    }
+
+    @SubjectPresent
+    public static Result doLink() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+        final AuthUser u = PlayAuthenticate.getLinkUser(session());
+        if (u == null) {
+            // account to link could not be found, silently redirect to login
+            return redirect(routes.Application.index());
+        }
+
+        final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
+        if (filledForm.hasErrors()) {
+            // User did not select whether to link or not link
+            return badRequest(ask_link.render(filledForm, u));
+        } else {
+            // User made a choice :)
+            final boolean link = filledForm.get().accept;
+            if (link) {
+                flash(Application.FLASH_MESSAGE_KEY,
+                        Messages.get("playauthenticate.accounts.link.success"));
+            }
+            return PlayAuthenticate.link(ctx(), link);
+        }
+    }
+
+    @SubjectPresent
+    public static Result askMerge() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+        // this is the currently logged in user
+        final AuthUser aUser = PlayAuthenticate.getUser(session());
+
+        // this is the user that was selected for a login
+        final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+        if (bUser == null) {
+            // user to merge with could not be found, silently redirect to login
+            return redirect(routes.Application.index());
+        }
+
+        // You could also get the local user object here via
+        // User.findByAuthUserIdentity(newUser)
+        return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
+    }
+
+    @SubjectPresent
+    public static Result doMerge() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+        // this is the currently logged in user
+        final AuthUser aUser = PlayAuthenticate.getUser(session());
+
+        // this is the user that was selected for a login
+        final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+        if (bUser == null) {
+            // user to merge with could not be found, silently redirect to login
+            return redirect(routes.Application.index());
+        }
+
+        final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
+        if (filledForm.hasErrors()) {
+            // User did not select whether to merge or not merge
+            return badRequest(ask_merge.render(filledForm, aUser, bUser));
+        } else {
+            // User made a choice :)
+            final boolean merge = filledForm.get().accept;
+            if (merge) {
+                flash(Application.FLASH_MESSAGE_KEY,
+                        Messages.get("playauthenticate.accounts.merge.success"));
+            }
+            return PlayAuthenticate.merge(ctx(), merge);
+        }
+    }
+
+    public static Result unverified() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+
+        // return the User
+        return ok(toJson(Messages.get("playauthenticate.verify.email.cta")));
+        // TODO return ok(unverified.render());
+    }
+
+    @ApiOperation(httpMethod = "POST", value = "Request a token to change forgot password")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "User not found")})
+    public static Result doForgotPassword() {
+        com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+        final Form<ResetConfig> filledForm = FORGOT_CONFIG_PASSWORD_FORM.bindFromRequest();
+        if (filledForm.hasErrors()) {
+            // User did not fill in his/her email
+            return badRequest(Json.toJson(new TransferResponseStatus("Form has errors: " + filledForm.errorsAsJson())));
+            // TODO return badRequest(password_forgot.render(filledForm));
+        } else {
+            // The email address given *BY AN UNKNWON PERSON* to the form - we
+            // should find out if we actually have a user with this email
+            // address and whether password login is enabled for him/her. Also
+            // only send if the email address of the user has been verified.
+            final String email = filledForm.get().email;
+            final String configUrl = filledForm.get().configUrl;
+
+            try {
+                Ebean.beginTransaction();
+                final User user = User.findByEmail(email);
+                if (user != null) {
+                    // yep, we have a user with this email that is active - we do
+                    // not know if the user owning that account has requested this
+                    // reset, though.
+                    final MyUsernamePasswordAuthProvider provider = MyUsernamePasswordAuthProvider.getProvider();
+                    String message = "";
+
+                    // User exists
+                    if (user.isEmailVerified()) {
+                        provider.sendPasswordResetMailing(user, ctx(), configUrl);
+                        message = Messages.get("playauthenticate.reset_password.message.instructions_sent", email);
+                    } else {
+                        // We need to change the message here, otherwise the user
+                        // does not understand whats going on - we should not verify
+                        // with the password reset, as a "bad" user could then sign
+                        // up with a fake email via OAuth and get it verified by an
+                        // a unsuspecting user that clicks the link.
+                        message = Messages.get("playauthenticate.reset_password.message.email_not_verified");
+                        // You might want to re-send the verification email here...
+                        provider.sendVerifyEmailMailingAfterSignup(user, ctx(), true);
+                    }
+                    TransferResponseStatus response = new TransferResponseStatus();
+                    response.setResponseStatus(ResponseStatus.OK);
+                    response.setStatusMessage(message);
+                    Ebean.commitTransaction();
+                    return ok(Json.toJson(response));
+                } else {
+                    TransferResponseStatus response = new TransferResponseStatus();
+                    response.setResponseStatus(ResponseStatus.NODATA);
+                    String message = Messages.get("playauthenticate.user.does.not.exists.title");
+                    response.setStatusMessage(message);
+                    return notFound(Json.toJson(response));
+                }
+            } catch (Exception e) {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                Logger.error("Error while doing forgot password: " + e.getStackTrace().toString() + " | " + e.getMessage() + " | " + sw.toString());
+                TransferResponseStatus errorResponse = new TransferResponseStatus("Error while changing password");
+                errorResponse.setErrorTrace(sw.toString());
+                errorResponse.setResponseStatus(ResponseStatus.SERVERERROR);
+                return internalServerError(Json.toJson(errorResponse));
+            } finally {
+                Ebean.endTransaction();
+            }
+        }
+    }
 
   /**
    * Returns a token object if valid, null if not
