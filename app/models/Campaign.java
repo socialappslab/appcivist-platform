@@ -890,7 +890,7 @@ String uuidAsString, List<Component> phases) {
 	public List<Theme> filterThemesByTitle(String t) {
 		return this.resources.getThemes()
 				.stream()
-				.filter(theme -> theme.getTitle().equals(t))
+				.filter(theme -> theme != null ? theme.getTitle() != null ? theme.getTitle().equals(t) : false : false)
 				.collect(Collectors.toList());
 	}
 
