@@ -1302,6 +1302,18 @@ public class Assemblies extends Controller {
 				Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(CSVHeaders.class).withSkipHeaderRecord().parse(in);
 				for (CSVRecord record : records) {
 
+							try {
+								record.get(CSVHeaders.email.name());
+								record.get(CSVHeaders.name.name());
+								record.get(CSVHeaders.lastname.name());
+								record.get(CSVHeaders.language.name());
+								record.get(CSVHeaders.role.name());
+							} catch (Exception e) {
+								return badRequest(Json.toJson(Json
+										.toJson(new TransferResponseStatus("Error parsing the CSV," +
+												"column email, name, last name, language or role doesn't exist"))));
+							}
+
 							if(!record.isMapped(CSVHeaders.email.name())) {
 								return badRequest(Json.toJson(Json
 										.toJson(new TransferResponseStatus("Error parsing the CSV," +
@@ -1347,7 +1359,7 @@ public class Assemblies extends Controller {
 				e.printStackTrace();
 			} catch (FileNotFoundException e) {
 				return internalServerError("File not found " + e.getMessage());
-            } catch (IOException e) {
+            } catch (Exception e) {
             	Logger.error(e.getMessage());
 				return internalServerError("Error reading the csv " + e.getMessage());			}
 			finally {

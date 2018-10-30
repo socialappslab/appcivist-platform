@@ -777,6 +777,7 @@ public class NotificationsDelegate {
                 .distinct()
                 .collect(Collectors.toList());
 
+        Logger.info("FINAL NOTIFICATED USERS: " + notificatedUsers);
 
         // Send notification Signal to Notification Service
         try {

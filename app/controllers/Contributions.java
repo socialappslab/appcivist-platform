@@ -81,9 +81,11 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -107,6 +109,9 @@ public class Contributions extends Controller {
 
     private static BufferedReader br;
 
+    public enum CSVHeaders {
+        code, source, title, description, category, keywords, date, location, group, authors, phones, emails
+    }
 
     /**
      * GET       /api/assembly/:aid/contribution
@@ -3958,7 +3963,7 @@ public class Contributions extends Controller {
      * @param dateString
      * @return
      */
-    public static LocalDate parseCreationDate(String dateString){
+    public static LocalDate parseCreationDate(String dateString) throws Exception{
         List<String> formatStrings = Arrays.asList("MM/dd/yyyy", "yyyy-MM-dd");
 
         for (String formatString : formatStrings)
@@ -3968,11 +3973,12 @@ public class Contributions extends Controller {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatString);
                 return LocalDate.parse(dateString,formatter );
             }
-            catch (Exception e) {}
+            catch (Exception e) {
+                Logger.error("Error parsing date: "+dateString);
+                throw (DateTimeParseException) new DateTimeParseException("Text cannot be parsed to a Date: fraction", dateString, 0).initCause(e);
+            }
         }
-
         return null;
-
     }
 
 
@@ -4149,80 +4155,120 @@ public class Contributions extends Controller {
         if (uploadFilePart != null && campaign != null) {
             try {
                 br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
-                String cvsSplitBy = "\\t";
-                //skip header
-                String line = br.readLine();
-                Logger.debug("Importing record => " + line);
-
+                // Supported Format:
+                // code*, source, title*, description*, category*, keywords, date, location, group, name, phone, email
+                Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                        .withHeader(CSVHeaders.class)
+                        .withAllowMissingColumnNames()
+                        .withIgnoreHeaderCase()
+                        .withIgnoreSurroundingSpaces()
+                        .withSkipHeaderRecord().parse(br);
                 try {
                     Ebean.beginTransaction();
-                    while ((line = br.readLine()) != null) {
-                        String[] cell = line.split(cvsSplitBy);
+                    for (CSVRecord record : records) {
                         Contribution c = new Contribution();
-
                         switch (type) {
                             case "IDEA":
-                                Logger.info("SETTING IDEA");
+                                Logger.info("Importing IDEA");
                                 c.setType(ContributionTypes.IDEA);
                                 break;
                             case "PROPOSAL":
-                                Logger.info("SETTING PROPOSAL");
+                                Logger.info("Importing PROPOSAL");
                                 c.setType(ContributionTypes.PROPOSAL);
                                 break;
                             case "COMMENT":
-                                Logger.info("SETTING COMMENT");
+                                Logger.info("Importing COMMENT");
                                 c.setType(ContributionTypes.COMMENT);
                                 break;
                         }
 
-                        // Supported Format:
-                        // source_code  title   text    working group   categories  author  age gender  creation_date
-
                         // SET source_code  title   text
-                        Logger.info("Importing => Contribution => " + cell[0]);
-                        c.setSourceCode((cell[0] != null) ? cell[0] : "");
-                        c.setSource((cell[1] != null) ? cell[1] : "");
-                        c.setTitle((cell[2] != null) ? cell[2] : "");
+                        if(!record.isSet(CSVHeaders.code.name())
+                                || record.get(CSVHeaders.code) == null
+                                || record.get(CSVHeaders.code).equals("") ) {
+                            return badRequest(Json.toJson(Json
+                                    .toJson(
+                                            new TransferResponseStatus(
+                                                    "Error parsing the CSV, code is missing for "
+                                                            + type))));
+                        }
+                        String sourceCode = record.get(CSVHeaders.code);
+                        Logger.info(type + "["+ sourceCode+"]: Starting to import...");
+                        c.setSourceCode(sourceCode);
+                        c.setSource(record.get(CSVHeaders.source));
+                        String title = "";
+                        String description = "";
 
-                        c.setText((cell[3] != null) ? cell[3].replaceAll("\n", "") : "");
-
-                        // SET existingThemes and emergentThemes
-                        // TODO: use some kind of string buffer to make this more efficient as strings are immutable
-                        if (cell.length > 4) {
-                            String categoriesLine = cell[4];
-                            String emergentThemesLine = cell[5];
-                            String[] categories = categoriesLine.split(",");
-
-                            List<Theme> existing = new ArrayList<>();
-                            List<Theme> newThemes = new ArrayList<>();
-                            for (String category : categories) {
-                                Logger.info("Importing Category => " + category);
-                                List<Theme> themes = campaign.filterThemesByTitle(category.trim());
-                                if (themes.size()>0) {
-                                    Logger.info(themes.size() + " themes found that match category " + category);
-                                    existing.addAll(themes);
-                                } else if (createThemes){
-                                    Theme t = new Theme();
-                                    t.setTitle(category);
-                                    t.setType(ThemeTypes.OFFICIAL_PRE_DEFINED);
-                                    newThemes.add(t);
-                                    campaign.addTheme(t);
-                                }
-                            }
-                            c.setExistingThemes(existing);
-                            if (createThemes) {
-                                c.setThemes(newThemes);
-                            }
+                        if((!record.isSet(CSVHeaders.title.name())
+                                    || record.get(CSVHeaders.title) == null
+                                    || record.get(CSVHeaders.title).equals(""))
+                                && (!record.isSet(CSVHeaders.description.name())
+                                    || record.get(CSVHeaders.description) == ""
+                                    || record.get(CSVHeaders.description) != "")) {
+                            return badRequest(Json.toJson(Json
+                                    .toJson(new TransferResponseStatus("Error parsing the CSV," +
+                                            " either a title or a description is needed in " + type + " " + sourceCode))));
+                        } else if (record.isSet(CSVHeaders.title.name()) && !record.isSet(CSVHeaders.description.name())) {
+                            description = title = record.get(CSVHeaders.title);
+                        } else if (!record.isSet(CSVHeaders.title.name()) && record.isSet(CSVHeaders.description.name())) {
+                            description = title = record.get(CSVHeaders.description);
+                        } else {
+                            title = record.get(CSVHeaders.title);
+                            description = record.get(CSVHeaders.description);
                         }
 
-                        //emergent themes
-                        if (cell.length > 5) {
-                            String emergenthemesline = cell[5];
-                            String[] emergenthemes = emergenthemesline.split(",");
+                        // if title too long, trim to 50 chars...
+                        if (title.length()>50) {
+                            title = title.substring(0,50)+"...";
+                        }
 
-                            List<Theme> existing = new ArrayList<>();
+                        // code*, source, title*, description*, category*, keywords, date, location, group, name, phone, email
+                        c.setTitle(title);
+                        c.setText(description);
+
+                        if(!record.isSet(CSVHeaders.category.name())
+                                || record.get(CSVHeaders.category) == null
+                                || record.get(CSVHeaders.category).equals("")) {
+                            return badRequest(Json.toJson(Json
+                                    .toJson(new TransferResponseStatus("Error parsing the CSV," +
+                                            " a category is missing for idea: "+type+" "+sourceCode))));
+                        }
+
+                        String categoriesLine = record.get(CSVHeaders.category);
+                        String[] categories = categoriesLine.split(",");
+
+                        List<Theme> existing = new ArrayList<>();
+                        List<Theme> newThemes = new ArrayList<>();
+                        for (String category : categories) {
+                            Logger.debug(type + "["+ sourceCode+"]: Importing category => " + category);
+                            List<Theme> themes = campaign.filterThemesByTitle(category.trim());
+                            if (themes.size()>0) {
+                                Logger.debug(type + "["+ sourceCode+"]: Importing => "
+                                        + themes.size() + " themes found that match category " + category);
+                                existing.addAll(themes);
+                            } else if (createThemes){
+                                Theme t = new Theme();
+                                t.setTitle(category);
+                                t.setType(ThemeTypes.OFFICIAL_PRE_DEFINED);
+                                newThemes.add(t);
+                                campaign.addTheme(t);
+                            } else {
+                                return badRequest(Json.toJson(Json
+                                        .toJson(new TransferResponseStatus("Error parsing the CSV," +
+                                                " category "+category+"does no exist: "+type+" "+sourceCode))));
+                            }
+                        }
+                        c.setExistingThemes(existing);
+                        if (createThemes) {
+                            c.setThemes(newThemes);
+                        }
+
+                        if(record.isSet(CSVHeaders.keywords.name())) {
+                            String emergentThemesLine = record.get(CSVHeaders.keywords);
+                            String[] emergenthemes = emergentThemesLine.split(",");
+                            existing = new ArrayList<>();
                             for (String category : emergenthemes) {
-                                Logger.info("Importing => emergentTheme => " + category);
+                                Logger.debug(type + "["+ sourceCode+"]: Importing => emergentTheme => " + category);
                                 List<Theme> themes = campaign.filterThemesByTitle(category.trim());
 
                                 if (themes.size() == 0) {
@@ -4243,49 +4289,66 @@ public class Contributions extends Controller {
 
                                 } else {
                                     //reuse theme
-                                    Logger.info(themes.size() + " themes found that match category " + category);
+                                    Logger.debug(type + "["+ sourceCode+"]: Importing => emergentTheme => "
+                                            + themes.size() + " themes found that match category " + category);
                                     for (Theme match : themes) {
                                         c.getExistingThemes().add(match);
                                     }
                                 }
 
                             }
-
+                        } else {
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => NO KEYWORDS");
                         }
 
-
-                        if (cell.length > 6) {
-                            String creationDate = cell[6];
-                            if (!creationDate.isEmpty()) {
-
-
-                                // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy hh:mm");
-                                Logger.info("Importing => date => " + creationDate);
-
-                                // LocalDate ldt = LocalDate.parse(creationDate, formatter);
+                        // date
+                        String creationDate = "";
+                        if(!record.isSet(CSVHeaders.date.name())
+                                || record.get(CSVHeaders.date) == null
+                                || record.get(CSVHeaders.date).equals("")) {
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => No creation date defined, using TODAY");
+                        } else {
+                            creationDate = record.get(CSVHeaders.date);
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => Creation date => " + creationDate);
+                            //
+                            try {
                                 LocalDate ldt = parseCreationDate(creationDate);
                                 if (ldt != null) {
                                     c.setCreation(Date.from(ldt.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                                    Logger.info("Importing => creating...");
                                 }
+                            } catch (DateTimeParseException dte) {
+                                return badRequest(Json.toJson(Json
+                                        .toJson(new TransferResponseStatus("Error parsing the CSV," +
+                                                " date must be formatted as \"MM/dd/yyyy\" or \"yyyy-MM-dd\" (in "+type+" "+sourceCode+")"))));
                             }
                         }
 
-                        if (cell.length > 7) {
-                            String placeName = cell[7];
-                            if (placeName != null && !placeName.isEmpty()) {
-                                //Create new location
-                                Location l = new Location();
-                                l.setPlaceName(placeName);
-                                c.setLocation(l);
-                            }
-
+                        // location
+                        String placeName = "";
+                        if(!record.isSet(CSVHeaders.location.name())
+                                || record.get(CSVHeaders.location) == null
+                                || record.get(CSVHeaders.location).equals("")) {
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => No location defined");
+                        } else {
+                            // LocalDate ldt = LocalDate.parse(creationDate, formatter);
+                            placeName = record.get(CSVHeaders.location);
+                            //Create new location
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => Location => " + placeName);
+                            Location l = new Location();
+                            l.setPlaceName(placeName);
+                            c.setLocation(l);
                         }
 
-                        if (cell.length > 8) {
+                        // group
+                        String wgName = "";
+                        if(!record.isSet(CSVHeaders.group.name())
+                                || record.get(CSVHeaders.group) == null
+                                || record.get(CSVHeaders.group).equals("")) {
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => No group defined");
+                        } else {
+                            wgName = record.get(CSVHeaders.group);
                             // Add IDEA to Working Group
-                            String wgName = cell[8];
-                            Logger.info("Importing => wg => " + wgName);
+                            Logger.debug("Importing => wg => " + wgName);
                             WorkingGroup wg = WorkingGroup.readByName(wgName);
                             if (wg != null) {
                                 Logger.info("Addng contribution to WG => " + wgName);
@@ -4294,30 +4357,53 @@ public class Contributions extends Controller {
                             }
                         }
 
+                        // SET author name, email and phone
                         List<NonMemberAuthor> existingNonMemberAuthors = new ArrayList<>();
                         List<User> existingUserAuthors = new ArrayList<>();
 
-                        // TODO: CHECK THAT HISTORY ADDS AN ITEM FOR THE AUTHORS
-                        if (cell.length > 9) {
-                            // SET author name, email and phone
-                            // get author name from cell 2
-                            for (int index = 9; index < cell.length; index += 3) {
-                                String author = cell[index];
-                                String phone = (cell.length > index + 1) ? cell[index + 1] : "";
-                                String email = (cell.length > index + 2) ? cell[index + 2] : "";
+                        String authors = "";
+                        String phones = "";
+                        String emails = "";
+                        if((!record.isSet(CSVHeaders.authors.name())
+                                    || record.get(CSVHeaders.authors) == null
+                                    || record.get(CSVHeaders.authors).equals(""))
+                                && (!record.isSet(CSVHeaders.phones.name())
+                                    || record.get(CSVHeaders.phones) == null
+                                    || record.get(CSVHeaders.phones).equals(""))
+                                && (!record.isSet(CSVHeaders.emails.name())
+                                    || record.get(CSVHeaders.emails) == null)
+                                    || record.get(CSVHeaders.emails).equals("")) {
+                            Logger.debug(type + "["+ sourceCode+"]: Importing => No aurhors defined");
+                        } else {
+                            authors = record.get(CSVHeaders.authors);
+                            phones = record.get(CSVHeaders.phones);
+                            emails = record.get(CSVHeaders.emails);
 
-                                HashMap<String,Object> authors = processAuthorsInImport(author, phone, email, c);
+                            String [] authorArray = authors.split(",");
+                            String [] phoneArray = phones.split(",");
+                            String [] emailsArray = emails.split(",");
+
+                            Logger.debug("Importing => authors => " + authors);
+                            int index = 0;
+                            for (String author : authorArray) {
+                                String phone = phoneArray != null ? phoneArray.length > index ? phoneArray[index] : "" : "";
+                                String email = emailsArray != null ? emailsArray.length > index ? emailsArray[index] : "" : "";
+                                index++;
+
+                                HashMap<String,Object> mapOfAuthors = processAuthorsInImport(author, phone, email, c);
                                 if (authors!=null) {
-                                    User userAuthor = (User) authors.get("user");
+                                    User userAuthor = (User) mapOfAuthors.get("user");
                                     if (userAuthor==null) {
-                                        NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) authors.get("nonUser");
+                                        NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) mapOfAuthors.get("nonUser");
                                         existingNonMemberAuthors.add(nonMemberAuthor);
                                     } else {
                                         existingUserAuthors.add(userAuthor);
                                     }
                                 }
+
                             }
                         }
+
                         ResourceSpace resourceSpace;
                         // Create the contribution
                         if(type.equals("COMMENT")) {
@@ -4352,12 +4438,10 @@ public class Contributions extends Controller {
                     e.printStackTrace();
                     return internalServerError(Json.toJson(new TransferResponseStatus(ResponseStatus.SERVERERROR,
                             "Tried to import contributions of type: " + type + "\n"
-                                    + "Tried parsing with column separator: " + cvsSplitBy + "\n"
                                     + e.getClass() + ": " + e.getMessage())));
                 } finally {
                     Ebean.endTransaction();
                 }
-
             } catch (Exception e) {
                 Logger.error(e.getMessage());
                 return internalServerError(
@@ -4366,7 +4450,6 @@ public class Contributions extends Controller {
                                         "Tried to import contributions of type: " + type + "\n"
                                                 + e.getClass() + ": " + e.getMessage())));
             }
-
             return ok();
         } else {
             String errorMessage = uploadFilePart == null ? "Missing import file" : "Campaign does not exist";
@@ -5995,6 +6078,5 @@ class PaginatedContribution {
     public void setList(List<Contribution> list) {
         this.list = list;
     }
-
 
 }
