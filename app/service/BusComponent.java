@@ -100,6 +100,9 @@ public class BusComponent {
         if(title != null) {
             subject = title;
         }
+        if(alwaysSendMail) {
+            mail = fullUser.getEmail();
+        }
         if((send || alwaysSendMail) && mail != null) {
             MyUsernamePasswordAuthProvider.sendNewsletterEmail(subject,mail, body);
         }
