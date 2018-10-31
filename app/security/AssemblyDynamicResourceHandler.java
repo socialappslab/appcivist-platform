@@ -123,7 +123,7 @@ public class AssemblyDynamicResourceHandler extends AbstractDynamicResourceHandl
                         if (m != null && rule.equals("CoordinatorOfAssembly") && !targetCollectionIsOpen) {
                             Logger.debug("AUTHORIZATION --> Checking if user" + m.getUser().getUserId() + " is Coordinator");
                             List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-                            allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                            allowed[0] = MembershipAssembly.hasRole(u, a, MyRoles.COORDINATOR);
 
                             if (!allowed[0] && isGroupMembership) {
                                 List<Long> assemblyIDs = wg.getAssemblies();
