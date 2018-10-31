@@ -64,10 +64,8 @@ public class SpaceDynamicResourceHandler extends AbstractDynamicResourceHandler 
                                                if(assemblyId!=null){
                                                    Assembly a = null;
                                                    AssemblyProfile ap = null;
-                                                   Membership m = null;
                                                    a = Assembly.read(assemblyId);
                                                    if (a != null) {
-                                                       m = MembershipAssembly.findByUserAndAssemblyIds(u.getUserId(), assemblyId);
                                                        ap = a.getProfile();
                                                    }
 
@@ -76,24 +74,21 @@ public class SpaceDynamicResourceHandler extends AbstractDynamicResourceHandler 
                                                        assemblyNotOpen = !ap.getManagementType().equals(ManagementTypes.OPEN);
 
                                                    }
-                                                   if (m != null && assemblyNotOpen) {
+                                                   allowed[0] = MembershipAssembly.hasRole(u, a, MyRoles.COORDINATOR);
+                                                   if (!assemblyNotOpen) {
                                                        Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
-                                                       List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-                                                       allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
-                                                   } else{
                                                        allowed[0] = false;
                                                    }
-                                               }else if (groupId!=null){
-                                                   Membership m = MembershipGroup.findByUserAndGroupId(u.getUserId(), groupId);
+                                               } else if (groupId!=null){
                                                    WorkingGroup wg = WorkingGroup.read(groupId);
                                                    Boolean groupNotOpen = !wg.getProfile().getManagementType().equals(ManagementTypes.OPEN);
                                                    if(wg.getIsTopic()){
                                                        groupNotOpen = false;
                                                    }
-                                                   if (m!=null && groupNotOpen) {
+                                                   Boolean isCoordinator =  MembershipGroup.hasRole(u, wg, MyRoles.COORDINATOR);
+                                                   if (isCoordinator && groupNotOpen) {
                                                        Logger.debug("AUTHORIZATION --> Checking if user is Coordinator");
-                                                       List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-                                                       allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                                       allowed[0] = true;
                                                    } else {
                                                        allowed[0] = false;
                                                    }

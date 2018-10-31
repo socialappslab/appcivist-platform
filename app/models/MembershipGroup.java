@@ -1,25 +1,20 @@
 package models;
 
+import com.avaje.ebean.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import enums.MembershipStatus;
+import enums.MyRoles;
+import exceptions.MembershipCreationException;
 import io.swagger.annotations.ApiModel;
-
-import java.util.List;
-import java.util.UUID;
+import play.Logger;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
-
-import com.avaje.ebean.Expr;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.RawSql;
-import com.avaje.ebean.RawSqlBuilder;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import enums.MembershipStatus;
-import exceptions.MembershipCreationException;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @DiscriminatorValue("GROUP")
@@ -56,6 +51,19 @@ public class MembershipGroup extends Membership {
 			throw new MembershipCreationException("Membership already exists");
 		}
 	}
+
+	public static boolean hasRole(User user, WorkingGroup target, MyRoles role) {
+		Logger.debug("Checking if user " + user.getName() + " is COORDINATOR in group "+ target.getGroupId());
+		List<Membership> memberships =  find.where().eq("user", user).eq("workingGroup", target)
+				.findList();
+		for(Membership membership: memberships) {
+			List<SecurityRole> membershipRoles = membership.filterByRoleName(role.getName());
+			if(!membershipRoles.isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/*
 	 * Getters and Setters
@@ -69,18 +77,6 @@ public class MembershipGroup extends Membership {
 		this.workingGroup = workingGroup;
 	}
 
-	/**
-	 * Check if membership for this user to the group/assembly already exists
-	 * 
-	 * @param m
-	 * @return
-	 */
-	public static boolean checkIfExists(Membership m) {
-		MembershipGroup gm = (MembershipGroup) m;
-		return find.where().eq("creator", gm.getCreator())
-				.eq("user", gm.getUser())
-				.eq("workingGroup", gm.getWorkingGroup()).findUnique() != null;
-	}
 
 	/**
 	 * Find a membership of the user in the target collection (group or
@@ -208,12 +204,7 @@ public class MembershipGroup extends Membership {
 	}
 	
 	public boolean alreadyExists() {
-		if (this.workingGroup!=null) {
-			return find.where().eq("workingGroup", this.workingGroup)
-					.eq("user", this.getUser()).findList().size() > 0;	
-		} else {
-			return false;
-		}
+		return this.workingGroup != null && find.where().eq("workingGroup", this.workingGroup).eq("user", this.getUser()).findList().size() > 0;
 	}
 	public static Integer membershipCountByGroupId(Long groupId) {
 		return find.where().eq("workingGroup.groupId",groupId).findRowCount();		
