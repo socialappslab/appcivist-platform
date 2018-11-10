@@ -789,6 +789,11 @@ public class NotificationsDelegate {
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                    for(Long userId: notificatedUsers) {
+                        User user = User.findByUserId(userId);
+                        NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);
+                        notificationEventSignalUser.save();
+                    }
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
                             notificationEvent.getRichTextMail(), ownTextAndTitle, true);
                 } else {
