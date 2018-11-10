@@ -1247,9 +1247,9 @@ public class NotificationsDelegate {
             }
         }
         if (page != null && pageSize != null) {
-            return q..orderBy("creation desc").findPagedList(page, pageSize).getList();
+            return q.orderBy("creation desc").findPagedList(page, pageSize).getList();
         } else {
-            return q.orderBy("creation desc").findList();
+            return q.orderBy("creationxzvc desc").findList();
         }
     }
 
