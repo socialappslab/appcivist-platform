@@ -1249,7 +1249,7 @@ public class NotificationsDelegate {
         if (page != null && pageSize != null) {
             return q.findPagedList(page, pageSize).getList();
         } else {
-            return q.findList();
+            return q.orderBy("creation desc").findList();
         }
     }
 
