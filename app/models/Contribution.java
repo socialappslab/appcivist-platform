@@ -1821,7 +1821,9 @@ public class Contribution extends AppCivistBaseModel {
             String padId = UUID.randomUUID().toString();
 
             Logger.debug("Creating resource ");
-            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + peerdocResponse.get("path")));
+            String path =         peerdocResponse.get("path").toString().replace("\"","");
+            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + path));
+            Logger.debug("PEERDOC URL FORK " + r.getUrlAsString());
             r.setPadId(padId);
             r.setResourceType(ResourceTypes.PEERDOC);
             r.setReadOnlyPadId(null);
