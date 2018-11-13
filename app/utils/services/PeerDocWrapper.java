@@ -133,30 +133,32 @@ public class PeerDocWrapper {
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, HashGenerationException {
 
-        /* DESCOMENTAR CUANDO SE TENGA LA URL DE PEERDOC
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
-        WSRequest holder = getWSHolder("TO DO"+documentId+"?user="+userEncrypted);
+        WSRequest holder = getWSHolder("/document/fork/"+documentId+"?user="+userEncrypted);
         F.Promise<WSResponse> promise = wsSend(holder);
-        return promise.get(DEFAULT_TIMEOUT).asJson();
-        */
-        Map<String, String> temp = new HashMap<>();
-        temp.put("path", "fakePID");
+        WSResponse status = promise.get(DEFAULT_TIMEOUT);
+        if(status.getStatus() == 200) {
+            JsonNode response = status.asJson();
+            if (response.get("status") != null && response.get("status").asText().equals("success")) {
+                return response;
+            }
+        }
+        return null;
 
-        return Json.toJson(temp);
     }
 
     public boolean merge(Contribution parent, Contribution children) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, HashGenerationException {
 
-        /* DESCOMENTAR CUANDO SE TENGA LA URL DE PEERDOC
+        Resource resource = getPeerdocByContribution(children);
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
-        WSRequest holder = getWSHolder("TO DO"+documentId+"?user="+userEncrypted);
+        WSRequest holder = getWSHolder("/document/merge/"+documentId+"?user="+userEncrypted);
         F.Promise<WSResponse> promise = wsSend(holder);
-        return promise.get(DEFAULT_TIMEOUT).getStatus() == 200; */
-        return true;
+        return promise.get(DEFAULT_TIMEOUT).getStatus() == 200;
+
     }
 
 
