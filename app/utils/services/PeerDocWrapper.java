@@ -218,6 +218,8 @@ public class PeerDocWrapper {
         Map<String, Boolean> peerDocVisibility = new HashMap<>();
         switch (status) {
             case PUBLIC_DRAFT:
+            case FORKED_PUBLIC_DRAFT:
+            case MERGED_PUBLIC_DRAFT:
                 if (!currentStatus.equals(ContributionStatus.PUBLISHED)) {
                     peerDocVisibility.put("visibility", true);
                 } else {
@@ -225,6 +227,8 @@ public class PeerDocWrapper {
                 }
                 break;
             case DRAFT:
+            case FORKED_PRIVATE_DRAFT:
+            case MERGED_PRIVATE_DRAFT:
                 if (!currentStatus.equals(ContributionStatus.PUBLISHED)) {
                     peerDocVisibility.put("visibility", false);
                 } else {
