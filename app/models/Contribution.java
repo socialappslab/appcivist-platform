@@ -1788,7 +1788,7 @@ public class Contribution extends AppCivistBaseModel {
         Logger.debug("Start forking contribution " + parent.getContributionId());
         PeerDocWrapper peerDocWrapper  = new PeerDocWrapper(author);
         JsonNode peerdocResponse = peerDocWrapper.fork(parent.getExtendedTextPad());
-        if(peerdocResponse.get("path") == null) {
+        if(peerdocResponse == null || peerdocResponse.get("path") == null) {
             Logger.debug("Non successful response from peerdoc, not forking");
             return null;
         }
