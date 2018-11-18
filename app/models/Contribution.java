@@ -1788,7 +1788,7 @@ public class Contribution extends AppCivistBaseModel {
         Logger.debug("Start forking contribution " + parent.getContributionId());
         PeerDocWrapper peerDocWrapper  = new PeerDocWrapper(author);
         JsonNode peerdocResponse = peerDocWrapper.fork(parent.getExtendedTextPad());
-        if(peerdocResponse.get("path") == null) {
+        if(peerdocResponse == null || peerdocResponse.get("path") == null) {
             Logger.debug("Non successful response from peerdoc, not forking");
             return null;
         }
@@ -1821,7 +1821,9 @@ public class Contribution extends AppCivistBaseModel {
             String padId = UUID.randomUUID().toString();
 
             Logger.debug("Creating resource ");
-            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + peerdocResponse.get("path")));
+            String path =         peerdocResponse.get("path").toString().replace("\"","");
+            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + path));
+            Logger.debug("PEERDOC URL FORK " + r.getUrlAsString());
             r.setPadId(padId);
             r.setResourceType(ResourceTypes.PEERDOC);
             r.setReadOnlyPadId(null);
