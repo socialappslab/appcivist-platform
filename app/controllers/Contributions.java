@@ -1614,8 +1614,19 @@ public class Contributions extends Controller {
                 if (c != null) {
                     Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
                     c.getContainingSpaces().add(rs);
-                    rs.getContributions().add(c);
-                    rs.update();
+                    c.update();
+                    if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                        List<Long> campaigns = rs.getWorkingGroupResources().getCampaigns();
+                        if(campaigns != null) {
+                            for(Long id : campaigns) {
+                                Campaign campaign = Campaign.find.byId(id);
+                                campaign.getContributions().add(c);
+                                campaign.update();
+                            }
+                        }
+                    }
+                /*    rs.getContributions().add(c);
+                    rs.update();*/
                 }
                 Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
