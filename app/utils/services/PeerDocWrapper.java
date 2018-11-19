@@ -157,7 +157,10 @@ public class PeerDocWrapper {
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document/merge/"+documentId+"?user="+userEncrypted);
         F.Promise<WSResponse> promise = wsSend(holder);
-        return promise.get(DEFAULT_TIMEOUT).getStatus() == 200;
+        WSResponse status = promise.get(DEFAULT_TIMEOUT);
+        Logger.info("RESPONSE FROM PEERDOC " + status.getBody());
+        Logger.info("RESPONSE STATUS FROM PEERDOC " + status.getStatus());
+        return status.getStatus() == 200;
 
     }
 
