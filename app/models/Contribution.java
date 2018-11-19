@@ -1781,7 +1781,7 @@ public class Contribution extends AppCivistBaseModel {
 
     }
 
-    public static List<User> findMergeAuthors(UUID cuuid) {
+    public static Set<User> findMergeAuthors(UUID cuuid) {
 
         Contribution contribution = Contribution.getByUUID(cuuid);
         if(contribution == null) {
@@ -1792,9 +1792,11 @@ public class Contribution extends AppCivistBaseModel {
         List<Contribution> contributions =  find.where().eq("parent.contributionId", contribution.getContributionId())
                         .ilike("status", "%MERGE%").findList();
         for(Contribution contribution1: contributions) {
-            authors.add(contribution1.getCreator());
+            if(!authors.contains(contribution1.getCreator())) {
+                authors.add(contribution1.getCreator());
+            }
         }
-        return authors;
+        return new HashSet<>(authors);
     }
 
     public static Contribution fork (Contribution parent, User author) throws NoSuchPaddingException,
