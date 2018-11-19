@@ -161,6 +161,18 @@ public class Contributions extends Controller {
                 "No contributions for contribution: " + uuid)));
     }
 
+
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions childrens or parent by type")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionMergeAuthors(
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid) {
+
+        List<User> contributions = Contribution.findMergeAuthors(uuid);
+        return contributions == null || contributions.isEmpty() ? notFound(Json.toJson(new TransferResponseStatus(
+                "No authors for contribution: " + uuid))) : ok(Json.toJson(contributions));
+    }
+
         /**
          * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
          *
