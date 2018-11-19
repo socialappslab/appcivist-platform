@@ -168,7 +168,7 @@ public class Contributions extends Controller {
     public static Result getContributionMergeAuthors(
             @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid) {
 
-        List<User> contributions = Contribution.findMergeAuthors(uuid);
+        Set<User> contributions = Contribution.findMergeAuthors(uuid);
         return contributions == null || contributions.isEmpty() ? notFound(Json.toJson(new TransferResponseStatus(
                 "No authors for contribution: " + uuid))) : ok(Json.toJson(contributions));
     }
