@@ -1781,6 +1781,22 @@ public class Contribution extends AppCivistBaseModel {
 
     }
 
+    public static List<User> findMergeAuthors(UUID cuuid) {
+
+        Contribution contribution = Contribution.getByUUID(cuuid);
+        if(contribution == null) {
+            return null;
+        }
+
+        List<User> authors = new ArrayList<>();
+        List<Contribution> contributions =  find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .eq("status", ContributionStatus.MERGED_PUBLIC_DRAFT.name()).findList();
+        for(Contribution contribution1: contributions) {
+            authors.add(contribution1.getCreator());
+        }
+        return authors;
+    }
+
     public static Contribution fork (Contribution parent, User author) throws NoSuchPaddingException,
             InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException,
             BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, HashGenerationException, MalformedURLException, MembershipCreationException {
