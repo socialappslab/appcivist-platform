@@ -1790,7 +1790,7 @@ public class Contribution extends AppCivistBaseModel {
 
         List<User> authors = new ArrayList<>();
         List<Contribution> contributions =  find.where().eq("parent.contributionId", contribution.getContributionId())
-                        .ilike("status", "MERGE").findList();
+                        .ilike("status", "%MERGE%").findList();
         for(Contribution contribution1: contributions) {
             authors.add(contribution1.getCreator());
         }
