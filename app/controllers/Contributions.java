@@ -4654,7 +4654,7 @@ public class Contributions extends Controller {
                 response.setStatusMessage("No ok response from peerdoc");
                 return internalServerError(Json.toJson(response));
             }
-            return ok(Json.toJson(Contribution.merge(parent, child, user)));
+            return ok(Json.toJson(aRet));
         } catch (Exception e) {
             Logger.error(e.getMessage());
             e.printStackTrace();
