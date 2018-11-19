@@ -1613,8 +1613,7 @@ public class Contributions extends Controller {
                 c.refresh();
                 if (c != null) {
                     Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
-                    c.getContainingSpaces().add(rs);
-                    c.update();
+
                     if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
                         List<Long> campaigns = rs.getWorkingGroupResources().getCampaigns();
                         if(campaigns != null) {
@@ -1624,9 +1623,13 @@ public class Contributions extends Controller {
                                 campaign.update();
                             }
                         }
+                    } else {
+                        c.getContainingSpaces().add(rs);
+                        c.update();
+                        rs.getContributions().add(c);
+                        rs.update();
                     }
-                /*    rs.getContributions().add(c);
-                    rs.update();*/
+
                 }
                 Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
