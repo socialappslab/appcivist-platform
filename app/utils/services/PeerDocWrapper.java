@@ -119,14 +119,28 @@ public class PeerDocWrapper {
                 .getString("appcivist.services.peerdoc.keyHex");
     }
 
-    public void publish(Resource resource) throws NoSuchPaddingException, UnsupportedEncodingException,
+    public boolean publish(Resource resource) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, HashGenerationException {
         String documentId = resource.getUrlAsString().split("document/")[1];
         String userEncrypted = encrypt();
         WSRequest holder = getWSHolder("/document/publish/"+documentId+"?user="+userEncrypted);
         F.Promise<WSResponse> promise = wsSend(holder);
-        promise.get(DEFAULT_TIMEOUT);
+        WSResponse status = promise.get(DEFAULT_TIMEOUT);
+        if(status.getStatus() == 200) {
+            JsonNode response = status.asJson();
+            if (response.get("status") != null && response.get("status").asText().equals("success")) {
+                return true;
+            } else {
+                Logger.error("ERROR ON PEERDOC PUBLISH " + status.getStatus());
+                Logger.error(status.asJson().toString());
+                return false;
+            }
+        } else {
+            Logger.error("ERROR ON PEERDOC PUBLISH " + status.getStatus());
+            Logger.error(status.asJson().toString());
+            return false;
+        }
     }
 
     public JsonNode fork(Resource resource) throws NoSuchPaddingException, UnsupportedEncodingException,
