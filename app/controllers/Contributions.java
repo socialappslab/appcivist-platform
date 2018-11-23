@@ -4599,7 +4599,10 @@ public class Contributions extends Controller {
         Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
         try {
-            peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            Boolean change = peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            if(change != null && !change) {
+                return internalServerError(Json.toJson("Error publishing PeerDoc"));
+            }
         } catch (Exception e) {
             TransferResponseStatus response = new TransferResponseStatus();
             response.setResponseStatus(ResponseStatus.SERVERERROR);

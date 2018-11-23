@@ -217,14 +217,14 @@ public class PeerDocWrapper {
         return resource;
     }
 
-    public void changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
+    public Boolean changeStatus(Contribution contribution, ContributionStatus status) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, HashGenerationException, PeerdocServerError{
         Resource resource = getPeerdocByContribution(contribution);
 
         if(resource == null) {
             Logger.info("PEERDOC: Contribution "+ contribution.getContributionId()+" does not have a PEERDOC. Changing status as usual.");
-            return;
+            return null;
         }
         ContributionStatus currentStatus = contribution.getStatus();
 
@@ -260,7 +260,15 @@ public class PeerDocWrapper {
         Logger.info("PEERDOC: sending request with following data => "+peerDocVisibility.toString());
         holder.setBody(Json.toJson(peerDocVisibility));
         F.Promise<WSResponse> promise = wsSend(holder);
-        promise.get(DEFAULT_TIMEOUT);
+        WSResponse pdStatus = promise.get(DEFAULT_TIMEOUT);
+        if(pdStatus.getStatus() == 200) {
+            JsonNode response = pdStatus.asJson();
+            if (response.get("status") != null && response.get("status").asText().equals("success")) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     public String encrypt() throws NoSuchAlgorithmException,
