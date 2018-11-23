@@ -4601,7 +4601,9 @@ public class Contributions extends Controller {
         try {
             Boolean change = peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
             if(change != null && !change) {
-                return internalServerError(Json.toJson("Error publishing PeerDoc"));
+                return internalServerError(Json.toJson(new TransferResponseStatus(
+                        ResponseStatus.SERVERERROR,
+                        "Error publishing peerdoc")));
             }
         } catch (Exception e) {
             TransferResponseStatus response = new TransferResponseStatus();
