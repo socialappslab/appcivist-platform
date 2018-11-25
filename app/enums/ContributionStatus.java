@@ -17,5 +17,6 @@ public enum ContributionStatus {
 	// as we don’t have merge requests, fork authors may decide to publish their fork at any time.
 	// In most cases, it signifies a dissensus proposal.
 	MERGED_PRIVATE_DRAFT,
-	MERGED_PUBLIC_DRAFT
+	MERGED_PUBLIC_DRAFT,
+	MERGED_PUBLISHED
 }

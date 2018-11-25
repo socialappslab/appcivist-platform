@@ -2399,7 +2399,8 @@ public class Contributions extends Controller {
 	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED) ||
                         newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLISHED) ||
                         newContribution.getStatus().equals(ContributionStatus.MERGED_PRIVATE_DRAFT) ||
-                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLIC_DRAFT)) {
+                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLIC_DRAFT)||
+                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLISHED)) {
                     final boolean[] allowed = {false};
                     checkIfCoordinator(newContribution, allowed, author);
                     if(!allowed[0]) {
@@ -5823,6 +5824,8 @@ public class Contributions extends Controller {
             case MERGED_PUBLIC_DRAFT:
                 configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ;
                 break;
+            case MERGED_PUBLISHED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLISHED_STATUS_REQ;
             default:
                 return null;
         }
