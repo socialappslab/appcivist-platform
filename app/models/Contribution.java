@@ -358,6 +358,14 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<WorkingGroup> workingGroups;
 
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer forks;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer acceptedForks;
+
     public Contribution(User creator, String title, String text,
                         ContributionTypes type) {
         super();
@@ -1972,5 +1980,24 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setParent(Contribution parent) {
         this.parent = parent;
+    }
+
+    public Integer getForks() {
+        List<Contribution> contributions = Contribution.findChildrenOrParents(this.uuid, "FORKS");
+        return contributions != null ? contributions.size() : 0;
+
+    }
+
+    public void setForks(Integer forks) {
+        this.forks = forks;
+    }
+
+    public Integer getAcceptedForks() {
+        List<Contribution> contributions = Contribution.findChildrenOrParents(this.uuid, "MERGES");
+        return contributions != null ? contributions.size() : 0;
+    }
+
+    public void setAcceptedForks(Integer acceptedForks) {
+        this.acceptedForks = acceptedForks;
     }
 }
