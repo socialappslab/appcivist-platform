@@ -1052,7 +1052,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 			}
 
             if (includeUserInsights!= "" && includeUserInsights.equals("true")) {
-                if (c.getCreator().getUserId()==userId) {
+                if (c!=null && c.getCreator() !=null && c.getCreator().getUserId()==userId) {
                     authored +=1;
                 }
                 for (User u : c.getAuthors()) {
