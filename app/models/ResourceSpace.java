@@ -1016,10 +1016,13 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 	
 	// Analytics
-	public Map<String,Map<String,Map<String,Integer>>> contributionCountPerType(String includeThemes) {
+	public Map<String,Map<String,Map<String,Integer>>> contributionCountPerType(String includeThemes, String includeUserInsights, Long userId) {
 		Map<String,Map<String,Integer>> contributionCountMap = new HashMap<>();
 		Map<String,Map<String,Integer>> themeContribCountMap = new HashMap<>();
 		Map<String,Map<String,Map<String,Integer>>> result = new HashMap<>();
+
+		Integer authored = 0;
+		Integer sharedWith = 0;
 
 		for (Contribution c : this.contributions) {
 			Map<String,Integer> contributionTypeMap = contributionCountMap.get(c.getType().toString());
@@ -1047,6 +1050,19 @@ public class ResourceSpace extends AppCivistBaseModel {
 				contributionTypeMap.put("NON_MEMBER_AUTHORS",currentNonMemberAuthorTotal!=null? currentNonMemberAuthorTotal+nonMemberAuthorCount:nonMemberAuthorCount);
 				contributionCountMap.put(c.getType().toString(),contributionTypeMap);
 			}
+
+            if (includeUserInsights!= "" && includeUserInsights.equals("true")) {
+                if (c.getCreator().getUserId()==userId) {
+                    authored +=1;
+                }
+                for (User u : c.getAuthors()) {
+                    if (u.getUserId()==userId) {
+                        sharedWith+=1;
+                    }
+                }
+            }
+			contributionTypeMap.put("MINE",authored);
+			contributionTypeMap.put("SHARED_WITH",sharedWith);
 			Integer currentAuthorTotal = contributionTypeMap.get("MEMBER_AUTHORS");
 			Integer currentNonMemberAuthorTotal = contributionTypeMap.get("NON_MEMBER_AUTHORS");
 			contributionTypeMap.put("AUTHORS",currentAuthorTotal+currentNonMemberAuthorTotal);
@@ -1075,6 +1091,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 					}
 				}
 			}
+
 		}
 		
 		result.put("contributions_per_type",contributionCountMap);
