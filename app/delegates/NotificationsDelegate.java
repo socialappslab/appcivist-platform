@@ -535,9 +535,38 @@ public class NotificationsDelegate {
                 resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 resourceType = "MILESTONE";
                 try {
-                    setCampaignUrl(((ComponentMilestone) resource).getContainingSpaces().get(0).getCampaign().getCampaignId(), urls);
+                    ComponentMilestone cm = (ComponentMilestone) resource;
+                    List<ResourceSpace> rscmList = cm.getContainingSpaces();
+                    if (rscmList != null && rscmList.size() > 0) {
+                        ResourceSpace rscm = rscmList.get(0);
+                        Campaign ca = rscm.getCampaign();
+                        Component co = null;
+                        Long caId = null;
+                        if (ca == null) {
+                            co = rscm.getComponent();
+                            List<ResourceSpace> rscoList = co.getContainingSpaces();
+                            if (rscoList != null && rscoList.size() > 0) {
+                                ResourceSpace rsco = rscoList.get(0);
+                                ca = rsco.getCampaign();
+                                caId = ca.getCampaignId();
+                            }
+                        } else {
+                            caId = ca.getCampaignId();
+                        }
+
+                        if (caId !=null) {
+                            setCampaignUrl(caId, urls);
+                        } else {
+                            String error = "Component Milestone ["
+                                    + cm.getComponentMilestoneId()
+                                    + "] has no campaign associated to itself or to its parent Component ["
+                                    + co.getComponentId()!=null ? co.getComponentId()+"" : "null"
+                                    +"]";
+                            throw new Exception(error);
+                        }
+                    }
                 } catch (Exception e) {
-                    Logger.error("Error setting milestone campaign id: none campaign foung");
+                    Logger.error("Error setting the milestone for the campaign ID: none campaign found. "+e.getMessage());
                 }
                 break;
             case MEMBER_JOINED:
