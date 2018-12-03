@@ -814,7 +814,9 @@ public class NotificationsDelegate {
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' "
                     + originName + " about '" + eventName + "'");
             Boolean rabbitIsActive = Play.application().configuration().getBoolean("appcivist.services.rabbitmq.active");
+            Boolean socialBusIsActive = Play.application().configuration().getBoolean("appcivist.services.notification.default.useSocialBus");
             if(rabbitIsActive !=null && rabbitIsActive) {
+                Logger.info("NOTIFICATION: Signaling notification to rabbitmq is enabled");
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
@@ -832,7 +834,7 @@ public class NotificationsDelegate {
                 notificationEvent.getData().put("signaled", true);
                 notificationEvent.update();
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
-            } else {
+            } else if (socialBusIsActive !=null && socialBusIsActive)  {
                 NotificationServiceWrapper ns = new NotificationServiceWrapper();
                 WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
                 Logger.info("NOTIFICATION: SENDING SIGNAL");
@@ -848,6 +850,11 @@ public class NotificationsDelegate {
                     NotificationEventSignal.create(notificationEvent);
                     return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
                 }
+            } else {
+                Logger.info("NOTIFICATION: Created but not signaled to either Social Bus or RabbitMQ");
+                notificationEvent.getData().put("signaled", false);
+                NotificationEventSignal.create(notificationEvent);
+                return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification created but not signaled to external push service","")));
             }
         } catch (IOException | TimeoutException e) {
             Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());

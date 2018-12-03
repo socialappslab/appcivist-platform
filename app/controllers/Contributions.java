@@ -1651,18 +1651,7 @@ public class Contributions extends Controller {
             // Signal a notification asynchronously
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             Promise.promise(() -> {
-                if (c.getType().equals(ContributionTypes.IDEA) ||
-                        c.getType().equals(ContributionTypes.PROPOSAL)) {
-                    try {
-                        NotificationsDelegate.createNotificationEventsByType(
-                                ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
-                    } catch (ConfigurationException e) {
-                        Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                    } catch (Exception e) {
-                        Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                    }
-                }
-                return Optional.ofNullable(null);
+                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
             return ok(Json.toJson(c));
         }
