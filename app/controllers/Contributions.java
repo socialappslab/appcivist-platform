@@ -826,6 +826,10 @@ public class Contributions extends Controller {
 
                 contributionFeedback.setUser(info);
             }
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and campaign " + cid);
+                feedbacks = new ArrayList<>();
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -858,6 +862,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "fid", value = "Feedback ID") Long fid) {
         try {
             ContributionFeedback feedback = ContributionFeedback.read(fid);
+            if (feedback==null) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and campaign " + cid);
+                feedback = new ContributionFeedback();
+            }
             return ok(Json.toJson(feedback));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -889,6 +897,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "type", value = "Type") String type) {
         try {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionTypeAndWGroup(coid, gid, type);
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and group " + gid);
+                feedbacks = new ArrayList<>();
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -922,14 +934,17 @@ public class Contributions extends Controller {
             User author = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
             Membership m = MembershipAssembly.findByUserAndAssemblyIds(author.getUserId(), aid);
-            if (m!=null){
-                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
-                return ok(Json.toJson(feedbacks));
-            }else{
-                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
-                return ok(Json.toJson(feedbacks));
+            List<ContributionFeedback> feedbacks = new ArrayList<>();
+            if (m!=null) {
+                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
+            } else {
+                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
             }
-
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid);
+                feedbacks = new ArrayList<>();
+            }
+            return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
             return internalServerError(Json
@@ -963,6 +978,10 @@ public class Contributions extends Controller {
                     info.put("profilePic", user.getProfilePic().getUrlAsString());
                 contributionFeedback.setUserId(null);
                 contributionFeedback.setUser(info);
+            }
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + couuid);
+                feedbacks = new ArrayList<>();
             }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
