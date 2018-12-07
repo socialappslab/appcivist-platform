@@ -3481,7 +3481,7 @@ ANY (ARRAY['NEW'::character varying::text, 'DRAFT'::character varying::text, 'PU
 'ARCHIVED'::character varying::text, 'EXCLUDED'::character varying::text, 'PUBLIC_DRAFT'::character varying::text,
 'MODERATED'::character varying::text, 'INBALLOT'::character varying::text, 'SELECTED'::character varying::text,
 'FORKED_PRIVATE_DRAFT'::character varying::text, 'FORKED_PUBLIC_DRAFT'::character varying::text,
-'FORKED_PUBLISHED'::character varying::text, 'MERGED'::character varying::text]]));
+'FORKED_PUBLISHED'::character varying::text, 'MERGED'::character varying::text]));
 
 
 ALTER TABLE contribution_status_audit DROP CONSTRAINT ck_contribution_status_audit_status;
