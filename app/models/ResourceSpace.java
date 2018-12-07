@@ -1049,14 +1049,20 @@ public class ResourceSpace extends AppCivistBaseModel {
 			}
 
             if (includeUserInsights!= "" && includeUserInsights.equals("true")) {
-                if (c!=null && c.getCreator() !=null && c.getCreator().getUserId().equals(userId)) {
+				Boolean contributionHasCreator = c!=null && c.getCreator() !=null;
+				Boolean userIsCreator = contributionHasCreator && c.getCreator().getUserId().equals(userId);
+
+                if (userIsCreator) {
                     Integer curretMinetotal = contributionTypeMap.get("MINE");
                     contributionTypeMap.put("MINE",curretMinetotal!=null?curretMinetotal+1:1);
                 }
                 for (User u : c.getAuthors()) {
-                    if (u.getUserId().equals(userId)) {
-                        Integer curretTotal= contributionTypeMap.get("SHARED_WITH");
-                        contributionTypeMap.put("SHARED_WITH",curretTotal!=null?curretTotal+1:1);
+                	Long sharedUserId = u.getUserId();
+					userIsCreator = contributionHasCreator && c.getCreator().getUserId().equals(sharedUserId);
+					Boolean userIsSharedWith = (!contributionHasCreator || !userIsCreator) && userId == sharedUserId;
+					if (userIsSharedWith) {
+                        Integer currentTotal= contributionTypeMap.get("SHARED_WITH");
+                        contributionTypeMap.put("SHARED_WITH",currentTotal!=null?currentTotal+1:1);
 
                     }
                 }
