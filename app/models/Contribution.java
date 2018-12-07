@@ -1780,8 +1780,7 @@ public class Contribution extends AppCivistBaseModel {
                                 Expr.eq("status", ContributionStatus.FORKED_PUBLISHED.name())).findList();
             case "MERGES":
                 return find.where().eq("parent.contributionId", contribution.getContributionId())
-                        .or(Expr.eq("status", ContributionStatus.MERGED_PUBLIC_DRAFT.name()),
-                                Expr.eq("status", ContributionStatus.MERGED_PUBLISHED.name())).findList();
+                        .eq("status", ContributionStatus.MERGED.name()).findList();
             case "PARENT":
                 return Collections.singletonList(contribution.getParent());
             default:
@@ -1921,13 +1920,9 @@ public class Contribution extends AppCivistBaseModel {
             Logger.debug("Non successful response from peerdoc, not merging");
             return null;
         }
-        if(children.getStatus().equals(ContributionStatus.FORKED_PUBLISHED)) {
-            children.setStatus(ContributionStatus.MERGED_PUBLISHED);
-        } else if(children.getStatus().equals(ContributionStatus.FORKED_PUBLIC_DRAFT)) {
-            children.setStatus(ContributionStatus.MERGED_PUBLIC_DRAFT);
-        } else {
-            children.setStatus(ContributionStatus.MERGED_PRIVATE_DRAFT);
-        }
+
+        children.setStatus(ContributionStatus.MERGED);
+
         children.update();
         children.refresh();
         F.Promise.promise(() -> {
