@@ -1058,7 +1058,6 @@ public class ResourceSpace extends AppCivistBaseModel {
                 }
                 for (User u : c.getAuthors()) {
                 	Long sharedUserId = u.getUserId();
-					userIsCreator = contributionHasCreator && c.getCreator().getUserId().equals(sharedUserId);
 					Boolean userIsSharedWith = (!contributionHasCreator || !userIsCreator) && userId == sharedUserId;
 					if (userIsSharedWith) {
                         Integer currentTotal= contributionTypeMap.get("SHARED_WITH");
