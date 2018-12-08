@@ -53,7 +53,9 @@ public class MembershipGroup extends Membership {
 	}
 
 	public static boolean hasRole(User user, WorkingGroup target, MyRoles role) {
-		Logger.debug("Checking if user " + user.getName() + " is COORDINATOR in group "+ target.getGroupId());
+		Logger.debug("Checking if user " + user.getName() + " is "+ role !=null ? role.getName() : role +" in group "+  target.getGroupId());
+		if (role==null)
+			return false;
 		List<Membership> memberships =  find.where().eq("user", user).eq("workingGroup", target)
 				.findList();
 		for(Membership membership: memberships) {
