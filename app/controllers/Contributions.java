@@ -2530,9 +2530,23 @@ public class Contributions extends Controller {
         ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
         ResourceSpace rs = ResourceSpace.read(sid);
         ResourceSpace rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        List<Contribution> forks = Contribution.findChildrenOrParents(contribution.getUuid(), "FORKS");
+        List<Contribution> merges = Contribution.findChildrenOrParents(contribution.getUuid(), "MERGES");
+        List<Contribution>  contributions = new ArrayList<>();
+        if(forks != null) {
+            contributions.addAll(forks);
+        }
+        if(merges!= null) {
+            contributions.addAll(merges);
+        }
+        for(Contribution contribution1: contributions) {
+            rsNew = ResourceSpace.read(contribution1.getResourceSpaceId());
+            rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        }
 
         try {
             rCombined.update();
+            Contribution.addContributionAuthorsToWG(contribution, rsNew);
             ContributionHistory.createHistoricFromContribution(contribution);
         } catch (Exception e) {
             return internalServerError(Json

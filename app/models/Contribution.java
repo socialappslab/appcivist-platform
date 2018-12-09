@@ -1848,7 +1848,7 @@ public class Contribution extends AppCivistBaseModel {
 
             Logger.debug("Creating resource ");
             String path =         peerdocResponse.get("path").toString().replace("\"","");
-            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + path));
+            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() +  path));
             Logger.debug("PEERDOC URL FORK " + r.getUrlAsString());
             r.setPadId(padId);
             r.setResourceType(ResourceTypes.PEERDOC);
@@ -1870,22 +1870,26 @@ public class Contribution extends AppCivistBaseModel {
             newContribution.getHashtags().addAll(parent.getHashtags());
             newContribution.setCustomFieldValues(new ArrayList<>());
             newContribution.getCustomFieldValues().addAll(parent.getCustomFieldValues());
-            newContribution.setContainingSpaces(new ArrayList<>());
-            newContribution.getContainingSpaces().addAll(parent.getContainingSpaces());
-
-            parent.getResourceSpace().getContributions().add(newContribution);
-
-
             newContribution.update();
-            parent.update();
+
+            List<ResourceSpace> parentResources = parent.getContainingSpaces();
+            for(ResourceSpace rs: parentResources) {
+                if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
+                        || rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    rs.addContribution(newContribution);
+                    rs.update();
+                    rs.refresh();
+                }
+            }
+            parent.refresh();
+            newContribution.refresh();
             Logger.debug("Contribution resource spaces saved ");
             if(parent.getWorkingGroupAuthors() != null && parent.getWorkingGroupAuthors().size() > 0) {
                 Logger.debug("Adding author to working group");
                 addContributionAuthorsToWG(newContribution, parent.getWorkingGroupAuthors().get(0).getResources());
             }
 
-            newContribution.refresh();
-            parent.refresh();
+
             Ebean.commitTransaction();
             F.Promise.promise(() -> {
                 Logger.debug("Sending notification");
