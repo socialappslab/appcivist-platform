@@ -39,7 +39,10 @@ import utils.LogActions;
 import utils.Pair;
 
 import javax.persistence.EntityNotFoundException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.*;
@@ -1286,8 +1289,8 @@ public class Assemblies extends Controller {
 
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
-        User sessionUser = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
+		User sessionUser = User.findByAuthUserIdentity(PlayAuthenticate
+				.getUser(session()));
         WorkingGroup wg;
         Assembly assembly;
         ObjectMapper om = new ObjectMapper();
@@ -1302,53 +1305,37 @@ public class Assemblies extends Controller {
 				Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader(CSVHeaders.class).withSkipHeaderRecord().parse(in);
 				for (CSVRecord record : records) {
 
-							try {
-								record.get(CSVHeaders.email.name());
-								record.get(CSVHeaders.name.name());
-								record.get(CSVHeaders.lastname.name());
-								record.get(CSVHeaders.language.name());
-								record.get(CSVHeaders.role.name());
-							} catch (Exception e) {
-								return badRequest(Json.toJson(Json
-										.toJson(new TransferResponseStatus("Error parsing the CSV," +
-												"column email, name, last name, language or role doesn't exist"))));
-							}
+					try {
+						record.get(CSVHeaders.email.name());
+						record.get(CSVHeaders.name.name());
+						record.get(CSVHeaders.lastname.name());
+						record.get(CSVHeaders.language.name());
+						record.get(CSVHeaders.role.name());
+					} catch (Exception e) {
+						return badRequest(Json.toJson(Json
+								.toJson(new TransferResponseStatus("Error parsing the CSV," +
+										"column email, name, last name, language or role doesn't exist"))));
+					}
 
-							if(!record.isMapped(CSVHeaders.email.name())) {
-								return badRequest(Json.toJson(Json
-										.toJson(new TransferResponseStatus("Error parsing the CSV," +
-												"column email doesn't exist"))));
-							}
-                            User u = User.findByEmail(record.get(CSVHeaders.email));
-                            // Create account if not exists
-                            if (u == null) {
-                            	if(!record.isMapped(CSVHeaders.name.name()) || !record.isMapped(CSVHeaders.lastname.name())
-										|| !record.isMapped(CSVHeaders.language.name())) {
-									return badRequest(Json.toJson(Json
-											.toJson(new TransferResponseStatus("Error parsing the CSV," +
-													"column name, lastname or language doesn't exist"))));
-								}
-                                u = createNewAssemblyUser(record, om, an);
-                            }
+					User u = User.findByEmail(record.get(CSVHeaders.email));
+					// Create account if not exists
+					if (u == null) {
+						u = createNewAssemblyUser(record, om, an);
+					}
 
-                            // If send_invitations==TRUE, send an invitation email to the corresponding email.
-                            // Else create membership
-						if(!record.isMapped(CSVHeaders.role.name())) {
-							return badRequest(Json.toJson(Json
-									.toJson(new TransferResponseStatus("Error parsing the CSV," +
-											"column role doesn't exist"))));
+					// If send_invitations==TRUE, send an invitation email to the corresponding email.
+					// Else create membership
+					if (sendInvitations.equals("true")) {
+						if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
+							//CREATE invitation and send mail
+							createAndSendInvitation(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
 						}
-						if (sendInvitations.equals("true")) {
-                                if (!Membership.checkIfExistsByEmailAndId(u.getEmail(), assembly.getAssemblyId(), MembershipTypes.ASSEMBLY)) {
-                                    //CREATE invitation and send mail
-                                    createAndSendInvitation(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
-                                }
-                            } else {
-                                // Create membership (with the group gid)
-                                createMembership(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
-                                // Also with the assembly aid
-                                createMembership(u, sessionUser, assembly, "ASSEMBLY", "MEMBER");
-                            }
+					} else {
+						// Create membership (with the group gid)
+						createMembership(u, sessionUser, wg, "GROUP", record.get(CSVHeaders.role));
+						// Also with the assembly aid
+						createMembership(u, sessionUser, assembly, "ASSEMBLY", "MEMBER");
+					}
                 }
                 Ebean.commitTransaction();
             } catch (EntityNotFoundException e) {
@@ -1446,7 +1433,7 @@ public class Assemblies extends Controller {
     }
 
     private static void createMembership(User u, User creator, AppCivistBaseModel target, String targetType, String role) {
-		role = role.trim();
+		role = role.trim().toUpperCase();
 	    List<SecurityRole> roles = new ArrayList<>();
         roles.add(SecurityRole.findByName("MEMBER")); // Member role
 		Logger.info("Creating role " + role);
@@ -1455,7 +1442,7 @@ public class Assemblies extends Controller {
 				roles.add(SecurityRole.findByName("COORDINATOR"));
 				break;
 			case "MODERATOR":
-				roles.add(SecurityRole.findByName("COORDINATOR"));
+				roles.add(SecurityRole.findByName("MODERATOR"));
 				break;
 			case "EXPERT":
 				roles.add(SecurityRole.findByName("EXPERT"));
