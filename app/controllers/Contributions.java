@@ -2530,6 +2530,12 @@ public class Contributions extends Controller {
         ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
         ResourceSpace rs = ResourceSpace.read(sid);
         ResourceSpace rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        List<Contribution> contributions = Contribution.findChildrenOrParents(contribution.getUuid(), "FORKS");
+        contributions.addAll(Contribution.findChildrenOrParents(contribution.getUuid(), "MERGES"));
+        for(Contribution contribution1: contributions) {
+            rsNew = ResourceSpace.read(contribution1.getResourceSpaceId());
+            rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        }
 
         try {
             rCombined.update();
