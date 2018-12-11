@@ -161,6 +161,18 @@ public class Contributions extends Controller {
                 "No contributions for contribution: " + uuid)));
     }
 
+
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions childrens or parent by type")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionMergeAuthors(
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid) {
+
+        Set<User> contributions = Contribution.findMergeAuthors(uuid);
+        return contributions == null || contributions.isEmpty() ? notFound(Json.toJson(new TransferResponseStatus(
+                "No authors for contribution: " + uuid))) : ok(Json.toJson(contributions));
+    }
+
         /**
          * GET       /api/assembly/:aid/campaign/:cid/component/:ciid/contribution
          *
@@ -814,6 +826,10 @@ public class Contributions extends Controller {
 
                 contributionFeedback.setUser(info);
             }
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and campaign " + cid);
+                feedbacks = new ArrayList<>();
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -846,6 +862,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "fid", value = "Feedback ID") Long fid) {
         try {
             ContributionFeedback feedback = ContributionFeedback.read(fid);
+            if (feedback==null) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and campaign " + cid);
+                feedback = new ContributionFeedback();
+            }
             return ok(Json.toJson(feedback));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -877,6 +897,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "type", value = "Type") String type) {
         try {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionTypeAndWGroup(coid, gid, type);
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and group " + gid);
+                feedbacks = new ArrayList<>();
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -910,14 +934,17 @@ public class Contributions extends Controller {
             User author = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
             Membership m = MembershipAssembly.findByUserAndAssemblyIds(author.getUserId(), aid);
-            if (m!=null){
-                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
-                return ok(Json.toJson(feedbacks));
-            }else{
-                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
-                return ok(Json.toJson(feedbacks));
+            List<ContributionFeedback> feedbacks = new ArrayList<>();
+            if (m!=null) {
+                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
+            } else {
+                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
             }
-
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid);
+                feedbacks = new ArrayList<>();
+            }
+            return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
             return internalServerError(Json
@@ -951,6 +978,10 @@ public class Contributions extends Controller {
                     info.put("profilePic", user.getProfilePic().getUrlAsString());
                 contributionFeedback.setUserId(null);
                 contributionFeedback.setUser(info);
+            }
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + couuid);
+                feedbacks = new ArrayList<>();
             }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
@@ -1639,18 +1670,7 @@ public class Contributions extends Controller {
             // Signal a notification asynchronously
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             Promise.promise(() -> {
-                if (c.getType().equals(ContributionTypes.IDEA) ||
-                        c.getType().equals(ContributionTypes.PROPOSAL)) {
-                    try {
-                        NotificationsDelegate.createNotificationEventsByType(
-                                ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
-                    } catch (ConfigurationException e) {
-                        Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                    } catch (Exception e) {
-                        Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                    }
-                }
-                return Optional.ofNullable(null);
+                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
             return ok(Json.toJson(c));
         }
@@ -2386,8 +2406,7 @@ public class Contributions extends Controller {
 
 	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED) ||
                         newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLISHED) ||
-                        newContribution.getStatus().equals(ContributionStatus.MERGED_PRIVATE_DRAFT) ||
-                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLIC_DRAFT)) {
+                        newContribution.getStatus().equals(ContributionStatus.MERGED)) {
                     final boolean[] allowed = {false};
                     checkIfCoordinator(newContribution, allowed, author);
                     if(!allowed[0]) {
@@ -2511,9 +2530,23 @@ public class Contributions extends Controller {
         ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
         ResourceSpace rs = ResourceSpace.read(sid);
         ResourceSpace rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        List<Contribution> forks = Contribution.findChildrenOrParents(contribution.getUuid(), "FORKS");
+        List<Contribution> merges = Contribution.findChildrenOrParents(contribution.getUuid(), "MERGES");
+        List<Contribution>  contributions = new ArrayList<>();
+        if(forks != null) {
+            contributions.addAll(forks);
+        }
+        if(merges!= null) {
+            contributions.addAll(merges);
+        }
+        for(Contribution contribution1: contributions) {
+            rsNew = ResourceSpace.read(contribution1.getResourceSpaceId());
+            rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        }
 
         try {
             rCombined.update();
+            Contribution.addContributionAuthorsToWG(contribution, rsNew);
             ContributionHistory.createHistoricFromContribution(contribution);
         } catch (Exception e) {
             return internalServerError(Json
@@ -4587,7 +4620,12 @@ public class Contributions extends Controller {
         Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
         try {
-            peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            Boolean change = peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            if(change != null && !change) {
+                return internalServerError(Json.toJson(new TransferResponseStatus(
+                        ResponseStatus.SERVERERROR,
+                        "Error publishing peerdoc")));
+            }
         } catch (Exception e) {
             TransferResponseStatus response = new TransferResponseStatus();
             response.setResponseStatus(ResponseStatus.SERVERERROR);
@@ -4654,7 +4692,7 @@ public class Contributions extends Controller {
                 response.setStatusMessage("No ok response from peerdoc");
                 return internalServerError(Json.toJson(response));
             }
-            return ok(Json.toJson(Contribution.merge(parent, child, user)));
+            return ok(Json.toJson(aRet));
         } catch (Exception e) {
             Logger.error(e.getMessage());
             e.printStackTrace();
@@ -5803,8 +5841,8 @@ public class Contributions extends Controller {
             case FORKED_PUBLISHED:
                 configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ;
                 break;
-            case MERGED_PUBLIC_DRAFT:
-                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ;
+            case MERGED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_STATUS_REQ;
                 break;
             default:
                 return null;

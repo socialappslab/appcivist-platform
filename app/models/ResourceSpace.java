@@ -1016,7 +1016,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 	}
 	
 	// Analytics
-	public Map<String,Map<String,Map<String,Integer>>> contributionCountPerType(String includeThemes) {
+	public Map<String,Map<String,Map<String,Integer>>> contributionCountPerType(String includeThemes, String includeUserInsights, Long userId) {
 		Map<String,Map<String,Integer>> contributionCountMap = new HashMap<>();
 		Map<String,Map<String,Integer>> themeContribCountMap = new HashMap<>();
 		Map<String,Map<String,Map<String,Integer>>> result = new HashMap<>();
@@ -1033,7 +1033,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 				contributionTypeMap.put("MEMBER_AUTHORS",authorCount);
 				contributionTypeMap.put("NON_MEMBER_AUTHORS",nonMemberAuthorCount);
 				contributionCountMap.put(c.getType().toString(),contributionTypeMap);
-			} else {
+            } else {
 				Integer currentTotal = contributionTypeMap.get("TOTAL");
 				Integer currentForStatus = contributionTypeMap.get(c.getStatus().toString());
 				contributionTypeMap.put("TOTAL", currentTotal+1);
@@ -1047,6 +1047,24 @@ public class ResourceSpace extends AppCivistBaseModel {
 				contributionTypeMap.put("NON_MEMBER_AUTHORS",currentNonMemberAuthorTotal!=null? currentNonMemberAuthorTotal+nonMemberAuthorCount:nonMemberAuthorCount);
 				contributionCountMap.put(c.getType().toString(),contributionTypeMap);
 			}
+
+            if (includeUserInsights!= "" && includeUserInsights.equals("true")) {
+				Boolean contributionHasCreator = c!=null && c.getCreator() !=null;
+				Boolean userIsCreator = contributionHasCreator && c.getCreator().getUserId().equals(userId);
+
+                if (userIsCreator) {
+                    Integer curretMinetotal = contributionTypeMap.get("MINE");
+                    contributionTypeMap.put("MINE",curretMinetotal!=null?curretMinetotal+1:1);
+                } else {
+                    for (User u : c.getAuthors()) {
+                        Long sharedUserId = u.getUserId();
+                        if (sharedUserId.equals(userId)) {
+                            Integer currentTotal= contributionTypeMap.get("SHARED_WITH");
+                            contributionTypeMap.put("SHARED_WITH",currentTotal!=null?currentTotal+1:1);
+                        }
+                    }
+                }
+            }
 			Integer currentAuthorTotal = contributionTypeMap.get("MEMBER_AUTHORS");
 			Integer currentNonMemberAuthorTotal = contributionTypeMap.get("NON_MEMBER_AUTHORS");
 			contributionTypeMap.put("AUTHORS",currentAuthorTotal+currentNonMemberAuthorTotal);
@@ -1061,7 +1079,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 					contributionTypeMap.put("TOTAL", currentTotal+1);
 				}
 			}
-			
+
 			if (includeThemes != "" && includeThemes.equals("true")) {
 				for (Theme t : c.getThemes()) {
 					Map<String,Integer> themeTypeMap = themeContribCountMap.get(t.getType().toString());
@@ -1075,9 +1093,11 @@ public class ResourceSpace extends AppCivistBaseModel {
 					}
 				}
 			}
+
 		}
-		
-		result.put("contributions_per_type",contributionCountMap);
+
+
+        result.put("contributions_per_type",contributionCountMap);
 		result.put("contributions_per_theme",themeContribCountMap);
 		return result;
 	}

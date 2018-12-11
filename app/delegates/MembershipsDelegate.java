@@ -86,8 +86,7 @@ public class MembershipsDelegate {
 
 		// 9. check if the membership of this user on this assembly/group
 		// already exists
-		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? MembershipGroup
-				.checkIfExists(m) : MembershipAssembly.checkIfExists(m);
+		boolean mExists = targetCollection.toUpperCase().equals("GROUP") ? ((MembershipGroup) m).alreadyExists() : ((MembershipAssembly) m).alreadyExists();
 
 		SecurityRole role = SecurityRole.findByName(MyRoles.MEMBER.toString());
 		if (defaultRoleId != null)

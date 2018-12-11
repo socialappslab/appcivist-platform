@@ -358,6 +358,14 @@ public class Contribution extends AppCivistBaseModel {
     @Transient
     private List<WorkingGroup> workingGroups;
 
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer forks;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer acceptedForks;
+
     public Contribution(User creator, String title, String text,
                         ContributionTypes type) {
         super();
@@ -1772,13 +1780,31 @@ public class Contribution extends AppCivistBaseModel {
                                 Expr.eq("status", ContributionStatus.FORKED_PUBLISHED.name())).findList();
             case "MERGES":
                 return find.where().eq("parent.contributionId", contribution.getContributionId())
-                        .eq("status", ContributionStatus.MERGED_PUBLIC_DRAFT.name()).findList();
+                        .eq("status", ContributionStatus.MERGED.name()).findList();
             case "PARENT":
                 return Collections.singletonList(contribution.getParent());
             default:
                 return null;
         }
 
+    }
+
+    public static Set<User> findMergeAuthors(UUID cuuid) {
+
+        Contribution contribution = Contribution.getByUUID(cuuid);
+        if(contribution == null) {
+            return null;
+        }
+
+        List<User> authors = new ArrayList<>();
+        List<Contribution> contributions =  find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .ilike("status", "%MERGE%").findList();
+        for(Contribution contribution1: contributions) {
+            if(!authors.contains(contribution1.getCreator())) {
+                authors.add(contribution1.getCreator());
+            }
+        }
+        return new HashSet<>(authors);
     }
 
     public static Contribution fork (Contribution parent, User author) throws NoSuchPaddingException,
@@ -1788,7 +1814,7 @@ public class Contribution extends AppCivistBaseModel {
         Logger.debug("Start forking contribution " + parent.getContributionId());
         PeerDocWrapper peerDocWrapper  = new PeerDocWrapper(author);
         JsonNode peerdocResponse = peerDocWrapper.fork(parent.getExtendedTextPad());
-        if(peerdocResponse.get("path") == null) {
+        if(peerdocResponse == null || peerdocResponse.get("path") == null) {
             Logger.debug("Non successful response from peerdoc, not forking");
             return null;
         }
@@ -1821,7 +1847,9 @@ public class Contribution extends AppCivistBaseModel {
             String padId = UUID.randomUUID().toString();
 
             Logger.debug("Creating resource ");
-            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + peerdocResponse.get("path")));
+            String path =         peerdocResponse.get("path").toString().replace("\"","");
+            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() +  path));
+            Logger.debug("PEERDOC URL FORK " + r.getUrlAsString());
             r.setPadId(padId);
             r.setResourceType(ResourceTypes.PEERDOC);
             r.setReadOnlyPadId(null);
@@ -1842,22 +1870,29 @@ public class Contribution extends AppCivistBaseModel {
             newContribution.getHashtags().addAll(parent.getHashtags());
             newContribution.setCustomFieldValues(new ArrayList<>());
             newContribution.getCustomFieldValues().addAll(parent.getCustomFieldValues());
-            newContribution.setContainingSpaces(new ArrayList<>());
-            newContribution.getContainingSpaces().addAll(parent.getContainingSpaces());
-
-            parent.getResourceSpace().getContributions().add(newContribution);
-
-
             newContribution.update();
-            parent.update();
+
+            List<ResourceSpace> parentResources = parent.getContainingSpaces();
+            int numberRS = parentResources != null ? parentResources.size() : 0;
+            Logger.debug("Parend of fork in " + numberRS + " Resource Spaces");
+            for(ResourceSpace rs: parentResources) {
+                if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
+                        || rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    Logger.debug("Adding fork to the Resource Space "+rs.getResourceSpaceId()+" of type "+rs.getType());
+                    rs.addContribution(newContribution);
+                    newContribution.getContainingSpaces().add(rs);
+                    rs.update();
+                }
+            }
+            parent.refresh();
+            newContribution.refresh();
             Logger.debug("Contribution resource spaces saved ");
             if(parent.getWorkingGroupAuthors() != null && parent.getWorkingGroupAuthors().size() > 0) {
                 Logger.debug("Adding author to working group");
                 addContributionAuthorsToWG(newContribution, parent.getWorkingGroupAuthors().get(0).getResources());
             }
 
-            newContribution.refresh();
-            parent.refresh();
+
             Ebean.commitTransaction();
             F.Promise.promise(() -> {
                 Logger.debug("Sending notification");
@@ -1892,11 +1927,9 @@ public class Contribution extends AppCivistBaseModel {
             Logger.debug("Non successful response from peerdoc, not merging");
             return null;
         }
-        if(children.getStatus().equals(ContributionStatus.FORKED_PUBLISHED)) {
-            children.setStatus(ContributionStatus.MERGED_PUBLIC_DRAFT);
-        } else {
-            children.setStatus(ContributionStatus.MERGED_PRIVATE_DRAFT);
-        }
+
+        children.setStatus(ContributionStatus.MERGED);
+
         children.update();
         children.refresh();
         F.Promise.promise(() -> {
@@ -1949,5 +1982,24 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setParent(Contribution parent) {
         this.parent = parent;
+    }
+
+    public Integer getForks() {
+        List<Contribution> contributions = Contribution.findChildrenOrParents(this.uuid, "FORKS");
+        return contributions != null ? contributions.size() : 0;
+
+    }
+
+    public void setForks(Integer forks) {
+        this.forks = forks;
+    }
+
+    public Integer getAcceptedForks() {
+        List<Contribution> contributions = Contribution.findChildrenOrParents(this.uuid, "MERGES");
+        return contributions != null ? contributions.size() : 0;
+    }
+
+    public void setAcceptedForks(Integer acceptedForks) {
+        this.acceptedForks = acceptedForks;
     }
 }

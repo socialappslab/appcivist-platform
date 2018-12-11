@@ -99,7 +99,8 @@ public class GlobalDataConfigKeys {
 
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.forked_public_draft.status-requirements";
 	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ = "appcivist.campaign.contribution.forked_published.status-requirements";
-	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ = "appcivist.campaign.contribution.merged_public_draft.status-requirements";
+	public static final String APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_STATUS_REQ = "appcivist.campaign.contribution.merged.status-requirements";
+
 
 
 	public static final String APPCIVIST_CAMPAIGN_ACCESSIBILITY_URL = "appcivist.campaign.accessibility.url"; //link to a URL explaining accessibility issues in connection with an campaign
@@ -399,7 +400,7 @@ public class GlobalDataConfigKeys {
 				""));
 		configList.add(new GlobalDataConfig(CAMPAIGN, 	APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ,
 				""));
-		configList.add(new GlobalDataConfig(CAMPAIGN, 	APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ,
+		configList.add(new GlobalDataConfig(CAMPAIGN, 	APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_STATUS_REQ,
 				""));
 	}
 

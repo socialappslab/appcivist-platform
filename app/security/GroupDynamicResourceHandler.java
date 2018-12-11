@@ -53,14 +53,11 @@ public class GroupDynamicResourceHandler extends AbstractDynamicResourceHandler 
 	                                      groupNotOpen = false;
 	                                   }
 	                                   if (m!=null && rule.equals("CoordinatorOfGroup") && groupNotOpen) {
-                                           List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.COORDINATOR.getName());
-                                           allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                           allowed[0] = MembershipGroup.hasRole(u, wg, MyRoles.COORDINATOR);
                                        } else if (m!=null && rule.equals("GroupMemberIsExpert") && groupNotOpen) {
-                                           List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.EXPERT.getName());
-                                           allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();
+                                           allowed[0] = MembershipGroup.hasRole(u, wg, MyRoles.EXPERT);
                                        } else if (m!=null && rule.equals("ModeratorOfGroup") && groupNotOpen) {
-                                           List<SecurityRole> membershipRoles = m.filterByRoleName(MyRoles.MODERATOR.getName());
-                                           allowed[0] = membershipRoles != null && !membershipRoles.isEmpty();                                           
+                                           allowed[0] = MembershipGroup.hasRole(u, wg, MyRoles.MODERATOR);
                                        } else {
                                     	 // Allow users if there is membership or the group is o
                                          allowed[0] = m!=null || !groupNotOpen; 

@@ -535,9 +535,38 @@ public class NotificationsDelegate {
                 resourceId = ((ComponentMilestone) resource).getComponentMilestoneId();
                 resourceType = "MILESTONE";
                 try {
-                    setCampaignUrl(((ComponentMilestone) resource).getContainingSpaces().get(0).getCampaign().getCampaignId(), urls);
+                    ComponentMilestone cm = (ComponentMilestone) resource;
+                    List<ResourceSpace> rscmList = cm.getContainingSpaces();
+                    if (rscmList != null && rscmList.size() > 0) {
+                        ResourceSpace rscm = rscmList.get(0);
+                        Campaign ca = rscm.getCampaign();
+                        Component co = null;
+                        Long caId = null;
+                        if (ca == null) {
+                            co = rscm.getComponent();
+                            List<ResourceSpace> rscoList = co.getContainingSpaces();
+                            if (rscoList != null && rscoList.size() > 0) {
+                                ResourceSpace rsco = rscoList.get(0);
+                                ca = rsco.getCampaign();
+                                caId = ca.getCampaignId();
+                            }
+                        } else {
+                            caId = ca.getCampaignId();
+                        }
+
+                        if (caId !=null) {
+                            setCampaignUrl(caId, urls);
+                        } else {
+                            String error = "Component Milestone ["
+                                    + cm.getComponentMilestoneId()
+                                    + "] has no campaign associated to itself or to its parent Component ["
+                                    + co.getComponentId()!=null ? co.getComponentId()+"" : "null"
+                                    +"]";
+                            throw new Exception(error);
+                        }
+                    }
                 } catch (Exception e) {
-                    Logger.error("Error setting milestone campaign id: none campaign foung");
+                    Logger.error("Error setting the milestone for the campaign ID: none campaign found. "+e.getMessage());
                 }
                 break;
             case MEMBER_JOINED:
@@ -785,10 +814,17 @@ public class NotificationsDelegate {
             Logger.info("NOTIFICATION: Signaling notification from '" + originType + "' "
                     + originName + " about '" + eventName + "'");
             Boolean rabbitIsActive = Play.application().configuration().getBoolean("appcivist.services.rabbitmq.active");
+            Boolean socialBusIsActive = Play.application().configuration().getBoolean("appcivist.services.notification.default.useSocialBus");
             if(rabbitIsActive !=null && rabbitIsActive) {
+                Logger.info("NOTIFICATION: Signaling notification to rabbitmq is enabled");
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                    for(Long userId: notificatedUsers) {
+                        User user = User.findByUserId(userId);
+                        NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);
+                        notificationEventSignalUser.save();
+                    }
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
                             notificationEvent.getRichTextMail(), ownTextAndTitle, true);
                 } else {
@@ -798,7 +834,7 @@ public class NotificationsDelegate {
                 notificationEvent.getData().put("signaled", true);
                 notificationEvent.update();
                 return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification signaled","")));
-            } else {
+            } else if (socialBusIsActive !=null && socialBusIsActive)  {
                 NotificationServiceWrapper ns = new NotificationServiceWrapper();
                 WSResponse response = ns.sendNotificationSignal(newNotificationSignal);
                 Logger.info("NOTIFICATION: SENDING SIGNAL");
@@ -814,6 +850,11 @@ public class NotificationsDelegate {
                     NotificationEventSignal.create(notificationEvent);
                     return Controller.internalServerError(Json.toJson(TransferResponseStatus.errorMessage("Error while signaling", response.asJson().toString())));
                 }
+            } else {
+                Logger.info("NOTIFICATION: Created but not signaled to either Social Bus or RabbitMQ");
+                notificationEvent.getData().put("signaled", false);
+                NotificationEventSignal.create(notificationEvent);
+                return Controller.ok(Json.toJson(TransferResponseStatus.okMessage("Notification created but not signaled to external push service","")));
             }
         } catch (IOException | TimeoutException e) {
             Logger.info("NOTIFICATION: Error while signaling => " + e.getLocalizedMessage());
@@ -1242,9 +1283,9 @@ public class NotificationsDelegate {
             }
         }
         if (page != null && pageSize != null) {
-            return q.findPagedList(page, pageSize).getList();
+            return q.orderBy("creation desc").findPagedList(page, pageSize).getList();
         } else {
-            return q.findList();
+            return q.orderBy("creation desc").findList();
         }
     }
 

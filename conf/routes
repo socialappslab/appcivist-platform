@@ -299,6 +299,7 @@ POST      /api/contribution/pad                                                 
 PUT       /api/contribution/pad                                                  controllers.Contributions.confirmContributionPad(rid: Long)
 
 GET       /api/contribution/:uuid/proposal                                       controllers.Contributions.getContributionChildrenOrParent(uuid: java.util.UUID, type: String)
+GET       /api/contribution/:uuid/proposal/merge/authors                         controllers.Contributions.getContributionMergeAuthors(uuid: java.util.UUID)
 PUT       /api/assembly/:aid/contribution/:pid/proposal/:cid                     controllers.Contributions.mergeContribution(aid: Long, pid:Long, cid: Long)
 
 
@@ -442,7 +443,7 @@ GET       /api/public/space/:uuid/contribution/pinned                           
 GET       /api/public/space/:uuid/organization                                   controllers.Assemblies.findOrganizationsInSpaceByUUID(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/commentcount                                   controllers.Spaces.getCommentCountPublic(uuid: java.util.UUID)
 POST      /api/public/space/:uuid/resource                                       controllers.Spaces.addSpaceResourcesbyUuid(uuid: java.util.UUID)
-GET       /api/public/space/:uuid/analytics                                      controllers.Spaces.getAnalytics(uuid: java.util.UUID, includeThemes?="")
+GET       /api/public/space/:uuid/analytics                                      controllers.Spaces.getAnalytics(uuid: java.util.UUID, includeThemes?="", includeUserInsights?="", userId:Long?=0)
 
 # Public custom field endpoints
 GET       /api/public/space/:uuid/field                                          controllers.Spaces.findSpaceFieldsByUUID(uuid: java.util.UUID)
