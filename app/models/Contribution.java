@@ -1873,9 +1873,12 @@ public class Contribution extends AppCivistBaseModel {
             newContribution.update();
 
             List<ResourceSpace> parentResources = parent.getContainingSpaces();
+            int numberRS = parentResources != null ? parentResources.size() : 0;
+            Logger.debug("Parend of fork in " + numberRS + " Resource Spaces");
             for(ResourceSpace rs: parentResources) {
                 if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
                         || rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    Logger.debug("Adding fork to the Resource Space "+rs.getResourceSpaceId()+" of type "+rs.getType());
                     rs.addContribution(newContribution);
                     rs.update();
                     rs.refresh();
