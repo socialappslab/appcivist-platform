@@ -1880,8 +1880,8 @@ public class Contribution extends AppCivistBaseModel {
                         || rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
                     Logger.debug("Adding fork to the Resource Space "+rs.getResourceSpaceId()+" of type "+rs.getType());
                     rs.addContribution(newContribution);
+                    newContribution.getContainingSpaces().add(rs);
                     rs.update();
-                    rs.refresh();
                 }
             }
             parent.refresh();
