@@ -234,13 +234,13 @@ public class ContributionsDelegate {
                             userTableAlreadyIncluded = true;
                             rawQueryFrom += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
                         }
-                        rawQueryFrom += "join appcivist_user aus on au.user_id = auth.appcivist_user_user_id \n ";
+                        rawQueryFrom += "join appcivist_user aus on aus.user_id = auth.appcivist_user_user_id \n ";
 
                         if (!spaceThemeAlreadyIncluded) {
                             spaceThemeAlreadyIncluded = true;
                             rawQueryFrom += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         }
-                        rawQueryFrom += "join theme the on t.theme_id = rst.theme_theme_id \n ";
+                        rawQueryFrom += "join theme the on the.theme_id = rst.theme_theme_id \n ";
 
                         if (!spaceGroupAlreadyIncluded) {
                             spaceGroupAlreadyIncluded = true;
@@ -303,7 +303,7 @@ public class ContributionsDelegate {
                                                                 Expr.ilike("the.title", "%" + ((String)value).toLowerCase() + "%"),
                                                                 Expr.ilike("wg.name", "%" + ((String)value).toLowerCase() + "%"))
                                         )
-                                );
+                                ));
                         // ToDo 1: extend ts_vector to include themes, keywords, wg names and authors
                         // ToDo 2: re-implement search by text to use the pg full text search using ts_vector document in the contribution table.
                         where.add(expression);
