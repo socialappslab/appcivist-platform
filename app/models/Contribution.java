@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.Contributions;
 import delegates.NotificationsDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.MembershipCreationException;
 import io.swagger.annotations.ApiModel;
@@ -981,6 +982,11 @@ public class Contribution extends AppCivistBaseModel {
         return contribs;
     }
 
+    /**
+     * Create in ResourceSpace
+     * @param c
+     * @param rs
+     */
     public static void create(Contribution c, ResourceSpace rs) {
 
         // 1. Check first for existing entities in ManyToMany relationships.
@@ -1040,13 +1046,9 @@ public class Contribution extends AppCivistBaseModel {
         cResSpace.getThemes().clear();
         cResSpace.getThemes().addAll(themesA);
         cResSpace.update();
-        // 5. Add contribution to working group authors
-        for (WorkingGroup workingGroup : workingGroupAuthors) {
-            workingGroup.getResources().addContribution(c);
-            c.containingSpaces.add(workingGroup.getResources());
-            workingGroup.getResources().update();
-        }
 
+        // 5. Add contribution to working group authors
+        WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, false);
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
     }

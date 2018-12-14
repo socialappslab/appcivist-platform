@@ -25,6 +25,7 @@ import com.lowagie.text.rtf.headerfooter.RtfHeaderFooter;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
@@ -3305,11 +3306,9 @@ public class Contributions extends Controller {
             throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException, ConfigurationException {
 
         newContrib.setType(type);
-        List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
         List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
         // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
-
             for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
                 nonMemberAuthor.save();
                 nonMemberAuthor.refresh();
@@ -3399,10 +3398,12 @@ public class Contributions extends Controller {
         Boolean autoCreateWG = autoCreateWGConfig != null ? autoCreateWGConfig.getValue().toLowerCase() == "true" : false;
         Boolean createWG = false;
         List<WorkingGroup> workingGroupAuthors = newContrib.getWorkingGroupAuthors();
+        List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
+        List<WorkingGroup> workingGroupAuthorsInRequest = workingGroupAuthors
         String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
         if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
             WorkingGroup wg = workingGroupAuthors.get(0);
-            if (wg.getGroupId() == null) {
+            if (wg.getGroupId() == null && wg.getUuid() == null) {
                 // if proposal contains the definition of a new WG, set workingGroupAuthors to null and create the group
                 newWorkingGroupName = wg.getName();
                 workingGroupAuthors = null;
@@ -3411,8 +3412,11 @@ public class Contributions extends Controller {
             } else {
                 // if the proposal contains one or more WGs as authoring groups
                 for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
-                    WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
-                    workingGroupAuthorsLoaded.add(contact);
+                    WorkingGroup dbGroup = WorkingGroup.read(wgroup.getGroupId());
+                    if (dbGroup == null) {
+                        dbGroup = WorkingGroup.readByUUID(wgroup.getUuid());
+                    }
+                    workingGroupAuthorsLoaded.add(dbGroup);
                 }
                 newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
             }
@@ -3584,6 +3588,21 @@ public class Contributions extends Controller {
         }
 
         Contribution.create(newContrib, containerResourceSpace);
+
+        // Check that contribution was correctly added to WGs
+        if (workingGroupAuthors!=null && !workingGroupAuthors.isEmpty()) {
+            Integer numberOfWGs = workingGroupAuthors.size();
+            List<WorkingGroup> refreshedGroups = newContrib.getWorkingGroupAuthors();
+            Integer numberOfRefreshedWgs = refreshedGroups !=null ? refreshedGroups.size() : 0;
+
+            if (numberOfRefreshedWgs<numberOfWGs) {
+                Logger.debug("Orphan detected. Request WGs = "+numberOfWGs+ ". Created contribution WGs = "+numberOfRefreshedWgs);
+                Logger.debug("Adding again to WGs, checking if already exists first");
+                // Add contribution to working group authors only if it is not there
+                WorkingGroupsDelegate.addContributionToWorkingGroups(newContrib, workingGroupAuthors, true);
+            }
+        }
+
         newContrib.refresh();
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
         F.Promise.promise(() -> {
