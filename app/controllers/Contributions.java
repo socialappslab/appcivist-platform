@@ -1552,29 +1552,21 @@ public class Contributions extends Controller {
 
             Contribution newContribution = newContributionForm.get();
             ContributionTypes type = newContribution.getType();
+
+            // If TYPE is not declared, default is COMMENT
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
 
             ResourceSpace rs = ResourceSpace.read(sid);
+            Result unauth = checkRsDraftState(rs, newContribution.getType());
+            if (unauth!=null) return unauth;
 
-            if (newContribution.getType().equals(ContributionTypes.COMMENT)
-                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
-                boolean unauth = checkRsDraftState(rs);
-                if (unauth) {
-                    TransferResponseStatus responseBody = new TransferResponseStatus();
-                    responseBody.setStatusMessage(Messages.get(
-                            "contribution.unauthorized.creation",
-                            rs.getType()));
-                    return unauthorized(Json.toJson(responseBody));
-                }
-            }
-
-            //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            // Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
             if (newContribution.getType().equals(ContributionTypes.IDEA)
-			|| newContribution.getType().equals(ContributionTypes.PROPOSAL)
-			|| newContribution.getType().equals(ContributionTypes.DISCUSSION)
-			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
+                    || newContribution.getType().equals(ContributionTypes.PROPOSAL)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)
+                    || newContribution.getType().equals(ContributionTypes.COMMENT)) {
             	Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
             	if (result == -1){
                     Logger.info("Missing Social Ideation Headers");
@@ -1583,24 +1575,19 @@ public class Contributions extends Controller {
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
-                    // social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
                     social_ideation_author = User.findByEmail(headerMap.get("SOCIAL_IDEATION_USER_EMAIL"));
                     if (social_ideation_author == null){
                         non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         if (non_member_author == null){
-                            non_member_author = new NonMemberAuthor();
-                            non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
-                            non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
-                            non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+                            non_member_author = createSocialIdeationNonMemberAuthor(headerMap);
                         }
                         newContribution.setNonMemberAuthor(non_member_author);
                     }
                 }
             }
 
-
+            // Check if there is a ContributionTemplate configured in the current component of the campaign.
             ContributionTemplate template = null;
-
             if (rs != null && newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
                 // TODO: make the template stored in the campaign rather than the proposal making component
                 List<Component> components = rs.getComponents();
@@ -1617,6 +1604,7 @@ public class Contributions extends Controller {
                     }
                 }
             }
+
             newContribution.setContextUserId(author.getUserId());
             if (social_ideation_author != null){
                 newContribution.setContextUserId(social_ideation_author.getUserId());
@@ -1624,7 +1612,10 @@ public class Contributions extends Controller {
             Contribution c;
 
             Ebean.beginTransaction();
+
+            // Create contribution and associated resources
             try {
+                // create contribution
                 if(social_ideation_author != null){
                     c = createContribution(newContribution, social_ideation_author, type, template, rs);
                 } else if (non_member_author != null) {
@@ -1633,12 +1624,18 @@ public class Contributions extends Controller {
                     c = createContribution(newContribution, author, type, template, rs);
                 }
 
+                // created associated peerdoc if config force collaborative editor is configured
                 if (c.getType().equals(ContributionTypes.PROPOSAL)) {
                     Config conf = rs.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR);
-                    if(conf != null && conf.getValue().equals(ResourceTypes.PEERDOC.name())) {
-                        PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
-                        Logger.info("Creating PEERDOC for contribution "+c.getContributionId());
-                        peerDocWrapper.createPad(c, rs.getResourceSpaceUuid());
+                    String confValue = conf != null ? conf.getValue().toLowerCase() : null;
+                    if (confValue!=null) {
+                        if(confValue.equals(ResourceTypes.PEERDOC.name().toLowerCase())) {
+                            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
+                            Logger.info("Creating PEERDOC for contribution "+c.getContributionId());
+                            peerDocWrapper.createPad(c, rs.getResourceSpaceUuid());
+                        } else if (confValue.equals(ResourceTypes.PAD.name().toLowerCase()) || confValue.equals("etherpad")) {
+                            // TODO: automatically create the etherpad PAD
+                        }
                     }
                 }
                 c.refresh();
@@ -4734,27 +4731,15 @@ public class Contributions extends Controller {
             }
 
             ResourceSpace resourceSpace = ResourceSpace.readByUUID(UUID.fromString(uuid));
-
-            if (newContribution.getType().equals(ContributionTypes.COMMENT)
-                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
-                boolean unauth = checkRsDraftState(resourceSpace);
-                if (unauth) {
-                    TransferResponseStatus responseBody = new TransferResponseStatus();
-                    responseBody.setStatusMessage(Messages.get(
-                            "contribution.unauthorized.creation",
-                            resourceSpace.getType()));
-                    return unauthorized(Json.toJson(responseBody));
-                }
-            }
+            Result unauth = checkRsDraftState(resourceSpace, newContribution.getType());
+            if (unauth!=null) return unauth;
 
             ContributionTemplate template = null;
             Contribution c;
             try {
                 c = createContribution(newContribution, null, type, template, resourceSpace);
-
                 resourceSpace.addContribution(c);
                 resourceSpace.update();
-
                 Promise.promise(() -> {
                     return NotificationsDelegate.newContributionInResourceSpace(resourceSpace,c);
                 });
@@ -5807,25 +5792,45 @@ public class Contributions extends Controller {
         }
     }
 
-    private static boolean checkRsDraftState(ResourceSpace rs) {
-        boolean unauth = false;
-        if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY) &&
-                rs.getAssemblyResources().getStatus().equals(AssemblyStatus.DRAFT)) {
-            unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN) &&
-                rs.getCampaign().getStatus().equals(CampaignStatus.DRAFT)) {
-            unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
-                rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
-            unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
-            unauth = rs.getContribution() != null
-                    ? rs.getContribution().getStatus().equals(ContributionStatus.DRAFT) :
-                        rs.getForumContribution() != null
-                            ? rs.getForumContribution().getStatus().equals(ContributionStatus.DRAFT) : false;
+    private static Result checkRsDraftState(ResourceSpace rs, ContributionTypes t) {
+        if (t!=null  && (t.equals(ContributionTypes.COMMENT) || t.equals(ContributionTypes.DISCUSSION))) {
+            Config noCommentsIfDraftConfig = rs.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_DISABLE_COMMENTS_IN_DRAFTS);
+            String noCommentsIfDraft = noCommentsIfDraftConfig != null ? noCommentsIfDraftConfig.getValue() : null;
+            if (noCommentsIfDraft != null && noCommentsIfDraft.toLowerCase().equals("true")) {
+                boolean unauth = false;
+                if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY) &&
+                        rs.getAssemblyResources().getStatus().equals(AssemblyStatus.DRAFT)) {
+                    unauth = true;
+                } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN) &&
+                        rs.getCampaign().getStatus().equals(CampaignStatus.DRAFT)) {
+                    unauth = true;
+                } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
+                        rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
+                    unauth = true;
+                } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+                    unauth = rs.getContribution() != null
+                            ? rs.getContribution().getStatus().equals(ContributionStatus.DRAFT) :
+                            rs.getForumContribution() != null
+                                    ? rs.getForumContribution().getStatus().equals(ContributionStatus.DRAFT) : false;
+                }
+
+                if (unauth) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            rs.getType()));
+                    return unauthorized(Json.toJson(responseBody));
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
-        return unauth;
     }
+
     private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus) {
         String configKey;
         switch (ContributionStatus.valueOf(upStatus)) {
@@ -5906,7 +5911,7 @@ public class Contributions extends Controller {
                             }
                             break;
                         case "group":
-                            if(c.getWorkingGroups() != null && c.getWorkingGroups().isEmpty()) {
+                            if(c.getWorkingGroupAuthors() != null && c.getWorkingGroupAuthors().isEmpty()) {
                                 contributionFields.add(requirement);
                             }
                             break;
@@ -6064,6 +6069,14 @@ public class Contributions extends Controller {
 
         return ok("Updated " + contributionCount + " contributions of " + contributionList.size());
 
+    }
+
+    private static NonMemberAuthor createSocialIdeationNonMemberAuthor(HashMap<String, String> headerMap) {
+        NonMemberAuthor non_member_author = new NonMemberAuthor();
+        non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
+        non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
+        non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+        return non_member_author;
     }
 
 }
