@@ -3399,7 +3399,6 @@ public class Contributions extends Controller {
         Boolean createWG = false;
         List<WorkingGroup> workingGroupAuthors = newContrib.getWorkingGroupAuthors();
         List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
-        List<WorkingGroup> workingGroupAuthorsInRequest = workingGroupAuthors
         String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
         if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
             WorkingGroup wg = workingGroupAuthors.get(0);
