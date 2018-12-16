@@ -5,4 +5,4 @@ alter table appcivist_user add column lang varchar(255);
 alter table appcivist_user add column removal timestamp;
 alter table appcivist_user add column removed boolean;
       
-# --- Downs
+# --- !Downs

@@ -1,9 +1,14 @@
+# --- !Ups
+
 -- 51. SQL
 alter table subscription drop column user_user_id;
 alter table subscription add column user_id character varying(40);
 
 alter table subscription drop column space_id;
 alter table subscription add column space_id character varying(40);
+
+DROP TABLE public.notification_event_signal;
+
 
 CREATE SEQUENCE public.notification_event_signal_id_seq
   INCREMENT 1
@@ -12,7 +17,7 @@ CREATE SEQUENCE public.notification_event_signal_id_seq
   START 1
   CACHE 1;
 
-DROP TABLE public.notification_event_signal;
+
 
 
 CREATE TABLE public.notification_event_signal
@@ -47,3 +52,5 @@ CREATE INDEX ix_notification_event_id
   (id);
 
 -- Index: public.ix_notification_event_uuid
+
+# --- !Downs

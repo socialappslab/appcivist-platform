@@ -5,26 +5,26 @@ BEGIN
 
 CASE
    WHEN param = 'es' THEN
-      result := 'simple_spanish';
+      result := 'simple_spanish';;
    WHEN param = 'es-ES' THEN
-      result := 'simple_spanish';
+      result := 'simple_spanish';;
    WHEN param = 'us' THEN
-      result := 'simple_english';
+      result := 'simple_english';;
    WHEN param = 'en-US' THEN
-      result := 'simple_english';
+      result := 'simple_english';;
    WHEN param = 'it' THEN
-      result := 'simple_italian';
+      result := 'simple_italian';;
    WHEN param = 'it-IT' THEN
-      result := 'simple_italian';
+      result := 'simple_italian';;
    WHEN param = 'fr' THEN
-      result := 'simple_french';
+      result := 'simple_french';;
    WHEN param = 'fr-FR' THEN
-      result := 'simple_french';
+      result := 'simple_french';;
    ELSE
-      result := 'simple_english';
-END CASE;
+      result := 'simple_english';;
+END CASE;;
 
-END
+END;;
 $$ LANGUAGE plpgsql;
 
 CREATE TEXT SEARCH DICTIONARY simple_english
@@ -65,10 +65,10 @@ ALTER TEXT SEARCH CONFIGURATION simple_italian
 
 CREATE OR REPLACE FUNCTION contribution_trigger() RETURNS trigger AS $$
 begin
-  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
-  new.document_simple := to_tsvector(lang_contribution(new.lang)::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));
-  return new;
-end
+  new.document := to_tsvector(new.lang::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));;
+  new.document_simple := to_tsvector(lang_contribution(new.lang)::regconfig, unaccent(coalesce(new.title,'')) || ' ' || unaccent(coalesce(new.text,'')));;
+  return new;;
+end;;
 $$ LANGUAGE plpgsql;
 
 UPDATE contribution

@@ -1,16 +1,18 @@
+# --- !Ups
+
 CREATE EXTENSION pgagent;
-CREATE LANGUAGE plpgsql;
+
 DO $$
 DECLARE
-    jid integer;
-    scid integer;
+    jid integer;;
+    scid integer;;
 BEGIN
 -- Creating a new job
 INSERT INTO pgagent.pga_job(
     jobjclid, jobname, jobdesc, jobhostagent, jobenabled
 ) VALUES (
     1::integer, 'Notification Archival Job'::text, ''::text, ''::text, true
-) RETURNING jobid INTO jid;
+) RETURNING jobid INTO jid;;
 
 -- Steps
 -- Inserting a step (jobid: NULL)
@@ -21,8 +23,8 @@ INSERT INTO pgagent.pga_jobstep (
 ) VALUES (
     jid, 'Notification Arhival Job'::text, true, 's'::character(1),
     ''::text, 'appcivistcore'::name, 'f'::character(1),
-    'select * from move_signals((select ''now''::timestamp - ''1 month''::interval));'::text, ''::text
-) ;
+    'select * from move_signals((select ''now''::timestamp - ''1 month''::interval));;'::text, ''::text
+) ;;
 
 -- Schedules
 -- Inserting a schedule
@@ -42,6 +44,8 @@ INSERT INTO pgagent.pga_schedule(
     ARRAY[false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]::boolean[],
     -- Months
     ARRAY[false, false, false, false, false, false, false, false, false, false, false, false]::boolean[]
-) RETURNING jscid INTO scid;
-END;
+) RETURNING jscid INTO scid;;
+END;;
 $$
+
+# --- !Downs

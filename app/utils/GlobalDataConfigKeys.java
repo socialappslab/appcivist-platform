@@ -31,6 +31,7 @@ public class GlobalDataConfigKeys {
 	// AppCivist General Configuration Keys, applicable to any resource space
 	public static final String APPCIVIST_REQUIRE_GROUP_AUTHORSHIP = "appcivist.campaign.require-group-authorship"; // Default is FALSE, if TRUE, proposals must be related to a WG on creation
 	public static final String APPCIVIST_CREATE_GROUP_ON_NEW_PROPOSALS = "appcivist.campaign.create-group-new-proposals"; // Default is FALSE, if TRUE, proposals WG are automatically created if the proposal does not have one
+	public static final String APPCIVIST_DISABLE_COMMENTS_IN_DRAFTS = "appcivist.space.disable-comments-in-drafts"; // Defatul is FALSE, if TRUE, comments and discussions type of contributions are not allowed in spaces that are associated to an entity with DRAFT status
 
 	// Assembly Level Configuration Keys
 	public static final String APPCIVIST_ASSEMBLY_DISABLE_NEW_MEMBERSHIPS = "appcivist.assembly.disable-new-memberships"; // only coordinators can add new members to the assembly, by uploading users for them.   
