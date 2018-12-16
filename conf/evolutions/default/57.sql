@@ -1,4 +1,5 @@
 ﻿# --- !Ups
+
 CREATE TABLE notification_event_signal_archive
 (
   id bigint NOT NULL,
@@ -25,7 +26,7 @@ ALTER TABLE resource
   DROP CONSTRAINT ck_resource_resource_type;
 
 ALTER TABLE resource
-  ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying::text, 'VIDEO'::character varying::text, 'PAD'::character varying::text, 'TEXT'::character varying::text, 'WEBPAGE'::character varying::text, 'FILE'::character varying::text, 'AUDIO'::character varying::text, 'CONTRIBUTION_TEMPLATE'::character varying::text, 'CAMPAIGN_TEMPLATE'::character varying::text, 'PROPOSAL'::character varying::text, 'GDOC'::character varying::text]))
+  ADD CONSTRAINT ck_resource_resource_type CHECK (resource_type::text = ANY (ARRAY['PICTURE'::character varying::text, 'VIDEO'::character varying::text, 'PAD'::character varying::text, 'TEXT'::character varying::text, 'WEBPAGE'::character varying::text, 'FILE'::character varying::text, 'AUDIO'::character varying::text, 'CONTRIBUTION_TEMPLATE'::character varying::text, 'CAMPAIGN_TEMPLATE'::character varying::text, 'PROPOSAL'::character varying::text, 'GDOC'::character varying::text]));
 
 ALTER TABLE "public"."appcivist_user"
   ALTER COLUMN "creation" SET DEFAULT now(),

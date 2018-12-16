@@ -1,3 +1,5 @@
+# --- !Ups
+
 ALTER TABLE contribution DROP CONSTRAINT ck_contribution_contribution_status;
 
 UPDATE contribution set status = 'MERGED' where STATUS ilike 'MERGE%';
@@ -20,3 +22,5 @@ ANY (ARRAY['NEW'::character varying::text, 'DRAFT'::character varying::text, 'PU
 'MODERATED'::character varying::text, 'INBALLOT'::character varying::text, 'SELECTED'::character varying::text,
 'FORKED_PRIVATE_DRAFT'::character varying::text, 'FORKED_PUBLIC_DRAFT'::character varying::text,
 'FORKED_PUBLISHED'::character varying::text, 'MERGED'::character varying::text]));
+
+# --- !Downs

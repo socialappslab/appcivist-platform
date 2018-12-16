@@ -11,4 +11,4 @@ CREATE TABLE contribution_history_contribution_feedback
       REFERENCES contribution_feedback (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION
 );
-# --- Downs
+# --- !Downs

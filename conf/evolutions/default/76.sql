@@ -1,3 +1,5 @@
+# --- !Ups
+
 create table campaign_participation (
     user_user_id             bigint,
     campaign_campaign_id     bigint,
@@ -8,3 +10,5 @@ create table campaign_participation (
     constraint fk_campaign_participation_user foreign key (user_user_id) references appcivist_user (user_id),
     constraint fk_campaign_participation_campaign foreign key (campaign_campaign_id) references campaign (campaign_id)
 );
+
+# --- !Downs

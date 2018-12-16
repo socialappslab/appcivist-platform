@@ -8,4 +8,4 @@ ALTER TABLE contribution
       REFERENCES public.resource_space (resource_space_id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE;
 
-# --- Downs
+# --- !Downs

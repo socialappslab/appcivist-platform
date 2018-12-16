@@ -1,3 +1,4 @@
+# --- !Ups
 
 CREATE SEQUENCE public.notification_event_signal_user_id_seq
   INCREMENT 1
@@ -28,3 +29,5 @@ CREATE TABLE public.notification_event_signal_user
 WITH (
   OIDS=FALSE
 );
+
+# --- !Downs

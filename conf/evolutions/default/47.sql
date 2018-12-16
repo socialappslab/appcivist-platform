@@ -1,6 +1,8 @@
+# --- !Ups
+
 ALTER TABLE location ADD COLUMN additional_info TEXT;
 ALTER TABLE location ADD COLUMN best_coordinates integer;
-ALTER TABLE location ADD COLUMN source character varying(255) default "Open Street Map";
+ALTER TABLE location ADD COLUMN source character varying(255) default 'Open Street Map';
 ALTER TABLE location ADD COLUMN marked_for_review boolean default false;
 
 CREATE TABLE working_group_location (
@@ -16,3 +18,5 @@ CREATE TABLE working_group_location (
 );
 
 update location set marked_for_review = true;
+
+# --- !Downs
