@@ -232,19 +232,19 @@ public class ContributionsDelegate {
                     case "by_text":
                         if (!userTableAlreadyIncluded) {
                             userTableAlreadyIncluded = true;
-                            rawQueryFrom += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
+                            rawQueryFrom += "left join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
                         }
-                        rawQueryFrom += "join appcivist_user aus on aus.user_id = auth.appcivist_user_user_id \n ";
+                        rawQueryFrom += "left join appcivist_user aus on aus.user_id = auth.appcivist_user_user_id \n ";
 
                         if (!spaceThemeAlreadyIncluded) {
                             spaceThemeAlreadyIncluded = true;
-                            rawQueryFrom += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
+                            rawQueryFrom += "left join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         }
-                        rawQueryFrom += "join theme the on the.theme_id = rst.theme_theme_id \n ";
+                        rawQueryFrom += "left join theme the on the.theme_id = rst.theme_theme_id \n ";
 
                         if (!spaceGroupAlreadyIncluded) {
                             spaceGroupAlreadyIncluded = true;
-                            rawQueryFrom += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
+                            rawQueryFrom += "left join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
                                     "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
                                     "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
                         }
