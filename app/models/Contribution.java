@@ -1048,7 +1048,7 @@ public class Contribution extends AppCivistBaseModel {
         cResSpace.update();
 
         // 5. Add contribution to working group authors
-        WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, false);
+        WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, true);
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
     }

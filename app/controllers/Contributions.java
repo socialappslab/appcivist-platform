@@ -4439,7 +4439,7 @@ public class Contributions extends Controller {
                                 index++;
 
                                 HashMap<String,Object> mapOfAuthors = processAuthorsInImport(author, phone, email, c);
-                                if (authors!=null) {
+                                if (authors!=null && mapOfAuthors != null) {
                                     User userAuthor = (User) mapOfAuthors.get("user");
                                     if (userAuthor==null) {
                                         NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) mapOfAuthors.get("nonUser");
@@ -4465,7 +4465,7 @@ public class Contributions extends Controller {
                             Logger.info("Adding contribution to campaign...");
                             resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
                         }
-                        c.getContainingSpaces().add(resourceSpace);
+//                        c.getContainingSpaces().add(resourceSpace);
                         Contribution.create(c, resourceSpace);
                         c.refresh();
                         Boolean updateContribution = false;
