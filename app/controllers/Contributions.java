@@ -82,7 +82,6 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -4439,7 +4438,7 @@ public class Contributions extends Controller {
                                 index++;
 
                                 HashMap<String,Object> mapOfAuthors = processAuthorsInImport(author, phone, email, c);
-                                if (authors!=null) {
+                                if (authors!=null && mapOfAuthors != null) {
                                     User userAuthor = (User) mapOfAuthors.get("user");
                                     if (userAuthor==null) {
                                         NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) mapOfAuthors.get("nonUser");
@@ -4464,10 +4463,12 @@ public class Contributions extends Controller {
                         } else {
                             Logger.info("Adding contribution to campaign...");
                             resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                            resourceSpace.getContributions().add(c);
                         }
                         c.getContainingSpaces().add(resourceSpace);
                         Contribution.create(c, resourceSpace);
                         c.refresh();
+                        resourceSpace.update();
                         Boolean updateContribution = false;
                         if (existingNonMemberAuthors!=null && existingNonMemberAuthors.size()>0) {
                             c.getNonMemberAuthors().addAll(existingNonMemberAuthors);

@@ -56,9 +56,12 @@ public class WorkingGroupsDelegate {
 			if (!contributionAlreadyExists) {
 				Logger.debug("Contribution added to Working Group: "+c.getContributionId()+" - " +wg.getGroupId());
 				List<ResourceSpace> contributionContainers = c.getContainingSpaces();
-				groupRS.addContribution(c);
-				contributionContainers.add(groupRS);
-				groupRS.update();
+				if(!groupRS.getContributions().contains(c)) {
+					groupRS.addContribution(c);
+					contributionContainers.add(groupRS);
+					groupRS.update();
+				}
+
 			}
 		}
 	}
