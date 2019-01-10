@@ -1311,13 +1311,13 @@ public class NotificationsDelegate {
         File file = Play.application().getFile(REGULAR_MAIL_TEMPLATE);
         LocalDate now = new LocalDate();
         String content = new String(Files.readAllBytes(Paths.get(file.toString())));
-        content = content.replaceAll("REGULAR_TITLE", title);
-        content = content.replaceAll("REGULAR_DESCRIPTION", description);
-        content = content.replaceAll("DATE", now.getDayOfMonth() +" " + now.toString("MMM"));
-        content = content.replaceAll("YEAR", String.valueOf(now.getYear()));
-        content = content.replaceAll("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
+        content = content.replace("REGULAR_TITLE", title);
+        content = content.replace("REGULAR_DESCRIPTION", description);
+        content = content.replace("DATE", now.getDayOfMonth() +" " + now.toString("MMM"));
+        content = content.replace("YEAR", String.valueOf(now.getYear()));
+        content = content.replace("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
                 "mail.notification.unsubscribe"));
-        content = content.replaceAll("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
+        content = content.replace("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
                 "mail.notification.new_activity"));
         return content;
     }
