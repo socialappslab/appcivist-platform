@@ -5576,6 +5576,8 @@ public class Contributions extends Controller {
         contributionMap.put("UUID", contribution.getUuidAsString());
         contributionMap.put("Title",contribution.getTitle());
         contributionMap.put("Brief Summary", contribution.getPlainText());
+        contributionMap.put("Budget", contribution.getBudget());
+        contributionMap.put("Location", contribution.getLocation()!=null ? contribution.getLocation().getPlaceName() : "");
         contributionMap.put("Type", contribution.getType()!=null ? contribution.getType().name() : "NO_TYPE");
         contributionMap.put("Status",contribution.getStatus() !=null ? contribution.getStatus().name() : "NO_STATUS");
         contributionMap.put("Source", contribution.getSource());
