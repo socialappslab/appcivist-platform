@@ -1048,7 +1048,7 @@ public class Contribution extends AppCivistBaseModel {
         cResSpace.update();
 
         // 5. Add contribution to working group authors
-        WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, false);
+        WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, true);
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
     }
@@ -1736,7 +1736,7 @@ public class Contribution extends AppCivistBaseModel {
                 if(c.getType().equals(ContributionTypes.IDEA) && rs.getCampaign().getLocation()!=null) {
                     Logger.debug("Using campaign geoJson");
                     c.getLocation().setGeoJson(rs.getCampaign().getLocation().getGeoJson());
-                } else if(c.getType().equals(ContributionTypes.PROPOSAL)) {
+                } else if(c.getType().equals(ContributionTypes.PROPOSAL) && rs.getWorkingGroupResources() != null) {
                     List<Location> locations = rs.getWorkingGroupResources().getLocations();
                     if(!locations.isEmpty() && locations.get(0).getGeoJson() != null) {
                         Logger.debug("Using WG geoJson");

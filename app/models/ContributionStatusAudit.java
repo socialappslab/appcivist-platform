@@ -79,14 +79,17 @@ public class ContributionStatusAudit extends Model {
     }
 
     public static void create(Contribution contribution) {
+        Contribution contribution1 = Contribution.getByUUID(contribution.getUuid());
+        if(contribution1 == null) {
+            return;
+        }
+        contribution1.refresh();
         Logger.info("Creating contributionStatusAudit ");
-        contribution.refresh();
         ContributionStatusAudit contributionStatusAudit = new ContributionStatusAudit();
-        contributionStatusAudit.setContribution(contribution);
+        contributionStatusAudit.setContribution(contribution1);
         contributionStatusAudit.setStatusStartDate(new Date());
         contributionStatusAudit.setStatus(contribution.getStatus());
         contributionStatusAudit.save();
-        contributionStatusAudit.refresh();
     }
 
     public static ContributionStatusAudit getLastByContribution(Contribution contribution) {
