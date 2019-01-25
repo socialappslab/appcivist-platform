@@ -3183,12 +3183,14 @@ public class Contributions extends Controller {
                 if (aRet == null) {
                     Assembly assembly = Assembly.findById(contribution.getAssemblyId());
                     aRet = assembly.getLang() == null ? null : Lang.forCode(assembly.getLang());
+                    Logger.info("Changed MailLang to use Assembly Lang: "+aRet);
+                } else {
+                    Logger.info("Changed MailLang to use Campaign Lang: "+aRet);
                 }
             } else {
                 aRet = Lang.forCode(initiativeLang);
             }
         }
-
         return aRet;
     }
 
@@ -3235,7 +3237,7 @@ public class Contributions extends Controller {
                                         containerContribution!=null ? containerContribution.getLang() : null;
         String url = getContributionMailUrl(contribution, containerAssembly, containerCampaign, containerGroup);
 
-
+        Logger.info("MailLang to use initially: "+initiativeLang);
         Logger.debug("Email to send with the following params: "
                 + "cType = " + cType
                 + ", initiativeName=" + initiativeName
@@ -3266,6 +3268,7 @@ public class Contributions extends Controller {
         Lang lang = getMailLang(authorLang, contribution, initiativeLang);
         if (lang == null) {
             lang = Lang.forCode(Messages.get(GlobalData.DEFAULT_LANGUAGE));
+            Logger.info("Changed MailLang to use Default: "+lang);
         }
         String bodyText;
         String subject;

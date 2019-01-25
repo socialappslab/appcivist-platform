@@ -263,7 +263,7 @@ public class ContributionsDelegate {
             String rawQuery = rawQueryColumns + rawQueryFrom;
 
             RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
-            where = finder.setRawSql(rawSql).where();
+            where = finder.setRawSql(rawSql).setDistinct(true).where();
             for(String key : conditions.keySet()){
                 Object value = conditions.get(key);
                 //We look at the keys, some of them have special treatment
@@ -375,8 +375,9 @@ public class ContributionsDelegate {
                 }
             }            
         }
-        where.add(Expr.not(Expr.eq("removed",true)));        
+        where.add(Expr.not(Expr.eq("removed",true)));
         List<Contribution> contributions;
+
         if(page != null && pageSize != null){
             if(sorting.equals("random")) {
                 contributions = where.setMaxRows(pageSize).findList();
