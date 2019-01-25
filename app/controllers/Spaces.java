@@ -2390,7 +2390,7 @@ public class Spaces extends Controller {
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No Resource found", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
     public static Result deleteSpaceResource(@ApiParam(name = "sid", value = "Space ID") Long sid,
                                           @ApiParam(name = "rid", value = "Resource ID") Long rid) {
         ResourceSpace resourceSpace = ResourceSpace.findByResource(sid, rid);

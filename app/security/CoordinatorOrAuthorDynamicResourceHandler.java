@@ -74,11 +74,12 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 		if (contributionUuid != null) {
 			Logger.debug("--> contributionUuid = " + contributionUuid);
 			if (metaIsResourceSpace) {
-				Logger.info("Authentication of authorsip is on the resource space of the contribution. Getting contribution from resource space id...");
+				Logger.info("Authentication of authorship is on the resource space of the contribution. Getting contribution from resource space id...");
 				ResourceSpace rs = ResourceSpace.readByUUID(contributionUuid);
 				contribution = rs.getContribution();
 			} else {
-				contribution = Contribution.readByUUID(contributionUuid);
+                Logger.info("Authentication of authorship is on the contribution. Getting contribution by id...");
+                contribution = Contribution.readByUUID(contributionUuid);
 			}
 		} else {
 			Long contributionId = MyDynamicResourceHandler.getIdFromPath(path, meta);
@@ -88,6 +89,7 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 				ResourceSpace rs = ResourceSpace.read(contributionId);
 				contribution = rs.getContribution();
 			} else {
+                Logger.info("Authentication of authorship is on the contribution. Getting contribution by id...");
 				contribution = Contribution.read(contributionId);
 			}
 		}
