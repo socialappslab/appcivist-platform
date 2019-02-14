@@ -1117,7 +1117,7 @@ public class Contribution extends AppCivistBaseModel {
                     .text());
         }
 
-        Contribution existingContribution = Contribution.read(contributionId);
+        Contribution existingContribution = Contribution.find.byId(contributionId);
         
 // TODO: find a way for reflections to work with Ebean updates in Play
 // See        http://stackoverflow.com/questions/38655024/playframework-2-5-ebean-update-using-reflection
