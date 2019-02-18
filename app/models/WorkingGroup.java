@@ -679,6 +679,24 @@ public class WorkingGroup extends AppCivistBaseModel {
 		}
 		return campaignIds;
 	}
+
+	public List<ResourceSpace> getCampaignsResourceSpaces() {
+		List<ResourceSpace> campaignIds = new ArrayList<>();
+
+			List<ResourceSpace> spaces = this.containingSpaces.stream()
+					.filter(p -> p.getType() == ResourceSpaceTypes.CAMPAIGN)
+					.collect(Collectors.toList());
+
+			for (ResourceSpace resourceSpace : spaces) {
+				Campaign a = resourceSpace.getCampaign();
+				if (a != null) {
+					campaignIds.add(resourceSpace);
+				}
+			}
+
+		return campaignIds;
+	}
+
 	
 	public void setCampaigns(List<Long> campaignIds) {
 		this.campaigns = campaignIds;

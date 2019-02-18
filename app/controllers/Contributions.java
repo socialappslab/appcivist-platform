@@ -1639,12 +1639,20 @@ public class Contributions extends Controller {
                     }
                 }
                 c.refresh();
-                if (c != null) {
-                    Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
-                    c.getContainingSpaces().add(rs);
-                    rs.getContributions().add(c);
-                    rs.update();
+
+                Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
+                c.getContainingSpaces().add(rs);
+                rs.getContributions().add(c);
+                rs.update();
+                if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    for(ResourceSpace rspaces: rs.getWorkingGroupResources().getCampaignsResourceSpaces()) {
+                        Logger.info("Adding new contribution to WG campaing too");
+                        rspaces.getContributions().add(c);
+                        c.getContainingSpaces().add(rspaces);
+                        rspaces.update();
+                    }
                 }
+
                 Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
 
