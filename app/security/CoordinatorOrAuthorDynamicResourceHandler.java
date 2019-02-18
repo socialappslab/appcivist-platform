@@ -65,14 +65,33 @@ public class CoordinatorOrAuthorDynamicResourceHandler extends AbstractDynamicRe
 
 	public static Contribution getContributionFromPath(String path, String meta) {
 		UUID contributionUuid = MyDynamicResourceHandler.getUUIDFromPath(path, meta);
+		Boolean metaIsResourceSpace = false;
+		if (meta.equals("space/")) {
+			metaIsResourceSpace = true;
+		}
+
 		Contribution contribution;
 		if (contributionUuid != null) {
 			Logger.debug("--> contributionUuid = " + contributionUuid);
-			contribution = Contribution.readByUUID(contributionUuid);
+			if (metaIsResourceSpace) {
+				Logger.info("Authentication of authorship is on the resource space of the contribution. Getting contribution from resource space id...");
+				ResourceSpace rs = ResourceSpace.readByUUID(contributionUuid);
+				contribution = rs.getContribution();
+			} else {
+                Logger.info("Authentication of authorship is on the contribution. Getting contribution by id...");
+                contribution = Contribution.readByUUID(contributionUuid);
+			}
 		} else {
 			Long contributionId = MyDynamicResourceHandler.getIdFromPath(path, meta);
 			Logger.debug("--> contributionId = " + contributionId);
-			contribution = Contribution.read(contributionId);
+			if (metaIsResourceSpace) {
+				Logger.info("Authentication of authorsip is on the resource space of the contribution. Getting contribution from resource space id...");
+				ResourceSpace rs = ResourceSpace.read(contributionId);
+				contribution = rs.getContribution();
+			} else {
+                Logger.info("Authentication of authorship is on the contribution. Getting contribution by id...");
+				contribution = Contribution.read(contributionId);
+			}
 		}
 		return contribution;
 	}

@@ -1,3 +1,5 @@
+# --- !Ups
+
 CREATE TABLE contribution_status_audit
 (
   id bigserial NOT NULL,
@@ -12,3 +14,5 @@ CREATE TABLE contribution_status_audit
   CONSTRAINT ck_contribution_status_audit_status CHECK (status::text = ANY (ARRAY['NEW'::character varying, 'PUBLISHED'::character varying,
   'ARCHIVED'::character varying, 'EXCLUDED'::character varying, 'DRAFT'::character varying, 'INBALLOT'::character varying]::text[]))
 );
+
+# --- !Downs

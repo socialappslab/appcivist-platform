@@ -155,21 +155,28 @@ public class ContributionsDelegate {
 
         String sorting = " order by pinned desc nulls last";
         Boolean intervalStatus = false;
+        Boolean userTableAlreadyIncluded = false;
+        Boolean spaceThemeAlreadyIncluded = false;
+        Boolean spaceGroupAlreadyIncluded = false;
         if(conditions != null){
             for(String key : conditions.keySet()){
                 Object value = conditions.get(key);
                 switch (key){
                     case "group":
-                        rawQueryFrom += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
-                                "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
-                                "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
+                        if (!spaceGroupAlreadyIncluded) {
+                            spaceGroupAlreadyIncluded = true;
+                            rawQueryFrom += "join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
+                                    "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
+                                    "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
+                        }
                         break;
                     case "containingSpaces":
                         rawQueryFrom += "join resource_space_contributions rsc on rsc.contribution_contribution_id = t0.contribution_id \n " +
                                 "join resource_space rs on rs.resource_space_id = rsc.resource_space_resource_space_id\n ";
                         break;
                     case "by_author":
-                        if(!creatorOnly) {
+                        if(!creatorOnly && !userTableAlreadyIncluded) {
+                            userTableAlreadyIncluded = true;
                             rawQueryFrom += "join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
                         }
                         break;
@@ -177,7 +184,10 @@ public class ContributionsDelegate {
                         rawQueryFrom += "join location l on l.location_id = t0.location_location_id \n ";
                     	break;                        
                     case "theme":
-                        rawQueryFrom += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
+                        if (!spaceThemeAlreadyIncluded) {
+                            spaceThemeAlreadyIncluded = true;
+                            rawQueryFrom += "join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
+                        }
                         break;
                     case "sorting":
                         String sortingValue = (String) value;
@@ -219,7 +229,26 @@ public class ContributionsDelegate {
                             intervalStatus = true;
                         }
                         break;
-                        
+                    case "by_text":
+                        if (!userTableAlreadyIncluded) {
+                            userTableAlreadyIncluded = true;
+                            rawQueryFrom += "left join contribution_appcivist_user auth on auth.contribution_contribution_id = t0.contribution_id \n ";
+                        }
+                        rawQueryFrom += "left join appcivist_user aus on aus.user_id = auth.appcivist_user_user_id \n ";
+
+                        if (!spaceThemeAlreadyIncluded) {
+                            spaceThemeAlreadyIncluded = true;
+                            rawQueryFrom += "left join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
+                        }
+                        rawQueryFrom += "left join theme the on the.theme_id = rst.theme_theme_id \n ";
+
+                        if (!spaceGroupAlreadyIncluded) {
+                            spaceGroupAlreadyIncluded = true;
+                            rawQueryFrom += "left join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
+                                    "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
+                                    "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
+                        }
+                        break;
                 }
             }
             if(!sorting.equals("random")) {
@@ -234,7 +263,7 @@ public class ContributionsDelegate {
             String rawQuery = rawQueryColumns + rawQueryFrom;
 
             RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
-            where = finder.setRawSql(rawSql).where();
+            where = finder.setRawSql(rawSql).setDistinct(true).where();
             for(String key : conditions.keySet()){
                 Object value = conditions.get(key);
                 //We look at the keys, some of them have special treatment
@@ -263,8 +292,20 @@ public class ContributionsDelegate {
                         }
                         break;
                     case "by_text":
-                        Expression expression = Expr.or(Expr.ilike("t0.title", "%" + ((String)value).toLowerCase() + "%"),
-                                Expr.ilike("t0.text", "%" + ((String)value).toLowerCase() + "%"));
+                        Expression expression =
+                                Expr.or(
+                                        Expr.ilike("t0.title", "%" + ((String)value).toLowerCase() + "%"),
+                                        Expr.or(
+                                                Expr.ilike("t0.text", "%" + ((String)value).toLowerCase() + "%"),
+                                                Expr.or(
+                                                        Expr.ilike("aus.name", "%" + ((String)value).toLowerCase() + "%"),
+                                                        Expr.or(
+                                                                Expr.ilike("the.title", "%" + ((String)value).toLowerCase() + "%"),
+                                                                Expr.ilike("wg.name", "%" + ((String)value).toLowerCase() + "%"))
+                                        )
+                                ));
+                        // ToDo 1: extend ts_vector to include themes, keywords, wg names and authors
+                        // ToDo 2: re-implement search by text to use the pg full text search using ts_vector document in the contribution table.
                         where.add(expression);
                         break;
                     case "by_location":                    	
@@ -334,8 +375,9 @@ public class ContributionsDelegate {
                 }
             }            
         }
-        where.add(Expr.not(Expr.eq("removed",true)));        
+        where.add(Expr.not(Expr.eq("removed",true)));
         List<Contribution> contributions;
+
         if(page != null && pageSize != null){
             if(sorting.equals("random")) {
                 contributions = where.setMaxRows(pageSize).findList();

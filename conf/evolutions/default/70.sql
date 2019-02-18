@@ -18,3 +18,5 @@ FOR hword, hword_part, word WITH unaccent, portuguese_stem;
 CREATE TEXT SEARCH CONFIGURATION "de" ( COPY = german );
 ALTER TEXT SEARCH CONFIGURATION "de" ALTER MAPPING
 FOR hword, hword_part, word WITH unaccent, german_stem;
+
+# --- !Downs

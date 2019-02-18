@@ -238,7 +238,9 @@ public class Spaces extends Controller {
     @ApiOperation(httpMethod = "GET", response = ObjectNode.class, produces = "application/json", responseContainer = "List", value = "Basic analytics of entities in a resource space")
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No resource space found", response = TransferResponseStatus.class) })
     public static Result getAnalytics(@ApiParam(name = "uuid", value = "Space UUID") UUID uuid,
-            @ApiParam(name = "includeThemes", value = "Include analytics of contributions per theme", allowableValues = "false,true", defaultValue = "false") String includeThemes) {
+            @ApiParam(name = "includeThemes", value = "Include analytics of contributions per theme", allowableValues = "false,true", defaultValue = "false") String includeThemes,
+                                      @ApiParam(name = "includeThemes", value = "Include analytics of contributions created by or shared with author", allowableValues = "false,true", defaultValue = "false") String includeUserInsights,
+                                      @ApiParam(name = "includeThemes", value = "User ID") Long userId) {
         ResourceSpace resourceSpace = ResourceSpace.readByUUID(uuid);
         // 1. Number of Contributions per Type
         // 1.1. Number of Ideas
@@ -247,7 +249,7 @@ public class Spaces extends Controller {
         // 1.4. Number of Discussions
         // 1.5. Number of Comments
         // 1.6. Number of Comments counting Discussions as comments
-        Map<String, Map<String, Map<String, Integer>>> contributionCountMap = resourceSpace.contributionCountPerType(includeThemes);
+        Map<String, Map<String, Map<String, Integer>>> contributionCountMap = resourceSpace.contributionCountPerType(includeThemes, includeUserInsights, userId);
         // 2. Number of Working Groups
         Integer wgCount = resourceSpace.getWorkingGroups().size();
         // 3. Number of Campaigns (ongoing, past, upcoming)
@@ -2388,7 +2390,7 @@ public class Spaces extends Controller {
     @ApiResponses(value = { @ApiResponse(code = 404, message = "No Resource found", response = TransferResponseStatus.class) })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header") })
-    @Dynamic(value = "CoordinatorOfSpace", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
+    @Dynamic(value = "AuthorOrCoordinator", meta = SecurityModelConstants.SPACE_RESOURCE_PATH)
     public static Result deleteSpaceResource(@ApiParam(name = "sid", value = "Space ID") Long sid,
                                           @ApiParam(name = "rid", value = "Resource ID") Long rid) {
         ResourceSpace resourceSpace = ResourceSpace.findByResource(sid, rid);

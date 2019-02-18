@@ -702,9 +702,10 @@ public class Memberships extends Controller {
                     SecurityRole newRole = newRoleForm.get();
                     Long roleId = newRole.getRoleId();
                     String roleName = newRole.getName();
-
-                    SecurityRole role = SecurityRole.read(roleId);
-                    if (role == null) {
+                    SecurityRole role = null;
+                    if (roleId != null && roleId > 0) {
+                        role = SecurityRole.read(roleId);
+                    } else {
                         role = SecurityRole.findByName(roleName);
                     }
 

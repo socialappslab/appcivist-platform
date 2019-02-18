@@ -24,4 +24,4 @@ ALTER table contribution_feedback
 ALTER TABLE contribution_feedback 
     RENAME COLUMN status_tmp to status;
       
-# --- Downs
+# --- !Downs

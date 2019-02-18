@@ -970,7 +970,10 @@ public class WorkingGroups extends Controller {
                 User user = User.findByAuthUserIdentity(PlayAuthenticate
                         .getUser(session()));
                 PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
-                peerDocWrapper.publish(proposal.getExtendedTextPad());
+                if(!peerDocWrapper.publish(proposal.getExtendedTextPad())) {
+                    return internalServerError(Json.toJson(Json
+                            .toJson(new TransferResponseStatus("Error publishing proposal in peerdoc"))));
+                }
                 newRevision = 1;
             } else {
                 try {

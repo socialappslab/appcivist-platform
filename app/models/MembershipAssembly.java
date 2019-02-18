@@ -87,7 +87,9 @@ public class MembershipAssembly extends Membership {
 	}
 
 	public static boolean hasRole(User user, Assembly target, MyRoles role) {
-		Logger.debug("Checking if user " + user.getName() + " is "+ role.getName() +" in assembly "+ target.getAssemblyId());
+		Logger.debug("Checking if user " + user.getName() + " is "+ role !=null ? role.getName() : role +" in assembly "+ target.getAssemblyId());
+		if (role==null)
+			return false;
 		List<Membership> memberships =  find.where().eq("user", user).eq("assembly", target)
 				.findList();
 		for(Membership membership: memberships) {

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.Contributions;
 import delegates.NotificationsDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.MembershipCreationException;
 import io.swagger.annotations.ApiModel;
@@ -357,6 +358,14 @@ public class Contribution extends AppCivistBaseModel {
      **/
     @Transient
     private List<WorkingGroup> workingGroups;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer forks;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer acceptedForks;
 
     public Contribution(User creator, String title, String text,
                         ContributionTypes type) {
@@ -973,6 +982,11 @@ public class Contribution extends AppCivistBaseModel {
         return contribs;
     }
 
+    /**
+     * Create in ResourceSpace
+     * @param c
+     * @param rs
+     */
     public static void create(Contribution c, ResourceSpace rs) {
 
         // 1. Check first for existing entities in ManyToMany relationships.
@@ -1032,13 +1046,9 @@ public class Contribution extends AppCivistBaseModel {
         cResSpace.getThemes().clear();
         cResSpace.getThemes().addAll(themesA);
         cResSpace.update();
-        // 5. Add contribution to working group authors
-        for (WorkingGroup workingGroup : workingGroupAuthors) {
-            workingGroup.getResources().addContribution(c);
-            c.containingSpaces.add(workingGroup.getResources());
-            workingGroup.getResources().update();
-        }
 
+        // 5. Add contribution to working group authors
+        WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, true);
         c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
     }
@@ -1726,7 +1736,7 @@ public class Contribution extends AppCivistBaseModel {
                 if(c.getType().equals(ContributionTypes.IDEA) && rs.getCampaign().getLocation()!=null) {
                     Logger.debug("Using campaign geoJson");
                     c.getLocation().setGeoJson(rs.getCampaign().getLocation().getGeoJson());
-                } else if(c.getType().equals(ContributionTypes.PROPOSAL)) {
+                } else if(c.getType().equals(ContributionTypes.PROPOSAL) && rs.getWorkingGroupResources() != null) {
                     List<Location> locations = rs.getWorkingGroupResources().getLocations();
                     if(!locations.isEmpty() && locations.get(0).getGeoJson() != null) {
                         Logger.debug("Using WG geoJson");
@@ -1772,13 +1782,31 @@ public class Contribution extends AppCivistBaseModel {
                                 Expr.eq("status", ContributionStatus.FORKED_PUBLISHED.name())).findList();
             case "MERGES":
                 return find.where().eq("parent.contributionId", contribution.getContributionId())
-                        .eq("status", ContributionStatus.MERGED_PUBLIC_DRAFT.name()).findList();
+                        .eq("status", ContributionStatus.MERGED.name()).findList();
             case "PARENT":
                 return Collections.singletonList(contribution.getParent());
             default:
                 return null;
         }
 
+    }
+
+    public static Set<User> findMergeAuthors(UUID cuuid) {
+
+        Contribution contribution = Contribution.getByUUID(cuuid);
+        if(contribution == null) {
+            return null;
+        }
+
+        List<User> authors = new ArrayList<>();
+        List<Contribution> contributions =  find.where().eq("parent.contributionId", contribution.getContributionId())
+                        .ilike("status", "%MERGE%").findList();
+        for(Contribution contribution1: contributions) {
+            if(!authors.contains(contribution1.getCreator())) {
+                authors.add(contribution1.getCreator());
+            }
+        }
+        return new HashSet<>(authors);
     }
 
     public static Contribution fork (Contribution parent, User author) throws NoSuchPaddingException,
@@ -1822,7 +1850,7 @@ public class Contribution extends AppCivistBaseModel {
 
             Logger.debug("Creating resource ");
             String path =         peerdocResponse.get("path").toString().replace("\"","");
-            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() + path));
+            Resource r = new Resource(new URL(peerDocWrapper.getPeerDocServerUrl() +  path));
             Logger.debug("PEERDOC URL FORK " + r.getUrlAsString());
             r.setPadId(padId);
             r.setResourceType(ResourceTypes.PEERDOC);
@@ -1844,22 +1872,29 @@ public class Contribution extends AppCivistBaseModel {
             newContribution.getHashtags().addAll(parent.getHashtags());
             newContribution.setCustomFieldValues(new ArrayList<>());
             newContribution.getCustomFieldValues().addAll(parent.getCustomFieldValues());
-            newContribution.setContainingSpaces(new ArrayList<>());
-            newContribution.getContainingSpaces().addAll(parent.getContainingSpaces());
-
-            parent.getResourceSpace().getContributions().add(newContribution);
-
-
             newContribution.update();
-            parent.update();
+
+            List<ResourceSpace> parentResources = parent.getContainingSpaces();
+            int numberRS = parentResources != null ? parentResources.size() : 0;
+            Logger.debug("Parend of fork in " + numberRS + " Resource Spaces");
+            for(ResourceSpace rs: parentResources) {
+                if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)
+                        || rs.getType().equals(ResourceSpaceTypes.CAMPAIGN)) {
+                    Logger.debug("Adding fork to the Resource Space "+rs.getResourceSpaceId()+" of type "+rs.getType());
+                    rs.addContribution(newContribution);
+                    newContribution.getContainingSpaces().add(rs);
+                    rs.update();
+                }
+            }
+            parent.refresh();
+            newContribution.refresh();
             Logger.debug("Contribution resource spaces saved ");
             if(parent.getWorkingGroupAuthors() != null && parent.getWorkingGroupAuthors().size() > 0) {
                 Logger.debug("Adding author to working group");
                 addContributionAuthorsToWG(newContribution, parent.getWorkingGroupAuthors().get(0).getResources());
             }
 
-            newContribution.refresh();
-            parent.refresh();
+
             Ebean.commitTransaction();
             F.Promise.promise(() -> {
                 Logger.debug("Sending notification");
@@ -1894,11 +1929,9 @@ public class Contribution extends AppCivistBaseModel {
             Logger.debug("Non successful response from peerdoc, not merging");
             return null;
         }
-        if(children.getStatus().equals(ContributionStatus.FORKED_PUBLISHED)) {
-            children.setStatus(ContributionStatus.MERGED_PUBLIC_DRAFT);
-        } else {
-            children.setStatus(ContributionStatus.MERGED_PRIVATE_DRAFT);
-        }
+
+        children.setStatus(ContributionStatus.MERGED);
+
         children.update();
         children.refresh();
         F.Promise.promise(() -> {
@@ -1951,5 +1984,24 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setParent(Contribution parent) {
         this.parent = parent;
+    }
+
+    public Integer getForks() {
+        List<Contribution> contributions = Contribution.findChildrenOrParents(this.uuid, "FORKS");
+        return contributions != null ? contributions.size() : 0;
+
+    }
+
+    public void setForks(Integer forks) {
+        this.forks = forks;
+    }
+
+    public Integer getAcceptedForks() {
+        List<Contribution> contributions = Contribution.findChildrenOrParents(this.uuid, "MERGES");
+        return contributions != null ? contributions.size() : 0;
+    }
+
+    public void setAcceptedForks(Integer acceptedForks) {
+        this.acceptedForks = acceptedForks;
     }
 }
