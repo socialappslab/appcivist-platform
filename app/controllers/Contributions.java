@@ -25,6 +25,7 @@ import com.lowagie.text.rtf.headerfooter.RtfHeaderFooter;
 import delegates.ContributionsDelegate;
 import delegates.NotificationsDelegate;
 import delegates.ResourcesDelegate;
+import delegates.WorkingGroupsDelegate;
 import enums.*;
 import exceptions.ConfigurationException;
 import exceptions.MembershipCreationException;
@@ -81,7 +82,6 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -159,6 +159,18 @@ public class Contributions extends Controller {
         return contributions != null ? ok(Json.toJson(contributions))
                 : notFound(Json.toJson(new TransferResponseStatus(
                 "No contributions for contribution: " + uuid)));
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = Contribution.class, responseContainer = "List",
+            produces = "application/json", value = "Get contributions childrens or parent by type")
+    @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
+    public static Result getContributionMergeAuthors(
+            @ApiParam(name = "uuid", value = "Contribution UUID") UUID uuid) {
+
+        Set<User> contributions = Contribution.findMergeAuthors(uuid);
+        return contributions == null || contributions.isEmpty() ? notFound(Json.toJson(new TransferResponseStatus(
+                "No authors for contribution: " + uuid))) : ok(Json.toJson(contributions));
     }
 
         /**
@@ -814,6 +826,10 @@ public class Contributions extends Controller {
 
                 contributionFeedback.setUser(info);
             }
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and campaign " + cid);
+                feedbacks = new ArrayList<>();
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -846,6 +862,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "fid", value = "Feedback ID") Long fid) {
         try {
             ContributionFeedback feedback = ContributionFeedback.read(fid);
+            if (feedback==null) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and campaign " + cid);
+                feedback = new ContributionFeedback();
+            }
             return ok(Json.toJson(feedback));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -877,6 +897,10 @@ public class Contributions extends Controller {
             @ApiParam(name = "type", value = "Type") String type) {
         try {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionTypeAndWGroup(coid, gid, type);
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid + " and group " + gid);
+                feedbacks = new ArrayList<>();
+            }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
@@ -910,14 +934,17 @@ public class Contributions extends Controller {
             User author = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
             Membership m = MembershipAssembly.findByUserAndAssemblyIds(author.getUserId(), aid);
-            if (m!=null){
-                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
-                return ok(Json.toJson(feedbacks));
-            }else{
-                List<ContributionFeedback> feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
-                return ok(Json.toJson(feedbacks));
+            List<ContributionFeedback> feedbacks = new ArrayList<>();
+            if (m!=null) {
+                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
+            } else {
+                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
             }
-
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid);
+                feedbacks = new ArrayList<>();
+            }
+            return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
             Logger.error("Error retrieving feedbacks", e);
             return internalServerError(Json
@@ -951,6 +978,10 @@ public class Contributions extends Controller {
                     info.put("profilePic", user.getProfilePic().getUrlAsString());
                 contributionFeedback.setUserId(null);
                 contributionFeedback.setUser(info);
+            }
+            if (feedbacks==null || feedbacks.size() == 0) {
+                Logger.debug("There are no feedbacks for contribution " + couuid);
+                feedbacks = new ArrayList<>();
             }
             return ok(Json.toJson(feedbacks));
         } catch (Exception e) {
@@ -1521,29 +1552,21 @@ public class Contributions extends Controller {
 
             Contribution newContribution = newContributionForm.get();
             ContributionTypes type = newContribution.getType();
+
+            // If TYPE is not declared, default is COMMENT
             if (type == null) {
                 type = ContributionTypes.COMMENT;
             }
 
             ResourceSpace rs = ResourceSpace.read(sid);
+            Result unauth = checkRsDraftState(rs, newContribution.getType());
+            if (unauth!=null) return unauth;
 
-            if (newContribution.getType().equals(ContributionTypes.COMMENT)
-                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
-                boolean unauth = checkRsDraftState(rs);
-                if (unauth) {
-                    TransferResponseStatus responseBody = new TransferResponseStatus();
-                    responseBody.setStatusMessage(Messages.get(
-                            "contribution.unauthorized.creation",
-                            rs.getType()));
-                    return unauthorized(Json.toJson(responseBody));
-                }
-            }
-
-            //Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
+            // Check headers if the request comes from SocialIdeation. Only Contributions of type IDEA, PROPOSAL, DISCUSSION and COMMENT will be created from SI
             if (newContribution.getType().equals(ContributionTypes.IDEA)
-			|| newContribution.getType().equals(ContributionTypes.PROPOSAL)
-			|| newContribution.getType().equals(ContributionTypes.DISCUSSION)
-			|| newContribution.getType().equals(ContributionTypes.COMMENT)) {
+                    || newContribution.getType().equals(ContributionTypes.PROPOSAL)
+                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)
+                    || newContribution.getType().equals(ContributionTypes.COMMENT)) {
             	Integer result = ContributionsDelegate.checkSocialIdeationHeaders();
             	if (result == -1){
                     Logger.info("Missing Social Ideation Headers");
@@ -1552,24 +1575,19 @@ public class Contributions extends Controller {
                     HashMap<String,String> headerMap = ContributionsDelegate.getSocialIdeationHeaders();
                     newContribution.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
                     newContribution.setSourceUrl(headerMap.get("SOCIAL_IDEATION_SOURCE_URL"));
-                    // social_ideation_author = User.findByProviderAndKey(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_ID"));
                     social_ideation_author = User.findByEmail(headerMap.get("SOCIAL_IDEATION_USER_EMAIL"));
                     if (social_ideation_author == null){
                         non_member_author = NonMemberAuthor.findBySourceAndUrl(headerMap.get("SOCIAL_IDEATION_SOURCE"), headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
                         if (non_member_author == null){
-                            non_member_author = new NonMemberAuthor();
-                            non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
-                            non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
-                            non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+                            non_member_author = createSocialIdeationNonMemberAuthor(headerMap);
                         }
                         newContribution.setNonMemberAuthor(non_member_author);
                     }
                 }
             }
 
-
+            // Check if there is a ContributionTemplate configured in the current component of the campaign.
             ContributionTemplate template = null;
-
             if (rs != null && newContribution.getType().equals(ContributionTypes.PROPOSAL)) {
                 // TODO: make the template stored in the campaign rather than the proposal making component
                 List<Component> components = rs.getComponents();
@@ -1586,6 +1604,7 @@ public class Contributions extends Controller {
                     }
                 }
             }
+
             newContribution.setContextUserId(author.getUserId());
             if (social_ideation_author != null){
                 newContribution.setContextUserId(social_ideation_author.getUserId());
@@ -1593,7 +1612,10 @@ public class Contributions extends Controller {
             Contribution c;
 
             Ebean.beginTransaction();
+
+            // Create contribution and associated resources
             try {
+                // create contribution
                 if(social_ideation_author != null){
                     c = createContribution(newContribution, social_ideation_author, type, template, rs);
                 } else if (non_member_author != null) {
@@ -1602,35 +1624,35 @@ public class Contributions extends Controller {
                     c = createContribution(newContribution, author, type, template, rs);
                 }
 
+                // created associated peerdoc if config force collaborative editor is configured
                 if (c.getType().equals(ContributionTypes.PROPOSAL)) {
                     Config conf = rs.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_FORCE_COLLABORATIVE_EDITOR);
-                    if(conf != null && conf.getValue().equals(ResourceTypes.PEERDOC.name())) {
-                        PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
-                        Logger.info("Creating PEERDOC for contribution "+c.getContributionId());
-                        peerDocWrapper.createPad(c, rs.getResourceSpaceUuid());
+                    String confValue = conf != null ? conf.getValue().toLowerCase() : null;
+                    if (confValue!=null) {
+                        if(confValue.equals(ResourceTypes.PEERDOC.name().toLowerCase())) {
+                            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(author);
+                            Logger.info("Creating PEERDOC for contribution "+c.getContributionId());
+                            peerDocWrapper.createPad(c, rs.getResourceSpaceUuid());
+                        } else if (confValue.equals(ResourceTypes.PAD.name().toLowerCase()) || confValue.equals("etherpad")) {
+                            // TODO: automatically create the etherpad PAD
+                        }
                     }
                 }
                 c.refresh();
-                if (c != null) {
-                    Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
 
-                    if(rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
-                        List<Long> campaigns = rs.getWorkingGroupResources().getCampaigns();
-                        if(campaigns != null) {
-                            for(Long id : campaigns) {
-                                Campaign campaign = Campaign.find.byId(id);
-                                campaign.getContributions().add(c);
-                                campaign.update();
-                            }
-                        }
-                    } else {
-                        c.getContainingSpaces().add(rs);
-                        c.update();
-                        rs.getContributions().add(c);
-                        rs.update();
+                Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
+                c.getContainingSpaces().add(rs);
+                rs.getContributions().add(c);
+                rs.update();
+                if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    for(ResourceSpace rspaces: rs.getWorkingGroupResources().getCampaignsResourceSpaces()) {
+                        Logger.info("Adding new contribution to WG campaing too");
+                        rspaces.getContributions().add(c);
+                        c.getContainingSpaces().add(rspaces);
+                        rspaces.update();
                     }
-
                 }
+
                 Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
 
@@ -1653,18 +1675,7 @@ public class Contributions extends Controller {
             // Signal a notification asynchronously
             Logger.info("Notification will be sent if it is IDEA or PROPOSAL: " + c.getType());
             Promise.promise(() -> {
-                if (c.getType().equals(ContributionTypes.IDEA) ||
-                        c.getType().equals(ContributionTypes.PROPOSAL)) {
-                    try {
-                        NotificationsDelegate.createNotificationEventsByType(
-                                ResourceSpaceTypes.CONTRIBUTION.toString(), c.getUuid());
-                    } catch (ConfigurationException e) {
-                        Logger.error("Configuration error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                    } catch (Exception e) {
-                        Logger.error("Error when creating events for contribution: " + LogActions.exceptionStackTraceToString(e));
-                    }
-                }
-                return Optional.ofNullable(null);
+                return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
             return ok(Json.toJson(c));
         }
@@ -2400,8 +2411,7 @@ public class Contributions extends Controller {
 
 	            if(newContribution.getStatus().equals(ContributionStatus.PUBLISHED) ||
                         newContribution.getStatus().equals(ContributionStatus.FORKED_PUBLISHED) ||
-                        newContribution.getStatus().equals(ContributionStatus.MERGED_PRIVATE_DRAFT) ||
-                        newContribution.getStatus().equals(ContributionStatus.MERGED_PUBLIC_DRAFT)) {
+                        newContribution.getStatus().equals(ContributionStatus.MERGED)) {
                     final boolean[] allowed = {false};
                     checkIfCoordinator(newContribution, allowed, author);
                     if(!allowed[0]) {
@@ -2525,9 +2535,23 @@ public class Contributions extends Controller {
         ResourceSpace rsNew = ResourceSpace.read(contribution.getResourceSpaceId());
         ResourceSpace rs = ResourceSpace.read(sid);
         ResourceSpace rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        List<Contribution> forks = Contribution.findChildrenOrParents(contribution.getUuid(), "FORKS");
+        List<Contribution> merges = Contribution.findChildrenOrParents(contribution.getUuid(), "MERGES");
+        List<Contribution>  contributions = new ArrayList<>();
+        if(forks != null) {
+            contributions.addAll(forks);
+        }
+        if(merges!= null) {
+            contributions.addAll(merges);
+        }
+        for(Contribution contribution1: contributions) {
+            rsNew = ResourceSpace.read(contribution1.getResourceSpaceId());
+            rCombined = ResourceSpace.setResourceSpaceItems(rs,rsNew);
+        }
 
         try {
             rCombined.update();
+            Contribution.addContributionAuthorsToWG(contribution, rsNew);
             ContributionHistory.createHistoricFromContribution(contribution);
         } catch (Exception e) {
             return internalServerError(Json
@@ -3167,12 +3191,14 @@ public class Contributions extends Controller {
                 if (aRet == null) {
                     Assembly assembly = Assembly.findById(contribution.getAssemblyId());
                     aRet = assembly.getLang() == null ? null : Lang.forCode(assembly.getLang());
+                    Logger.info("Changed MailLang to use Assembly Lang: "+aRet);
+                } else {
+                    Logger.info("Changed MailLang to use Campaign Lang: "+aRet);
                 }
             } else {
                 aRet = Lang.forCode(initiativeLang);
             }
         }
-
         return aRet;
     }
 
@@ -3219,7 +3245,7 @@ public class Contributions extends Controller {
                                         containerContribution!=null ? containerContribution.getLang() : null;
         String url = getContributionMailUrl(contribution, containerAssembly, containerCampaign, containerGroup);
 
-
+        Logger.info("MailLang to use initially: "+initiativeLang);
         Logger.debug("Email to send with the following params: "
                 + "cType = " + cType
                 + ", initiativeName=" + initiativeName
@@ -3250,6 +3276,7 @@ public class Contributions extends Controller {
         Lang lang = getMailLang(authorLang, contribution, initiativeLang);
         if (lang == null) {
             lang = Lang.forCode(Messages.get(GlobalData.DEFAULT_LANGUAGE));
+            Logger.info("Changed MailLang to use Default: "+lang);
         }
         String bodyText;
         String subject;
@@ -3289,11 +3316,9 @@ public class Contributions extends Controller {
             throws MalformedURLException, MembershipCreationException, UnsupportedEncodingException, ConfigurationException {
 
         newContrib.setType(type);
-        List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
         List<NonMemberAuthor> nonMemberAuthors = new ArrayList<NonMemberAuthor>();
         // Create NonMemberAuthors associated with the Contribution
         if(newContrib.getNonMemberAuthors()!=null && newContrib.getNonMemberAuthors().size()>0){
-
             for (NonMemberAuthor nonMemberAuthor:newContrib.getNonMemberAuthors()) {
                 nonMemberAuthor.save();
                 nonMemberAuthor.refresh();
@@ -3383,10 +3408,11 @@ public class Contributions extends Controller {
         Boolean autoCreateWG = autoCreateWGConfig != null ? autoCreateWGConfig.getValue().toLowerCase() == "true" : false;
         Boolean createWG = false;
         List<WorkingGroup> workingGroupAuthors = newContrib.getWorkingGroupAuthors();
+        List<WorkingGroup> workingGroupAuthorsLoaded = new ArrayList<WorkingGroup>();
         String newWorkingGroupName = "WG for '" + newContrib.getTitle() + "'";
         if (workingGroupAuthors != null && !workingGroupAuthors.isEmpty()) {
             WorkingGroup wg = workingGroupAuthors.get(0);
-            if (wg.getGroupId() == null) {
+            if (wg.getGroupId() == null && wg.getUuid() == null) {
                 // if proposal contains the definition of a new WG, set workingGroupAuthors to null and create the group
                 newWorkingGroupName = wg.getName();
                 workingGroupAuthors = null;
@@ -3395,8 +3421,11 @@ public class Contributions extends Controller {
             } else {
                 // if the proposal contains one or more WGs as authoring groups
                 for (WorkingGroup wgroup: newContrib.getWorkingGroupAuthors()) {
-                    WorkingGroup contact = WorkingGroup.read(wgroup.getGroupId());
-                    workingGroupAuthorsLoaded.add(contact);
+                    WorkingGroup dbGroup = WorkingGroup.read(wgroup.getGroupId());
+                    if (dbGroup == null) {
+                        dbGroup = WorkingGroup.readByUUID(wgroup.getUuid());
+                    }
+                    workingGroupAuthorsLoaded.add(dbGroup);
                 }
                 newContrib.setWorkingGroupAuthors(workingGroupAuthorsLoaded);
             }
@@ -3568,6 +3597,21 @@ public class Contributions extends Controller {
         }
 
         Contribution.create(newContrib, containerResourceSpace);
+
+        // Check that contribution was correctly added to WGs
+        if (workingGroupAuthors!=null && !workingGroupAuthors.isEmpty()) {
+            Integer numberOfWGs = workingGroupAuthors.size();
+            List<WorkingGroup> refreshedGroups = newContrib.getWorkingGroupAuthors();
+            Integer numberOfRefreshedWgs = refreshedGroups !=null ? refreshedGroups.size() : 0;
+
+            if (numberOfRefreshedWgs<numberOfWGs) {
+                Logger.debug("Orphan detected. Request WGs = "+numberOfWGs+ ". Created contribution WGs = "+numberOfRefreshedWgs);
+                Logger.debug("Adding again to WGs, checking if already exists first");
+                // Add contribution to working group authors only if it is not there
+                WorkingGroupsDelegate.addContributionToWorkingGroups(newContrib, workingGroupAuthors, true);
+            }
+        }
+
         newContrib.refresh();
         Logger.info("Contribution created with id = "+newContrib.getContributionId());
         F.Promise.promise(() -> {
@@ -4405,7 +4449,7 @@ public class Contributions extends Controller {
                                 index++;
 
                                 HashMap<String,Object> mapOfAuthors = processAuthorsInImport(author, phone, email, c);
-                                if (authors!=null) {
+                                if (authors!=null && mapOfAuthors != null) {
                                     User userAuthor = (User) mapOfAuthors.get("user");
                                     if (userAuthor==null) {
                                         NonMemberAuthor nonMemberAuthor = (NonMemberAuthor) mapOfAuthors.get("nonUser");
@@ -4430,10 +4474,12 @@ public class Contributions extends Controller {
                         } else {
                             Logger.info("Adding contribution to campaign...");
                             resourceSpace = ResourceSpace.read(campaign.getResourceSpaceId());
+                            resourceSpace.getContributions().add(c);
                         }
                         c.getContainingSpaces().add(resourceSpace);
                         Contribution.create(c, resourceSpace);
                         c.refresh();
+                        resourceSpace.update();
                         Boolean updateContribution = false;
                         if (existingNonMemberAuthors!=null && existingNonMemberAuthors.size()>0) {
                             c.getNonMemberAuthors().addAll(existingNonMemberAuthors);
@@ -4601,7 +4647,12 @@ public class Contributions extends Controller {
         Logger.debug("Updating contribution status. User = "+(user != null ? user.getUserId() : "[no user found]"));
         PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
         try {
-            peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            Boolean change = peerDocWrapper.changeStatus(c, ContributionStatus.valueOf(status));
+            if(change != null && !change) {
+                return internalServerError(Json.toJson(new TransferResponseStatus(
+                        ResponseStatus.SERVERERROR,
+                        "Error publishing peerdoc")));
+            }
         } catch (Exception e) {
             TransferResponseStatus response = new TransferResponseStatus();
             response.setResponseStatus(ResponseStatus.SERVERERROR);
@@ -4710,27 +4761,15 @@ public class Contributions extends Controller {
             }
 
             ResourceSpace resourceSpace = ResourceSpace.readByUUID(UUID.fromString(uuid));
-
-            if (newContribution.getType().equals(ContributionTypes.COMMENT)
-                    || newContribution.getType().equals(ContributionTypes.DISCUSSION)) {
-                boolean unauth = checkRsDraftState(resourceSpace);
-                if (unauth) {
-                    TransferResponseStatus responseBody = new TransferResponseStatus();
-                    responseBody.setStatusMessage(Messages.get(
-                            "contribution.unauthorized.creation",
-                            resourceSpace.getType()));
-                    return unauthorized(Json.toJson(responseBody));
-                }
-            }
+            Result unauth = checkRsDraftState(resourceSpace, newContribution.getType());
+            if (unauth!=null) return unauth;
 
             ContributionTemplate template = null;
             Contribution c;
             try {
                 c = createContribution(newContribution, null, type, template, resourceSpace);
-
                 resourceSpace.addContribution(c);
                 resourceSpace.update();
-
                 Promise.promise(() -> {
                     return NotificationsDelegate.newContributionInResourceSpace(resourceSpace,c);
                 });
@@ -5548,6 +5587,8 @@ public class Contributions extends Controller {
         contributionMap.put("UUID", contribution.getUuidAsString());
         contributionMap.put("Title",contribution.getTitle());
         contributionMap.put("Brief Summary", contribution.getPlainText());
+        contributionMap.put("Budget", contribution.getBudget());
+        contributionMap.put("Location", contribution.getLocation()!=null ? contribution.getLocation().getPlaceName() : "");
         contributionMap.put("Type", contribution.getType()!=null ? contribution.getType().name() : "NO_TYPE");
         contributionMap.put("Status",contribution.getStatus() !=null ? contribution.getStatus().name() : "NO_STATUS");
         contributionMap.put("Source", contribution.getSource());
@@ -5783,25 +5824,45 @@ public class Contributions extends Controller {
         }
     }
 
-    private static boolean checkRsDraftState(ResourceSpace rs) {
-        boolean unauth = false;
-        if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY) &&
-                rs.getAssemblyResources().getStatus().equals(AssemblyStatus.DRAFT)) {
-            unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN) &&
-                rs.getCampaign().getStatus().equals(CampaignStatus.DRAFT)) {
-            unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
-                rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
-            unauth = true;
-        } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
-            unauth = rs.getContribution() != null
-                    ? rs.getContribution().getStatus().equals(ContributionStatus.DRAFT) :
-                        rs.getForumContribution() != null
-                            ? rs.getForumContribution().getStatus().equals(ContributionStatus.DRAFT) : false;
+    private static Result checkRsDraftState(ResourceSpace rs, ContributionTypes t) {
+        if (t!=null  && (t.equals(ContributionTypes.COMMENT) || t.equals(ContributionTypes.DISCUSSION))) {
+            Config noCommentsIfDraftConfig = rs.getConfigByKey(GlobalDataConfigKeys.APPCIVIST_DISABLE_COMMENTS_IN_DRAFTS);
+            String noCommentsIfDraft = noCommentsIfDraftConfig != null ? noCommentsIfDraftConfig.getValue() : null;
+            if (noCommentsIfDraft != null && noCommentsIfDraft.toLowerCase().equals("true")) {
+                boolean unauth = false;
+                if (rs.getType().equals(ResourceSpaceTypes.ASSEMBLY) &&
+                        rs.getAssemblyResources().getStatus().equals(AssemblyStatus.DRAFT)) {
+                    unauth = true;
+                } else if (rs.getType().equals(ResourceSpaceTypes.CAMPAIGN) &&
+                        rs.getCampaign().getStatus().equals(CampaignStatus.DRAFT)) {
+                    unauth = true;
+                } else if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP) &&
+                        rs.getWorkingGroupResources().getStatus().equals(WorkingGroupStatus.DRAFT)) {
+                    unauth = true;
+                } else if (rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+                    unauth = rs.getContribution() != null
+                            ? rs.getContribution().getStatus().equals(ContributionStatus.DRAFT) :
+                            rs.getForumContribution() != null
+                                    ? rs.getForumContribution().getStatus().equals(ContributionStatus.DRAFT) : false;
+                }
+
+                if (unauth) {
+                    TransferResponseStatus responseBody = new TransferResponseStatus();
+                    responseBody.setStatusMessage(Messages.get(
+                            "contribution.unauthorized.creation",
+                            rs.getType()));
+                    return unauthorized(Json.toJson(responseBody));
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
-        return unauth;
     }
+
     private static List<String> checkContributionRequirementsFields(Contribution c, String upStatus) {
         String configKey;
         switch (ContributionStatus.valueOf(upStatus)) {
@@ -5817,8 +5878,8 @@ public class Contributions extends Controller {
             case FORKED_PUBLISHED:
                 configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_FORKED_PUBLISHED_STATUS_REQ;
                 break;
-            case MERGED_PUBLIC_DRAFT:
-                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_PUBLIC_DRAFT_STATUS_REQ;
+            case MERGED:
+                configKey = GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_CONTRIBUTION_MERGED_STATUS_REQ;
                 break;
             default:
                 return null;
@@ -5882,7 +5943,7 @@ public class Contributions extends Controller {
                             }
                             break;
                         case "group":
-                            if(c.getWorkingGroups() != null && c.getWorkingGroups().isEmpty()) {
+                            if(c.getWorkingGroupAuthors() != null && c.getWorkingGroupAuthors().isEmpty()) {
                                 contributionFields.add(requirement);
                             }
                             break;
@@ -6040,6 +6101,14 @@ public class Contributions extends Controller {
 
         return ok("Updated " + contributionCount + " contributions of " + contributionList.size());
 
+    }
+
+    private static NonMemberAuthor createSocialIdeationNonMemberAuthor(HashMap<String, String> headerMap) {
+        NonMemberAuthor non_member_author = new NonMemberAuthor();
+        non_member_author.setName(headerMap.get("SOCIAL_IDEATION_USER_NAME"));
+        non_member_author.setSourceUrl(headerMap.get("SOCIAL_IDEATION_USER_SOURCE_URL"));
+        non_member_author.setSource(headerMap.get("SOCIAL_IDEATION_SOURCE"));
+        return non_member_author;
     }
 
 }
