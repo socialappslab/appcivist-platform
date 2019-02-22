@@ -127,13 +127,15 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign_components")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Component> components;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_campaign_milestones")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<ComponentMilestone> milestones;
 
@@ -146,42 +148,49 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_contributions")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Contribution> contributions;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_contribution_histories")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<ContributionHistory> contributionHistories;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_assemblies")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Assembly> assemblies;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_resource")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Resource> resources;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_hashtag")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	private List<Hashtag> hashtags;
 	
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_ballots")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Ballot> ballots;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_templates")
-	@Where(clause="${ta}.removed=false")
+    @JsonManagedReference
+    @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<ContributionTemplate> templates;
 
