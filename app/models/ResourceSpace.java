@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 
 import java.util.*;
@@ -12,12 +13,7 @@ import models.misc.Views;
 
 import com.avaje.ebean.annotation.Index;
 import com.avaje.ebean.annotation.Where;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonView;
 
 import enums.BallotStatus;
 import enums.CampaignTemplatesEnum;
@@ -120,76 +116,76 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch=FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign")
-	@JsonManagedReference
+	@JsonBackReference
 	@Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Campaign> campaigns;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_campaign_components")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Component> components;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_campaign_milestones")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<ComponentMilestone> milestones;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_working_groups")
-	@JsonManagedReference
+    @JsonBackReference
 	@Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<WorkingGroup> workingGroups;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_contributions")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Contribution> contributions;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_contribution_histories")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<ContributionHistory> contributionHistories;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_assemblies")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Assembly> assemblies;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_resource")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Resource> resources;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_hashtag")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	private List<Hashtag> hashtags;
 	
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_ballots")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<Ballot> ballots;
 
 	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinTable(name = "resource_space_templates")
-    @JsonManagedReference
+    @JsonBackReference
     @Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<ContributionTemplate> templates;
@@ -206,43 +202,53 @@ public class ResourceSpace extends AppCivistBaseModel {
 		
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
 	@JsonIgnore
+    @JsonBackReference
 	private Assembly assemblyResources;
 
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
-	@JsonIgnore
+    @JsonIgnore
+    @JsonBackReference
 	private ResourceSpaceAssociationHistory associationHistoryResources;
 
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
 	@JsonIgnore
+    @JsonBackReference
 	private Assembly assemblyForum;
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
 	@JsonIgnore
+    @JsonBackReference
 	private WorkingGroup workingGroupResources;
 		
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
 	@JsonIgnore
+    @JsonBackReference
 	private WorkingGroup workingGroupForum;
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
 	@JsonIgnore
+    @JsonBackReference
 	private Contribution contribution;
 
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
 	@JsonIgnore
+    @JsonBackReference
 	private Contribution forumContribution;
 
 
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "forum")
 	@JsonIgnore
+    @JsonBackReference
 	private Campaign campaignForum;
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resources")
 	@JsonIgnore
+    @JsonBackReference
 	private Campaign campaign;
 	
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "resourceSpace")
 	@JsonIgnore
+    @JsonBackReference
 	private Component component;
 
 	@JsonView(Views.Public.class)
