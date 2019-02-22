@@ -139,6 +139,7 @@ public class ResourceSpace extends AppCivistBaseModel {
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(name = "resource_space_working_groups")
+	@JsonManagedReference
 	@Where(clause="${ta}.removed=false")
 	@JsonView(Views.Public.class)
 	private List<WorkingGroup> workingGroups;
