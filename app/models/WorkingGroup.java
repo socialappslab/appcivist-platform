@@ -697,7 +697,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return campaignIds;
 	}
 
-	
+
 	public void setCampaigns(List<Long> campaignIds) {
 		this.campaigns = campaignIds;
 	}
