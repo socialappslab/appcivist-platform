@@ -153,8 +153,38 @@ public class Notifications extends Controller {
                 null, resourceSpace.getResourceSpaceId(), null, true);
     }
 
+    @ApiOperation(response = NotificationEventSignal.class, produces = "application/json", value = "Create a notification signal event by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "NotificationEventSignal Object", value = "Body of NotificationEventSignal in JSON. Only title and text needed",
+                    required = true, dataType = "models.transfer.NotificationSignalTransfer", paramType = "body"),
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+//    @Restrict({ @Group(GlobalData.ADMIN_ROLE) })
+    public static Result createNotificationSignalEventByPeerDocId(
+            @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
+            @ApiParam(name = "title", value = "Event Type") String eventType
+            ) {
+        Contribution contribution = Contribution.getByPeerDocId(peerDocId);
+        if(contribution == null) {
+            return notFound(Json.toJson(new TransferResponseStatus("No contribution " +
+                    "found for the given id")));
+        }
+        if(!NotificationEventName.contains(eventType)) {
+            return notFound(Json.toJson(new TransferResponseStatus("No event type " +
+                    "found for the given string")));
+        }
+        ResourceSpace resourceSpace = contribution.getResourceSpace();
+        NotificationSignalTransfer toCreate = NOTIFICATION_SIGNAL_TRANSFER_FORM.bindFromRequest().get();
+        return NotificationsDelegate.signalNotification(resourceSpace.getUuid(), resourceSpace.getType(),
+                resourceSpace.getName(), NotificationEventName.valueOf(eventType), toCreate.getTitle(),
+                toCreate.getText(), resourceSpace.getUuid(), toCreate.getTitle(), toCreate.getText(), new Date(),
+                resourceSpace.getType().name(), null, SubscriptionTypes.REGULAR,
+                null, resourceSpace.getResourceSpaceId(), null, false);
+    }
 
-        @ApiOperation(response = Subscription.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
+
+
+    @ApiOperation(response = Subscription.class, produces = "application/json", value = "Create a subscription by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Errors in the form", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Subscription Object", value = "Body of Subscription in JSON. Only origin and eventName needed", required = true, dataType = "models.Subscription", paramType = "body", example = "{'origin':'6b0d5134-f330-41ce-b924-2663015de5b5'}"),

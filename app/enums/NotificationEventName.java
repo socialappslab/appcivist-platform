@@ -21,5 +21,17 @@ public enum NotificationEventName {
 	UPDATED_ASSEMBLY_CONFIGS,UPDATED_CAMPAIGN_CONFIGS,UPDATED_WORKING_GROUP_CONFIGS,
 
 	MEMBER_JOINED,DELETED_CONTRIBUTION,MODERATED_CONTRIBUTION,NEW_CONTRIBUTION_FEEDBACK_FLAG,
-	 NEWSLETTER, NEW_CONTRIBUTION_FORK, NEW_CONTRIBUTION_MERGE, NEW_COORDINATOR_SIGNAL
+	 NEWSLETTER, NEW_CONTRIBUTION_FORK, NEW_CONTRIBUTION_MERGE, NEW_COORDINATOR_SIGNAL;
+
+	public static boolean contains(String test) {
+
+		for (NotificationEventName c : NotificationEventName.values()) {
+			if (c.name().equals(test)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
+
