@@ -195,8 +195,8 @@ notification.description.contribution.comment={0} commented your contribution '{
 notification.description.campaign.contribution={0} posted a new contribution in campaign '{1}'
 notification.description.campaign.upcoming.milestone={0} due date approaching ({4}) for {1} {3}
 notification.description.campaign.upcoming.milestone_passed={0} just passed (due date was {4}) for {1} {2}
-notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
-notification.description.general.resource_updated={0} of {1} '{2}' was updated by {3}
+notification.description.general.resource_new=A new {0} was created in {1} {2} by {3}
+notification.description.general.resource_updated={0} of {1} {2} was updated by {3}
 notification.description.general=There are news related to a {0} in {1} '{2}'
 
 appcivist.configuration.missing=Configurations not found in local.conf {0}

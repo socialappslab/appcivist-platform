@@ -96,7 +96,7 @@ POST      /api/public/space/:suuid/subscription/:identifier                     
 PUT       /api/public/space/:suuid/subscription/:identifier                      controllers.Subscriptions.updateByResourceSpaceUUIDAndIdentifier(suuid: String, identifier: String)
 DELETE    /api/public/space/:suuid/subscription/:identifier                      controllers.Subscriptions.unsuscribeByResourceSpaceUUIDAndIdentifier(suuid: String, identifier: String)
 POST      /api/space/:sid/signal                                                 controllers.Notifications.createNotificationSignalEvent(sid: Long)
-POST      /api/contribution/:pid/signal                                          controllers.Notifications.createNotificationSignalEventByPeerDocId(peerDocId: String, eventType?="")
+POST      /api/contribution/:peerDocId/signal                                          controllers.Notifications.createNotificationSignalEventByPeerDocId(peerDocId: String, eventType?="")
 
 
 ##################################################################################################################################################################

@@ -159,11 +159,13 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "NotificationEventSignal Object", value = "Body of NotificationEventSignal in JSON. Only title and text needed",
                     required = true, dataType = "models.transfer.NotificationSignalTransfer", paramType = "body"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-//    @Restrict({ @Group(GlobalData.ADMIN_ROLE) })
+    @Restrict({ @Group(GlobalData.ADMIN_ROLE) })
     public static Result createNotificationSignalEventByPeerDocId(
             @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
             @ApiParam(name = "title", value = "Event Type") String eventType
             ) {
+
+        NotificationSignalTransfer toCreate = NOTIFICATION_SIGNAL_TRANSFER_FORM.bindFromRequest().get();
         Contribution contribution = Contribution.getByPeerDocId(peerDocId);
         if(contribution == null) {
             return notFound(Json.toJson(new TransferResponseStatus("No contribution " +
@@ -174,12 +176,9 @@ public class Notifications extends Controller {
                     "found for the given string")));
         }
         ResourceSpace resourceSpace = contribution.getResourceSpace();
-        NotificationSignalTransfer toCreate = NOTIFICATION_SIGNAL_TRANSFER_FORM.bindFromRequest().get();
-        return NotificationsDelegate.signalNotification(resourceSpace.getUuid(), resourceSpace.getType(),
-                resourceSpace.getName(), NotificationEventName.valueOf(eventType), toCreate.getTitle(),
-                toCreate.getText(), resourceSpace.getUuid(), toCreate.getTitle(), toCreate.getText(), new Date(),
-                resourceSpace.getType().name(), null, SubscriptionTypes.REGULAR,
-                null, resourceSpace.getResourceSpaceId(), null, false);
+        return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CONTRIBUTION,
+                NotificationEventName.valueOf(eventType), contribution, contribution,
+                SubscriptionTypes.REGULAR, null);
     }
 
 

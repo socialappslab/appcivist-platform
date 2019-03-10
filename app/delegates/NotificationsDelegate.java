@@ -408,8 +408,11 @@ public class NotificationsDelegate {
                 resourceId = ((Contribution) resource).getContributionId();
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] New " + resourceType + " in " + originName;
+                if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) {
+                    title = "[AppCivist] New Comment in " + originName;
+                }
                 int numAuthors = ((Contribution) resource).getAuthors().size();
-                associatedUser = ((Contribution) resource).getAuthors().get(0).getName() + (numAuthors > 1 ? " et. al." : "");
+                associatedUser = ((Contribution) resource).getCreator() + (numAuthors > 1 ? " et. al." : "");
                 Contribution contribution = (Contribution) resource;
                 setContributionUrl(contribution, urls);
 
@@ -428,17 +431,21 @@ public class NotificationsDelegate {
                 resourceDate = resource.getLastUpdate();
                 resourceType = ((Contribution) resource).getType().toString();
                 resourceId = ((Contribution) resource).getContributionId();
+                numAuthors = ((Contribution) resource).getAuthors().size();
+                associatedUser = ((Contribution) resource).getCreator().getName() + (numAuthors > 1 ? " et. al." : "");
+                setContributionUrl((Contribution) resource, urls);
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
+                if (eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT)) {
+                    title = "[AppCivist] Updated Comment in " + originName;
+                }
                 if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
                     title = "[AppCivist] The contribution " + resourceTitle + " was forked in " + originName;
                 }
                 if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
                     title = "[AppCivist] The contribution " + resourceTitle + " was merged in " + originName;
                 }
-                numAuthors = ((Contribution) resource).getAuthors().size();
-                associatedUser = ((Contribution) resource).getCreator().getName() + (numAuthors > 1 ? " et. al." : "");
-                setContributionUrl((Contribution) resource, urls);
+
                 break;
 //			case NEW_CONTRIBUTION_FEEDBACK:
 //			case UPDATED_CONTRIBUTION_FEEDBACK:
@@ -627,6 +634,9 @@ public class NotificationsDelegate {
         if (contribution.getWorkingGroups() != null && !contribution.getWorkingGroups().isEmpty()) {
             setWorkingGroupUrl(contribution.getWorkingGroups().get(0).getGroupId(), urls);
         }
+        if(!contribution.getCampaignIds().isEmpty()) {
+            setCampaignUrl(contribution.getCampaignIds().get(0), urls);
+        }
     }
 
     private static void setWorkingGroupUrl(Long workingGroupId, Map<String, Long> urls) {
@@ -718,7 +728,7 @@ public class NotificationsDelegate {
                     String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
                     lang = lang == null ? Lang.defaultLang().code() : lang;
                     String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
-                            newNotificationSignal.getText(), lang);
+                            newNotificationSignal.getText(), lang, urls);
                     notificationEvent.setRichTextMail(richTextMail);
                 }
             } else {
@@ -915,6 +925,10 @@ public class NotificationsDelegate {
             }
         }
         // notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
+        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT.name()) ||
+                eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT.name())) {
+            resourceType = "COMMENT";
+        }
         text = Messages.get(messageCode, resourceType, originType, originName, associatedUser, associatedDateString);
         // setting the text for the signal
         newNotificationSignal.setText(text);
@@ -1305,20 +1319,35 @@ public class NotificationsDelegate {
         return null;
     }
 
+    private static String getUrl(Map<String, Long> url) {
+        String aRet = Play.application().configuration().getString("application.uiUrl") + "/";
+        ///assembly/113/campaign/215
+        if (url.get("assemblyId") != null) {
+            aRet = aRet.concat("assembly/" + url.get("assemblyId"));
+        }
+        if (url.get("campaignId") != null) {
+            aRet = aRet.concat("/campaign/" + url.get("campaignId"));
+        }
+        if (url.get("contributionId") != null) {
+            aRet = aRet.concat("/contribution/" + url.get("contributionId"));
+        }
+
+        return aRet;
+    }
 
 
-    private static String getRegularMailToSend(String title, String description, String lang) throws IOException {
+    private static String getRegularMailToSend(String title, String description, String lang, Map<String, Long> url) throws IOException {
         File file = Play.application().getFile(REGULAR_MAIL_TEMPLATE);
         LocalDate now = new LocalDate();
         String content = new String(Files.readAllBytes(Paths.get(file.toString())));
-        content = content.replace("REGULAR_TITLE", title);
-        content = content.replace("REGULAR_DESCRIPTION", description);
-        content = content.replace("DATE", now.getDayOfMonth() +" " + now.toString("MMM"));
-        content = content.replace("YEAR", String.valueOf(now.getYear()));
-        content = content.replace("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
-                "mail.notification.unsubscribe"));
-        content = content.replace("VISIT_BUTTON_TEXT", Messages.get(Lang.forCode(lang),
-                "mail.notification.new_activity"));
+        content = content.replace("{{REGULAR_TITLE}}", title);
+        content = content.replace("{{NEW_ACTIVITY}}", title);
+        content = content.replace("{{VISIT_BUTTON_URL}}", getUrl(url));
+        content = content.replace("{{REGULAR_DESCRIPTION}}", description);
+        content = content.replace("{{DATE}}", now.getDayOfMonth() +" " + now.toString("MMM"));
+        content = content.replace("{{YEAR}}", String.valueOf(now.getYear()));
+        content = content.replace("{{VISIT_BUTTON_TEXT}}", Messages.get(Lang.forCode(lang),
+                "playauthenticate.index.details"));
         return content;
     }
 
