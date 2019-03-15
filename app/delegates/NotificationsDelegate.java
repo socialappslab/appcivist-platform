@@ -406,13 +406,15 @@ public class NotificationsDelegate {
                 resourceDate = resource.getCreation();
                 resourceType = ((Contribution) resource).getType().toString();
                 resourceId = ((Contribution) resource).getContributionId();
+                int numAuthors = ((Contribution) resource).getAuthors().size();
+                associatedUser = ((Contribution) resource).getCreator() + (numAuthors > 1 ? " et. al." : "");
+
                 if (resourceType.equals("BRAINSTORMING")) resourceType = "IDEA";
                 title = "[AppCivist] New " + resourceType + " in " + originName;
                 if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) {
                     title = "[AppCivist] New Comment in " + originName;
+                    associatedUser = userParam != null ? userParam.toString() : associatedUser;
                 }
-                int numAuthors = ((Contribution) resource).getAuthors().size();
-                associatedUser = ((Contribution) resource).getCreator() + (numAuthors > 1 ? " et. al." : "");
                 Contribution contribution = (Contribution) resource;
                 setContributionUrl(contribution, urls);
 
@@ -438,6 +440,7 @@ public class NotificationsDelegate {
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 if (eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT)) {
                     title = "[AppCivist] Updated Comment in " + originName;
+                    associatedUser = userParam != null ? userParam.toString() : associatedUser;
                 }
                 if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
                     title = "[AppCivist] The contribution " + resourceTitle + " was forked in " + originName;

@@ -161,11 +161,13 @@ public class Notifications extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Restrict({ @Group(GlobalData.ADMIN_ROLE) })
     public static Result createNotificationSignalEventByPeerDocId(
-            @ApiParam(name = "pid", value = "PeerDoc ID") String peerDocId,
-            @ApiParam(name = "title", value = "Event Type") String eventType
+            @ApiParam(name = "peerDocId", value = "PeerDoc ID") String peerDocId,
+            @ApiParam(name = "eventType", value = "Event Type") String eventType,
+            @ApiParam(name = "userId") Long userId
             ) {
 
-        NotificationSignalTransfer toCreate = NOTIFICATION_SIGNAL_TRANSFER_FORM.bindFromRequest().get();
+        User commentCreator = User.findByUserId(userId);
+
         Contribution contribution = Contribution.getByPeerDocId(peerDocId);
         if(contribution == null) {
             return notFound(Json.toJson(new TransferResponseStatus("No contribution " +
@@ -178,7 +180,7 @@ public class Notifications extends Controller {
         ResourceSpace resourceSpace = contribution.getResourceSpace();
         return NotificationsDelegate.signalNotification(ResourceSpaceTypes.CONTRIBUTION,
                 NotificationEventName.valueOf(eventType), contribution, contribution,
-                SubscriptionTypes.REGULAR, null);
+                SubscriptionTypes.REGULAR, commentCreator);
     }
 
 
