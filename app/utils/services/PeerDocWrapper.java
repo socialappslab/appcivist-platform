@@ -162,6 +162,27 @@ public class PeerDocWrapper {
 
     }
 
+    public String export(Resource resource) throws NoSuchPaddingException, UnsupportedEncodingException,
+            InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
+            InvalidAlgorithmParameterException, HashGenerationException {
+
+        String documentId = resource.getUrlAsString().split("document/")[1];
+        String userEncrypted = encrypt();
+        WSRequest holder = getWSHolder("/document/export/"+documentId+"?user="+userEncrypted);
+        F.Promise<WSResponse> promise = wsSend(holder);
+        WSResponse status = promise.get(DEFAULT_TIMEOUT);
+        if(status.getStatus() == 200) {
+            Logger.info("PEERDOC EXPORT: 200 status ");
+            JsonNode response = status.asJson();
+            if (response.get("status") != null && response.get("status").asText().equals("success")) {
+                return response.get("html").asText();
+            }
+        }
+        return null;
+    }
+
+
+
     public boolean merge(Contribution parent, Contribution children) throws NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, HashGenerationException {
