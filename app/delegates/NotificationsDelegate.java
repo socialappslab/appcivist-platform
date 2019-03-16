@@ -88,6 +88,8 @@ public class NotificationsDelegate {
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL, "notifications.{{resourceType}}.updated.contribution.proposal");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION, "notifications.{{resourceType}}.updated.contribution.discussion");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT, "notifications.{{resourceType}}.updated.contribution.comment");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_RESOLVE, "notifications.{{resourceType}}.updated.contribution.comment.resolve");
+        eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_UNRESOLVE, "notifications.{{resourceType}}.updated.contribution.comment.unresolve");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_NOTE, "notifications.{{resourceType}}.updated.contribution.note");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FORUM_POST, "notifications.{{resourceType}}.updated.contribution.post");
         eventsTitleByType.put(NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK, "notifications.{{resourceType}}.updated.contribution.feedback");
@@ -118,6 +120,8 @@ public class NotificationsDelegate {
             NotificationEventName.UPDATED_CONTRIBUTION_PROPOSAL,
             NotificationEventName.UPDATED_CONTRIBUTION_DISCUSSION,
             NotificationEventName.UPDATED_CONTRIBUTION_COMMENT,
+            NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_RESOLVE,
+            NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_UNRESOLVE,
             NotificationEventName.UPDATED_CONTRIBUTION_NOTE,
             NotificationEventName.UPDATED_CONTRIBUTION_FEEDBACK,
             NotificationEventName.UPDATED_CONTRIBUTION_HISTORY,
@@ -423,6 +427,8 @@ public class NotificationsDelegate {
             case UPDATED_CONTRIBUTION_PROPOSAL:
             case UPDATED_CONTRIBUTION_DISCUSSION:
             case UPDATED_CONTRIBUTION_COMMENT:
+            case UPDATED_CONTRIBUTION_COMMENT_RESOLVE:
+            case UPDATED_CONTRIBUTION_COMMENT_UNRESOLVE:
             case UPDATED_CONTRIBUTION_NOTE:
             case UPDATED_CONTRIBUTION_FORUM_POST:
             case NEW_CONTRIBUTION_FORK:
@@ -440,6 +446,10 @@ public class NotificationsDelegate {
                 title = "[AppCivist] Updated " + resourceType + " in " + originName;
                 if (eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT)) {
                     title = "[AppCivist] Updated Comment in " + originName;
+                    associatedUser = userParam != null ? userParam.toString() : associatedUser;
+                }
+                if (eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_RESOLVE)
+                        || eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_UNRESOLVE)) {
                     associatedUser = userParam != null ? userParam.toString() : associatedUser;
                 }
                 if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
@@ -929,7 +939,8 @@ public class NotificationsDelegate {
         }
         // notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
         if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT.name()) ||
-                eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT.name())) {
+                eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_RESOLVE.name()) ||
+                        eventName.equals(NotificationEventName.UPDATED_CONTRIBUTION_COMMENT_UNRESOLVE.name())) {
             resourceType = "COMMENT";
         }
         text = Messages.get(messageCode, resourceType, originType, originName, associatedUser, associatedDateString);
