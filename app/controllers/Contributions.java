@@ -514,7 +514,10 @@ public class Contributions extends Controller {
                         for (Contribution contribution : contributions) {
                             aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, finalFormat));
                             if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                                aRet.add(getPadFile(contribution, finalExtendedTextFormat, finalFormat, user));
+                                File file = getPadFile(contribution, finalExtendedTextFormat, finalFormat, user);
+                                if (file != null) {
+                                    aRet.add(file);
+                                }
                             }
                         }
 
@@ -659,8 +662,13 @@ public class Contributions extends Controller {
                     User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
                     Logger.info("EXPORT: Preparing ZIP file for export");
                     if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                        Logger.info("Extended text included");
-                        aRet.add(getPadFile(contribution, extendedTextFormat, finalFormat, user));
+                        Logger.info("TRying to include extended text file");
+                        File file = getPadFile(contribution, extendedTextFormat, finalFormat, user);
+                        if (file != null) {
+                            aRet.add(file);
+                            Logger.info("Extended text included");
+
+                        }
                     }
 
                     String fileName = "contribution" + new Date().getTime() + ".zip";
@@ -5575,6 +5583,7 @@ public class Contributions extends Controller {
             if(html != null) {
                 try (Writer w = new OutputStreamWriter(out, "UTF-8")) {
                     w.write(html);
+                    return tempFile;
                 }
             }
         }
