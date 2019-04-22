@@ -194,11 +194,13 @@ notification.title.message.reply.assembly=New Assembly Reply
 notification.description.assembly.forum.contribution={0} posted a new contribution in the forum of assembly '{1}'
 notification.description.group.forum.contribution={0} posted a new contribution in the forum of working group '{1}'
 notification.description.contribution.comment={0} commented your contribution '{1}'
+notification.description.contribution.comment.resolve={0} resolved your contribution '{1}'
+notification.description.contribution.comment.unresolve={0} unresolved your contribution '{1}'
 notification.description.campaign.contribution={0} posted a new contribution in campaign '{1}'
 notification.description.campaign.upcoming.milestone={0} due date approaching ({4}) for {1} {3}
 notification.description.campaign.upcoming.milestone_passed={0} just passed (due date was {4}) for {1} {2}
-notification.description.general.resource_new=A new {0} was created in {1} '{2}' by {3}
-notification.description.general.resource_updated={0} of {1} '{2}' was updated by {3}
+notification.description.general.resource_new=A new {0} was created in {1} {2} by {3}
+notification.description.general.resource_updated={0} of {1} {2} was updated by {3}
 notification.description.general=There are news related to a {0} in {1} '{2}'
 
 appcivist.api.error.groups.group_with_same_name_already_exists=Working Group with same name already exists in the Assembly

@@ -349,6 +349,9 @@ public class Contributions extends Controller {
             @ApiParam(name = "createdByOnly", value = "Include or not only creators authors" , defaultValue = "false") String createdByOnly)
     {
 
+        User user = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+
         format = format.toUpperCase();
         extendedTextFormat = extendedTextFormat.toUpperCase();
         if (pageSize == null) {
@@ -511,13 +514,14 @@ public class Contributions extends Controller {
                         for (Contribution contribution : contributions) {
                             aRet.add(getExportFile(contribution, includeExtendedText, finalExtendedTextFormat, finalFormat));
                             if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                                aRet.add(getPadFile(contribution, finalExtendedTextFormat, finalFormat));
+                                File file = getPadFile(contribution, finalExtendedTextFormat, finalFormat, user);
+                                if (file != null) {
+                                    aRet.add(file);
+                                }
                             }
                         }
 
                         Logger.info("EXPORT: Preparing ZIP file for exported contributions...");
-                        User user = User.findByAuthUserIdentity(PlayAuthenticate
-                                .getUser(session()));
                         String fileName = "contribution" + new Date().getTime() + ".zip";
 
                         String appBasePath = Play.application().path().getAbsolutePath();
@@ -655,12 +659,18 @@ public class Contributions extends Controller {
                         }
                 }
                 try {
+                    User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
                     Logger.info("EXPORT: Preparing ZIP file for export");
                     if (includeExtendedText.toUpperCase().equals("TRUE")) {
-                        Logger.info("Extended text included");
-                        aRet.add(getPadFile(contribution, extendedTextFormat, finalFormat));
+                        Logger.info("TRying to include extended text file");
+                        File file = getPadFile(contribution, extendedTextFormat, finalFormat, user);
+                        if (file != null) {
+                            aRet.add(file);
+                            Logger.info("Extended text included");
+
+                        }
                     }
-                    User user = User.findByAuthUserIdentity(PlayAuthenticate.getUser(session()));
+
                     String fileName = "contribution" + new Date().getTime() + ".zip";
 
                     String appBasePath = Play.application().path().getAbsolutePath();
@@ -1639,12 +1649,20 @@ public class Contributions extends Controller {
                     }
                 }
                 c.refresh();
-                if (c != null) {
-                    Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
-                    c.getContainingSpaces().add(rs);
-                    rs.getContributions().add(c);
-                    rs.update();
+
+                Logger.info("Adding new contribution ("+c.getContributionId()+") to Resource Space ("+rs.getType()+", "+rs.getResourceSpaceId()+")");
+                c.getContainingSpaces().add(rs);
+                rs.getContributions().add(c);
+                rs.update();
+                if (rs.getType().equals(ResourceSpaceTypes.WORKING_GROUP)) {
+                    for(ResourceSpace rspaces: rs.getWorkingGroupResources().getCampaignsResourceSpaces()) {
+                        Logger.info("Adding new contribution to WG campaing too");
+                        rspaces.getContributions().add(c);
+                        c.getContainingSpaces().add(rspaces);
+                        rspaces.update();
+                    }
                 }
+
                 Contribution.addContributionAuthorsToWG(newContribution, rs);
                 Ebean.commitTransaction();
 
@@ -5505,8 +5523,10 @@ public class Contributions extends Controller {
 
     }
 
-    private static File getPadFile(Contribution contribution, String extendedTextFormat, String format) throws IOException, GeneralSecurityException {
+    private static File getPadFile(Contribution contribution, String extendedTextFormat, String format, User user)
+            throws IOException, GeneralSecurityException, HashGenerationException {
         String selectFormat;
+
         if (extendedTextFormat.equals("")) {
             if (format.equals("CSV") || format.equals("JSON")) {
                 selectFormat = "DOC";
@@ -5516,6 +5536,17 @@ public class Contributions extends Controller {
         } else {
             selectFormat = extendedTextFormat;
         }
+
+        if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+            selectFormat = "html";
+        }
+
+        String fileName = "/tmp/" + EXTENDED_PAD_NAME.replace(CONTRIBUTION_ID_PARAM,
+                contribution.getContributionId().toString()+ "."+selectFormat.toLowerCase());
+        File tempFile = new File(fileName);
+        Logger.debug("Saving file to: "+fileName);
+        OutputStream out = new FileOutputStream(tempFile);
+
         String url = contribution.getExtendedTextPad().getUrlAsString();
         Logger.debug("Downloading extended text: "+url);
         if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.GDOC)) {
@@ -5525,29 +5556,38 @@ public class Contributions extends Controller {
             } catch (IndexOutOfBoundsException e) {
                 Logger.info("Error in GDOC text pad url " + url, e);
             }
-        } else {
+        } else if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PAD)) {
             String padId = contribution.getExtendedTextPad().getPadId();
             // Transform URL from read only to write url
             // From [.../p/r.613e...] TO [.../p/{padId}]
             String[] padUrlParts = url.split("/p/");
             url = padUrlParts[0]+"/p/"+padId;
             url = url + "/export/" + selectFormat.toLowerCase();
-        }
-        String fileName = "/tmp/" + EXTENDED_PAD_NAME.replace(CONTRIBUTION_ID_PARAM,
-                contribution.getContributionId().toString()+ "."+selectFormat.toLowerCase());
-        File tempFile = new File(fileName);
-        Logger.debug("Saving file to: "+fileName);
-        OutputStream out = new FileOutputStream(tempFile);
-        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        try {
-            httpTransport.createRequestFactory().buildGetRequest(new GenericUrl(url)).execute().download(out);
-            out.close();
-            return tempFile;
 
-        } catch (IOException  e) {
-            out.close();
-            Logger.error("Error downloading extendedPAD ", e);
+            HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            try {
+
+                httpTransport.createRequestFactory().buildGetRequest(new GenericUrl(url)).execute().download(out);
+                out.close();
+                return tempFile;
+
+            } catch (IOException  e) {
+                out.close();
+                Logger.error("Error downloading extendedPAD ", e);
+            }
+
+        } else if (contribution.getExtendedTextPad().getResourceType().equals(ResourceTypes.PEERDOC)) {
+            Logger.info("Trying to export peerdoc as html");
+            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(user);
+            String html = peerDocWrapper.export(contribution.getExtendedTextPad());
+            if(html != null) {
+                try (Writer w = new OutputStreamWriter(out, "UTF-8")) {
+                    w.write(html);
+                    return tempFile;
+                }
+            }
         }
+
         return null;
     }
 
