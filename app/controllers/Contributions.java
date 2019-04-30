@@ -1557,6 +1557,9 @@ public class Contributions extends Controller {
 
             Contribution newContribution = new Contribution();
             newContribution.setType(ContributionTypes.valueOf(content.get("type").asText()));
+        newContribution.setStatus(ContributionStatus.valueOf(content.get("status").asText()));
+        newContribution.setText(content.get("text").asText());
+        newContribution.setTitle(content.get("title").asText());
             ContributionTypes type = newContribution.getType();
 
             // If TYPE is not declared, default is COMMENT
