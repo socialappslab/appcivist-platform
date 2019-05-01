@@ -1553,13 +1553,16 @@ public class Contributions extends Controller {
         NonMemberAuthor non_member_author = null;
 
 
-            JsonNode content = request().body().asJson();
+        // 2. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
 
-            Contribution newContribution = new Contribution();
-            newContribution.setType(ContributionTypes.valueOf(content.get("type").asText()));
-        newContribution.setStatus(ContributionStatus.valueOf(content.get("status").asText()));
-        newContribution.setText(content.get("text").asText());
-        newContribution.setTitle(content.get("title").asText());
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
             ContributionTypes type = newContribution.getType();
 
             // If TYPE is not declared, default is COMMENT
@@ -1687,7 +1690,7 @@ public class Contributions extends Controller {
                 return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
             return ok(Json.toJson(c));
-
+        }
     }
 
     /**
