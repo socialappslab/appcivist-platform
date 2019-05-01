@@ -1553,16 +1553,21 @@ public class Contributions extends Controller {
         NonMemberAuthor non_member_author = null;
 
 
-        // 2. read the new role data from the body
-        // another way of getting the body content => request().body().asJson()
-        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
-                .bindFromRequest();
+            JsonNode content = request().body().asJson();
 
-        if (newContributionForm.hasErrors()) {
-            return contributionCreateError(newContributionForm);
-        } else {
-
-            Contribution newContribution = newContributionForm.get();
+            Contribution newContribution = new Contribution();
+            newContribution.setType(ContributionTypes.valueOf(content.get("type").asText()));
+        newContribution.setStatus(ContributionStatus.valueOf(content.get("status").asText()));
+        newContribution.setText(content.get("text").asText());
+        newContribution.setTitle(content.get("title").asText());
+        newContribution.setWorkingGroupAuthors(new ArrayList<>());
+        for(JsonNode wg: content.get("workingGroupAuthors")) {
+            WorkingGroup workingGroup = new WorkingGroup();
+            workingGroup.setGroupId(wg.get("groupId").asLong());
+            workingGroup.setUuid(UUID.fromString(wg.get("uuid").asText()));
+            workingGroup.setName(wg.get("name").asText());
+            newContribution.getWorkingGroupAuthors().add(workingGroup);
+        }
             ContributionTypes type = newContribution.getType();
 
             // If TYPE is not declared, default is COMMENT
@@ -1690,7 +1695,7 @@ public class Contributions extends Controller {
                 return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
             return ok(Json.toJson(c));
-        }
+
     }
 
     /**
