@@ -1547,12 +1547,13 @@ public class Contributions extends Controller {
     @SubjectPresent
     public static Result createContributionInResourceSpaceWithId(@ApiParam(name = "sid", value = "Resource Space ID") Long sid) {
     	// 1. obtaining the user of the request
+
         User author = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
         User social_ideation_author = null;
         NonMemberAuthor non_member_author = null;
 
-
+/*
             JsonNode content = request().body().asJson();
 
             Contribution newContribution = new Contribution();
@@ -1567,7 +1568,17 @@ public class Contributions extends Controller {
             workingGroup.setUuid(UUID.fromString(wg.get("uuid").asText()));
             workingGroup.setName(wg.get("name").asText());
             newContribution.getWorkingGroupAuthors().add(workingGroup);
-        }
+        }*/
+        // 2. read the new role data from the body
+        // another way of getting the body content => request().body().asJson()
+        final Form<Contribution> newContributionForm = CONTRIBUTION_FORM
+                .bindFromRequest();
+
+        if (newContributionForm.hasErrors()) {
+            return contributionCreateError(newContributionForm);
+        } else {
+
+            Contribution newContribution = newContributionForm.get();
             ContributionTypes type = newContribution.getType();
 
             // If TYPE is not declared, default is COMMENT
@@ -1695,7 +1706,7 @@ public class Contributions extends Controller {
                 return NotificationsDelegate.newContributionInResourceSpace(rs, c);
             });
             return ok(Json.toJson(c));
-
+        }
     }
 
     /**
