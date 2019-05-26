@@ -235,6 +235,16 @@ public class NotificationsDelegate {
         return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
     }
 
+
+    public static Result publishedContributionInResourceSpace(ResourceSpace rs, Contribution c) throws ConfigurationException {
+        Logger.info("NOTIFICATION: Published in RESOURCE SPACE of type '" + rs.getType() + "'");
+        ResourceSpaceTypes originType = rs.getType();
+        NotificationEventName eventName = NotificationEventName.PUBLISHED_CONTRIBUTION;
+        AppCivistBaseModel origin = getOriginByContribution(rs, c);
+        AppCivistBaseModel resource = c;
+        return signalNotification(originType, eventName, origin, resource, SubscriptionTypes.REGULAR, null);
+    }
+
     public static Result forkMergeContributionInResourceSpace(ResourceSpace rs, Contribution c,
                                                               NotificationEventName forkOrMerge) {
         Logger.info("NOTIFICATION: FORK/MERGE contribution in RESOURCE SPACE of type '" + rs.getType() + "'");
@@ -433,6 +443,7 @@ public class NotificationsDelegate {
             case UPDATED_CONTRIBUTION_FORUM_POST:
             case NEW_CONTRIBUTION_FORK:
             case NEW_CONTRIBUTION_MERGE:
+            case PUBLISHED_CONTRIBUTION:
                 resourceUuid = ((Contribution) resource).getUuid();
                 resourceTitle = ((Contribution) resource).getTitle();
                 resourceText = ((Contribution) resource).getText();
@@ -457,6 +468,9 @@ public class NotificationsDelegate {
                 }
                 if (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
                     title = "[AppCivist] The contribution " + resourceTitle + " was merged in " + originName;
+                }
+                if (eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION)) {
+                    title = "[AppCivist] The contribution " + resourceTitle + " was published in " + originName;
                 }
 
                 break;
@@ -842,7 +856,8 @@ public class NotificationsDelegate {
                 Logger.info("NOTIFICATION: Signaling notification to rabbitmq is enabled");
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
+                                eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION)) {
                     for(Long userId: notificatedUsers) {
                         User user = User.findByUserId(userId);
                         NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);

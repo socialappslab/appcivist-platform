@@ -157,6 +157,24 @@ public class Subscription extends Model {
         List<Subscription> membs = q.findList();
         return membs;
     }
+
+    public static Subscription createRegularSubscription(User user, ResourceSpace rs){
+        Subscription old = Subscription.findSubscriptionBySpaceIdAndIdentifier(rs.getUuidAsString(), user.getEmail());
+        if (old != null) {
+            Logger.info("Subscription for " + user.getUsername() + " already exists");
+             return null;
+        }
+        Subscription sub = new Subscription();
+        sub.setSpaceId(rs.getUuidAsString());
+        sub.setSubscriptionType(SubscriptionTypes.REGULAR);
+        sub.setSpaceType(rs.getType());
+        sub.setDefaultIdentity(user.getEmail());
+        sub.setUserId(user.getUuid().toString());
+        Subscription.setDisabledServices(sub);
+        sub.save();
+        sub.refresh();
+        return sub;
+    }
   
     public static List<Subscription> findContributionSubscriptionsByUserId(User u) {
         com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
