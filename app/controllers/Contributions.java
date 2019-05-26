@@ -4701,7 +4701,8 @@ public class Contributions extends Controller {
             Logger.info("PUBLISHING CONTRIBUTION");
             Contribution.publishContribution(c);
         } else {
-            Contribution.update(c);
+            Logger.info("UNPUBLISHING CONTRIBUTION");
+            Contribution.unpublishContribution(c);
         }
         return ok(Json.toJson(c));
     }

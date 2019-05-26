@@ -1100,6 +1100,28 @@ public class Contribution extends AppCivistBaseModel {
         ContributionHistory.createHistoricFromContribution(c);
     }
 
+    public static Contribution unpublishContribution(Contribution c) {
+        update(c);
+        List<User> authors = c.getAuthors();
+        List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getResourceSpace().getUuidAsString());
+        // if the subscription is for a non author user, we delete it when the contribution is unpublished
+        for(Subscription subscription: subscriptions) {
+            boolean delete = true;
+            String userName = "";
+            for(User user: authors) {
+                if (user.getUuidAsString().equals(subscription.getUserId())) {
+                    delete = false;
+                    userName = user.getUsername();
+                }
+            }
+            if(delete) {
+                Logger.info("Deleting suscription for user " + userName);
+                subscription.delete();
+            }
+        }
+        return c;
+    }
+
     public static Contribution publishContribution(Contribution c) {
 
         update(c);
