@@ -842,7 +842,9 @@ public class NotificationsDelegate {
                 Logger.info("NOTIFICATION: Signaling notification to rabbitmq is enabled");
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)) {
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE)
+                                ||
+                                eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) {
                     for(Long userId: notificatedUsers) {
                         User user = User.findByUserId(userId);
                         NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);
