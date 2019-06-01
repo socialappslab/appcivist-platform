@@ -1100,6 +1100,51 @@ public class Contribution extends AppCivistBaseModel {
         ContributionHistory.createHistoricFromContribution(c);
     }
 
+    public static Contribution unpublishContribution(Contribution c) {
+        update(c);
+        List<User> authors = c.getAuthors();
+        List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getResourceSpace().getUuidAsString());
+        // if the subscription is for a non author user, we delete it when the contribution is unpublished
+        for(Subscription subscription: subscriptions) {
+            boolean delete = true;
+            String userName = "";
+            for(User user: authors) {
+                if (user.getUuidAsString().equals(subscription.getUserId())) {
+                    delete = false;
+                    userName = user.getUsername();
+                }
+            }
+            if(delete) {
+                Logger.info("Deleting suscription for user " + userName);
+                subscription.delete();
+            }
+        }
+        return c;
+    }
+
+    public static Contribution publishContribution(Contribution c) {
+
+        update(c);
+
+        // We create subscription to the contribution for all the wg members
+        for (WorkingGroup wg: c.getWorkingGroupAuthors()) {
+            for(MembershipGroup mg: wg.getMembers()) {
+                Logger.info("Creating subscriptions to wg members");
+                Subscription.createRegularSubscription(mg.getUser(), c.getResourceSpace());
+            }
+        }
+
+        // and then we notified all that the contribution was updated
+        F.Promise.promise(() -> {
+            Logger.debug("Sending notification for published contribution");
+            NotificationsDelegate.publishedContributionInResourceSpace(c.getResourceSpace(),
+                    c);
+            return Optional.ofNullable(null);
+        });
+
+        return c;
+    }
+
     public static Contribution update(Contribution c) {
         c.update();
         c.refresh();

@@ -4696,7 +4696,14 @@ public class Contributions extends Controller {
             return internalServerError(Json.toJson(response));
         }
         c.setStatus(ContributionStatus.valueOf(upStatus));
-        Contribution.update(c);
+        if(upStatus.equals(ContributionStatus.PUBLISHED.name()) ||
+                upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
+            Logger.info("PUBLISHING CONTRIBUTION");
+            Contribution.publishContribution(c);
+        } else {
+            Logger.info("UNPUBLISHING CONTRIBUTION");
+            Contribution.unpublishContribution(c);
+        }
         return ok(Json.toJson(c));
     }
 
