@@ -857,7 +857,9 @@ public class NotificationsDelegate {
                 notificationEvent = NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
-                                eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION)) {
+                                eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
+                                eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) 
+               {
                     for(Long userId: notificatedUsers) {
                         User user = User.findByUserId(userId);
                         NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);
