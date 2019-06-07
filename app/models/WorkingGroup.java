@@ -680,6 +680,7 @@ public class WorkingGroup extends AppCivistBaseModel {
 		return campaignIds;
 	}
 
+	@JsonIgnore
 	public List<ResourceSpace> getCampaignsResourceSpaces() {
 		List<ResourceSpace> campaignIds = new ArrayList<>();
 

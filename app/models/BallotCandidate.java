@@ -173,7 +173,11 @@ public class BallotCandidate extends Model {
 
 	@Transient
 	public Map<String,String> getContributionSummary() {
-		Contribution c = Contribution.find.where().eq("uuid", this.candidateUuid).findUnique();
+		List<Contribution> cs = Contribution.find.where().eq("uuid", this.candidateUuid).findList();
+		Contribution c = null;
+		if (!cs.isEmpty()) {
+			c = cs.get(0);
+		}
 		Map<String, String> cSummary = new HashMap<>();
 		String title = c!=null ? c.getTitle() : null;
 		Long id = c!=null ? c.getContributionId() : null;

@@ -140,17 +140,10 @@ public class Subscriptions extends Controller {
         if(rs == null) {
             return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
         }
-        Subscription old = Subscription.findSubscriptionBySpaceIdAndIdentifier(suuid, identifier);
-        if (old != null) {
+        Subscription sub = Subscription.createRegularSubscription(subscriber, rs);
+        if (sub == null) {
             return badRequest(Json.toJson(TransferResponseStatus.badMessage("Subscription error", "The email is already subscribed to the resource space")));
         }
-        Subscription sub = new Subscription();
-        sub.setSpaceId(rs.getUuidAsString());
-        sub.setSubscriptionType(SubscriptionTypes.REGULAR);
-        sub.setSpaceType(rs.getType());
-        sub.setDefaultIdentity(identifier);
-        Subscription.setDisabledServices(sub);
-        sub.insert();
         return NotificationsDelegate.manageSubscriptionToResourceSpace("SUBSCRIBE", rs, "email", subscriber);
     }
 
