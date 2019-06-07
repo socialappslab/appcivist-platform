@@ -165,7 +165,11 @@ public class Subscription extends Model {
              return null;
         }
         Subscription sub = new Subscription();
-        sub.setSpaceId(rs.getUuidAsString());
+        if(rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+            sub.setSpaceId(rs.getContribution().getUuidAsString());
+        } else {
+            sub.setSpaceId(rs.getUuidAsString());
+        }
         sub.setSubscriptionType(SubscriptionTypes.REGULAR);
         sub.setSpaceType(rs.getType());
         sub.setDefaultIdentity(user.getEmail());
@@ -245,11 +249,16 @@ public class Subscription extends Model {
     * subscription.subscriptionType === signal.signalType
     * subscription.ignoredEventsList[signal.eventName] === null OR false
          */
-        Logger.debug("spacetype " + signal.getSpaceType());
+        String type = signal.getSpaceType();
+        Logger.debug("spacetype " + type);
         Logger.debug("spaceId " + signal.getSpaceId());
         Logger.debug("sub type " + signal.getSignalType());
+
+        if(type.equals("PROPOSAL")) {
+            type = "CONTRIBUTION";
+        }
         com.avaje.ebean.Query<Subscription> q = find.where()
-                .eq("spaceType",signal.getSpaceType())
+                .eq("spaceType", type)
                 .eq("spaceId", signal.getSpaceId())
                 .eq("subscriptionType",signal.getSignalType())
                 .query();
