@@ -245,8 +245,8 @@ public class ContributionsDelegate {
                         if (!spaceGroupAlreadyIncluded) {
                             spaceGroupAlreadyIncluded = true;
                             rawQueryFrom += "left join resource_space_contributions rscwg on rscwg.contribution_contribution_id = t0.contribution_id\n" +
-                                    "  join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
-                                    "  join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
+                                    "  left join resource_space rswg on rswg.resource_space_id = rscwg.resource_space_resource_space_id\n " +
+                                    "  left join working_group wg on wg.resources_resource_space_id = rswg.resource_space_id\n ";
                         }
                         break;
                 }
@@ -377,6 +377,7 @@ public class ContributionsDelegate {
         }
         where.add(Expr.not(Expr.eq("removed",true)));
         List<Contribution> contributions;
+
 
         if(page != null && pageSize != null){
             if(sorting.equals("random")) {
