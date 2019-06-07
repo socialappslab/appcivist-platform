@@ -776,8 +776,9 @@ public class NotificationsDelegate {
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         Logger.info(subscriptions.size() + " subscriptions found");
         for (Subscription sub : subscriptions) {
+            Logger.info("SUBSCRIPTION IGNORED EVENTS: " + sub.getIgnoredEvents());
             //subscription.ignoredEventsList[signal.eventName] === null OR false
-            if (sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
+            if (sub.getIgnoredEvents() == null || sub.getIgnoredEvents().isEmpty() || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
                     || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false) {
                 // If subscription does not have a defaultService override,
                 // then iterate the list of enabled identities of the user (where enabled === true),
