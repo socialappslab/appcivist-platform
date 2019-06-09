@@ -209,6 +209,15 @@ contribution.unauthorized.creation = No se puede agregar un nuevo {0} en este es
 mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través "Mis {2}". Si no quieres formar parte de esta proposta, elimine su nombre de la lista de autores o contacte al autor principal. Link: <a href="{4}">{4}</a>
 mail.notification.add.nonmember.subject=[AppCivist] Invitación para colaborar en {0}
 
+
+mail.notification.view_update=View Update
+mail.notification.contribution.status_message=Your proposal has been updated by {0}: status change
+mail.notification.contribution.comment_message=Your proposal has been updated by {0}: new comment
+mail.notification.contribution.amendment_message=Your proposal has been updated by {0}: amendment
+mail.notification.contribution.title_message_status=[AppCivist] Status change to "{0}"
+mail.notification.contribution.title_message_comment=[AppCivist] New comment in "{0}"
+mail.notification.contribution.title_message_amendment=[AppCivist] New amendment to "{0}"
+
 appcivist.contribution = contribución
 appcivist.contribution.proposal = propuesta
 appcivist.contribution.idea = idea

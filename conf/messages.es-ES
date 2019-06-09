@@ -193,6 +193,14 @@ contribution.etherpad.words=palabras
 mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada al link de abajo para el proceso participativo {1}. Accede a la iniciativa con este enlace y luego inicia sesión. Luego de iniciar sesión, podrás encontrar la {3} a través "Mis {2}". Si no quieres formar parte de esta proposta, elimine su nombre de la lista de autores o contacte al autor principal. Link: {4}
 mail.notification.add.nonmember.subject=[AppCivist] Invitación para colaborar
 
+mail.notification.view_update=View Update
+mail.notification.contribution.status_message=Your proposal has been updated by {0}: status change
+mail.notification.contribution.comment_message=Your proposal has been updated by {0}: new comment
+mail.notification.contribution.amendment_message=Your proposal has been updated by {0}: amendment
+mail.notification.contribution.title_message_status=[AppCivist] Status change to "{0}"
+mail.notification.contribution.title_message_comment=[AppCivist] New comment in "{0}"
+mail.notification.contribution.title_message_amendment=[AppCivist] New amendment to "{0}"
+
 contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
 
 appcivist.contribution = contribución

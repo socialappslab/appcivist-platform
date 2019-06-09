@@ -1,5 +1,6 @@
 package delegates;
 
+import com.amazonaws.services.simpleemail.model.NotificationType;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.Model;
 import enums.*;
@@ -25,6 +26,7 @@ import utils.GlobalDataConfigKeys;
 import utils.LogActions;
 import utils.services.NotificationServiceWrapper;
 
+import javax.management.Notification;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -748,12 +750,12 @@ public class NotificationsDelegate {
         Logger.info("NOTIFICATION: Notification event ready");
 
         NotificationSignalTransfer newNotificationSignal = null;
+        String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
+        lang = lang == null ? Lang.defaultLang().code() : lang;
         try {
-            newNotificationSignal = prepareNotificationSignal(notificationEvent);
+            newNotificationSignal = prepareNotificationSignal(notificationEvent, lang);
             if(!ownTextAndTitle) {
                 if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
-                    String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
-                    lang = lang == null ? Lang.defaultLang().code() : lang;
                     String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
                             newNotificationSignal.getText(), lang, urls);
                     notificationEvent.setRichTextMail(richTextMail);
@@ -919,7 +921,8 @@ public class NotificationsDelegate {
      * Method to prepare a quick notificaiton event object and send it to the local notification endpoint that will prepare the full notificaiton
      * and send the signal to the notification service
      */
-    private static NotificationSignalTransfer prepareNotificationSignal(NotificationEventSignal notificationEvent) throws Exception {
+    private static NotificationSignalTransfer prepareNotificationSignal(NotificationEventSignal notificationEvent,
+                                                                        String lang) {
         NotificationSignalTransfer newNotificationSignal = new NotificationSignalTransfer();
 
         newNotificationSignal.setEventId(notificationEvent.getData().get("origin") + "_" + notificationEvent.getEventId());
@@ -962,6 +965,24 @@ public class NotificationsDelegate {
             resourceType = "COMMENT";
         }
         text = Messages.get(messageCode, resourceType, originType, originName, associatedUser, associatedDateString);
+        if(eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION)) {
+            text = Messages.get(Lang.forCode(lang), "mail.notification.contribution.status_message",
+                    associatedUser);
+            newNotificationSignal.setTitle(Messages.get(Lang.forCode(lang),"mail.notification.contribution.title_message_status",
+                    originName));
+        }
+        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
+            text = Messages.get(Lang.forCode(lang), "mail.notification.contribution.amendment_message",
+                    associatedUser);
+            newNotificationSignal.setTitle(Messages.get(Lang.forCode(lang), "mail.notification.contribution.title_message_amendment",
+                    originName));
+        }
+        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) {
+            text = Messages.get(Lang.forCode(lang), "mail.notification.contribution.comment_message",
+                    associatedUser);
+            newNotificationSignal.setTitle(Messages.get(Lang.forCode(lang),"mail.notification.contribution.title_message_comment",
+                    originName));
+        }
         // setting the text for the signal
         newNotificationSignal.setText(text);
         newNotificationSignal.setData(notificationEvent.getData());
@@ -1372,14 +1393,13 @@ public class NotificationsDelegate {
         File file = Play.application().getFile(REGULAR_MAIL_TEMPLATE);
         LocalDate now = new LocalDate();
         String content = new String(Files.readAllBytes(Paths.get(file.toString())));
-        content = content.replace("{{REGULAR_TITLE}}", title);
         content = content.replace("{{NEW_ACTIVITY}}", title);
         content = content.replace("{{VISIT_BUTTON_URL}}", getUrl(url));
         content = content.replace("{{REGULAR_DESCRIPTION}}", description);
-        content = content.replace("{{DATE}}", now.getDayOfMonth() +" " + now.toString("MMM"));
+        content = content.replace("{{DATE}}", now.getYear() + "-" + now.getMonthOfYear() + "-" + now.getDayOfMonth());
         content = content.replace("{{YEAR}}", String.valueOf(now.getYear()));
         content = content.replace("{{VISIT_BUTTON_TEXT}}", Messages.get(Lang.forCode(lang),
-                "playauthenticate.index.details"));
+                "mail.notification.view_update"));
         return content;
     }
 
