@@ -965,19 +965,19 @@ public class NotificationsDelegate {
             resourceType = "COMMENT";
         }
         text = Messages.get(messageCode, resourceType, originType, originName, associatedUser, associatedDateString);
-        if(eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION)) {
+        if(eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION.name())) {
             text = Messages.get(Lang.forCode(lang), "mail.notification.contribution.status_message",
                     associatedUser);
             newNotificationSignal.setTitle(Messages.get(Lang.forCode(lang),"mail.notification.contribution.title_message_status",
                     originName));
         }
-        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK)) {
+        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK.name())) {
             text = Messages.get(Lang.forCode(lang), "mail.notification.contribution.amendment_message",
                     associatedUser);
             newNotificationSignal.setTitle(Messages.get(Lang.forCode(lang), "mail.notification.contribution.title_message_amendment",
                     originName));
         }
-        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) {
+        if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT.name())) {
             text = Messages.get(Lang.forCode(lang), "mail.notification.contribution.comment_message",
                     associatedUser);
             newNotificationSignal.setTitle(Messages.get(Lang.forCode(lang),"mail.notification.contribution.title_message_comment",
