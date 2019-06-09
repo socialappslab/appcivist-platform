@@ -150,7 +150,7 @@ public class Notifications extends Controller {
                 resourceSpace.getName(), NotificationEventName.NEW_COORDINATOR_SIGNAL, toCreate.getTitle(),
                 toCreate.getText(), resourceSpace.getUuid(), toCreate.getTitle(), toCreate.getText(), new Date(),
                 resourceSpace.getType().name(), null, SubscriptionTypes.REGULAR,
-                null, resourceSpace.getResourceSpaceId(), null, true);
+                null, resourceSpace.getResourceSpaceId(), null, false);
     }
 
     @ApiOperation(response = NotificationEventSignal.class, produces = "application/json", value = "Create a notification signal event by specifying the subscription object. You can subscribe to a list of eventNames on origin (i.e., a resource space)", httpMethod = "POST")
