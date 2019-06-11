@@ -6,6 +6,7 @@ import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Model;
+import com.avaje.ebean.SqlUpdate;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -86,8 +87,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
@@ -3013,7 +3014,10 @@ public class Contributions extends Controller {
         try {
             Theme theme = Theme.read(tid);
             contribution.setLastUpdate(new Date());
-            contribution.getThemes().remove(theme);
+            SqlUpdate themeDown = Ebean.createSqlUpdate("DELETE FROM resource_space_theme WHERE " +
+                    "resource_space_resource_space_id = " + contribution.getResourceSpaceId() + " and " +
+                    "theme_theme_id = " + theme.getThemeId());
+            themeDown.execute();
             contribution.update();
             return ok(Json.toJson(contribution));
         } catch (Exception e) {

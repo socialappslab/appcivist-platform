@@ -1,27 +1,14 @@
 package models;
 
-import com.avaje.ebean.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonView;
-
-import io.swagger.annotations.ApiModel;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
+import com.fasterxml.jackson.annotation.JsonView;
 import enums.ThemeTypes;
+import io.swagger.annotations.ApiModel;
 import models.misc.Views;
 
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -50,7 +37,7 @@ public class Theme extends AppCivistBaseModel {
     private String url;
 
     @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "themes", cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "themes", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     private List<ResourceSpace> containingSpaces;
 
     /**
