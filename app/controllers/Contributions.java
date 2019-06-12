@@ -4701,7 +4701,9 @@ public class Contributions extends Controller {
         }
         c.setStatus(ContributionStatus.valueOf(upStatus));
         if(upStatus.equals(ContributionStatus.PUBLISHED.name()) ||
-                upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())) {
+                upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())
+                        || upStatus.equals(ContributionStatus.FORKED_PUBLIC_DRAFT.name())
+                || upStatus.equals(ContributionStatus.FORKED_PUBLISHED.name())) {
             Logger.info("PUBLISHING CONTRIBUTION");
             Contribution.publishContribution(c);
         } else {
