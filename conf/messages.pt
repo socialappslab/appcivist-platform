@@ -225,13 +225,13 @@ mail.notification.add.nonmember=Você foi convidado a colaborar em uma {0} para 
 mail.notification.add.nonmember.subject=Convite para colaborar no {0}
 
 
-mail.notification.view_update=View Update
-mail.notification.contribution.status_message=Your proposal has been updated by {0}: status change
-mail.notification.contribution.comment_message=Your proposal has been updated by {0}: new comment
-mail.notification.contribution.amendment_message=Your proposal has been updated by {0}: amendment
-mail.notification.contribution.title_message_status=[AppCivist] Status change to "{0}"
-mail.notification.contribution.title_message_comment=[AppCivist] New comment in "{0}"
-mail.notification.contribution.title_message_amendment=[AppCivist] New amendment to "{0}"
+mail.notification.view_update=Ver Atualização
+mail.notification.contribution.status_message=Sua proposta foi atualizada por {0}: mudança de status
+mail.notification.contribution.comment_message=Sua proposta foi atualizada por {0}: novo comentário
+mail.notification.contribution.amendment_message=Sua proposta foi atualizada por {0}: nova emenda
+mail.notification.contribution.title_message_status=[AppCivist] Mudança de status para a proposta "{0}"
+mail.notification.contribution.title_message_comment=[AppCivist] Novo comentário para a proposta "{0}"
+mail.notification.contribution.title_message_amendment=[AppCivist] Nova emenda para a proposta "{0}"
 
 contribution.unauthorized.creation = Não é possível um postar um novo {0} neste espaço porque atualmente é um RASCUNHO privado
 

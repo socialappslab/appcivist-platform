@@ -210,13 +210,13 @@ mail.notification.add.nonmember=Te han invitado a colaborar en la {0} conectada 
 mail.notification.add.nonmember.subject=[AppCivist] Invitación para colaborar en {0}
 
 
-mail.notification.view_update=View Update
-mail.notification.contribution.status_message=Your proposal has been updated by {0}: status change
-mail.notification.contribution.comment_message=Your proposal has been updated by {0}: new comment
-mail.notification.contribution.amendment_message=Your proposal has been updated by {0}: amendment
-mail.notification.contribution.title_message_status=[AppCivist] Status change to "{0}"
-mail.notification.contribution.title_message_comment=[AppCivist] New comment in "{0}"
-mail.notification.contribution.title_message_amendment=[AppCivist] New amendment to "{0}"
+mail.notification.view_update=Ver actualización
+mail.notification.contribution.status_message=Tu propuesta ha sido actualizada por {0}: cambio de estado
+mail.notification.contribution.comment_message=Tu propuesta ha sido actualizada por {0}: nuevo comentario
+mail.notification.contribution.amendment_message=Tu propuesta ha sido actualizada por {0}: enmienda
+mail.notification.contribution.title_message_status=[AppCivist] Estado cambiado en "{0}"
+mail.notification.contribution.title_message_comment=[AppCivist] Nuevo comentario en "{0}"
+mail.notification.contribution.title_message_amendment=[AppCivist] Nueva enmienda de "{0}"
 
 appcivist.contribution = contribución
 appcivist.contribution.proposal = propuesta
