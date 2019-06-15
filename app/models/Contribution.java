@@ -1102,6 +1102,7 @@ public class Contribution extends AppCivistBaseModel {
 
     public static Contribution unpublishContribution(Contribution c) {
         update(c);
+
         List<User> authors = c.getAuthors();
         List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getResourceSpace().getUuidAsString());
         // if the subscription is for a non author user, we delete it when the contribution is unpublished
@@ -1119,6 +1120,13 @@ public class Contribution extends AppCivistBaseModel {
                 subscription.delete();
             }
         }
+        F.Promise.promise(() -> {
+            Logger.debug("Sending notification for published contribution");
+            NotificationsDelegate.publishedContributionInResourceSpace(c.getResourceSpace(),
+                    c);
+            return Optional.ofNullable(null);
+        });
+
         return c;
     }
 

@@ -800,7 +800,9 @@ public class NotificationsDelegate {
 
         if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
                 (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK))) {
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
+                        eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT))) {
             Contribution contribution = Contribution.getByUUID(resourceUuid);
             notificatedUsers.add(contribution.getCreator().getUserId());
             for(User user: contribution.getAuthors()) {
