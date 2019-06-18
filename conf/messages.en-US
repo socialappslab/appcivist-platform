@@ -209,6 +209,14 @@ contribution.etherpad.words=words
 mail.notification.add.nonmember=You have been invited to collaborate on a {0} for the participatory process {1}. If you would like to contribute, click on the link below to go to this {2}, login, and start editing and/or commenting. If you don’t want to contribute, don’t login. If you don’t want your name even shared on the {3}, click on the link, login, and delete it. If you are unable to open the link by clicking on it, please copy and paste it into your browser. Link: <a href="{4}">{4}</a>
 mail.notification.add.nonmember.subject=[AppCivist] Invitation to collaborate on {0}
 
+mail.notification.view_update=View Update
+mail.notification.contribution.status_message=Your proposal has been updated by {0}: status change
+mail.notification.contribution.comment_message=Your proposal has been updated by {0}: new comment
+mail.notification.contribution.amendment_message=Your proposal has been updated by {0}: new amendment
+mail.notification.contribution.title_message_status=[AppCivist] Status change to "{0}"
+mail.notification.contribution.title_message_comment=[AppCivist] New comment in "{0}"
+mail.notification.contribution.title_message_amendment=[AppCivist] New amendment to "{0}"
+
 contribution.unauthorized.creation = Cannot post a new {0} in this space because it is currently a private DRAFT
 
 appcivist.contribution = contribution

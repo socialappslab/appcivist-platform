@@ -157,6 +157,28 @@ public class Subscription extends Model {
         List<Subscription> membs = q.findList();
         return membs;
     }
+
+    public static Subscription createRegularSubscription(User user, ResourceSpace rs){
+        Subscription old = Subscription.findSubscriptionBySpaceIdAndIdentifier(rs.getUuidAsString(), user.getEmail());
+        if (old != null) {
+            Logger.info("Subscription for " + user.getUsername() + " already exists");
+             return null;
+        }
+        Subscription sub = new Subscription();
+        if(rs.getType().equals(ResourceSpaceTypes.CONTRIBUTION)) {
+            sub.setSpaceId(rs.getContribution().getUuidAsString());
+        } else {
+            sub.setSpaceId(rs.getUuidAsString());
+        }
+        sub.setSubscriptionType(SubscriptionTypes.REGULAR);
+        sub.setSpaceType(rs.getType());
+        sub.setDefaultIdentity(user.getEmail());
+        sub.setUserId(user.getUuid().toString());
+        Subscription.setDisabledServices(sub);
+        sub.save();
+        sub.refresh();
+        return sub;
+    }
   
     public static List<Subscription> findContributionSubscriptionsByUserId(User u) {
         com.avaje.ebean.Query<Subscription> q = find.where().eq("user.userId",u.getUuidAsString())
@@ -227,11 +249,16 @@ public class Subscription extends Model {
     * subscription.subscriptionType === signal.signalType
     * subscription.ignoredEventsList[signal.eventName] === null OR false
          */
-        Logger.debug("spacetype " + signal.getSpaceType());
+        String type = signal.getSpaceType();
+        Logger.debug("spacetype " + type);
         Logger.debug("spaceId " + signal.getSpaceId());
         Logger.debug("sub type " + signal.getSignalType());
+
+        if(type.equals("PROPOSAL")) {
+            type = "CONTRIBUTION";
+        }
         com.avaje.ebean.Query<Subscription> q = find.where()
-                .eq("spaceType",signal.getSpaceType())
+                .eq("spaceType", type)
                 .eq("spaceId", signal.getSpaceId())
                 .eq("subscriptionType",signal.getSignalType())
                 .query();
