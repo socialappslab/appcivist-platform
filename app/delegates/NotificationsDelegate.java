@@ -752,27 +752,6 @@ public class NotificationsDelegate {
         NotificationSignalTransfer newNotificationSignal = null;
         String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
         lang = lang == null ? Lang.defaultLang().code() : lang;
-        try {
-            newNotificationSignal = prepareNotificationSignal(notificationEvent, lang);
-            if(!ownTextAndTitle) {
-                if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
-                    String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
-                            newNotificationSignal.getText(), lang, urls);
-                    notificationEvent.setRichTextMail(richTextMail);
-                }
-            } else {
-                notificationEvent.setRichTextMail(text);
-                notificationEvent.setTitle(title);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            TransferResponseStatus responseBody = new TransferResponseStatus();
-            responseBody.setStatusMessage(e.getMessage());
-            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
-            Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
-            return Controller.internalServerError(Json.toJson(responseBody));
-        }
-
         List<Long> notificatedUsers = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
@@ -804,6 +783,17 @@ public class NotificationsDelegate {
                         eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT))) {
             Contribution contribution = Contribution.getByUUID(resourceUuid);
+
+            for (ResourceSpace rs: contribution.getContainingSpaces()) {
+                if(rs.getType().equals(CAMPAIGN)) {
+                    lang = rs.getLang();
+                }
+            }
+
+            if(lang == null) {
+                Lang.defaultLang().code();
+            }
+
             notificatedUsers.add(contribution.getCreator().getUserId());
             for(User user: contribution.getAuthors()) {
                 if(!notificatedUsers.contains(user.getUserId())) {
@@ -811,6 +801,28 @@ public class NotificationsDelegate {
                 }
             }
         }
+
+        try {
+            newNotificationSignal = prepareNotificationSignal(notificationEvent, lang);
+            if(!ownTextAndTitle) {
+                if (subscriptionType.equals(SubscriptionTypes.REGULAR)) {
+                    String richTextMail = getRegularMailToSend(newNotificationSignal.getTitle(),
+                            newNotificationSignal.getText(), lang, urls);
+                    notificationEvent.setRichTextMail(richTextMail);
+                }
+            } else {
+                notificationEvent.setRichTextMail(text);
+                notificationEvent.setTitle(title);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            TransferResponseStatus responseBody = new TransferResponseStatus();
+            responseBody.setStatusMessage(e.getMessage());
+            responseBody.setResponseStatus(ResponseStatus.SERVERERROR);
+            Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
+            return Controller.internalServerError(Json.toJson(responseBody));
+        }
+
 
         //if the spaceType is CAMPAIGN
         if (originType.equals(ResourceSpaceTypes.CAMPAIGN)) {
