@@ -752,8 +752,7 @@ public class NotificationsDelegate {
         NotificationSignalTransfer newNotificationSignal = null;
         String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
         lang = lang == null ? Lang.defaultLang().code() : lang;
-
-
+        List<Long> notificatedUsers = new ArrayList<>();
 
         if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
                 (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
@@ -800,7 +799,7 @@ public class NotificationsDelegate {
             Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
             return Controller.internalServerError(Json.toJson(responseBody));
         }
-        List<Long> notificatedUsers = new ArrayList<>();
+
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         Logger.info(subscriptions.size() + " subscriptions found");
