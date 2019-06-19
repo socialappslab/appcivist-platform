@@ -752,29 +752,7 @@ public class NotificationsDelegate {
         NotificationSignalTransfer newNotificationSignal = null;
         String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
         lang = lang == null ? Lang.defaultLang().code() : lang;
-        List<Long> notificatedUsers = new ArrayList<>();
-        //Get all subscriptions and create NotificationEventSignalUser
-        List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
-        Logger.info(subscriptions.size() + " subscriptions found");
-        for (Subscription sub : subscriptions) {
-            Logger.info("SUBSCRIPTION IGNORED EVENTS: " + sub.getIgnoredEvents());
-            //subscription.ignoredEventsList[signal.eventName] === null OR false
-            if (sub.getIgnoredEvents() == null || sub.getIgnoredEvents().isEmpty() || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
-                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false) {
-                // If subscription does not have a defaultService override,
-                // then iterate the list of enabled identities of the user (where enabled === true),
-                // and create the message to send as follow (see signals.js => processMatch):
-                User user = User.findByUUID(UUID.fromString(sub.getUserId()));
-                if (sub.getDefaultService() == null && user != null) {
-                    Logger.info("Notificated user: " + user.getName());
-                    NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
-                    notificationEvent.addNotificationEventSignalUser(userSignal);
-                    notificatedUsers.add(user.getUserId());
-                }
 
-            }
-
-        }
 
 
         if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
@@ -822,7 +800,29 @@ public class NotificationsDelegate {
             Logger.error("Error signaling notificaiton: " + LogActions.exceptionStackTraceToString(e));
             return Controller.internalServerError(Json.toJson(responseBody));
         }
+        List<Long> notificatedUsers = new ArrayList<>();
+        //Get all subscriptions and create NotificationEventSignalUser
+        List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
+        Logger.info(subscriptions.size() + " subscriptions found");
+        for (Subscription sub : subscriptions) {
+            Logger.info("SUBSCRIPTION IGNORED EVENTS: " + sub.getIgnoredEvents());
+            //subscription.ignoredEventsList[signal.eventName] === null OR false
+            if (sub.getIgnoredEvents() == null || sub.getIgnoredEvents().isEmpty() || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
+                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false) {
+                // If subscription does not have a defaultService override,
+                // then iterate the list of enabled identities of the user (where enabled === true),
+                // and create the message to send as follow (see signals.js => processMatch):
+                User user = User.findByUUID(UUID.fromString(sub.getUserId()));
+                if (sub.getDefaultService() == null && user != null) {
+                    Logger.info("Notificated user: " + user.getName());
+                    NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
+                    notificationEvent.addNotificationEventSignalUser(userSignal);
+                    notificatedUsers.add(user.getUserId());
+                }
 
+            }
+
+        }
 
         //if the spaceType is CAMPAIGN
         if (originType.equals(ResourceSpaceTypes.CAMPAIGN)) {
