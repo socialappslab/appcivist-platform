@@ -763,7 +763,9 @@ public class NotificationsDelegate {
 
             for (ResourceSpace rs: contribution.getContainingSpaces()) {
                 if(rs.getType().equals(CAMPAIGN)) {
-                    lang = rs.getLang();
+                    lang = rs.getCampaign().getLang();
+                    Logger.info("USIGIN CAMPAIGN LANG " + lang);
+
                 }
             }
 
@@ -882,7 +884,7 @@ public class NotificationsDelegate {
                         notificationEventSignalUser.save();
                     }
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
-                            notificationEvent.getRichTextMail(), ownTextAndTitle, true);
+                            notificationEvent.getRichTextMail(), true, true);
                 } else {
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
                             notificationEvent.getRichTextMail(), ownTextAndTitle, false);

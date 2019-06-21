@@ -1142,6 +1142,12 @@ public class Contribution extends AppCivistBaseModel {
             }
         }
 
+        // We create subscription to the contribution for all the authors
+        for(User author: c.getAuthors()) {
+            Logger.info("Creating subscriptions to author " + author.getUsername());
+            Subscription.createRegularSubscription(author, c.getResourceSpace());
+        }
+
         // and then we notified all that the contribution was updated
         F.Promise.promise(() -> {
             Logger.debug("Sending notification for published contribution");
