@@ -1384,7 +1384,9 @@ public class Campaigns extends Controller {
             @ApiParam(name = "uuid", value = "Campaign UUID") UUID campaignUUID,
             @ApiParam(name = "all", value = "Boolean") String all,
             @ApiParam(name = "page", value = "Integer") Integer page,
-            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize) {
+            @ApiParam(name = "pageSize", value = "Integer") Integer pageSize,
+            @ApiParam(name = "themeType", value = "String") String themeType,
+            @ApiParam(name = "query", value = "String") String query) {
 
         try {
             if (pageSize == null) {
@@ -1392,17 +1394,17 @@ public class Campaigns extends Controller {
             }
             Campaign campaign = Campaign.readByUUID(campaignUUID);
             List<Theme> themes;
-            if (all != null) {
-                themes = campaign.getThemes();
+            if (all != null && campaign!=null) {
+                themes = Campaign.getThemesByCampaignIdAndType(campaign.getCampaignId(), themeType, null, null, query);
+            } else if (campaign!=null){
+                themes = Campaign.getThemesByCampaignIdAndType(campaign.getCampaignId(), themeType, page, pageSize, query);
             } else {
-                themes = campaign.getPagedThemes(page, pageSize);
+                return notFound("Campaign not found");
             }
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
-            String result = mapper.writerWithView(Views.Public.class)
-                    .writeValueAsString(themes);
-
+            String result = mapper.writerWithView(Views.Public.class).writeValueAsString(themes);
             Content ret = new Content() {
                 @Override
                 public String body() {

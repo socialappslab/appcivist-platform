@@ -1,9 +1,6 @@
 package models;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.SqlQuery;
-import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.*;
 import com.avaje.ebean.annotation.Index;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -15,6 +12,7 @@ import models.location.Location;
 import models.misc.Views;
 
 import javax.persistence.*;
+import javax.persistence.OrderBy;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -918,8 +916,10 @@ String uuidAsString, List<Component> phases) {
 		}
 
 		if (query!=null && !query.isEmpty()) {
-		    e = e.ilike("title","%"+query+"%");
-        }
+		    Expression e1 = com.avaje.ebean.Expr.ilike("description", "%"+query+"%");
+            Expression e2 = com.avaje.ebean.Expr.ilike("title", "%"+query+"%");
+			e = e.or(e1, e2);
+		}
 
         e.orderBy("themeId");
 		if (pageSize==null) {
