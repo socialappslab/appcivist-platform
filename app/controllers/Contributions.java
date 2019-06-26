@@ -2906,6 +2906,7 @@ public class Contributions extends Controller {
                 contribution.setLastUpdate(new Date());
                 contribution.update();
                 contribution.refresh();
+                Subscription.createRegularSubscription(author, contribution.getResourceSpace(), null);
                 F.Promise.promise(() -> {
                     sendAuthorAddedMail(author, null, contribution, contribution.getContainingSpaces().get(0));
                     PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive);
@@ -2975,6 +2976,7 @@ public class Contributions extends Controller {
                 contribution.getAuthors().add(user);
                 contribution.update();
                 contribution.refresh();
+                Subscription.createRegularSubscription(user, contribution.getResourceSpace(), null);
                 F.Promise.promise(() -> {
                     sendAuthorAddedMail(user, null, contribution, contribution.getContainingSpaces().get(0));
                     PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
@@ -4685,6 +4687,19 @@ public class Contributions extends Controller {
                         ResponseStatus.SERVERERROR,
                         "Error publishing peerdoc")));
             }
+            c.setStatus(ContributionStatus.valueOf(upStatus));
+            if(upStatus.equals(ContributionStatus.PUBLISHED.name()) ||
+                    upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())
+                    || upStatus.equals(ContributionStatus.FORKED_PUBLIC_DRAFT.name())
+                    || upStatus.equals(ContributionStatus.FORKED_PUBLISHED.name())) {
+                Logger.info("PUBLISHING CONTRIBUTION");
+                Contribution.publishContribution(c);
+            } else {
+                Logger.info("UNPUBLISHING CONTRIBUTION");
+                Contribution.unpublishContribution(c);
+            }
+            return ok(Json.toJson(c));
+
         } catch (Exception e) {
             TransferResponseStatus response = new TransferResponseStatus();
             response.setResponseStatus(ResponseStatus.SERVERERROR);
@@ -4699,18 +4714,6 @@ public class Contributions extends Controller {
             response.setNewResourceURL("");
             return internalServerError(Json.toJson(response));
         }
-        c.setStatus(ContributionStatus.valueOf(upStatus));
-        if(upStatus.equals(ContributionStatus.PUBLISHED.name()) ||
-                upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())
-                        || upStatus.equals(ContributionStatus.FORKED_PUBLIC_DRAFT.name())
-                || upStatus.equals(ContributionStatus.FORKED_PUBLISHED.name())) {
-            Logger.info("PUBLISHING CONTRIBUTION");
-            Contribution.publishContribution(c);
-        } else {
-            Logger.info("UNPUBLISHING CONTRIBUTION");
-            Contribution.unpublishContribution(c);
-        }
-        return ok(Json.toJson(c));
     }
 
     @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")

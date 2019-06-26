@@ -158,7 +158,8 @@ public class Subscription extends Model {
         return membs;
     }
 
-    public static Subscription createRegularSubscription(User user, ResourceSpace rs){
+    public static Subscription createRegularSubscription(User user, ResourceSpace rs,
+                                                         HashMap<String, Boolean> ignoredEvents){
         Subscription old = Subscription.findSubscriptionBySpaceIdAndIdentifier(rs.getUuidAsString(), user.getEmail());
         if (old != null) {
             Logger.info("Subscription for " + user.getUsername() + " already exists");
@@ -174,6 +175,7 @@ public class Subscription extends Model {
         sub.setSpaceType(rs.getType());
         sub.setDefaultIdentity(user.getEmail());
         sub.setUserId(user.getUuid().toString());
+        sub.setIgnoredEvents(ignoredEvents);
         Subscription.setDisabledServices(sub);
         sub.save();
         sub.refresh();

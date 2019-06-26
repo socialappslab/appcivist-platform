@@ -140,7 +140,7 @@ public class Subscriptions extends Controller {
         if(rs == null) {
             return notFound(Json.toJson(new TransferResponseStatus("The resource space doesn't exist")));
         }
-        Subscription sub = Subscription.createRegularSubscription(subscriber, rs);
+        Subscription sub = Subscription.createRegularSubscription(subscriber, rs, null);
         if (sub == null) {
             return badRequest(Json.toJson(TransferResponseStatus.badMessage("Subscription error", "The email is already subscribed to the resource space")));
         }

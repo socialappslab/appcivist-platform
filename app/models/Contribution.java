@@ -1134,18 +1134,27 @@ public class Contribution extends AppCivistBaseModel {
 
         update(c);
 
-        // We create subscription to the contribution for all the wg members
+        // We create subscription to the contribution for all the wg members, but ignoring the comment and
+        // amendments events.
+
+        HashMap<String, Boolean> ignoredEvents = new HashMap<>();
+
+        ignoredEvents.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT.name(), true);
+        ignoredEvents.put(NotificationEventName.NEW_CONTRIBUTION_FORK.name(), true);
+        ignoredEvents.put(NotificationEventName.NEW_CONTRIBUTION_MERGE.name(), true);
+
+
         for (WorkingGroup wg: c.getWorkingGroupAuthors()) {
             for(MembershipGroup mg: wg.getMembers()) {
                 Logger.info("Creating subscriptions to wg members");
-                Subscription.createRegularSubscription(mg.getUser(), c.getResourceSpace());
+                Subscription.createRegularSubscription(mg.getUser(), c.getResourceSpace(), ignoredEvents);
             }
         }
 
         // We create subscription to the contribution for all the authors
         for(User author: c.getAuthors()) {
             Logger.info("Creating subscriptions to author " + author.getUsername());
-            Subscription.createRegularSubscription(author, c.getResourceSpace());
+            Subscription.createRegularSubscription(author, c.getResourceSpace(), null);
         }
 
         // and then we notified all that the contribution was updated
