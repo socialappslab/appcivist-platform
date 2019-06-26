@@ -752,6 +752,35 @@ public class NotificationsDelegate {
         NotificationSignalTransfer newNotificationSignal = null;
         String lang = userParam == null ? Lang.defaultLang().code() : userParam.getLang();
         lang = lang == null ? Lang.defaultLang().code() : lang;
+        List<Long> notificatedUsers = new ArrayList<>();
+
+        if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
+                (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
+                        eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
+                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT))) {
+            Contribution contribution = Contribution.getByUUID(resourceUuid);
+
+            for (ResourceSpace rs: contribution.getContainingSpaces()) {
+                if(rs.getType().equals(CAMPAIGN)) {
+                    lang = rs.getCampaign().getLang();
+                    Logger.info("USIGIN CAMPAIGN LANG " + lang);
+
+                }
+            }
+
+            if(lang == null) {
+                Lang.defaultLang().code();
+            }
+
+            notificatedUsers.add(contribution.getCreator().getUserId());
+            for(User user: contribution.getAuthors()) {
+                if(!notificatedUsers.contains(user.getUserId())) {
+                    notificatedUsers.add(user.getUserId());
+                }
+            }
+        }
+
         try {
             newNotificationSignal = prepareNotificationSignal(notificationEvent, lang);
             if(!ownTextAndTitle) {
@@ -773,7 +802,6 @@ public class NotificationsDelegate {
             return Controller.internalServerError(Json.toJson(responseBody));
         }
 
-        List<Long> notificatedUsers = new ArrayList<>();
         //Get all subscriptions and create NotificationEventSignalUser
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         Logger.info(subscriptions.size() + " subscriptions found");
@@ -795,21 +823,6 @@ public class NotificationsDelegate {
 
             }
 
-        }
-
-
-        if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
-                (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
-                        eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT))) {
-            Contribution contribution = Contribution.getByUUID(resourceUuid);
-            notificatedUsers.add(contribution.getCreator().getUserId());
-            for(User user: contribution.getAuthors()) {
-                if(!notificatedUsers.contains(user.getUserId())) {
-                    notificatedUsers.add(user.getUserId());
-                }
-            }
         }
 
         //if the spaceType is CAMPAIGN
@@ -871,7 +884,7 @@ public class NotificationsDelegate {
                         notificationEventSignalUser.save();
                     }
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
-                            notificationEvent.getRichTextMail(), ownTextAndTitle, true);
+                            notificationEvent.getRichTextMail(), true, true);
                 } else {
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
                             notificationEvent.getRichTextMail(), ownTextAndTitle, false);
