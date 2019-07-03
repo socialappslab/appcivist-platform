@@ -1100,6 +1100,26 @@ public class Contribution extends AppCivistBaseModel {
         ContributionHistory.createHistoricFromContribution(c);
     }
 
+    public static Contribution deleteContributionAuthor(Contribution contribution, User author,
+                                                        User authorActive) {
+        contribution.setLastUpdate(new Date());
+        contribution.getAuthors().remove(author);
+        contribution.update();
+        contribution.refresh();
+        List<Subscription> subscriptions = Subscription.findSubscriptionByUserIdAndSpaceIdAndType(author.getUuidAsString(),
+                contribution.getResourceSpace().getUuidAsString(), SubscriptionTypes.REGULAR.name());
+        for (Subscription subscription : subscriptions) {
+            subscription.delete();
+        }
+        F.Promise.promise(() -> {
+            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive);
+            peerDocWrapper.updatePeerdocPermissions(contribution);
+            return Optional.ofNullable(null);
+        });
+
+        return contribution;
+    }
+
     public static Contribution unpublishContribution(Contribution c) {
         update(c);
 
@@ -1733,7 +1753,7 @@ public class Contribution extends AppCivistBaseModel {
 
     /**
      * Given a user, removes it from all contribution where it is a non member
-     * set as author and update peerdoc and send mails
+     * set as author and update peerdoc and send mails and create suscriptions to the contributions
      * @param user
      */
     public static void updateContributionAuthors(User user) {
@@ -1764,6 +1784,7 @@ public class Contribution extends AppCivistBaseModel {
             }
             if(!isAuthor) {
                 contribution.addAuthor(user);
+                Subscription.createRegularSubscription(user, contribution.getResourceSpace(), null);
                 Logger.debug("Contribution updated ");
             }
             contribution.update();

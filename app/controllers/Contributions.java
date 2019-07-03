@@ -4,6 +4,7 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.amazonaws.services.simpleemail.model.NotificationType;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Model;
 import com.avaje.ebean.SqlUpdate;
@@ -3046,22 +3047,13 @@ public class Contributions extends Controller {
         User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
         contribution = Contribution.readByUUID(uuid);
-
         try {
             User author = User.findByUUID(auuid);
-            contribution.setLastUpdate(new Date());
             boolean authorExist = contribution.getAuthors().contains(author);
-            if(authorExist) {
-                contribution.getAuthors().remove(author);
-                contribution.update();
-                contribution.refresh();
-                F.Promise.promise(() -> {
-                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
-                    peerDocWrapper.updatePeerdocPermissions(contribution);
-                    return Optional.ofNullable(null);
-                });
+            if (authorExist) {
+                contribution = Contribution.deleteContributionAuthor(contribution, author, authorActive);
                 return ok(Json.toJson(contribution));
-            }else {
+            } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
             }
 
