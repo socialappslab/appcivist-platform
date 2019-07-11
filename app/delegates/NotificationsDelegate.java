@@ -808,9 +808,9 @@ public class NotificationsDelegate {
         for (Subscription sub : subscriptions) {
             Logger.info("SUBSCRIPTION IGNORED EVENTS: " + sub.getIgnoredEvents());
             //subscription.ignoredEventsList[signal.eventName] === null OR false
-            if (sub.getIgnoredEvents() == null || sub.getIgnoredEvents().isEmpty()
-                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
-                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false) {
+            if ((sub.getIgnoredEvents() == null) || sub.getIgnoredEvents().isEmpty()
+                    || (sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null)
+                    || !sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName"))) {
                 // If subscription does not have a defaultService override,
                 // then iterate the list of enabled identities of the user (where enabled === true),
                 // and create the message to send as follow (see signals.js => processMatch):
@@ -873,17 +873,17 @@ public class NotificationsDelegate {
             Boolean socialBusIsActive = Play.application().configuration().getBoolean("appcivist.services.notification.default.useSocialBus");
             if(rabbitIsActive !=null && rabbitIsActive) {
                 Logger.info("NOTIFICATION: Signaling notification to rabbitmq is enabled");
-                notificationEvent = NotificationEventSignal.create(notificationEvent);
+                NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
                                 eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
                                 eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) 
                {
-                    for(Long userId: notificatedUsers) {
+                    /*for(Long userId: notificatedUsers) {
                         User user = User.findByUserId(userId);
                         NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);
                         notificationEventSignalUser.save();
-                    }
+                    }*/
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
                             notificationEvent.getRichTextMail(), true, true);
                 } else {
