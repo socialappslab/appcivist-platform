@@ -1107,7 +1107,7 @@ public class Contribution extends AppCivistBaseModel {
         contribution.update();
         contribution.refresh();
         List<Subscription> subscriptions = Subscription.findSubscriptionByUserIdAndSpaceIdAndType(author.getUuidAsString(),
-                contribution.getResourceSpace().getUuidAsString(), SubscriptionTypes.REGULAR.name());
+                contribution.getUuidAsString(), SubscriptionTypes.REGULAR.name());
         for (Subscription subscription : subscriptions) {
             subscription.delete();
         }
@@ -1124,7 +1124,7 @@ public class Contribution extends AppCivistBaseModel {
         update(c);
 
         List<User> authors = c.getAuthors();
-        List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getResourceSpace().getUuidAsString());
+        List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getUuidAsString());
         // if the subscription is for a non author user, we delete it when the contribution is unpublished
         for(Subscription subscription: subscriptions) {
             boolean delete = true;
