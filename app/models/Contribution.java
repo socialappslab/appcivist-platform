@@ -1100,11 +1100,31 @@ public class Contribution extends AppCivistBaseModel {
         ContributionHistory.createHistoricFromContribution(c);
     }
 
+    public static Contribution deleteContributionAuthor(Contribution contribution, User author,
+                                                        User authorActive) {
+        contribution.setLastUpdate(new Date());
+        contribution.getAuthors().remove(author);
+        contribution.update();
+        contribution.refresh();
+        List<Subscription> subscriptions = Subscription.findSubscriptionByUserIdAndSpaceIdAndType(author.getUuidAsString(),
+                contribution.getUuidAsString(), SubscriptionTypes.REGULAR.name());
+        for (Subscription subscription : subscriptions) {
+            subscription.delete();
+        }
+        F.Promise.promise(() -> {
+            PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive);
+            peerDocWrapper.updatePeerdocPermissions(contribution);
+            return Optional.ofNullable(null);
+        });
+
+        return contribution;
+    }
+
     public static Contribution unpublishContribution(Contribution c) {
         update(c);
 
         List<User> authors = c.getAuthors();
-        List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getResourceSpace().getUuidAsString());
+        List<Subscription> subscriptions = Subscription.findSubscriptionBySpaceId(c.getUuidAsString());
         // if the subscription is for a non author user, we delete it when the contribution is unpublished
         for(Subscription subscription: subscriptions) {
             boolean delete = true;
@@ -1134,18 +1154,27 @@ public class Contribution extends AppCivistBaseModel {
 
         update(c);
 
-        // We create subscription to the contribution for all the wg members
+        // We create subscription to the contribution for all the wg members, but ignoring the comment and
+        // amendments events.
+
+        HashMap<String, Boolean> ignoredEvents = new HashMap<>();
+
+        ignoredEvents.put(NotificationEventName.NEW_CONTRIBUTION_COMMENT.name(), true);
+        ignoredEvents.put(NotificationEventName.NEW_CONTRIBUTION_FORK.name(), true);
+        ignoredEvents.put(NotificationEventName.NEW_CONTRIBUTION_MERGE.name(), true);
+
+
         for (WorkingGroup wg: c.getWorkingGroupAuthors()) {
             for(MembershipGroup mg: wg.getMembers()) {
                 Logger.info("Creating subscriptions to wg members");
-                Subscription.createRegularSubscription(mg.getUser(), c.getResourceSpace());
+                Subscription.createRegularSubscription(mg.getUser(), c.getResourceSpace(), ignoredEvents);
             }
         }
 
         // We create subscription to the contribution for all the authors
         for(User author: c.getAuthors()) {
             Logger.info("Creating subscriptions to author " + author.getUsername());
-            Subscription.createRegularSubscription(author, c.getResourceSpace());
+            Subscription.createRegularSubscription(author, c.getResourceSpace(), null);
         }
 
         // and then we notified all that the contribution was updated
@@ -1724,7 +1753,7 @@ public class Contribution extends AppCivistBaseModel {
 
     /**
      * Given a user, removes it from all contribution where it is a non member
-     * set as author and update peerdoc and send mails
+     * set as author and update peerdoc and send mails and create suscriptions to the contributions
      * @param user
      */
     public static void updateContributionAuthors(User user) {
@@ -1755,6 +1784,7 @@ public class Contribution extends AppCivistBaseModel {
             }
             if(!isAuthor) {
                 contribution.addAuthor(user);
+                Subscription.createRegularSubscription(user, contribution.getResourceSpace(), null);
                 Logger.debug("Contribution updated ");
             }
             contribution.update();

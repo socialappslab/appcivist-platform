@@ -754,32 +754,6 @@ public class NotificationsDelegate {
         lang = lang == null ? Lang.defaultLang().code() : lang;
         List<Long> notificatedUsers = new ArrayList<>();
 
-        if(originType.equals(ResourceSpaceTypes.CONTRIBUTION) &&
-                (eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
-                        eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
-                        eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT))) {
-            Contribution contribution = Contribution.getByUUID(resourceUuid);
-
-            for (ResourceSpace rs: contribution.getContainingSpaces()) {
-                if(rs.getType().equals(CAMPAIGN)) {
-                    lang = rs.getCampaign().getLang();
-                    Logger.info("USIGIN CAMPAIGN LANG " + lang);
-
-                }
-            }
-
-            if(lang == null) {
-                Lang.defaultLang().code();
-            }
-
-            notificatedUsers.add(contribution.getCreator().getUserId());
-            for(User user: contribution.getAuthors()) {
-                if(!notificatedUsers.contains(user.getUserId())) {
-                    notificatedUsers.add(user.getUserId());
-                }
-            }
-        }
 
         try {
             newNotificationSignal = prepareNotificationSignal(notificationEvent, lang);
@@ -806,13 +780,14 @@ public class NotificationsDelegate {
         List<Subscription> subscriptions = Subscription.findBySignal(newNotificationSignal);
         Logger.info(subscriptions.size() + " subscriptions found");
         for (Subscription sub : subscriptions) {
-            Logger.info("SUBSCRIPTION IGNORED EVENTS: " + sub.getIgnoredEvents());
             //subscription.ignoredEventsList[signal.eventName] === null OR false
-            if (sub.getIgnoredEvents() == null || sub.getIgnoredEvents().isEmpty() || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == null
-                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName")) == false) {
+            if ((sub.getIgnoredEvents() == null) || sub.getIgnoredEvents().isEmpty()
+                    || sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName").toString()) == null
+                    || !sub.getIgnoredEvents().get(newNotificationSignal.getData().get("eventName").toString())) {
                 // If subscription does not have a defaultService override,
                 // then iterate the list of enabled identities of the user (where enabled === true),
                 // and create the message to send as follow (see signals.js => processMatch):
+                Logger.info("SUBSCRIPTION IGNORED EVENTS: " + sub.getIgnoredEvents());
                 User user = User.findByUUID(UUID.fromString(sub.getUserId()));
                 if (sub.getDefaultService() == null && user != null) {
                     Logger.info("Notificated user: " + user.getName());
@@ -837,12 +812,12 @@ public class NotificationsDelegate {
                         //Get configuration CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION
                         User user = member.getUser();
 
-                        if (notificatedUsers!=null && user !=null && !notificatedUsers.contains(user.getUserId())) {// if not already notified
+                        if (user != null && !notificatedUsers.contains(user.getUserId())) {// if not already notified
                             Config config = Config.findByUser(user.getUuid(), UserProfileConfigsTypes.CAMPAIGN_NEWSLETTER_AUTO_SUBSCRIPTION);
 
                             //If auto subscription is active
                             if (config != null) {
-                                if (new Boolean(config.getValue())) {
+                                if (Boolean.valueOf(config.getValue())) {
                                     //create new signal
                                     NotificationEventSignalUser userSignal = new NotificationEventSignalUser(user, notificationEvent);
                                     notificationEvent.addNotificationEventSignalUser(userSignal);
@@ -872,17 +847,17 @@ public class NotificationsDelegate {
             Boolean socialBusIsActive = Play.application().configuration().getBoolean("appcivist.services.notification.default.useSocialBus");
             if(rabbitIsActive !=null && rabbitIsActive) {
                 Logger.info("NOTIFICATION: Signaling notification to rabbitmq is enabled");
-                notificationEvent = NotificationEventSignal.create(notificationEvent);
+                NotificationEventSignal.create(notificationEvent);
                 if(eventName.equals(NotificationEventName.NEW_CONTRIBUTION_FORK) ||
                         eventName.equals(NotificationEventName.NEW_CONTRIBUTION_MERGE) ||
                                 eventName.equals(NotificationEventName.PUBLISHED_CONTRIBUTION) ||
                                 eventName.equals(NotificationEventName.NEW_CONTRIBUTION_COMMENT)) 
                {
-                    for(Long userId: notificatedUsers) {
+                    /*for(Long userId: notificatedUsers) {
                         User user = User.findByUserId(userId);
                         NotificationEventSignalUser notificationEventSignalUser = new NotificationEventSignalUser(user, notificationEvent);
                         notificationEventSignalUser.save();
-                    }
+                    }*/
                     BusComponent.sendToRabbit(newNotificationSignal, notificatedUsers,
                             notificationEvent.getRichTextMail(), true, true);
                 } else {

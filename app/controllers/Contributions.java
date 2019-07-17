@@ -4,6 +4,7 @@ import be.objectify.deadbolt.java.actions.Dynamic;
 import be.objectify.deadbolt.java.actions.Group;
 import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
+import com.amazonaws.services.simpleemail.model.NotificationType;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Model;
 import com.avaje.ebean.SqlUpdate;
@@ -2906,6 +2907,7 @@ public class Contributions extends Controller {
                 contribution.setLastUpdate(new Date());
                 contribution.update();
                 contribution.refresh();
+                Subscription.createRegularSubscription(author, contribution.getResourceSpace(), null);
                 F.Promise.promise(() -> {
                     sendAuthorAddedMail(author, null, contribution, contribution.getContainingSpaces().get(0));
                     PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive);
@@ -2975,6 +2977,7 @@ public class Contributions extends Controller {
                 contribution.getAuthors().add(user);
                 contribution.update();
                 contribution.refresh();
+                Subscription.createRegularSubscription(user, contribution.getResourceSpace(), null);
                 F.Promise.promise(() -> {
                     sendAuthorAddedMail(user, null, contribution, contribution.getContainingSpaces().get(0));
                     PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
@@ -3044,22 +3047,13 @@ public class Contributions extends Controller {
         User authorActive = User.findByAuthUserIdentity(PlayAuthenticate
                 .getUser(session()));
         contribution = Contribution.readByUUID(uuid);
-
         try {
             User author = User.findByUUID(auuid);
-            contribution.setLastUpdate(new Date());
             boolean authorExist = contribution.getAuthors().contains(author);
-            if(authorExist) {
-                contribution.getAuthors().remove(author);
-                contribution.update();
-                contribution.refresh();
-                F.Promise.promise(() -> {
-                    PeerDocWrapper peerDocWrapper = new PeerDocWrapper(authorActive );
-                    peerDocWrapper.updatePeerdocPermissions(contribution);
-                    return Optional.ofNullable(null);
-                });
+            if (authorExist) {
+                contribution = Contribution.deleteContributionAuthor(contribution, author, authorActive);
                 return ok(Json.toJson(contribution));
-            }else {
+            } else {
                 return notFound(Json.toJson(new TransferResponseStatus(ResponseStatus.NODATA, "Uuid given is not a contribution author")));
             }
 
@@ -4685,6 +4679,19 @@ public class Contributions extends Controller {
                         ResponseStatus.SERVERERROR,
                         "Error publishing peerdoc")));
             }
+            c.setStatus(ContributionStatus.valueOf(upStatus));
+            if(upStatus.equals(ContributionStatus.PUBLISHED.name()) ||
+                    upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())
+                    || upStatus.equals(ContributionStatus.FORKED_PUBLIC_DRAFT.name())
+                    || upStatus.equals(ContributionStatus.FORKED_PUBLISHED.name())) {
+                Logger.info("PUBLISHING CONTRIBUTION");
+                Contribution.publishContribution(c);
+            } else {
+                Logger.info("UNPUBLISHING CONTRIBUTION");
+                Contribution.unpublishContribution(c);
+            }
+            return ok(Json.toJson(c));
+
         } catch (Exception e) {
             TransferResponseStatus response = new TransferResponseStatus();
             response.setResponseStatus(ResponseStatus.SERVERERROR);
@@ -4699,18 +4706,6 @@ public class Contributions extends Controller {
             response.setNewResourceURL("");
             return internalServerError(Json.toJson(response));
         }
-        c.setStatus(ContributionStatus.valueOf(upStatus));
-        if(upStatus.equals(ContributionStatus.PUBLISHED.name()) ||
-                upStatus.equals(ContributionStatus.PUBLIC_DRAFT.name())
-                        || upStatus.equals(ContributionStatus.FORKED_PUBLIC_DRAFT.name())
-                || upStatus.equals(ContributionStatus.FORKED_PUBLISHED.name())) {
-            Logger.info("PUBLISHING CONTRIBUTION");
-            Contribution.publishContribution(c);
-        } else {
-            Logger.info("UNPUBLISHING CONTRIBUTION");
-            Contribution.unpublishContribution(c);
-        }
-        return ok(Json.toJson(c));
     }
 
     @ApiOperation(httpMethod = "PUT", response = Campaign.class, produces = "application/json", value = "Update status of a Contribution")
