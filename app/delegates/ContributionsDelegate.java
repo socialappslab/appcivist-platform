@@ -220,7 +220,7 @@ public class ContributionsDelegate {
                         	sorting +=", forum_comment_count desc nulls last";
                         } else if (sortingValue.equals("most_commented_public_asc")) {
                         	sorting +=", forum_comment_count asc nulls last";
-                        } else if (sortingValue.equals("source_code")) {
+                        } else if (sortingValue.equals("source_code") || sortingValue.equals("source_code_desc")) {
                             sorting +=", source_code desc nulls last";
                         } else if (sortingValue.equals("source_code_asc")) {
                             sorting +=", source_code asc nulls last";
