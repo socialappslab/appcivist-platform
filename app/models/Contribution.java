@@ -231,7 +231,7 @@ public class Contribution extends AppCivistBaseModel {
     @JsonIgnoreProperties({"contributionId", "uuidAsString", "textIndex", "moderationComment", "location",
             "budget", "firstAuthor", "assemblyId", "containingSpaces", "resourceSpace", "stats",
             "attachments", "hashtags", "comments", "associatedMilestones", "associatedContributions", "actionDueDate",
-            "actionDone", "action", "assessmentSummary", "extendedTextPad", "sourceCode", "assessments", "existingHashtags",
+            "actionDone", "action", "assessmentSummary", "extendedTextPad", "assessments", "existingHashtags",
             "existingResponsibleWorkingGroups", "existingContributions", "existingResources", "existingThemes", "addedThemes"
     })
     @JsonIgnore
