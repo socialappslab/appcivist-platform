@@ -150,7 +150,7 @@ public class ContributionsDelegate {
                 "                t0.pinned, \n" +
                 "                t0.comment_count, \n" +
                 "                t0.forum_comment_count, \n" +
-                "                t0.total_comments";
+                "                t0.total_comments ";
 
 
         String sorting = " order by pinned desc nulls last";
@@ -224,6 +224,20 @@ public class ContributionsDelegate {
                             sorting +=", source_code desc nulls last";
                         } else if (sortingValue.equals("source_code_asc")) {
                             sorting +=", source_code asc nulls last";
+                        } else if (sortingValue.contains("feedback_")) {
+                            String feedback_field = sortingValue.split("_")[1];
+                            String aggregate = sortingValue.split("_")[2];
+                            if (feedback_field.equals("all")) {
+                                rawQueryColumns += ", " + aggregate + "(cf.benefit) as aggregate_benefit," + aggregate
+                                        + "(cf.need) as aggregate_need, " + aggregate + "(cf.feasibility) as aggregate_feasibility";
+                                sorting +=", aggregate_benefit, aggregate_need, aggregate_feasibility desc nulls last";
+                            } else {
+                                rawQueryColumns += ", " + aggregate + "(cf." + feedback_field + ") as aggregate_"+ feedback_field;
+                                sorting +=", aggregate_"+ feedback_field+" desc nulls last";
+
+                            }
+                            rawQueryFrom +="left join contribution_feedback cf on cf.contribution_id = t0.contribution_id\n";
+
                         }
                         break;
                     case "statusStartDate":
@@ -244,7 +258,7 @@ public class ContributionsDelegate {
                             spaceThemeAlreadyIncluded = true;
                             rawQueryFrom += "left join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         }
-                        rawQueryFrom += "left join theme the on the.theme_id = rst.theme_theme_id \n ";
+                        rawQueryFrom += "left join theme the on the.theme_id = rst.theme_themae_id \n ";
 
                         if (!spaceGroupAlreadyIncluded) {
                             spaceGroupAlreadyIncluded = true;
@@ -256,7 +270,7 @@ public class ContributionsDelegate {
                 }
             }
             if(!sorting.equals("random")) {
-                if (sorting.contains("popularity")) {
+                if (sorting.contains("popularity") || sorting.contains("aggregate")) {
                     rawQueryFrom += groupBy;
                 } else {
                     rawQueryColumns+=rawQueryVoidPopularityColumn;

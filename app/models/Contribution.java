@@ -141,6 +141,18 @@ public class Contribution extends AppCivistBaseModel {
     private Integer popularity = 0;
 
     @JsonView(Views.Public.class)
+    @Transient
+    private Integer aggregate_need;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer aggregate_feasibility;
+
+    @JsonView(Views.Public.class)
+    @Transient
+    private Integer aggregate_benefit;
+
+    @JsonView(Views.Public.class)
     private Integer commentCount = 0;
 
     @JsonView(Views.Public.class)
@@ -2093,5 +2105,29 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setAcceptedForks(Integer acceptedForks) {
         this.acceptedForks = acceptedForks;
+    }
+
+    public Integer getAggregate_need() {
+        return aggregate_need;
+    }
+
+    public void setAggregate_need(Integer aggregate_need) {
+        this.aggregate_need = aggregate_need;
+    }
+
+    public Integer getAggregate_feasibility() {
+        return aggregate_feasibility;
+    }
+
+    public void setAggregate_feasibility(Integer aggregate_feasibility) {
+        this.aggregate_feasibility = aggregate_feasibility;
+    }
+
+    public Integer getAggregate_benefit() {
+        return aggregate_benefit;
+    }
+
+    public void setAggregate_benefit(Integer aggregate_benefit) {
+        this.aggregate_benefit = aggregate_benefit;
     }
 }
