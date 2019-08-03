@@ -321,7 +321,7 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contributions found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @SubjectPresent
+ //   @SubjectPresent
     public static Result findResourceSpaceContributions(
             @ApiParam(name = "sid", value = "Resource Space ID") Long sid,
             @ApiParam(name = "type", value = "Type of contributions", allowableValues = "forum_post, comment, idea, question, issue, proposal, note", defaultValue = "") String type,
@@ -415,6 +415,23 @@ public class Contributions extends Controller {
                             ResponseStatus.BADREQUEST,
                             "Error in date formatting: " + e.getMessage())));
 
+        }
+        if (sorting!= null && sorting.contains("feedback_")) {
+            if (!sorting.contains("need") &&
+                    !sorting.contains("feasibility") && !sorting.contains("benefit") && !sorting.contains("all"))
+            {
+                return badRequest(Json
+                        .toJson(new TransferResponseStatus(
+                                ResponseStatus.BADREQUEST, "Error in feedback filter param doesnt exist")));
+
+            } else {
+                if (!sorting.contains("_avg") && !sorting.contains("_sum") && !sorting.contains("_count")) {
+                    return badRequest(Json
+                            .toJson(new TransferResponseStatus(
+                                    ResponseStatus.BADREQUEST, "You need to specify the aggregate function: avg,sum or count")));
+
+                }
+            }
         }
 
         PaginatedContribution pag = new PaginatedContribution();
