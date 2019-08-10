@@ -227,14 +227,17 @@ public class ContributionsDelegate {
                         } else if (sortingValue.contains("feedback_")) {
                             String feedback_field = sortingValue.split("_")[1];
                             String aggregate = sortingValue.split("_")[2];
+                            String order = "desc";
+                            if (sortingValue.contains("asc")) {
+                                order = "asc";
+                            }
                             if (feedback_field.equals("all")) {
                                 rawQueryColumns += ", " + aggregate + "(cf.benefit) as aggregate_benefit," + aggregate
                                         + "(cf.need) as aggregate_need, " + aggregate + "(cf.feasibility) as aggregate_feasibility";
-                                sorting +=", aggregate_benefit, aggregate_need, aggregate_feasibility desc nulls last";
+                                sorting +=", aggregate_benefit, aggregate_need, aggregate_feasibility  " + order  + " nulls last";
                             } else {
                                 rawQueryColumns += ", " + aggregate + "(cf." + feedback_field + ") as aggregate_"+ feedback_field;
-                                sorting +=", aggregate_"+ feedback_field+" desc nulls last";
-
+                                sorting +=", aggregate_"+ feedback_field+ " " + order + " nulls last";
                             }
                             rawQueryFrom +="left join contribution_feedback cf on cf.contribution_id = t0.contribution_id\n";
 
