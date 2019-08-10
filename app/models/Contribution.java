@@ -153,6 +153,10 @@ public class Contribution extends AppCivistBaseModel {
     private Integer aggregate_benefit;
 
     @JsonView(Views.Public.class)
+    @Transient
+    private Integer aggregate_all;
+
+    @JsonView(Views.Public.class)
     private Integer commentCount = 0;
 
     @JsonView(Views.Public.class)
@@ -2129,5 +2133,13 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setAggregate_benefit(Integer aggregate_benefit) {
         this.aggregate_benefit = aggregate_benefit;
+    }
+
+    public Integer getAggregate_all() {
+        return aggregate_all;
+    }
+
+    public void setAggregate_all(Integer aggregate_all) {
+        this.aggregate_all = aggregate_all;
     }
 }
