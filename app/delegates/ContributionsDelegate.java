@@ -221,9 +221,9 @@ public class ContributionsDelegate {
                         } else if (sortingValue.equals("most_commented_public_asc")) {
                         	sorting +=", forum_comment_count asc nulls last";
                         } else if (sortingValue.equals("source_code") || sortingValue.equals("source_code_desc")) {
-                            sorting +=", source_code desc nulls last";
+                            sorting +=", naturalsort(source_code) desc nulls last";
                         } else if (sortingValue.equals("source_code_asc")) {
-                            sorting +=", source_code asc nulls last";
+                            sorting +=", naturalsort(source_code) asc nulls last";
                         } else if (sortingValue.contains("feedback_")) {
                             String feedback_field = sortingValue.split("_")[1];
                             String aggregate = sortingValue.split("_")[2];
@@ -282,7 +282,6 @@ public class ContributionsDelegate {
             }
 
             String rawQuery = rawQueryColumns + rawQueryFrom;
-
             RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
             where = finder.setRawSql(rawSql).setDistinct(true).where();
             for(String key : conditions.keySet()){
