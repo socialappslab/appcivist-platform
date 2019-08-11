@@ -302,6 +302,10 @@ public class Contribution extends AppCivistBaseModel {
     @Column(name = "source_code")
     private String sourceCode;
 
+    @JsonIgnore
+    @Transient
+    private byte[] source_order;
+
     // Fields specific to the type PROPOSAL
     @Transient
     private List<Contribution> assessments;
@@ -2141,5 +2145,13 @@ public class Contribution extends AppCivistBaseModel {
 
     public void setAggregate_all(Integer aggregate_all) {
         this.aggregate_all = aggregate_all;
+    }
+
+    public byte[] getSource_order() {
+        return source_order;
+    }
+
+    public void setSource_order(byte[] source_order) {
+        this.source_order = source_order;
     }
 }

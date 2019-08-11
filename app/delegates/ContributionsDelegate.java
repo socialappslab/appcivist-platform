@@ -133,7 +133,7 @@ public class ContributionsDelegate {
 
         String rawQueryColumns = "select distinct t0.contribution_id, t0.creation, t0.last_update, t0.lang, t0.removal, \n" +
                 "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index, \n" +
-                "  t0.moderation_comment, t0.budget, t0.source_code, \n" +
+                "  t0.moderation_comment, t0.budget, naturalorder(t0.source_code) as source_order, \n" +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, \n" +
                 "  t0.source_code, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments \n";
 
@@ -147,6 +147,7 @@ public class ContributionsDelegate {
                 "                t0.budget, \n" +
                 "                t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, \n" +
                 "                t0.source_code, \n" +
+                "                source_order, \n" +
                 "                t0.pinned, \n" +
                 "                t0.comment_count, \n" +
                 "                t0.forum_comment_count, \n" +
@@ -221,9 +222,9 @@ public class ContributionsDelegate {
                         } else if (sortingValue.equals("most_commented_public_asc")) {
                         	sorting +=", forum_comment_count asc nulls last";
                         } else if (sortingValue.equals("source_code") || sortingValue.equals("source_code_desc")) {
-                            sorting +=", naturalsort(source_code) desc nulls last";
+                            sorting +=", source_order desc nulls last";
                         } else if (sortingValue.equals("source_code_asc")) {
-                            sorting +=", naturalsort(source_code) asc nulls last";
+                            sorting +=", source_order asc nulls last";
                         } else if (sortingValue.contains("feedback_")) {
                             String feedback_field = sortingValue.split("_")[1];
                             String aggregate = sortingValue.split("_")[2];
@@ -756,7 +757,7 @@ public class ContributionsDelegate {
                 "  t0.removed, t0.uuid, t0.title, t0.text, t0.type, t0.status, t0.text_index,\n" +
                 "  t0.moderation_comment, t0.budget, \n " +
                 "  t0.action_due_date, t0.action_done, t0.action, t0.assessment_summary, \n" +
-                "  t0.source_code, t0.popularity, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments, t0.document from contribution t0\n ";
+                "  t0.source_code, naturalorder(t0.source_code) as source_order, t0.popularity, t0.pinned, t0.comment_count, t0.forum_comment_count, t0.total_comments, t0.document from contribution t0\n ";
         
         RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
         where = finder.setRawSql(rawSql).where();   
