@@ -275,7 +275,7 @@ public class ContributionsDelegate {
                 }
             }
             if(!sorting.equals("random")) {
-                if (sorting.contains("popularity") || sorting.contains("aggregate")) {
+                if (sorting.contains("popularity") || sorting.contains("avg")) {
                     rawQueryFrom += groupBy;
                 } else {
                     rawQueryColumns+=rawQueryVoidPopularityColumn;
