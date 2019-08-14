@@ -406,6 +406,15 @@ public class ContributionsDelegate {
                 Collections.shuffle(contributions);
             } else {
                 contributions = where.findPagedList(page, pageSize).getList();
+                if(sorting.contains("aggregate")) {
+                    contributions.sort((o1, o2)->((o2.getStats().getAverageBenefit()
+                            + o2.getStats().getAverageFeasibility() +
+                            o2.getStats().getAverageNeed())- (o1.getStats().getAverageBenefit()
+                            + o1.getStats().getAverageNeed() + o1.getStats().getAverageFeasibility())));
+                    if(sorting.contains("desc")) {
+                        Collections.reverse(contributions);
+                    }
+                }
             }
         } else {
             contributions = where.findList();
