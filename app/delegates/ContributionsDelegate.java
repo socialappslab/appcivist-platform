@@ -235,7 +235,7 @@ public class ContributionsDelegate {
                             if (feedback_field.equals("all")) {
                                 rawQueryColumns += ", " + aggregate + "(cf.benefit) as aggregate_benefit," + aggregate
                                         + "(cf.need) as aggregate_need, " + aggregate + "(cf.feasibility) as aggregate_feasibility";
-                                sorting +=", aggregate_benefit, aggregate_need, aggregate_feasibility  " + order  + " nulls last";
+                                sorting +=", (aggregate_benefit + aggregate_need + aggregate_feasibility)  " + order  + " nulls last";
                             } else {
                                 rawQueryColumns += ", " + aggregate + "(cf." + feedback_field + ") as aggregate_"+ feedback_field;
                                 sorting +=", aggregate_"+ feedback_field+ " " + order + " nulls last";
@@ -406,15 +406,6 @@ public class ContributionsDelegate {
                 Collections.shuffle(contributions);
             } else {
                 contributions = where.findPagedList(page, pageSize).getList();
-                if(sorting.contains("aggregate")) {
-                    contributions.sort((o1, o2)->((o2.getStats().getAverageBenefit()
-                            + o2.getStats().getAverageFeasibility() +
-                            o2.getStats().getAverageNeed())- (o1.getStats().getAverageBenefit()
-                            + o1.getStats().getAverageNeed() + o1.getStats().getAverageFeasibility())));
-                    if(sorting.contains("desc")) {
-                        Collections.reverse(contributions);
-                    }
-                }
             }
         } else {
             contributions = where.findList();
