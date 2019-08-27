@@ -13,11 +13,7 @@ BEGIN
       CASE 
           WHEN c.status in ('PUBLISHED', 'DRAFT', 'EXCLUDED', 'ARCHIVED', 'NEW', 'PUBLIC_DRAFT', 'INBALLOT') and c.parent_id is null then 'P'||c.contribution_id 
           WHEN c.status not in ('FORKED_PUBLISHED') and c.parent_id is not null then 'P'||c.parent_id
-          ELSE 'P'||c.parent_id||
-              substring('abcdefghijklmnopqrstuvwxyz'
-                from ( (select count(*) from contribution c2 where c2.contribution_id<c.contribution_id and c2.parent_id = c.parent_id and c2.status = 'FORKED_PUBLISHED')::integer + 1 ) 
-                  for 1
-              )
+          ELSE 'P'||c.parent_id||'.'||to_char((select count(*) from contribution c2 where c2.contribution_id<c.contribution_id and c2.parent_id = c.parent_id and c2.status = 'FORKED_PUBLISHED')::integer + 1,'09')
       END
     FROM contribution c
     JOIN resource_space_contributions rsc on c.contribution_id = rsc.contribution_contribution_id 
@@ -29,11 +25,7 @@ BEGIN
       CASE 
           WHEN c.status in ('PUBLISHED', 'DRAFT', 'EXCLUDED', 'ARCHIVED', 'NEW', 'PUBLIC_DRAFT', 'INBALLOT') and c.parent_id is null then 'P'||c.contribution_id 
           WHEN c.status not in ('FORKED_PUBLISHED') and c.parent_id is not null then 'P'||c.parent_id
-          ELSE 'P'||c.parent_id||
-              substring('abcdefghijklmnopqrstuvwxyz'
-                from ( (select count(*) from contribution c2 where c2.contribution_id<c.contribution_id and c2.parent_id = c.parent_id and c2.status = 'FORKED_PUBLISHED')::integer + 1 ) 
-                  for 1
-              )
+          ELSE 'P'||c.parent_id||'.'||to_char((select count(*) from contribution c2 where c2.contribution_id<c.contribution_id and c2.parent_id = c.parent_id and c2.status = 'FORKED_PUBLISHED')::integer + 1,'09')
       END
     FROM contribution c
     JOIN resource_space_contributions rsc on c.contribution_id = rsc.contribution_contribution_id 
