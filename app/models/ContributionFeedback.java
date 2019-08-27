@@ -367,7 +367,8 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				" group by contribution_id";
 		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 		where = find.setRawSql(rawSql).where();
-		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false)
+				.isNotNull("t0.benefit").findList();
 		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getBenefit() != null ? feedbacks.get(0).getBenefit() : 0;
 	}
 
@@ -389,7 +390,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				" group by contribution_id";
 		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 		where = find.setRawSql(rawSql).where();
-		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId)
+				.eq("t0.archived", false)
+				.isNotNull("t0.need").findList();
 		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getNeed() != null ? feedbacks.get(0).getNeed() : 0;
 	}
 
@@ -411,7 +414,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 				" group by contribution_id";
 		RawSql rawSql = RawSqlBuilder.parse(rawQuery).create();
 		where = find.setRawSql(rawSql).where();
-		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false).findList();
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId)
+				.eq("t0.archived", false)
+				.isNotNull("t0.feasibility").findList();
 		return feedbacks != null && !feedbacks.isEmpty() && feedbacks.get(0).getFeasibility() != null ? feedbacks.get(0).getFeasibility() : 0;
 	}
 
