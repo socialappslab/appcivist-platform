@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@UniqueConstraint(columnNames = { "key" })
+//@UniqueConstraint(columnNames = { "key" })
 @ApiModel(value="ConfigDefinition", description="Definition of a configuration value")
 public class ConfigDefinition extends AppCivistBaseModel {
 	

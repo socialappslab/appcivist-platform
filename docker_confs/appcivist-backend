@@ -1,0 +1,104 @@
+#!/bin/sh
+
+PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/node/bin"
+LOGFILE="/var/log/appcivist/appcivist-backend.log"
+APPCIVIST_BCK_DIR="/home/appcivist/production/appcivist-platform"
+APPCIVIST_BCK_BIN="target/universal/stage/bin/appcivist-core"
+USER="appcivist"
+GROUP="appcivist"
+DESC="AppCivist Backend"
+NAME="appcivist-core"
+
+### BEGIN INIT INFO
+# Provides:          appcivist-backend
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts appcivist server
+# Description:       starts appcivist server using start-stop-daemon
+### END INIT INFO
+
+
+set -e
+
+. /lib/lsb/init-functions
+
+start() {
+  if [ -f $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID ]; then
+    rm $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID
+  fi
+  echo "Starting $DESC... "
+  start-stop-daemon -v --start --chuid "$USER:$GROUP" --exec $APPCIVIST_BCK_DIR/$APPCIVIST_BCK_BIN
+  echo "done"
+}
+
+#We need this function to ensure the whole process tree will be killed
+killtree() {
+    local _pid=$1
+    local _sig=${2-TERM}
+    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
+        killtree ${_child} ${_sig}
+    done
+    kill -${_sig} ${_pid}
+}
+
+stop() {
+  echo "Stopping $DESC... "
+  echo "Testing  $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID"
+
+#  if [ -f $APPCIVIST_BCK_DIR/$NAME-play.pid ]; then
+#    echo "PID file found $APPCIVIST_BCK_DIR/$NAME-play.pid"
+#    echo "Killing process tree /proc/`cat $APPCIVIST_BCK_DIR/$NAME-play.pid`"
+#    while [ -d /proc/$(cat $APPCIVIST_BCK_DIR/$NAME-play.pid) ]; do
+#      echo "Killing process `cat $APPCIVIST_BCK_DIR/$NAME-play.pid`"
+#      killtree $(cat $APPCIVIST_BCK_DIR/$NAME-play.pid) 15
+#      sleep 0.5
+#    done
+#    rm $APPCIVIST_BCK_DIR/$NAME-play.pid
+#  fi
+#  echo "done"
+  if [ ! -f $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID ]
+  then
+    echo "$APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID does not exist, process is not running"
+    exit 1
+  else
+    echo "PID file found $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID"
+    echo "Killing process tree /proc/`cat $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID`"
+    kill `cat $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID`;
+    rm -f $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID;
+    echo "$NAME stopped"
+
+    #while [ -d /proc/$(cat $APPCIVIST_BCK_DIR/$NAME-play.pid) ]; do
+    #  echo "Killing process `cat $APPCIVIST_BCK_DIR/$NAME-play.pid`"
+    #  killtree $(cat $APPCIVIST_BCK_DIR/$NAME-play.pid) 15
+    #  sleep 0.5
+    #done
+  fi
+}
+
+status() {
+  status_of_proc -p $APPCIVIST_BCK_DIR/target/universal/stage/RUNNING_PID "" "appcivist-backend" && exit 0 || exit $?
+}
+
+case "$1" in
+  start)
+      start
+      ;;
+  stop)
+    stop
+      ;;
+  restart)
+      stop
+      start
+      ;;
+  status)
+      status
+      ;;
+  *)
+      echo "Usage: $NAME {start|stop|restart|status}" >&2
+      exit 1
+      ;;
+esac
+
+exit 0
