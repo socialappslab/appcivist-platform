@@ -5,8 +5,8 @@ RUN groupadd appcivist && useradd appcivist -m -g appcivist -s /bin/bash && pass
 ADD docker_confs/appcivist-backend /etc/init.d/appcivist-backend
 ADD docker_confs/deploy.sh deploy.sh
 RUN chmod 777 /etc/init.d/appcivist-backend && chmod 777 deploy.sh
-COPY . ${PROJECT_HOME}
 USER appcivist
+COPY . ${PROJECT_HOME}
 EXPOSE 9000
 EXPOSE 8888
 EXPOSE 9999
