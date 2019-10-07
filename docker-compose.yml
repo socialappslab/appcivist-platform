@@ -1,0 +1,11 @@
+version: "2"
+services:
+    appcivist-plataform:
+      build:
+          context: .
+          dockerfile: Dockerfile-dev
+      ports:
+        - "9000:9000"
+      volumes:
+      - .:/home/appcivist/production/appcivist-platform
+      stdin_open: true
