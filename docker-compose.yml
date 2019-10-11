@@ -9,3 +9,4 @@ services:
       volumes:
       - .:/home/appcivist/production/appcivist-platform
       stdin_open: true
+      env_file: .env
