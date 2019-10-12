@@ -1,4 +1,4 @@
 FROM rabbitmq:3
-COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN sed -i '2s/^/source environment\n/' docker-entrypoint.sh
 
 
