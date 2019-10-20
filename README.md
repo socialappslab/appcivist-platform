@@ -25,6 +25,24 @@ Altogether, the **AppCivist-PB prototype UI** connected to both the **AppCivist 
 5. **AppCivist-PB User’s Guide** ([gdoc](https://docs.google.com/document/d/1a2jmVKqtZSM2VRxTMImRFGbjsgRQpFXl7RHHjW1022U/edit?usp=sharing)) is a simple, screen-based, user guide of the current user interface prototype that supports proposal and decision making activities for participatory budgeting. 
 6. **AppCivist 2-pages Product Pitch** ([gdoc](https://docs.google.com/document/d/14n4_EF36vXYfiA6FVPbrbzWyhadA08t6wV1bkEYJw3o/edit?usp=sharing)) gives a quick overview of the project and its main ideas as a quick 1-page product pitch.  
 
+## Local Deployment
+
+To deploy this project locally, you can use docker and docker-compose.
+You should follow these steps:
+
+* Clone the repository with `git clone git@github.com:socialappslab/appcivist-platform.git`
+* Inside the project run `docker-compose build`
+* When the build finished run `docker-compose up`
+* Only the first time the backend should take a while to donwload all the dependencies and start
+* Then you can access the main page at `http://localhost:9000`
+Optionally you can restore a copy of the test database to work with, with:
+*  psql -U appcivist --host localhost --port 5433 -f <backup-file>.sql
+
+
+run the provided slq script to get the test db
+only the first time the backend should take a while to donwload all the dependencies and start
+
+
 # Copyright
 
 Created by the [Social Apps Lab](http://www.socialappslab.org/) at [CITRIS](http://citris-uc.org/), [University of California, Berkeley](http://www.berkeley.edu/). 
