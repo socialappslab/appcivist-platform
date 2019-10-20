@@ -1,5 +1,11 @@
 version: "2"
 services:
+    etherpad:
+      build:
+          context: docker_confs/etherpad-lite/
+          dockerfile: Dockerfile
+      volumes:
+      - ./environment:/environment
     appcivist-plataform:
       build:
           context: .
@@ -10,7 +16,6 @@ services:
       - .:/home/appcivist/production/appcivist-platform
       - ./environment:/environment
       stdin_open: true
-      env_file: .env
       depends_on:
       - db
     db:
@@ -20,5 +25,4 @@ services:
       - ./environment:/environment
       ports:
         - "5433:5432"
-      env_file: .env
 
