@@ -263,7 +263,7 @@ public class ContributionsDelegate {
                             spaceThemeAlreadyIncluded = true;
                             rawQueryFrom += "left join resource_space_theme rst on rst.resource_space_resource_space_id = t0.resource_space_resource_space_id \n ";
                         }
-                        rawQueryFrom += "left join theme the on the.theme_id = rst.theme_themae_id \n ";
+                        rawQueryFrom += "left join theme the on the.theme_id = rst.theme_theme_id \n ";
 
                         if (!spaceGroupAlreadyIncluded) {
                             spaceGroupAlreadyIncluded = true;
