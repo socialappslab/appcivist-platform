@@ -4235,7 +4235,7 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
- //   @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+    @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
             @ApiParam(name = "aid", value = "Assembly id") Long aid,
             @ApiParam(name = "cid", value = "Campaign id") Long cid,
@@ -4259,7 +4259,7 @@ public class Contributions extends Controller {
                 // Supported Format:
                 // code*, source, title*, description*, category*, keywords, date, location, group, name, phone, email
                 Iterable<CSVRecord> records = CSVFormat.DEFAULT
-                        .withHeader(CSVHeaders.class)
+                        .withFirstRecordAsHeader()
                         .withAllowMissingColumnNames()
                         .withIgnoreHeaderCase()
                         .withIgnoreSurroundingSpaces()
