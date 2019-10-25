@@ -4296,7 +4296,9 @@ public class Contributions extends Controller {
                         String sourceCode = record.get(CSVHeaders.code);
                         Logger.info(type + "["+ sourceCode+"]: Starting to import...");
                         c.setSourceCode(sourceCode);
-                        c.setSource(record.get(CSVHeaders.source));
+                        if(record.isSet(CSVHeaders.source.name())) {
+                            c.setSource(record.get(CSVHeaders.source));
+                        }
                         String title = "";
                         String description = "";
 
