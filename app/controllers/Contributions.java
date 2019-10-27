@@ -4306,8 +4306,8 @@ public class Contributions extends Controller {
                                     || record.get(CSVHeaders.title) == null
                                     || record.get(CSVHeaders.title).equals(""))
                                 && (!record.isSet(CSVHeaders.description.name())
-                                    || record.get(CSVHeaders.description) == ""
-                                    || record.get(CSVHeaders.description) != "")) {
+                                    || record.get(CSVHeaders.description) == null
+                                    || record.get(CSVHeaders.description).isEmpty())) {
                             return badRequest(Json.toJson(Json
                                     .toJson(new TransferResponseStatus("Error parsing the CSV," +
                                             " either a title or a description is needed in " + type + " " + sourceCode))));
