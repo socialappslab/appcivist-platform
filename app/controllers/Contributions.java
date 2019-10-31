@@ -4320,6 +4320,10 @@ public class Contributions extends Controller {
                             description = record.get(CSVHeaders.description);
                         }
 
+                        if(title == null || title.isEmpty()) {
+                            title = description;
+                        }
+
                         // if title too long, trim to 50 chars...
                         if (title.length()>50) {
                             title = title.substring(0,50)+"...";
