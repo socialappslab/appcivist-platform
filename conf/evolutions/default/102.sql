@@ -1,0 +1,1 @@
+INSERT INTO security_role ("role_id", "name") VALUES (DEFAULT, 'JURY');

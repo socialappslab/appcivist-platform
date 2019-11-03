@@ -2126,30 +2126,29 @@ public class Contributions extends Controller {
             if (feedback.getType() != null && feedback.getType()
                     .equals(ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
                 List<Config> configs = Config
-                        .findByCampaignAndKey(
+                        .findByTypeAndKey(
                                 campaignPath.getUuid(),
-                                GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
-                // TODO: Leaving the following as example for other cases where
-                // we have to read all the configs at once
-                // Map<String, Config> configMap =
-                // Config.convertConfigsToMap(configs);
-                // Config c =
-                // configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+                                ConfigTargets.ASSEMBLY,
+                                GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE);
 
                 boolean authorized = false || configs == null || configs.isEmpty();
-                for (Config config : configs) {
-                    if (feedback.getPassword() != null && feedback // there is a
-                                                                    // password
-                                                                    // so verify
-                            .getPassword().equals(config.getValue())) {
-                        authorized = true;
+                if (!configs.isEmpty()) {
+                    Config config = configs.get(0);
+                    if (config.getValue().equals("JURIES")) {
+                        if (author == null) {
+                            authorized = false;
+                        } else {
+                            authorized = MembershipAssembly.hasRole(author,
+                                    Assembly.read(campaignPath.getAssemblies().get(0)), MyRoles.JURY);
+                        }
                     }
                 }
+
 
                 if (!authorized) {
                     return unauthorized(Json.toJson(new TransferResponseStatus(
                             ResponseStatus.UNAUTHORIZED,
-                            "Password in feedback form is incorrect")));
+                            "User is not JURY")));
                 }
             }
 
@@ -2552,6 +2551,42 @@ public class Contributions extends Controller {
                             ResponseStatus.SERVERERROR,
                             "Error when assigning Resource Space to Resource Space: " + e.toString())));
         }
+        return ok();
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Check if the user can give his feedback")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result checkFeedbackPermission(
+            @ApiParam(name = "aid", value = "Assembly Resource space id") UUID aid) {
+        User author = User.findByAuthUserIdentity(PlayAuthenticate
+                .getUser(session()));
+        Assembly assembly =  Assembly.readByUUID(aid);
+        List<Config> configs = Config.findByTypeAndKey(aid, ConfigTargets.ASSEMBLY,
+                GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE);
+        HashMap<String, Boolean> aret = new HashMap<>();
+
+        if (configs.isEmpty()) {
+            aret.put("show", true);
+            return ok(Json.toJson(aret));
+        } else {
+            Config config = configs.get(0);
+            if (config.getValue().equals("ALL")) {
+                aret.put("show", true);
+                return ok(Json.toJson(aret));
+            }
+            if (config.getValue().equals("JURIES")) {
+                if (author == null) {
+                    aret.put("show", false);
+                    return ok(Json.toJson(aret));
+                }
+                aret.put("show", MembershipAssembly.hasRole(author, assembly, MyRoles.JURY));
+                return ok(Json.toJson(aret));
+            }
+        }
+
         return ok();
     }
 

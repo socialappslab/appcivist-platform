@@ -144,6 +144,8 @@ DELETE    /api/assembly/:aid/config/:cid                                        
 PUT       /api/user/:aid/config/                                                 controllers.Configs.updateUserConfig(aid: Long)
 GET       /api/user/:aid/config/                                                 controllers.Configs.getUserConfig(aid: Long)
 
+GET       /api/public/assembly/:aid/feedbackpermission                          controllers.Contributions.checkFeedbackPermission(aid: java.util.UUID)
+
 # Assembly: upload users
 POST      /api/assembly/:aid/member                                                  controllers.Assemblies.uploadAssemblyUsers(aid: Long, send_invitations ?= "false")
 POST      /api/assembly/:aid/campaign/:cid/group/:gid/member                         controllers.Assemblies.uploadGroupUsers(aid: Long, cid: Long, gid: Long, send_invitations ?= "false")
@@ -469,6 +471,7 @@ GET       /api/public/space/:uuid/resource                                      
 GET       /api/public/space/:uuid/component                                      controllers.Spaces.findSpaceComponentPublic(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/milestone                                      controllers.Spaces.findSpaceMilestonePublic(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/assembly                                       controllers.Spaces.findSpaceAssemblyPublic(uuid: java.util.UUID)
+
 GET       /api/public/space/:uuid/campaign                                       controllers.Spaces.findSpaceCampaignPublic(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/theme                                          controllers.Spaces.findSpaceThemePublic(uuid: java.util.UUID)
 GET       /api/public/space/:uuid/group                                          controllers.Spaces.findSpaceGroupPublic(uuid: java.util.UUID)

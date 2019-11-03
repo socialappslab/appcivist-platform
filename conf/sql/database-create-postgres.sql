@@ -3557,3 +3557,6 @@ create or replace function naturalorder(text)
     select string_agg(convert_to(coalesce(r[2], length(length(r[1])::text) || length(r[1])::text || r[1]), 'SQL_ASCII'),'\x00')
     from regexp_matches($1, '0*([0-9]+)|([^0-9]+)', 'g') r;
 $f$;
+
+-- 102.sql
+INSERT INTO security_role ("role_id", "name") VALUES (DEFAULT, 'JURY');
