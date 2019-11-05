@@ -2560,9 +2560,12 @@ public class Contributions extends Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result checkFeedbackPermission(
-            @ApiParam(name = "aid", value = "Assembly Resource space id") UUID aid) {
-        User author = User.findByAuthUserIdentity(PlayAuthenticate
-                .getUser(session()));
+            @ApiParam(name = "aid", value = "Assembly Resource space id") UUID aid,
+            Long userId) {
+        User author = null;
+        if (userId!= -1) {
+            author = User.read(userId);
+        }
         Assembly assembly =  Assembly.readByUUID(aid);
         List<Config> configs = Config.findByTypeAndKey(aid, ConfigTargets.ASSEMBLY,
                 GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE);
