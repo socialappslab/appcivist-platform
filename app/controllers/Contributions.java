@@ -2160,6 +2160,10 @@ public class Contributions extends Controller {
             } else {
                 feedback.setUserId(author.getUserId());
             }
+            if(author != null) {
+                feedback.setUserId(author.getUserId());
+                feedback.setNonMemberAuthor(null);
+            }
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
 
