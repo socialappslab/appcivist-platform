@@ -302,7 +302,6 @@ PUT       /api/assembly/:aid/contributions/popularity                           
 POST      /api/contribution/pad                                                  controllers.Contributions.createContributionPad(aid?="", cid?="")
 PUT       /api/contribution/pad                                                  controllers.Contributions.confirmContributionPad(rid: Long)
 
-GET       /api/contribution/:uuid/proposal                                       controllers.Contributions.getContributionChildrenOrParent(uuid: java.util.UUID, type: String)
 GET       /api/contribution/:uuid/proposal/merge/authors                         controllers.Contributions.getContributionMergeAuthors(uuid: java.util.UUID)
 PUT       /api/assembly/:aid/contribution/:pid/proposal/:cid                     controllers.Contributions.mergeContribution(aid: Long, pid:Long, cid: Long)
 
