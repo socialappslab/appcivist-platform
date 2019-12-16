@@ -1000,13 +1000,15 @@ public class Contributions extends Controller {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(co.getContributionId(), type);
             for (ContributionFeedback contributionFeedback: feedbacks) {
                 Map<String, Object> info = new HashMap<>();
-                User user = User.findByUserId(contributionFeedback.getUserId());
-                info.put("id", user.getUserId());
-                info.put("name", user.getName());
-                if (user.getProfilePic()!=null)
-                    info.put("profilePic", user.getProfilePic().getUrlAsString());
-                contributionFeedback.setUserId(null);
-                contributionFeedback.setUser(info);
+                if(contributionFeedback.getUserId() != null) {
+                    User user = User.findByUserId(contributionFeedback.getUserId());
+                    info.put("id", user.getUserId());
+                    info.put("name", user.getName());
+                    if (user.getProfilePic() != null)
+                        info.put("profilePic", user.getProfilePic().getUrlAsString());
+                    contributionFeedback.setUserId(null);
+                    contributionFeedback.setUser(info);
+                }
             }
             if (feedbacks==null || feedbacks.size() == 0) {
                 Logger.debug("There are no feedbacks for contribution " + couuid);

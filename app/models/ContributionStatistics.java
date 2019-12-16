@@ -24,11 +24,11 @@ public class ContributionStatistics extends AppCivistBaseModel {
 	private Long contributionId;
 	private Long groupId;
 	@JsonView(Views.Public.class)
-	private Integer averageBenefit;
+	private Double averageBenefit;
 	@JsonView(Views.Public.class)
-	private Integer averageNeed;
+	private Double averageNeed;
 	@JsonView(Views.Public.class)
-	private Integer averageFeasibility;
+	private Double averageFeasibility;
 	@JsonView(Views.Public.class)
 	private Integer eligibilityTrue;
 	@JsonView(Views.Public.class)
@@ -118,7 +118,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 		return this.points;
 	}
 
-	public Integer getAverageBenefit() {
+	public Double getAverageBenefit() {
 
 		if(type.equals(STATISTICS_CONTRIBUTION)){
 			this.averageBenefit = ContributionFeedback.getAverageBenefitForContribution(this.contributionId);
@@ -129,7 +129,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 		return this.averageBenefit;
 	}
 
-	public Integer getAverageNeed() {
+	public Double getAverageNeed() {
 
 		if(type.equals(STATISTICS_CONTRIBUTION)){
 			this.averageNeed = ContributionFeedback.getAverageNeedForContribution(this.contributionId);
@@ -141,7 +141,7 @@ public class ContributionStatistics extends AppCivistBaseModel {
 		return this.averageNeed;
 	}
 
-	public Integer getAverageFeasibility() {
+	public Double getAverageFeasibility() {
 
 		if(type.equals(STATISTICS_CONTRIBUTION)){
 			this.averageFeasibility = ContributionFeedback.getAverageFeasibilityForContribution(this.contributionId);
