@@ -370,18 +370,18 @@ public class ContributionFeedback extends AppCivistBaseModel {
 		}
 		where.eq("status", ContributionFeedbackStatus.PUBLIC);
 		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false)
-				.isNotNull("t0." + type).findList();
+				.findList();
 		double total = 0;
 		double count = 0;
 		for(ContributionFeedback feedback: feedbacks) {
 			if (type.equals("benefit")) {
-				total = total + Double.valueOf(feedback.getBenefit());
+				total = total + (double) (feedback.getBenefit() != null ? feedback.getBenefit() : 0);
 				count = count + 1;
 			} else if(type.equals("need")) {
-				total = total + Double.valueOf(feedback.getNeed());
+				total = total + (double) (feedback.getNeed() != null ? feedback.getNeed() : 0);
 				count = count + 1;
 			} else {
-				total = total + Double.valueOf(feedback.getFeasibility());
+				total = total + (double) (feedback.getFeasibility() != null ? feedback.getFeasibility() : 0);
 				count = count + 1;
 			}
 		}
