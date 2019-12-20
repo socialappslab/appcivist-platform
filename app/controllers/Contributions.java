@@ -962,13 +962,8 @@ public class Contributions extends Controller {
             // 1. obtaining the user of the requestor
             User author = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
-            Membership m = MembershipAssembly.findByUserAndAssemblyIds(author.getUserId(), aid);
             List<ContributionFeedback> feedbacks = new ArrayList<>();
-            if (m!=null) {
-                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
-            } else {
-                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
-            }
+            feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
             if (feedbacks==null || feedbacks.size() == 0) {
                 Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid);
                 feedbacks = new ArrayList<>();
