@@ -475,9 +475,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 
 	public static List<ContributionFeedback> getPrivateFeedbacksByContributionType(Long contributionId, Long userId, String type) {
 		ExpressionList<ContributionFeedback> where = find.where().eq("contribution.contributionId", contributionId)
-				.eq("archived", false)
+				.eq("archived", false);
 				//.eq("status", ContributionFeedbackStatus.PRIVATE)
-				.isNull("workingGroupId");
+//				.isNull("workingGroupId");
 		if (userId != null)
 			where.eq("userId", userId);
 		if (type != null)
