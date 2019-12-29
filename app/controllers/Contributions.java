@@ -2135,8 +2135,7 @@ public class Contributions extends Controller {
                         if (author == null) {
                             authorized = false;
                         } else {
-                            authorized = MembershipAssembly.hasRole(author,
-                                    Assembly.read(campaignPath.getAssemblies().get(0)), MyRoles.JURY);
+                            authorized = ContributionJury.isContributionAndUser(contribution, author);
                         }
                     }
                 }
@@ -2562,12 +2561,14 @@ public class Contributions extends Controller {
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     public static Result checkFeedbackPermission(
             @ApiParam(name = "aid", value = "Assembly Resource space id") UUID aid,
+            @ApiParam(name = "cid", value = "Contribution Resource space id") UUID cid,
             Long userId) {
         User author = null;
         if (userId!= -1) {
             author = User.read(userId);
         }
         Assembly assembly =  Assembly.readByUUID(aid);
+        Contribution contribution = Contribution.readByUUID(cid);
         List<Config> configs = Config.findByTypeAndKey(aid, ConfigTargets.ASSEMBLY,
                 GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE);
         HashMap<String, Boolean> aret = new HashMap<>();
@@ -2586,7 +2587,7 @@ public class Contributions extends Controller {
                     aret.put("show", false);
                     return ok(Json.toJson(aret));
                 }
-                aret.put("show", MembershipAssembly.hasRole(author, assembly, MyRoles.JURY));
+                aret.put("show", ContributionJury.isContributionAndUser(contribution, author));
                 return ok(Json.toJson(aret));
             }
         }

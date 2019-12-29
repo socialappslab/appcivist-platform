@@ -144,7 +144,7 @@ DELETE    /api/assembly/:aid/config/:cid                                        
 PUT       /api/user/:aid/config/                                                 controllers.Configs.updateUserConfig(aid: Long)
 GET       /api/user/:aid/config/                                                 controllers.Configs.getUserConfig(aid: Long)
 
-GET       /api/public/assembly/:aid/feedbackpermission                          controllers.Contributions.checkFeedbackPermission(aid: java.util.UUID, userId:Long?= -1)
+GET       /api/public/assembly/:aid/contribution/:cid/feedbackpermission                          controllers.Contributions.checkFeedbackPermission(aid: java.util.UUID, cid:java.util.UUID, userId:Long?= -1)
 
 # Assembly: upload users
 POST      /api/assembly/:aid/member                                                  controllers.Assemblies.uploadAssemblyUsers(aid: Long, send_invitations ?= "false")
