@@ -23,6 +23,9 @@ public class ContributionJury extends AppCivistBaseModel {
 	@JoinColumn(name="user_id")
 	private User jury;
 
+	@Column(name = "username")
+	private String username;
+
 
 	public static Finder<Long, ContributionJury> find = new Finder<>(ContributionJury.class);
 
@@ -30,9 +33,20 @@ public class ContributionJury extends AppCivistBaseModel {
 		super();
 	}
 
+	public ContributionJury(String username, Contribution contribution) {
+		this.contribution = contribution;
+		this.username = username;
+	}
+
 	public static boolean isContributionAndUser(Contribution contribution, User user) {
 		return find.where().eq("contribution", contribution)
-				.eq("jury", user).findUnique() != null;
+				.eq("jury", user).findUnique() != null ||
+				isContributionAndUsername(contribution, user.getUsername());
+	}
+
+	public static boolean isContributionAndUsername(Contribution contribution, String username) {
+		return find.where().eq("contribution", contribution)
+				.eq("username", username).findUnique() != null;
 	}
 
 

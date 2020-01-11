@@ -490,4 +490,6 @@ GET       /api/uuid                                                             
 GET       /api/id                                                                controllers.Spaces.getIdByUUIdAndType(type: String, uuid : java.util.UUID)
 
 PUT       /api/admin/updatepeerdocpermission                                     controllers.Contributions.updatePeerDocPermission()
+PUT       /api/admin/import/contributions/juries                                 controllers.Contributions.importContributionJuries()
+
 GET       /api/admin/configs                                                     controllers.Configs.findConfigsByType(target: String ?= "")

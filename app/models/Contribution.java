@@ -1368,6 +1368,11 @@ public class Contribution extends AppCivistBaseModel {
                 .findUnique();
     }
 
+    public static Contribution findBySourceCode(String sourceCode) {
+        return find.where()
+                .eq("sourceCode", sourceCode).findUnique();
+    }
+
     public static Contribution findBySourceCodeAndSource(String source,
                                                String sourceCode) {
         List<Contribution> contributions =  find.where()

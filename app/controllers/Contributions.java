@@ -4272,15 +4272,15 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
             notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @ApiImplicitParams({@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+                       @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
-            @ApiParam(name = "aid", value = "Assembly id") Long aid,
-            @ApiParam(name = "cid", value = "Campaign id") Long cid,
-            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
-            @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
+        @ApiParam(name = "aid", value = "Assembly id") Long aid,
+        @ApiParam(name = "cid", value = "Campaign id") Long cid,
+        @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
+        @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
+
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         Campaign campaign = Campaign.read(cid);
@@ -6223,6 +6223,56 @@ public class Contributions extends Controller {
         return ok("Updated " + contributionCount + " contributions of " + contributionList.size());
 
     }
+
+
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class,  produces = "application/json", value = "Import juries for contributions" +
+            "from a CSV")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form")})
+    //@Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result importContributionJuries () {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        try {
+            br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withAllowMissingColumnNames()
+                    .withIgnoreHeaderCase()
+                    .withIgnoreSurroundingSpaces()
+                    .withSkipHeaderRecord().parse(br);
+            int total = 0;
+            for (CSVRecord record : records) {
+                String username = record.get("username");
+                for (int i = 1; i < 6; i++) {
+                 String proposalCode = record.get("proposal"+i);
+                 Contribution contribution = Contribution.findBySourceCode(proposalCode);
+                 if (contribution!=null) {
+                        if(!ContributionJury.isContributionAndUsername(contribution, username)) {
+                            ContributionJury contributionJury = new ContributionJury(username, contribution);
+                            contributionJury.save();
+                            total = total + 1;
+                        }
+                        else {
+                            Logger.info("User " + username + " with proposal " + proposalCode +
+                                    " already exists");
+                        }
+                 } else {
+                     Logger.info("Contribution with code " + proposalCode + " not found");
+                 }
+                }
+            }
+            return ok("Created " + total + " contribution juries");
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Internal server error : " + ex.toString())));
+        }
+    }
+
 
     private static NonMemberAuthor createSocialIdeationNonMemberAuthor(HashMap<String, String> headerMap) {
         NonMemberAuthor non_member_author = new NonMemberAuthor();
