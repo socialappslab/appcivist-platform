@@ -6243,10 +6243,11 @@ public class Contributions extends Controller {
                     .withSkipHeaderRecord().parse(br);
             int total = 0;
             for (CSVRecord record : records) {
+                int numberOfColumns = record.size();
                 String username = record.get("username");
-                for (int i = 1; i < 6; i++) {
+                for (int i = 1; i < numberOfColumns; i++) {
                  String proposalCode = record.get("proposal"+i);
-                 Contribution contribution = Contribution.findBySourceCode(proposalCode);
+                 Contribution contribution = Contribution.read(Long.getLong(proposalCode));
                  if (contribution!=null) {
                         if(!ContributionJury.isContributionAndUsername(contribution, username)) {
                             ContributionJury contributionJury = new ContributionJury(username, contribution);
