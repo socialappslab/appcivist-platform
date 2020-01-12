@@ -45,6 +45,9 @@ public class ContributionJury extends AppCivistBaseModel {
 	}
 
 	public static boolean isContributionAndUsername(Contribution contribution, String username) {
+		if (username.contains("@")) {
+			username = username.substring(0, username.indexOf("@"));
+		}
 		return find.where().eq("contribution", contribution)
 				.eq("username", username).findUnique() != null;
 	}
