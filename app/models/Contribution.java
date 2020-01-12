@@ -1071,6 +1071,7 @@ public class Contribution extends AppCivistBaseModel {
         // 5. Add contribution to working group authors
         WorkingGroupsDelegate.addContributionToWorkingGroups(c, workingGroupAuthors, true);
         c.refresh();
+        c.refresh();
         ContributionHistory.createHistoricFromContribution(c);
     }
 
@@ -1882,6 +1883,11 @@ public class Contribution extends AppCivistBaseModel {
     public static Contribution getByUUID(UUID uuid) {
         return find.where().eq("uuid",uuid.toString()).findUnique();
     }
+
+    public static Contribution getById(Long id) {
+        return find.where().eq("contributionId",id).findUnique();
+    }
+
 
     public static List<Contribution> findChildrenOrParents(UUID cuuid, String type) {
 

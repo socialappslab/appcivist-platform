@@ -6247,7 +6247,8 @@ public class Contributions extends Controller {
                 String username = record.get("username");
                 for (int i = 1; i < numberOfColumns; i++) {
                  String proposalCode = record.get("proposal"+i);
-                 Contribution contribution = Contribution.read(Long.getLong(proposalCode));
+                 Logger.info("Proposal ID " + proposalCode + " " + i);
+                 Contribution contribution = Contribution.getById(Long.getLong(proposalCode));
                  if (contribution!=null) {
                         if(!ContributionJury.isContributionAndUsername(contribution, username)) {
                             ContributionJury contributionJury = new ContributionJury(username, contribution);
