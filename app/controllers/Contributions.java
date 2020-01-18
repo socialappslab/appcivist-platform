@@ -962,13 +962,8 @@ public class Contributions extends Controller {
             // 1. obtaining the user of the requestor
             User author = User.findByAuthUserIdentity(PlayAuthenticate
                     .getUser(session()));
-            Membership m = MembershipAssembly.findByUserAndAssemblyIds(author.getUserId(), aid);
             List<ContributionFeedback> feedbacks = new ArrayList<>();
-            if (m!=null) {
-                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, null, type);
-            } else {
-                feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
-            }
+            feedbacks = ContributionFeedback.getPrivateFeedbacksByContributionType(coid, author.getUserId(), type);
             if (feedbacks==null || feedbacks.size() == 0) {
                 Logger.debug("There are no feedbacks for contribution " + coid + " in assembly " + aid);
                 feedbacks = new ArrayList<>();
@@ -1000,13 +995,15 @@ public class Contributions extends Controller {
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(co.getContributionId(), type);
             for (ContributionFeedback contributionFeedback: feedbacks) {
                 Map<String, Object> info = new HashMap<>();
-                User user = User.findByUserId(contributionFeedback.getUserId());
-                info.put("id", user.getUserId());
-                info.put("name", user.getName());
-                if (user.getProfilePic()!=null)
-                    info.put("profilePic", user.getProfilePic().getUrlAsString());
-                contributionFeedback.setUserId(null);
-                contributionFeedback.setUser(info);
+                if(contributionFeedback.getUserId() != null) {
+                    User user = User.findByUserId(contributionFeedback.getUserId());
+                    info.put("id", user.getUserId());
+                    info.put("name", user.getName());
+                    if (user.getProfilePic() != null)
+                        info.put("profilePic", user.getProfilePic().getUrlAsString());
+                    contributionFeedback.setUserId(null);
+                    contributionFeedback.setUser(info);
+                }
             }
             if (feedbacks==null || feedbacks.size() == 0) {
                 Logger.debug("There are no feedbacks for contribution " + couuid);
@@ -2126,30 +2123,28 @@ public class Contributions extends Controller {
             if (feedback.getType() != null && feedback.getType()
                     .equals(ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)) {
                 List<Config> configs = Config
-                        .findByCampaignAndKey(
+                        .findByTypeAndKey(
                                 campaignPath.getUuid(),
-                                GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
-                // TODO: Leaving the following as example for other cases where
-                // we have to read all the configs at once
-                // Map<String, Config> configMap =
-                // Config.convertConfigsToMap(configs);
-                // Config c =
-                // configMap.get(GlobalDataConfigKeys.APPCIVIST_CAMPAIGN_EXTENDED_FEEDBACK_PASSWORD);
+                                ConfigTargets.ASSEMBLY,
+                                GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE);
 
                 boolean authorized = false || configs == null || configs.isEmpty();
-                for (Config config : configs) {
-                    if (feedback.getPassword() != null && feedback // there is a
-                                                                    // password
-                                                                    // so verify
-                            .getPassword().equals(config.getValue())) {
-                        authorized = true;
+                if (!configs.isEmpty()) {
+                    Config config = configs.get(0);
+                    if (config.getValue().equals("JURIES")) {
+                        if (author == null) {
+                            authorized = false;
+                        } else {
+                            authorized = ContributionJury.isContributionAndUser(contribution, author);
+                        }
                     }
                 }
+
 
                 if (!authorized) {
                     return unauthorized(Json.toJson(new TransferResponseStatus(
                             ResponseStatus.UNAUTHORIZED,
-                            "Password in feedback form is incorrect")));
+                            "User is not JURY")));
                 }
             }
 
@@ -2160,6 +2155,10 @@ public class Contributions extends Controller {
                 feedback.setNonMemberAuthor(non_member_author);
             } else {
                 feedback.setUserId(author.getUserId());
+            }
+            if(author != null) {
+                feedback.setUserId(author.getUserId());
+                feedback.setNonMemberAuthor(null);
             }
             List<ContributionFeedback> existingFeedbacks = ContributionFeedback.findPreviousContributionFeedback(feedback.getContributionId(),
                     feedback.getUserId(), feedback.getWorkingGroupId(), feedback.getType(), feedback.getStatus(), feedback.getNonMemberAuthor());
@@ -2552,6 +2551,47 @@ public class Contributions extends Controller {
                             ResponseStatus.SERVERERROR,
                             "Error when assigning Resource Space to Resource Space: " + e.toString())));
         }
+        return ok();
+    }
+
+
+    @ApiOperation(httpMethod = "GET", response = String.class, produces = "application/json", value = "Check if the user can give his feedback")
+    @ApiResponses(value = {@ApiResponse(code = BAD_REQUEST, message = "", response = TransferResponseStatus.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    public static Result checkFeedbackPermission(
+            @ApiParam(name = "aid", value = "Assembly Resource space id") UUID aid,
+            @ApiParam(name = "cid", value = "Contribution Resource space id") UUID cid,
+            Long userId) {
+        User author = null;
+        if (userId!= -1) {
+            author = User.read(userId);
+        }
+        Assembly assembly =  Assembly.readByUUID(aid);
+        Contribution contribution = Contribution.readByUUID(cid);
+        List<Config> configs = Config.findByTypeAndKey(aid, ConfigTargets.ASSEMBLY,
+                GlobalDataConfigKeys.APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE);
+        HashMap<String, Boolean> aret = new HashMap<>();
+
+        if (configs.isEmpty()) {
+            aret.put("show", true);
+            return ok(Json.toJson(aret));
+        } else {
+            Config config = configs.get(0);
+            if (config.getValue().equals("ALL")) {
+                aret.put("show", true);
+                return ok(Json.toJson(aret));
+            }
+            if (config.getValue().equals("JURIES")) {
+                if (author == null) {
+                    aret.put("show", false);
+                    return ok(Json.toJson(aret));
+                }
+                aret.put("show", ContributionJury.isContributionAndUser(contribution, author));
+                return ok(Json.toJson(aret));
+            }
+        }
+
         return ok();
     }
 
@@ -4232,15 +4272,15 @@ public class Contributions extends Controller {
     @ApiOperation(httpMethod = "POST", consumes = "application/csv", value = "Import CSV file with campaign ideas or proposals",
             notes = "CSV format: the values must be separated by coma (;). If the theme column has more than one theme, then it must be separated by dash (-).")
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No campaign found", response = TransferResponseStatus.class)})
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
-            @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
+    @ApiImplicitParams({@ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form"),
+                       @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
     @Dynamic(value = "CoordinatorOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result importContributions(
-            @ApiParam(name = "aid", value = "Assembly id") Long aid,
-            @ApiParam(name = "cid", value = "Campaign id") Long cid,
-            @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
-            @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
+        @ApiParam(name = "aid", value = "Assembly id") Long aid,
+        @ApiParam(name = "cid", value = "Campaign id") Long cid,
+        @ApiParam(name = "type", value = "Contribution Type", allowableValues = "IDEA, PROPOSAL, COMMENT", defaultValue = "IDEA") String type,
+        @ApiParam(name = "createThemes", value = "Contribution Type", defaultValue = "false") Boolean createThemes) {
+
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
         Campaign campaign = Campaign.read(cid);
@@ -6183,6 +6223,58 @@ public class Contributions extends Controller {
         return ok("Updated " + contributionCount + " contributions of " + contributionList.size());
 
     }
+
+
+    @ApiOperation(httpMethod = "PUT", response = TransferResponseStatus.class,  produces = "application/json", value = "Import juries for contributions" +
+            "from a CSV")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "CSV file", dataType = "file", paramType = "form")})
+    //@Restrict({@Group(GlobalData.ADMIN_ROLE)})
+    public static Result importContributionJuries () {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart uploadFilePart = body.getFile("file");
+        try {
+            br = new BufferedReader(new FileReader(uploadFilePart.getFile()));
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .withAllowMissingColumnNames()
+                    .withIgnoreHeaderCase()
+                    .withIgnoreSurroundingSpaces()
+                    .withSkipHeaderRecord().parse(br);
+            int total = 0;
+            for (CSVRecord record : records) {
+                int numberOfColumns = record.size();
+                String username = record.get("username");
+                for (int i = 1; i < numberOfColumns; i++) {
+                 String proposalCode = record.get("proposal"+i);
+                 Logger.info("Proposal ID " + proposalCode + " " + i);
+                 Contribution contribution = Contribution.getById(Long.parseLong(proposalCode));
+                 if (contribution!=null) {
+                        if(!ContributionJury.isContributionAndUsername(contribution, username)) {
+                            ContributionJury contributionJury = new ContributionJury(username, contribution);
+                            contributionJury.save();
+                            total = total + 1;
+                        }
+                        else {
+                            Logger.info("User " + username + " with proposal " + proposalCode +
+                                    " already exists");
+                        }
+                 } else {
+                     Logger.info("Contribution with code " + proposalCode + " not found");
+                 }
+                }
+            }
+            return ok("Created " + total + " contribution juries");
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            return internalServerError(Json
+                    .toJson(new TransferResponseStatus(
+                            ResponseStatus.SERVERERROR,
+                            "Internal server error : " + ex.toString())));
+        }
+    }
+
 
     private static NonMemberAuthor createSocialIdeationNonMemberAuthor(HashMap<String, String> headerMap) {
         NonMemberAuthor non_member_author = new NonMemberAuthor();

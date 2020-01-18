@@ -3557,3 +3557,31 @@ create or replace function naturalorder(text)
     select string_agg(convert_to(coalesce(r[2], length(length(r[1])::text) || length(r[1])::text || r[1]), 'SQL_ASCII'),'\x00')
     from regexp_matches($1, '0*([0-9]+)|([^0-9]+)', 'g') r;
 $f$;
+
+-- 102.sql
+INSERT INTO security_role ("role_id", "name") VALUES (DEFAULT, 'JURY');
+
+-- 103.sql
+
+create table contribution_jury (
+    id                              bigserial not null,
+    creation                        timestamp,
+    last_update                     timestamp,
+    lang                            varchar(255),
+    removal                         timestamp,
+    removed                         boolean,
+    user_id                         bigint not null,
+    contribution_id                 bigint not null,
+    constraint pk_contribution_jury primary key (id)
+
+);
+
+alter table contribution_jury add constraint fk_contribution_jury_user foreign key (user_id) references appcivist_user (user_id);
+alter table contribution_jury add constraint fk_contribution_jury_contribution foreign key (contribution_id) references contribution (contribution_id);
+
+-- 104.sql
+ALTER TABLE contribution_jury DROP CONSTRAINT fk_contribution_jury_user;
+ALTER TABLE contribution_jury DROP COLUMN user_id;
+ALTER TABLE contribution_jury ADD COLUMN user_id bigint;
+alter table contribution_jury add constraint fk_contribution_jury_user foreign key (user_id) references appcivist_user (user_id);
+ALTER TABLE contribution_jury ADD COLUMN username varchar(100);

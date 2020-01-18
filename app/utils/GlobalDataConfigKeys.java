@@ -57,6 +57,7 @@ public class GlobalDataConfigKeys {
 	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_USERNAME_PLACEHOLDER = "appcivist.assembly.authentication.username-placeholder";
 	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_PASSWORD_PLACEHOLDER = "appcivist.assembly.authentication.password-placeholder";
 	public static final String APPCIVIST_ASSEMBLY_AUTHENTICATION_SINGUP_TITLE = "appcivist.assembly.authentication.signup-title";
+	public static final String APPCIVIST_ASSEMBLY_FEEDBACK_FORM_MODE = "appcivist.assembly.feedback.form.mode";
 
 
 
