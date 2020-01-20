@@ -827,7 +827,8 @@ public class Contributions extends Controller {
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
         try {
-            List<ContributionFeedback> feedbacks = ContributionFeedback.getFeedbacksByContribution(coid);
+            String type = ContributionFeedbackTypes.TECHNICAL_ASSESSMENT.name();
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(cid, type);
             User user;
             NonMemberAuthor nma;
 
@@ -992,6 +993,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "type", value = "Type") String type) {
         try {
             Contribution co = Contribution.readByUUID(UUID.fromString(couuid));
+            type = ContributionFeedbackTypes.TECHNICAL_ASSESSMENT.name();
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(co.getContributionId(), type);
             for (ContributionFeedback contributionFeedback: feedbacks) {
                 Map<String, Object> info = new HashMap<>();
