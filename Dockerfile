@@ -6,6 +6,8 @@ ADD docker_confs/appcivist-backend /etc/init.d/appcivist-backend
 ADD docker_confs/deploy.sh deploy.sh
 COPY . ${PROJECT_HOME}
 RUN chmod 777 /etc/init.d/appcivist-backend && chmod 777 deploy.sh && chmod 777 -R ${PROJECT_HOME}
+RUN mkdir -p /root/.sbt
+ADD docker_confs/sbt /root/.sbt/repositories
 USER appcivist
 EXPOSE 9000
 EXPOSE 8888

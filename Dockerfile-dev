@@ -1,7 +1,11 @@
 FROM openjdk:8
 MAINTAINER Cristhian Parra <cdparra@gmail.com>
+RUN apt-get update && apt-get install -y ca-certificates-java && update-ca-certificates -f
 ENV PROJECT_HOME /home/appcivist/production/appcivist-platform
 ADD docker_confs/deploy-dev.sh deploy.sh
+RUN mkdir -p /root/.sbt
+ADD docker_confs/sbt /root/.sbt/repositories
+
 RUN chmod 777 deploy.sh
 EXPOSE 9000
 EXPOSE 8888

@@ -1,0 +1,28 @@
+
+[scala]
+  version: ${sbt.scala.version-auto}
+
+[app]
+  org: com.typesafe.activator
+  name: activator-launcher
+  version: ${activator.version-read(activator.version)[1.2.10]}
+  class: activator.ActivatorLauncher
+  cross-versioned: false
+  components: xsbti
+
+[repositories]
+  local
+  activator-local: file://${activator.local.repository-${activator.home-${user.home}/.activator}/repository}, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+  maven: https://repo1.maven.org/maven2/
+  typesafe-releases: http://repo.typesafe.com/typesafe/releases
+  typesafe-ivy-releasez: http://repo.typesafe.com/typesafe/ivy-releases, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+
+[boot]
+ directory: ${sbt.boot.directory-${sbt.global.base-${user.home}/.sbt}/boot/}
+ properties: ${activator.boot.properties-${user.home}/.activator/version-${activator.launcher.generation-0}.properties}
+
+[ivy]
+  ivy-home: ${user.home}/.ivy2
+  checksums: ${sbt.checksums-sha1,md5}
+  override-build-repos: ${sbt.override.build.repos-false}
+  repository-config: ${sbt.repository.config-${sbt.global.base-${user.home}/.sbt}/repositories}
