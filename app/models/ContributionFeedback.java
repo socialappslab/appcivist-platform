@@ -369,7 +369,9 @@ public class ContributionFeedback extends AppCivistBaseModel {
 			where.eq("t0.working_group_id", groupId);
 		}
 		where.eq("status", ContributionFeedbackStatus.PUBLIC);
-		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id", contributionId).eq("t0.archived", false)
+		List<ContributionFeedback> feedbacks =  where.eq("t0.contribution_id",
+				contributionId).eq("t0.archived", false)
+				.eq("t0.type", ContributionFeedbackTypes.TECHNICAL_ASSESSMENT)
 				.findList();
 		double total = 0;
 		double count = 0;
@@ -486,7 +488,8 @@ public class ContributionFeedback extends AppCivistBaseModel {
 	}
 
 	public static List<ContributionFeedback> getPublicFeedbacksByContributionType(Long contributionId, String type) {
-		ExpressionList<ContributionFeedback> where = find.where().eq("contribution.contributionId", contributionId)
+		ExpressionList<ContributionFeedback> where =
+				find.where().eq("contribution.contributionId", contributionId)
 				.eq("archived", false)
 				.eq("status", ContributionFeedbackStatus.PUBLIC);
 		if (type != null)

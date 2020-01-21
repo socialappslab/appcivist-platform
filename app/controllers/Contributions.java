@@ -821,14 +821,14 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution feedbacks found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+//    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result readContributionFeedbacks(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
         try {
             String type = ContributionFeedbackTypes.TECHNICAL_ASSESSMENT.name();
-            List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(cid, type);
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(coid, type);
             User user;
             NonMemberAuthor nma;
 
