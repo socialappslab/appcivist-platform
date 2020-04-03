@@ -278,6 +278,7 @@ public class PeerDocWrapper {
         }
 
         Logger.info("PEERDOC: sending request with following data => "+peerDocVisibility.toString());
+        Logger.info("PEERDOC url :" + holder.getUrl());
         if (!peerDocVisibility.isEmpty()) {
             holder.setBody(Json.toJson(peerDocVisibility));
         }

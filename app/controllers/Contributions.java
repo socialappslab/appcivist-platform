@@ -4704,9 +4704,17 @@ public class Contributions extends Controller {
 
         // Authors of the parent of a fork can merge, and therefore, they are the only ones who can change the status
         // from FORK_* to MERGE_*.
-        if(upStatus.contains("MERGE") && (c.getParent() !=null && !c.getParent().getAuthors().contains(user))) {
-            return badRequest(Json.toJson(new TransferResponseStatus("Only the author of the parent " +
-                    "contribution can change from FORK to MERGE")));
+ //       if(upStatus.contains("MERGE") && (c.getParent() !=null && !c.getParent().getAuthors().contains(user))) {
+   //         return badRequest(Json.toJson(new TransferResponseStatus("Only the author of the parent " +
+     //               "contribution can change from FORK to MERGE")));
+//        }
+
+        if (upStatus.contains("MERGE") && (c.getParent() !=null))  {
+            user = c.getParent().getFirstAuthor();
+        }
+
+        if (!upStatus.contains("MERGE")) {
+            user = c.getFirstAuthor();
         }
 
         List<String> checkStatus = checkContributionRequirementsFields(c, upStatus);
