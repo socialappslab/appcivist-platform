@@ -821,13 +821,14 @@ public class Contributions extends Controller {
     @ApiResponses(value = {@ApiResponse(code = 404, message = "No contribution feedbacks found", response = TransferResponseStatus.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "SESSION_KEY", value = "User's session authentication key", dataType = "String", paramType = "header")})
-    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
+//    @Dynamic(value = "MemberOfAssembly", meta = SecurityModelConstants.ASSEMBLY_RESOURCE_PATH)
     public static Result readContributionFeedbacks(
             @ApiParam(name = "aid", value = "Assembly ID") Long aid,
             @ApiParam(name = "cid", value = "Campaign ID") Long cid,
             @ApiParam(name = "coid", value = "Contribution ID") Long coid) {
         try {
-            List<ContributionFeedback> feedbacks = ContributionFeedback.getFeedbacksByContribution(coid);
+            String type = ContributionFeedbackTypes.TECHNICAL_ASSESSMENT.name();
+            List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(coid, type);
             User user;
             NonMemberAuthor nma;
 
@@ -992,6 +993,7 @@ public class Contributions extends Controller {
             @ApiParam(name = "type", value = "Type") String type) {
         try {
             Contribution co = Contribution.readByUUID(UUID.fromString(couuid));
+            type = ContributionFeedbackTypes.TECHNICAL_ASSESSMENT.name();
             List<ContributionFeedback> feedbacks = ContributionFeedback.getPublicFeedbacksByContributionType(co.getContributionId(), type);
             for (ContributionFeedback contributionFeedback: feedbacks) {
                 Map<String, Object> info = new HashMap<>();

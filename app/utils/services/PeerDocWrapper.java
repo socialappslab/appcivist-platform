@@ -278,14 +278,23 @@ public class PeerDocWrapper {
         }
 
         Logger.info("PEERDOC: sending request with following data => "+peerDocVisibility.toString());
-        holder.setBody(Json.toJson(peerDocVisibility));
+        Logger.info("PEERDOC url :" + holder.getUrl());
+        if (!peerDocVisibility.isEmpty()) {
+            holder.setBody(Json.toJson(peerDocVisibility));
+        }
+
         F.Promise<WSResponse> promise = wsSend(holder);
         WSResponse pdStatus = promise.get(DEFAULT_TIMEOUT);
         if(pdStatus.getStatus() == 200) {
             JsonNode response = pdStatus.asJson();
+            Logger.info("PEERDOC: STATUS 200 " + response.toString());
             if (response.get("status") != null && response.get("status").asText().equals("success")) {
                 return true;
             }
+        } else {
+            Logger.error("ERROR ON PEERDOC PUBLISH " + pdStatus.getStatus());
+            Logger.error(pdStatus.asJson().toString());
+            return false;
         }
         return false;
 
