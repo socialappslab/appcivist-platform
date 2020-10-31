@@ -72,6 +72,65 @@ Email invitations are sent using the [Sendgrid API](https://sendgrid.com/docs/AP
 A preliminary connection to the [MapBox API](https://www.mapbox.com/api-documentation/) is used when we create assemblies and working groups with a location. The MapBox API is called to obtain the geographic coordinates related to the location string, which is stored in the database in GeoJSON format. MapBox API credentials must be configured in the mapboxapi section of the [configuration file](../conf/local.sample.conf).
 
 ## Development Guide HowTo
-TODO
 
+To start a development in this project, the first time you should: 
+Clone the project
+- `git clone git@github.com:socialappslab/appcivist-platform.git`
+- `git clone https://github.com/socialappslab/appcivist-platform.git`
+Move to the develop branch
+- `git checkout develop`
+Create you own branch with a the issue number and a short description as its name:
+- `git checkout -b 123-my-feature`
+Make a copy of the file local.sample.conf
+- `cp conf/local.sample.conf conf/local.conf`
 
+### Local deploy with docker and docker-compose
+
+#### Requirements
+- Docker
+- docker-compose
+
+#### Deploy
+To deploy the project with docker, you can use the docker-compose.yml and
+the Dockerfile-dev files. The docker-compose file deploy the appcivist backend app 
+and a postgres database and an etherpad app. 
+To to this:
+Build the docker images
+- `docker-compose build`
+Up the app and db
+- `docker-compose up -d`
+With this, all the 3 services will be deployed and you can access the API in 
+http://localhost:9000/
+However, at the beginning the database will be empty, so for having a test data to
+work with you can access to http://bit.ly/2BFlL1c and download a backup from the test
+database. Then, you can restore the database backup with:
+- `psql -U appcivist --host localhost --port 5433 -f  <file>.sql`
+Now, you have test data, and you can start working in your issue.
+Any changes you made in your code will be automatically reflected in the API without need
+to redeploy it.
+
+### Local deploy without docker
+
+#### Requirements
+- a postgres database
+- a etherpad database
+
+##### Local deployment
+First, you need to update your local.conf file to set up your postgres database name,
+user and password.
+Then, to start the up you need to run:
+- `./activator run`
+This command will take a while to finish. When it finishes you can access to http://localhost:9000/
+Then you can also made a restore of the postgresql database backup mentioned in the docker
+deployment.
+Any changes you made in your code will be automatically reflected in the API without need
+to redeploy it.
+
+## Deploying to test or production
+When you finish your issue, you can commit and push your changes in your branch, create a
+pull request and merge your changes to the develop branch first. When you push to develop
+a new docker image is automatically builded in https://hub.docker.com/ then, you should ask
+someone with access to the server to deploy the changes in the server with Salt.
+When your changes in development are approved you can create a pull request from develop to
+master, and merge your changes there. Once merged, a new docker image will also automatically
+be builded and you should also aks someone to deploy the changes in production.
